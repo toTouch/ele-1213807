@@ -621,6 +621,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             excelVo.setPhone(eleDepositOrder.getPhone());
             excelVo.setName(eleDepositOrder.getName());
             excelVo.setPayAmount(eleDepositOrder.getPayAmount());
+            excelVo.setStoreName(eleDepositOrder.getStoreName());
 
             if (Objects.nonNull(eleDepositOrder.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(eleDepositOrder.getCreateTime())));
@@ -1310,10 +1311,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        if(!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("admin payRentCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -1374,6 +1377,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .name(user.getUsername())
                 .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
                 .newBatteryDeposit(batteryDepositAdd.getPayAmount())
+                .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);

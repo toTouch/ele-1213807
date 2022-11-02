@@ -95,7 +95,7 @@ public class JsonAdminElectricityMemberCardController {
         }
 
         Long franchiseeId = null;
-        if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
@@ -103,7 +103,7 @@ public class JsonAdminElectricityMemberCardController {
             }
         }
 
-        return electricityMemberCardService.queryList(offset, size, status, type, tenantId,cardModel,franchiseeId);
+        return electricityMemberCardService.queryList(offset, size, status, type, tenantId, cardModel, franchiseeId);
     }
 
 
@@ -135,7 +135,7 @@ public class JsonAdminElectricityMemberCardController {
             }
         }
 
-        return electricityMemberCardService.queryCount(status, type, tenantId,cardModel,franchiseeId);
+        return electricityMemberCardService.queryCount(status, type, tenantId, cardModel, franchiseeId);
     }
 
 
@@ -203,13 +203,15 @@ public class JsonAdminElectricityMemberCardController {
     //查询换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Long id) {
-        return R.ok(electricityMemberCardService.selectByFranchiseeId(id));
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(electricityMemberCardService.selectByFranchiseeId(id, tenantId));
     }
 
     //查询未删除并且启用换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryUsableByFranchisee/{id}")
     public R getElectricityUsableBatteryList(@PathVariable("id") Long id) {
-        return R.ok(electricityMemberCardService.getElectricityUsableBatteryList(id));
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(electricityMemberCardService.getElectricityUsableBatteryList(id,tenantId));
     }
 
     /**

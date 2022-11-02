@@ -18,15 +18,19 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetServerVo;
 import com.xiliulou.electricity.vo.PageDataAndCountVo;
+
 import java.util.ArrayList;
 import java.util.Objects;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,17 +39,24 @@ import lombok.extern.slf4j.Slf4j;
  * @author zgw
  * @since 2022-09-26 11:40:35
  */
-@Service("electricityCabinetServerService") @Slf4j public class ElectricityCabinetServerServiceImpl
-    implements ElectricityCabinetServerService {
-    @Resource private ElectricityCabinetServerMapper electricityCabinetServerMapper;
+@Service("electricityCabinetServerService")
+@Slf4j
+public class ElectricityCabinetServerServiceImpl
+        implements ElectricityCabinetServerService {
+    @Resource
+    private ElectricityCabinetServerMapper electricityCabinetServerMapper;
 
-    @Autowired private ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    private ElectricityCabinetService electricityCabinetService;
 
-    @Autowired private UserService userService;
+    @Autowired
+    private UserService userService;
 
-    @Autowired private ElectricityCabinetServerOperRecordService electricityCabinetServerOperRecordService;
+    @Autowired
+    private ElectricityCabinetServerOperRecordService electricityCabinetServerOperRecordService;
 
-    @Autowired private TenantService tenantService;
+    @Autowired
+    private TenantService tenantService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -53,7 +64,8 @@ import lombok.extern.slf4j.Slf4j;
      * @param id 主键
      * @return 实例对象
      */
-    @Override public ElectricityCabinetServer queryByIdFromDB(Long id) {
+    @Override
+    public ElectricityCabinetServer queryByIdFromDB(Long id) {
         return this.electricityCabinetServerMapper.queryById(id);
     }
 
@@ -63,7 +75,8 @@ import lombok.extern.slf4j.Slf4j;
      * @param id 主键
      * @return 实例对象
      */
-    @Override public ElectricityCabinetServer queryByIdFromCache(Long id) {
+    @Override
+    public ElectricityCabinetServer queryByIdFromCache(Long id) {
         return null;
     }
 
@@ -74,7 +87,8 @@ import lombok.extern.slf4j.Slf4j;
      * @param limit  查询条数
      * @return 对象列表
      */
-    @Override public List<ElectricityCabinetServer> queryAllByLimit(int offset, int limit) {
+    @Override
+    public List<ElectricityCabinetServer> queryAllByLimit(int offset, int limit) {
         return this.electricityCabinetServerMapper.queryAllByLimit(offset, limit);
     }
 
@@ -84,8 +98,10 @@ import lombok.extern.slf4j.Slf4j;
      * @param electricityCabinetServer 实例对象
      * @return 实例对象
      */
-    @Override @Transactional(rollbackFor = Exception.class) public ElectricityCabinetServer insert(
-        ElectricityCabinetServer electricityCabinetServer) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ElectricityCabinetServer insert(
+            ElectricityCabinetServer electricityCabinetServer) {
         this.electricityCabinetServerMapper.insertOne(electricityCabinetServer);
         return electricityCabinetServer;
     }
@@ -96,8 +112,10 @@ import lombok.extern.slf4j.Slf4j;
      * @param electricityCabinetServer 实例对象
      * @return 实例对象
      */
-    @Override @Transactional(rollbackFor = Exception.class) public Integer update(
-        ElectricityCabinetServer electricityCabinetServer) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer update(
+            ElectricityCabinetServer electricityCabinetServer) {
         return this.electricityCabinetServerMapper.update(electricityCabinetServer);
 
     }
@@ -108,18 +126,21 @@ import lombok.extern.slf4j.Slf4j;
      * @param id 主键
      * @return 是否成功
      */
-    @Override @Transactional(rollbackFor = Exception.class) public Boolean deleteById(Long id) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteById(Long id) {
         return this.electricityCabinetServerMapper.deleteById(id) > 0;
     }
 
-    @Override @Transactional(rollbackFor = Exception.class)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ElectricityCabinetServer queryByProductKeyAndDeviceName(String productKey, String deviceName) {
         return this.electricityCabinetServerMapper.queryByProductKeyAndDeviceName(productKey, deviceName);
     }
 
     @Override
     public R queryList(String eleName, String deviceName, String tenantName, Long serverTimeStart, Long serverTimeEnd,
-        Long offset, Long size) {
+                       Long offset, Long size) {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
@@ -127,14 +148,14 @@ import lombok.extern.slf4j.Slf4j;
         List<ElectricityCabinetServerVo> result = new ArrayList<>();
 
         List<ElectricityCabinetServer> data = electricityCabinetServerMapper
-            .queryList(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd, offset, size);
+                .queryList(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd, offset, size);
         if (DataUtil.collectionIsUsable(data)) {
             data.forEach(item -> {
                 ElectricityCabinetServerVo vo = new ElectricityCabinetServerVo();
                 BeanUtils.copyProperties(item, vo);
 
                 ElectricityCabinet electricityCabinet =
-                    electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+                        electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
                 if (Objects.nonNull(electricityCabinet)) {
                     vo.setEleName(electricityCabinet.getName());
                 }
@@ -149,11 +170,13 @@ import lombok.extern.slf4j.Slf4j;
         }
 
         Long count =
-            electricityCabinetServerMapper.queryCount(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd);
+                electricityCabinetServerMapper.queryCount(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd);
         return R.ok(new PageDataAndCountVo<>(result, count));
     }
 
-    @Override @Transactional(rollbackFor = Exception.class) public R deleteOne(Long id) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R deleteOne(Long id) {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
@@ -164,9 +187,9 @@ import lombok.extern.slf4j.Slf4j;
         }
 
         ElectricityCabinet electricityCabinet =
-            electricityCabinetService.queryByIdFromCache(electricityCabinetServer.getElectricityCabinetId());
+                electricityCabinetService.queryByIdFromCache(electricityCabinetServer.getElectricityCabinetId());
         if (Objects.nonNull(electricityCabinet) && Objects
-            .equals(electricityCabinet.getDelFlag(), ElectricityCabinet.DEL_NORMAL)) {
+                .equals(electricityCabinet.getDelFlag(), ElectricityCabinet.DEL_NORMAL)) {
             return R.fail("100229", "电柜服务信息还有绑定电柜，无法删除");
         }
 
@@ -175,7 +198,8 @@ import lombok.extern.slf4j.Slf4j;
         return R.ok();
     }
 
-    @Override @Transactional(rollbackFor = Exception.class)
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd) {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
@@ -213,11 +237,12 @@ import lombok.extern.slf4j.Slf4j;
         return R.ok();
     }
 
-    @Override public void insertOrUpdateByElectricityCabinet(ElectricityCabinet electricityCabinet,
-        ElectricityCabinet oldElectricityCabinet) {
+    @Override
+    public void insertOrUpdateByElectricityCabinet(ElectricityCabinet electricityCabinet,
+                                                   ElectricityCabinet oldElectricityCabinet) {
         ElectricityCabinetServer electricityCabinetServer =
-            queryByProductKeyAndDeviceName(oldElectricityCabinet.getProductKey(),
-                oldElectricityCabinet.getDeviceName());
+                queryByProductKeyAndDeviceName(oldElectricityCabinet.getProductKey(),
+                        oldElectricityCabinet.getDeviceName());
         if (Objects.nonNull(electricityCabinetServer)) {
             electricityCabinetServer.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetServer.setProductKey(electricityCabinet.getProductKey());

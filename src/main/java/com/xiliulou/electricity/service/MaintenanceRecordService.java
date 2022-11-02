@@ -22,7 +22,7 @@ public interface MaintenanceRecordService {
      * @param id 主键
      * @return 实例对象
      */
-    MaintenanceRecord queryByIdFromDB(Long id);
+    MaintenanceRecord queryByIdFromDB(Long id,Integer tenantId);
 
 
 

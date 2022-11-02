@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,11 +43,15 @@ public class JsonAdminBankCardController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 
 		BankCardQuery bankCardQuery = BankCardQuery.builder()
 				.offset(offset)
 				.size(size)
 				.uid(uid)
+				.tenantId(tenantId)
 				.encBindUserName(encBindUserName).build();
 
 		return bankCardService.queryList(bankCardQuery);
@@ -60,8 +65,12 @@ public class JsonAdminBankCardController {
 	public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "encBindUserName", required = false) String encBindUserName) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		BankCardQuery bankCardQuery = BankCardQuery.builder()
 				.uid(uid)
+				.tenantId(tenantId)
 				.encBindUserName(encBindUserName).build();
 
 		return bankCardService.queryCount(bankCardQuery);
@@ -73,7 +82,9 @@ public class JsonAdminBankCardController {
 	 */
 	@DeleteMapping("/admin/bankcard/unBindByWeb")
 	public R unBindByWeb(@RequestParam("id") Integer id) {
-		return bankCardService.unBindByWeb(id);
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		return bankCardService.unBindByWeb(id,tenantId);
 	}
 
 }

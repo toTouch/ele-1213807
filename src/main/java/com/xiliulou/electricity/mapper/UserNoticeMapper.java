@@ -11,5 +11,6 @@ import com.xiliulou.electricity.entity.UserNotice;
  * @since 2021-09-26 14:06:23
  */
 public interface UserNoticeMapper extends BaseMapper<UserNotice> {
-
+    
+    Integer update(UserNotice userNotice);
 }

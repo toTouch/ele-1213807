@@ -23,5 +23,7 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
 
     Franchisee queryByUserId(Long uid);
 
-    Franchisee queryByCabinetId(Integer id);
+    Franchisee queryByCabinetId(@Param("id") Integer id, @Param("tenantId") Integer tenantId);
+    
+    Integer update( Franchisee franchisee );
 }

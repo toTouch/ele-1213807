@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleUserOperateRecordMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +31,13 @@ public class EleUserOperateRecordServiceImpl extends ServiceImpl<EleUserOperateR
 
     @Override
     public R queryList(Long uid,Long size,Long offset,Long beginTime,Long enTime,Integer operateModel) {
-        return R.ok(eleUserOperateRecordMapper.queryList(uid,size,offset,beginTime,enTime,operateModel));
+        Integer tenantId=TenantContextHolder.getTenantId();
+        return R.ok(eleUserOperateRecordMapper.queryList(uid,size,offset,beginTime,enTime,operateModel,tenantId));
     }
 
     @Override
     public R queryCount(Long uid,Long beginTime,Long enTime,Integer operateModel) {
-        return R.ok(eleUserOperateRecordMapper.queryCount(uid,beginTime,enTime,operateModel));
+        Integer tenantId=TenantContextHolder.getTenantId();
+        return R.ok(eleUserOperateRecordMapper.queryCount(uid,beginTime,enTime,operateModel,tenantId));
     }
 }

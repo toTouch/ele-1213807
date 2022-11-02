@@ -181,6 +181,9 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
+        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
             if (checkParam(storeAddAndUpdate, store)) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -208,6 +211,9 @@ public class StoreServiceImpl implements StoreService {
         Store store = queryByIdFromCache(id);
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if(!Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //查询门店是否绑定换电柜
@@ -295,8 +301,10 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-
-
+        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
+        
         Store store = new Store();
         store.setId(id);
         store.setUpdateTime(System.currentTimeMillis());
@@ -439,7 +447,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public void updateById(Store store) {
-        int update = storeMapper.updateById(store);
+        int update = storeMapper.update(store);
 
 
         DbUtils.dbOperateSuccessThen(update, () -> {

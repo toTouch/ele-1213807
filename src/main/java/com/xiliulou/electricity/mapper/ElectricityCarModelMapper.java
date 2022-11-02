@@ -25,4 +25,6 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
     List<ElectricityCarModelVO> queryList(@Param("query") ElectricityCarModelQuery electricityCarModelQuery);
 
 	Integer queryCount(@Param("query") ElectricityCarModelQuery electricityCarModelQuery);
+    
+    Integer update(ElectricityCarModel electricityCarModel);
 }

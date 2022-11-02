@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
@@ -728,7 +729,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Override
     public R endOrder(String orderId) {
-        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(new LambdaQueryWrapper<RentBatteryOrder>().eq(RentBatteryOrder::getOrderId, orderId).eq(RentBatteryOrder::getTenantId, tenantId));
         if (Objects.isNull(rentBatteryOrder)) {
             log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");

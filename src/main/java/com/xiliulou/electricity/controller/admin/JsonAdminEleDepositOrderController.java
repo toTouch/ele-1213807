@@ -60,7 +60,8 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "depositType", required = false) Integer depositType,
                        @RequestParam(value = "carModel", required = false) String carModel,
-                       @RequestParam(value = "payType", required = false) Integer payType) {
+        @RequestParam(value = "payType", required = false) Integer payType,
+        @RequestParam(value = "storeName", required = false) String storeName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -114,9 +115,7 @@ public class JsonAdminEleDepositOrderController {
                 .tenantId(tenantId)
                 .carModel(carModel)
                 .franchiseeName(franchiseeName)
-                .depositType(depositType)
-                .payType(payType)
-                .franchiseeId(franchiseeId).build();
+                .depositType(depositType).payType(payType).franchiseeId(franchiseeId).storeName(storeName).build();
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
@@ -131,7 +130,8 @@ public class JsonAdminEleDepositOrderController {
                         @RequestParam(value = "depositType", required = false) Integer depositType,
                         @RequestParam(value = "carModel", required = false) String carModel,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
-                        @RequestParam(value = "payType", required = false) Integer payType) {
+        @RequestParam(value = "payType", required = false) Integer payType,
+        @RequestParam(value = "storeName", required = false) String storeName) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -176,8 +176,7 @@ public class JsonAdminEleDepositOrderController {
                 .depositType(depositType)
                 .payType(payType)
                 .tenantId(tenantId)
-                .franchiseeName(franchiseeName)
-                .franchiseeId(franchiseeId).build();
+                .franchiseeName(franchiseeName).franchiseeId(franchiseeId).storeName(storeName).build();
 
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);
     }

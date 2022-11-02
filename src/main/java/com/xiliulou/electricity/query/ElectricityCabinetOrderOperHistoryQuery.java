@@ -29,6 +29,8 @@ public class ElectricityCabinetOrderOperHistoryQuery {
      */
     private String orderId;
 
+    private Integer tenantId;
+
 
 
 

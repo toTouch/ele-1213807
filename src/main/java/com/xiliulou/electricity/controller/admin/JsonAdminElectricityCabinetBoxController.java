@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -14,7 +15,9 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.query.UpdateBoxesQuery;
 import com.xiliulou.electricity.query.UpdateBoxesStatusQuery;
 import com.xiliulou.electricity.query.UpdateUsableStatusQuery;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -62,43 +65,51 @@ public class JsonAdminElectricityCabinetBoxController {
                 .electricityCabinetId(electricityCabinetId)
                 .tenantId(tenantId).build();
 
-		return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
-	}
-	
-	
-	//列表查询
-	@GetMapping(value = "/admin/electricityCabinetBox/list/super")
-	public R queryListSuper(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-		
-		if (offset < 0) {
-			offset = 0L;
-		}
-		
-		
-		
-		ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
-				.offset(offset)
-				.size(size)
-				.electricityCabinetId(electricityCabinetId)
-				.tenantId(null).build();
-		
-		return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
-	}
+        return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+    }
+
+
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinetBox/list/super")
+    public R queryListSuper(@RequestParam("size") Long size,
+                            @RequestParam("offset") Long offset,
+                            @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!Objects.equals(tenantId,1)){
+            log.error("ELECTRICITY  ERROR! query electricityCabinetBoxList super not permission tenantId:{}", tenantId);
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
+                .offset(offset)
+                .size(size)
+                .electricityCabinetId(electricityCabinetId).build();
+
+        return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+    }
 
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody UpdateUsableStatusQuery updateUsableStatusQuery) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         if (Objects.isNull(updateUsableStatusQuery.getId())
                 || Objects.isNull(updateUsableStatusQuery.getUsableStatus())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateUsableStatusQuery.getId());
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateUsableStatusQuery.getId(), tenantId);
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
@@ -106,6 +117,10 @@ public class JsonAdminElectricityCabinetBoxController {
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        if (!Objects.equals(tenantId, electricityCabinet.getTenantId())) {
+            return R.ok();
         }
 
         //换电柜是否在线
@@ -143,6 +158,9 @@ public class JsonAdminElectricityCabinetBoxController {
     @PostMapping(value = "/admin/electricityCabinetBox/updateBoxesStatus")
     public R updateBoxesStatus(@RequestBody UpdateBoxesStatusQuery updateBoxesStatusQuery) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         if (Objects.isNull(updateBoxesStatusQuery.getElectricityCabinetId())
                 || Objects.isNull(updateBoxesStatusQuery.getUsableStatus())
                 || ObjectUtil.isEmpty(updateBoxesStatusQuery.getUpdateBoxesQueryList())) {
@@ -154,6 +172,10 @@ public class JsonAdminElectricityCabinetBoxController {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
+		if (!Objects.equals(tenantId, electricityCabinet.getTenantId())) {
+			return R.ok();
+		}
+
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
@@ -164,7 +186,7 @@ public class JsonAdminElectricityCabinetBoxController {
         List<String> cellList = new ArrayList<>();
         for (UpdateBoxesQuery updateBoxesQuery : updateBoxesStatusQuery.getUpdateBoxesQueryList()) {
 
-            ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateBoxesQuery.getId());
+            ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateBoxesQuery.getId(), tenantId);
             if (Objects.isNull(oldElectricityCabinetBox)) {
                 return R.fail("ELECTRICITY.0006", "未找到此仓门");
             }

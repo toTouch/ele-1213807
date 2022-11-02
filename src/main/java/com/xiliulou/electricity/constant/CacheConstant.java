@@ -200,11 +200,13 @@ public interface CacheConstant {
 
     String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
     String OTA_PROCESS_CACHE = "ota_process_cache";
-    
+
     /**
      * 满仓柜机缓存
      */
     String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
+
+    String OTA_OPERATE_CACHE = "ota_operate_cache:";
     /**
      * 异常告警导出缓存
      */

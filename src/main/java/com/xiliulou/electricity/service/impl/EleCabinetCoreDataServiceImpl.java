@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper;
 import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +28,8 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     private EleCabinetCoreDataMapper eleCabinetCoreDataMapper;
 
     @Override
-    public int atomicUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
-        return eleCabinetCoreDataMapper.atomicUpdateCabinetCoreData(cabinetCoreData);
+    public int idempotentUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
+        return eleCabinetCoreDataMapper.idempotentUpdateCabinetCoreData(cabinetCoreData);
     }
 
     @Override
@@ -38,7 +39,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
 
     @Override
     public EleCabinetCoreData selectByEleCabinetId(Integer id) {
-        return eleCabinetCoreDataMapper.selectOne(new LambdaQueryWrapper<EleCabinetCoreData>().eq(EleCabinetCoreData::getElectricityCabinetId,id));
+        return eleCabinetCoreDataMapper.selectById(id, TenantContextHolder.getTenantId());
     }
 
     /**

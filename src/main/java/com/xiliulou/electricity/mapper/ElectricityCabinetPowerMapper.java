@@ -20,11 +20,9 @@ import org.apache.ibatis.annotations.SelectKey;
  * @since 2021-01-27 16:22:44
  */
 public interface ElectricityCabinetPowerMapper  extends BaseMapper<ElectricityCabinetPower>{
-
-
-
-    @Insert("insert into t_electricity_cabinet_power(eid,same_day_power,sum_power,date,create_time,update_time) " +
-            " values(#{eid},#{sameDayPower},#{sumPower},#{date},#{createTime},#{updateTime}) " +
+    
+    @Insert("insert into t_electricity_cabinet_power(eid,same_day_power,sum_power,date,create_time,update_time,tenant_id) " +
+            " values(#{eid},#{sameDayPower},#{sumPower},#{date},#{createTime},#{updateTime},#{tenantId}) " +
             " on duplicate key update same_day_power=#{sameDayPower},sum_power=#{sumPower},create_time=#{createTime},update_time=#{updateTime}")
     @SelectKey(keyProperty = "id", statement = "select LAST_INSERT_ID()", before = false, resultType = Long.class)
     int insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);

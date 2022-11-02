@@ -140,12 +140,15 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	public R update(NewUserActivityAddAndUpdateQuery newUserActivityAddAndUpdateQuery) {
 		NewUserActivity oldNewUserActivity = queryByIdFromCache(newUserActivityAddAndUpdateQuery.getId());
 		if (Objects.isNull(oldNewUserActivity)) {
-			log.error("update Activity  ERROR! not found Activity ! ActivityId:{} ", newUserActivityAddAndUpdateQuery.getId());
+			log.error("update Activity  ERROR! not found Activity ! ActivityId={} ", newUserActivityAddAndUpdateQuery.getId());
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
+		if(!Objects.equals(oldNewUserActivity.getTenantId(),tenantId)){
+			return R.ok();
+		}
 
 		//查询该租户是否有邀请活动，有则不能启用
 		if (Objects.equals(newUserActivityAddAndUpdateQuery.getStatus(), NewUserActivity.STATUS_ON)) {
@@ -213,8 +216,8 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Override
 	public R queryInfo(Integer id) {
 		NewUserActivity newUserActivity = queryByIdFromCache(id);
-		if (Objects.isNull(newUserActivity)) {
-			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+		if (Objects.isNull(newUserActivity) || !Objects.equals(newUserActivity.getTenantId(),TenantContextHolder.getTenantId())) {
+			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId={} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 

@@ -26,4 +26,8 @@
 			</if>
 		</where>
 	</select>
+
+	<delete id="delete">
+		delete from t_faq where id=#{id} and tenant_id=#{tenantId}
+	</delete>
 </mapper>

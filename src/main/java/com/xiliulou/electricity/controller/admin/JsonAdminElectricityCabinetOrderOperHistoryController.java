@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,10 +59,14 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder()
 				.offset(offset)
 				.size(size)
 				.orderId(orderId)
+				.tenantId(tenantId)
 				.type(type).build();
 		return electricityCabinetOrderOperHistoryService.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
 	}
@@ -71,7 +76,11 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 	public R queryCount(@RequestParam("orderId") String orderId,
 			@RequestParam("type") Integer type) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder()
+				.tenantId(tenantId)
 				.orderId(orderId)
 				.type(type).build();
 		return electricityCabinetOrderOperHistoryService.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery);

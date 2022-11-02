@@ -79,20 +79,36 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 
     @Override
     public R update(StoreGoods storeGoods) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        if (!Objects.equals(tenantId,storeGoods.getTenantId())){
+            return R.ok();
+        }
+
         if (Objects.nonNull(storeGoods.getStoreId())) {
             Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
             if (Objects.isNull(store)) {
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
+
+            if (!Objects.equals(tenantId, store.getTenantId())) {
+                return R.ok();
+            }
         }
 
         storeGoods.setUpdateTime(System.currentTimeMillis());
-        return R.ok(storeGoodsMapper.updateById(storeGoods));
+        return R.ok(storeGoodsMapper.update(storeGoods));
     }
 
     @Override
     public R delete(Long id) {
-        StoreGoods storeGoods = storeGoodsMapper.selectById(id);
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        StoreGoods storeGoods = storeGoodsMapper.selectOne(new LambdaQueryWrapper<StoreGoods>().eq(StoreGoods::getId, id).eq(StoreGoods::getTenantId, tenantId));
         if (Objects.isNull(storeGoods)) {
             R.fail("ELECTRICITY.00109", "未找到门店商品");
         }
@@ -100,7 +116,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
         storeGoods.setId(id);
         storeGoods.setUpdateTime(System.currentTimeMillis());
         storeGoods.setDelFlag(StoreGoods.DEL_DEL);
-        return R.ok(storeGoodsMapper.updateById(storeGoods));
+        return R.ok(storeGoodsMapper.update(storeGoods));
     }
 
     @Override
