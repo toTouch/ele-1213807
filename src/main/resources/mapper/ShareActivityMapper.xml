@@ -19,9 +19,9 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.franchiseeId!=null">
+            <if test="query.franchiseeIds!=null">
                 and franchisee_id in
-                <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -50,9 +50,9 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.franchiseeId!=null">
+            <if test="query.franchiseeIds!=null">
                 and franchisee_id in
-                <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>
