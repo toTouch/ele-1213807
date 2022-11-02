@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ReportManagementMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ReportManagement" id="ReportManagementMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="jobId" column="job_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!-- 基础字段 -->
+	<sql id="selectReportManagement">
+       	select   id, job_id, type, status, url, del_flag, tenant_id, create_time, update_time        from t_report_management
+    </sql>
+    
+    <!--查询单个-->
+    <select id="selectById" resultMap="ReportManagementMap">
+        <include refid="selectReportManagement"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="ReportManagementMap">
+        <include refid="selectReportManagement"/>
+        where del_flag=0
+        <if test="startTime != null">
+            and create_time &gt;=#{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectByPageCount" resultType="java.lang.Integer">
+        select count(1) from t_report_management where del_flag=0
+        <if test="startTime != null">
+            and create_time &gt;=#{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="ReportManagementMap">
+        <include refid="selectReportManagement"/>
+        from t_report_management
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="jobId != null">
+                and job_id = #{jobId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="url != null and url != ''">
+                and url = #{url}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_report_management(job_id, type, status, url, del_flag, tenant_id, create_time, update_time)
+        values (#{jobId}, #{type}, #{status}, #{url}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_report_management
+        <set>
+            <if test="jobId != null">
+                job_id = #{jobId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="url != null and url != ''">
+                url = #{url},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_report_management where id = #{id}
+    </delete>
+
+    <delete id="deleteByQuery">
+        delete from t_report_management where id = #{id}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </delete>
+
+</mapper>

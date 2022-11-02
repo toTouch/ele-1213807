@@ -207,4 +207,8 @@ public interface CacheConstant {
     String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
 
     String OTA_OPERATE_CACHE = "ota_operate_cache:";
+    /**
+     * 异常告警导出缓存
+     */
+    String WARN_MESSAGE_EXPORT_CACHE="warn_message_export_cache:";
 }

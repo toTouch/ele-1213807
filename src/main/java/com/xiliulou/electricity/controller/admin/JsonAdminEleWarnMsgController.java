@@ -3,11 +3,13 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
+import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.EleWarnMsgExcelQuery;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.UserTypeFactory;
@@ -19,9 +21,7 @@ import com.xiliulou.electricity.vo.EleBusinessWarnMsgVo;
 import com.xiliulou.electricity.vo.EleCabinetWarnMsgVo;
 import com.xiliulou.electricity.vo.EleCellWarnMsgVo;
 import com.xiliulou.security.bean.TokenUser;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +41,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminEleWarnMsgController {
+public class JsonAdminEleWarnMsgController extends BaseController {
     /**
      * 服务对象
      */
@@ -708,6 +708,28 @@ public class JsonAdminEleWarnMsgController {
         List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
+    }
+
+    /**
+     * 异常告警导出
+     * @return
+     */
+    @PostMapping(value = "/admin/eleWarnMsg/export")
+    public R eleWarnMsgExport(@RequestBody EleWarnMsgExcelQuery warnMsgQuery) {
+        if(!SecurityUtils.isAdmin()){
+            return R.fail("AUTH.0002", "没有权限！");
+        }
+        
+        verifyParams(warnMsgQuery);
+        return returnTripleResult(eleWarnMsgService.submitExportTask(warnMsgQuery));
+    }
+
+    private void verifyParams(EleWarnMsgExcelQuery warnMsgQuery) {
+        warnMsgQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        if ((warnMsgQuery.getBeginTime() - warnMsgQuery.getEndTime()) / 1000 / 3600 / 24 > 31) {
+            throw new CustomBusinessException("搜索日期不能大于31天");
+        }
     }
 
 

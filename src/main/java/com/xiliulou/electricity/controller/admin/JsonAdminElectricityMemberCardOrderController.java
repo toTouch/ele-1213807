@@ -151,21 +151,34 @@ public class JsonAdminElectricityMemberCardOrderController {
                             @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                             HttpServletResponse response) {
 
-        Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
-        if (days > 33) {
-            throw new CustomBusinessException("搜索日期不能大于33天");
-        }
+		Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
+		if (days > 33) {
+			throw new CustomBusinessException("搜索日期不能大于31天");
+		}
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
-            throw new CustomBusinessException("查不到订单");
-        }
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-        }
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			throw new CustomBusinessException("查不到订单");
+		}
+		
+		if(!Objects.equals(user.getType(), User.TYPE_USER_OPERATE) || !Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
+			throw new CustomBusinessException("没有权限！");
+		}
+
+		Long franchiseeId=null;
+		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+			//加盟商
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				throw new CustomBusinessException("查不到订单");
+			}
+			franchiseeId=franchisee.getId();
+		}
 
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
                 .phone(phone)
