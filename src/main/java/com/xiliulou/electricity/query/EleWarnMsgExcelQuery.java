@@ -8,11 +8,10 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder
 public class EleWarnMsgExcelQuery {
-    private Boolean isAdmin;
-    @NotNull(message = "每页条数不能为空!")
-    private Long size;
-    @NotNull(message = "页码不能为空!")
-    private Long offset;
+//    @NotNull(message = "每页条数不能为空!")
+//    private Long size;
+//    @NotNull(message = "页码不能为空!")
+//    private Long offset;
     @NotNull(message = "类型不能为空!")
     private Integer type;
     @NotNull(message = "开始时间不能为空!")

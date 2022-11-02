@@ -717,7 +717,7 @@ public class JsonAdminEleWarnMsgController extends BaseController {
     @PostMapping(value = "/admin/eleWarnMsg/export")
     public R eleWarnMsgExport(@RequestBody EleWarnMsgExcelQuery warnMsgQuery) {
         if(!SecurityUtils.isAdmin()){
-            return R.fail("AUTH.0002", "没有权限操作！");
+            return R.fail("AUTH.0002", "没有权限！");
         }
         
         verifyParams(warnMsgQuery);
@@ -725,7 +725,6 @@ public class JsonAdminEleWarnMsgController extends BaseController {
     }
 
     private void verifyParams(EleWarnMsgExcelQuery warnMsgQuery) {
-        warnMsgQuery.setIsAdmin(SecurityUtils.isAdmin());
         warnMsgQuery.setTenantId(TenantContextHolder.getTenantId());
 
         if ((warnMsgQuery.getBeginTime() - warnMsgQuery.getEndTime()) / 1000 / 3600 / 24 > 31) {
