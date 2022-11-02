@@ -1898,6 +1898,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
         }
+        
+        TenantContextHolder.setTenantId(electricityBattery.getTenantId());
 
         //电池电量上报变化在百分之50以上，不更新电池电量
         Double power = batteryReportQuery.getPower();
