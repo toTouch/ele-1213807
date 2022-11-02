@@ -557,6 +557,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer totalCount = ids.size();
         return totalCount;
     }
+    
+    private boolean checkBatteryIsExchange(String batteryName,Double fullyCharged){
+        return electricityBatteryService.checkBatteryIsExchange(batteryName,fullyCharged);
+    }
 
     public Triple<Boolean, String, Object> queryFullyElectricityBatteryByExchangeOrder(Integer id, String batteryType, Long franchiseeId, Integer tenantId) {
 
@@ -1429,7 +1433,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         }
                     }
                 }
-
+                
+                
+                //获取柜机可换电数和空仓数
+                List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(e.getId());
+                if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+                    //可换电
+                    List<ElectricityCabinetBox> fullBatteryBoxs = electricityCabinetBoxes.parallelStream().filter(item -> StringUtils.isNotBlank(item.getSn())
+                            && Objects.equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE, item.getUsableStatus())
+                            && electricityBatteryService.checkBatteryIsExchange(item.getSn(), e.getFullyCharged()))
+                            .collect(Collectors.toList());
+                    //空仓
+                    List<ElectricityCabinetBox> emptyBoxs = electricityCabinetBoxes.parallelStream().filter(item -> StringUtils.isNotBlank(item.getSn())
+                            && Objects.equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE,item.getUsableStatus())).collect(Collectors.toList());
+    
+                    //有电池
+                    List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.parallelStream().filter(item->StringUtils.isNotBlank(item.getSn())
+                            && Objects.equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE, item.getUsableStatus())).collect(Collectors.toList());
+    
+                    e.setNoElectricityBattery(emptyBoxs.size());
+                    e.setFullyElectricityBattery(fullBatteryBoxs.size());
+                    e.setElectricityBatteryTotal(haveBatteryBoxs.size());
+                }
+                
+    
                 //查满仓空仓数
                 int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
                 //查满仓空仓数
