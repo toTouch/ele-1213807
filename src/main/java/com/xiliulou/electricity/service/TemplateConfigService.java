@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.TemplateConfigEntity;
 
+import java.util.List;
+
 /**
  * @author zgw
  * @date 2021/11/30 19:25
@@ -23,4 +25,6 @@ public interface TemplateConfigService extends IService<TemplateConfigEntity> {
     TemplateConfigEntity queryByTenantIdFromDB(Integer tenantId);
 
     R queryTemplateId();
+
+    List<String> selectTemplateId(Integer tenantId);
 }

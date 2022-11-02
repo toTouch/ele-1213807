@@ -2,19 +2,16 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
-import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
-import org.apache.commons.lang3.tuple.Pair;
+import com.xiliulou.electricity.vo.UserInfoDetailVO;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * 用户列表(TUserInfo)表服务接口
@@ -106,6 +103,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
 
+    UserInfoDetailVO selectUserInfoDetail();
+    
     void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
 
     R deleteUserInfo(Long uid);

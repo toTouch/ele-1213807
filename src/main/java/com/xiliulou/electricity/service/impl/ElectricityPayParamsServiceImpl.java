@@ -151,6 +151,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	}
 
 	@Override
+	public ElectricityPayParams selectTenantId(String appId) {
+		return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId, appId));
+	}
+
+	@Override
 	public ElectricityPayParams queryByTenantId(Integer tenantId) {
 		return baseMapper.queryByTenantId(tenantId);
 	}
