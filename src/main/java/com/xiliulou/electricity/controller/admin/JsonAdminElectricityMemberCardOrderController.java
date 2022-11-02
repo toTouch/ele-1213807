@@ -165,7 +165,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 
 		Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
 		if (days > 33) {
-			throw new CustomBusinessException("搜索日期不能大于33天");
+			throw new CustomBusinessException("搜索日期不能大于31天");
 		}
 
 		//租户
@@ -177,10 +177,13 @@ public class JsonAdminElectricityMemberCardOrderController {
 			log.error("ELECTRICITY  ERROR! not found user ");
 			throw new CustomBusinessException("查不到订单");
 		}
+		
+		if(!Objects.equals(user.getType(), User.TYPE_USER_OPERATE) || !Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
+			throw new CustomBusinessException("没有权限！");
+		}
 
 		Long franchiseeId=null;
-		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 			//加盟商
 			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 			if (Objects.isNull(franchisee)) {
