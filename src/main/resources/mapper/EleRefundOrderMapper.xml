@@ -37,11 +37,17 @@
             <if test="query.phone != null and query.phone != ''">
                 and tedo.phone = #{query.phone}
             </if>
-            <if test="query.storeId != null">
-                and tedo.store_id = #{query.storeId}
+            <if test="query.storeIds != null">
+                and tedo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
-            <if test="query.franchiseeId != null">
-                and tedo.franchisee_id = #{query.franchiseeId}
+            <if test="query.franchiseeIds != null">
+                and tedo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by tero.update_time desc
@@ -77,11 +83,17 @@
             <if test="query.payType != null">
                 and tedo.pay_type = #{query.payType}
             </if>
-            <if test="query.storeId != null">
-                and tedo.store_id = #{query.storeId}
+            <if test="query.storeIds != null">
+                and tedo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
-            <if test="query.franchiseeId != null">
-                and tedo.franchisee_id = #{query.franchiseeId}
+            <if test="query.franchiseeIds != null">
+                and tedo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

@@ -144,6 +144,7 @@ public interface ElectricityCabinetService {
 
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
+    List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
     R acquireIdcardFileSign();
 
     R queryName(Integer tenant,Integer id);

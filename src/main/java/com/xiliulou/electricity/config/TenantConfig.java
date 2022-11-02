@@ -22,5 +22,9 @@ public class TenantConfig {
     private List<Integer> disableRobotMessageForTenantId;
 
     private List<Integer> notBatteryReportCheckTenantId;
+    /**
+     * 可以查看所有权限的租户
+     */
+    private List<Integer> viewAllPermissionTenantId;
 
 }

@@ -19,6 +19,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +28,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -168,7 +166,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(oldFranchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-        
+
         if(!Objects.equals(oldFranchisee.getTenantId(),TenantContextHolder.getTenantId())){
             return R.ok();
         }
@@ -211,7 +209,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-    
+
         if(!Objects.equals(franchisee.getTenantId(),TenantContextHolder.getTenantId())){
             return R.ok();
         }
@@ -457,5 +455,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     public Franchisee queryByIdAndTenantId(Long id, Integer tenantId) {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId,tenantId));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectListByQuery(FranchiseeQuery franchiseeQuery) {
+        List<Franchisee> franchisees = franchiseeMapper.selectListByQuery(franchiseeQuery);
+        if (CollectionUtils.isEmpty(franchisees)) {
+            return Triple.of(true, "", Collections.EMPTY_LIST);
+        }
+
+        return Triple.of(true, "", franchisees);
     }
 }

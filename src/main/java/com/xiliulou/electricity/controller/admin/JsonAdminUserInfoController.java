@@ -65,7 +65,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "cardName",required = false) String cardName,
                        @RequestParam(value = "sortType",required = false) Integer sortType,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-                       @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd) {
+                       @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -73,7 +73,10 @@ public class JsonAdminUserInfoController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
-        
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -159,13 +162,10 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                         @RequestParam(value = "batteryId",required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
-                        @RequestParam(value = "cardName",required = false) String cardName,
-                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
+                        @RequestParam(value = "cardName", required = false) String cardName,
+                        @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .name(name)
@@ -178,7 +178,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryCount(userInfoQuery);
     }
@@ -236,9 +236,6 @@ public class JsonAdminUserInfoController extends BaseController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -247,27 +244,22 @@ public class JsonAdminUserInfoController extends BaseController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .authStatus(authStatus)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryUserAuthInfo(userInfoQuery);
     }
 
-
-
     @GetMapping(value = "/admin/authenticationUserInfo/queryCount")
     public R queryAuthenticationCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-                        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
-                        @RequestParam(value = "uid", required = false) Long uid,
-                        @RequestParam(value = "cardName",required = false) String cardName,
-                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
-                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
-                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+                                      @RequestParam(value = "phone", required = false) String phone,
+                                      @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                                      @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+                                      @RequestParam(value = "nowElectricityBatterySn", required = false) String nowElectricityBatterySn,
+                                      @RequestParam(value = "uid", required = false) Long uid,
+                                      @RequestParam(value = "cardName", required = false) String cardName,
+                                      @RequestParam(value = "memberCardId", required = false) Long memberCardId,
+                                      @RequestParam(value = "authStatus", required = false) Integer authStatus,
+                                      @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .name(name)
@@ -280,7 +272,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryAuthenticationCount(userInfoQuery);
     }
@@ -318,10 +310,11 @@ public class JsonAdminUserInfoController extends BaseController {
 
     /**
      * 用户的总消费金额
+     *
      * @return
      */
     @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
-    public R queryUserAllConsumption(@PathVariable("id") Long id){
+    public R queryUserAllConsumption(@PathVariable("id") Long id) {
         return userInfoService.queryUserAllConsumption(id);
     }
 

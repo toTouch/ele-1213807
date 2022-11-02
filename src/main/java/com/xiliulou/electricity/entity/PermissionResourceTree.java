@@ -15,6 +15,7 @@ public class PermissionResourceTree extends TreeNode {
 	private String method;
 	private Double sort;
 	private String desc;
+	private String permission;
 	private Long createTime;
 
 }

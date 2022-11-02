@@ -23,13 +23,9 @@ import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -80,22 +76,22 @@ public class JsonAdminEleWarnMsgController {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //如果是查全部则直接跳过
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
             if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(new ArrayList<>());
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -134,8 +130,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -157,8 +153,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -174,7 +170,6 @@ public class JsonAdminEleWarnMsgController {
                         @RequestParam(value = "cellNo", required = false) Integer cellNo,
                         @RequestParam(value = "tenantId") Integer tenantId) {
 
-
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -184,16 +179,16 @@ public class JsonAdminEleWarnMsgController {
 
         //如果是查全部则直接跳过
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
             if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(new ArrayList<>());
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -266,8 +261,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -293,8 +288,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -319,8 +314,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -340,8 +335,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 

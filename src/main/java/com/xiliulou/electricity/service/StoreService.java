@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.MapVo;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,4 +70,8 @@ public interface StoreService {
     Integer queryCountForHomePage(StoreQuery storeQuery);
 
     List<Long> queryStoreIdByFranchiseeId(Long id);
+
+    List<Store> selectByFranchiseeIds(List<Long> franchiseeIds);
+
+    Triple<Boolean, String, Object> selectListByQuery(StoreQuery storeQuery);
 }
