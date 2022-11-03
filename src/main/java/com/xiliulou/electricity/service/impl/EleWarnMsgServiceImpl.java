@@ -216,7 +216,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     public Triple<Boolean, String, Object> submitExportTask(EleWarnMsgExcelQuery warnMsgQuery) {
 
         //限频
-        if (!redisService.setNx(CacheConstant.WARN_MESSAGE_EXPORT_CACHE + SecurityUtils.getUid(), "1", 180 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.WARN_MESSAGE_EXPORT_CACHE + SecurityUtils.getUid(), "1", 120 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0001", "操作频繁！");
         }
 
