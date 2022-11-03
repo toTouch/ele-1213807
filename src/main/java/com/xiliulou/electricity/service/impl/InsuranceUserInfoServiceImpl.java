@@ -42,4 +42,10 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId,tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
     }
+
+    @Override
+    public InsuranceUserInfo queryByUid(Long uid,Integer tenantId) {
+        return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId,tenantId)
+                .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+    }
 }

@@ -260,9 +260,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryInsurance = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
-                    ElectricityCar electricityCar = electricityCarService.queryInfoByUid(item.getUid());
-                    if (Objects.nonNull(electricityCar)) {
-                        item.setCarSn(electricityCar.getSn());
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(),item.getTenantId());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        item.setIsUseInsurance(insuranceUserInfo.getIsUse());
+                        item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
                     }
                 }
             });

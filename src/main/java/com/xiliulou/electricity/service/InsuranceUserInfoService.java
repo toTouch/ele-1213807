@@ -17,6 +17,6 @@ public interface InsuranceUserInfoService {
 
     List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId);
 
-
+    InsuranceUserInfo queryByUid(Long uid,Integer tenantId);
 
 }
