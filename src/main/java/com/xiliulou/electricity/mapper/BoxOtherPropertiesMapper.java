@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.BoxOtherProperties;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -65,4 +66,5 @@ public interface BoxOtherPropertiesMapper extends BaseMapper<BoxOtherProperties>
      */
     int deleteById(Long id);
     
+    BoxOtherProperties insertBoxOtherProperties(BoxOtherProperties boxOtherProperties);
 }

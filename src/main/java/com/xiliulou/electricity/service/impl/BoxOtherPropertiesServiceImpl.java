@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.mapper.BoxOtherPropertiesMapper;
+import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 import com.xiliulou.electricity.service.BoxOtherPropertiesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,8 +71,10 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public BoxOtherProperties insert(BoxOtherProperties boxOtherProperties) {
-        this.boxOtherPropertiesMapper.insertOne(boxOtherProperties);
-        return boxOtherProperties;
+        boxOtherProperties.setCreateTime(System.currentTimeMillis());
+        boxOtherProperties.setUpdateTime(System.currentTimeMillis());
+        boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
+        return this.boxOtherPropertiesMapper.insertBoxOtherProperties(boxOtherProperties);
     }
     
     /**

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BoxOtherProperties;
+import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 
 import java.util.List;
 

@@ -52,6 +52,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     ElectricityConfigService electricityConfigService;
+    @Autowired
+    BoxOtherPropertiesService boxOtherPropertiesService;
 
 
     /**
@@ -114,7 +116,37 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
         return R.ok(result);
     }
-
+    
+    /**
+     * 电柜详情  查询格挡列表及格挡其它信息
+     * @param electricityCabinetBoxQuery
+     * @return
+     */
+    @Override
+    public R selectBoxList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.selectBoxList(electricityCabinetBoxQuery);
+        if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
+            return R.ok(electricityCabinetBoxVOList);
+        }
+    
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = electricityCabinetBoxVOList.parallelStream().peek(item -> {
+            if (StringUtils.isNotBlank(item.getSn())) {
+                ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
+                if (Objects.nonNull(electricityBatteryVO)) {
+                    item.setPower(electricityBatteryVO.getPower());
+                    item.setChargeStatus(electricityBatteryVO.getChargeStatus());
+                    item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
+                    item.setBatteryV(electricityBatteryVO.getBatteryV());
+                }
+            }
+            
+        }).collect(Collectors.toList());
+    
+        List<ElectricityCabinetBoxVO> result = electricityCabinetBoxVOs.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+    
+        return R.ok(result);
+    }
+    
     @Override
     public R modify(ElectricityCabinetBox electricityCabinetBox) {
         electricityCabinetBoxMapper.updateById(electricityCabinetBox);

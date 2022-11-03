@@ -32,6 +32,8 @@ public interface ElectricityCabinetBoxService {
     void batchDeleteBoxByElectricityCabinetId(Integer id);
 
     R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
+    
+    R selectBoxList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
     R modify(ElectricityCabinetBox electricityCabinetBox);
 

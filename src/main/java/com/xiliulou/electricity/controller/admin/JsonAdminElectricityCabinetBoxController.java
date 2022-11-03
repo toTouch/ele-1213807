@@ -67,6 +67,37 @@ public class JsonAdminElectricityCabinetBoxController {
 
         return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
     }
+    
+    /**
+     * 查询格挡及其它属性
+     * @param size
+     * @param offset
+     * @param electricityCabinetId
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityCabinetBox/list_other")
+    public R selectBoxList(@RequestParam("size") Long size,
+            @RequestParam("offset") Long offset,
+            @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
+                .offset(offset)
+                .size(size)
+                .electricityCabinetId(electricityCabinetId)
+                .tenantId(tenantId).build();
+        
+        return electricityCabinetBoxService.selectBoxList(electricityCabinetBoxQuery);
+    }
 
 
     //列表查询
