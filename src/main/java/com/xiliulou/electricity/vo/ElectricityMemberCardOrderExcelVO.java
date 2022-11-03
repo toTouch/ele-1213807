@@ -17,17 +17,28 @@ public class ElectricityMemberCardOrderExcelVO {
     private Integer id;
 	@ExcelProperty("订单编号")
 	private String orderId;
+	@ExcelProperty("姓名")
+	private String name;
 	@ExcelProperty("手机号")
     private String phone;
-	@ExcelProperty("套餐类型")
-	private String memberCardType;
+	@ExcelProperty("加盟商")
+	private String franchiseeName;
+	@ExcelProperty("套餐名称")
+	private String memberCardName;
+	@ExcelProperty("套餐次数")
+	private Long maxUseCount;
+	@ExcelProperty("有效天数")
+	private Integer validDays;
 	@ExcelProperty("状态")
 	private String status;
 	@ExcelProperty("支付金额")
 	private BigDecimal payAmount;
+	@ExcelProperty("交易方式")
+	private String payType;
 	@ExcelProperty("购买时间")
 	private String beginningTime;
-	@ExcelProperty("到期时间")
-	private String endTime;
+//	@ExcelProperty("到期时间")
+//	private String endTime;
+
 
 }
