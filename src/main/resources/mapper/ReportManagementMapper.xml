@@ -35,6 +35,9 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
         limit #{offset}, #{size}
     </select>
 
@@ -46,7 +49,9 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
-        limit #{offset}, #{size}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
     </select>
 
     <!--通过实体作为筛选条件查询-->
