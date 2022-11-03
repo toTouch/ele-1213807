@@ -45,12 +45,6 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-        String sessionId = receiverMessage.getSessionId();
-        if (StrUtil.isEmpty(sessionId)) {
-            log.error("no sessionId,{}", receiverMessage.getOriginContent());
-            return;
-        }
-    
         if (StrUtil.isBlank(receiverMessage.getOriginContent())) {
             redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage.getSessionId(), "操作失败", 30L,
                     TimeUnit.SECONDS);
@@ -65,23 +59,22 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             return;
         }
     
+        String sessionId = request.getSessionId();
+        if (StrUtil.isEmpty(sessionId)) {
+            log.error("no sessionId,{}", receiverMessage.getOriginContent());
+            return;
+        }
+        
         if (EleOtaOperateRequest.TYPE_DOWNLOAD.equals(request.getOperateType()) || EleOtaOperateRequest.TYPE_SYNC
                 .equals(request.getOperateType())) {
             insertOrUpdateEleOtaFile(electricityCabinet, request);
             //操作回调的放在redis中
-            if (Objects.nonNull(receiverMessage.getSuccess()) && "true"
-                    .equalsIgnoreCase(receiverMessage.getSuccess())) {
-                redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage
-                        .getSessionId(), "ok", 30L, TimeUnit.SECONDS);
+            if (Objects.nonNull(request.getSuccess()) && "true".equalsIgnoreCase(request.getSuccess())) {
+                redisService.set(CacheConstant.OTA_OPERATE_CACHE + sessionId, "ok", 30L, TimeUnit.SECONDS);
             } else {
-                redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage
-                        .getSessionId(), request.getMsg(), 30L, TimeUnit.SECONDS);
+                redisService.set(CacheConstant.OTA_OPERATE_CACHE + sessionId, request.getMsg(), 30L, TimeUnit.SECONDS);
             }
             return;
-        }
-
-        if(Objects.isNull(request.getCellNo())) {
-            request.setCellNo(0);
         }
     
         updateEleOtaUpgrade(electricityCabinet, receiverMessage, request);
@@ -102,9 +95,11 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         updateEleOtaUpgrade.setId(eleOtaUpgradeFromDb.getId());
         updateEleOtaUpgrade.setStatus(queryStatus(request.getStatus()));
         updateEleOtaUpgrade.setUpdateTime(System.currentTimeMillis());
-        eleOtaUpgradeService.update(eleOtaUpgradeFromDb);
-        
-        EleOtaUpgradeHistory eleOtaUpgradeHistory = eleOtaUpgradeHistoryService.queryByCellNoAndSessionId(electricityCabinet.getId(), request.getCellNo(), receiverMessage.getSessionId(), type);
+        eleOtaUpgradeService.update(updateEleOtaUpgrade);
+    
+        EleOtaUpgradeHistory eleOtaUpgradeHistory = eleOtaUpgradeHistoryService
+                .queryByCellNoAndSessionId(electricityCabinet.getId(), request.getCellNo(), request.getSessionId(),
+                        type);
         if (Objects.isNull(eleOtaUpgradeHistory)) {
             log.error("OTA UPGRADE ERROR! eleOtaUpgradeHistory is null error! session={}, eid={}, cid={}",
                     receiverMessage.getSessionId(), electricityCabinet.getId(), request.getCellNo());
@@ -113,6 +108,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         
         EleOtaUpgradeHistory updateEleOtaUpgradeHistory = new EleOtaUpgradeHistory();
         updateEleOtaUpgradeHistory.setId(eleOtaUpgradeHistory.getId());
+        updateEleOtaUpgradeHistory.setStatus(queryStatus(request.getStatus()));
         updateEleOtaUpgradeHistory.setUpgradeSha256Value(
                 Objects.equals(type, EleOtaUpgrade.TYPE_CORE) ? request.getCoreSha256() : request.getSubSha256());
         updateEleOtaUpgradeHistory.setErrMsg(request.getMsg());
@@ -202,6 +198,8 @@ class EleOtaOperateRequest {
     private Integer cellNo;
     
     private String msg;
+    
+    private String success;
 
     public static final Integer TYPE_DOWNLOAD = 1;
     
