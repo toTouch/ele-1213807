@@ -9,6 +9,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.AppMalfunctionConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.EleWarnMsg;
@@ -276,7 +277,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             excelEntity.setId(i+1);
             excelEntity.setCabinetName(dataList.get(i).getCabinetName());
             excelEntity.setCellNo(dataList.get(i).getCellNo());
-            excelEntity.setErrorMsg(dataList.get(i).getErrorMsg());
+            excelEntity.setErrorMsg(AppMalfunctionConstant.acquireBusinessAbnormal(dataList.get(i).getErrorCode()));
             excelEntity.setReportTime(dataList.get(i).getReportTime());
 
             excelVOList.add(excelEntity);
@@ -311,7 +312,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             EleCabinetWarnExcelVO excelEntity = new EleCabinetWarnExcelVO();
             excelEntity.setId(i+1);
             excelEntity.setCabinetName(dataList.get(i).getCabinetName());
-            excelEntity.setErrorMsg(dataList.get(i).getErrorMsg());
+            excelEntity.setErrorMsg(AppMalfunctionConstant.acquireEleHardwareAbnormal(dataList.get(i).getErrorCode()));
             excelEntity.setReportTime(dataList.get(i).getReportTime());
 
             excelVOList.add(excelEntity);
@@ -349,8 +350,8 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             excelEntity.setCellNo(dataList.get(i).getCellNo());
             excelEntity.setReportTime(dataList.get(i).getReportTime());
             excelEntity.setErrorMsg(dataList.get(i).getErrorMsg());
-            excelEntity.setErrorCode(dataList.get(i).getErrorCode());
-            excelEntity.setOperateType(dataList.get(i).getOperateType());
+            excelEntity.setErrorType(AppMalfunctionConstant.acquireCellHardwareAbnormal(dataList.get(i).getErrorCode()));
+            excelEntity.setOperateType(AppMalfunctionConstant.acquireOperateType(dataList.get(i).getOperateType()));
 
             excelVOList.add(excelEntity);
         }
@@ -423,10 +424,10 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             List<EleBusinessWarnMsgVo> tempList = Lists.newArrayList();;
             
             if (Objects.isNull(warnMsgQuery.getElectricityCabinetId())) {
-                String sql = "select electricityCabinetId ,cellNo ,errorMsg ,reportTime from t_warn_msg_business where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId ,cellNo ,errorMsg ,errorCode ,reportTime from t_warn_msg_business where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             } else {
-                String sql = "select electricityCabinetId ,cellNo ,errorMsg ,reportTime from t_warn_msg_business where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId ,cellNo ,errorMsg ,errorCode ,reportTime from t_warn_msg_business where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, warnMsgQuery.getElectricityCabinetId(), dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             }
         
@@ -471,10 +472,10 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             List<EleCabinetWarnMsgVo> tempList = Lists.newArrayList();
             
             if (Objects.isNull(warnMsgQuery.getElectricityCabinetId())) {
-                String sql = "select electricityCabinetId,operateType,errorMsg,reportTime from t_warn_msg_cabinet where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId,operateType,errorMsg,errorCode ,reportTime from t_warn_msg_cabinet where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             } else {
-                String sql = "select electricityCabinetId,operateType,errorMsg,reportTime from t_warn_msg_cabinet where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId,operateType,errorMsg,errorCode ,reportTime from t_warn_msg_cabinet where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, warnMsgQuery.getElectricityCabinetId(), dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             }
             
@@ -593,22 +594,22 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             List<EleBatteryWarnMsgVo> tempList = Lists.newArrayList();
             
             if (StrUtil.isNotEmpty(warnMsgQuery.getBatteryName()) && Objects.isNull(warnMsgQuery.getElectricityCabinetId())) {
-                String sql = "select electricityCabinetId,batteryName,errorMsg,reportTime from t_warn_msg_battery where batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId,batteryName,errorMsg,errorCode ,reportTime from t_warn_msg_battery where batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, warnMsgQuery.getBatteryName(), dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             }
         
             if (Objects.nonNull(warnMsgQuery.getElectricityCabinetId()) && StrUtil.isEmpty(warnMsgQuery.getBatteryName())) {
-                String sql = "select electricityCabinetId,batteryName,errorMsg,reportTime from t_warn_msg_battery where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId,batteryName,errorMsg,errorCode ,reportTime from t_warn_msg_battery where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, warnMsgQuery.getElectricityCabinetId(), dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             }
         
             if (StrUtil.isNotEmpty(warnMsgQuery.getBatteryName()) && Objects.nonNull(warnMsgQuery.getElectricityCabinetId())) {
-                String sql = "select electricityCabinetId,batteryName,errorMsg,reportTime from t_warn_msg_battery where and  electricityCabinetId=? and  batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+                String sql = "select electricityCabinetId,batteryName,errorMsg,errorCode ,reportTime from t_warn_msg_battery where and  electricityCabinetId=? and  batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, warnMsgQuery.getElectricityCabinetId(), warnMsgQuery.getBatteryName(), dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index,
                                 index += EXPORT_LIMIT);
             }
         
-            String sql = "select electricityCabinetId,batteryName,errorMsg,reportTime from t_warn_msg_battery where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            String sql = "select electricityCabinetId,batteryName,errorMsg,errorCode ,reportTime from t_warn_msg_battery where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             
             if (CollectionUtils.isEmpty(tempList)) {
