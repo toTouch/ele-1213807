@@ -102,6 +102,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     ElectricityCarModelService electricityCarModelService;
 
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -254,7 +257,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime);
+        CompletableFuture<Void> queryInsurance = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.stream().forEach(item -> {
+                if (Objects.nonNull(item.getUid())) {
+                    ElectricityCar electricityCar = electricityCarService.queryInfoByUid(item.getUid());
+                    if (Objects.nonNull(electricityCar)) {
+                        item.setCarSn(electricityCar.getSn());
+                    }
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime,queryInsurance);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

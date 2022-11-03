@@ -1,31 +1,26 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.query;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
- * 换电柜保险(FranchiseeInsurance)实体类
+ * 加盟商保险(FranchiseeInsurance)实体类
  *
  * @author makejava
- * @since 2022-11-02 14:44:12
+ * @since 2022-11-03 14:59:37
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_franchisee_insurance")
-public class FranchiseeInsurance {
+public class FranchiseeInsuranceAddAndUpdate {
 
-    @TableId(value = "id", type = IdType.AUTO)
+    @NotNull(message = "保险Id不能为空!", groups = {UpdateGroup.class})
     private Integer id;
 
     /**
@@ -83,17 +78,9 @@ public class FranchiseeInsurance {
      */
     private Integer delFlag;
 
-    //租户id
-    private Integer tenantId;
-
-    private Long createTime;
-
-    private Long updateTime;
-
-
-    //禁用状态
-    public static final Integer STATUS_UN_USABLE = 1;
-    //可用状态
-    public static final Integer STATUS_USABLE = 0;
-
+    /**
+     * 保险说明
+     */
+    @NotEmpty(message = "保险说明不能为空!")
+    private String instruction;
 }

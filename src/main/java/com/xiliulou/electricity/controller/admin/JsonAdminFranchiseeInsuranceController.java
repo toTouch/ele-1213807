@@ -4,11 +4,13 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +45,8 @@ public class JsonAdminFranchiseeInsuranceController {
      *
      */
     @PostMapping(value = "/admin/franchiseeInsurance")
-    public R updateEleAuthEntries(@RequestBody @Validated FranchiseeInsurance franchiseeInsurance) {
-        return franchiseeInsuranceService.add(franchiseeInsurance);
+    public R updateEleAuthEntries(@RequestBody @Validated FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
+        return franchiseeInsuranceService.add(franchiseeInsuranceAddAndUpdate);
     }
 
 
@@ -54,11 +56,11 @@ public class JsonAdminFranchiseeInsuranceController {
      * @return
      */
     @PutMapping("admin/franchiseeInsurance")
-    public R update(@RequestBody @Validated FranchiseeInsurance franchiseeInsurance) {
-        if (Objects.isNull(franchiseeInsurance)) {
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
+        if (Objects.isNull(franchiseeInsuranceAddAndUpdate)) {
             return R.failMsg("请求参数不能为空!");
         }
-        return franchiseeInsuranceService.update(franchiseeInsurance);
+        return franchiseeInsuranceService.update(franchiseeInsuranceAddAndUpdate);
     }
 
     /**

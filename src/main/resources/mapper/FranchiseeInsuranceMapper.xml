@@ -63,23 +63,24 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
 
-    <select id="queryList" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
-        select id,franchisee_id,name,premium,forehead,valid_days,insurance_type,status,is_constraint,del_flag,create_time,update_time,tenant_id
-        from t_franchisee_insurance
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.FranchiseeInsuranceVo">
+        select tf.id,tf.franchisee_id,tf.cid,tf.name,tf.premium,tf.forehead,tf.valid_days,tf.insurance_type,tf.status,tf.is_constraint,tf.del_flag,tf.create_time,tf.update_time,tf.tenant_id
+        ti.instruction
+        from t_franchisee_insurance tf left join t_insurance_instruction ti on tf.id=ti.insurance_id
         where del_flag=0
         <if test="status != null">
-            AND status = #{status}
+            AND tf.status = #{status}
         </if>
         <if test="insuranceType != null">
-            AND insurance_type = #{insuranceType}
+            AND tf.insurance_type = #{insuranceType}
         </if>
         <if test="tenantId != null ">
-            and tenant_id = #{tenantId}
+            and tf.tenant_id = #{tenantId}
         </if>
         <if test="franchiseeId != null ">
-            and franchisee_id = #{franchiseeId}
+            and tf.franchisee_id = #{franchiseeId}
         </if>
-        ORDER BY temc.create_time DESC
+        ORDER BY tf.create_time DESC
         limit #{offset}, #{size}
     </select>
 

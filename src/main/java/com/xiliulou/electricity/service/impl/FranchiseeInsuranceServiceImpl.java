@@ -12,8 +12,10 @@ import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.InsuranceInstructionService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -49,18 +51,23 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
 
+    @Autowired
+    InsuranceInstructionService insuranceInstructionService;
+
     @Override
-    public R add(FranchiseeInsurance franchiseeInsurance) {
+    public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        Integer count = baseMapper.queryCount(null, franchiseeInsurance.getInsuranceType(), tenantId,  null, franchiseeInsurance.getName());
+        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId,  null, franchiseeInsuranceAddAndUpdate.getName());
         if (count > 0) {
-            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsurance.getName());
+            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
             return R.fail("100304", "保险名称已存在！");
         }
 
+        FranchiseeInsurance franchiseeInsurance=new FranchiseeInsurance();
+        BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, franchiseeInsurance);
 
         //填充参数
         franchiseeInsurance.setCreateTime(System.currentTimeMillis());
@@ -68,9 +75,17 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         franchiseeInsurance.setStatus(FranchiseeInsurance.STATUS_UN_USABLE);
         franchiseeInsurance.setTenantId(tenantId);
         franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
-
-
         Integer insert = baseMapper.insert(franchiseeInsurance);
+
+        InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
+        insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
+        insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
+        insuranceInstruction.setTenantId(tenantId);
+        insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
+        insuranceInstruction.setCreateTime(System.currentTimeMillis());
+        insuranceInstruction.setUpdateTime(System.currentTimeMillis());
+        insuranceInstructionService.insert(insuranceInstruction);
+
         DbUtils.dbOperateSuccessThen(insert, () -> {
             return null;
         });
@@ -83,32 +98,39 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     }
 
     @Override
-    public R update(FranchiseeInsurance franchiseeInsurance) {
+    public R update(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        FranchiseeInsurance oldFranchiseeInsurance = baseMapper.selectOne(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getId, franchiseeInsurance.getId()).eq(FranchiseeInsurance::getTenantId, tenantId));
+        FranchiseeInsurance oldFranchiseeInsurance = baseMapper.selectOne(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getId, franchiseeInsuranceAddAndUpdate.getId()).eq(FranchiseeInsurance::getTenantId, tenantId));
 
         if (Objects.isNull(oldFranchiseeInsurance)) {
             return R.ok();
         }
 
-        Integer count = baseMapper.queryCount(null, franchiseeInsurance.getInsuranceType(), tenantId, null, franchiseeInsurance.getName());
+        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
 
-        if (count > 0 && !Objects.equals(oldFranchiseeInsurance.getName(), franchiseeInsurance.getName())) {
-            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsurance.getName());
+        if (count > 0 && !Objects.equals(oldFranchiseeInsurance.getName(), franchiseeInsuranceAddAndUpdate.getName())) {
+            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
             return R.fail("100304", "保险名称已存在！");
         }
 
-        franchiseeInsurance.setUpdateTime(System.currentTimeMillis());
 
+        FranchiseeInsurance newFranchiseeInsurance=new FranchiseeInsurance();
+        BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
+        newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
+        Integer update = baseMapper.update(newFranchiseeInsurance);
 
-
-        Integer update = baseMapper.update(franchiseeInsurance);
+        InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
+        insuranceInstruction.setInsuranceId(newFranchiseeInsurance.getId());
+        insuranceInstruction.setTenantId(tenantId);
+        insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
+        insuranceInstruction.setUpdateTime(System.currentTimeMillis());
+        insuranceInstructionService.update(insuranceInstruction);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //先删再改
-            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + franchiseeInsurance.getId());
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + newFranchiseeInsurance.getId());
             return null;
         });
 
@@ -130,15 +152,23 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
         }
 
-        FranchiseeInsurance franchiseeInsurance = new FranchiseeInsurance();
-        franchiseeInsurance.setId(id);
-        franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_DEL);
-        franchiseeInsurance.setTenantId(tenantId);
-        Integer update = baseMapper.update(franchiseeInsurance);
+
+        FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
+        newFranchiseeInsurance.setId(id);
+        newFranchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_DEL);
+        newFranchiseeInsurance.setTenantId(tenantId);
+        Integer update = baseMapper.update(newFranchiseeInsurance);
+
+        InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
+        insuranceInstruction.setInsuranceId(newFranchiseeInsurance.getId());
+        insuranceInstruction.setTenantId(tenantId);
+        insuranceInstruction.setInsuranceId(id);
+        insuranceInstruction.setUpdateTime(System.currentTimeMillis());
+        insuranceInstructionService.update(insuranceInstruction);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + franchiseeInsurance.getId());
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + newFranchiseeInsurance.getId());
             return null;
         });
 

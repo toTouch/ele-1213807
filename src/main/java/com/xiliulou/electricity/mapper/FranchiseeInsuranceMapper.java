@@ -24,6 +24,6 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
 
     int update(FranchiseeInsurance franchiseeInsurance);
 
-    List<FranchiseeInsurance> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    List<FranchiseeInsuranceVo> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 
 }
