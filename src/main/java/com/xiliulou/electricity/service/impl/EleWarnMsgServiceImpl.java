@@ -271,9 +271,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         List<EleBusinessWarnMsgVo> dataList = getBusinessWarnDatas(warnMsgQuery);
 
         List<EleBusinessWarnExcelVO> excelVOList = Lists.newArrayList();
-        for (int i = 1; i <= dataList.size(); i++) {
+        for (int i = 0; i < dataList.size(); i++) {
             EleBusinessWarnExcelVO excelEntity = new EleBusinessWarnExcelVO();
-            excelEntity.setId(i);
+            excelEntity.setId(i+1);
             excelEntity.setCabinetName(dataList.get(i).getCabinetName());
             excelEntity.setCellNo(dataList.get(i).getCellNo());
             excelEntity.setErrorMsg(dataList.get(i).getErrorMsg());
@@ -307,9 +307,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         List<EleCabinetWarnMsgVo> dataList = getEleCabinetWarnDatas(warnMsgQuery);
 
         List<EleCabinetWarnExcelVO> excelVOList = Lists.newArrayList();
-        for (int i = 1; i <= dataList.size(); i++) {
+        for (int i = 0; i < dataList.size(); i++) {
             EleCabinetWarnExcelVO excelEntity = new EleCabinetWarnExcelVO();
-            excelEntity.setId(i);
+            excelEntity.setId(i+1);
             excelEntity.setCabinetName(dataList.get(i).getCabinetName());
             excelEntity.setErrorMsg(dataList.get(i).getErrorMsg());
             excelEntity.setReportTime(dataList.get(i).getReportTime());
@@ -342,9 +342,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         List<EleCellWarnMsgVo> dataList = getCellWarnDatas(warnMsgQuery);
 
         List<EleCellWarnExcelVO> excelVOList = Lists.newArrayList();
-        for (int i = 1; i <= dataList.size(); i++) {
+        for (int i = 0; i < dataList.size(); i++) {
             EleCellWarnExcelVO excelEntity = new EleCellWarnExcelVO();
-            excelEntity.setId(i);
+            excelEntity.setId(i+1);
             excelEntity.setCabinetName(dataList.get(i).getCabinetName());
             excelEntity.setCellNo(dataList.get(i).getCellNo());
             excelEntity.setReportTime(dataList.get(i).getReportTime());
@@ -381,9 +381,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         List<EleBatteryWarnMsgVo> dataList = getBatteryWarnDatas(warnMsgQuery);
 
         List<EleBatteryWarnExcelVO> excelVOList = Lists.newArrayList();
-        for (int i = 1; i <= dataList.size(); i++) {
+        for (int i = 0; i < dataList.size(); i++) {
             EleBatteryWarnExcelVO excelEntity = new EleBatteryWarnExcelVO();
-            excelEntity.setId(i);
+            excelEntity.setId(i+1);
             excelEntity.setCabinetName(dataList.get(i).getCabinetName());
             excelEntity.setBatteryName(dataList.get(i).getBatteryName());
             excelEntity.setErrorMsg(dataList.get(i).getErrorMsg());
