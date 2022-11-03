@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -71,6 +73,8 @@ public class StoreServiceImpl implements StoreService {
     StoreAmountService storeAmountService;
     @Autowired
     RoleService roleService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -105,6 +109,7 @@ public class StoreServiceImpl implements StoreService {
         BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
 
         adminUserQuery.setUserType(User.TYPE_USER_STORE);
+        adminUserQuery.setDataType(User.DATA_TYPE_STORE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商
             //1、查普通租户加盟商角色
@@ -163,7 +168,13 @@ public class StoreServiceImpl implements StoreService {
                     .tenantId(tenantId)
                     .build();
             storeAmountService.insert(storeAmount);
-
+            
+            //保存用户数据可见范围
+            UserDataScope userDataScope = new UserDataScope();
+            userDataScope.setUid(store.getUid());
+            userDataScope.setDataId(store.getId());
+            userDataScopeService.insert(userDataScope);
+    
             return null;
         });
 

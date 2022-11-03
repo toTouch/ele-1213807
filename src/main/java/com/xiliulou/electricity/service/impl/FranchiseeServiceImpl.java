@@ -75,6 +75,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -107,6 +110,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         //admin用户新增加盟商
         adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+        adminUserQuery.setDataType(User.DATA_TYPE_FRANCHISEE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商
             //1、查普通租户加盟商角色
@@ -150,7 +154,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 .tenantId(tenantId)
                 .build();
         franchiseeAmountService.insert(franchiseeAmount);
-
+        
+        //保存用户数据可见范围
+        UserDataScope userDataScope = new UserDataScope();
+        userDataScope.setUid(franchisee.getUid());
+        userDataScope.setDataId(franchisee.getId());
+        userDataScopeService.insert(userDataScope);
+    
         if (insert > 0) {
             return R.ok();
         }
