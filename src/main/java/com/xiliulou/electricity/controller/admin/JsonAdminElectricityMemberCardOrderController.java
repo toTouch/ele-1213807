@@ -178,9 +178,9 @@ public class JsonAdminElectricityMemberCardOrderController {
 			throw new CustomBusinessException("查不到订单");
 		}
 		
-		if(!SecurityUtils.isAdmin() || !Objects.equals(user.getType(), User.TYPE_USER_OPERATE) || !Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
-			throw new CustomBusinessException("没有权限！");
-		}
+//		if(!SecurityUtils.isAdmin() || !Objects.equals(user.getType(), User.TYPE_USER_OPERATE) || !Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
+//			throw new CustomBusinessException("没有权限！");
+//		}
 
 		Long franchiseeId=null;
 		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
