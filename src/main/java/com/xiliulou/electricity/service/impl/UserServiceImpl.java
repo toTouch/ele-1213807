@@ -349,7 +349,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
-            User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE, user.getTenantId());
+            User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_NORMAL_ADMIN, user.getTenantId());
             if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
                 return Pair.of(false, "手机号已存在！无法修改!");
             }

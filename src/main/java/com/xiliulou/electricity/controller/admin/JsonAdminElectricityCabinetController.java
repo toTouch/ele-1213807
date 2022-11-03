@@ -394,7 +394,7 @@ public class JsonAdminElectricityCabinetController {
         }
 
         //限制解锁权限
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
             log.info("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
