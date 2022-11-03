@@ -35,7 +35,7 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="java.lang.Integer">
@@ -46,7 +46,7 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
