@@ -168,6 +168,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     
         ElectricityCarModelQuery modelQuery = new ElectricityCarModelQuery();
         modelQuery.setFranchiseeId(store.getFranchiseeId());
+        modelQuery.setOffset(0L);
+        modelQuery.setSize(Long.MAX_VALUE);
         List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(modelQuery);
         if(!CollectionUtils.isEmpty(electricityCarModelVOS)){
             return R.ok(electricityCarModelVOS);
