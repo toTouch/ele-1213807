@@ -273,7 +273,7 @@ public class JsonAdminFranchiseeController extends BaseController {
 				.startTime(startTime)
 				.endTime(endTime)
 				.tenantId(tenantId)
-				.franchiseeIds(Arrays.asList(franchiseeId)).build();
+				.franchiseeId(franchiseeId).build();
 
         return franchiseeSplitAccountHistoryService.queryList(franchiseeAccountQuery);
     }
@@ -296,7 +296,7 @@ public class JsonAdminFranchiseeController extends BaseController {
 				.endTime(endTime)
 				.orderId(orderId)
 				.tenantId(tenantId)
-				.franchiseeIds(Arrays.asList(franchiseeId)).build();
+				.franchiseeId(franchiseeId).build();
 
         return franchiseeSplitAccountHistoryService.queryCount(franchiseeAccountQuery);
     }

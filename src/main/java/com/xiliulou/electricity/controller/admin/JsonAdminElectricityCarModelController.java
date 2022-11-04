@@ -153,6 +153,16 @@ public class JsonAdminElectricityCarModelController {
 
         return electricityCarModelService.queryCount(electricityCarModelQuery);
     }
-
+    
+    //列表查询
+    @GetMapping(value = "/admin/electricityCarModel/selectByStoreId")
+    public R queryCount(@RequestParam(value = "storeId", required = false) Long storeId) {
+        
+        ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
+                .storeId(storeId)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        
+        return electricityCarModelService.selectByStoreId(electricityCarModelQuery);
+    }
 
 }

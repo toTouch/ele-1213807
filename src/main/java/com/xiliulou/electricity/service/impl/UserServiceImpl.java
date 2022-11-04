@@ -227,7 +227,7 @@ public class UserServiceImpl implements UserService {
                 .name(adminUserQuery.getName())
                 .phone(adminUserQuery.getPhone())
                 .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
+                .userType(User.TYPE_USER_NORMAL_ADMIN)
                 .dataType(adminUserQuery.getDataType())
                 .salt("")
                 .city(Objects.nonNull(city) ? city.getName() : null)
@@ -237,35 +237,35 @@ public class UserServiceImpl implements UserService {
                 .build();
         User insert = insert(user);
 
-        //默认值
-        Long roleId = adminUserQuery.getUserType().longValue() + 1;
-        //运营商
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
-            Long role = roleService.queryByName("OPERATE_USER", tenantId);
-            if (Objects.nonNull(role)) {
-                roleId = role;
-            }
-        }
-
-        //加盟商
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
-            Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
-            if (Objects.nonNull(role)) {
-                roleId = role;
-            }
-        }
-
-        //门店
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
-            Long role = roleService.queryByName("STORE_USER", tenantId);
-            if (Objects.nonNull(role)) {
-                roleId = role;
-            }
-        }
+//        //默认值
+//        Long roleId = adminUserQuery.getUserType().longValue() + 1;
+//        //运营商
+//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
+//            Long role = roleService.queryByName("OPERATE_USER", tenantId);
+//            if (Objects.nonNull(role)) {
+//                roleId = role;
+//            }
+//        }
+//
+//        //加盟商
+//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+//            Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
+//            if (Objects.nonNull(role)) {
+//                roleId = role;
+//            }
+//        }
+//
+//        //门店
+//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
+//            Long role = roleService.queryByName("STORE_USER", tenantId);
+//            if (Objects.nonNull(role)) {
+//                roleId = role;
+//            }
+//        }
 
         //设置角色
         UserRole userRole = new UserRole();
-        userRole.setRoleId(roleId);
+        userRole.setRoleId(adminUserQuery.getRoleId());
         userRole.setUid(insert.getUid());
         userRoleService.insert(userRole);
 

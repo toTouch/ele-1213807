@@ -33,9 +33,9 @@
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
-        <if test="query.franchiseeId != null">
+        <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
-            <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>
@@ -76,9 +76,9 @@
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
-        <if test="query.franchiseeId != null">
+        <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
-            <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>
