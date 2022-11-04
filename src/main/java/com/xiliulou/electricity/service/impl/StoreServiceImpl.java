@@ -504,7 +504,12 @@ public class StoreServiceImpl implements StoreService {
 
         return Triple.of(true, "", stores);
     }
-
+    
+    @Override
+    public List<Store> selectByStoreIds(List<Long> storeIds) {
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getId, storeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+    
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

@@ -64,6 +64,12 @@
             <if test="query.queryStartTime != null">
                 and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
+            <if test="query.franchiseeIds != null">
+                and te.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
             order by te.create_time desc
             limit #{query.offset},#{query.size}
         </where>
@@ -96,6 +102,12 @@
             </if>
             <if test="query.queryStartTime != null">
                 and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+            </if>
+            <if test="query.franchiseeIds != null">
+                and te.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

@@ -289,19 +289,6 @@ public class JsonAdminElectricityCabinetOrderController {
             throw new CustomBusinessException("查不到订单");
         }
 
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                throw new CustomBusinessException("查不到订单");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                throw new CustomBusinessException("查不到订单");
-//            }
-//        }
-
         List<Integer> eleIdList = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());

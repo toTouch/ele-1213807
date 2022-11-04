@@ -19,6 +19,12 @@
         <if test="query.franchiseeId != null">
             and tecm.franchisee_id = #{query.franchiseeId}
         </if>
+        <if test="query.franchiseeIds != null">
+            and tecm.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by tecm.update_time desc
         limit #{query.offset}, #{query.size}
     </select>

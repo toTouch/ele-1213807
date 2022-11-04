@@ -80,6 +80,12 @@
 		<if test="query.franchiseeName != null and '' != query.franchiseeName">
 			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
 		</if>
+		<if test="query.franchiseeIds != null">
+			and franchisee_id in
+			<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+				#{id}
+			</foreach>
+		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
 	</select>
@@ -184,6 +190,12 @@
 		</if>
 		<if test="query.franchiseeName != null and '' != query.franchiseeName">
 			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+		</if>
+		<if test="query.franchiseeIds != null">
+			and franchisee_id in
+			<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+				#{id}
+			</foreach>
 		</if>
 	</select>
 

@@ -14,10 +14,12 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -94,8 +96,15 @@ public class JsonAdminElectricityMemberCardController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-
+        
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         return electricityMemberCardService.queryList(offset, size, status, type, TenantContextHolder.getTenantId(), cardModel, franchiseeIds);
     }
 
@@ -118,17 +127,20 @@ public class JsonAdminElectricityMemberCardController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        Long franchiseeId = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
-        return electricityMemberCardService.queryCount(status, type, tenantId, cardModel, franchiseeId);
+        return electricityMemberCardService.queryCount(status, type, tenantId, cardModel, franchiseeIds);
     }
 
 
@@ -154,13 +166,12 @@ public class JsonAdminElectricityMemberCardController {
         }
 
         //加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (Objects.isNull(franchisee)) {
-            return R.ok(new ArrayList<>());
+        List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        if(CollectionUtils.isEmpty(franchiseeIds)){
+            return R.ok(Collections.EMPTY_LIST);
         }
-
-
-        return electricityMemberCardService.listByFranchisee(offset, size, status, type, tenantId, franchisee.getId());
+        
+        return electricityMemberCardService.listByFranchisee(offset, size, status, type, tenantId, franchiseeIds);
     }
 
     /**
@@ -183,13 +194,12 @@ public class JsonAdminElectricityMemberCardController {
         }
 
         //加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (Objects.isNull(franchisee)) {
-            return R.ok(0);
+        List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        if(CollectionUtils.isEmpty(franchiseeIds)){
+            return R.ok(Collections.EMPTY_LIST);
         }
-
-
-        return electricityMemberCardService.listCountByFranchisee(status, type, tenantId, franchisee.getId());
+        
+        return electricityMemberCardService.listCountByFranchisee(status, type, tenantId, franchiseeIds);
     }
 
 

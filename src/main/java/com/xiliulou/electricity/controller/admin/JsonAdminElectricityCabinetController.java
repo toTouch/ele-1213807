@@ -803,8 +803,6 @@ public class JsonAdminElectricityCabinetController {
             }
         }
         
-        
-
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
                 .name(name)

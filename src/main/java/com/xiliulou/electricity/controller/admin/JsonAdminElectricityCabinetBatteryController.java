@@ -4,19 +4,21 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -42,6 +44,8 @@ public class JsonAdminElectricityCabinetBatteryController {
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 新增电池
@@ -177,17 +181,19 @@ public class JsonAdminElectricityCabinetBatteryController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (Objects.isNull(franchisee)) {
-            return R.ok(CollectionUtils.EMPTY_COLLECTION);
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
         }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-        electricityBatteryQuery.setFranchiseeId(franchisee.getId());
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
 
@@ -215,32 +221,19 @@ public class JsonAdminElectricityCabinetBatteryController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (Objects.isNull(franchisee)) {
-            return R.ok(0);
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
         }
-
-//        //加盟商电池
-//        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
-//
-//        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
-//            return R.ok(0);
-//        }
-//        List<Long> electricityBatteryIdList = new ArrayList<>();
-//        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
-//            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
-//        }
-//        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
-//            return R.ok(0);
-//        }
-
+        
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-//        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
-        electricityBatteryQuery.setFranchiseeId(franchisee.getId());
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(tenantId);
         electricityBatteryQuery.setChargeStatus(chargeStatus);
 

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,15 +72,11 @@ public class JsonAdminCouponController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//			if (Objects.isNull(franchisee)) {
-//				return R.ok();
-//			}
-//			franchiseeId = franchisee.getId();
-//		}
-
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -93,6 +90,7 @@ public class JsonAdminCouponController {
                 .size(size)
                 .name(name)
                 .discountType(discountType)
+                .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -114,14 +112,11 @@ public class JsonAdminCouponController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//			if (Objects.isNull(franchisee)) {
-//				return R.ok();
-//			}
-//			franchiseeId = franchisee.getId();
-//		}
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -133,6 +128,7 @@ public class JsonAdminCouponController {
         CouponQuery couponQuery = CouponQuery.builder()
                 .name(name)
                 .discountType(discountType)
+                .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
                 .tenantId(tenantId).build();

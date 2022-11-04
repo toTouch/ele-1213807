@@ -74,4 +74,6 @@ public interface StoreService {
     List<Store> selectByFranchiseeIds(List<Long> franchiseeIds);
 
     Triple<Boolean, String, Object> selectListByQuery(StoreQuery storeQuery);
+    
+    List<Store> selectByStoreIds(List<Long> storeIds);
 }
