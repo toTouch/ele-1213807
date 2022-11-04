@@ -45,8 +45,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		return rolePermission;
 	}
 
-
-
 	@Override
 	public List<Long> queryPidsByRid(Long rid) {
 		String pids = redisService.get(CacheConstant.CACHE_ROLE_PERMISSION_RELATION + rid);
@@ -68,6 +66,5 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	public boolean deleteByRoleId(Long roleId) {
 		return rolePermissionMapper.deleteByRoleId(roleId) > 0;
 	}
-
 
 }

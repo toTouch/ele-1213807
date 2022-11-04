@@ -34,7 +34,10 @@
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
         <if test="query.franchiseeId != null">
-            and tel.franchisee_id = #{query.franchiseeId}
+            and tel.franchisee_id in
+            <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.franchiseeName != null and query.franchiseeName != ''">
             and tf.name = #{query.franchiseeName}
@@ -74,7 +77,10 @@
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
         <if test="query.franchiseeId != null">
-            and tel.franchisee_id = #{query.franchiseeId}
+            and tel.franchisee_id in
+            <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.franchiseeName != null and query.franchiseeName != ''">
             and tf.name = #{query.franchiseeName}

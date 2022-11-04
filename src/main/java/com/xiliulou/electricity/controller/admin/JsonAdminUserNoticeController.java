@@ -4,7 +4,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserNoticeQuery;
 import com.xiliulou.electricity.service.UserNoticeService;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,16 +22,13 @@ public class JsonAdminUserNoticeController extends BaseController {
 
     @GetMapping("/admin/userNotice")
     public R queryUserNotice() {
-
         return userNoticeService.queryUserNotice();
     }
 
 
-
     @PutMapping("/admin/userNotice")
-    public R update(@Validated @RequestBody  UserNoticeQuery userNoticeQuery) {
+    public R update(@Validated @RequestBody UserNoticeQuery userNoticeQuery) {
         return returnTripleResult(userNoticeService.update(userNoticeQuery));
-
     }
 
 }

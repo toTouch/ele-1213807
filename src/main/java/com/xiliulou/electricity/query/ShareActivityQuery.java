@@ -24,7 +24,7 @@ public class ShareActivityQuery {
     /**
      * 加盟商Id
      */
-    private Long franchiseeId;
+    private List<Long> franchiseeIds;
 
     private Integer tenantId;
 

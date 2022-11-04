@@ -1898,7 +1898,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
         }
+        
+        TenantContextHolder.setTenantId(electricityBattery.getTenantId());
 
+        TenantContextHolder.setTenantId(electricityBattery.getTenantId());
         //电池电量上报变化在百分之50以上，不更新电池电量
         Double power = batteryReportQuery.getPower();
         //修改电池
@@ -2272,6 +2275,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryList(electricityCabinetQuery));
     }
 
+    @Override
+    public List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds) {
+        return electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().in(ElectricityCabinet::getStoreId, storeIds).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
+    }
 
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
         if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {

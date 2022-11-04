@@ -2,8 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCarBindUser;
@@ -11,6 +9,7 @@ import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -21,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -43,6 +43,8 @@ public class JsonAdminElectricityCarController {
     StoreService storeService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -72,7 +74,7 @@ public class JsonAdminElectricityCarController {
                        @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "model", required = false) String model,
                        @RequestParam(value = "status", required = false) Integer status,
-                       @RequestParam(value = "storeId", required = false) Long storeId,
+                       @RequestParam(value = "storeIds", required = false) List<Long> storeIds,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "batterySn", required = false) String batterySn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -85,8 +87,6 @@ public class JsonAdminElectricityCarController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -95,22 +95,30 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
-            Store store=storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)){
-                storeId=store.getId();
-            }
+//        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
+//            Store store=storeService.queryByUid(user.getUid());
+//            if (Objects.nonNull(store)){
+//                storeId=store.getId();
+//            }
+//        }
+//
+//        Long franchiseeId = null;
+//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+//                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            //加盟商
+//            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+//            if (Objects.nonNull(franchisee)) {
+//                franchiseeId = franchisee.getId();
+//            }
+//        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
-        Long franchiseeId = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -120,12 +128,12 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
-                .storeId(storeId)
-                .franchiseeId(franchiseeId)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCarService.queryList(electricityCarQuery);
     }
 
@@ -134,14 +142,11 @@ public class JsonAdminElectricityCarController {
     public R queryCount(@RequestParam(value = "sn", required = false) String sn,
                         @RequestParam(value = "model", required = false) String model,
                         @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "storeId", required = false) Long storeId,
+                        @RequestParam(value = "storeIds", required = false) List<Long> storeIds,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "batterySn", required = false) String batterySn,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -150,22 +155,13 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
-            Store store=storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)){
-                storeId=store.getId();
-            }
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
-        Long franchiseeId = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -173,12 +169,12 @@ public class JsonAdminElectricityCarController {
                 .model(model)
                 .Phone(phone)
                 .status(status)
-                .storeId(storeId)
-                .franchiseeId(franchiseeId)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return electricityCarService.queryCount(electricityCarQuery);
     }
