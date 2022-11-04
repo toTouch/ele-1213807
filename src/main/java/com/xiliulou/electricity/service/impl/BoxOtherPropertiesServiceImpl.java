@@ -74,7 +74,8 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
         boxOtherProperties.setCreateTime(System.currentTimeMillis());
         boxOtherProperties.setUpdateTime(System.currentTimeMillis());
         boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
-        return this.boxOtherPropertiesMapper.insertBoxOtherProperties(boxOtherProperties);
+        this.boxOtherPropertiesMapper.insertBoxOtherProperties(boxOtherProperties);
+        return boxOtherProperties;
     }
     
     /**
