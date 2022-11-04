@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import javax.validation.constraints.NotNull;
+
 
 /**
  * 换电柜仓门其它属性(BoxOtherProperties)表实体类
@@ -30,11 +32,13 @@ public class BoxOtherProperties {
     /**
      * 所属换电柜柜Id
      */
+    @NotNull(message = "柜机id不能为空")
     private Integer electricityCabinetId;
     
     /**
      * 仓门号
      */
+    @NotNull(message = "格挡号不能为空")
     private String cellNo;
     
     /**

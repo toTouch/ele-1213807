@@ -27,14 +27,12 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="BoxOtherPropertiesMap">
         <include refid="selectBoxOtherProperties"/>
-        from t_box_other_properties
         limit #{offset}, #{limit}
     </select>
     
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="BoxOtherPropertiesMap">
         <include refid="selectBoxOtherProperties"/>
-        from t_box_other_properties
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -67,6 +65,14 @@
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_box_other_properties(electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, create_time, update_time)
         values (#{electricityCabinetId}, #{cellNo}, #{delFlag}, #{remark}, #{lockReason}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <!--新增所有列-->
+    <insert id="insertBoxOtherProperties" keyProperty="id" useGeneratedKeys="true">
+        insert into t_box_other_properties(electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, create_time, update_time)
+        values (#{electricityCabinetId}, #{cellNo}, #{delFlag}, #{remark}, #{lockReason}, #{createTime}, #{updateTime})
+        on duplicate key
+        update remark=#{remark},lock_reason=#{lockReason},update_time=#{updateTime}
     </insert>
     
     <!--通过主键修改数据-->
