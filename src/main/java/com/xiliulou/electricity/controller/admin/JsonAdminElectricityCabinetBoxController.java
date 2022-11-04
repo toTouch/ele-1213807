@@ -98,6 +98,34 @@ public class JsonAdminElectricityCabinetBoxController {
         
         return electricityCabinetBoxService.selectBoxList(electricityCabinetBoxQuery);
     }
+    
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinetBox/list_other/super")
+    public R selectBoxListSuper(@RequestParam("size") Long size,
+            @RequestParam("offset") Long offset,
+            @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!Objects.equals(tenantId,1)){
+            log.error("ELECTRICITY  ERROR! query electricityCabinetBoxList super not permission tenantId={}", tenantId);
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
+                .offset(offset)
+                .size(size)
+                .electricityCabinetId(electricityCabinetId).build();
+        
+        return electricityCabinetBoxService.selectBoxList(electricityCabinetBoxQuery);
+    }
 
 
     //列表查询

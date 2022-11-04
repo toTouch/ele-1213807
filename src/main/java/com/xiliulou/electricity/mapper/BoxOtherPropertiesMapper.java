@@ -66,5 +66,5 @@ public interface BoxOtherPropertiesMapper extends BaseMapper<BoxOtherProperties>
      */
     int deleteById(Long id);
     
-    BoxOtherProperties insertBoxOtherProperties(BoxOtherProperties boxOtherProperties);
+    int insertBoxOtherProperties(BoxOtherProperties boxOtherProperties);
 }
