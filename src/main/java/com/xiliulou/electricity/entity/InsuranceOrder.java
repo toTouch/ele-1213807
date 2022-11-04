@@ -69,6 +69,11 @@ public class InsuranceOrder {
     private String insuranceName;
 
     /**
+     * 保险类型 0--电池 1--车辆
+     */
+    private Integer insuranceType;
+
+    /**
      * 交易方式 0--线上 1--线下
      */
     private Integer payType;
@@ -77,6 +82,11 @@ public class InsuranceOrder {
      * 加盟商id
      */
     private Long franchiseeId;
+
+    /**
+     * 城市Id
+     */
+    private Integer cid;
 
     /**
      * 是否出险 0--未出险 1--已出险

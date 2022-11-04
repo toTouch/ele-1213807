@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.query.InsuranceOrderQuery;
 
 /**
  * 换电柜保险订单(InsuranceOrder)表服务接口
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.entity.FranchiseeInsurance;
  */
 public interface InsuranceOrderService {
 
+    R queryList(InsuranceOrderQuery insuranceOrderQuery);
 
-
+    R queryCount(InsuranceOrderQuery insuranceOrderQuery);
 }

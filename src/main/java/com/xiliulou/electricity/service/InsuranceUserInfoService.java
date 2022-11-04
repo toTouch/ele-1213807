@@ -19,4 +19,6 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfo queryByUid(Long uid,Integer tenantId);
 
+    R updateInsuranceStatus(Long uid,Integer insuranceStatus);
+
 }

@@ -15,5 +15,6 @@ import java.util.List;
  */
 public interface InsuranceUserInfoMapper extends BaseMapper<InsuranceUserInfo> {
 
+    int update(InsuranceUserInfo insuranceUserInfo);
 
 }

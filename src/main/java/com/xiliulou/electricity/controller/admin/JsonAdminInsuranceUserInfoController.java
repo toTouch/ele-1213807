@@ -62,4 +62,15 @@ public class JsonAdminInsuranceUserInfoController {
     }
 
 
+    /**
+     * 更新用户保险出险状态
+     * @param uid
+     * @param insuranceStatus
+     * @return
+     */
+    @PutMapping(value = "/admin/insuranceUserInfo/insuranceStatus")
+    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer insuranceStatus){
+        return insuranceUserInfoService.updateInsuranceStatus(uid,insuranceStatus);
+    }
+
 }

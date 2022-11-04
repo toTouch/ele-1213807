@@ -48,4 +48,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId,tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
     }
+
+    @Override
+    public R updateInsuranceStatus(Long uid, Integer insuranceStatus) {
+        return null;
+    }
 }
