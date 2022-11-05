@@ -296,12 +296,13 @@ public class JsonAdminElectricityCabinetOrderController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
                 throw new CustomBusinessException("查不到订单");
             }
+            
             eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                throw new CustomBusinessException("查不到订单");
+            }
         }
-
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            throw new CustomBusinessException("查不到订单");
-        }
+        
 
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .orderId(orderId)
