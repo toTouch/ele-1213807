@@ -106,13 +106,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
 
         Long franchiseeId = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             Store store = storeService.queryByUid(user.getUid());
             if (Objects.nonNull(store)) {
                 franchiseeId = store.getFranchiseeId();
             }
         }
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();

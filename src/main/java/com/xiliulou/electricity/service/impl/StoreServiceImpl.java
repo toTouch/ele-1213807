@@ -108,7 +108,7 @@ public class StoreServiceImpl implements StoreService {
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
 
-        adminUserQuery.setUserType(User.TYPE_USER_STORE);
+        adminUserQuery.setUserType(User.TYPE_USER_NORMAL_ADMIN);
         adminUserQuery.setDataType(User.DATA_TYPE_STORE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商
