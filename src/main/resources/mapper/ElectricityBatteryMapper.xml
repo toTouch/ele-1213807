@@ -406,6 +406,12 @@
 		<if test="query.businessStatus != null">
 			and b.business_status =#{query.businessStatus}
 		</if>
+		<if test="query.franchiseeIds != null">
+			and b.franchisee_id in
+			<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+				#{id}
+			</foreach>
+		</if>
 		order by create_time desc
 	</select>
 
