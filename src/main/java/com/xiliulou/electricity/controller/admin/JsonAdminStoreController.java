@@ -88,14 +88,17 @@ public class JsonAdminStoreController extends BaseController {
         }
 
         StoreQuery storeQuery=new StoreQuery();
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if(Objects.nonNull(franchisee)){
-                storeQuery.setFranchiseeId(franchisee.getId());
+        
+        List<Long> franchiseeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds=userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
         storeQuery.setTenantId(TenantContextHolder.getTenantId());
+        storeQuery.setFranchiseeIds(franchiseeIds);
 
         return returnTripleResult(storeService.selectListByQuery(storeQuery));
     }
@@ -129,6 +132,17 @@ public class JsonAdminStoreController extends BaseController {
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(ids)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         StoreQuery storeQuery = StoreQuery.builder()
@@ -142,6 +156,7 @@ public class JsonAdminStoreController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .payType(payType)
                 .storeIdList(ids)
+                .franchiseeIds(franchiseeIds)
                 .franchiseeId(franchiseeId).build();
 
         return storeService.queryList(storeQuery);
@@ -162,10 +177,21 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(ids)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         StoreQuery storeQuery = StoreQuery.builder()
@@ -177,6 +203,7 @@ public class JsonAdminStoreController extends BaseController {
                 .payType(payType)
                 .tenantId(TenantContextHolder.getTenantId())
                 .storeIdList(ids)
+                .franchiseeIds(franchiseeIds)
                 .franchiseeId(franchiseeId).build();
 
         return storeService.queryCount(storeQuery);
@@ -199,16 +226,6 @@ public class JsonAdminStoreController extends BaseController {
             offset = 0L;
         }
 
-        StoreQuery storeQuery = StoreQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .address(address)
-                .usableStatus(usableStatus)
-                .tenantId(TenantContextHolder.getTenantId()).build();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -229,16 +246,19 @@ public class JsonAdminStoreController extends BaseController {
             if(CollectionUtils.isEmpty(franchiseeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
-    
-            List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
-            if (CollectionUtils.isEmpty(storeList)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-    
-            storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
         }
-        
-        storeQuery.setStoreIdList(storeIds);
+    
+        StoreQuery storeQuery = StoreQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .address(address)
+                .usableStatus(usableStatus)
+                .storeIdList(storeIds)
+                .franchiseeIds(franchiseeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return storeService.queryList(storeQuery);
     }
@@ -251,14 +271,6 @@ public class JsonAdminStoreController extends BaseController {
                                     @RequestParam(value = "endTime", required = false) Long endTime,
                                     @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
 
-        StoreQuery storeQuery = StoreQuery.builder()
-                .name(name)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .address(address)
-                .usableStatus(usableStatus)
-                .tenantId(TenantContextHolder.getTenantId()).build();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -279,16 +291,17 @@ public class JsonAdminStoreController extends BaseController {
             if(CollectionUtils.isEmpty(franchiseeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
-        
-            List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
-            if (CollectionUtils.isEmpty(storeList)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
-        
-            storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
         }
-    
-        storeQuery.setStoreIdList(storeIds);
+        
+        StoreQuery storeQuery = StoreQuery.builder()
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .address(address)
+                .usableStatus(usableStatus)
+                .storeIdList(storeIds)
+                .franchiseeIds(franchiseeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return storeService.queryCountByFranchisee(storeQuery);
     }
@@ -324,64 +337,30 @@ public class JsonAdminStoreController extends BaseController {
         }
 
         List<Long> storeIdList = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-
-            //加盟商查询
-            if (Objects.equals(user.getDataType(), User.TYPE_USER_FRANCHISEE)) {
-                List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-                if (CollectionUtils.isEmpty(franchiseeIds)) {
-                    return R.ok(Collections.EMPTY_LIST);
-                }
-
-                List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
-                if (CollectionUtils.isEmpty(storeList)) {
-                    return R.ok(Collections.EMPTY_LIST);
-                }
-
-                storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(storeIdList)) {
-                    return R.ok(Collections.EMPTY_LIST);
-                }
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIdList)){
+                return R.ok(Collections.EMPTY_LIST);
             }
-
-            //门店查询
-            if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-                storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
-            }
-
-//            //加盟商查询
-//            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//                //1、先找到加盟商
-//                Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//                if (ObjectUtil.isEmpty(franchisee)) {
-//                    return R.ok(0);
-//                }
-//
-//                List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
-//
-//                if (ObjectUtil.isEmpty(storeList)) {
-//                    return R.ok(0);
-//                }
-//                //2、再找加盟商绑定的门店
-//                storeIdList = new ArrayList<>();
-//                for (Store store : storeList) {
-//                    storeIdList.add(store.getId());
-//                }
-//                if (ObjectUtil.isEmpty(storeIdList)) {
-//                    return R.ok(0);
-//                }
-//            }
-
-//            //门店查询
-//            if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//                Store store = storeService.queryByUid(user.getUid());
-//                if (ObjectUtil.isEmpty(store)) {
-//                    return R.ok(0);
-//                }
-//                storeIdList = new ArrayList<>();
-//                storeIdList.add(store.getId());
-//            }
         }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        
+            List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+            if (CollectionUtils.isEmpty(storeList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+    
+            storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(storeIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
 
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
                 .offset(offset)
@@ -410,66 +389,30 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         List<Long> storeIdList = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-
-            //加盟商查询
-            if (Objects.equals(user.getDataType(), User.TYPE_USER_FRANCHISEE)) {
-                List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-                if (CollectionUtils.isEmpty(franchiseeIds)) {
-                    return R.ok(Collections.EMPTY_LIST);
-                }
-
-                List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
-                if (CollectionUtils.isEmpty(storeList)) {
-                    return R.ok(Collections.EMPTY_LIST);
-                }
-
-                storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(storeIdList)) {
-                    return R.ok(Collections.EMPTY_LIST);
-                }
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIdList)){
+                return R.ok(Collections.EMPTY_LIST);
             }
-
-            //门店查询
-            if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-                storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
-
-//            //加盟商查询
-//            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//                //1、先找到加盟商
-//                Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//                if (ObjectUtil.isEmpty(franchisee)) {
-//                    return R.ok(0);
-//                }
-//
-//                List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
-//
-//                if (ObjectUtil.isEmpty(storeList)) {
-//                    return R.ok(0);
-//                }
-//                //2、再找加盟商绑定的门店
-//                storeIdList = new ArrayList<>();
-//                for (Store store : storeList) {
-//                    storeIdList.add(store.getId());
-//                }
-//                if (ObjectUtil.isEmpty(storeIdList)) {
-//                    return R.ok(0);
-//                }
-//            }
-//
-//
-//            //门店查询
-//            if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//                Store store = storeService.queryByUid(user.getUid());
-//                if (ObjectUtil.isEmpty(store)) {
-//                    return R.ok(0);
-//                }
-//                storeIdList = new ArrayList<>();
-//                storeIdList.add(store.getId());
-//            }
+        
+            List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+            if (CollectionUtils.isEmpty(storeList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        
+            storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(storeIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()

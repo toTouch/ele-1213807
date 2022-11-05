@@ -83,10 +83,7 @@ public class JsonAdminEleDepositOrderController {
         }
 
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin()
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
@@ -156,9 +153,7 @@ public class JsonAdminEleDepositOrderController {
         }
 
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin()
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
@@ -201,12 +196,15 @@ public class JsonAdminEleDepositOrderController {
             throw new CustomBusinessException("查不到订单");
         }
     
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
+    
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+        
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                throw new CustomBusinessException("查不到订单");
-            }
         }
         
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -216,6 +214,7 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);

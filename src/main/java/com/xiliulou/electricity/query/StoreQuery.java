@@ -46,6 +46,8 @@ public class StoreQuery {
 	private Integer tenantId;
 
 	private Long franchiseeId;
+	
+	private List<Long> franchiseeIds;
 
 	private Long uid;
 

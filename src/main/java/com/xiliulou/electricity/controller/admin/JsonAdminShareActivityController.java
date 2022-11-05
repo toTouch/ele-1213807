@@ -78,7 +78,7 @@ public class JsonAdminShareActivityController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getDataType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
@@ -120,7 +120,7 @@ public class JsonAdminShareActivityController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getDataType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
