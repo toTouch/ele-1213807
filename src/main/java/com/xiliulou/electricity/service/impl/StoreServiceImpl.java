@@ -486,7 +486,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public List<Long> queryStoreIdByFranchiseeId(Long id) {
+    public List<Long> queryStoreIdByFranchiseeId(List<Long> id) {
         return storeMapper.queryStoreIdByFranchiseeId(id);
     }
 

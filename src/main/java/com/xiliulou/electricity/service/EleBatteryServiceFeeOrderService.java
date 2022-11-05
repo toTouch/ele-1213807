@@ -72,11 +72,11 @@ public interface EleBatteryServiceFeeOrderService {
      * @param todayStartTime
      * @return
      */
-    BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId);
+    BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId);
 
-    List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+    List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
 
-    BigDecimal queryAllTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+    BigDecimal queryAllTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
 
 
 }

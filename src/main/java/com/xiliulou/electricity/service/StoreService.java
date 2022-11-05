@@ -69,7 +69,7 @@ public interface StoreService {
 
     Integer queryCountForHomePage(StoreQuery storeQuery);
 
-    List<Long> queryStoreIdByFranchiseeId(Long id);
+    List<Long> queryStoreIdByFranchiseeId(List<Long> ids);
 
     List<Store> selectByFranchiseeIds(List<Long> franchiseeIds);
 

@@ -23,6 +23,7 @@ public class HomepageElectricityExchangeFrequencyQuery {
     private Long endTime;
 
     private Long franchiseeId;
+    private List<Long> franchiseeIds;
 
     private List<Integer> eleIdList;
 }
