@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import org.apache.commons.lang3.tuple.Pair;
@@ -158,4 +159,6 @@ public interface ElectricityCabinetService {
     R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos);
     
     R checkOtaSession(String sessionId);
+    
+    void sendFullBatteryMessage(List<Message>  messageList);
 }
