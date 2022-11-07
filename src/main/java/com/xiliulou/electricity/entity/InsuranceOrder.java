@@ -100,4 +100,16 @@ public class InsuranceOrder {
 
     private Long updateTime;
 
+    public static final Integer BATTERY_INSURANCE_TYPE = 0;
+    public static final Integer CAR_INSURANCE_TYPE = 1;
+
+    public static final Integer NOT_USE = 0;
+    public static final Integer IS_USE = 1;
+
+    public static final Integer ONLINE_PAY_TYPE = 0;
+    public static final Integer OFFLINE_PAY_TYPE = 1;
+
+    public static final Integer STATUS_INIT = 0;
+    public static final Integer STATUS_SUCCESS = 1;
+    public static final Integer STATUS_FAIL = 2;
 }
