@@ -29,4 +29,6 @@ public interface FranchiseeInsuranceService {
 
     FranchiseeInsurance queryByCache(Integer id);
 
+    FranchiseeInsurance queryByFranchiseeId(Long franchiseeId);
+
 }

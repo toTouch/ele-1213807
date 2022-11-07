@@ -76,6 +76,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      */
     private Integer isEnableReturnBoxCheck;
 
+    /**
+     * 是否开启保险 （0--是 1--否）
+     */
+    private Integer isOpenInsurance;
+
 }
 
 

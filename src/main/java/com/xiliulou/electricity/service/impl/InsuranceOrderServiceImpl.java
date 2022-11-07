@@ -14,6 +14,8 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +59,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     FranchiseeService franchiseeService;
 
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
+
+    @Autowired
+    ElectricityTradeOrderService electricityTradeOrderService;
+
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
@@ -154,7 +165,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
             log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", insuranceOrderAdd.getInsuranceId());
-            return R.fail("100305", "保险已禁用!");
+            return R.fail("100306", "保险已禁用!");
         }
 
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
@@ -165,7 +176,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         //生成保险订单
         String orderId = generateOrderId(user.getUid());
 
-        InsuranceOrder insuranceOrder=InsuranceOrder.builder()
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder()
                 .insuranceId(franchiseeInsurance.getId())
                 .insuranceName(franchiseeInsurance.getName())
                 .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
@@ -184,11 +195,80 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
 
+        //支付零元
+        if (franchiseeInsurance.getPremium().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            insuranceOrder.setStatus(InsuranceOrder.STATUS_SUCCESS);
+            insuranceOrderMapper.insert(insuranceOrder);
+
+            InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
+            updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
+            updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+            updateOrAddInsuranceUserInfo.setInsuranceOrderId(orderId);
+            updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setTenantId(tenantId);
+            updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
+            updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
+            updateOrAddInsuranceUserInfo.setFranchiseeId(franchisee.getId());
 
 
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(insuranceUserInfo)) {
+                updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
+                insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
+            } else {
+                insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
+            }
+            return R.ok();
+        }
+        insuranceOrderMapper.insert(insuranceOrder);
 
-        return null;
+        //调起支付
+        try {
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(orderId)
+                    .uid(user.getUid())
+                    .payAmount(franchiseeInsurance.getPremium())
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_INSURANCE)
+                    .attach(ElectricityTradeOrder.ATTACH_INSURANCE)
+                    .description("保险收费")
+                    .tenantId(tenantId).build();
+
+            WechatJsapiOrderResultDTO resultDTO =
+                    electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return R.ok(resultDTO);
+        } catch (WechatPayException e) {
+            log.error("CREATE INSURANCE_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+        }
+
+        return R.fail("ELECTRICITY.0099", "下单失败");
     }
+
+    @Override
+    public InsuranceOrder queryByOrderId(String orderNo) {
+        return insuranceOrderMapper.selectOne(new LambdaQueryWrapper<InsuranceOrder>().eq(InsuranceOrder::getOrderId, orderNo));
+    }
+
+    @Override
+    public Integer updateOrderStatusById(InsuranceOrder insuranceOrder) {
+        return insuranceOrderMapper.updateById(insuranceOrder);
+    }
+
+    @Override
+    public R queryInsurance(Long franchiseeId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
+            log.error("queryInsurance  ERROR! not found insurance！franchiseeId{}", franchiseeId);
+            return R.ok();
+        }
+
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId));
+    }
+
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.UserInfo;
 
 import java.util.List;
 
@@ -20,5 +21,11 @@ public interface InsuranceUserInfoService {
     InsuranceUserInfo queryByUid(Long uid,Integer tenantId);
 
     R updateInsuranceStatus(Long uid,Integer insuranceStatus);
+
+    InsuranceUserInfo queryByUidFromCache(Long uid);
+
+    Integer insert(InsuranceUserInfo insuranceUserInfo);
+
+    Integer update(InsuranceUserInfo insuranceUserInfo);
 
 }

@@ -212,4 +212,9 @@ public interface CacheConstant {
      * 保险缓存
      */
     String CACHE_FRANCHISEE_INSURANCE = "CACHE_FRANCHISEE_INSURANCE:";
+
+    /**
+     * insuranceUserInfo的缓存
+     */
+    String CACHE_INSURANCE_USER_INFO = "insurance_user_info:";
 }

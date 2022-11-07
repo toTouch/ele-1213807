@@ -96,4 +96,7 @@ public class FranchiseeInsurance {
     //可用状态
     public static final Integer STATUS_USABLE = 0;
 
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
+
 }

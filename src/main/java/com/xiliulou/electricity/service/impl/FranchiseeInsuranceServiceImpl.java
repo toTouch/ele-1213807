@@ -60,13 +60,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId,  null, franchiseeInsuranceAddAndUpdate.getName());
+        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
         if (count > 0) {
             log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
             return R.fail("100304", "保险名称已存在！");
         }
 
-        FranchiseeInsurance franchiseeInsurance=new FranchiseeInsurance();
+        FranchiseeInsurance franchiseeInsurance = new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, franchiseeInsurance);
 
         //填充参数
@@ -77,7 +77,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
         Integer insert = baseMapper.insert(franchiseeInsurance);
 
-        InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
+        InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
         insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
         insuranceInstruction.setTenantId(tenantId);
@@ -115,13 +115,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 //            return R.fail("100304", "保险名称已存在！");
 //        }
 
-        FranchiseeInsurance newFranchiseeInsurance=new FranchiseeInsurance();
+        FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
         newFranchiseeInsurance.setTenantId(tenantId);
         Integer update = baseMapper.update(newFranchiseeInsurance);
 
-        InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
+        InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setInsuranceId(newFranchiseeInsurance.getId());
         insuranceInstruction.setTenantId(tenantId);
         insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
@@ -159,7 +159,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         newFranchiseeInsurance.setTenantId(tenantId);
         Integer update = baseMapper.update(newFranchiseeInsurance);
 
-        InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
+        InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setInsuranceId(newFranchiseeInsurance.getId());
         insuranceInstruction.setTenantId(tenantId);
         insuranceInstruction.setInsuranceId(id);
@@ -185,7 +185,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Override
     public R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
-        return R.ok(baseMapper.queryCount(status,type,tenantId,franchiseeId,null));
+        return R.ok(baseMapper.queryCount(status, type, tenantId, franchiseeId, null));
     }
 
     @Override
@@ -199,5 +199,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             }
         }
         return franchiseeInsurance;
+    }
+
+    @Override
+    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId) {
+        return franchiseeInsuranceMapper.selectOne(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getFranchiseeId, franchiseeId).eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE));
     }
 }

@@ -39,6 +39,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     @Autowired
     UserInfoService userInfoService;
 
+    @Autowired
+    RedisService redisService;
+
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
         return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId,tenantId)
@@ -69,5 +72,29 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
 
         return R.ok(insuranceUserInfoMapper.update(updateInsuranceUserInfo));
+    }
+
+    @Override
+    public InsuranceUserInfo queryByUidFromCache(Long uid) {
+
+        InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
+        if (Objects.nonNull(cache)) {
+            return cache;
+        }
+
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+
+        redisService.saveWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, insuranceUserInfo);
+        return insuranceUserInfo;
+    }
+
+    @Override
+    public Integer insert(InsuranceUserInfo insuranceUserInfo) {
+        return insuranceUserInfoMapper.insert(insuranceUserInfo);
+    }
+
+    @Override
+    public Integer update(InsuranceUserInfo insuranceUserInfo) {
+        return insuranceUserInfoMapper.update(insuranceUserInfo);
     }
 }

@@ -41,6 +41,12 @@ public class JsonUserInsuranceOrderController {
         return insuranceOrderService.createOrder(insuranceOrderAdd, request);
     }
 
+    //用户查询保险
+    @GetMapping(value = "/user/queryInsurance")
+    public R queryDeposit(@RequestParam(value = "franchiseeId") Long franchiseeId) {
+        return insuranceOrderService.queryInsurance(franchiseeId);
+    }
+
 
 }
 

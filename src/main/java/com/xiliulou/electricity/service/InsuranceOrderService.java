@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
@@ -21,4 +23,10 @@ public interface InsuranceOrderService {
     R queryCount(InsuranceOrderQuery insuranceOrderQuery);
 
     R createOrder(InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request);
+
+    InsuranceOrder queryByOrderId(String orderNo);
+
+    Integer updateOrderStatusById(InsuranceOrder insuranceOrder);
+
+    R queryInsurance(Long franchiseeId);
 }

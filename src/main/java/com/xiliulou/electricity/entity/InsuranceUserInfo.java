@@ -86,4 +86,6 @@ public class InsuranceUserInfo {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    public static final Integer NOT_USE = 0;
+    public static final Integer IS_USE = 1;
 }

@@ -35,107 +35,107 @@ import java.util.Objects;
 @Slf4j
 public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandler {
 
-	@Autowired
-	WechatV3MerchantLoadAndUpdateCertificateService certificateService;
+    @Autowired
+    WechatV3MerchantLoadAndUpdateCertificateService certificateService;
 
 
-	@Autowired
-	RedisService redisService;
+    @Autowired
+    RedisService redisService;
 
-	@Autowired
-	ElectricityTradeOrderService electricityTradeOrderService;
+    @Autowired
+    ElectricityTradeOrderService electricityTradeOrderService;
 
-	@Autowired
-	EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
 
-	@Override
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-	public void postProcessBeforeWechatPay(WechatV3OrderQuery wechatV3OrderQuery) {
-		//暂时什么都不处理 TODO
-	}
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void postProcessBeforeWechatPay(WechatV3OrderQuery wechatV3OrderQuery) {
+        //暂时什么都不处理 TODO
+    }
 
-	@Override
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-	public void postProcessAfterWechatPay(WechatV3OrderCallBackQuery wechatV3OrderCallBackQuery) {
-		WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
-		if (Objects.isNull(resource)) {
-			log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
-			return;
-		}
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void postProcessAfterWechatPay(WechatV3OrderCallBackQuery wechatV3OrderCallBackQuery) {
+        WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
+        if (Objects.isNull(resource)) {
+            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
+            return;
+        }
 
-		String decryptJson = null;
-		try {
-			decryptJson = AesUtil.decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8),
-					resource.getNonce().getBytes(StandardCharsets.UTF_8),
-					resource.getCiphertext(),
-					certificateService.getMerchantApiV3Key(wechatV3OrderCallBackQuery.getTenantId()).getBytes(StandardCharsets.UTF_8));
+        String decryptJson = null;
+        try {
+            decryptJson = AesUtil.decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8),
+                    resource.getNonce().getBytes(StandardCharsets.UTF_8),
+                    resource.getCiphertext(),
+                    certificateService.getMerchantApiV3Key(wechatV3OrderCallBackQuery.getTenantId()).getBytes(StandardCharsets.UTF_8));
 
-		} catch (Exception e) {
-			log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3OrderCallBackQuery, e);
-			return;
-		}
+        } catch (Exception e) {
+            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3OrderCallBackQuery, e);
+            return;
+        }
 
-		WechatJsapiOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiOrderCallBackResource.class);
+        WechatJsapiOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiOrderCallBackResource.class);
 
-		//幂等加锁
-		String orderNo = callBackResource.getOutTradeNo();
-		if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-			return;
-		}
+        //幂等加锁
+        String orderNo = callBackResource.getOutTradeNo();
+        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            return;
+        }
 
-		if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
-			electricityTradeOrderService.notifyDepositOrder(callBackResource);
-		}else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)){
-			electricityTradeOrderService.notifyBatteryServiceFeeOrder(callBackResource);
-		}else if(Objects.equals(callBackResource.getAttach(),ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT)) {
-			electricityTradeOrderService.notifyRentCarDepositOrder(callBackResource);
-		}else if (Objects.equals(callBackResource.getAttach(),ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)){
-			electricityTradeOrderService.notifyRentCarMemberOrder(callBackResource);
-		} else {
-			electricityTradeOrderService.notifyMemberOrder(callBackResource);
-		}
-	}
+        if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
+            electricityTradeOrderService.notifyDepositOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)) {
+            electricityTradeOrderService.notifyBatteryServiceFeeOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT)) {
+            electricityTradeOrderService.notifyRentCarDepositOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)) {
+            electricityTradeOrderService.notifyRentCarMemberOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_MEMBER)) {
+            electricityTradeOrderService.notifyMemberOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_INSURANCE)) {
+            electricityTradeOrderService.notifyInsuranceOrder(callBackResource);
+        }
+    }
 
 
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void postProcessBeforeWechatRefund(WechatV3RefundQuery wechatV3RefundQuery) {
+        return;
+    }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void postProcessAfterWechatRefund(WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
+        if (Objects.isNull(resource)) {
+            log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
+            return;
+        }
 
-	@Override
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-	public void postProcessBeforeWechatRefund(WechatV3RefundQuery wechatV3RefundQuery) {
-		return;
-	}
+        String decryptJson = null;
+        try {
+            decryptJson = AesUtil.decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8),
+                    resource.getNonce().getBytes(StandardCharsets.UTF_8),
+                    resource.getCiphertext(),
+                    certificateService.getMerchantApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId()).getBytes(StandardCharsets.UTF_8));
 
-	@Override
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-	public void postProcessAfterWechatRefund(WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
-		WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
-		if (Objects.isNull(resource)) {
-			log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
-			return;
-		}
+        } catch (Exception e) {
+            log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
+            return;
+        }
 
-		String decryptJson = null;
-		try {
-			decryptJson = AesUtil.decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8),
-					resource.getNonce().getBytes(StandardCharsets.UTF_8),
-					resource.getCiphertext(),
-					certificateService.getMerchantApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId()).getBytes(StandardCharsets.UTF_8));
+        WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
 
-		} catch (Exception e) {
-			log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
-			return;
-		}
+        //幂等加锁
+        String orderNo = callBackResource.getOutTradeNo();
+        if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+            return;
+        }
 
-		WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
+        eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
 
-		//幂等加锁
-		String orderNo = callBackResource.getOutTradeNo();
-		if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-			return;
-		}
-
-		eleRefundOrderService.notifyDepositRefundOrder(callBackResource);
-
-	}
+    }
 
 }
