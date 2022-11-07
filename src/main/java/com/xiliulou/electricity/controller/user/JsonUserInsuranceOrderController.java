@@ -36,7 +36,7 @@ public class JsonUserInsuranceOrderController {
     FranchiseeService franchiseeService;
 
     //缴纳押金
-    @PostMapping("/user/payDeposit")
+    @PostMapping("/user/payInsurance")
     public R payDeposit(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
         return insuranceOrderService.createOrder(insuranceOrderAdd, request);
     }
