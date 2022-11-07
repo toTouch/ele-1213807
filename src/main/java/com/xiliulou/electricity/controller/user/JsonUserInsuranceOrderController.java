@@ -1,0 +1,51 @@
+package com.xiliulou.electricity.controller.user;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
+
+/**
+ * 缴纳保险订单(TInsuranceOrder)表控制层
+ *
+ * @author makejava
+ * @since 2022-11-07 10:16:44
+ */
+@RestController
+@Slf4j
+public class JsonUserInsuranceOrderController {
+    /**
+     * 服务对象
+     */
+    @Autowired
+    InsuranceOrderService insuranceOrderService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
+
+    //缴纳押金
+    @PostMapping("/user/payDeposit")
+    public R payDeposit(@RequestParam(value = "productKey", required = false) String productKey,
+                        @RequestParam(value = "deviceName", required = false) String deviceName,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "model", required = false) Integer model,
+                        HttpServletRequest request) {
+        return eleDepositOrderService.payDeposit(productKey, deviceName, franchiseeId, model, request);
+    }
+
+
+
+}
+

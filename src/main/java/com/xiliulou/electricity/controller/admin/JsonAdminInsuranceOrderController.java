@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * 订单表(TElectricityCabinetOrder)表控制层
+ * 保险订单表(TInsuranceOrder)表控制层
  *
  * @author makejava
  * @since 2022-11-04 10:56:56
