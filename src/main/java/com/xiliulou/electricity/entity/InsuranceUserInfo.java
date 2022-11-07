@@ -36,11 +36,6 @@ public class InsuranceUserInfo {
     private Long franchiseeId;
 
     /**
-     * 保险名称
-     */
-    private String name;
-
-    /**
      * 保费
      */
     private BigDecimal premium;
