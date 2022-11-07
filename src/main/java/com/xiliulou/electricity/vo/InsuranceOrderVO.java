@@ -43,4 +43,6 @@ public class InsuranceOrderVO {
     private Long createTime;
 
     private Integer validDays;
+
+    private String cityName;
 }

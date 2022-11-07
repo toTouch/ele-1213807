@@ -68,6 +68,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     ElectricityConfigService electricityConfigService;
 
+    @Autowired
+    CityService cityService;
+
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
 
@@ -77,6 +80,13 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         insuranceOrderVOList.parallelStream().forEach(e -> {
+
+            //获取城市名称
+            City city = cityService.queryByIdFromDB(e.getCid());
+            if (Objects.nonNull(city)) {
+                e.setCityName(city.getName());
+            }
+
             Integer validDays = e.getValidDays();
             Long insuranceExpireTime = validDays * (24 * 60 * 60 * 1000L);
             e.setInsuranceExpireTime(insuranceExpireTime);
@@ -190,7 +200,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 .status(InsuranceOrder.STATUS_INIT)
                 .tenantId(tenantId)
                 .uid(user.getUid())
-                .userName(userInfo.getUserName())
+                .userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
