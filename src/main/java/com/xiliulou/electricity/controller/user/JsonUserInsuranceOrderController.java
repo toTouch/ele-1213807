@@ -38,9 +38,7 @@ public class JsonUserInsuranceOrderController {
     //缴纳押金
     @PostMapping("/user/payDeposit")
     public R payDeposit(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
-//        return eleDepositOrderService.payDeposit(productKey, deviceName, franchiseeId, model, request);
-
-        return null;
+        return insuranceOrderService.createOrder(insuranceOrderAdd, request);
     }
 
 

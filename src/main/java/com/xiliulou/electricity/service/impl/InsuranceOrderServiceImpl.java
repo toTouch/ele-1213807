@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
+import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.service.InsuranceOrderService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,5 +56,10 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Override
     public R queryCount(InsuranceOrderQuery insuranceOrderQuery) {
         return R.ok(insuranceOrderMapper.queryCount(insuranceOrderQuery));
+    }
+
+    @Override
+    public R createOrder(InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
+        return null;
     }
 }
