@@ -288,7 +288,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
 
     public String generateOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
-                RandomUtil.randomNumbers(6);
+        return String.valueOf(System.currentTimeMillis()).substring(0,6) + uid +
+                RandomUtil.randomNumbers(4);
     }
 }
