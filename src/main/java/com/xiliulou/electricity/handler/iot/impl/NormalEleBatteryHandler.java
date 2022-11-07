@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -483,7 +484,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     
     private Message buildDelyQueueMessage(ElectricityCabinet electricityCabinet){
         Message message = new Message();
-        message.setId(UUIDUtil.uuid());
+        message.setId(IdUtil.simpleUUID());
         message.setMsg(String.valueOf(electricityCabinet.getId()));
         
         return message;

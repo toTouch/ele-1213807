@@ -3181,7 +3181,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
                 messageNotifyList.forEach(i -> {
                     rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
-                    log.info("ELE BATTERY REPORT INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
+                    log.info("ELE FULL BATTERY INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
                 });
             }
         });
