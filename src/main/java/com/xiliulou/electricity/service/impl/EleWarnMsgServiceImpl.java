@@ -23,6 +23,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ReportManagementService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.UUIDUtil;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -640,10 +641,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     }
 
     private ReportManagement buildReportManagement() {
-        String jobId = UuidUtils.generateUuid().replace("-", "");
 
         ReportManagement reportManagement = new ReportManagement();
-        reportManagement.setJobId(jobId);
+        reportManagement.setJobId(UUIDUtil.uuid());
         reportManagement.setType(ReportManagement.TYPE_WARN_MESSAGE);
         reportManagement.setStatus(ReportManagement.STATUS_INIT);
         reportManagement.setTenantId(TenantContextHolder.getTenantId());
