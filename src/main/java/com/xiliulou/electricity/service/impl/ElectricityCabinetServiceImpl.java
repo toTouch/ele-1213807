@@ -3224,13 +3224,4 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryName(null, id));
     }
     
-    @Override
-    public String acquireElectricityCabinetName(Integer eid) {
-        ElectricityCabinet electricityCabinet = this.queryByIdFromCache(eid);
-        if(!Objects.isNull(electricityCabinet)){
-            return electricityCabinet.getName();
-        }
-        
-        return "";
-    }
 }

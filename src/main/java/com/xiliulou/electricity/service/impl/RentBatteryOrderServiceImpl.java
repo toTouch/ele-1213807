@@ -819,8 +819,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             excelVo.setCellNo(rentBatteryOrderVO.getCellNo());
             excelVo.setElectricityBatterySn(rentBatteryOrderVO.getElectricityBatterySn());
             excelVo.setBatteryDeposit(rentBatteryOrderVO.getBatteryDeposit());
-            excelVo.setElectricityCabinetName(electricityCabinetService.acquireElectricityCabinetName(rentBatteryOrderVO.getElectricityCabinetId()));
-
+            excelVo.setEleName(Optional.ofNullable(electricityCabinetService.queryByIdFromCache(rentBatteryOrderVO.getElectricityCabinetId())).orElse(new ElectricityCabinet()).getName());
+            
             if (Objects.nonNull(rentBatteryOrderVO.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrderVO.getCreateTime())));
             }
