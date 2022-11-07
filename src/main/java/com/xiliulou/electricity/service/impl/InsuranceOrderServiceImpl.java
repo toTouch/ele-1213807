@@ -266,6 +266,23 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.ok();
         }
 
+        if (Objects.isNull(franchiseeId)) {
+            //用户区分
+            TokenUser user = SecurityUtils.getUserInfo();
+            if (Objects.isNull(user)) {
+                log.error("ELECTRICITY  ERROR! not found user ");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+
+            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(user.getUid());
+            if (Objects.isNull(franchiseeUserInfo)) {
+                log.error("ELECTRICITY  ERROR! not found user ");
+                return R.fail("ELECTRICITY.0001", "未找到用户");
+            }
+
+            franchiseeId = franchiseeUserInfo.getFranchiseeId();
+        }
+
         return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId));
     }
 
