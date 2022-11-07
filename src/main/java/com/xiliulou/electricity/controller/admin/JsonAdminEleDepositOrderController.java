@@ -232,6 +232,7 @@ public class JsonAdminEleDepositOrderController {
                 .status(status)
                 .orderId(orderId)
                 .storeIds(storeIds)
+                .depositType(EleDepositOrder.RENT_CAR_DEPOSIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);

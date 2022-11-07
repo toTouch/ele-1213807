@@ -241,7 +241,7 @@ public class JsonAdminRentBatteryOrderController {
         }
 
         List<Integer> eleIdList = null;
-        if ( Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)&& Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) || Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
