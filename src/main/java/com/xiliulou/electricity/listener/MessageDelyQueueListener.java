@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 @Component
 public class MessageDelyQueueListener implements DisposableBean {
     
-    protected volatile boolean shutdown = false;
+    protected volatile Boolean shutdown = Boolean.FALSE;
     
     @Autowired
     private MessageDelyQueueService messageDelyQueueService;
