@@ -60,7 +60,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBattery> queryBatteryOverview(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 
-    BatteryStatisticalVo batteryStatistical(Integer tenantId);
+    BatteryStatisticalVo batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
     int unbindFranchiseeId(@Param("franchiseeId") Integer franchiseeId, @Param("updateBattery") ElectricityBattery updateBattery);
 

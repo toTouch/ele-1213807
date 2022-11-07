@@ -641,8 +641,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public R batteryStatistical(Integer tenantId) {
-        return R.ok(electricitybatterymapper.batteryStatistical(tenantId));
+    public R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery) {
+        return R.ok(electricitybatterymapper.batteryStatistical(electricityBatteryQuery));
     }
 
     /**
