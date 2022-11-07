@@ -268,7 +268,8 @@ public class ElectricityCabinetServerServiceImpl
         electricityCabinetServer.setDeviceName(electricityCabinet.getDeviceName());
         electricityCabinetServer.setTenantId(electricityCabinet.getTenantId());
         electricityCabinetServer.setServerBeginTime(electricityCabinet.getCreateTime());
-        electricityCabinetServer.setServerEndTime(electricityCabinet.getCreateTime() + 24L * 3600000 * 365);
+        electricityCabinetServer.setServerEndTime(Objects.isNull(electricityCabinet.getCreateTime()) ? 0
+                : electricityCabinet.getCreateTime() + 24L * 3600000 * 365);
         electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_NORMAL);
         electricityCabinetServer.setCreateTime(System.currentTimeMillis());
         electricityCabinetServer.setUpdateTime(System.currentTimeMillis());

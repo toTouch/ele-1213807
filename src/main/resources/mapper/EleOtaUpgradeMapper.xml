@@ -108,7 +108,7 @@
     
     <select id="queryCoreUpgradeInfoVo" resultType="com.xiliulou.electricity.vo.OtaUpgradeInfoVo">
         select
-            eou.id, eccd.core_version, eou.status
+            eou.id, eccd.core_version as version, eou.status
         from t_ele_cabinet_core_data eccd
         left join t_ele_ota_upgrade eou on eou.electricity_cabinet_id = eccd.electricity_cabinet_id
         where eccd.electricity_cabinet_id = #{eid} and `type` = 1

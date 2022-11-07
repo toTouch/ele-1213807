@@ -3021,7 +3021,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         final Integer TYPE_DOWNLOAD = 1;
         final Integer TYPE_SYNC = 2;
         final Integer TYPE_UPGRADE = 3;
-        
+    
+        Long uid = SecurityUtils.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
         ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -3041,10 +3047,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
-        
-        Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
+    
+        Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
         data.put("operateType", operateType);
+        data.put("userid", user.getUid());
+        data.put("username", user.getName());
+        
         if (TYPE_DOWNLOAD.equals(operateType)) {
             //ota文件是否存在
             OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
