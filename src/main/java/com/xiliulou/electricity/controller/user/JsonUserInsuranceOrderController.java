@@ -35,7 +35,7 @@ public class JsonUserInsuranceOrderController {
     @Autowired
     FranchiseeService franchiseeService;
 
-    //缴纳押金
+    //缴纳保险
     @PostMapping("/user/payInsurance")
     public R payDeposit(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
         return insuranceOrderService.createOrder(insuranceOrderAdd, request);

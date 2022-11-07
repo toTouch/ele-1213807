@@ -35,7 +35,7 @@
     </select>
 
     <select id="queryCount" resultType="integer">
-        select count(1) from t_insurance_order
+        select count(1) from t_insurance_order tio
         <where>
             <if test="query.orderId != null and query.orderId !=''">
                 and tio.order_id = #{query.orderId}
