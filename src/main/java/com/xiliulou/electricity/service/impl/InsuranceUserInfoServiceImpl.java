@@ -5,17 +5,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -37,6 +36,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     @Resource
     InsuranceUserInfoMapper insuranceUserInfoMapper;
 
+    @Autowired
+    UserInfoService userInfoService;
+
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
         return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId,tenantId)
@@ -51,6 +53,21 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     public R updateInsuranceStatus(Long uid, Integer insuranceStatus) {
-        return null;
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        InsuranceUserInfo updateInsuranceUserInfo =new InsuranceUserInfo();
+        updateInsuranceUserInfo.setIsUse(insuranceStatus);
+        updateInsuranceUserInfo.setUid(uid);
+        updateInsuranceUserInfo.setTenantId(tenantId);
+        updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        return R.ok(insuranceUserInfoMapper.update(updateInsuranceUserInfo));
     }
 }

@@ -116,9 +116,14 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         }
 
 
+        System.out.println("参数对象============================"+franchiseeInsuranceAddAndUpdate);
+
         FranchiseeInsurance newFranchiseeInsurance=new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
+
+        System.out.println("封装对象==============================="+newFranchiseeInsurance);
+
         Integer update = baseMapper.update(newFranchiseeInsurance);
 
         InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
