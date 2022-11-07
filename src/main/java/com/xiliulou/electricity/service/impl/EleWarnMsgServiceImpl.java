@@ -643,7 +643,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     private ReportManagement buildReportManagement() {
 
         ReportManagement reportManagement = new ReportManagement();
-        reportManagement.setJobId(UUIDUtil.uuid());
+        reportManagement.setJobId(IdUtil.simpleUUID());
         reportManagement.setType(ReportManagement.TYPE_WARN_MESSAGE);
         reportManagement.setStatus(ReportManagement.STATUS_INIT);
         reportManagement.setTenantId(TenantContextHolder.getTenantId());
