@@ -108,12 +108,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
-
-        if (count > 0 && !Objects.equals(oldFranchiseeInsurance.getName(), franchiseeInsuranceAddAndUpdate.getName())) {
-            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
-            return R.fail("100304", "保险名称已存在！");
-        }
+//        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
+//
+//        if (count > 0 && !Objects.equals(oldFranchiseeInsurance.getName(), franchiseeInsuranceAddAndUpdate.getName())) {
+//            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
+//            return R.fail("100304", "保险名称已存在！");
+//        }
 
         FranchiseeInsurance newFranchiseeInsurance=new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
