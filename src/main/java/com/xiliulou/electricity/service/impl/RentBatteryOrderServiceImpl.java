@@ -819,6 +819,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             excelVo.setCellNo(rentBatteryOrderVO.getCellNo());
             excelVo.setElectricityBatterySn(rentBatteryOrderVO.getElectricityBatterySn());
             excelVo.setBatteryDeposit(rentBatteryOrderVO.getBatteryDeposit());
+            excelVo.setElectricityCabinetName(electricityCabinetService.acquireElectricityCabinetName(rentBatteryOrderVO.getElectricityCabinetId()));
 
             if (Objects.nonNull(rentBatteryOrderVO.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrderVO.getCreateTime())));
@@ -890,7 +891,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             rentBatteryOrderExcelVOS.add(excelVo);
         }
 
-        String fileName = "换电订单报表.xlsx";
+        String fileName = "租电订单报表.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
