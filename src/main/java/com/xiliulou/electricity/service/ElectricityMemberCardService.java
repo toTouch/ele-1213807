@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -15,7 +14,7 @@ public interface ElectricityMemberCardService {
 
     ElectricityMemberCard queryByCache(Integer id);
 
-    R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Integer cardModel,Long franchiseeId);
+    R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel, List<Long> franchiseeId);
 
     R queryUserList(Long offset, Long size, String productKey, String deviceName, Long franchiseeId);
 
@@ -27,11 +26,11 @@ public interface ElectricityMemberCardService {
 
     List<ElectricityMemberCard> selectByFranchiseeId(Long id,Integer tenantId);
 
-    R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId);
+    R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, List<Long> franchiseeId);
 
-    R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
+    R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, List<Long> franchiseeId);
 
-    R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId);
+    R listCountByFranchisee(Integer status, Integer type, Integer tenantId, List<Long> franchiseeId);
 
     ElectricityMemberCard queryByStatus(Integer id);
 

@@ -19,6 +19,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +28,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -77,6 +75,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -108,7 +109,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         BeanUtil.copyProperties(franchiseeAddAndUpdate, adminUserQuery);
 
         //admin用户新增加盟商
-        adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+        adminUserQuery.setUserType(User.TYPE_USER_NORMAL_ADMIN);
+        adminUserQuery.setDataType(User.DATA_TYPE_FRANCHISEE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商
             //1、查普通租户加盟商角色
@@ -152,7 +154,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 .tenantId(tenantId)
                 .build();
         franchiseeAmountService.insert(franchiseeAmount);
-
+        
+        //保存用户数据可见范围
+        UserDataScope userDataScope = new UserDataScope();
+        userDataScope.setUid(franchisee.getUid());
+        userDataScope.setDataId(franchisee.getId());
+        userDataScopeService.insert(userDataScope);
+    
         if (insert > 0) {
             return R.ok();
         }
@@ -168,7 +176,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(oldFranchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-        
+
         if(!Objects.equals(oldFranchisee.getTenantId(),TenantContextHolder.getTenantId())){
             return R.ok();
         }
@@ -211,7 +219,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-    
+
         if(!Objects.equals(franchisee.getTenantId(),TenantContextHolder.getTenantId())){
             return R.ok();
         }
@@ -457,5 +465,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     public Franchisee queryByIdAndTenantId(Long id, Integer tenantId) {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId,tenantId));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectListByQuery(FranchiseeQuery franchiseeQuery) {
+        List<Franchisee> franchisees = franchiseeMapper.selectListByQuery(franchiseeQuery);
+        if (CollectionUtils.isEmpty(franchisees)) {
+            return Triple.of(true, "", Collections.EMPTY_LIST);
+        }
+
+        return Triple.of(true, "", franchisees);
     }
 }

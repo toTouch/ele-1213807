@@ -6,13 +6,13 @@
     <parent>
         <groupId>com.xiliulou</groupId>
         <artifactId>xiliulou-parent</artifactId>
-        <version>2.0.1</version>
+        <version>2.1.0</version>
     </parent>
     <artifactId>xiliulou-electricity-cabinet</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <xiliulou.version>2.0.1</xiliulou.version>
+        <xiliulou.version>2.1.0</xiliulou.version>
         <logback.version>1.2.10</logback.version>
     </properties>
 

@@ -10,12 +10,16 @@ import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -154,5 +158,23 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public R queryCount(ElectricityCarModelQuery electricityCarModelQuery) {
         return R.ok(electricityCarModelMapper.queryCount(electricityCarModelQuery));
     }
-
+    
+    @Override
+    public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
+        Store store = storeService.queryByIdFromCache(electricityCarModelQuery.getStoreId());
+        if(Objects.isNull(store)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        ElectricityCarModelQuery modelQuery = new ElectricityCarModelQuery();
+        modelQuery.setFranchiseeId(store.getFranchiseeId());
+        modelQuery.setOffset(0L);
+        modelQuery.setSize(Long.MAX_VALUE);
+        List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(modelQuery);
+        if(!CollectionUtils.isEmpty(electricityCarModelVOS)){
+            return R.ok(electricityCarModelVOS);
+        }
+    
+        return R.ok(Collections.EMPTY_LIST);
+    }
 }

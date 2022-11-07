@@ -1399,17 +1399,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId) {
-        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeId)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> franchiseeIds) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
+    public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, franchiseeId, beginTime, enTime);
     }
 
     @Override
-    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, Long franchiseeId, Long beginTime, Long enTime) {
+    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
     }
 }

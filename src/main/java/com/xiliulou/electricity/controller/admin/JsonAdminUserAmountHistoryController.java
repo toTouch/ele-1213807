@@ -20,56 +20,46 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class JsonAdminUserAmountHistoryController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	private UserAmountHistoryService userAmountHistoryService;
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private UserAmountHistoryService userAmountHistoryService;
+
+    /**
+     * 用户邀请记录
+     */
+    @GetMapping(value = "/admin/userAmountHistory/list")
+    public R queryList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "uid", required = false) Long uid) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
+                .offset(offset)
+                .size(size)
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(uid).build();
+        return userAmountHistoryService.queryList(userAmountHistoryQuery);
+    }
 
 
+    /**
+     * 用户邀请记录
+     */
+    @GetMapping(value = "/admin/userAmountHistory/queryCount")
+    public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
 
-	/**
-	 * 用户邀请记录
-	 */
-	@GetMapping(value = "/admin/userAmountHistory/list")
-	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "uid", required = false) Long uid) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-
-		if (offset < 0) {
-			offset = 0L;
-		}
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-
-		UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
-				.offset(offset)
-				.size(size)
-				.tenantId(tenantId)
-				.uid(uid).build();
-		return userAmountHistoryService.queryList(userAmountHistoryQuery);
-	}
-
-
-	/**
-	 * 用户邀请记录
-	 */
-	@GetMapping(value = "/admin/userAmountHistory/queryCount")
-	public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-
-		UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
-				.tenantId(tenantId)
-				.uid(uid).build();
-		return userAmountHistoryService.queryCount(userAmountHistoryQuery);
-	}
+        UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(uid).build();
+        return userAmountHistoryService.queryCount(userAmountHistoryQuery);
+    }
 
 }

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.service.EleOtaUpgradeHistoryService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * (EleOtaUpgradeHistory)表控制层
@@ -33,6 +34,15 @@ public class JsonAdminEleOtaUpgradeHistoryController {
             @RequestParam(value = "startTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "offset", required = false) Long offset,
             @RequestParam(value = "size", required = false) Long size) {
+    
+        if (Objects.isNull(offset)) {
+            offset = 0L;
+        }
+    
+        if (Objects.isNull(size)) {
+            size = 50L;
+        }
+       
         return eleOtaUpgradeHistoryService
                 .queryList(eid, cellNo, type, upgradeVersion, historyVersion, status, startTime, endTime, offset, size);
     }

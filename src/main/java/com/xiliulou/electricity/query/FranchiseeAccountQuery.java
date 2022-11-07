@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -21,8 +23,10 @@ public class FranchiseeAccountQuery {
 	private Long offset;
 
 	private Integer tenantId;
-
+	
 	private Long franchiseeId;
+
+	private List<Long> franchiseeIds;
 
 	private String orderId;
 

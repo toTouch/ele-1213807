@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -205,8 +206,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @DS("slave_1")
-    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId) {
-        List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, franchiseeId, null);
+    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel,List<Long> franchiseeIds) {
+        List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, franchiseeIds, null);
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
         }
@@ -421,7 +422,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("100011", "加盟商没有对应的车辆型号");
         }
 
-        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, franchiseeUserInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, electricityCarModel.getFranchiseeId(), franchiseeUserInfo.getBindCarModelId()));
+        List<Long> franchiseeIds= Arrays.asList(electricityCarModel.getFranchiseeId());
+
+        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, franchiseeUserInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, franchiseeIds , franchiseeUserInfo.getBindCarModelId()));
     }
 
     @Override
@@ -446,18 +449,18 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId) {
+    public R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, List<Long> franchiseeId) {
         return R.ok(baseMapper.queryCount(status, type, tenantId, cardModel, franchiseeId, null));
     }
 
     @Override
-    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
-        return R.ok(baseMapper.listByFranchisee(offset, size, status, type, tenantId, franchiseeId));
+    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, List<Long> franchiseeIds) {
+        return R.ok(baseMapper.listByFranchisee(offset, size, status, type, tenantId, franchiseeIds));
     }
 
     @Override
-    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
-        return R.ok(baseMapper.listCountByFranchisee(status, type, tenantId, franchiseeId));
+    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, List<Long> franchiseeIds) {
+        return R.ok(baseMapper.listCountByFranchisee(status, type, tenantId, franchiseeIds));
     }
 
     @Override

@@ -316,6 +316,12 @@
 		<if test="query.id != null">
 			and id =#{query.id}
 		</if>
+        <if test="query.eleIdList!=null and query.eleIdList!=''">
+            and id in
+            <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
 		<if test="query.tenantId != null ">
 			and tenant_id = #{query.tenantId}
 		</if>

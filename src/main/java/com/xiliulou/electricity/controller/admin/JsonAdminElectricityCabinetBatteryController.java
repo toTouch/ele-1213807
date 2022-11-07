@@ -4,19 +4,21 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,6 +45,8 @@ public class JsonAdminElectricityCabinetBatteryController {
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 新增电池
@@ -97,7 +102,24 @@ public class JsonAdminElectricityCabinetBatteryController {
                                        @RequestParam(value = "sn", required = false) String sn,
                                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
-
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
@@ -106,6 +128,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
@@ -143,7 +166,24 @@ public class JsonAdminElectricityCabinetBatteryController {
                         @RequestParam(value = "sn", required = false) String sn,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
-
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
@@ -153,6 +193,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
@@ -177,17 +218,23 @@ public class JsonAdminElectricityCabinetBatteryController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (Objects.isNull(franchisee)) {
-            return R.ok(CollectionUtils.EMPTY_COLLECTION);
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-        electricityBatteryQuery.setFranchiseeId(franchisee.getId());
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
 
@@ -215,32 +262,23 @@ public class JsonAdminElectricityCabinetBatteryController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (Objects.isNull(franchisee)) {
-            return R.ok(0);
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-
-//        //加盟商电池
-//        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
-//
-//        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
-//            return R.ok(0);
-//        }
-//        List<Long> electricityBatteryIdList = new ArrayList<>();
-//        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
-//            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
-//        }
-//        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
-//            return R.ok(0);
-//        }
-
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-//        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
-        electricityBatteryQuery.setFranchiseeId(franchisee.getId());
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setTenantId(tenantId);
         electricityBatteryQuery.setChargeStatus(chargeStatus);
 
@@ -304,15 +342,31 @@ public class JsonAdminElectricityCabinetBatteryController {
     public R queryBatteryOverview(@RequestParam(value = "businessStatus", required = false) Integer businessStatus,
                                   @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                                   @RequestParam(value = "sn", required = false) String sn) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
         ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
                 .physicsStatus(physicsStatus)
                 .businessStatus(businessStatus)
                 .sn(sn)
-                .tenantId(tenantId).build();
+                .franchiseeIds(franchiseeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
     }
 

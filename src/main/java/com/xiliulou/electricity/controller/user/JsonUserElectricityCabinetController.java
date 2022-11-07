@@ -134,13 +134,13 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 		String phone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE+tenantId);
-		if(StrUtil.isBlank(phone)){
-			List<User> userList = userService.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
-			if(CollectionUtils.isNotEmpty(userList)){
-				phone = userList.get(0).getPhone();
-			}
-
-		}
+//		if(StrUtil.isBlank(phone)){
+//			List<User> userList = userService.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
+//			if(CollectionUtils.isNotEmpty(userList)){
+//				phone = userList.get(0).getPhone();
+//			}
+//
+//		}
 		return R.ok(phone);
 	}
 

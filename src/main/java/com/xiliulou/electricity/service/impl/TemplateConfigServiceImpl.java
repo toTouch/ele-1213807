@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import com.xiliulou.electricity.mapper.TemplateConfigMapper;
 import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -111,10 +112,18 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
         TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
         if(Objects.nonNull(templateConfigEntity)){
-            result.add(templateConfigEntity.getBatteryOuttimeTemplate());
-            result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
-            result.add(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
-            result.add(templateConfigEntity.getCarMemberCardExpiringTemplate());
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryOuttimeTemplate())) {
+                result.add(templateConfigEntity.getBatteryOuttimeTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getElectricQuantityRemindTemplate())) {
+                result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getCarMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getCarMemberCardExpiringTemplate());
+            }
             //result.add(templateConfigEntity.getMemberCardExpiringTemplate());
         }
 

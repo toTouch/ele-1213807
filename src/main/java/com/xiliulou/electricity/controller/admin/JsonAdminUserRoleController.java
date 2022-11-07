@@ -2,10 +2,14 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.web.query.RoleQuery;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -25,6 +30,7 @@ import java.util.Objects;
  * @Date: 2020/12/11 09:54
  * @Description:
  */
+@Slf4j
 @RestController
 @RequestMapping(value = "/admin")
 public class JsonAdminUserRoleController extends BaseController {
@@ -33,6 +39,17 @@ public class JsonAdminUserRoleController extends BaseController {
 
 	@GetMapping("/role/list")
 	public R getRoleList() {
+		
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELE ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		
+		if(Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)||Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+			return R.ok(Collections.EMPTY_LIST);
+		}
+		
 		return roleService.queryAll();
 	}
 

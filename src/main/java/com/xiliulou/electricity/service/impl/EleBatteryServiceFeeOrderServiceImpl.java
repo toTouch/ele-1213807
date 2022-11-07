@@ -110,17 +110,17 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     }
 
     @Override
-    public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
-        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeIds) {
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId, todayStartTime, franchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+    public List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return eleBatteryServiceFeeOrderMapper.queryTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
     @Override
-    public BigDecimal queryAllTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+    public BigDecimal queryAllTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return eleBatteryServiceFeeOrderMapper.queryAllTurnOver(tenantId, franchiseeId, beginTime, endTime);
     }
 }

@@ -150,6 +150,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -733,7 +735,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //1、查用户
         CompletableFuture<Void> successUserFuture = CompletableFuture.runAsync(() -> {
             if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
                 Integer userCount = userInfoService.homeOne(beginTime, endTime, tenantId);
                 homeOne.put("userCount", userCount.toString());
             }
@@ -746,7 +748,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         boolean flag = true;
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
@@ -773,10 +775,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
                 //电柜
                 List<ElectricityCabinet> electricityCabinetList = null;
-                if (Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                if (Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
                     //1、直接查柜子
                     electricityCabinetList = this.electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
-                } else if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                } else if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                     //1、查代理商
                     Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
                     //2、再找代理商下的门店
@@ -820,12 +822,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //3、查月卡
         CompletableFuture<Void> successCardFuture = CompletableFuture.runAsync(() -> {
             if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                    || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
                 BigDecimal moneyCount = null;
                 //查月卡
-                if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                     Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 
                     List<Integer> cardIdList = new ArrayList<>();
@@ -859,12 +861,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //4、门店
         CompletableFuture<Void> successStoreFuture = CompletableFuture.runAsync(() -> {
             if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                    || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
                 Integer storeCount = 0;
                 //查用户
-                if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                     Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 
                     List<Long> storeIdList = new ArrayList<>();
@@ -919,11 +921,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //只有用户admin,运营商，加盟商时才有收益
         if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
+                || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
             //如果用户类型不等于admin和运营商，则查询绑定的月卡
-            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                 Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 
                 //查不到加盟商
@@ -971,7 +973,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查用户
         if (type == 1) {
             if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
                 homeThree = userInfoService.homeThree(beginTime, endTime, tenantId);
             }
             return R.ok(homeThree);
@@ -981,7 +983,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (type == 2) {
             //如果用户类型不等于admin和运营商，则查询绑定的换电柜
             if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                    && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
                 UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
                 if (Objects.isNull(userTypeService)) {
@@ -1007,7 +1009,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //如果用户类型不等于admin和运营商，则查询绑定的换电柜
             if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                    && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
                 UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
                 if (Objects.isNull(userTypeService)) {
@@ -1033,11 +1035,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查门店
         if (type == 4) {
             if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                    || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                    || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
+                    || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
                 //查用户
-                if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                     Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
                     if (Objects.isNull(franchisee)) {
                         log.info("homeThree  info! not found franchisee！uid:{} ", user.getUid());
@@ -1908,6 +1910,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok();
         }
 
+        TenantContextHolder.setTenantId(electricityBattery.getTenantId());
         //电池电量上报变化在百分之50以上，不更新电池电量
         Double power = batteryReportQuery.getPower();
         //修改电池
@@ -2281,6 +2284,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryList(electricityCabinetQuery));
     }
 
+    @Override
+    public List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds) {
+        return electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().in(ElectricityCabinet::getStoreId, storeIds).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
+    }
 
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
         if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {
@@ -2411,6 +2418,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R homepageTurnover() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        HomePageTurnOverVo homePageTurnOverVo = new HomePageTurnOverVo();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -2419,30 +2429,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
+    
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
+    
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(homePageTurnOverVo);
+            }
         }
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
-        }
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        HomePageTurnOverVo homePageTurnOverVo = new HomePageTurnOverVo();
+        
+        
 
         long todayStartTime = DateUtils.getTodayStartTime();
         //购买换电月卡
-        Long finalFranchiseeId = franchiseeId;
+        List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, null, finalFranchiseeId);
-            BigDecimal todayBatteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeId);
+            BigDecimal batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, null, finalFranchiseeIds);
+            BigDecimal todayBatteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeIds);
             homePageTurnOverVo.setBatteryMemberCardTurnover(batteryMemberCardTurnover);
             homePageTurnOverVo.setTodayBatteryMemberCardTurnover(todayBatteryMemberCardTurnover);
         }, executorService).exceptionally(e -> {
@@ -2452,8 +2472,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //购买租车月卡
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-            BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, null, finalFranchiseeId);
-            BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeId);
+            BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, null, finalFranchiseeIds);
+            BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeIds);
             homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
             homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
         }, executorService).exceptionally(e -> {
@@ -2463,8 +2483,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //电池服务费
         CompletableFuture<Void> batteryServiceFee = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, null, finalFranchiseeId);
-            BigDecimal todayBatteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, todayStartTime, finalFranchiseeId);
+            BigDecimal batteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, null, finalFranchiseeIds);
+            BigDecimal todayBatteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, todayStartTime, finalFranchiseeIds);
             homePageTurnOverVo.setTodayBatteryServiceFeeTurnover(todayBatteryServiceFeeTurnover);
             homePageTurnOverVo.setBatteryServiceFeeTurnover(batteryServiceFeeTurnover);
         }, executorService).exceptionally(e -> {
@@ -2494,31 +2514,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            return R.fail("AUTH.0002", "没有权限操作！");
-        }
-
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-        }
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
-        }
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         HomePageDepositVo homePageDepositVo = new HomePageDepositVo();
+    
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(homePageDepositVo);
+            }
+        }
+        
 
         long todayStartTime = DateUtils.getTodayStartTime();
 
         //缴纳电池押金
-        Long finalFranchiseeId = franchiseeId;
+        List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeId);
-            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeId);
+            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
+            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
             homePageDepositVo.setBatteryDeposit(batteryDepositTurnover);
             homePageDepositVo.setTodayBatteryDeposit(todayBatteryDeposit);
         }, executorService).exceptionally(e -> {
@@ -2528,8 +2562,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //缴纳租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeId);
-            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeId);
+            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
             homePageDepositVo.setCarDeposit(batteryDepositTurnover);
             homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
         }, executorService).exceptionally(e -> {
@@ -2581,24 +2615,36 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            return R.fail("AUTH.0002", "没有权限操作！");
-        }
-
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-        }
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
-        }
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
 
         HomepageOverviewDetailVo homepageOverviewDetailVo = new HomepageOverviewDetailVo();
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(homepageOverviewDetailVo);
+            }
+        }
 
         //实名认证用户
         CompletableFuture<Void> authenticationUser = CompletableFuture.runAsync(() -> {
@@ -2610,12 +2656,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //门店
-        Long finalFranchiseeId = franchiseeId;
+        List<Long> finalFranchiseeIds = franchiseeIds;
         //查询所有门店
-        List<Long> stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeId);
+        List<Long> stores = null;
+        if(!CollectionUtils.isEmpty(stores)){
+            stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
+        }
+        
         CompletableFuture<Void> store = CompletableFuture.runAsync(() -> {
             StoreQuery storeQuery = StoreQuery.builder()
-                    .franchiseeId(finalFranchiseeId)
+                    .franchiseeIds(finalFranchiseeIds)
                     .tenantId(tenantId).build();
             Integer storeCount = storeService.queryCountForHomePage(storeQuery);
             homepageOverviewDetailVo.setStoreCount(storeCount);
@@ -2625,8 +2675,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //柜机
+        List<Long> finalStores = stores;
         CompletableFuture<Void> electricityCabinet = CompletableFuture.runAsync(() -> {
-            Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, stores);
+            Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, finalStores);
             homepageOverviewDetailVo.setElectricityCabinetCount(electricityCabinetCount);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2635,7 +2686,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //车辆
         CompletableFuture<Void> car = CompletableFuture.runAsync(() -> {
-            Integer carCount = electricityCarService.queryCountByStoreIds(tenantId, stores);
+            Integer carCount = electricityCarService.queryCountByStoreIds(tenantId, finalStores);
             homepageOverviewDetailVo.setCarCount(carCount);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2662,27 +2713,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            return R.fail("AUTH.0002", "没有权限操作！");
-        }
-
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            franchisee = franchiseeService.queryByUid(user.getUid());
-        }
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
-        }
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         HomePageTurnOverAnalysisVo homePageTurnOverAnalysisVo = new HomePageTurnOverAnalysisVo();
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(homePageTurnOverAnalysisVo);
+            }
+        }
+        
+        
+        
         //购买换电月卡
-        Long finalFranchiseeId = franchiseeId;
+        List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeId, beginTime, endTime);
+            List<HomePageTurnOverGroupByWeekDayVo> batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setBatteryMemberCardAnalysis(batteryMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2691,7 +2757,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //购买租车月卡
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeId, beginTime, endTime);
+            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setCarMemberCardAnalysis(carMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2700,7 +2766,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //电池服务费
         CompletableFuture<Void> batteryServiceFee = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> batteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOverByCreateTime(tenantId, finalFranchiseeId, beginTime, endTime);
+            List<HomePageTurnOverGroupByWeekDayVo> batteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setBatteryServiceFeeAnalysis(batteryServiceFeeTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2709,7 +2775,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //电池押金
         CompletableFuture<Void> batteryDeposit = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeId, beginTime, endTime);
+            List<HomePageTurnOverGroupByWeekDayVo> batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setBatteryDepositAnalysis(batteryDepositTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2718,7 +2784,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeId, beginTime, endTime);
+            List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setCarDepositAnalysis(carDepositTurnOver);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2727,8 +2793,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //总套餐营业额统计
         CompletableFuture<Void> sumMemberCard = CompletableFuture.runAsync(() -> {
-            BigDecimal sumMemberCardTurnOver = electricityMemberCardOrderService.querySumMemberCardTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
-            BigDecimal sumBatteryService = eleBatteryServiceFeeOrderService.queryAllTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
+            BigDecimal sumMemberCardTurnOver = electricityMemberCardOrderService.querySumMemberCardTurnOver(tenantId, finalFranchiseeIds, beginTime, endTime);
+            BigDecimal sumBatteryService = eleBatteryServiceFeeOrderService.queryAllTurnOver(tenantId, finalFranchiseeIds, beginTime, endTime);
             if (Objects.isNull(sumMemberCardTurnOver)) {
                 sumMemberCardTurnOver = BigDecimal.valueOf(0);
             }
@@ -2743,7 +2809,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //总押金营业额统计
         CompletableFuture<Void> sumDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal sumDepositTurnOver = eleDepositOrderService.querySumDepositTurnOverAnalysis(tenantId, finalFranchiseeId, beginTime, endTime);
+            BigDecimal sumDepositTurnOver = eleDepositOrderService.querySumDepositTurnOverAnalysis(tenantId, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setDepositTurnOver(sumDepositTurnOver);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2771,7 +2837,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
 
@@ -2828,37 +2898,66 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            return R.fail("AUTH.0002", "没有权限操作！");
-        }
-
-        List<Integer> eleIdList = null;
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            franchisee = franchiseeService.queryByUid(user.getUid());
-        }
-
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
-        }
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        List<Integer> eleIdList = null;
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+//            if (Objects.isNull(userTypeService)) {
+//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+//                return R.fail("ELECTRICITY.0066", "用户权限不足");
+//            }
+//            eleIdList = userTypeService.getEleIdListByUserType(user);
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         HomePageElectricityOrderVo homePageElectricityOrderVo = new HomePageElectricityOrderVo();
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+    
+        List<Integer> eleIdList = null;
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if(CollectionUtils.isEmpty(eleIdList)){
+                return R.ok(homePageElectricityOrderVo);
+            }
+            
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(homePageElectricityOrderVo);
+            }
+        }
+        
+        
 
         //换电成功订单数量统计
         List<Integer> finalEleIdList = eleIdList;
-        Long finalFranchiseeId = franchiseeId;
+        List<Long> finalFranchiseeIds = franchiseeIds;
         //查询所有门店
-        List<Long> stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeId);
+        List<Long> stores = null;
+        if(!CollectionUtils.isEmpty(finalFranchiseeIds)){
+            stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
+        }
+        
         CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
             ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().tenantId(tenantId).eleIdList(finalEleIdList).status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
             Integer orderSuccessCount = electricityCabinetOrderService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
@@ -2879,8 +2978,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //换电柜在线总数统计
+        List<Long> finalStores = stores;
         CompletableFuture<Void> electricityOnlineCabinetCount = CompletableFuture.runAsync(() -> {
-            Integer onLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, stores, ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+            Integer onLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, finalStores, ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
             homePageElectricityOrderVo.setOnlineElectricityCabinet(onLineCount);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
@@ -2889,7 +2989,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //换电柜离线总数统计
         CompletableFuture<Void> electricityOfflineCabinetCount = CompletableFuture.runAsync(() -> {
-            Integer offLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, stores, ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            Integer offLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, finalStores, ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
             homePageElectricityOrderVo.setOfflineElectricityCabinet(offLineCount);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
@@ -3023,7 +3123,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         final Integer TYPE_DOWNLOAD = 1;
         final Integer TYPE_SYNC = 2;
         final Integer TYPE_UPGRADE = 3;
-        
+    
+        Long uid = SecurityUtils.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
         ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -3043,10 +3149,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
-        
-        Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
+    
+        Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
         data.put("operateType", operateType);
+        data.put("userid", user.getUid());
+        data.put("username", user.getName());
+        
         if (TYPE_DOWNLOAD.equals(operateType)) {
             //ota文件是否存在
             OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
