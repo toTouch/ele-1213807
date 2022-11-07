@@ -247,12 +247,13 @@ public class JsonAdminRentBatteryOrderController {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
                 throw new CustomBusinessException("查不到订单");
             }
+            
             eleIdList = userTypeService.getEleIdListByUserType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                throw new CustomBusinessException("查不到订单");
+            }
         }
-
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            throw new CustomBusinessException("查不到订单");
-        }
+        
 
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .name(name)
