@@ -434,25 +434,21 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             if (CollectionUtils.isEmpty(tempList)) {
                 break;
             }
+    
+            tempList.parallelStream().forEach(item -> {
+                if (StringUtils.isBlank(item.getElectricityCabinetId())) {
+                    return;
+                }
+        
+                ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
+                if (Objects.nonNull(cabinet)) {
+                    item.setCabinetName(cabinet.getName());
+                }
+            });
             
             list.addAll(tempList);
         }
-
-        if (CollectionUtils.isEmpty(list)) {
-            return list;
-        }
-    
-        list.parallelStream().forEach(item -> {
-            if (StringUtils.isBlank(item.getElectricityCabinetId())) {
-                return;
-            }
         
-            ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
-            if (Objects.nonNull(cabinet)) {
-                item.setCabinetName(cabinet.getName());
-            }
-        });
-
         return list;
     }
 
@@ -482,24 +478,20 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             if (CollectionUtils.isEmpty(tempList)) {
                 break;
             }
+    
+            tempList.parallelStream().forEach(item -> {
+                if (StringUtils.isBlank(item.getElectricityCabinetId())) {
+                    return;
+                }
+        
+                ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
+                if (Objects.nonNull(cabinet)) {
+                    item.setCabinetName(cabinet.getName());
+                }
+            });
             
             list.addAll(tempList);
         }
-    
-        if (CollectionUtils.isEmpty(list)) {
-            return list;
-        }
-    
-        list.parallelStream().forEach(item -> {
-            if (StringUtils.isBlank(item.getElectricityCabinetId())) {
-                return;
-            }
-        
-            ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
-            if (Objects.nonNull(cabinet)) {
-                item.setCabinetName(cabinet.getName());
-            }
-        });
 
         return list;
     }
@@ -554,25 +546,20 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             if (CollectionUtils.isEmpty(tempList)) {
                 break;
             }
+    
+            tempList.parallelStream().forEach(item -> {
+                if (StringUtils.isBlank(item.getElectricityCabinetId())) {
+                    return;
+                }
+        
+                ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
+                if (Objects.nonNull(cabinet)) {
+                    item.setCabinetName(cabinet.getName());
+                }
+            });
             
             list.addAll(tempList);
         }
-
-        if (CollectionUtils.isEmpty(list)) {
-            return list;
-        }
-    
-        //设置柜机名称
-        list.parallelStream().forEach(item -> {
-            if (StringUtils.isBlank(item.getElectricityCabinetId())) {
-                return;
-            }
-        
-            ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
-            if (Objects.nonNull(cabinet)) {
-                item.setCabinetName(cabinet.getName());
-            }
-        });
 
         return list;
     }
@@ -615,25 +602,20 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             if (CollectionUtils.isEmpty(tempList)) {
                 break;
             }
+    
+            tempList.parallelStream().forEach(item -> {
+                if (StringUtils.isBlank(item.getElectricityCabinetId())) {
+                    return;
+                }
+        
+                ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
+                if (Objects.nonNull(cabinet)) {
+                    item.setCabinetName(cabinet.getName());
+                }
+            });
             
             list.addAll(tempList);
         }
-    
-        if (CollectionUtils.isEmpty(list)) {
-            return list;
-        }
-    
-        //设置柜机名称
-        list.parallelStream().forEach(item -> {
-            if (StringUtils.isBlank(item.getElectricityCabinetId())) {
-                return;
-            }
-        
-            ElectricityCabinet cabinet = electricityCabinetService.queryByIdFromCache(Integer.parseInt(item.getElectricityCabinetId()));
-            if (Objects.nonNull(cabinet)) {
-                item.setCabinetName(cabinet.getName());
-            }
-        });
     
         return list;
     }
@@ -644,8 +626,10 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
      * @return
      */
     private Map<String, String> uploadExcelToOSS(ByteArrayOutputStream bos) throws Exception {
+        
+        String basePath="/saas/report/";
 
-        String fileName = IdUtil.simpleUUID() + StrUtil.DOT + EXCEL_TYPE;
+        String fileName = basePath+IdUtil.simpleUUID() + StrUtil.DOT + EXCEL_TYPE;
         String bucketName = storageConfig.getBucketName();
         Map<String, String> resultMap = new HashMap<>(2);
         resultMap.put(CommonConstant.BUCKET_NAME, bucketName);
