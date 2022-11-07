@@ -115,15 +115,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("100304", "保险名称已存在！");
         }
 
-
-        System.out.println("参数对象============================"+franchiseeInsuranceAddAndUpdate);
-
         FranchiseeInsurance newFranchiseeInsurance=new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
-
-        System.out.println("封装对象==============================="+newFranchiseeInsurance);
-
+        newFranchiseeInsurance.setTenantId(tenantId);
         Integer update = baseMapper.update(newFranchiseeInsurance);
 
         InsuranceInstruction insuranceInstruction=new InsuranceInstruction();
