@@ -45,4 +45,6 @@ public class InsuranceOrderVO {
     private Integer validDays;
 
     private String cityName;
+
+    private Integer status;
 }
