@@ -103,28 +103,20 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public WechatJsapiRefundResultDTO commonCreateRefundOrder(RefundOrder refundOrder, HttpServletRequest request) throws WechatPayException {
 
         //第三方订单号
-        Integer tenantId = null;
-        String tradeOrderNo = null;
-
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
         if (Objects.isNull(electricityTradeOrder)) {
-            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
-            if (Objects.isNull(unionTradeOrder) || JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class).size() == 0) {
-                log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
-                throw new CustomBusinessException("未找到交易订单!");
-            }
-            tenantId = unionTradeOrder.getTenantId();
-            tradeOrderNo = unionTradeOrder.getTradeOrderNo();
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
+            throw new CustomBusinessException("未找到交易订单!");
         }
 
         //退款
         WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
-        wechatV3RefundQuery.setTenantId(tenantId);
+        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setTotal(refundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundQuery.setReason("退款");
-        wechatV3RefundQuery.setOrderId(tradeOrderNo);
-        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + tenantId);
+        wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setCurrency("CNY");
         wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
 
