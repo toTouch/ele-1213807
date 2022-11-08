@@ -19,7 +19,7 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetServer queryById(Long id);
+    ElectricityCabinetServer queryById(@Param("id") Long id);
 
     /**
      * 查询指定行数据

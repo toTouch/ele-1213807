@@ -11,5 +11,6 @@ import com.xiliulou.electricity.entity.DepositProtocol;
  * @since 2021-09-26 14:06:23
  */
 public interface DepositProtocolMapper extends BaseMapper<DepositProtocol> {
-
+    
+    Integer update(DepositProtocol depositProtocol);
 }

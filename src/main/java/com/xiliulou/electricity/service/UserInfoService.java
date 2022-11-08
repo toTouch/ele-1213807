@@ -94,7 +94,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer deleteByUid(Long uid);
 
-    R queryUserBelongFranchisee(Long franchiseeId);
+    R queryUserBelongFranchisee(Long franchiseeId,Integer tenantId);
 
     R queryUserAllConsumption(Long id);
 

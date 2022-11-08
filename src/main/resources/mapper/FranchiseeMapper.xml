@@ -92,7 +92,7 @@
                     FROM
                         t_electricity_cabinet
                 WHERE
-                id = #{id}))
+                id = #{id})) and tf.tenant_id=#{tenantId}
     </select>
 
 
@@ -104,4 +104,46 @@
         f.model_type,f.model_battery_deposit,f.battery_service_fee from t_franchisee f
         left join t_franchisee_user_info tf on f.id =tf.franchisee_id left join t_user_info tu on tu.id=tf.user_info_id where tu.uid=#{uid}
     </select>
+    
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_franchisee
+        <set>
+            <if test="cid != null">
+                cid = #{cid},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="batteryDeposit != null">
+                battery_deposit = #{batteryDeposit},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="percent != null">
+                percent = #{percent},
+            </if>
+            <if test="modelType != null">
+                model_type = #{modelType},
+            </if>
+            <if test="modelBatteryDeposit != null and modelBatteryDeposit != ''">
+                model_battery_deposit = #{modelBatteryDeposit},
+            </if>
+            <if test="batteryServiceFee != null">
+                battery_service_fee = #{batteryServiceFee},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
 </mapper>

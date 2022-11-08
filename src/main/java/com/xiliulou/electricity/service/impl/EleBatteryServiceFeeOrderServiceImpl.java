@@ -58,14 +58,14 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS);
+        return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS,user.getTenantId());
     }
 
 
     @Override
-    public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status) {
+    public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status,Integer tenantId) {
 
-        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid, offset, size, startTime, endTime, status);
+        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid, offset, size, startTime, endTime, status,tenantId);
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {

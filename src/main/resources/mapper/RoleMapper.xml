@@ -27,11 +27,8 @@
 			<if test="updateTime != null  ">
 				update_time = #{updateTime},
 			</if>
-			<if test="tenantId != null  ">
-				tenant_id = #{tenantId},
-			</if>
 		</set>
-		where id =#{id}
+		where id =#{id} and tenant_id = #{tenantId}
 
 	</update>
 
@@ -60,5 +57,13 @@
 		</foreach>
 
 	</select>
+	
+	
+	<!--通过主键删除-->
+	<delete id="deleteById">
+        delete
+        from t_role
+        where id = #{id} and tenant_id = #{tenantId}
+    </delete>
 
 </mapper>

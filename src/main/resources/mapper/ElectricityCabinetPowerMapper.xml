@@ -28,6 +28,9 @@
             <if test="query.endTime != null">
                 and tecp.create_time &lt;=#{query.endTime}
             </if>
+            <if test="query.tenantId != null">
+                and tecp.tenant_id =#{query.tenantId}
+            </if>
         </where>
         order by tecp.create_time DESC
         limit #{query.offset}, #{query.size}
@@ -42,6 +45,9 @@
         <where>
             <if test="query.electricityCabinetId != null">
                 and tecp.eid = #{query.electricityCabinetId}
+            </if>
+            <if test="query.tenantId != null">
+                and tecp.tenant_id =#{query.tenantId}
             </if>
         </where>
         order by tecp.create_time desc limit 1;

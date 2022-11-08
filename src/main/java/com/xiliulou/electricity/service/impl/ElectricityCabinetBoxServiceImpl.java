@@ -5,11 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -56,7 +52,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     ElectricityConfigService electricityConfigService;
- 
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -65,8 +61,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
      * @return 实例对象
      */
     @Override
-    public ElectricityCabinetBox queryByIdFromDB(Long id) {
-        return this.electricityCabinetBoxMapper.selectById(id);
+    public ElectricityCabinetBox queryByIdFromDB(Long id,Integer tenantId) {
+        return this.electricityCabinetBoxMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetBox>()
+                .eq(ElectricityCabinetBox::getId, id).eq(ElectricityCabinetBox::getTenantId,tenantId));
     }
 
     @Override
@@ -181,12 +178,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> findUsableEmptyCellNo(Integer eid) {
         return electricityCabinetBoxMapper.queryUsableEmptyCellNo(eid);
     }
-    
+
     @Override
     public int selectUsableEmptyCellNumber(Integer eid, Integer tenantId) {
         return electricityCabinetBoxMapper.selectUsableEmptyCellNumber(eid, tenantId);
     }
-    
+
     @Override
     public Integer disableCell(Integer cellNo, Integer electricityCabinetId) {
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
@@ -205,7 +202,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public ElectricityCabinetBox selectByBatteryId(Long batteryId) {
         return electricityCabinetBoxMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetBox>().eq(ElectricityCabinetBox::getBId, batteryId));
     }
-    
+
     @Override
     public Triple<Boolean, String, Object> selectAvailableBoxNumber(Integer electricityCabinetId, Integer tenantId) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
@@ -213,24 +210,24 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             log.error("ELE ERROR! electricityConfig is null,tenantId={}", tenantId);
             return Triple.of(false, "000001", "系统异常！");
         }
-    
+
         if (!Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.DISABLE_RETURN_BOX_CHECK)) {
             return Triple.of(true, "", "");
         }
-    
+
         //获取所有启用的格挡
         List<ElectricityCabinetBox> electricityCabinetBoxes = this.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return Triple.of(true, "", "");
         }
-    
+
         //获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
             log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}", electricityCabinetId);
             return Triple.of(false, "100240", "当前无空余格挡可供退电，请联系客服！");
         }
-        
+
         return Triple.of(true, "", "");
     }
 }

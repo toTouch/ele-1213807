@@ -130,8 +130,8 @@ public class UserCouponServiceImpl implements UserCouponService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         Coupon coupon = couponService.queryByIdFromCache(id);
-        if (Objects.isNull(coupon)) {
-            log.error("Coupon  ERROR! not found coupon ! couponId:{} ", id);
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(),tenantId)) {
+            log.error("Coupon  ERROR! not found coupon ! couponId={} ", id);
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
 
@@ -181,6 +181,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             couponIssueOperateRecord.name(userInfo.getName());
             couponIssueOperateRecord.operateName(operateUser.getUsername());
             couponIssueOperateRecord.phone(user.getPhone());
+            couponIssueOperateRecord.tenantId(tenantId);
             CouponIssueOperateRecord couponIssueOperateRecordBuild = couponIssueOperateRecord.build();
             couponIssueOperateRecordService.insert(couponIssueOperateRecordBuild);
         }

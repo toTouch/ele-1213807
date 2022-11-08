@@ -209,25 +209,90 @@
         </where>
     </select>
 
-    <select id="queryCountByStoreIdsAndStatus" resultType="integer">
-        select count(1)
-        from t_electricity_cabinet
-        <where>
-            del_flag=0
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="storeIds != null and storeIds.size() > 0">
-                and store_id in
-                <foreach collection="storeIds" item="id" separator="," open="(" close=")">
-                    #{id}
-                </foreach>
-            </if>
-            <if test="status != null">
-                and online_status = #{status}
-            </if>
-        </where>
-    </select>
+	<select id="queryCountByStoreIdsAndStatus" resultType="integer">
+		select count(1)
+		from t_electricity_cabinet
+		<where>
+			del_flag=0
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="storeIds != null and storeIds.size() > 0">
+				and store_id in
+				<foreach collection="storeIds" item="id" separator="," open="(" close=")">
+					#{id}
+				</foreach>
+			</if>
+			<if test="status != null">
+				and online_status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<!--通过主键修改数据-->
+	<update id="updateEleById">
+		update t_electricity_cabinet
+		<set>
+			<if test="name != null and name != ''">
+				name = #{name},
+			</if>
+			<if test="address != null and address != ''">
+				address = #{address},
+			</if>
+			<if test="longitude != null">
+				longitude = #{longitude},
+			</if>
+			<if test="latitude != null">
+				latitude = #{latitude},
+			</if>
+			<if test="productKey != null and productKey != ''">
+				product_key = #{productKey},
+			</if>
+			<if test="deviceName != null and deviceName != ''">
+				device_name = #{deviceName},
+			</if>
+			<if test="deviceSecret != null and deviceSecret != ''">
+				device_secret = #{deviceSecret},
+			</if>
+			<if test="usableStatus != null">
+				usable_status = #{usableStatus},
+			</if>
+			<if test="onlineStatus != null">
+				online_status = #{onlineStatus},
+			</if>
+			<if test="modelId != null">
+				model_id = #{modelId},
+			</if>
+			<if test="version != null and version != ''">
+				version = #{version},
+			</if>
+			<if test="fullyCharged != null">
+				fully_charged = #{fullyCharged},
+			</if>
+			<if test="servicePhone != null and servicePhone != ''">
+				service_phone = #{servicePhone},
+			</if>
+			<if test="businessTime != null and businessTime != ''">
+				business_time = #{businessTime},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="delFlag != null">
+				del_flag = #{delFlag},
+			</if>
+			<if test="storeId != null">
+				store_id = #{storeId},
+			</if>
+			<if test="sn != null and sn != ''">
+				sn = #{sn},
+			</if>
+		</set>
+		where id = #{id} and tenant_id = #{tenantId}
+	</update>
 
     <select id="queryName" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select id,name from t_electricity_cabinet

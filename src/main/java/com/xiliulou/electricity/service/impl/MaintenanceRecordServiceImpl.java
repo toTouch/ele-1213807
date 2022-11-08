@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceRecord;
+import com.xiliulou.electricity.entity.OldCard;
 import com.xiliulou.electricity.mapper.MaintenanceRecordMapper;
 import com.xiliulou.electricity.query.MaintenanceRecordHandleQuery;
 import com.xiliulou.electricity.query.MaintenanceRecordListQuery;
@@ -67,8 +69,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
      * @return 实例对象
      */
     @Override
-    public MaintenanceRecord queryByIdFromDB(Long id) {
-        return this.maintenanceRecordMapper.selectById(id);
+    public MaintenanceRecord queryByIdFromDB(Long id,Integer tenantId) {
+        return this.maintenanceRecordMapper.selectOne(new LambdaQueryWrapper<MaintenanceRecord>().eq(MaintenanceRecord::getId,id).eq(MaintenanceRecord::getTenantId,tenantId));
     }
 
 
@@ -170,7 +172,10 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
 
     @Override
     public Triple<Boolean, String, Object> handleMaintenanceRecord(MaintenanceRecordHandleQuery maintenanceRecordHandleQuery) {
-        MaintenanceRecord maintenanceRecord = queryByIdFromDB(maintenanceRecordHandleQuery.getId());
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        MaintenanceRecord maintenanceRecord = queryByIdFromDB(maintenanceRecordHandleQuery.getId(),tenantId);
         if (Objects.isNull(maintenanceRecord)) {
             return Triple.of(false, "ELECTRICITY.0097", "没有此故障记录");
         }

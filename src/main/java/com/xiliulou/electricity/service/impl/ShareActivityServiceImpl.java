@@ -266,6 +266,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
+		
+		if(!Objects.equals(shareActivity.getTenantId(),TenantContextHolder.getTenantId())){
+			return R.ok();
+		}
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);

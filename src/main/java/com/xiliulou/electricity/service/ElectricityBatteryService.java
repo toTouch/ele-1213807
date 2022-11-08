@@ -39,8 +39,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId);
 
-    Integer updateBatteryById(ElectricityBattery electricityBattery);
-
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
@@ -83,4 +81,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
     
     List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
+    
+    boolean checkBatteryIsExchange(String batteryName, Double fullyCharged);
 }

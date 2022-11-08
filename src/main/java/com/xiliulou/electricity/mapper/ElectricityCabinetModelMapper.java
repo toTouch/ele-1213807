@@ -24,4 +24,6 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
     List<ElectricityCabinetModel> queryList(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 	Integer queryCount(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
+
+	int update(ElectricityCabinetModel electricityCabinetModel);
 }

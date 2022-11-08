@@ -22,7 +22,7 @@ public interface BankCardService extends IService<BankCard> {
 
     R queryCount(BankCardQuery bankCardQuery);
 
-    R unBindByWeb(Integer id);
+    R unBindByWeb(Integer id,Integer tenantId);
 
 	BankCard queryByUidAndDel(Long uid);
 

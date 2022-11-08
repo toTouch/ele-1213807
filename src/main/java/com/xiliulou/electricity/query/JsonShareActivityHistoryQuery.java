@@ -19,6 +19,7 @@ public class JsonShareActivityHistoryQuery {
     private Long offset;
     private Long uid;
     private Integer activityId;
+    private Integer tenantId;
 
 
 

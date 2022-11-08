@@ -15,5 +15,6 @@ public class EleCabinetCoreDataQuery {
     private Integer id;
     private Long size;
     private Long offset;
+    private Integer tenantId;
 
 }

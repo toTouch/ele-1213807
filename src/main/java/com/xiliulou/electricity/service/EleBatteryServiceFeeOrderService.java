@@ -50,7 +50,7 @@ public interface EleBatteryServiceFeeOrderService {
      * @param status
      * @return
      */
-    R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status);
+    R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status,Integer tenantId);
 
     R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery);
 
