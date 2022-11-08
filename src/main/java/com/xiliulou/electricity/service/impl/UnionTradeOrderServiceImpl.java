@@ -101,6 +101,20 @@ public class UnionTradeOrderServiceImpl extends
         electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
         electricityTradeOrderService.insert(electricityTradeOrder);
 
+        ElectricityTradeOrder electricityTradeOrderForInsurance = new ElectricityTradeOrder();
+        electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(),String.class).get(1));
+        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
+        electricityTradeOrder.setClientId(ip);
+        electricityTradeOrder.setCreateTime(System.currentTimeMillis());
+        electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrder.setOrderType(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderType(),Integer.class).get(1));
+        electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
+        electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(),BigDecimal.class).get(1));
+        electricityTradeOrder.setUid(unionPayOrder.getUid());
+        electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
+        electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
+        electricityTradeOrderService.insert(electricityTradeOrderForInsurance);
+
 
         //支付参数
         WechatV3OrderQuery wechatV3OrderQuery = new WechatV3OrderQuery();
