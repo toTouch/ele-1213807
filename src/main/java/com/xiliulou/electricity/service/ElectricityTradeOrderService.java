@@ -46,4 +46,6 @@ public interface ElectricityTradeOrderService {
 
 
     ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
+
+    void insert(ElectricityTradeOrder electricityTradeOrder);
 }

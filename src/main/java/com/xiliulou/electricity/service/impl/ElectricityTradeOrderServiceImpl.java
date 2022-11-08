@@ -812,6 +812,11 @@ public class ElectricityTradeOrderServiceImpl extends
         return baseMapper.selectTradeOrderByOrderId(orderId);
     }
 
+    @Override
+    public void insert(ElectricityTradeOrder electricityTradeOrder) {
+        baseMapper.insert(electricityTradeOrder);
+    }
+
     private void handleSplitAccount(ElectricityMemberCardOrder electricityMemberCardOrder) {
         //加盟商分账
         Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityMemberCardOrder.getFranchiseeId());

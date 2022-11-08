@@ -107,10 +107,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         String tradeOrderNo = null;
 
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
-        if (Objects.nonNull(electricityTradeOrder)) {
-            tenantId = electricityTradeOrder.getTenantId();
-            tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
-        }
         if (Objects.isNull(electricityTradeOrder)) {
             UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
             if (Objects.isNull(unionTradeOrder) || JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class).size() == 0) {

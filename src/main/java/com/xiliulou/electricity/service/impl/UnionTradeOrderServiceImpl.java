@@ -66,6 +66,8 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
 
+    @Autowired
+    ElectricityTradeOrderService electricityTradeOrderService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -84,6 +86,20 @@ public class UnionTradeOrderServiceImpl extends
         unionTradeOrder.setUid(unionPayOrder.getUid());
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
         baseMapper.insert(unionTradeOrder);
+
+        ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+        electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(),String.class).get(0));
+        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
+        electricityTradeOrder.setClientId(ip);
+        electricityTradeOrder.setCreateTime(System.currentTimeMillis());
+        electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrder.setOrderType(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderType(),Integer.class).get(0));
+        electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
+        electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(),BigDecimal.class).get(0));
+        electricityTradeOrder.setUid(unionPayOrder.getUid());
+        electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
+        electricityTradeOrderService.insert(electricityTradeOrder);
+
 
         //支付参数
         WechatV3OrderQuery wechatV3OrderQuery = new WechatV3OrderQuery();
