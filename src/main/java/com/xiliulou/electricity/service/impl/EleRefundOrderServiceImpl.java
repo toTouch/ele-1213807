@@ -107,16 +107,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         String tradeOrderNo = null;
 
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
-        tenantId = electricityTradeOrder.getTenantId();
-        tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+        if (Objects.nonNull(electricityTradeOrder)) {
+            tenantId = electricityTradeOrder.getTenantId();
+            tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+        }
         if (Objects.isNull(electricityTradeOrder)) {
             UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
-            tenantId = unionTradeOrder.getTenantId();
-            tradeOrderNo = unionTradeOrder.getTradeOrderNo();
             if (Objects.isNull(unionTradeOrder) || JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class).size() == 0) {
                 log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
                 throw new CustomBusinessException("未找到交易订单!");
             }
+            tenantId = unionTradeOrder.getTenantId();
+            tradeOrderNo = unionTradeOrder.getTradeOrderNo();
         }
 
         //退款
