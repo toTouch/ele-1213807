@@ -250,4 +250,9 @@ public class UnionTradeOrderServiceImpl extends
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
         return Pair.of(result, null);
     }
+
+    @Override
+    public UnionTradeOrder selectTradeOrderByOrderId(String orderId) {
+        return baseMapper.selectTradeOrderByOrderId(orderId);
+    }
 }
