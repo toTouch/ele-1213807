@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -189,6 +190,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
+                .cardModel(ElectricityMemberCardOrder.BATTERY_MEMBER_CARD)
                 .franchiseeIds(franchiseeIds).build();
         electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
     }
