@@ -749,9 +749,6 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //用户
         UserInfo userInfo = userInfoService.selectUserByUid(insuranceOrder.getUid());
-
-        System.out.println("保险回调用户-=============="+userInfo);
-
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", insuranceOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
@@ -779,9 +776,6 @@ public class ElectricityTradeOrderServiceImpl extends
         updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-        System.out.println("保险用户=------------========================"+insuranceUserInfo);
-
         if (Objects.isNull(insuranceUserInfo)) {
             updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
             insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);

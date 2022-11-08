@@ -83,6 +83,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+        if (Objects.isNull(insuranceUserInfo)) {
+            return null;
+        }
 
         redisService.saveWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, insuranceUserInfo);
         return insuranceUserInfo;
