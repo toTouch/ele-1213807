@@ -1131,7 +1131,149 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
 
-//        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), oldFranchiseeUserInfo.getCardId())) {
+        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), oldFranchiseeUserInfo.getCardId())) {
+            //套餐订单
+            ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+            electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
+            electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
+            electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
+            electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+            electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
+            electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
+            electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
+            electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
+            electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
+            electricityMemberCardOrder.setUserName(userInfo.getUserName());
+//            electricityMemberCardOrder.setValidDays(memberCardOrderAddAndUpdate.getValidDays());
+            electricityMemberCardOrder.setValidDays(0);
+            electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
+            electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
+            electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
+            electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+            electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
+
+            //计算套餐剩余天数
+            if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
+                Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
+                electricityMemberCardOrder.setValidDays(validDays.intValue());
+            }
+
+            baseMapper.insert(electricityMemberCardOrder);
+        }
+
+        //用户
+        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+        Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
+//        Long memberCardExpireTime = System.currentTimeMillis() +  memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
+        Long memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
+
+//        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
+//            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
+//        }
+        Long now = System.currentTimeMillis();
+        if (memberCardExpireTime < now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
+            remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
+            if (memberCardExpireTime <= now) {
+                memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
+            } else {
+                memberCardExpireTime = System.currentTimeMillis();
+            }
+        }
+
+        franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+        franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
+        franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
+        franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
+        franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+        franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
+        franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
+        franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+
+
+        franchiseeUserInfoService.updateMemberCardExpire(franchiseeUserInfoUpdate);
+
+        Double oldCardDay = 0.0;
+        if (oldFranchiseeUserInfo.getMemberCardExpireTime() - now > 0) {
+            oldCardDay = Math.ceil((oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
+        }
+        Long oldMaxUseCount = null;
+        if (Objects.nonNull(memberCardOrderAddAndUpdate.getMaxUseCount())) {
+            oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
+        }
+
+        Double carDayTemp = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
+
+        //生成后台操作记录
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.MEMBER_CARD_EXPIRE_CONTENT)
+                .operateUid(user.getUid())
+                .uid(memberCardOrderAddAndUpdate.getUid())
+                .name(user.getUsername())
+                .oldValidDays(oldCardDay.intValue())
+                .newValidDays(carDayTemp.intValue())
+                .oldMaxUseCount(oldMaxUseCount)
+                .newMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount())
+                .tenantId(TenantContextHolder.getTenantId())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        return R.ok();
+    }
+
+    @Override
+    public R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
+        if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && memberCardOrderAddAndUpdate.getValidDays() > 65535) {
+            log.error("admin editUserMemberCard ERROR! not found user ");
+            return R.fail("100029", "输入的天数过大");
+        }
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("admin editUserMemberCard ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(memberCardOrderAddAndUpdate.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("admin editUserMemberCard ERROR! not found user! uid={}", memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        if (Objects.isNull(oldFranchiseeUserInfo) || !Objects.equals(oldFranchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("admin editUserMemberCard ERROR! not found user! uid={}", memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //判断是否缴纳押金
+        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+                || Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
+            log.error("admin editUserMemberCard ERROR! not pay deposit! uid={} ", memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardOrderAddAndUpdate.getMemberCardId());
+        if (Objects.isNull(electricityMemberCard) || !Objects.equals(electricityMemberCard.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("admin editUserMemberCard ERROR ,NOT FOUND MEMBER_CARD BY ID={},uid={}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
+        }
+        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
+            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0088", "月卡已禁用!");
+        }
+
+        if (ObjectUtil.equal(FranchiseeUserInfo.MEMBER_CARD_DISABLE, oldFranchiseeUserInfo.getMemberCardDisableStatus())) {
+            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+            return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
+        }
+
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -1160,7 +1302,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         baseMapper.insert(electricityMemberCardOrder);
-//        }
 
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();

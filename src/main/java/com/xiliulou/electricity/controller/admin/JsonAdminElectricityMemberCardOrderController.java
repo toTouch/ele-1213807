@@ -214,6 +214,16 @@ public class JsonAdminElectricityMemberCardOrderController {
     }
 
     /**
+     * 续费用户套餐
+     *
+     * @return
+     */
+    @PutMapping(value = "/admin/electricityMemberCard/renewalUserMemberCard")
+    public R renewalUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
+        return electricityMemberCardOrderService.renewalUserMemberCard(memberCardOrderAddAndUpdate);
+    }
+
+    /**
      * 暂停用户套餐
      *
      * @param usableStatus
