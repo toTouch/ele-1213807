@@ -104,9 +104,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //第三方订单号
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
+        String tradeOrderNo = null;
         if (Objects.isNull(electricityTradeOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
             throw new CustomBusinessException("未找到交易订单!");
+        }
+        tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+
+        if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
+            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
+            if (Objects.nonNull(unionTradeOrder)) {
+                tradeOrderNo = unionTradeOrder.getTradeOrderNo();
+            }
         }
 
         //退款
@@ -115,7 +124,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         wechatV3RefundQuery.setTotal(refundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundQuery.setReason("退款");
-        wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        wechatV3RefundQuery.setOrderId(tradeOrderNo);
         wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setCurrency("CNY");
         wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());

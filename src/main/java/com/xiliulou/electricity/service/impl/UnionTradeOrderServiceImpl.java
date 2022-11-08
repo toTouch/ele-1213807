@@ -98,6 +98,7 @@ public class UnionTradeOrderServiceImpl extends
         electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(),BigDecimal.class).get(0));
         electricityTradeOrder.setUid(unionPayOrder.getUid());
         electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
+        electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
         electricityTradeOrderService.insert(electricityTradeOrder);
 
 
@@ -270,5 +271,10 @@ public class UnionTradeOrderServiceImpl extends
     @Override
     public UnionTradeOrder selectTradeOrderByOrderId(String orderId) {
         return baseMapper.selectTradeOrderByOrderId(orderId);
+    }
+
+    @Override
+    public UnionTradeOrder selectTradeOrderById(Long id) {
+        return baseMapper.selectById(id);
     }
 }

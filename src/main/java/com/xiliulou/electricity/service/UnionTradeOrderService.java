@@ -24,4 +24,6 @@ public interface UnionTradeOrderService {
 
     UnionTradeOrder selectTradeOrderByOrderId(String orderId);
 
+    UnionTradeOrder selectTradeOrderById(Long id);
+
 }
