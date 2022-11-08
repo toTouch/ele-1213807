@@ -748,9 +748,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
             eleIdList = userTypeService.getEleIdListByUserType(user);
@@ -984,9 +984,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                     && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
-                UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+                UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
                 if (Objects.isNull(userTypeService)) {
-                    log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                    log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                     return R.fail("ELECTRICITY.0066", "用户权限不足");
                 }
                 //查询绑定的换电柜
@@ -1010,9 +1010,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                     && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
-                UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+                UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
                 if (Objects.isNull(userTypeService)) {
-                    log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                    log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                     return R.fail("ELECTRICITY.0066", "用户权限不足");
                 }
 

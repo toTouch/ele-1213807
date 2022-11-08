@@ -656,9 +656,9 @@ public class JsonAdminElectricityCabinetController {
         List<Integer> eleIdList = null;
         List<Long> franchiseeIds = null;
         if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
             eleIdList = userTypeService.getEleIdListByDataType(user);
@@ -726,9 +726,9 @@ public class JsonAdminElectricityCabinetController {
         List<Integer> eleIdList = null;
         List<Long> franchiseeIds = null;
         if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
             eleIdList = userTypeService.getEleIdListByDataType(user);
