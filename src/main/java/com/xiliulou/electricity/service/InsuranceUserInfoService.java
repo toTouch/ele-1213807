@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 
 import java.util.List;
 
@@ -27,5 +28,7 @@ public interface InsuranceUserInfoService {
     Integer insert(InsuranceUserInfo insuranceUserInfo);
 
     Integer update(InsuranceUserInfo insuranceUserInfo);
+
+    InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId);
 
 }

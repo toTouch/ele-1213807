@@ -58,7 +58,7 @@ public class JsonAdminInsuranceUserInfoController {
         }
 
 
-        return R.ok(insuranceUserInfoService.queryByUid(uid, tenantId));
+        return R.ok(insuranceUserInfoService.queryByUidAndTenantId(uid, tenantId));
     }
 
 
@@ -69,7 +69,7 @@ public class JsonAdminInsuranceUserInfoController {
      * @return
      */
     @PutMapping(value = "/admin/insuranceUserInfo/insuranceStatus")
-    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer insuranceStatus){
+    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("insuranceStatus") Integer insuranceStatus){
         return insuranceUserInfoService.updateInsuranceStatus(uid,insuranceStatus);
     }
 

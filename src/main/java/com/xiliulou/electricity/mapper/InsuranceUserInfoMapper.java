@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -16,5 +17,7 @@ import java.util.List;
 public interface InsuranceUserInfoMapper extends BaseMapper<InsuranceUserInfo> {
 
     int update(InsuranceUserInfo insuranceUserInfo);
+
+    InsuranceUserInfoVo queryByUidAndTenantId(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 
 }

@@ -147,7 +147,7 @@ public class UserBatteryInfoVO {
     /**
      * 是否购买不保险
      */
-    private Integer isUseInsurance;
+    private Integer isUse;
 
     /**
      * 保险过期时间

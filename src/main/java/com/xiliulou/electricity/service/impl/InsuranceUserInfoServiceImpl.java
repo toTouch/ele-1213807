@@ -8,11 +8,13 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
+import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +44,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     @Autowired
     RedisService redisService;
 
+    @Autowired
+    CityService cityService;
+
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
-        return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId,tenantId)
+        return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId, tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
     }
 
     @Override
-    public InsuranceUserInfo queryByUid(Long uid,Integer tenantId) {
-        return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId,tenantId)
+    public InsuranceUserInfo queryByUid(Long uid, Integer tenantId) {
+        return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId, tenantId)
                 .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
     }
 
@@ -65,7 +70,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        InsuranceUserInfo updateInsuranceUserInfo =new InsuranceUserInfo();
+        InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setIsUse(insuranceStatus);
         updateInsuranceUserInfo.setUid(uid);
         updateInsuranceUserInfo.setTenantId(tenantId);
@@ -99,5 +104,19 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     @Override
     public Integer update(InsuranceUserInfo insuranceUserInfo) {
         return insuranceUserInfoMapper.update(insuranceUserInfo);
+    }
+
+    @Override
+    public InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId) {
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoMapper.queryByUidAndTenantId(uid, tenantId);
+
+        if (Objects.nonNull(insuranceUserInfoVo)) {
+            //获取城市名称
+            City city = cityService.queryByIdFromDB(insuranceUserInfoVo.getCid());
+            if (Objects.nonNull(city)) {
+                insuranceUserInfoVo.setCityName(city.getName());
+            }
+        }
+        return insuranceUserInfoVo;
     }
 }

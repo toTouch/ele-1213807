@@ -262,7 +262,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (Objects.nonNull(item.getUid())) {
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(),userInfoQuery.getTenantId());
                     if (Objects.nonNull(insuranceUserInfo)) {
-                        item.setIsUseInsurance(insuranceUserInfo.getIsUse());
+                        item.setIsUse(insuranceUserInfo.getIsUse());
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
                     }
                 }
