@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
@@ -898,7 +899,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, RentBatteryOrderExcelVO.class).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
+            EasyExcel.write(outputStream, RentBatteryOrderExcelVO.class).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
             return;
         } catch (IOException e) {
             log.error("导出报表失败！", e);
