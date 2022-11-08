@@ -775,10 +775,10 @@ public class ElectricityTradeOrderServiceImpl extends
             updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
             updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
             updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
+            updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.isNull(insuranceUserInfo)) {
-                updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
                 insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
             } else {
                 insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
