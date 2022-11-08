@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.entity;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,12 +16,14 @@ import java.math.BigDecimal;
 public class UnionPayOrder {
     //支付金额
     private BigDecimal payAmount;
-   //
+    //
     private Long uid;
     //
     private String jsonOrderId;
     //订单类型
     private String jsonOrderType;
+
+    private String jsonSingleFee;
     //额外参数
     private String attach;
     //

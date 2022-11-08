@@ -234,11 +234,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
         orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
 
+        List<BigDecimal> allPayAmount=new ArrayList<>();
+        allPayAmount.add(depositPayAmount);
+        allPayAmount.add(franchiseeInsurance.getPremium());
+
         //调起支付
         try {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder()
                     .jsonOrderId(JsonUtil.toJson(orderList))
                     .jsonOrderType(JsonUtil.toJson(orderTypeList))
+                    .jsonSingleFee(JsonUtil.toJson(allPayAmount))
                     .payAmount(depositPayAmount.add(franchiseeInsurance.getPremium()))
                     .tenantId(tenantId)
                     .attach(UnionTradeOrder.ATTACH_UNION_INSURANCE_AND_DEPOSIT)

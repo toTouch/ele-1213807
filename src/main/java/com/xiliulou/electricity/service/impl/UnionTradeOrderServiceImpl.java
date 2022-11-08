@@ -73,6 +73,7 @@ public class UnionTradeOrderServiceImpl extends
         String ip = request.getRemoteAddr();
         UnionTradeOrder unionTradeOrder = new UnionTradeOrder();
         unionTradeOrder.setJsonOrderId(unionPayOrder.getJsonOrderId());
+        unionTradeOrder.setJsonSingleFee(unionPayOrder.getJsonSingleFee());
         unionTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()).substring(2) + unionPayOrder.getUid() + RandomUtil.randomNumbers(6));
         unionTradeOrder.setClientId(ip);
         unionTradeOrder.setCreateTime(System.currentTimeMillis());
