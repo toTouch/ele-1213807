@@ -256,7 +256,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
                 eleLockFlag = Boolean.FALSE;
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
-                return R.fail("100211", "用户套餐已暂停");
+                return R.fail("100241", "当前套餐暂停中，请先启用套餐");
             }
 
             //已绑定电池
