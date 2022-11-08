@@ -84,7 +84,7 @@ public class JsonAdminElectricityCabinetOrderController {
 //        }
 
         List<Integer> eleIdList = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
@@ -198,7 +198,7 @@ public class JsonAdminElectricityCabinetOrderController {
 //        }
 
         List<Integer> eleIdList = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
