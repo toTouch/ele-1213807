@@ -10,9 +10,6 @@
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
             </if>
-            <if test="cid != null">
-                cid = #{cid},
-            </if>
             <if test="premium != null">
                 premium = #{premium},
             </if>
