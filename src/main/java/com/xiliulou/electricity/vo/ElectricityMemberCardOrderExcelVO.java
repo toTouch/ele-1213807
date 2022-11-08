@@ -26,7 +26,7 @@ public class ElectricityMemberCardOrderExcelVO {
 	@ExcelProperty("套餐名称")
 	private String memberCardName;
 	@ExcelProperty("套餐次数")
-	private Long maxUseCount;
+	private String maxUseCount;
 	@ExcelProperty("有效天数")
 	private Integer validDays;
 	@ExcelProperty("状态")

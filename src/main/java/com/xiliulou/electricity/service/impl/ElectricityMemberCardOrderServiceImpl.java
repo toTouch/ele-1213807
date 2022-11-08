@@ -649,13 +649,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setPhone(electricityMemberCardOrders.get(i).getPhone());
             excelVo.setFranchiseeName(electricityMemberCardOrders.get(i).getFranchiseeName());
             excelVo.setMemberCardName(electricityMemberCardOrders.get(i).getCardName());
-            excelVo.setMaxUseCount(electricityMemberCardOrders.get(i).getMaxUseCount());
+            excelVo.setMaxUseCount(Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(),-1) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));
             excelVo.setValidDays(electricityMemberCardOrders.get(i).getValidDays());
             excelVo.setStatus(Objects.equals(electricityMemberCardOrders.get(i).getStatus(),ElectricityMemberCardOrder.STATUS_SUCCESS)?"已支付":"未支付");
             excelVo.setPayAmount(electricityMemberCardOrders.get(i).getPayAmount());
             excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(),ElectricityMemberCardOrder.ONLINE_PAYMENT)?"线上支付":"线下支付");
-            excelVo.setBeginningTime(
-                    DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
+            excelVo.setBeginningTime(DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
         
             electricityMemberCardOrderExcelVOS.add(excelVo);
         }
