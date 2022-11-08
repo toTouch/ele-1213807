@@ -296,6 +296,11 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId));
     }
 
+    @Override
+    public void insert(InsuranceOrder insuranceOrder) {
+        insuranceOrderMapper.insert(insuranceOrder);
+    }
+
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(0,6) + uid +

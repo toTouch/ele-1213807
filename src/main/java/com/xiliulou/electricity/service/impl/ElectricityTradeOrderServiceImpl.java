@@ -763,24 +763,26 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
-        updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
-        updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
-        updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
-        updateOrAddInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
-        updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
-        updateOrAddInsuranceUserInfo.setInsuranceExpireTime(franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
-        updateOrAddInsuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
-        updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
-        updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
-        updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
+        if (Objects.equals(insuranceOrderStatus,InsuranceOrder.STATUS_SUCCESS)) {
+            InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
+            updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
+            updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+            updateOrAddInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+            updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
+            updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
+            updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
+            updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
 
-        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(insuranceUserInfo)) {
-            updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
-            insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
-        } else {
-            insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(insuranceUserInfo)) {
+                updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
+                insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
+            } else {
+                insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
+            }
         }
 
         //交易订单

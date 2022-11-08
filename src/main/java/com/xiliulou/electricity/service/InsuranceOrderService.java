@@ -29,4 +29,6 @@ public interface InsuranceOrderService {
     Integer updateOrderStatusById(InsuranceOrder insuranceOrder);
 
     R queryInsurance(Long franchiseeId);
+
+    void insert(InsuranceOrder insuranceOrder);
 }

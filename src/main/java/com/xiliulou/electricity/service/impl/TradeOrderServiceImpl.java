@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FaqMapper;
 import com.xiliulou.electricity.query.FaqQuery;
@@ -11,6 +13,8 @@ import com.xiliulou.electricity.query.UnionTradeOrderAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -21,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,6 +58,15 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
+
+    @Autowired
+    EleDepositOrderService eleDepositOrderService;
+
+    @Autowired
+    InsuranceOrderService insuranceOrderService;
+
+    @Autowired
+    UnionTradeOrderService unionTradeOrderService;
 
     @Override
     public R createOrder(UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request) {
@@ -117,10 +131,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        BigDecimal payAmount = null;
+        BigDecimal depositPayAmount = null;
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            payAmount = franchisee.getBatteryDeposit();
+            depositPayAmount = franchisee.getBatteryDeposit();
         }
 
         //型号押金计算
@@ -139,14 +153,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
             for (Map map : modelBatteryDepositList) {
                 if ((double) (map.get("model")) - unionTradeOrderAdd.getModel() < 1 && (double) (map.get("model")) - unionTradeOrderAdd.getModel() >= 0) {
-                    payAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
+                    depositPayAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
                     break;
                 }
             }
 
         }
 
-        if (Objects.isNull(payAmount)) {
+        if (Objects.isNull(depositPayAmount)) {
             log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{}", unionTradeOrderAdd.getFranchiseeId());
             return R.fail("ELECTRICITY.00110", "未找到押金");
         }
@@ -168,6 +182,88 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return R.fail("100305", "未找到保险");
         }
 
-        return null;
+        //生成押金独立订单
+        String orderId = generateDepositOrderId(user.getUid());
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+                .orderId(orderId)
+                .uid(user.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(depositPayAmount)
+                .status(EleDepositOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenantId)
+                .franchiseeId(franchisee.getId())
+                .payType(EleDepositOrder.ONLINE_PAYMENT)
+                .storeId(null)
+                .modelType(franchisee.getModelType()).build();
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(unionTradeOrderAdd.getModel()));
+        }
+        eleDepositOrderService.insert(eleDepositOrder);
+
+        //生成保险独立订单
+        String insuranceOrderId = generateInsuranceOrderId(user.getUid());
+        InsuranceOrder insuranceOrder = InsuranceOrder.builder()
+                .insuranceId(franchiseeInsurance.getId())
+                .insuranceName(franchiseeInsurance.getName())
+                .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
+                .orderId(insuranceOrderId)
+                .cid(franchiseeInsurance.getCid())
+                .franchiseeId(franchisee.getId())
+                .isUse(InsuranceOrder.NOT_USE)
+                .payAmount(franchiseeInsurance.getPremium())
+                .payType(InsuranceOrder.ONLINE_PAY_TYPE)
+                .phone(userInfo.getPhone())
+                .status(InsuranceOrder.STATUS_INIT)
+                .tenantId(tenantId)
+                .uid(user.getUid())
+                .userName(userInfo.getName())
+                .validDays(franchiseeInsurance.getValidDays())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        insuranceOrderService.insert(insuranceOrder);
+
+        List<String> orderList=new ArrayList<>();
+        orderList.add(orderId);
+        orderList.add(insuranceOrderId);
+
+        List<Integer> orderTypeList=new ArrayList<>();
+        orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+        orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
+
+        //调起支付
+        try {
+            UnionPayOrder unionPayOrder = UnionPayOrder.builder()
+                    .jsonOrderId(JsonUtil.toJson(orderList))
+                    .jsonOrderType(JsonUtil.toJson(orderTypeList))
+                    .payAmount(depositPayAmount.add(franchiseeInsurance.getPremium()))
+                    .tenantId(tenantId)
+                    .attach(UnionTradeOrder.ATTACH_UNION_INSURANCE_AND_DEPOSIT)
+                    .description("保险押金联合收费")
+                    .uid(user.getUid()).build();
+            WechatJsapiOrderResultDTO resultDTO =
+                    unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return R.ok(resultDTO);
+        } catch (WechatPayException e) {
+            log.error("CREATE UNION_INSURANCE_DEPOSIT_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+        }
+
+        return R.fail("ELECTRICITY.0099", "下单失败");
+    }
+
+
+
+
+    private String generateDepositOrderId(Long uid) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
+                RandomUtil.randomNumbers(6);
+    }
+
+    private String generateInsuranceOrderId(Long uid) {
+        return String.valueOf(System.currentTimeMillis()).substring(0,6) + uid +
+                RandomUtil.randomNumbers(4);
     }
 }

@@ -30,5 +30,14 @@ public class UnionPayOrder {
      */
     private String description;
 
+    //押金支付
+    public static final Integer ORDER_TYPE_DEPOSIT = 1;
+
+    //保险支付
+    public static final Integer ORDER_TYPE_INSURANCE = 2;
+
+
+    //保险附加信息
+    public static final String ATTACH_INSURANCE_UNION_DEPOSIT = "insurance_union_deposit";
 
 }

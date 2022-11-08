@@ -8,9 +8,9 @@ import org.apache.ibatis.annotations.Select;
 
 public interface UnionTradeOrderMapper extends BaseMapper<UnionTradeOrder> {
 
-    @Select("SELECT *  FROM t_electricity_trade_order WHERE trade_order_no =#{outTradeNo} ")
-    ElectricityTradeOrder selectTradeOrderByTradeOrderNo(@Param("outTradeNo") String outTradeNo);
+    @Select("SELECT *  FROM t_union_trade_order WHERE trade_order_no =#{outTradeNo} ")
+    UnionTradeOrder selectTradeOrderByTradeOrderNo(@Param("outTradeNo") String outTradeNo);
 
-    @Select("SELECT *  FROM t_electricity_trade_order WHERE order_no =#{orderId} ")
-    ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
+    @Select("SELECT *  FROM t_union_trade_order WHERE order_no =#{orderId} ")
+    UnionTradeOrder selectTradeOrderByOrderId(String orderId);
 }
