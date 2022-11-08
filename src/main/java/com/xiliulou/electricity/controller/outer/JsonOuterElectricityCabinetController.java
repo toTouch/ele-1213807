@@ -182,5 +182,15 @@ public class JsonOuterElectricityCabinetController {
     }
 
 
+    /**
+     * 网络检测检测
+     * @return
+     */
+    @PostMapping("/outer/heartbeat/check")
+    public R queryHeartbeat(){
+        return R.ok();
+    }
+
+
 
 }
