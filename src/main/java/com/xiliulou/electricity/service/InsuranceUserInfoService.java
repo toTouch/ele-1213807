@@ -31,4 +31,6 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId);
 
+    R queryUserInsurance();
+
 }
