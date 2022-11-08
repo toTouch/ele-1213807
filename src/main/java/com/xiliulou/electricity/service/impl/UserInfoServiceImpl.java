@@ -261,6 +261,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(),item.getTenantId());
+
+                    System.out.println("用户保险信息========================"+insuranceUserInfo);
+
                     if (Objects.nonNull(insuranceUserInfo)) {
                         item.setIsUseInsurance(insuranceUserInfo.getIsUse());
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
