@@ -17,6 +17,8 @@ public class ElectricityMemberCardOrderExcelVO {
 	private Integer id;
 	@ExcelProperty("订单编号")
 	private String orderId;
+	@ExcelProperty("姓名")
+	private String name;
 	@ExcelProperty("手机号")
 	private String phone;
 	@ExcelProperty("加盟商")
@@ -31,6 +33,8 @@ public class ElectricityMemberCardOrderExcelVO {
 	private String status;
 	@ExcelProperty("支付金额")
 	private BigDecimal payAmount;
+	@ExcelProperty("交易方式")
+	private String payType;
 	@ExcelProperty("购买时间")
 	private String beginningTime;
 
