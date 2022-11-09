@@ -14,6 +14,9 @@
 					#{id}
 				</foreach>
 			</if>
+			<if test="franchiseeId != null">
+				and franchisee_id = #{franchiseeId}
+			</if>
 			<if test="startTime != null">
 				and create_time &gt;= #{startTime}
 			</if>
@@ -39,6 +42,9 @@
 				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
 					#{id}
 				</foreach>
+			</if>
+			<if test="franchiseeId != null">
+				and franchisee_id = #{franchiseeId}
 			</if>
 			<if test="startTime != null">
 				and create_time &gt;= #{startTime}

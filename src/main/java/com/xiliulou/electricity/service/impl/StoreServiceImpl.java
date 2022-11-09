@@ -108,7 +108,7 @@ public class StoreServiceImpl implements StoreService {
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
 
-        adminUserQuery.setUserType(User.TYPE_USER_STORE);
+        adminUserQuery.setUserType(User.TYPE_USER_NORMAL_ADMIN);
         adminUserQuery.setDataType(User.DATA_TYPE_STORE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商
@@ -486,7 +486,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public List<Long> queryStoreIdByFranchiseeId(Long id) {
+    public List<Long> queryStoreIdByFranchiseeId(List<Long> id) {
         return storeMapper.queryStoreIdByFranchiseeId(id);
     }
 
@@ -504,7 +504,12 @@ public class StoreServiceImpl implements StoreService {
 
         return Triple.of(true, "", stores);
     }
-
+    
+    @Override
+    public List<Store> selectByStoreIds(List<Long> storeIds) {
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getId, storeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+    
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

@@ -96,9 +96,23 @@ public class JsonAdminUserInfoController extends BaseController {
 
         return userInfoService.queryList(userInfoQuery);
     }
-
-
-    //租电池订单导出报表
+    
+    
+    /**
+     * 会员列表导出
+     * @param name
+     * @param phone
+     * @param nowElectricityBatterySn
+     * @param authStatus
+     * @param serviceStatus
+     * @param franchiseeId
+     * @param uid
+     * @param memberCardId
+     * @param cardName
+     * @param memberCardExpireTimeBegin
+     * @param memberCardExpireTimeEnd
+     * @param response
+     */
     @GetMapping("/admin/userInfo/exportExcel")
     public void exportExcel(@RequestParam(value = "name", required = false) String name,
         @RequestParam(value = "phone", required = false) String phone,
@@ -112,29 +126,15 @@ public class JsonAdminUserInfoController extends BaseController {
         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
         @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
 
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             throw new CustomBusinessException("查不到订单");
         }
-
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-            && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                throw new CustomBusinessException("查不到订单");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (ObjectUtil.isEmpty(eleIdList)) {
-                throw new CustomBusinessException("查不到订单");
-            }
+    
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
+            log.info("USER TYPE ERROR! not found operate service! userType={}", user.getType());
+            throw new CustomBusinessException("用户权限不足");
         }
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
@@ -149,7 +149,7 @@ public class JsonAdminUserInfoController extends BaseController {
             .uid(uid)
             .memberCardId(memberCardId)
             .cardName(cardName)
-            .tenantId(tenantId).build();
+            .tenantId(TenantContextHolder.getTenantId()).build();
 
         userInfoService.exportExcel(userInfoQuery, response);
     }

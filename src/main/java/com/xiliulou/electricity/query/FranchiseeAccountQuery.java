@@ -23,6 +23,8 @@ public class FranchiseeAccountQuery {
 	private Long offset;
 
 	private Integer tenantId;
+	
+	private Long franchiseeId;
 
 	private List<Long> franchiseeIds;
 

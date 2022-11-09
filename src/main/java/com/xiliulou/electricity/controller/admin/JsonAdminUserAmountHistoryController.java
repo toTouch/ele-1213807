@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.query.UserAmountHistoryQuery;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -44,6 +45,7 @@ public class JsonAdminUserAmountHistoryController {
         UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
                 .offset(offset)
                 .size(size)
+                .type(UserAmountHistory.TYPE_SHARE_ACTIVITY)
                 .tenantId(TenantContextHolder.getTenantId())
                 .uid(uid).build();
         return userAmountHistoryService.queryList(userAmountHistoryQuery);
@@ -57,6 +59,7 @@ public class JsonAdminUserAmountHistoryController {
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
 
         UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
+                .type(UserAmountHistory.TYPE_SHARE_ACTIVITY)
                 .tenantId(TenantContextHolder.getTenantId())
                 .uid(uid).build();
         return userAmountHistoryService.queryCount(userAmountHistoryQuery);

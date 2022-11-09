@@ -92,7 +92,12 @@ public class JsonAdminFranchiseeController extends BaseController {
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
-        }else if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            if(CollectionUtils.isEmpty(ids)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
 
@@ -114,7 +119,27 @@ public class JsonAdminFranchiseeController extends BaseController {
      */
     @GetMapping(value = "/admin/franchisee/selectListByTenantId")
     public R selectFranchiseeList(){
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> ids = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            ids = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(ids)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
+        franchiseeQuery.setIds(ids);
         franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnTripleResult(franchiseeService.selectListByQuery(franchiseeQuery));
     }
@@ -131,11 +156,16 @@ public class JsonAdminFranchiseeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
-        }else if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            if(CollectionUtils.isEmpty(ids)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
 
@@ -193,12 +223,14 @@ public class JsonAdminFranchiseeController extends BaseController {
         }
     
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-        } else if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
 
@@ -208,6 +240,7 @@ public class JsonAdminFranchiseeController extends BaseController {
                 .startTime(startTime)
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds).build();
 
         return franchiseeAmountService.queryList(franchiseeAccountQuery);
@@ -229,17 +262,22 @@ public class JsonAdminFranchiseeController extends BaseController {
         }
 
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
                 .startTime(startTime)
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds).build();
 
         return franchiseeAmountService.queryCount(franchiseeAccountQuery);
@@ -273,7 +311,7 @@ public class JsonAdminFranchiseeController extends BaseController {
 				.startTime(startTime)
 				.endTime(endTime)
 				.tenantId(tenantId)
-				.franchiseeIds(Arrays.asList(franchiseeId)).build();
+				.franchiseeId(franchiseeId).build();
 
         return franchiseeSplitAccountHistoryService.queryList(franchiseeAccountQuery);
     }
@@ -296,7 +334,7 @@ public class JsonAdminFranchiseeController extends BaseController {
 				.endTime(endTime)
 				.orderId(orderId)
 				.tenantId(tenantId)
-				.franchiseeIds(Arrays.asList(franchiseeId)).build();
+				.franchiseeId(franchiseeId).build();
 
         return franchiseeSplitAccountHistoryService.queryCount(franchiseeAccountQuery);
     }

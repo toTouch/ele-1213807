@@ -109,7 +109,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         BeanUtil.copyProperties(franchiseeAddAndUpdate, adminUserQuery);
 
         //admin用户新增加盟商
-        adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+        adminUserQuery.setUserType(User.TYPE_USER_NORMAL_ADMIN);
         adminUserQuery.setDataType(User.DATA_TYPE_FRANCHISEE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商

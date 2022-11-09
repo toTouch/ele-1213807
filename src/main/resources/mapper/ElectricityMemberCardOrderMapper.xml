@@ -33,9 +33,9 @@
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
-        <if test="query.franchiseeId != null">
+        <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
-            <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>
@@ -76,9 +76,9 @@
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
-        <if test="query.franchiseeId != null">
+        <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
-            <foreach collection="query.franchiseeId" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>
@@ -186,8 +186,14 @@
         <if test="todayStartTime != null">
             and create_time &gt;=#{todayStartTime}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id =#{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id =#{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 
@@ -199,8 +205,14 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id =#{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id =#{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}
@@ -221,8 +233,14 @@
         <if test="todayStartTime != null">
             and create_time &gt;=#{todayStartTime}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id =#{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id =#{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 
@@ -233,8 +251,14 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id =#{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id =#{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}
@@ -252,8 +276,14 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id =#{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id =#{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}

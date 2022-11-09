@@ -23,6 +23,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
@@ -568,6 +569,59 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
+//        memberCardOrderQuery.setOffset(0L);
+//        memberCardOrderQuery.setSize(2000L);
+//        List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
+//        if (ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
+//            throw new CustomBusinessException("查不到订单");
+//        }
+//
+//        List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        int index = 0;
+//        for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
+//            index++;
+//            ElectricityMemberCardOrderExcelVO excelVo = new ElectricityMemberCardOrderExcelVO();
+//            excelVo.setId(index);
+//            excelVo.setOrderId(electricityMemberCardOrderVO.getOrderId());
+//            excelVo.setPhone(electricityMemberCardOrderVO.getPhone());
+//            excelVo.setPayAmount(electricityMemberCardOrderVO.getPayAmount());
+//
+//            if (Objects.nonNull(electricityMemberCardOrderVO.getUpdateTime())) {
+//                excelVo.setBeginningTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime())));
+//                if (Objects.nonNull(electricityMemberCardOrderVO.getValidDays())) {
+//                    excelVo.setEndTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime() + electricityMemberCardOrderVO.getValidDays() * 24 * 60 * 60 * 1000)));
+//                }
+//            }
+//
+//            if (Objects.isNull(electricityMemberCardOrderVO.getMemberCardType())) {
+//                excelVo.setMemberCardType("");
+//            }
+//            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_MONTH_CARD)) {
+//                excelVo.setMemberCardType("月卡");
+//            }
+//            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_SEASON_CARD)) {
+//                excelVo.setMemberCardType("季卡");
+//            }
+//            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_YEAR_CARD)) {
+//                excelVo.setMemberCardType("年卡");
+//            }
+//
+//            if (Objects.isNull(electricityMemberCardOrderVO.getStatus())) {
+//                excelVo.setStatus("");
+//            }
+//            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_INIT)) {
+//                excelVo.setStatus("未支付");
+//            }
+//            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+//                excelVo.setStatus("支付成功");
+//            }
+//            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_FAIL)) {
+//                excelVo.setStatus("支付失败");
+//            }
+//
+//            electricityMemberCardOrderExcelVOS.add(excelVo);
+//        }
     
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrders= Lists.newArrayList();
         Long offset = 0L;
@@ -575,18 +629,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             memberCardOrderQuery.setOffset(offset);
             memberCardOrderQuery.setSize(offset += EXPORT_LIMIT);
             List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
-    
+        
             if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
                 break;
             }
-            
+        
             electricityMemberCardOrders.addAll(electricityMemberCardOrderVOList);
         }
-        
+    
         if (ObjectUtil.isEmpty(electricityMemberCardOrders)) {
             throw new CustomBusinessException("订单不存在！");
         }
-        
+    
         List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
         for (int i = 0; i < electricityMemberCardOrders.size(); i++) {
             ElectricityMemberCardOrderExcelVO excelVo = new ElectricityMemberCardOrderExcelVO();
@@ -596,13 +650,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setPhone(electricityMemberCardOrders.get(i).getPhone());
             excelVo.setFranchiseeName(electricityMemberCardOrders.get(i).getFranchiseeName());
             excelVo.setMemberCardName(electricityMemberCardOrders.get(i).getCardName());
-            excelVo.setMaxUseCount(electricityMemberCardOrders.get(i).getMaxUseCount());
+            excelVo.setMaxUseCount(Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(),-1L) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));
             excelVo.setValidDays(electricityMemberCardOrders.get(i).getValidDays());
             excelVo.setStatus(Objects.equals(electricityMemberCardOrders.get(i).getStatus(),ElectricityMemberCardOrder.STATUS_SUCCESS)?"已支付":"未支付");
             excelVo.setPayAmount(electricityMemberCardOrders.get(i).getPayAmount());
             excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(),ElectricityMemberCardOrder.ONLINE_PAYMENT)?"线上支付":"线下支付");
             excelVo.setBeginningTime(DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
-    
+        
             electricityMemberCardOrderExcelVOS.add(excelVo);
         }
 
@@ -613,7 +667,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, ElectricityMemberCardOrderExcelVO.class).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
+            EasyExcel.write(outputStream, ElectricityMemberCardOrderExcelVO.class).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
             return;
         } catch (IOException e) {
             log.error("导出报表失败！", e);
@@ -1346,27 +1400,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
+    public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId) {
         return Optional.ofNullable(baseMapper.queryBatteryMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
+    public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId) {
         return Optional.ofNullable(baseMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+    public List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return baseMapper.queryBatteryMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
     @Override
-    public List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+    public List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return baseMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
     @Override
-    public BigDecimal querySumMemberCardTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+    public BigDecimal querySumMemberCardTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return baseMapper.querySumMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 

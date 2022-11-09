@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: hrp
  * @Date: 2022/08/16 10:02
@@ -30,6 +32,6 @@ public class BatteryServiceFeeQuery {
     private Integer tenantId;
 
     private String sn;
-
-
+    
+    private List<Long> franchiseeIds;
 }

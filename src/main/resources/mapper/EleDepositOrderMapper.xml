@@ -275,8 +275,14 @@
         <if test="depositType != null">
             and deposit_type = #{depositType}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id = #{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 
@@ -290,8 +296,14 @@
         <if test="depositType != null">
             and deposit_type = #{depositType}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id = #{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}
@@ -309,8 +321,14 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        <if test="franchiseeId != null">
-            and franchisee_id = #{franchiseeId}
+<!--        <if test="franchiseeId != null">-->
+<!--            and franchisee_id = #{franchiseeId}-->
+<!--        </if>-->
+        <if test="franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}

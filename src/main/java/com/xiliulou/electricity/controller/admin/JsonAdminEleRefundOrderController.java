@@ -12,6 +12,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -74,31 +76,19 @@ public class JsonAdminEleRefundOrderController {
         }
 
         List<Long> storeIds = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//        	refundOrderType= EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER;
-//            Store store = storeService.queryByUid(user.getUid());
-//            if (Objects.nonNull(store)) {
-//                storeId = store.getId();
-//            }
-//        }
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-
-
+        
         List<Long> franchiseeIds = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            //加盟商
-//            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//            if (Objects.nonNull(franchisee)) {
-//                franchiseeId = franchisee.getId();
-//            }
-//        }
-
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
@@ -135,17 +125,21 @@ public class JsonAdminEleRefundOrderController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            refundOrderType = EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER;
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-
-
+    
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()

@@ -137,7 +137,7 @@ public class TenantServiceImpl implements TenantService {
         adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
         adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
         adminUserQuery.setGender(User.GENDER_MALE);
-        adminUserQuery.setUserType(User.TYPE_USER_OPERATE);
+        adminUserQuery.setUserType(User.TYPE_USER_NORMAL_ADMIN);
         adminUserQuery.setLang(User.DEFAULT_LANG);
         adminUserQuery.setCityId(null);
         adminUserQuery.setProvinceId(null);

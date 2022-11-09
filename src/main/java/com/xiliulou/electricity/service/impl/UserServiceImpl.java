@@ -227,7 +227,7 @@ public class UserServiceImpl implements UserService {
                 .name(adminUserQuery.getName())
                 .phone(adminUserQuery.getPhone())
                 .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
+                .userType(User.TYPE_USER_NORMAL_ADMIN)
                 .dataType(adminUserQuery.getDataType())
                 .salt("")
                 .city(Objects.nonNull(city) ? city.getName() : null)
@@ -237,35 +237,35 @@ public class UserServiceImpl implements UserService {
                 .build();
         User insert = insert(user);
 
-        //默认值
-        Long roleId = adminUserQuery.getUserType().longValue() + 1;
-        //运营商
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
-            Long role = roleService.queryByName("OPERATE_USER", tenantId);
-            if (Objects.nonNull(role)) {
-                roleId = role;
-            }
-        }
-
-        //加盟商
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
-            Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
-            if (Objects.nonNull(role)) {
-                roleId = role;
-            }
-        }
-
-        //门店
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
-            Long role = roleService.queryByName("STORE_USER", tenantId);
-            if (Objects.nonNull(role)) {
-                roleId = role;
-            }
-        }
+//        //默认值
+//        Long roleId = adminUserQuery.getUserType().longValue() + 1;
+//        //运营商
+//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
+//            Long role = roleService.queryByName("OPERATE_USER", tenantId);
+//            if (Objects.nonNull(role)) {
+//                roleId = role;
+//            }
+//        }
+//
+//        //加盟商
+//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+//            Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
+//            if (Objects.nonNull(role)) {
+//                roleId = role;
+//            }
+//        }
+//
+//        //门店
+//        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
+//            Long role = roleService.queryByName("STORE_USER", tenantId);
+//            if (Objects.nonNull(role)) {
+//                roleId = role;
+//            }
+//        }
 
         //设置角色
         UserRole userRole = new UserRole();
-        userRole.setRoleId(roleId);
+        userRole.setRoleId(adminUserQuery.getRoleId());
         userRole.setUid(insert.getUid());
         userRoleService.insert(userRole);
 
@@ -349,7 +349,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
-            User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE, user.getTenantId());
+            User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_NORMAL_ADMIN, user.getTenantId());
             if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
                 return Pair.of(false, "手机号已存在！无法修改!");
             }
@@ -383,7 +383,8 @@ public class UserServiceImpl implements UserService {
                 .name(adminUserQuery.getName())
                 .phone(adminUserQuery.getPhone())
                 .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
+//                .userType(adminUserQuery.getUserType())
+                .dataType(adminUserQuery.getDataType())
                 .lockFlag(adminUserQuery.getLock())
                 .build();
 
@@ -413,13 +414,15 @@ public class UserServiceImpl implements UserService {
                 userInfo.setUid(oldUserInfo.getUid());
                 userInfoService.update(userInfo);
             }
-        }
-
-        userDataScopeService.deleteByUid(user.getUid());
-        //更新用户数据范围
-        if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
-            List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
-            userDataScopeService.batchInsert(userDataScopes);
+    
+            
+            //更新用户数据范围
+            if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
+                userDataScopeService.deleteByUid(user.getUid());
+                
+                List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
+                userDataScopeService.batchInsert(userDataScopes);
+            }
         }
 
         return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
@@ -447,12 +450,12 @@ public class UserServiceImpl implements UserService {
         //不让删除租户
         if (Objects.equals(SecurityUtils.getUid(), 1)
                 && !Objects.equals(user.getTenantId(), 1)
-                && Objects.equals(user.getUserType(), User.TYPE_USER_OPERATE)) {
+                && Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             return Pair.of(false, "非法操作");
         }
 
         //加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
-        if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
             Integer count = franchiseeService.queryByFanchisee(user.getUid());
             if (count > 0) {
@@ -461,7 +464,7 @@ public class UserServiceImpl implements UserService {
         }
 
         //门店用户删除查看是否绑定换电柜
-        if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
 
             Integer count = storeService.queryCountByFranchisee(user.getUid());
             if (count > 0) {
@@ -474,13 +477,15 @@ public class UserServiceImpl implements UserService {
             redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
 
             //删除加盟商或门店
-            if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
                 franchiseeService.deleteByUid(uid);
             }
-            if (Objects.equals(user.getUserType(), User.TYPE_USER_STORE)) {
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
                 storeService.deleteByUid(uid);
             }
-
+            
+            //删除用户数据可见范围
+            userDataScopeService.deleteByUid(user.getUid());
         }
         return Pair.of(true, null);
     }
@@ -655,7 +660,7 @@ public class UserServiceImpl implements UserService {
 
 
         //运营商
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
+        if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_OPERATE)) {
             Long role = roleService.queryByName("OPERATE_USER", tenantId);
             if (Objects.nonNull(role)) {
                 roleId = role;
@@ -664,7 +669,7 @@ public class UserServiceImpl implements UserService {
         }
 
         //加盟商
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
             if (Objects.nonNull(role)) {
                 roleId = role;
@@ -672,7 +677,7 @@ public class UserServiceImpl implements UserService {
         }
 
         //门店
-        if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
+        if (Objects.equals(adminUserQuery.getDataType(), User.DATA_TYPE_STORE)) {
             Long role = roleService.queryByName("STORE_USER", tenantId);
             if (Objects.nonNull(role)) {
                 roleId = role;
@@ -725,7 +730,7 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "USER.0001", "登陆用户不合法，无法操作！");
         }
 
-        if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.TYPE_USER_OPERATE, userInfo.getType())) {
+        if (!Objects.equals(User.TYPE_USER_SUPER, userInfo.getType()) && !Objects.equals(User.DATA_TYPE_OPERATE, userInfo.getDataType())) {
             return Triple.of(false, "AUTH.0002", "没有权限操作！");
         }
 

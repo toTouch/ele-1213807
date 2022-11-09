@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -78,16 +79,19 @@ public class JsonAdminEleDepositOrderController {
         //隔离门店租车数据
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
+            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;//不知道这个是搞啥的  原来这样写的
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin()
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -151,16 +155,19 @@ public class JsonAdminEleDepositOrderController {
 //        }
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
+            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;//不知道这个是搞啥的  原来这样写的
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin()
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)
-                && !Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -201,11 +208,19 @@ public class JsonAdminEleDepositOrderController {
             throw new CustomBusinessException("查不到订单");
         }
     
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                throw new CustomBusinessException("订单不存在！");
+            }
+        }
+    
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                throw new CustomBusinessException("查不到订单");
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                throw new CustomBusinessException("订单不存在！");
             }
         }
         
@@ -216,6 +231,8 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
+                .storeIds(storeIds)
+                .depositType(EleDepositOrder.ELECTRICITY_DEPOSIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);

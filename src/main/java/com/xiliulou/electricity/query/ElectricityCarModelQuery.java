@@ -22,6 +22,7 @@ public class ElectricityCarModelQuery {
     private String name;
     private List<Long> franchiseeIds;
     private Long franchiseeId;
+    private Long storeId;
     private List<Long> storeIds;
     private Long uid;
 

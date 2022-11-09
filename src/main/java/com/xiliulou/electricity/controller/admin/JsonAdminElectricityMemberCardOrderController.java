@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -70,9 +71,13 @@ public class JsonAdminElectricityMemberCardOrderController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
@@ -118,9 +123,13 @@ public class JsonAdminElectricityMemberCardOrderController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
         List<Long> franchiseeIds = null;
-        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
@@ -157,29 +166,23 @@ public class JsonAdminElectricityMemberCardOrderController {
 			throw new CustomBusinessException("搜索日期不能大于31天");
 		}
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		//用户
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			throw new CustomBusinessException("查不到订单");
-		}
-//TODO
-//		if(!SecurityUtils.isAdmin() || !Objects.equals(user.getType(), User.TYPE_USER_OPERATE) || !Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
-//			throw new CustomBusinessException("没有权限！");
-//		}
-
-		Long franchiseeId=null;
-		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			//加盟商
-			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-			if (Objects.isNull(franchisee)) {
-				throw new CustomBusinessException("查不到订单");
-			}
-			franchiseeId=franchisee.getId();
-		}
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            throw new CustomBusinessException("查不到订单");
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            throw new CustomBusinessException("订单不存在");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                throw new CustomBusinessException("订单不存在！");
+            }
+        }
 
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
                 .phone(phone)
@@ -188,7 +191,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(franchiseeId).build();
+                .cardModel(ElectricityMemberCardOrder.BATTERY_MEMBER_CARD)
+                .franchiseeIds(franchiseeIds).build();
         electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
     }
 

@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 public class RentBatteryOrderExcelVO {
 	@ExcelProperty("序号")
     private Integer id;
+	@ExcelProperty("换电柜")
+	private String eleName;
 	@ExcelProperty("仓门编号")
 	private Integer cellNo;
 	@ExcelProperty("订单编号")

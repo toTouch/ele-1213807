@@ -82,7 +82,7 @@ public class JsonAdminElectricityCabinetTrafficController {
 
         //限制解锁权限
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-            && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
             log.info("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
             throw new CustomBusinessException("用户权限不足");
         }

@@ -9,7 +9,7 @@
     </sql>
 
     <!--列表查询-->
-    <select id="selectListByQuery" resultType="com.xiliulou.electricity.entity.Franchisee">
+    <select id="selectListByQuery" resultType="com.xiliulou.electricity.entity.Store">
         <include refid="selectStore"/>
         <where>
             <if test="id != null">
@@ -17,6 +17,18 @@
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIdList!=null and storeIdList!=''">
+                and id in
+                <foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
@@ -49,6 +61,12 @@
         </if>
         <if test="query.franchiseeId != null">
             and franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.uid != null">
             and uid = #{query.uid}
@@ -90,6 +108,12 @@
         </if>
         <if test="query.franchiseeId != null">
             and franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.franchiseeIds != null">
+            and franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.uid != null">
             and uid = #{query.uid}
@@ -232,7 +256,12 @@
     </select>
 
     <select id="queryStoreIdByFranchiseeId" resultType="long">
-        select id from t_store where del_flag=0 and franchisee_id=#{franchiseeId}
+        select id from t_store where del_flag=0
+        and franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        
     </select>
     
     <!--通过主键修改数据-->

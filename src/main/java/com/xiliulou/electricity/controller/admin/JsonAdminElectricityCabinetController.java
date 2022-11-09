@@ -21,6 +21,8 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.HomepageBatteryVo;
+import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +80,8 @@ public class JsonAdminElectricityCabinetController {
     
     @Autowired
     EleOnlineLogService eleOnlineLogService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
     
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -394,7 +398,7 @@ public class JsonAdminElectricityCabinetController {
         }
 
         //限制解锁权限
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
             log.info("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -625,24 +629,47 @@ public class JsonAdminElectricityCabinetController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        List<Integer> eleIdList = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+//            if (Objects.isNull(userTypeService)) {
+//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+//                return R.fail("ELECTRICITY.0066", "用户权限不足");
+//            }
+//            eleIdList = userTypeService.getEleIdListByUserType(user);
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-        
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
+    
         List<Integer> eleIdList = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            franchisee = franchiseeService.queryByUid(user.getUid());
-        }
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if(org.springframework.util.CollectionUtils.isEmpty(eleIdList)){
+                return R.ok(new HomepageElectricityExchangeFrequencyVo());
+            }
+        
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(new HomepageElectricityExchangeFrequencyVo());
+            }
         }
         
         //租户
@@ -656,7 +683,7 @@ public class JsonAdminElectricityCabinetController {
                 .electricityCabinetId(electricityCabinetId)
                 .tenantId(tenantId)
                 .eleIdList(eleIdList)
-                .franchiseeId(franchiseeId).build();
+                .franchiseeIds(franchiseeIds).build();
         
         return electricityCabinetService.homepageExchangeOrderFrequency(homepageElectricityExchangeFrequencyQuery);
     }
@@ -674,22 +701,45 @@ public class JsonAdminElectricityCabinetController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            return R.fail("AUTH.0002", "没有权限操作！");
+//        }
+//
+//        Long franchiseeId = null;
+//        Franchisee franchisee = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+//            if (Objects.isNull(userTypeService)) {
+//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+//                return R.fail("ELECTRICITY.0066", "用户权限不足");
+//            }
+//            franchisee = franchiseeService.queryByUid(user.getUid());
+//        }
+//        if (Objects.nonNull(franchisee)) {
+//            franchiseeId = franchisee.getId();
+//        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-
-        Long franchiseeId = null;
-        Franchisee franchisee = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+    
+        List<Integer> eleIdList = null;
+        List<Long> franchiseeIds = null;
+        if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            franchisee = franchiseeService.queryByUid(user.getUid());
-        }
-        if (Objects.nonNull(franchisee)) {
-            franchiseeId = franchisee.getId();
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if(org.springframework.util.CollectionUtils.isEmpty(eleIdList)){
+                return R.ok(new HomepageBatteryVo());
+            }
+        
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.springframework.util.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(new HomepageBatteryVo());
+            }
         }
         
         //租户
@@ -701,7 +751,7 @@ public class JsonAdminElectricityCabinetController {
                 .endTime(endTime)
                 .offset(offset)
                 .size(size)
-                .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(tenantId).build();
 
         return electricityCabinetService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
@@ -782,11 +832,32 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
     public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value="id", required = false) Integer id,
                                                         @RequestParam(value="name", required = false) String name){
-
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+        
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
                 .name(name)
                 .tenantId(TenantContextHolder.getTenantId())
+                .eleIdList(eleIdList)
                 .build();
 
         return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
