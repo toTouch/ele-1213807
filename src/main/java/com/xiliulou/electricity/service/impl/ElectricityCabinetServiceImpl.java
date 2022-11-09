@@ -1518,6 +1518,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Franchisee franchisee= (Franchisee) franchiseeService.queryByCabinetId(electricityCabinet.getId(),electricityCabinet.getTenantId()).getData();
         if (Objects.nonNull(franchisee)){
             electricityCabinetVO.setFranchiseeName(franchisee.getName());
+            electricityCabinetVO.setFranchiseeId(franchisee.getId());
         }
 
         return R.ok(electricityCabinetVO);
