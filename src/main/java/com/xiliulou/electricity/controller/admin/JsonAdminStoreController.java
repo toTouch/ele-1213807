@@ -96,9 +96,18 @@ public class JsonAdminStoreController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
+    
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds=userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
 
         storeQuery.setTenantId(TenantContextHolder.getTenantId());
         storeQuery.setFranchiseeIds(franchiseeIds);
+        storeQuery.setStoreIdList(storeIds);
 
         return returnTripleResult(storeService.selectListByQuery(storeQuery));
     }
