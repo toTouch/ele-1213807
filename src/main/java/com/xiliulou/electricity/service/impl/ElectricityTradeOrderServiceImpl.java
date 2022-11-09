@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.*;
@@ -815,6 +816,18 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     public void insert(ElectricityTradeOrder electricityTradeOrder) {
         baseMapper.insert(electricityTradeOrder);
+    }
+
+    @Override
+    public List<ElectricityTradeOrder> selectTradeOrderByParentOrderId(Long parentOrderId) {
+        return baseMapper.selectList(Wrappers.<ElectricityTradeOrder>lambdaQuery()
+                .eq(ElectricityTradeOrder::getParentOrderId, parentOrderId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer updateElectricityTradeOrderById(ElectricityTradeOrder electricityTradeOrder) {
+        return baseMapper.updateById(electricityTradeOrder);
     }
 
     private void handleSplitAccount(ElectricityMemberCardOrder electricityMemberCardOrder) {

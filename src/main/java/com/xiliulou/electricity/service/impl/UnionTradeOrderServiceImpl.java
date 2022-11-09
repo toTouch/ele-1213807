@@ -87,34 +87,22 @@ public class UnionTradeOrderServiceImpl extends
         unionTradeOrder.setTenantId(unionPayOrder.getTenantId());
         baseMapper.insert(unionTradeOrder);
 
-        ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
-        electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(),String.class).get(0));
-        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
-        electricityTradeOrder.setClientId(ip);
-        electricityTradeOrder.setCreateTime(System.currentTimeMillis());
-        electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
-        electricityTradeOrder.setOrderType(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderType(),Integer.class).get(0));
-        electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
-        electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(),BigDecimal.class).get(0));
-        electricityTradeOrder.setUid(unionPayOrder.getUid());
-        electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
-        electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
-        electricityTradeOrderService.insert(electricityTradeOrder);
-
-        ElectricityTradeOrder electricityTradeOrderForInsurance = new ElectricityTradeOrder();
-        electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(),String.class).get(1));
-        electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
-        electricityTradeOrder.setClientId(ip);
-        electricityTradeOrder.setCreateTime(System.currentTimeMillis());
-        electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
-        electricityTradeOrder.setOrderType(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderType(),Integer.class).get(1));
-        electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
-        electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(),BigDecimal.class).get(1));
-        electricityTradeOrder.setUid(unionPayOrder.getUid());
-        electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
-        electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
-        electricityTradeOrderService.insert(electricityTradeOrderForInsurance);
-
+        List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
+        for (int i = 0; i <= jsonOrderList.size(); i++) {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class).get(i));
+            electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
+            electricityTradeOrder.setClientId(ip);
+            electricityTradeOrder.setCreateTime(System.currentTimeMillis());
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setOrderType(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderType(), Integer.class).get(i));
+            electricityTradeOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
+            electricityTradeOrder.setTotalFee(JsonUtil.fromJsonArray(unionPayOrder.getJsonSingleFee(), BigDecimal.class).get(i));
+            electricityTradeOrder.setUid(unionPayOrder.getUid());
+            electricityTradeOrder.setTenantId(unionPayOrder.getTenantId());
+            electricityTradeOrder.setParentOrderId(unionTradeOrder.getId());
+            electricityTradeOrderService.insert(electricityTradeOrder);
+        }
 
         //支付参数
         WechatV3OrderQuery wechatV3OrderQuery = new WechatV3OrderQuery();
@@ -133,6 +121,7 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyUnionDepositAndInsurance(WechatJsapiOrderCallBackResource callBackResource) {
 
         //回调参数
@@ -150,10 +139,16 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "交易订单已处理");
         }
 
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (Objects.isNull(electricityTradeOrderList)) {
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+
         //处理保险订单
         String jsonOrderId = unionTradeOrder.getJsonOrderId();
         List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
-        if (Objects.isNull(orderIdLIst) || orderIdLIst.size()==0){
+        if (Objects.isNull(orderIdLIst) || orderIdLIst.size() == 0) {
             log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
@@ -258,12 +253,21 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         //系统订单
-        UnionTradeOrder unionTradeOrderUpdate=new UnionTradeOrder();
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
         unionTradeOrderUpdate.setId(unionTradeOrder.getId());
         unionTradeOrderUpdate.setStatus(tradeOrderStatus);
         unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         unionTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(unionTradeOrderUpdate);
+
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
 
 
         //押金订单

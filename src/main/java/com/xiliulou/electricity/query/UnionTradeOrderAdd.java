@@ -18,7 +18,7 @@ public class UnionTradeOrderAdd {
 	private Integer insuranceId;
 
 	//保险
-	@NotNull(message = "保险不能为空!", groups = {CreateGroup.class})
+	@NotNull(message = "加盟商不能为空!", groups = {CreateGroup.class})
 	private Long franchiseeId;
 
 	private Integer model;
