@@ -53,5 +53,11 @@
             </if>
         </where>
     </select>
+    
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_coupon where id = #{id} and tenant_id = #{tenantId}
+    </delete>
 
 </mapper>

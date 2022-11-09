@@ -6,19 +6,24 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,7 +37,8 @@ import java.util.Objects;
 public class CouponServiceImpl implements CouponService {
     @Resource
     private CouponMapper couponMapper;
-
+    @Autowired
+    private UserCouponService userCouponService;
     @Autowired
     RedisService redisService;
 
@@ -194,5 +200,17 @@ public class CouponServiceImpl implements CouponService {
     public R queryCount(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryCount(couponQuery));
     }
-
+    
+    @Override
+    public Triple<Boolean, String, Object> deleteById(Long id) {
+    
+        List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
+        if(!CollectionUtils.isEmpty(userCoupons)){
+            return Triple.of(false,"","删除失败，优惠券已有用户领取未使用！");
+        }
+    
+        couponMapper.deleteById(id,TenantContextHolder.getTenantId());
+    
+        return Triple.of(true,"","删除成功！");
+    }
 }
