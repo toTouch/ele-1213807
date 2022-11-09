@@ -79,7 +79,6 @@ public class JsonAdminEleDepositOrderController {
         //隔离门店租车数据
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;//不知道这个是搞啥的  原来这样写的
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if(CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
@@ -155,7 +154,6 @@ public class JsonAdminEleDepositOrderController {
 //        }
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;//不知道这个是搞啥的  原来这样写的
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if(CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
