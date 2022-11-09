@@ -318,6 +318,26 @@
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
     </select>
+    
+    <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+        select id,name from t_electricity_cabinet
+        where del_flag=0
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="id != null">
+            and id =#{id}
+        </if>
+        <if test="name != null and '' != name">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
 
 
 	<select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">

@@ -3230,7 +3230,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R queryName(Integer tenantId, Integer id) {
         return R.ok(electricityCabinetMapper.queryName(tenantId, id));
     }
-
+    
+    @Override
+    public R selectByQuery(ElectricityCabinetQuery query) {
+        return R.ok(electricityCabinetMapper.selectByQuery(query));
+    }
+    
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));

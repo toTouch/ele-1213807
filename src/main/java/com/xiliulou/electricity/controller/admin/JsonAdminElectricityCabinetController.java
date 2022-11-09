@@ -801,11 +801,38 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     
 
     @GetMapping("/admin/electricityCabinet/queryName")
-    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
-
+    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId,
+            @RequestParam(value = "name", required = false) String name) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Integer> eleIdList = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)|| Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+        
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        ElectricityCabinetQuery query = new ElectricityCabinetQuery();
+        query.setId(eleId);
+        query.setName(name);
+        query.setEleIdList(eleIdList);
+        query.setTenantId(TenantContextHolder.getTenantId());
+        
+        
         //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityCabinetService.queryName(tenantId, eleId);
+//        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricityCabinetService.selectByQuery(query);
     }
 
     @GetMapping("/admin/electricityCabinet/superAdminQueryName")

@@ -55,5 +55,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinet> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
     List<ElectricityCabinetVO> queryName(@Param("tenantId") Integer tenantId, @Param("id") Integer id);
     
+    List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query);
+    
     List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
 }
