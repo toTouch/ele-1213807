@@ -89,7 +89,7 @@ public class UnionTradeOrderServiceImpl extends
         baseMapper.insert(unionTradeOrder);
 
         List<String> jsonOrderList = JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class);
-        for (int i = 0; i <= jsonOrderList.size(); i++) {
+        for (int i = 0; i < jsonOrderList.size(); i++) {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
             electricityTradeOrder.setOrderNo(JsonUtil.fromJsonArray(unionPayOrder.getJsonOrderId(), String.class).get(i));
             electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
