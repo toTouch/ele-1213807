@@ -253,6 +253,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0022", "未开通月卡");
             }
 
+            if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+                eleLockFlag = Boolean.FALSE;
+                log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
+                return R.fail("100241", "当前套餐暂停中，请先启用套餐");
+            }
+
             //已绑定电池
             if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
                 eleLockFlag = Boolean.FALSE;
