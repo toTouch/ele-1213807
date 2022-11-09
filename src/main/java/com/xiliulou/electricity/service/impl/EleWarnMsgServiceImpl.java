@@ -297,6 +297,8 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         } catch (Exception e) {
             log.error("ELE ERROR! export excel fail,jobId={},ex={}", reportManagement.getJobId(), e.getMessage());
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_FAIL, null));
+        }finally {
+            redisService.delete(CacheConstant.WARN_MESSAGE_EXPORT_CACHE + SecurityUtils.getUid());
         }
     }
 
@@ -332,6 +334,8 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         } catch (Exception e) {
             log.error("ELE ERROR! export excel fail,jobId={},ex={}", reportManagement.getJobId(), e.getMessage());
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_FAIL, null));
+        }finally {
+            redisService.delete(CacheConstant.WARN_MESSAGE_EXPORT_CACHE + SecurityUtils.getUid());
         }
     }
 
@@ -370,6 +374,8 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         } catch (Exception e) {
             log.error("ELE ERROR! export excel fail,jobId={},ex={}", reportManagement.getJobId(), e.getMessage());
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_FAIL, null));
+        }finally {
+            redisService.delete(CacheConstant.WARN_MESSAGE_EXPORT_CACHE + SecurityUtils.getUid());
         }
     }
 
@@ -407,6 +413,8 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         } catch (Exception e) {
             log.error("ELE ERROR! export excel fail,jobId={},ex={}", reportManagement.getJobId(), e.getMessage());
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_FAIL, null));
+        }finally {
+            redisService.delete(CacheConstant.WARN_MESSAGE_EXPORT_CACHE + SecurityUtils.getUid());
         }
     }
 
@@ -437,7 +445,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
                 break;
             }
     
-            tempList.parallelStream().forEach(item -> {
+            tempList.stream().forEach(item -> {
                 if (StringUtils.isBlank(item.getElectricityCabinetId())) {
                     return;
                 }
@@ -481,7 +489,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
                 break;
             }
     
-            tempList.parallelStream().forEach(item -> {
+            tempList.stream().forEach(item -> {
                 if (StringUtils.isBlank(item.getElectricityCabinetId())) {
                     return;
                 }
@@ -549,7 +557,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
                 break;
             }
     
-            tempList.parallelStream().forEach(item -> {
+            tempList.stream().forEach(item -> {
                 if (StringUtils.isBlank(item.getElectricityCabinetId())) {
                     return;
                 }
@@ -605,7 +613,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
                 break;
             }
     
-            tempList.parallelStream().forEach(item -> {
+            tempList.stream().forEach(item -> {
                 if (StringUtils.isBlank(item.getElectricityCabinetId())) {
                     return;
                 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
@@ -48,7 +49,7 @@ import java.util.*;
  */
 @RestController
 @Slf4j
-public class JsonAdminElectricityCabinetController {
+public class JsonAdminElectricityCabinetController extends BaseController {
     
     /**
      * 服务对象
@@ -808,7 +809,8 @@ public class JsonAdminElectricityCabinetController {
     }
 
     @GetMapping("/admin/electricityCabinet/superAdminQueryName")
-    public R superAdminQueryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
+    public R superAdminQueryName(@RequestParam(value = "eleId", required = false) Integer eleId,
+            @RequestParam(value = "name", required = false) String name) {
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -820,9 +822,13 @@ public class JsonAdminElectricityCabinetController {
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-
+        ElectricityCabinetQuery query = new ElectricityCabinetQuery();
+        query.setId(eleId);
+        query.setName(name);
+    
         //租户
-        return electricityCabinetService.superAdminQueryName(eleId);
+//        return electricityCabinetService.superAdminQueryName(eleId);
+        return R.ok(electricityCabinetService.superAdminSelectByQuery(query));
     }
 
     /**

@@ -3210,7 +3210,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(electricityCabinets);
     }
-
+    
+    @Override
+    public List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> list=electricityCabinetMapper.superAdminSelectByQuery(query);
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.EMPTY_LIST;
+        }
+        
+        return list;
+    }
+    
     @Override
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));

@@ -159,5 +159,6 @@ public interface ElectricityCabinetService {
     R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos);
     
     R checkOtaSession(String sessionId);
-
+    
+    List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
 }

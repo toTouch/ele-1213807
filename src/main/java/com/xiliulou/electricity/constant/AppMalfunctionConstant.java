@@ -337,7 +337,7 @@ public class AppMalfunctionConstant {
      */
     private static final String HARDWARE_OPERATION_FAILURE_CODE = "70001";
     
-    private static final String HARDWARE_OPERATION_FAILURE_MESSAGE = "硬件操作失败(开门，开灯，开充电器)";
+    private static final String HARDWARE_OPERATION_FAILURE_MESSAGE = "硬件操作失败";
     
     /**
      * 过温故障
@@ -396,7 +396,6 @@ public class AppMalfunctionConstant {
     private static final String BATTERY_ABNORMAL_APPEAR_CODE = "60008";
     
     private static final String BATTERY_ABNORMAL_APPEAR_MESSAGE = "电池异常出现";
-    
     
     //=================================操作类型=====================================
     
