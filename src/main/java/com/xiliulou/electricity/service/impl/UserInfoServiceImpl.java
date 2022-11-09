@@ -1195,14 +1195,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             serviceStatus = franchiseeUserInfo.getServiceStatus();
         }
 
-        //用户是否开通月卡
-        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
-            log.error("ELE ERROR! not found memberCard,uid={} ", userInfo.getUid());
-            serviceStatus = -1;
-        } else if (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis() || franchiseeUserInfo.getRemainingNumber() == 0) {
-            log.error("ELE ERROR! memberCard  is Expire,uid={} ", userInfo.getUid());
-            serviceStatus = -1;
-        }
+//        //用户是否开通月卡
+//        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+//            log.error("ELE ERROR! not found memberCard,uid={} ", userInfo.getUid());
+//            serviceStatus = -1;
+//        } else if (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis() || franchiseeUserInfo.getRemainingNumber() == 0) {
+//            log.error("ELE ERROR! memberCard  is Expire,uid={} ", userInfo.getUid());
+//            serviceStatus = -1;
+//        }
 
         return serviceStatus;
     }
