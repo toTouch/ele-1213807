@@ -21,6 +21,7 @@ import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ReportManagementService;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.UUIDUtil;
@@ -288,7 +289,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
         try {
             //生成Excel
-            EasyExcel.write(bos, EleBusinessWarnExcelVO.class).sheet("sheet").doWrite(excelVOList);
+            EasyExcel.write(bos, EleBusinessWarnExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOList);
             //上传到OSS
             Map<String, String> resultMap = uploadExcelToOSS(bos);
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_SUCCESS, resultMap.get(CommonConstant.FILE_NAME)));
@@ -323,7 +324,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
         try {
             //生成Excel
-            EasyExcel.write(bos, EleCabinetWarnExcelVO.class).sheet("sheet").doWrite(excelVOList);
+            EasyExcel.write(bos, EleCabinetWarnExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOList);
             //上传到OSS
             Map<String, String> resultMap = uploadExcelToOSS(bos);
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_SUCCESS, resultMap.get(CommonConstant.FILE_NAME)));
@@ -361,7 +362,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
         try {
             //生成Excel
-            EasyExcel.write(bos, EleCellWarnExcelVO.class).sheet("sheet").doWrite(excelVOList);
+            EasyExcel.write(bos, EleCellWarnExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOList);
             //上传到OSS
             Map<String, String> resultMap = uploadExcelToOSS(bos);
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_SUCCESS, resultMap.get(CommonConstant.FILE_NAME)));
@@ -398,7 +399,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
         try {
             //生成Excel
-            EasyExcel.write(bos, EleBatteryWarnExcelVO.class).sheet("sheet").doWrite(excelVOList);
+            EasyExcel.write(bos, EleBatteryWarnExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOList);
             //上传到OSS
             Map<String, String> resultMap = uploadExcelToOSS(bos);
             reportManagementService.update(buildReportManagementUpdate(reportManagement.getId(), ReportManagement.STATUS_SUCCESS, resultMap.get(CommonConstant.FILE_NAME)));
@@ -628,7 +629,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
      */
     private Map<String, String> uploadExcelToOSS(ByteArrayOutputStream bos) throws Exception {
         
-        String basePath="/saas/report/";
+        String basePath="saas/report/";
 
         String fileName = basePath+IdUtil.simpleUUID() + StrUtil.DOT + EXCEL_TYPE;
         String bucketName = storageConfig.getBucketName();
