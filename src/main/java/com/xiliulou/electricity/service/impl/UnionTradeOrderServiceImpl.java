@@ -16,6 +16,7 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -148,7 +149,7 @@ public class UnionTradeOrderServiceImpl extends
         //处理保险订单
         String jsonOrderId = unionTradeOrder.getJsonOrderId();
         List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
-        if (Objects.isNull(orderIdLIst) || orderIdLIst.size() == 0) {
+        if (CollectionUtils.isEmpty(orderIdLIst)) {
             log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
@@ -196,7 +197,7 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
@@ -260,6 +261,7 @@ public class UnionTradeOrderServiceImpl extends
         unionTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(unionTradeOrderUpdate);
 
+        //混合支付的子订单
         electricityTradeOrderList.parallelStream().forEach(item -> {
             ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
             electricityTradeOrder.setId(item.getId());
