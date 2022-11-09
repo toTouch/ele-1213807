@@ -551,7 +551,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             }
         
             String sql = "select electricityCabinetId,cellNo,errorMsg,errorCode,operateType,reportTime from t_warn_msg_cell where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
-            list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
+            tempList = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
            
             if (CollectionUtils.isEmpty(tempList)) {
                 break;
@@ -607,7 +607,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             }
         
             String sql = "select electricityCabinetId,batteryName,errorMsg,errorCode ,reportTime from t_warn_msg_battery where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
-            list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
+            tempList = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
             
             if (CollectionUtils.isEmpty(tempList)) {
                 break;

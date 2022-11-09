@@ -547,7 +547,7 @@ public class AppMalfunctionConstant {
             return "";
         }
         
-        return BUSINESS_ABNORMAL_MAPS.getOrDefault(String.valueOf(operateTypeCode), "");
+        return OPERATE_TYPE_MAPS.getOrDefault(String.valueOf(operateTypeCode), "");
     }
     
     
