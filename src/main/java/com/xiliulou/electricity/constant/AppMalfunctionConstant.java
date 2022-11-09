@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * app故障类型
  *
- * @author zzString
+ * @author zzlong
  * @since 2022-11-03 15:59:06
  */
 public class AppMalfunctionConstant {
@@ -397,34 +397,37 @@ public class AppMalfunctionConstant {
     
     private static final String BATTERY_ABNORMAL_APPEAR_MESSAGE = "电池异常出现";
     
+    
     //=================================操作类型=====================================
-    private static final String NON_OPERATE_code = "0";
     
-    private static final String NON_OPERATE_message = "无";
     
-    private static final String OPERATE_CELL_code = "1";
+    private static final String NON_OPERATE_CODE = "0";
     
-    private static final String OPERATE_CELL_message = "开门";
+    private static final String NON_OPERATE_MESSAGE = "无";
     
-    private static final String OPERATE_OPEN_CHARGE_code = "2";
+    private static final String OPERATE_CELL_CODE = "1";
     
-    private static final String OPERATE_OPEN_CHARGE_message = "开充电器";
+    private static final String OPERATE_CELL_MESSAGE = "开门";
     
-    private static final String OPERATE_CLOSE_CHARGE_code = "3";
+    private static final String OPERATE_OPEN_CHARGE_CODE = "2";
     
-    private static final String OPERATE_CLOSE_CHARGE_message = "关充电器";
+    private static final String OPERATE_OPEN_CHARGE_MESSAGE = "开充电器";
     
-    private static final String OPERATE_SET_CHARGE_code = "4";
+    private static final String OPERATE_CLOSE_CHARGE_CODE = "3";
     
-    private static final String OPERATE_SET_CHARGE_message = "设置充电电压";
+    private static final String OPERATE_CLOSE_CHARGE_MESSAGE = "关充电器";
     
-    private static final String OPERATE_OPEN_LIGHT_code = "5";
+    private static final String OPERATE_SET_CHARGE_CODE = "4";
     
-    private static final String OPERATE_OPEN_LIGHT_message = "开灯";
+    private static final String OPERATE_SET_CHARGE_MESSAGE = "设置充电电压";
     
-    private static final String OPERATE_CLOSE_LIGHT_code = "6";
+    private static final String OPERATE_OPEN_LIGHT_CODE = "5";
     
-    private static final String OPERATE_CLOSE_LIGHT_message = "关灯";
+    private static final String OPERATE_OPEN_LIGHT_MESSAGE = "开灯";
+    
+    private static final String OPERATE_CLOSE_LIGHT_CODE = "6";
+    
+    private static final String OPERATE_CLOSE_LIGHT_MESSAGE = "关灯";
     
     
     static {
@@ -444,7 +447,6 @@ public class AppMalfunctionConstant {
         ELE_HARDWARE_ABNORMAL_MAPS.put(READ_CORE_LOSE_PACKAGE_CODE, READ_CORE_LOSE_PACKAGE_MESSAGE);
         ELE_HARDWARE_ABNORMAL_MAPS.put(OPEN_PUMP_LOSE_PACKAGE_CODE, OPEN_PUMP_LOSE_PACKAGE_MESSAGE);
         ELE_HARDWARE_ABNORMAL_MAPS.put(CLOSE_PUMP_LOSE_PACKAGE_CODE, CLOSE_PUMP_LOSE_PACKAGE_MESSAGE);
-        ELE_HARDWARE_ABNORMAL_MAPS.put(READ_CORE_COMMAND_LOSE_PACKAGE_CODE, READ_CORE_COMMAND_LOSE_PACKAGE_MESSAGE);
         ELE_HARDWARE_ABNORMAL_MAPS.put(READ_CORE_COMMAND_LOSE_PACKAGE_CODE, READ_CORE_COMMAND_LOSE_PACKAGE_MESSAGE);
         ELE_HARDWARE_ABNORMAL_MAPS.put(READ_CORE_HARDWARE_LOSE_PACKAGE_CODE, READ_CORE_HARDWARE_LOSE_PACKAGE_MESSAGE);
         ELE_HARDWARE_ABNORMAL_MAPS.put(READ_POWER_LOSE_PACKAGE_CODE, READ_POWER_LOSE_PACKAGE_MESSAGE);
@@ -484,13 +486,13 @@ public class AppMalfunctionConstant {
         BUSINESS_ABNORMAL_MAPS.put(BATTERY_ABNORMAL_DISAPPEAR_CODE, BATTERY_ABNORMAL_DISAPPEAR_MESSAGE);
         BUSINESS_ABNORMAL_MAPS.put(BATTERY_ABNORMAL_APPEAR_CODE, BATTERY_ABNORMAL_APPEAR_MESSAGE);
         
-        OPERATE_TYPE_MAPS.put(NON_OPERATE_code, NON_OPERATE_message);
-        OPERATE_TYPE_MAPS.put(OPERATE_CELL_code, OPERATE_CELL_message);
-        OPERATE_TYPE_MAPS.put(OPERATE_OPEN_CHARGE_code, OPERATE_OPEN_CHARGE_message);
-        OPERATE_TYPE_MAPS.put(OPERATE_CLOSE_CHARGE_code, OPERATE_CLOSE_CHARGE_message);
-        OPERATE_TYPE_MAPS.put(OPERATE_SET_CHARGE_code, OPERATE_SET_CHARGE_message);
-        OPERATE_TYPE_MAPS.put(OPERATE_OPEN_LIGHT_code, OPERATE_OPEN_LIGHT_message);
-        OPERATE_TYPE_MAPS.put(OPERATE_CLOSE_LIGHT_code, OPERATE_CLOSE_LIGHT_message);
+        OPERATE_TYPE_MAPS.put(NON_OPERATE_CODE, NON_OPERATE_MESSAGE);
+        OPERATE_TYPE_MAPS.put(OPERATE_CELL_CODE, OPERATE_CELL_MESSAGE);
+        OPERATE_TYPE_MAPS.put(OPERATE_OPEN_CHARGE_CODE, OPERATE_OPEN_CHARGE_MESSAGE);
+        OPERATE_TYPE_MAPS.put(OPERATE_CLOSE_CHARGE_CODE, OPERATE_CLOSE_CHARGE_MESSAGE);
+        OPERATE_TYPE_MAPS.put(OPERATE_SET_CHARGE_CODE, OPERATE_SET_CHARGE_MESSAGE);
+        OPERATE_TYPE_MAPS.put(OPERATE_OPEN_LIGHT_CODE, OPERATE_OPEN_LIGHT_MESSAGE);
+        OPERATE_TYPE_MAPS.put(OPERATE_CLOSE_LIGHT_CODE, OPERATE_CLOSE_LIGHT_MESSAGE);
     }
     
     /**
