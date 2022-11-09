@@ -23,7 +23,7 @@ public class AutoHeadColumnWidthStyleStrategy extends AbstractColumnWidthStyleSt
         
         if (isHead) {
             int length = cell.getStringCellValue().getBytes().length;
-            writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), length * 300);
+            writeSheetHolder.getSheet().setColumnWidth(cell.getColumnIndex(), length * 400);
         }
         
     }
