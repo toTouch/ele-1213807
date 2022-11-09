@@ -1401,6 +1401,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("orderId", electricityCabinetOrder.getOrderId());
             commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());
             commandData.put("takeCellNo", electricityCabinetOrder.getNewCellNo());
+            commandData.put("uid", user.getUid());
 
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
