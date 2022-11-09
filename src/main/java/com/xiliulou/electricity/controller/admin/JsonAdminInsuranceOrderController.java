@@ -47,6 +47,7 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -89,6 +90,7 @@ public class JsonAdminInsuranceOrderController {
                 .franchiseeName(franchiseeName)
                 .tenantId(tenantId)
                 .phone(phone)
+                .status(status)
                 .userName(userName)
                 .offset(offset)
                 .size(size).build();
@@ -102,6 +104,7 @@ public class JsonAdminInsuranceOrderController {
     @GetMapping("/admin/insuranceOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -132,6 +135,7 @@ public class JsonAdminInsuranceOrderController {
                 .orderId(orderId)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .status(status)
                 .franchiseeId(franchiseeId)
                 .franchiseeName(franchiseeName)
                 .tenantId(tenantId)

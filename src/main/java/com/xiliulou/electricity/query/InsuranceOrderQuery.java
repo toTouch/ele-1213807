@@ -32,4 +32,6 @@ public class InsuranceOrderQuery {
     private Long beginTime;
 
     private Long endTime;
+
+    private Integer status;
 }
