@@ -25,4 +25,12 @@ public class UserInfoDetailVO {
      * 获取用户状态（离线换电）
      */
     private UserFrontDetectionVO userFrontDetection;
+
+    /**
+     * 是否购买套餐
+     */
+    private Integer isExistMemberCard;
+
+    public static final Integer EXIST_MEMBER_CARD = 0;
+    public static final Integer NOT_EXIST_MEMBER_CARD = 1;
 }

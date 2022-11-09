@@ -135,10 +135,23 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         List<String> result = new ArrayList<>(2);
 
         TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
+
         if(Objects.nonNull(templateConfigEntity)){
-            result.add(templateConfigEntity.getBatteryOuttimeTemplate());
-            result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryOuttimeTemplate())) {
+                result.add(templateConfigEntity.getBatteryOuttimeTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getElectricQuantityRemindTemplate())) {
+                result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getCarMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getCarMemberCardExpiringTemplate());
+            }
+            //result.add(templateConfigEntity.getMemberCardExpiringTemplate());
         }
+
         return result;
     }
 }

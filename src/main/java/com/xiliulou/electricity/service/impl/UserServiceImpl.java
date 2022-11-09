@@ -781,17 +781,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public String selectServicePhone(Integer tenantId) {
         String cachePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
-        if (StringUtils.isNotBlank(cachePhone)) {
-            return cachePhone;
-        }
+//        if (StringUtils.isNotBlank(cachePhone)) {
+//            return cachePhone;
+//        }
+//
+//        String phone = null;
+//        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
+//        if (CollectionUtils.isNotEmpty(userList)) {
+//            phone = userList.get(0).getPhone();
+//        }
 
-        String phone = null;
-        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
-        if (CollectionUtils.isNotEmpty(userList)) {
-            phone = userList.get(0).getPhone();
-        }
-
-        return phone;
+        return cachePhone;
     }
 
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {

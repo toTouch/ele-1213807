@@ -1172,6 +1172,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! not found franchiseeUserInfo,uid={}", userInfo.getUid());
             return userInfoDetailVO;
         }
+        //套餐状态
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime()<System.currentTimeMillis()){
+            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
+        }else {
+            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
+        }
+
         //服务状态
         userInfoDetailVO.setServiceStatus(getServiceStatus(userInfo,franchiseeUserInfo));
 
