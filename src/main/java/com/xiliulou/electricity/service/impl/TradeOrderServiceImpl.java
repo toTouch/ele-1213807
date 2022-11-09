@@ -128,7 +128,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(unionTradeOrderAdd.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={}", unionTradeOrderAdd.getFranchiseeId());
+            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={},uid={}", unionTradeOrderAdd.getFranchiseeId(),user.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -147,7 +147,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             //型号押金
             List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={}", unionTradeOrderAdd.getFranchiseeId());
+                log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", unionTradeOrderAdd.getFranchiseeId(),user.getUid());
                 return R.fail("ELECTRICITY.00110", "未找到押金");
             }
 
@@ -162,7 +162,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         if (Objects.isNull(depositPayAmount)) {
-            log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{}", unionTradeOrderAdd.getFranchiseeId());
+            log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{},uid={}", unionTradeOrderAdd.getFranchiseeId(),user.getUid());
             return R.fail("ELECTRICITY.00110", "未找到押金");
         }
 
@@ -170,16 +170,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(unionTradeOrderAdd.getInsuranceId());
 
         if (Objects.isNull(franchiseeInsurance)) {
-            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={}", unionTradeOrderAdd.getInsuranceId());
+            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", unionTradeOrderAdd.getInsuranceId(),user.getUid());
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={}", unionTradeOrderAdd.getInsuranceId());
+            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", unionTradeOrderAdd.getInsuranceId(),user.getUid());
             return R.fail("100306", "保险已禁用!");
         }
 
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", unionTradeOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={},uid={}", unionTradeOrderAdd.getFranchiseeId(),user.getUid());
             return R.fail("100305", "未找到保险");
         }
 

@@ -122,47 +122,47 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found user,uid:{} ", user.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //未实名认证
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! user not auth! uid:{} ", user.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR! user not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
         //
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found user! userId:{}", user.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR! not found user! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //判断是否缴纳押金
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
                 || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit! uid:{} ", user.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(insuranceOrderAdd.getFranchiseeId().longValue());
         if (Objects.isNull(franchisee)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId{}", insuranceOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", insuranceOrderAdd.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -170,16 +170,16 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrderAdd.getInsuranceId());
 
         if (Objects.isNull(franchiseeInsurance)) {
-            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID:{}", insuranceOrderAdd.getInsuranceId());
+            log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={}", insuranceOrderAdd.getInsuranceId());
             return R.fail("100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", insuranceOrderAdd.getInsuranceId());
+            log.error("CREATE INSURANCE_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={}", insuranceOrderAdd.getInsuranceId());
             return R.fail("100306", "保险已禁用!");
         }
 
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId{}", insuranceOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", insuranceOrderAdd.getFranchiseeId());
             return R.fail("100305", "未找到保险");
         }
 
@@ -272,7 +272,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
-            log.error("queryInsurance  ERROR! not found insurance！franchiseeId{}", franchiseeId);
+            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", franchiseeId);
             return R.ok();
         }
 

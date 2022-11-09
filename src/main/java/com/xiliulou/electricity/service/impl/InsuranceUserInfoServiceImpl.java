@@ -136,14 +136,14 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+            log.error("ELECTRICITY  ERROR! not found user! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //用户是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -152,7 +152,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+            log.error("payDeposit  ERROR! not found user! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
