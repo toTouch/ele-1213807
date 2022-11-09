@@ -21,6 +21,7 @@ import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +118,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
             if (Objects.nonNull(unionTradeOrder)) {
                 tradeOrderNo = unionTradeOrder.getTradeOrderNo();
-                total=unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
+                total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
             }
         }
 
@@ -155,14 +156,28 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByTradeOrderNo(outTradeNo);
+
+        String orderNo = null;
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", outTradeNo);
-            return Pair.of(false, "未找到交易订单!");
+            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(outTradeNo);
+            if (Objects.isNull(unionTradeOrder)) {
+                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", outTradeNo);
+                return Pair.of(false, "未找到交易订单!");
+            }
+            String jsonOrderId = unionTradeOrder.getJsonOrderId();
+            List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+            if (CollectionUtils.isEmpty(orderIdLIst)) {
+                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", outTradeNo);
+                return Pair.of(false, "未找到交易订单");
+            }
+            orderNo = orderIdLIst.get(0);
+        } else {
+            orderNo = electricityTradeOrder.getOrderNo();
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 
