@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -232,6 +233,14 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		
 		if(!Objects.equals(role.getTenantId(), TenantContextHolder.getTenantId())){
 			return Pair.of(true, "");
+		}
+		
+		//校验前端传过来的权限是否包含  /**
+		if(!CollectionUtils.isEmpty(pids)){
+			List<Long> list = pids.stream().filter(item -> item <= 4).collect(Collectors.toList());
+			if(CollectionUtils.isEmpty(list)){
+				return Pair.of(true, "");
+			}
 		}
 		
 		//删除旧的
