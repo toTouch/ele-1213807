@@ -238,21 +238,21 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		//校验前端传过来的权限是否包含  /**
 		if(!CollectionUtils.isEmpty(pids)){
 			List<Long> list = pids.stream().filter(item -> item <= 4).collect(Collectors.toList());
-			if(CollectionUtils.isEmpty(list)){
+			if(!CollectionUtils.isEmpty(list)){
 				return Pair.of(true, "");
 			}
 		}
 		
 		//删除旧的
 		rolePermissionService.deleteByRoleId(roleId);
-log.error("pids:{}",pids);
+
 		List<PermissionResource> permissionResources = queryListByIds(pids);
 		if (!DataUtil.collectionIsUsable(permissionResources)) {
 			return Pair.of(false, "权限查询不到！");
 		}
 
 		HashSet<Long> result = Sets.newHashSet();
-log.error("permissionResources:{}",JsonUtil.toJson(permissionResources));
+
 		permissionResources.parallelStream().forEach(e -> {
 			RolePermission rolePermission = RolePermission.builder()
 					.pId(e.getId())
