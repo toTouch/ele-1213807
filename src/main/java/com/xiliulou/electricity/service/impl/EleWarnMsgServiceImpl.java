@@ -520,11 +520,11 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         while (true) {
             List<EleCellWarnMsgVo> tempList = Lists.newArrayList();
             
-            if (Objects.nonNull(warnMsgQuery.getCellNo()) && Objects.nonNull(warnMsgQuery.getOperateType())) {
+            if (Objects.nonNull(warnMsgQuery.getElectricityCabinetId()) && Objects.nonNull(warnMsgQuery.getCellNo()) && Objects.nonNull(warnMsgQuery.getOperateType())) {
                 String sql = "select electricityCabinetId,cellNo,errorMsg,errorCode,operateType,reportTime from t_warn_msg_cell where  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, String.valueOf(warnMsgQuery.getElectricityCabinetId()), warnMsgQuery.getCellNo(), warnMsgQuery.getOperateType(), dateMap.get(BEGIN_TIME),
                         dateMap.get(END_TIME), index, index += EXPORT_LIMIT);
-            }else if (Objects.nonNull(warnMsgQuery.getCellNo()) && Objects.isNull(warnMsgQuery.getOperateType())) {
+            }else if (Objects.nonNull(warnMsgQuery.getElectricityCabinetId()) && Objects.nonNull(warnMsgQuery.getCellNo()) && Objects.isNull(warnMsgQuery.getOperateType())) {
                 String sql = "select electricityCabinetId,cellNo,errorMsg,errorCode,operateType,reportTime from t_warn_msg_cell where electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
                 tempList = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, String.valueOf(warnMsgQuery.getElectricityCabinetId()), warnMsgQuery.getCellNo(), dateMap.get(BEGIN_TIME), dateMap.get(END_TIME), index,
                         index += EXPORT_LIMIT);
