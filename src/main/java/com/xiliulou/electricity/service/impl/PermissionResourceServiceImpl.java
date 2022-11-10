@@ -279,7 +279,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@DS("slave_1")
 	public Pair<Boolean, Object> getList() {
-		TokenUser userInfo = SecurityUtils.getUserInfo();
+//		TokenUser userInfo = SecurityUtils.getUserInfo();
 
 		List<PermissionResource> permissionResources = this.permissionResourceMapper.queryAll();
 		if (!DataUtil.collectionIsUsable(permissionResources)) {
@@ -348,5 +348,21 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		}
 		return result;
 	}
-
+	
+	@Override
+	public Pair<Boolean, Object> getPermissionTempleteList() {
+		List<PermissionResource> permissionResources = this.permissionResourceMapper.queryAll();
+		if (!DataUtil.collectionIsUsable(permissionResources)) {
+			return Pair.of(false, "查询不到任何权限！");
+		}
+		
+		//获取不显示的权限列表
+		List<Long> permissionIds = permissionTemplateService.selectByType(PermissionTemplate.TYPE_UNSHOW);
+		permissionResources = permissionResources.stream().filter(e -> !permissionIds.contains(e.getId()))
+				.collect(Collectors.toList());
+		
+		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+		
+		return Pair.of(true, permissionResourceTrees);
+	}
 }
