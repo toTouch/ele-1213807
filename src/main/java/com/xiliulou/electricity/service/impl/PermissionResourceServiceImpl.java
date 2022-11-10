@@ -245,7 +245,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		
 		//删除旧的
 		rolePermissionService.deleteByRoleId(roleId);
-
+log.error("pids:{}",pids);
 		List<PermissionResource> permissionResources = queryListByIds(pids);
 		if (!DataUtil.collectionIsUsable(permissionResources)) {
 			return Pair.of(false, "权限查询不到！");
