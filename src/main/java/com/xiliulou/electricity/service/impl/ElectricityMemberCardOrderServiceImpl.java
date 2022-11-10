@@ -62,7 +62,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     /**
      * excel导出每次查询条数
      */
-    private static final Integer EXPORT_LIMIT = 2000;
+    private static final Long EXPORT_LIMIT = 2000L;
     
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
@@ -627,8 +627,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long offset = 0L;
         while (true) {
             memberCardOrderQuery.setOffset(offset);
-            memberCardOrderQuery.setSize(offset += EXPORT_LIMIT);
+            memberCardOrderQuery.setSize(EXPORT_LIMIT);
             List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
+            offset += EXPORT_LIMIT;
         
             if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
                 break;
