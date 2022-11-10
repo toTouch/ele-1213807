@@ -10,11 +10,13 @@ import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.PermissionResourceTree;
+import com.xiliulou.electricity.entity.PermissionTemplate;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
+import com.xiliulou.electricity.service.PermissionTemplateService;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -60,6 +62,8 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 
 	@Autowired
 	RolePermissionConfig rolePermissionConfig;
+	@Autowired
+	PermissionTemplateService permissionTemplateService;
 
 
 	/**
@@ -282,15 +286,33 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return Pair.of(false, "查询不到任何权限！");
 		}
 
-		//如果不是超级管理员，就不用返回前4个权限
-		if (!Objects.equals(userInfo.getType(), User.TYPE_USER_SUPER)) {
-			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4&& !rolePermissionConfig.getUnShow().contains(e.getId())).collect(Collectors.toList());
+//		//如果不是超级管理员，就不用返回前4个权限
+//		if (!Objects.equals(userInfo.getType(), User.TYPE_USER_SUPER)) {
+//			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4&& !rolePermissionConfig.getUnShow().contains(e.getId())).collect(Collectors.toList());
+//		}
+//
+//		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+//
+//
+//		return Pair.of(true, permissionResourceTrees);
+		
+		
+		//超级管理员
+		if (SecurityUtils.isAdmin()) {
+			List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+			return Pair.of(true, permissionResourceTrees);
+		} else {
+			//普通管理员
+			
+			//获取不显示的权限列表
+			List<Long> permissionIds = permissionTemplateService.selectByType(PermissionTemplate.TYPE_UNSHOW);
+			permissionResources = permissionResources.stream().filter(e -> !permissionIds.contains(e.getId()))
+					.collect(Collectors.toList());
+			
+			List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+			
+			return Pair.of(true, permissionResourceTrees);
 		}
-
-		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
-
-
-		return Pair.of(true, permissionResourceTrees);
 	}
 
 	@Override
