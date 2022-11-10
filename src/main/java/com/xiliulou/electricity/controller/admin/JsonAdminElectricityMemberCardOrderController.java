@@ -156,7 +156,11 @@ public class JsonAdminElectricityMemberCardOrderController {
     @GetMapping("/admin/electricityMemberCardOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "orderId", required = false) String orderId,
+                            @RequestParam(value = "userName", required = false) String userName,
+                            @RequestParam(value = "status", required = false) Integer status,
                             @RequestParam(value = "memberCardType", required = false) Integer cardType,
+                            @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                            @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                             @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                             @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                             HttpServletResponse response) {
@@ -188,6 +192,10 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .phone(phone)
                 .orderId(orderId)
                 .cardType(cardType)
+                .status(status)
+                .userName(userName)
+                .franchiseeName(franchiseeName)
+                .cardModel(memberCardModel)
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
