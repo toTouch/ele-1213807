@@ -252,7 +252,7 @@ log.error("pids:{}",pids);
 		}
 
 		HashSet<Long> result = Sets.newHashSet();
-
+log.error("permissionResources:{}",JsonUtil.toJson(permissionResources));
 		permissionResources.parallelStream().forEach(e -> {
 			RolePermission rolePermission = RolePermission.builder()
 					.pId(e.getId())
