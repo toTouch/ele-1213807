@@ -77,7 +77,7 @@ public class MessageDelyQueueService {
     
     
     public Boolean remove(String queue, Message message) {
-        //TODO redisServer没封装 remove方法
+        //TODO
         //        Long remove = redisTemplate.opsForZSet().remove(queue, JSONObject.toJSONString(message));
         //        return remove>0?Boolean.TRUE:Boolean.FALSE;
         return Boolean.FALSE;

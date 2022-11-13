@@ -26,14 +26,13 @@ import java.util.concurrent.ExecutorService;
 public class MessageDelyQueueListener implements DisposableBean {
     
     protected volatile Boolean shutdown = Boolean.FALSE;
+    protected ExecutorService delyQueueListenerThread = XllThreadPoolExecutors.newFixedThreadPool("DELY-QUEUE-LISTENER-POOL", 1, "dely-queue-listener-pool-thread");
     
     @Autowired
     private MessageDelyQueueService messageDelyQueueService;
     
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
-    
-    protected ExecutorService delyQueueListenerThread = XllThreadPoolExecutors.newFixedThreadPool("DELY-QUEUE-LISTENER-POOL", 1, "dely-queue-listener-pool-thread");
     
     
     @EventListener({WebServerInitializedEvent.class})
@@ -42,8 +41,12 @@ public class MessageDelyQueueListener implements DisposableBean {
         log.info("DELY QUEUE LISTENER INFO! start poll delay queue message!");
         delyQueueListenerThread.execute(()->{
             while (!shutdown){
-                //发送满仓提醒
-                electricityCabinetService.sendFullBatteryMessage(messageDelyQueueService.pullMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE));
+                try {
+                    //电池满仓提醒
+                    electricityCabinetService.sendFullBatteryMessage(messageDelyQueueService.pullMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE));
+                } catch (Exception e) {
+                    log.error("ELE ERROR! send full battery to MQ error,ex={}",e);
+                }
             }
         });
         

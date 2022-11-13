@@ -166,7 +166,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
         
         //检查柜机电池是否满仓
-//        this.checkElectricityCabinetBatteryFull(electricityCabinet);
+        this.checkElectricityCabinetBatteryFull(electricityCabinet);
     }
 
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {
@@ -248,16 +248,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //更新原仓门中的电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
-        //            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-        //                ElectricityBattery updateBattery = new ElectricityBattery();
-        //                updateBattery.setId(electricityBattery.getId());
-        //                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
-        //                updateBattery.setElectricityCabinetId(null);
-        //                updateBattery.setElectricityCabinetName(null);
-        ////                updateBattery.setUid(null);
-        //                updateBattery.setUpdateTime(System.currentTimeMillis());
-        //                electricityBatteryService.updateByOrder(updateBattery);
-        //            }
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
@@ -427,60 +417,16 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
     
         //过滤没有电池的格挡
-        List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
+        List<ElectricityCabinetBox> notHaveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
             return;
         }
     
         //柜机仓内电池已满
         log.info("ELE BATTERY REPORT INFO! push battery full message,electricityCabinetId={}", electricityCabinet.getId());
         messageDelyQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE, buildDelyQueueMessage(electricityCabinet), 5 * 60);
-        
-//        Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinet.getId(), "1", 3600 * 1000L, false);
-//        if (cacheFlag) {
-//            List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
-//            if (CollectionUtils.isEmpty(messageNotifyList)) {
-//                return;
-//            }
-//
-//            messageNotifyList.forEach(item -> {
-//                rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(item), "", "", 0);
-//                log.info("ELE BATTERY REPORT INFO! ele abnormal notify,msg={}", JsonUtil.toJson(item));
-//            });
-//        }
     }
     
-//    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
-//        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
-//        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-//            log.error("ELE BATTERY REPORT ERROR! not found maintenanceUserNotifyConfig,tenantId={}",
-//                    electricityCabinet.getTenantId());
-//            return Collections.EMPTY_LIST;
-//        }
-//
-//        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
-//        if (CollectionUtils.isEmpty(phones)) {
-//            log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
-//            return Collections.EMPTY_LIST;
-//        }
-//
-//        return phones.parallelStream().map(item -> {
-//            ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
-//            abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
-//            abnormalMessageNotify.setEquipmentNumber(electricityCabinet.getName());
-//            abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
-//            abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
-//            abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-//
-//            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
-//            abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-//            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
-//            abnormalMessageNotifyCommon.setPhone(item);
-//            abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
-//            return abnormalMessageNotifyCommon;
-//        }).collect(Collectors.toList());
-//
-//    }
     
     private Message buildDelyQueueMessage(ElectricityCabinet electricityCabinet){
         Message message = new Message();
@@ -489,28 +435,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         return message;
     }
-
-    /**
-     * 解绑电池uid的同时  解绑用户绑定的电池
-     *
-     * @param batteryName
-     */
-//    private void unbindUserBattery(String batteryName) {
-//        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService
-//            .selectByNowElectricityBatterySn(batteryName);
-//        if (CollectionUtils.isEmpty(franchiseeUserInfoList)) {
-//            return;
-//        }
-//
-//        franchiseeUserInfoList.forEach(item -> {
-//            FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
-//                .id(item.getId())
-//                .nowElectricityBatterySn(null)
-//                .serviceStatus(item.getServiceStatus())
-//                .updateTime(System.currentTimeMillis()).build();
-//            franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
-//        });
-//    }
+    
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
         if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
             return "";
