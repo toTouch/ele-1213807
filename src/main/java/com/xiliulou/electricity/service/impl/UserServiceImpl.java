@@ -298,7 +298,17 @@ public class UserServiceImpl implements UserService {
 
         return user;
     }
-
+    
+    @Override
+    public User queryByUserPhoneFromDB(String phone, Integer type, Integer tenantId) {
+        User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
+        if (Objects.isNull(user)) {
+            return null;
+        }
+        
+        return user;
+    }
+    
     @Override
     @DS("slave_1")
     public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
