@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
+import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
@@ -60,22 +61,12 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
         //获取柜机模式
         String applicationModel = null;
         try {
-//            ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
-//            if (Objects.nonNull(eleOtherSetting)) {
-//                applicationModel = eleOtherSetting.getApplicationMode();
-//            }
-// TODO 阶段一更新后
-
-
-            String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
-            if (StringUtils.isEmpty(result)) {
-                log.error("ELE BATTERY REPORT ERROR! result is null,sessionId={}", receiverMessage.getSessionId());
-                return;
+            ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
+            if (Objects.nonNull(eleOtherSetting)) {
+                applicationModel = eleOtherSetting.getApplicationMode();
             }
-            Map<String, String> map = JsonUtil.fromJson(result, Map.class);
-            applicationModel = map.getOrDefault("applicationMode", "-1");
         } catch (Exception e) {
-            log.error("ELE BATTERY REPORT ERROR! applicationMode parsing failed,electricityCabinetId={},sessionId={}", electricityCabinet.getId(), receiverMessage.getSessionId());
+            log.error("ELE ERROR! applicationMode parsing failed,electricityCabinetId={},sessionId={}", electricityCabinet.getId(), receiverMessage.getSessionId());
         }
 
         BatteryChargeConfigQuery batteryChargeConfigQuery = new BatteryChargeConfigQuery();
@@ -86,6 +77,5 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
         batteryChargeConfigQuery.setCreateTime(System.currentTimeMillis());
         batteryChargeConfigQuery.setUpdateTime(System.currentTimeMillis());
         batteryChargeConfigService.atomicUpdate(batteryChargeConfigQuery);
-
     }
 }
