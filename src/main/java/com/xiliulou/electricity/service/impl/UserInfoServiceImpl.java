@@ -260,7 +260,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryInsurance = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
-                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(),userInfoQuery.getTenantId());
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(), userInfoQuery.getTenantId());
                     if (Objects.nonNull(insuranceUserInfo)) {
                         item.setIsUse(insuranceUserInfo.getIsUse());
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
@@ -272,7 +272,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime,queryInsurance);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -758,7 +758,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        if (!Objects.equals(tenantId,oldUserInfo.getTenantId())) {
+        if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
             return R.ok();
         }
 
@@ -884,7 +884,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        if (!Objects.equals(tenantId,oldUserInfo.getTenantId())) {
+        if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
             return R.ok();
         }
 
@@ -1081,8 +1081,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public R queryUserBelongFranchisee(Long franchiseeId,Integer tenantId) {
-        return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId,tenantId));
+    public R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId) {
+        return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId, tenantId));
     }
 
     @Override
@@ -1174,14 +1174,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return userInfoDetailVO;
         }
         //套餐状态
-        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime()<System.currentTimeMillis()){
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
-        }else {
+        } else {
             userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.EXIST_MEMBER_CARD);
         }
 
         //服务状态
-        userInfoDetailVO.setServiceStatus(getServiceStatus(userInfo,franchiseeUserInfo));
+        userInfoDetailVO.setServiceStatus(getServiceStatus(userInfo, franchiseeUserInfo));
 
 
         //电池服务费
@@ -1189,14 +1189,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfoDetailVO.setBatteryServiceFee(eleBatteryServiceFeeVO);
 
 
-       //用户状态(离线换电)
+        //用户状态(离线换电)
         UserFrontDetectionVO userFrontDetection = offLineElectricityCabinetService.getUserFrontDetection(userInfo, franchiseeUserInfo);
         userInfoDetailVO.setUserFrontDetection(userFrontDetection);
 
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(user.getUid(), user.getTenantId());
+        userInfoDetailVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
         return userInfoDetailVO;
     }
 
-    private Integer getServiceStatus(UserInfo userInfo,FranchiseeUserInfo franchiseeUserInfo) {
+    private Integer getServiceStatus(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
         Integer serviceStatus = userInfo.getServiceStatus();
 
         if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
@@ -1214,7 +1216,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return serviceStatus;
     }
-
 
 
     @Override

@@ -31,6 +31,11 @@ public class UserInfoDetailVO {
      */
     private Integer isExistMemberCard;
 
+    /**
+     * 是否购买保险
+     */
+    private  InsuranceUserInfoVo insuranceUserInfoVo;
+
     public static final Integer EXIST_MEMBER_CARD = 0;
     public static final Integer NOT_EXIST_MEMBER_CARD = 1;
 }
