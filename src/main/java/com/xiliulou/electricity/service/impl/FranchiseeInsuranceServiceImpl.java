@@ -120,7 +120,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
                     .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE));
             if (count > 0) {
-                return R.fail("ELECTRICITY.00102", "该租户已有启用中的保险，请勿重复添加");
+                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
             }
         }
 
