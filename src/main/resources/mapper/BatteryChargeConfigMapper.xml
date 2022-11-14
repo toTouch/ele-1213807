@@ -8,13 +8,14 @@
         <result property="config" column="config" jdbcType="VARCHAR"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 基础字段 -->
     <sql id="selectBatteryChargeConfig">
-       	select   id, application_model, config, electricity_cabinet_id, del_flag, create_time, update_time        from t_battery_charge_config
+       	select   id, application_model, config, electricity_cabinet_id, del_flag, tenant_id, create_time, update_time        from t_battery_charge_config
     </sql>
 
     <!--查询单个-->
@@ -50,6 +51,9 @@
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
             <if test="createTime != null">
                 and create_time = #{createTime}
             </if>
@@ -61,8 +65,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_charge_config(application_model, config, electricity_cabinet_id, del_flag, create_time, update_time)
-        values (#{applicationModel}, #{config}, #{electricityCabinetId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_battery_charge_config(application_model, config, electricity_cabinet_id, del_flag, tenant_id, create_time, update_time)
+        values (#{applicationModel}, #{config}, #{electricityCabinetId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -88,18 +92,18 @@
                 update_time = #{updateTime},
             </if>
         </set>
-        where id = #{id}
+        where id = #{id} and tenant_id=#{tenantId}
     </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_battery_charge_config where id = #{id}
+        delete from t_battery_charge_config where id = #{id} and tenant_id=#{tenantId}
     </delete>
 
     <!--原子更新-->
-    <insert id="atomicUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_charge_config(application_model, config, electricity_cabinet_id, del_flag, create_time, update_time)
-        values (#{applicationModel}, #{config}, #{electricityCabinetId}, #{delFlag}, #{createTime}, #{updateTime}) on duplicate key
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_battery_charge_config(application_model, config, electricity_cabinet_id, del_flag, tenant_id,create_time, update_time)
+        values (#{applicationModel}, #{config}, #{electricityCabinetId}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime}) on duplicate key
         update application_model = #{applicationModel} ,config = #{config} , update_time =#{updateTime}
     </insert>
 

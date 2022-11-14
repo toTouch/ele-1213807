@@ -37,6 +37,10 @@ public class BatteryChargeConfig {
      * 是否删除（0-正常，1-删除）
      */
     private Integer delFlag;
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
 
     private Long createTime;
 

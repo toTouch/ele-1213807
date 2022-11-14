@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
+import com.xiliulou.electricity.vo.BatteryChargeConfigVO;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public interface BatteryChargeConfigService {
      */
     Boolean deleteById(Long id);
 
-    BatteryChargeConfigQuery selectByElectricityCabinetId(Long electricityCabinetId);
+    BatteryChargeConfigVO selectByElectricityCabinetId(Long electricityCabinetId);
 
-    int atomicUpdate(BatteryChargeConfigQuery query);
+    int insertOrUpdate(BatteryChargeConfigQuery query);
 }

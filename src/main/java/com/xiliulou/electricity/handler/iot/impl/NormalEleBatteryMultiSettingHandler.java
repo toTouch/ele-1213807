@@ -3,7 +3,6 @@ package com.xiliulou.electricity.handler.iot.impl;
 import com.google.gson.JsonElement;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
@@ -14,16 +13,13 @@ import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
 import com.xiliulou.electricity.service.BatteryChargeConfigService;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -59,7 +55,7 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
         }
 
         //获取柜机模式
-        String applicationModel = null;
+        String applicationModel = "";
         try {
             ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
             if (Objects.nonNull(eleOtherSetting)) {
@@ -74,8 +70,9 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
         batteryChargeConfigQuery.setConfigList(batteryMultiConfigVOS);
         batteryChargeConfigQuery.setElectricityCabinetId(electricityCabinet.getId().longValue());
         batteryChargeConfigQuery.setDelFlag(BatteryChargeConfig.DEL_NORMAL);
+        batteryChargeConfigQuery.setTenantId(electricityCabinet.getTenantId());
         batteryChargeConfigQuery.setCreateTime(System.currentTimeMillis());
         batteryChargeConfigQuery.setUpdateTime(System.currentTimeMillis());
-        batteryChargeConfigService.atomicUpdate(batteryChargeConfigQuery);
+        batteryChargeConfigService.insertOrUpdate(batteryChargeConfigQuery);
     }
 }

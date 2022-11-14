@@ -1,17 +1,13 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
 import com.xiliulou.electricity.service.BatteryChargeConfigService;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 
 /**
  * app电池充电设置
@@ -62,7 +58,7 @@ public class JsonAdminBatteryChargeConfigController {
      */
     @PostMapping("batteryChargeConfig/save")
     public R atomicUpdate(@RequestBody @Validated BatteryChargeConfigQuery query) {
-        return R.ok(this.batteryChargeConfigService.atomicUpdate(query));
+        return R.ok(this.batteryChargeConfigService.insertOrUpdate(query));
     }
 
 }

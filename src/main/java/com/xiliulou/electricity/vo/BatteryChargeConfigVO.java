@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.query;
+package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
 import lombok.AllArgsConstructor;
@@ -12,14 +12,14 @@ import java.util.List;
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2022-08-12-15:01
+ * @date 2022-11-14-14:47
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BatteryChargeConfigQuery {
-
+public class BatteryChargeConfigVO {
+    
     private Long id;
     /**
      * 柜机模式
@@ -29,19 +29,13 @@ public class BatteryChargeConfigQuery {
      * 电池充电配置
      */
     private List<BatteryMultiConfigDTO> configList;
-
-    @NotNull(message = "electricityCabinetId不能为空!")
+    /**
+     * 柜机id
+     */
     private Long electricityCabinetId;
-    /**
-     * 租户id
-     */
-    private Integer tenantId;
-    /**
-     * 是否删除（0-正常，1-删除）
-     */
-    private Integer delFlag;
-
+    
     private Long createTime;
-
+    
     private Long updateTime;
+    
 }

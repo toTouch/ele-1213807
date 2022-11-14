@@ -66,5 +66,5 @@ public interface BatteryChargeConfigMapper extends BaseMapper<BatteryChargeConfi
      */
     int deleteById(Long id);
 
-    int atomicUpdate(BatteryChargeConfig batteryChargeConfig);
+    int insertOrUpdate(BatteryChargeConfig batteryChargeConfig);
 }

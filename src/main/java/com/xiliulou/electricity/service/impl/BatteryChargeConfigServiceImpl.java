@@ -7,13 +7,14 @@ import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.mapper.BatteryChargeConfigMapper;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
 import com.xiliulou.electricity.service.BatteryChargeConfigService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.BatteryChargeConfigVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
@@ -103,30 +104,33 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     }
 
     @Override
-    public BatteryChargeConfigQuery selectByElectricityCabinetId(Long electricityCabinetId) {
-        BatteryChargeConfigQuery batteryChargeConfigQuery = new BatteryChargeConfigQuery();
+    public BatteryChargeConfigVO selectByElectricityCabinetId(Long electricityCabinetId) {
+        BatteryChargeConfigVO batteryChargeConfigVO = new BatteryChargeConfigVO();
 
         BatteryChargeConfig batteryChargeConfig = this.batteryChargeConfigMapper.selectOne(new LambdaQueryWrapper<BatteryChargeConfig>()
-                .eq(BatteryChargeConfig::getElectricityCabinetId, electricityCabinetId).eq(BatteryChargeConfig::getDelFlag, BatteryChargeConfig.DEL_NORMAL));
+                .eq(BatteryChargeConfig::getElectricityCabinetId, electricityCabinetId)
+                .eq(BatteryChargeConfig::getTenantId, TenantContextHolder.getTenantId())
+                .eq(BatteryChargeConfig::getDelFlag, BatteryChargeConfig.DEL_NORMAL));
 
         if (Objects.isNull(batteryChargeConfig)) {
-            return batteryChargeConfigQuery;
+            return batteryChargeConfigVO;
         }
-        BeanUtils.copyProperties(batteryChargeConfig, batteryChargeConfigQuery);
-        batteryChargeConfigQuery.setConfigList(JsonUtil.fromJsonArray(batteryChargeConfig.getConfig(), BatteryMultiConfigDTO.class));
+        BeanUtils.copyProperties(batteryChargeConfig, batteryChargeConfigVO);
+        batteryChargeConfigVO.setConfigList(JsonUtil.fromJsonArray(batteryChargeConfig.getConfig(), BatteryMultiConfigDTO.class));
 
-        return batteryChargeConfigQuery;
+        return batteryChargeConfigVO;
     }
 
     @Override
-    public int atomicUpdate(BatteryChargeConfigQuery query) {
+    public int insertOrUpdate(BatteryChargeConfigQuery query) {
 
         BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
         BeanUtils.copyProperties(query, batteryChargeConfig);
         batteryChargeConfig.setConfig(JsonUtil.toJson(query.getConfigList()));
+        batteryChargeConfig.setTenantId(TenantContextHolder.getTenantId());
         batteryChargeConfig.setCreateTime(System.currentTimeMillis());
         batteryChargeConfig.setUpdateTime(System.currentTimeMillis());
 
-        return this.batteryChargeConfigMapper.atomicUpdate(batteryChargeConfig);
+        return this.batteryChargeConfigMapper.insertOrUpdate(batteryChargeConfig);
     }
 }
