@@ -158,7 +158,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         List<InsuranceUserInfo> insuranceUserInfoList = insuranceUserInfoService.selectByInsuranceId(id, tenantId);
         if (!CollectionUtils.isEmpty(insuranceUserInfoList)) {
             log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);
-            return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
+            return R.fail(queryByCache(id), "100243", "删除失败，该保险已有用户使用！");
         }
 
 

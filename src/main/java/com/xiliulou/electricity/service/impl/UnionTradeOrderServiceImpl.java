@@ -237,7 +237,7 @@ public class UnionTradeOrderServiceImpl extends
             updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
             updateOrAddInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
             updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
-            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
             updateOrAddInsuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
             updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
             updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());

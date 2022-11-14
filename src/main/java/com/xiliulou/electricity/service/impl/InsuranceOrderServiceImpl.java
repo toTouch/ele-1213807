@@ -217,7 +217,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
             updateOrAddInsuranceUserInfo.setInsuranceOrderId(orderId);
             updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
-            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
             updateOrAddInsuranceUserInfo.setTenantId(tenantId);
             updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
             updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
@@ -304,7 +304,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
 
     public String generateOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(0,6) + uid +
+        return String.valueOf(System.currentTimeMillis()).substring(0, 6) + uid +
                 RandomUtil.randomNumbers(4);
     }
 }
