@@ -74,6 +74,9 @@ import java.util.stream.Collectors;
 @Service("electricityCabinetService")
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
+    
+    private static final String BATTERY_FULL_CONDITION="batteryFullCondition";
+    
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
     @Autowired
@@ -354,6 +357,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //修改柜机服务时间信息
             electricityCabinetServerService
                     .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
+    
+            //云端下发命令修改换电标准
+            if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
+                this.updateFullyChargedByCloud(electricityCabinet);
+            }
+            
             return null;
         });
         return R.ok();
@@ -3243,6 +3252,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));
+    }
+    
+    
+    /**
+     * 通过云端下发命令更新换电标准
+     */
+    private void updateFullyChargedByCloud(ElectricityCabinet electricityCabinet) {
+        
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(BATTERY_FULL_CONDITION, electricityCabinet.getFullyCharged());
+        
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(electricityCabinet.getProductKey());
+        commandQuery.setDeviceName(electricityCabinet.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+        
+        try {
+            sendCommandToEleForOuter(commandQuery);
+        } catch (Exception e) {
+            log.error("ELE ERROR！set batteryFullCondition error,electricityCabinetId={}", electricityCabinet.getId(), e);
+        }
     }
     
 }
