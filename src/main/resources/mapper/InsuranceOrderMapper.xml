@@ -6,6 +6,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.InsuranceOrderVO">
         select tf.name as franchiseeName, tio.insurance_name as insuranceName,tio.insurance_type as insuranceType,tio.user_name as userName,tio.order_id as orderId
         ,tui.id_number as idCard,tio.phone as phone,tio.cid as cid,tio.pay_amount as insuranceAmount,tio.create_time as createTime,tio.valid_days as validDays,tio.status
+        ,tio.forehead
         from t_insurance_order tio left join t_franchisee tf on tio.franchisee_id=tf.id left join t_user_info tui on tio.uid=tui.uid
         <where>
             <if test="query.orderId != null and query.orderId !=''">

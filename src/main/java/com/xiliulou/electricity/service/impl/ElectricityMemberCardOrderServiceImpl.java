@@ -1344,7 +1344,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //计算套餐剩余天数
         if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
-            Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
+            Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24.0);
             electricityMemberCardOrder.setValidDays(validDays.intValue());
         }
 

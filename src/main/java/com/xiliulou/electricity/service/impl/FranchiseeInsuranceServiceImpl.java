@@ -115,6 +115,15 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 //            return R.fail("100304", "保险名称已存在！");
 //        }
 
+        //查询该租户是否有邀请活动，有则不能启用
+        if (Objects.equals(franchiseeInsuranceAddAndUpdate.getStatus(), FranchiseeInsurance.STATUS_USABLE)) {
+            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE));
+            if (count > 0) {
+                return R.fail("ELECTRICITY.00102", "该租户已有启用中的保险，请勿重复添加");
+            }
+        }
+
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());

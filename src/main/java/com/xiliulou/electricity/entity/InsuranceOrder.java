@@ -89,6 +89,11 @@ public class InsuranceOrder {
     private Integer cid;
 
     /**
+     * 保额
+     */
+    private BigDecimal forehead;
+
+    /**
      * 是否出险 0--未出险 1--已出险
      */
     private Integer isUse;

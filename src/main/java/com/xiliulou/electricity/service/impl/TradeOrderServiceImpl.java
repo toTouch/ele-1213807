@@ -216,6 +216,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .franchiseeId(franchisee.getId())
                 .isUse(InsuranceOrder.NOT_USE)
                 .payAmount(franchiseeInsurance.getPremium())
+                .forehead(franchiseeInsurance.getForehead())
                 .payType(InsuranceOrder.ONLINE_PAY_TYPE)
                 .phone(userInfo.getPhone())
                 .status(InsuranceOrder.STATUS_INIT)

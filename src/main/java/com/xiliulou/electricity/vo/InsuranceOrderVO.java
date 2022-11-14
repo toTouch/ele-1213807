@@ -47,4 +47,6 @@ public class InsuranceOrderVO {
     private String cityName;
 
     private Integer status;
+
+    private BigDecimal forehead;
 }
