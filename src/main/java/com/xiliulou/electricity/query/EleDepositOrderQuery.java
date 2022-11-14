@@ -29,6 +29,9 @@ public class EleDepositOrderQuery {
     private Integer tenantId;
 
     private List<Long> franchiseeIds;
+
+    private Long franchiseeId;
+
     private String franchiseeName;
 
     private Long uid;
