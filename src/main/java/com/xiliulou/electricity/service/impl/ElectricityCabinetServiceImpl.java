@@ -61,6 +61,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -2188,8 +2189,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {
             return Pair.of(false, null);
         }
-        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
-
+//        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
+    
+    
+        String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size())).getCellNo();
+        return Pair.of(true, Integer.parseInt(cellNo));
     }
 
     @Override
