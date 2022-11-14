@@ -12,15 +12,15 @@ import java.util.List;
 
 public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMemberCard> {
 
-    List<ElectricityMemberCardVO> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("cardModel") Integer cardModel,@Param("franchiseeId") Long franchiseeId,@Param("carModelId") Integer carModelId);
+    List<ElectricityMemberCardVO> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("cardModel") Integer cardModel,@Param("franchiseeIds") List<Long> franchiseeIds,@Param("carModelId") Integer carModelId);
 
     List<ElectricityMemberCard> queryUserList(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Long id, @Param("batteryType") String batteryType, @Param("cardModel") Integer cardModel);
 
-	Integer queryCount(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId,@Param("cardModel") Integer cardModel,@Param("franchiseeId") Long franchiseeId,@Param("name") String name);
+	Integer queryCount(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId,@Param("cardModel") Integer cardModel,@Param("franchiseeIds") List<Long> franchiseeIds,@Param("name") String name);
 
-    List<ElectricityMemberCard> listByFranchisee(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    List<ElectricityMemberCard> listByFranchisee(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
 
-    Integer listCountByFranchisee(@Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    Integer listCountByFranchisee(@Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds);
 
     void unbindActivity(@Param("id") Integer id);
 

@@ -31,6 +31,7 @@ public class TreeUtils {
 			node.setUri(permissionResource.getUri());
 			node.setParentId(permissionResource.getParent());
 			node.setSort(permissionResource.getSort());
+			node.setPermission(permissionResource.getPermission());
 			trees.add(node);
 		}
 

@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @program: XILIULOU
  * @description:
@@ -28,6 +30,7 @@ public class MemberCardOrderQuery {
     private Integer status;
 
     private Long franchiseeId;
+    private List<Long> franchiseeIds;
     private String franchiseeName;
     private String userName;
 }

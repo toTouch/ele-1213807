@@ -36,6 +36,8 @@ public class ElectricityBatteryQuery {
     private Integer chargeStatus;
 
     private Long franchiseeId;
+    
+    private List<Long> franchiseeIds;
 
     private String electricityCabinetName;
     private String franchiseeName;

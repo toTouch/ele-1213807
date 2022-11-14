@@ -22,6 +22,8 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
      * @return 对象列表
      */
     List<ElectricityCabinetBoxVO> queryList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
+    
+    List<ElectricityCabinetBoxVO> selectBoxList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
 
     void batchDeleteBoxByElectricityCabinetId(@Param("id") Integer id, @Param("updateTime") Long updateTime);

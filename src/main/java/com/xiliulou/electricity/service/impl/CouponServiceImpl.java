@@ -90,8 +90,25 @@ public class CouponServiceImpl implements CouponService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
 
+//        //判断参数
+//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//            coupon.setType(Coupon.TYPE_FRANCHISEE);
+//            if (Objects.isNull(coupon.getFranchiseeId())) {
+//                log.error("Coupon  ERROR! not found FranchiseeId ");
+//                return R.fail("ELECTRICITY.0094", "加盟商不能为空");
+//            }
+//        } else {
+//            if (Objects.equals(coupon.getType(), Coupon.TYPE_FRANCHISEE)) {
+//                if (Objects.isNull(coupon.getFranchiseeId())) {
+//                    log.error("Coupon  ERROR! not found FranchiseeId ");
+//                    return R.fail("ELECTRICITY.0094", "加盟商不能为空");
+//                }
+//            }
+//        }
+    
+    
         //判断参数
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             coupon.setType(Coupon.TYPE_FRANCHISEE);
             if (Objects.isNull(coupon.getFranchiseeId())) {
                 log.error("Coupon  ERROR! not found FranchiseeId ");

@@ -72,7 +72,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery);
 
-    R batteryStatistical(Integer tenantId);
+    R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
     R bindFranchisee(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 

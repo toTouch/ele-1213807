@@ -114,10 +114,17 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName, electricityCabinet.getTenantId());
+        
+        //检查电池是否在未录入表中
+        NotExistSn notExistSn = notExistSnService.queryByBatteryName(batteryName);
+        //未录入
         if (Objects.isNull(electricityBattery)) {
-            //保存未录入电池
-            this.saveNotExistSn(batteryName, electricityCabinet, cellNO);
+            this.insertOrUpdateNotExistSn(notExistSn, batteryName, electricityCabinet, cellNO);
             return;
+        }
+        //已录入
+        if (Objects.nonNull(electricityBattery) && Objects.nonNull(notExistSn)) {
+            notExistSnService.deleteNotExistSn(notExistSn);
         }
 
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
@@ -280,9 +287,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      * @param cellNO
      * @return
      */
-    private void saveNotExistSn(String batteryName, ElectricityCabinet electricityCabinet, String cellNO) {
+    private void insertOrUpdateNotExistSn(NotExistSn notExistSnOld,String batteryName, ElectricityCabinet electricityCabinet, String cellNO) {
 
-        NotExistSn notExistSnOld = notExistSnService.queryByBatteryName(batteryName);
         if (Objects.isNull(notExistSnOld)) {
             NotExistSn notExistSn = new NotExistSn();
             notExistSn.setEId(electricityCabinet.getId());
