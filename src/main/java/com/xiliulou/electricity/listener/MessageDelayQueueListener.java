@@ -2,8 +2,7 @@ package com.xiliulou.electricity.listener;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CommonConstant;
-import com.xiliulou.electricity.entity.Message;
-import com.xiliulou.electricity.queue.MessageDelyQueueService;
+import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
@@ -12,7 +11,6 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -23,13 +21,13 @@ import java.util.concurrent.ExecutorService;
  */
 @Slf4j
 @Component
-public class MessageDelyQueueListener implements DisposableBean {
+public class MessageDelayQueueListener implements DisposableBean {
     
     protected volatile Boolean shutdown = Boolean.FALSE;
-    protected ExecutorService delyQueueListenerThread = XllThreadPoolExecutors.newFixedThreadPool("DELY-QUEUE-LISTENER-POOL", 1, "dely-queue-listener-pool-thread");
+    protected ExecutorService delayQueueListenerThread = XllThreadPoolExecutors.newFixedThreadPool("DELAY-QUEUE-LISTENER-POOL", 1, "delay-queue-listener-pool-thread");
     
     @Autowired
-    private MessageDelyQueueService messageDelyQueueService;
+    private MessageDelayQueueService messageDelayQueueService;
     
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
@@ -39,13 +37,13 @@ public class MessageDelyQueueListener implements DisposableBean {
     public void pollDelyQueue(){
         
         log.info("DELY QUEUE LISTENER INFO! start poll delay queue message!");
-        delyQueueListenerThread.execute(()->{
+        delayQueueListenerThread.execute(()->{
             while (!shutdown){
                 try {
                     //电池满仓提醒
-                    electricityCabinetService.sendFullBatteryMessage(messageDelyQueueService.pullMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE));
+                    electricityCabinetService.sendFullBatteryMessage(messageDelayQueueService.pullMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE));
                 } catch (Exception e) {
-                    log.error("ELE ERROR! send full battery to MQ error,ex={}",e);
+                    log.error("ELE ERROR! send full battery to MQ error!",e);
                 }
             }
         });
@@ -55,6 +53,6 @@ public class MessageDelyQueueListener implements DisposableBean {
     @Override
     public void destroy() throws Exception {
         this.shutdown = true;
-        delyQueueListenerThread.shutdown();
+        delayQueueListenerThread.shutdown();
     }
 }

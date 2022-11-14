@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
-public class MessageDelyQueueService {
+public class MessageDelayQueueService {
     
     @Autowired
     private RedisService redisService;
@@ -69,7 +69,7 @@ public class MessageDelyQueueService {
                 return message;
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("MESSAGE DELY QUEUE ERROR! pull dely queue message error,ex={}", e);
+            log.error("MESSAGE DELY QUEUE ERROR! pull delay queue message error!", e);
         }
         
         return messageList;

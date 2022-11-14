@@ -1,34 +1,25 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.queue.MessageDelyQueueService;
+import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.utils.UUIDUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -67,7 +58,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 //    @Autowired
 //    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     @Autowired
-    MessageDelyQueueService messageDelyQueueService;
+MessageDelayQueueService messageDelayQueueService;
     
 //    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
     
@@ -410,6 +401,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      */
     private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet) {
     
+        
+        Boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1", 300 * 1000L, false);
+        if(!cacheFlag){
+            return;
+        }
+    
         //获取所有启用的格挡
         List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
@@ -424,7 +421,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     
         //柜机仓内电池已满
         log.info("ELE BATTERY REPORT INFO! push battery full message,electricityCabinetId={}", electricityCabinet.getId());
-        messageDelyQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE, buildDelyQueueMessage(electricityCabinet), 5 * 60);
+        messageDelayQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE, buildDelyQueueMessage(electricityCabinet), 5 * 60);
     }
     
     
