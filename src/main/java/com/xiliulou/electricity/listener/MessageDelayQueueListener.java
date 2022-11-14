@@ -38,7 +38,7 @@ public class MessageDelayQueueListener implements DisposableBean {
         
         log.info("DELY QUEUE LISTENER INFO! start poll delay queue message!");
         delayQueueListenerThread.execute(()->{
-            while (!shutdown){
+            while (Boolean.FALSE.equals(shutdown)){
                 try {
                     //电池满仓提醒
                     electricityCabinetService.sendFullBatteryMessage(messageDelayQueueService.pullMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE));

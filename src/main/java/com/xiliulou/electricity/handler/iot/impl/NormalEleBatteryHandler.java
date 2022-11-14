@@ -34,15 +34,11 @@ import java.util.stream.Collectors;
 public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     
     @Autowired
-    ElectricityCabinetService electricityCabinetService;
-    @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     RedisService redisService;
-    @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
     @Autowired
     StoreService storeService;
     @Autowired
@@ -50,17 +46,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     @Autowired
     NotExistSnService notExistSnService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     ElectricityCabinetModelService electricityCabinetModelService;
-//    @Autowired
-//    RocketMqService rocketMqService;
-//    @Autowired
-//    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
     @Autowired
-MessageDelayQueueService messageDelayQueueService;
-    
-//    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    MessageDelayQueueService messageDelayQueueService;
+
     
     private static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     private static final String IRON_LITHIUM = "IRON_LITHIUM";
@@ -335,7 +324,7 @@ MessageDelayQueueService messageDelayQueueService;
         }
 
 
-        /**
+        /*
          * 1.如果柜机模式为 MULTI_V，不管nacos是否开启电量变化检测，都不进行电量变化太大检测
          */
         if (StringUtils.isNotBlank(applicationMode) && ANCHI_BATTERY_PROTOCOL.equals(applicationMode)) {
@@ -343,7 +332,7 @@ MessageDelayQueueService messageDelayQueueService;
             return power;
         }
 
-        /**
+        /*
          * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
         if (Objects.nonNull(electricityBattery.getPower())
@@ -402,7 +391,7 @@ MessageDelayQueueService messageDelayQueueService;
     private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet) {
     
         
-        Boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1", 300 * 1000L, false);
+        boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1", 300 * 1000L, false);
         if(!cacheFlag){
             return;
         }
