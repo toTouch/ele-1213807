@@ -30,4 +30,6 @@ public interface NotExistSnService {
 	NotExistSn queryByIdFromDB(Long id);
 
     void delete(Long id);
+    
+    int deleteNotExistSn(NotExistSn entity);
 }

@@ -376,11 +376,30 @@ public class JsonAdminElectricityCabinetBatteryController {
      */
     @GetMapping("/admin/battery/batteryStatistical")
     public R batteryStatistical() {
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
+        electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        return electricityBatteryService.batteryStatistical(tenantId);
+        return electricityBatteryService.batteryStatistical(electricityBatteryQuery);
     }
     
     /**

@@ -119,7 +119,27 @@ public class JsonAdminFranchiseeController extends BaseController {
      */
     @GetMapping(value = "/admin/franchisee/selectListByTenantId")
     public R selectFranchiseeList(){
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> ids = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            ids = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(ids)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
+        franchiseeQuery.setIds(ids);
         franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnTripleResult(franchiseeService.selectListByQuery(franchiseeQuery));
     }

@@ -4,6 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -41,6 +42,19 @@ public class JsonAdminUserPermissionController extends BaseController {
     @GetMapping("/permission/list")
     public R getList() {
         return returnPairResult(permissionResourceService.getList());
+    }
+    
+    /**
+     * 权限分配 去哪象列表
+     * @return
+     */
+    @GetMapping("/permission_templete/list")
+    public R permissionTempleteList() {
+        if (!SecurityUtils.isAdmin()) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+        
+        return returnPairResult(permissionResourceService.getPermissionTempleteList());
     }
     
     @PostMapping("/permission/add")

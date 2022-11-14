@@ -46,9 +46,6 @@ public class JsonAdminUserRoleController extends BaseController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 		
-		if(Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)||Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-			return R.ok(Collections.EMPTY_LIST);
-		}
 		
 		return roleService.queryAll();
 	}

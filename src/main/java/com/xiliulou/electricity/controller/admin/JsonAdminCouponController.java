@@ -73,17 +73,17 @@ public class JsonAdminCouponController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
-            }
-        }
+//        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+//            return R.ok(Collections.EMPTY_LIST);
+//        }
+//
+//        List<Long> franchiseeIds = null;
+//        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+//            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+//            if (CollectionUtils.isEmpty(franchiseeIds)) {
+//                return R.ok();
+//            }
+//        }
 
         CouponQuery couponQuery = CouponQuery.builder()
                 .offset(offset)
@@ -91,7 +91,7 @@ public class JsonAdminCouponController {
                 .name(name)
                 .discountType(discountType)
                 .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
+//                .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return couponService.queryList(couponQuery);
@@ -113,23 +113,23 @@ public class JsonAdminCouponController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
-        }
-        
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
-            }
-        }
+//        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+//            return R.ok(Collections.EMPTY_LIST);
+//        }
+//
+//        List<Long> franchiseeIds = null;
+//        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+//            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+//            if (CollectionUtils.isEmpty(franchiseeIds)) {
+//                return R.ok();
+//            }
+//        }
 
         CouponQuery couponQuery = CouponQuery.builder()
                 .name(name)
                 .discountType(discountType)
                 .franchiseeId(franchiseeId)
-                .franchiseeIds(franchiseeIds)
+//                .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
                 .tenantId(tenantId).build();
         return couponService.queryCount(couponQuery);

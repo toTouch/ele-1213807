@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
@@ -48,7 +49,7 @@ import java.util.*;
  */
 @RestController
 @Slf4j
-public class JsonAdminElectricityCabinetController {
+public class JsonAdminElectricityCabinetController extends BaseController {
     
     /**
      * 服务对象
@@ -656,9 +657,9 @@ public class JsonAdminElectricityCabinetController {
         List<Integer> eleIdList = null;
         List<Long> franchiseeIds = null;
         if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
             eleIdList = userTypeService.getEleIdListByDataType(user);
@@ -726,9 +727,9 @@ public class JsonAdminElectricityCabinetController {
         List<Integer> eleIdList = null;
         List<Long> franchiseeIds = null;
         if(Objects.equals(user.getDataType(),User.DATA_TYPE_FRANCHISEE)){
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
             eleIdList = userTypeService.getEleIdListByDataType(user);
@@ -800,15 +801,43 @@ public class JsonAdminElectricityCabinetController {
     
 
     @GetMapping("/admin/electricityCabinet/queryName")
-    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
-
+    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId,
+            @RequestParam(value = "name", required = false) String name) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Integer> eleIdList = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)|| Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+        
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        ElectricityCabinetQuery query = new ElectricityCabinetQuery();
+        query.setId(eleId);
+        query.setName(name);
+        query.setEleIdList(eleIdList);
+        query.setTenantId(TenantContextHolder.getTenantId());
+        
+        
         //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityCabinetService.queryName(tenantId, eleId);
+//        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricityCabinetService.selectByQuery(query);
     }
 
     @GetMapping("/admin/electricityCabinet/superAdminQueryName")
-    public R superAdminQueryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
+    public R superAdminQueryName(@RequestParam(value = "eleId", required = false) Integer eleId,
+            @RequestParam(value = "name", required = false) String name) {
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -820,9 +849,13 @@ public class JsonAdminElectricityCabinetController {
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-
+        ElectricityCabinetQuery query = new ElectricityCabinetQuery();
+        query.setId(eleId);
+        query.setName(name);
+    
         //租户
-        return electricityCabinetService.superAdminQueryName(eleId);
+//        return electricityCabinetService.superAdminQueryName(eleId);
+        return R.ok(electricityCabinetService.superAdminSelectByQuery(query));
     }
 
     /**

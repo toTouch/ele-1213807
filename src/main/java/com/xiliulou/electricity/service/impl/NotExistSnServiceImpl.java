@@ -63,4 +63,14 @@ public class NotExistSnServiceImpl implements NotExistSnService {
 	public void delete(Long id) {
 		notExistSnMapper.deleteById(id);
 	}
+	
+	@Override
+	public int deleteNotExistSn(NotExistSn entity) {
+		NotExistSn notExistSn = new NotExistSn();
+		notExistSn.setId(entity.getId());
+		notExistSn.setDelFlag(NotExistSn.DEL_DEL);
+		notExistSn.setUpdateTime(System.currentTimeMillis());
+		
+		return notExistSnMapper.updateById(notExistSn);
+	}
 }

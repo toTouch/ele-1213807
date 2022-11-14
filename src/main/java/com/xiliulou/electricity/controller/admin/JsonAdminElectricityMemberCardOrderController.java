@@ -2,6 +2,8 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -154,15 +156,19 @@ public class JsonAdminElectricityMemberCardOrderController {
     @GetMapping("/admin/electricityMemberCardOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "orderId", required = false) String orderId,
+                            @RequestParam(value = "userName", required = false) String userName,
+                            @RequestParam(value = "status", required = false) Integer status,
                             @RequestParam(value = "memberCardType", required = false) Integer cardType,
+                            @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                            @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                             @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                             @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                             HttpServletResponse response) {
 
-        Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
-        if (days > 33) {
-            throw new CustomBusinessException("搜索日期不能大于33天");
-        }
+		Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
+		if (days > 33) {
+			throw new CustomBusinessException("搜索日期不能大于31天");
+		}
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -186,9 +192,14 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .phone(phone)
                 .orderId(orderId)
                 .cardType(cardType)
+                .status(status)
+                .userName(userName)
+                .franchiseeName(franchiseeName)
+                .cardModel(memberCardModel)
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
+                .cardModel(ElectricityMemberCardOrder.BATTERY_MEMBER_CARD)
                 .franchiseeIds(franchiseeIds).build();
         electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
     }

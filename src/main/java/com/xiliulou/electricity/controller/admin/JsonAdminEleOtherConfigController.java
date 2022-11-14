@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleOtherConfig;
 import com.xiliulou.electricity.service.EleOtherConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,10 @@ public class JsonAdminEleOtherConfigController extends BaseController {
     public R queryEleOtherConfigByCid(@PathVariable("eid") Integer eid) {
 
         EleOtherConfig eleOtherConfig = eleOtherConfigService.queryByEidFromCache(eid);
+        if(Objects.nonNull(eleOtherConfig) && SecurityUtils.isAdmin()){
+            return R.ok(eleOtherConfig);
+        }
+        
         if (Objects.isNull(eleOtherConfig) || !Objects.equals(eleOtherConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }

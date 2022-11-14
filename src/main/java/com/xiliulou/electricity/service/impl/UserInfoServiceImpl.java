@@ -979,6 +979,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .name(user.getUsername())
                 .initElectricityBatterySn(oldElectricityBattery.getSn())
                 .nowElectricityBatterySn(null)
+                .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);

@@ -383,7 +383,8 @@ public class UserServiceImpl implements UserService {
                 .name(adminUserQuery.getName())
                 .phone(adminUserQuery.getPhone())
                 .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
+//                .userType(adminUserQuery.getUserType())
+                .dataType(adminUserQuery.getDataType())
                 .lockFlag(adminUserQuery.getLock())
                 .build();
 
@@ -413,13 +414,15 @@ public class UserServiceImpl implements UserService {
                 userInfo.setUid(oldUserInfo.getUid());
                 userInfoService.update(userInfo);
             }
-        }
-
-        userDataScopeService.deleteByUid(user.getUid());
-        //更新用户数据范围
-        if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
-            List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
-            userDataScopeService.batchInsert(userDataScopes);
+    
+            
+            //更新用户数据范围
+            if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
+                userDataScopeService.deleteByUid(user.getUid());
+                
+                List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
+                userDataScopeService.batchInsert(userDataScopes);
+            }
         }
 
         return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
@@ -480,7 +483,9 @@ public class UserServiceImpl implements UserService {
             if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
                 storeService.deleteByUid(uid);
             }
-
+            
+            //删除用户数据可见范围
+            userDataScopeService.deleteByUid(user.getUid());
         }
         return Pair.of(true, null);
     }
