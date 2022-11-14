@@ -14,6 +14,8 @@ public interface CommonConstant {
     String FRANCHISEE_CODE = "加盟商";
     String STORE_NAME = "STORE_USER";
     String STORE_CODE = "门店";
+    String MAINTAIN_NAME="MAINTAIN_USER";
+    String MAINTAIN_CODE="运维";
 
     String APP_ID = "wx76159ea6aa7a64bc";
     String TENANT_ID = "tenantId";
@@ -22,4 +24,7 @@ public interface CommonConstant {
     String STATUS_ONLINE="online";
     //离线
     String STATUS_OFFLINE="offline";
+
+    String BUCKET_NAME="bucketName";
+    String FILE_NAME="fileName";
 }

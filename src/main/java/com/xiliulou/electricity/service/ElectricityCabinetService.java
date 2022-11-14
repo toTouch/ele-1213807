@@ -144,9 +144,12 @@ public interface ElectricityCabinetService {
 
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
+    List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
     R acquireIdcardFileSign();
 
     R queryName(Integer tenant,Integer id);
+    
+    R selectByQuery(ElectricityCabinetQuery query);
 
     R superAdminQueryName(Integer id);
 
@@ -158,4 +161,6 @@ public interface ElectricityCabinetService {
     R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos);
     
     R checkOtaSession(String sessionId);
+    
+    List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
 }

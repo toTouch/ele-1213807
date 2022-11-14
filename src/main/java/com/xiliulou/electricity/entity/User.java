@@ -56,9 +56,13 @@ public class User {
 	 */
 	private Integer lockFlag;
 	/**
-	 * 0--超级管理员 1--运营商 2--加盟商 3--门店 11--微信小程序用户
+	 * 0--超级管理员 1--运营商 2--普通管理员  11--微信小程序用户
 	 */
 	private Integer userType;
+	/**
+	 * 数据类型 ：0--超级管理员 1--运营商 2--加盟商 3--门店
+	 */
+	private Integer dataType;
 	/**
 	 * 创建时间
 	 */
@@ -109,16 +113,30 @@ public class User {
 	//没有锁住用户
 	public static final Integer USER_UN_LOCK = 0;
 
-	//超级管理员
+
+	/**
+	 * 用户类型  0：超级管理员，1:普通管理员  11：普通微信小程序用户
+	 */
 	public static final Integer TYPE_USER_SUPER = 0;
-	//运营商
+	@Deprecated
 	public static final Integer TYPE_USER_OPERATE = 1;
-	//加盟商
+	@Deprecated
 	public static final Integer TYPE_USER_FRANCHISEE =2;
-	//门店
+	@Deprecated
 	public static final Integer TYPE_USER_STORE=3;
-	//普通微信小程序用户
+	
 	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
+	
+	public static final Integer TYPE_USER_NORMAL_ADMIN = 1;
+
+
+	/**
+	 * 用户数据可见范围   1：运营商，2：加盟商，3：门店
+	 */
+	public static final Integer DATA_TYPE_OPERATE = 1;
+	public static final Integer DATA_TYPE_FRANCHISEE =2;
+	public static final Integer DATA_TYPE_STORE=3;
+
 
 	//默认语言
 	public static final String DEFAULT_LANG = "zh-CN";

@@ -2,21 +2,22 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,7 +37,7 @@ public class JsonAdminCouponController {
     private CouponService couponService;
 
     @Autowired
-    FranchiseeService franchiseeService;
+    UserDataScopeService userDataScopeService;
 
     //新增
     @PostMapping(value = "/admin/coupon")
@@ -66,22 +67,23 @@ public class JsonAdminCouponController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
-                return R.ok();
-            }
-            franchiseeId = franchisee.getId();
-        }
+    
+//        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+//            return R.ok(Collections.EMPTY_LIST);
+//        }
+//
+//        List<Long> franchiseeIds = null;
+//        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+//            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+//            if (CollectionUtils.isEmpty(franchiseeIds)) {
+//                return R.ok();
+//            }
+//        }
 
         CouponQuery couponQuery = CouponQuery.builder()
                 .offset(offset)
@@ -89,8 +91,9 @@ public class JsonAdminCouponController {
                 .name(name)
                 .discountType(discountType)
                 .franchiseeId(franchiseeId)
+//                .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
         return couponService.queryList(couponQuery);
     }
 
@@ -109,19 +112,24 @@ public class JsonAdminCouponController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
-                return R.ok();
-            }
-            franchiseeId = franchisee.getId();
-        }
+    
+//        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+//            return R.ok(Collections.EMPTY_LIST);
+//        }
+//
+//        List<Long> franchiseeIds = null;
+//        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+//            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+//            if (CollectionUtils.isEmpty(franchiseeIds)) {
+//                return R.ok();
+//            }
+//        }
 
         CouponQuery couponQuery = CouponQuery.builder()
                 .name(name)
                 .discountType(discountType)
                 .franchiseeId(franchiseeId)
+//                .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
                 .tenantId(tenantId).build();
         return couponService.queryCount(couponQuery);

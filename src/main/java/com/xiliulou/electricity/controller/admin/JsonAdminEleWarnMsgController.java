@@ -3,11 +3,13 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
+import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.EleWarnMsgExcelQuery;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.UserTypeFactory;
@@ -19,17 +21,11 @@ import com.xiliulou.electricity.vo.EleBusinessWarnMsgVo;
 import com.xiliulou.electricity.vo.EleCabinetWarnMsgVo;
 import com.xiliulou.electricity.vo.EleCellWarnMsgVo;
 import com.xiliulou.security.bean.TokenUser;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -45,7 +41,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminEleWarnMsgController {
+public class JsonAdminEleWarnMsgController extends BaseController {
     /**
      * 服务对象
      */
@@ -80,22 +76,22 @@ public class JsonAdminEleWarnMsgController {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //如果是查全部则直接跳过
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
             if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(new ArrayList<>());
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -134,8 +130,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -157,8 +153,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -174,7 +170,6 @@ public class JsonAdminEleWarnMsgController {
                         @RequestParam(value = "cellNo", required = false) Integer cellNo,
                         @RequestParam(value = "tenantId") Integer tenantId) {
 
-
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -184,16 +179,16 @@ public class JsonAdminEleWarnMsgController {
 
         //如果是查全部则直接跳过
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userDataType:{}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
             if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(new ArrayList<>());
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -266,8 +261,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -293,8 +288,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -319,8 +314,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -340,8 +335,8 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -424,7 +419,7 @@ public class JsonAdminEleWarnMsgController {
             return R.ok(list);
         }
 
-        if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
+        if (StrUtil.isEmpty(electricityCabinetId) && Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
@@ -441,6 +436,13 @@ public class JsonAdminEleWarnMsgController {
         if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.isNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+    
+        if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.nonNull(cellNo)) {
+            String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
@@ -608,7 +610,7 @@ public class JsonAdminEleWarnMsgController {
             return R.ok(list);
         }
 
-        if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
+        if (StrUtil.isEmpty(electricityCabinetId) && Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
@@ -625,6 +627,13 @@ public class JsonAdminEleWarnMsgController {
         if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.isNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+    
+        if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.nonNull(cellNo)) {
+            String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
@@ -713,6 +722,28 @@ public class JsonAdminEleWarnMsgController {
         List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
+    }
+
+    /**
+     * 异常告警导出
+     * @return
+     */
+    @PostMapping(value = "/admin/eleWarnMsg/export")
+    public R eleWarnMsgExport(@RequestBody EleWarnMsgExcelQuery warnMsgQuery) {
+        if(!SecurityUtils.isAdmin()){
+            return R.fail("AUTH.0002", "没有权限!");
+        }
+        
+        verifyParams(warnMsgQuery);
+        return returnTripleResult(eleWarnMsgService.submitExportTask(warnMsgQuery));
+    }
+
+    private void verifyParams(EleWarnMsgExcelQuery warnMsgQuery) {
+//        warnMsgQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        if ((warnMsgQuery.getBeginTime() - warnMsgQuery.getEndTime()) / 1000 / 3600 / 24 > 31) {
+            throw new CustomBusinessException("搜索日期不能大于31天");
+        }
     }
 
 

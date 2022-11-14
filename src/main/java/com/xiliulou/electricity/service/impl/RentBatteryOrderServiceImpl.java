@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
@@ -825,7 +826,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             excelVo.setCellNo(rentBatteryOrderVO.getCellNo());
             excelVo.setElectricityBatterySn(rentBatteryOrderVO.getElectricityBatterySn());
             excelVo.setBatteryDeposit(rentBatteryOrderVO.getBatteryDeposit());
-
+            excelVo.setEleName(Optional.ofNullable(electricityCabinetService.queryByIdFromCache(rentBatteryOrderVO.getElectricityCabinetId())).orElse(new ElectricityCabinet()).getName());
+            
             if (Objects.nonNull(rentBatteryOrderVO.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrderVO.getCreateTime())));
             }
@@ -896,14 +898,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             rentBatteryOrderExcelVOS.add(excelVo);
         }
 
-        String fileName = "换电订单报表.xlsx";
+        String fileName = "租电订单报表.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, RentBatteryOrderExcelVO.class).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
+            EasyExcel.write(outputStream, RentBatteryOrderExcelVO.class).registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
             return;
         } catch (IOException e) {
             log.error("导出报表失败！", e);

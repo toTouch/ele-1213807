@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,7 +52,7 @@ public class JsonAdminElectricityCabinetOrderController {
                        @RequestParam(value = "source", required = false) Integer source,
                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-					   @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+                       @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -62,27 +62,38 @@ public class JsonAdminElectricityCabinetOrderController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+//        List<Integer> eleIdList = null;
+//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+//            if (Objects.isNull(userTypeService)) {
+//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+//                return R.fail("ELECTRICITY.0066", "用户权限不足");
+//            }
+//            eleIdList = userTypeService.getEleIdListByUserType(user);
+//            if (ObjectUtil.isEmpty(eleIdList)) {
+//                return R.ok(new ArrayList<>());
+//            }
+//        }
+
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(new ArrayList<>());
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -97,9 +108,9 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(eleIdList)
                 .source(source)
-				.electricityCabinetName(electricityCabinetName)
-				.oldCellNo(oldCellNo)
-                .tenantId(tenantId).build();
+                .electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo)
+                .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
 
@@ -165,8 +176,6 @@ public class JsonAdminElectricityCabinetOrderController {
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                         @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -175,17 +184,30 @@ public class JsonAdminElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+//        List<Integer> eleIdList = null;
+//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+//            if (Objects.isNull(userTypeService)) {
+//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+//                return R.fail("ELECTRICITY.0066", "用户权限不足");
+//            }
+//            eleIdList = userTypeService.getEleIdListByUserType(user);
+//            if (ObjectUtil.isEmpty(eleIdList)) {
+//                return R.ok();
+//            }
+//        }
+
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok();
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -200,7 +222,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .source(source)
                 .electricityCabinetName(electricityCabinetName)
                 .oldCellNo(oldCellNo)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 
@@ -260,29 +282,27 @@ public class JsonAdminElectricityCabinetOrderController {
             throw new CustomBusinessException("搜索日期不能大于33天");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user ");
             throw new CustomBusinessException("查不到订单");
         }
 
         List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE) || Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
             if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
                 throw new CustomBusinessException("查不到订单");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (ObjectUtil.isEmpty(eleIdList)) {
+            
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
                 throw new CustomBusinessException("查不到订单");
             }
         }
+        
 
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .orderId(orderId)
@@ -291,7 +311,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .eleIdList(eleIdList)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }
 
