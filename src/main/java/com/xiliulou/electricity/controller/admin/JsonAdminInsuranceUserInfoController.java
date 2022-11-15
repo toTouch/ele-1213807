@@ -11,6 +11,7 @@ import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,20 +58,27 @@ public class JsonAdminInsuranceUserInfoController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-
-        return R.ok(insuranceUserInfoService.queryByUidAndTenantId(uid, tenantId));
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(uid, tenantId);
+        if (Objects.isNull(insuranceUserInfoVo)) {
+            return R.ok();
+        }
+        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            return R.ok();
+        }
+        return R.ok(insuranceUserInfoVo);
     }
 
 
     /**
      * 更新用户保险出险状态
+     *
      * @param uid
      * @param insuranceStatus
      * @return
      */
     @PutMapping(value = "/admin/insuranceUserInfo/insuranceStatus")
-    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("insuranceStatus") Integer insuranceStatus){
-        return insuranceUserInfoService.updateInsuranceStatus(uid,insuranceStatus);
+    public R updateServiceStatus(@RequestParam("uid") Long uid, @RequestParam("insuranceStatus") Integer insuranceStatus) {
+        return insuranceUserInfoService.updateInsuranceStatus(uid, insuranceStatus);
     }
 
 }
