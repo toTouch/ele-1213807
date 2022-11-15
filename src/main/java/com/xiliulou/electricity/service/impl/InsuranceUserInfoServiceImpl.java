@@ -156,7 +156,14 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
+        InsuranceUserInfo insuranceUserInfo = queryByUidFromCache(uid);
+        if (Objects.isNull(insuranceUserInfo)) {
+            return R.ok();
+        }
+        if (insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            return R.ok();
+        }
 
-        return R.ok(queryByUidAndTenantId(uid,tenantId));
+        return R.ok(queryByUidAndTenantId(uid, tenantId));
     }
 }
