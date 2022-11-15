@@ -150,7 +150,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         //查询该租户是否有邀请活动，有则不能启用
         if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
             int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
-                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE).notIn(FranchiseeInsurance::getId, id));
+                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
+                    .notIn(FranchiseeInsurance::getId, id));
             if (count > 0) {
                 return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
             }
