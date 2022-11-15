@@ -157,6 +157,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
+        newFranchiseeInsurance.setId(franchiseeInsurance.getId());
         newFranchiseeInsurance.setStatus(status);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
         newFranchiseeInsurance.setTenantId(tenantId);
