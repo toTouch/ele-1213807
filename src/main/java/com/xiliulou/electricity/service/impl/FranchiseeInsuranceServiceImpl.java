@@ -108,22 +108,6 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-//        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
-//
-//        if (count > 0 && !Objects.equals(oldFranchiseeInsurance.getName(), franchiseeInsuranceAddAndUpdate.getName())) {
-//            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
-//            return R.fail("100304", "保险名称已存在！");
-//        }
-
-        //查询该租户是否有邀请活动，有则不能启用
-        if (Objects.equals(franchiseeInsuranceAddAndUpdate.getStatus(), FranchiseeInsurance.STATUS_USABLE)) {
-            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
-                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE));
-            if (count > 0) {
-                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
-            }
-        }
-
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
@@ -136,6 +120,47 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
         insuranceInstruction.setUpdateTime(System.currentTimeMillis());
         insuranceInstructionService.update(insuranceInstruction);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //先删再改
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + newFranchiseeInsurance.getId());
+            return null;
+        });
+
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
+    }
+
+    @Override
+    public R enableOrDisable(Long id, Integer status) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        FranchiseeInsurance franchiseeInsurance = queryByCache(id.intValue());
+        if (Objects.isNull(franchiseeInsurance)) {
+            return R.ok();
+        }
+
+        if (!Objects.equals(franchiseeInsurance.getTenantId(), tenantId) || Objects.equals(status, franchiseeInsurance.getStatus())) {
+            return R.ok();
+        }
+
+        //查询该租户是否有邀请活动，有则不能启用
+        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
+            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE).notIn(FranchiseeInsurance::getId, id));
+            if (count > 0) {
+                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
+            }
+        }
+
+        FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
+        newFranchiseeInsurance.setStatus(status);
+        newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
+        newFranchiseeInsurance.setTenantId(tenantId);
+        Integer update = baseMapper.update(newFranchiseeInsurance);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //先删再改

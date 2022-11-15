@@ -63,6 +63,17 @@ public class JsonAdminFranchiseeInsuranceController {
         return franchiseeInsuranceService.update(franchiseeInsuranceAddAndUpdate);
     }
 
+
+    /**
+     * 禁用启用保险
+     *
+     * @return
+     */
+    @PutMapping("admin/franchiseeInsurance/enableOrDisable")
+    public R enableOrDisable(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
+        return franchiseeInsuranceService.enableOrDisable(id, usableStatus);
+    }
+
     /**
      * 删除
      *
