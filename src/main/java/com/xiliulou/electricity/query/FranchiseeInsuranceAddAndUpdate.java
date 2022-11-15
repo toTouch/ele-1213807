@@ -31,6 +31,7 @@ public class FranchiseeInsuranceAddAndUpdate {
     /**
      * 城市Id
      */
+    @NotNull(message = "城市不能为空!")
     private Integer cid;
 
     /**
