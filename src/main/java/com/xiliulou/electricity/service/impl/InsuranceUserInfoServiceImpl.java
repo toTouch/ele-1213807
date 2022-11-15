@@ -88,7 +88,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
         if (Objects.nonNull(cache)) {
-            return cache;
+            if (Objects.nonNull(cache.getInsuranceExpireTime()) && cache.getInsuranceExpireTime() < System.currentTimeMillis()) {
+                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+            } else {
+                return cache;
+            }
         }
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
