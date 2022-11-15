@@ -33,4 +33,6 @@ public interface InsuranceUserInfoService {
 
     R queryUserInsurance();
 
+    int deleteById(Integer id);
+
 }

@@ -8,6 +8,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
@@ -72,6 +73,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     EleUserOperateRecordService eleUserOperateRecordService;
     @Autowired
     UnionTradeOrderService unionTradeOrderService;
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
 
     /**
@@ -223,6 +226,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 franchiseeUserInfo.setRemainingNumber(null);
                 franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
                 franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
+
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
+                }
             } else {
                 franchiseeUserInfo.setRentCarOrderId(null);
                 franchiseeUserInfo.setRentCarDeposit(null);
@@ -330,6 +339,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateFranchiseeUserInfo.setRemainingNumber(null);
                     updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
                     franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                        redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+                    }
                 } else {
                     updateFranchiseeUserInfo.setRentCarOrderId(null);
                     updateFranchiseeUserInfo.setRentCarDeposit(null);
@@ -599,6 +614,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateFranchiseeUserInfo.setMemberCardExpireTime(null);
             updateFranchiseeUserInfo.setRemainingNumber(null);
             franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(insuranceUserInfo)) {
+                insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+            }
 
 
             //生成后台操作记录

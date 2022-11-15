@@ -39,7 +39,7 @@
         select tiui.uid,tiui.franchisee_id,tiui.premium,tiui.forehead,tiui.insurance_id,tiui.insurance_order_id
          ,tiui.insurance_expire_time,tiui.del_flag,tiui.is_use,tiui.create_time,tiui.update_time
          ,tfi.name as insuranceName ,tfi.cid from t_insurance_user_info tiui left join t_franchisee_insurance tfi on tiui.insurance_id=tfi.id
-         where tiui.tenant_id=#{tenantId} and tiui.uid=#{uid}
+         where tiui.tenant_id=#{tenantId} and tiui.uid=#{uid} and tiui.del_flag=0
     </select>
 
 </mapper>
