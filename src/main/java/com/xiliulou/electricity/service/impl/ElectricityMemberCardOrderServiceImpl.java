@@ -60,12 +60,12 @@ import java.util.*;
 @Service
 @Slf4j
 public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<ElectricityMemberCardOrderMapper, ElectricityMemberCardOrder> implements ElectricityMemberCardOrderService {
-    
+
     /**
      * excel导出每次查询条数
      */
     private static final Long EXPORT_LIMIT = 2000L;
-    
+
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
     @Autowired
@@ -624,42 +624,42 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //
 //            electricityMemberCardOrderExcelVOS.add(excelVo);
 //        }
-    
-        List<ElectricityMemberCardOrderVO> electricityMemberCardOrders= Lists.newArrayList();
+
+        List<ElectricityMemberCardOrderVO> electricityMemberCardOrders = Lists.newArrayList();
         Long offset = 0L;
         while (true) {
             memberCardOrderQuery.setOffset(offset);
             memberCardOrderQuery.setSize(EXPORT_LIMIT);
             List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
             offset += EXPORT_LIMIT;
-        
+
             if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
                 break;
             }
-        
+
             electricityMemberCardOrders.addAll(electricityMemberCardOrderVOList);
         }
-    
+
         if (ObjectUtil.isEmpty(electricityMemberCardOrders)) {
             throw new CustomBusinessException("订单不存在！");
         }
-    
+
         List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
         for (int i = 0; i < electricityMemberCardOrders.size(); i++) {
             ElectricityMemberCardOrderExcelVO excelVo = new ElectricityMemberCardOrderExcelVO();
-            excelVo.setId(i+1);
+            excelVo.setId(i + 1);
             excelVo.setOrderId(electricityMemberCardOrders.get(i).getOrderId());
             excelVo.setName(electricityMemberCardOrders.get(i).getUserName());
             excelVo.setPhone(electricityMemberCardOrders.get(i).getPhone());
             excelVo.setFranchiseeName(electricityMemberCardOrders.get(i).getFranchiseeName());
             excelVo.setMemberCardName(electricityMemberCardOrders.get(i).getCardName());
-            excelVo.setMaxUseCount(Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(),-1L) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));
+            excelVo.setMaxUseCount(Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(), -1L) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));
             excelVo.setValidDays(electricityMemberCardOrders.get(i).getValidDays());
-            excelVo.setStatus(Objects.equals(electricityMemberCardOrders.get(i).getStatus(),ElectricityMemberCardOrder.STATUS_SUCCESS)?"已支付":"未支付");
+            excelVo.setStatus(Objects.equals(electricityMemberCardOrders.get(i).getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS) ? "已支付" : "未支付");
             excelVo.setPayAmount(electricityMemberCardOrders.get(i).getPayAmount());
-            excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(),ElectricityMemberCardOrder.ONLINE_PAYMENT)?"线上支付":"线下支付");
+            excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT) ? "线上支付" : "线下支付");
             excelVo.setBeginningTime(DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
-        
+
             electricityMemberCardOrderExcelVOS.add(excelVo);
         }
 
@@ -1192,7 +1192,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
             electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
             electricityMemberCardOrder.setUserName(userInfo.getUserName());
-//            electricityMemberCardOrder.setValidDays(memberCardOrderAddAndUpdate.getValidDays());
             electricityMemberCardOrder.setValidDays(0);
             electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
             electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
@@ -1250,6 +1249,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //        }
 
         Double carDayTemp = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
+
+        if (remainingNumber == -1) {
+            remainingNumber = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+        }
+        if (oldFranchiseeUserInfo.getRemainingNumber() == -1) {
+            oldFranchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+        }
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
