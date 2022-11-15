@@ -1352,7 +1352,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-        Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
+//        Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
 //        Long memberCardExpireTime = System.currentTimeMillis() +  memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
         Long memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
 
@@ -1361,7 +1361,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //        }
         Long now = System.currentTimeMillis();
         if (memberCardExpireTime < now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
-            remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
+//            remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
             if (memberCardExpireTime <= now) {
                 memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
             } else {
@@ -1373,9 +1373,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
         franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
+        franchiseeUserInfoUpdate.setRemainingNumber(oldFranchiseeUserInfo.getRemainingNumber());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
-        franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
 
 
