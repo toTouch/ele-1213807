@@ -83,6 +83,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //查找用户
         User user = userService.queryByUserPhone(offlineEleOrderVo.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
         if (Objects.isNull(user)) {
+            senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! not found user! userId:{}", offlineEleOrderVo.getPhone());
             return ;
         }
@@ -103,6 +104,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
+            senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! userInfo is null! userId:{}", offlineEleOrderVo.getPhone());
             return ;
         }
@@ -110,6 +112,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //查询用户绑定押金列表
         FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
         if (Objects.isNull(oldFranchiseeUserInfo)) {
+            senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! franchiseeUserInfo is null!userId:{}", user.getUid());
             return ;
         }
