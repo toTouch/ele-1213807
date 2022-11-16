@@ -30,7 +30,7 @@ import java.util.Objects;
  * @Date: 2022/03/03 15:22
  * @Description: 离线换电
  */
-@Service(value= ElectricityIotConstant.NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER)
+@Service(value = ElectricityIotConstant.NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER)
 @Slf4j
 public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHandler {
 
@@ -75,7 +75,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
             log.error("OFFLINE EXCHANGE NO sessionId,{}", receiverMessage.getOriginContent());
-            return ;
+            return;
         }
 
         OfflineEleOrderVo offlineEleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineEleOrderVo.class);
@@ -85,7 +85,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (Objects.isNull(user)) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! not found user! userId:{}", offlineEleOrderVo.getPhone());
-            return ;
+            return;
         }
 
         //幂等加锁
@@ -93,20 +93,20 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (!result) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
-            return ;
+            return;
         }
         ElectricityCabinetOfflineReportOrder oldElectricityCabinetOfflineReportOrder = electricityCabinetOfflineReportOrderService.queryByOrderId(offlineEleOrderVo.getOrderId());
         if (Objects.nonNull(oldElectricityCabinetOfflineReportOrder)) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
-            return ;
+            return;
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! userInfo is null! userId:{}", offlineEleOrderVo.getPhone());
-            return ;
+            return;
         }
 
         //查询用户绑定押金列表
@@ -114,19 +114,19 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (Objects.isNull(oldFranchiseeUserInfo)) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! franchiseeUserInfo is null!userId:{}", user.getUid());
-            return ;
+            return;
         }
 
         //新仓门号处理
-        Integer newCellNo=null;
-        if (StringUtils.isNotEmpty(offlineEleOrderVo.getNewCellNo())){
-            newCellNo=Integer.valueOf(offlineEleOrderVo.getNewCellNo());
+        Integer newCellNo = null;
+        if (StringUtils.isNotEmpty(offlineEleOrderVo.getNewCellNo())) {
+            newCellNo = Integer.valueOf(offlineEleOrderVo.getNewCellNo());
         }
 
         //订单状态处理
-        String orderStatus=offlineEleOrderVo.getStatus();
-        if (offlineEleOrderVo.getIsProcessFail()){
-            orderStatus=ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL;
+        String orderStatus = offlineEleOrderVo.getStatus();
+        if (offlineEleOrderVo.getIsProcessFail()) {
+            orderStatus = ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL;
         }
 
         //生成订单
@@ -171,7 +171,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         if (offlineEleOrderVo.getIsProcessFail()) {
             log.error("OFFLINE EXCHANGE ERROR! exchange exception!orderId:{}", offlineEleOrderVo.getOrderId());
             senMsg(electricityCabinet, offlineEleOrderVo, user);
-            return ;
+            return;
         }
 
         //根据用户购买的套餐类型进行套餐扣减
@@ -209,7 +209,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(offlineEleOrderVo.getOldElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getOldElectricityBatterySn());
-            return ;
+            return;
         }
         ElectricityBattery InWarehouseElectricityBattery = new ElectricityBattery();
         InWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
@@ -226,7 +226,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(offlineEleOrderVo.getNewElectricityBatterySn());
         if (Objects.isNull(newElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn:{}", offlineEleOrderVo.getNewElectricityBatterySn());
-            return ;
+            return;
         }
         ElectricityBattery UsingElectricityBattery = new ElectricityBattery();
         UsingElectricityBattery.setId(newElectricityBattery.getId());
@@ -245,8 +245,13 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         dataMap.put("orderId", offlineEleOrderVo.getOrderId());
         dataMap.put("status", offlineEleOrderVo.getStatus());
 
+        Long uid = -1L;
+        if (Objects.nonNull(user)) {
+            uid = user.getUid();
+        }
+
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + user.getUid() + "_" + offlineEleOrderVo.getOrderId())
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + uid + "_" + offlineEleOrderVo.getOrderId())
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
@@ -284,7 +289,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         /**
          * 订单状态
          */
-        private String  status;
+        private String status;
         /**
          * 订单开始时间
          */
