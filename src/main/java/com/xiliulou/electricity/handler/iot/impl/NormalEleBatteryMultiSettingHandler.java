@@ -13,6 +13,7 @@ import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
 import com.xiliulou.electricity.service.BatteryChargeConfigService;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,16 +42,10 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
-
-        JsonElement jsonElement = JsonUtil.fetchJsonElement(receiverMessage.getOriginContent(), "list");
-        if (Objects.isNull(jsonElement)) {
-            log.error("ELE BATTERY SETTING ERROR! report list is null,sessionId={}", receiverMessage.getSessionId());
-            return;
-        }
-
-        List<BatteryMultiConfigDTO> batteryMultiConfigVOS = JsonUtil.fromJsonArray(jsonElement.getAsString(), BatteryMultiConfigDTO.class);
-        if (CollectionUtils.isEmpty(batteryMultiConfigVOS)) {
-            log.error("ELE BATTERY SETTING ERROR! batteryMultiConfigVOS is empty,sessionId={}", receiverMessage.getSessionId());
+    
+        BatteryChargeMultiDTO batteryChargeMultiDTO = JsonUtil.fromJson(receiverMessage.getOriginContent(), BatteryChargeMultiDTO.class);
+        if (Objects.isNull(batteryChargeMultiDTO)) {
+            log.error("ELE ERROR! batteryChargeMulti is null,sessionId={}", receiverMessage.getSessionId());
             return;
         }
 
@@ -67,12 +62,19 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
 
         BatteryChargeConfigQuery batteryChargeConfigQuery = new BatteryChargeConfigQuery();
         batteryChargeConfigQuery.setApplicationModel(applicationModel);
-        batteryChargeConfigQuery.setConfigList(batteryMultiConfigVOS);
+        batteryChargeConfigQuery.setConfigList(batteryChargeMultiDTO.getList());
         batteryChargeConfigQuery.setElectricityCabinetId(electricityCabinet.getId().longValue());
         batteryChargeConfigQuery.setDelFlag(BatteryChargeConfig.DEL_NORMAL);
         batteryChargeConfigQuery.setTenantId(electricityCabinet.getTenantId());
         batteryChargeConfigQuery.setCreateTime(System.currentTimeMillis());
         batteryChargeConfigQuery.setUpdateTime(System.currentTimeMillis());
         batteryChargeConfigService.insertOrUpdate(batteryChargeConfigQuery);
+    }
+    
+    
+    @Data
+    class BatteryChargeMultiDTO{
+        private String sessionId;
+        private List<BatteryMultiConfigDTO> list;
     }
 }

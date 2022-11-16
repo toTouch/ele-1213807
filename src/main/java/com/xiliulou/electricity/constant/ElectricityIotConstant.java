@@ -375,6 +375,7 @@ public class ElectricityIotConstant {
      * 读取电池充电设置
      */
     public static final String ELE_BATTERY_MULTI_PARAMS_READ = "battery_multi_params_read";
+    public static final String ELE_BATTERY_MULTI_PARAMS_READ_RSP = "battery_multi_rsp";
 
 
     static {
@@ -491,6 +492,7 @@ public class ElectricityIotConstant {
          * 电池充电设置
          */
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ_RSP, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAM_SETTING, NORMAL_ELE_OPERATE_HANDLER);
 
 

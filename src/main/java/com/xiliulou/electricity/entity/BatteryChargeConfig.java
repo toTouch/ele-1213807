@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 
 /**
- * (BatteryChargeConfig)表实体类
+ * 换电柜电池充电设置
  *
  * @author zzlong
  * @since 2022-08-12 14:49:37
