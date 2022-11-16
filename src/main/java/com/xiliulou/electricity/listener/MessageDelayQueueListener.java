@@ -42,6 +42,8 @@ public class MessageDelayQueueListener implements DisposableBean {
                 try {
                     //电池满仓提醒
                     electricityCabinetService.sendFullBatteryMessage(messageDelayQueueService.pullMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE));
+                
+                    Thread.sleep(1000);
                 } catch (Exception e) {
                     log.error("ELE ERROR! send full battery to MQ error!",e);
                 }

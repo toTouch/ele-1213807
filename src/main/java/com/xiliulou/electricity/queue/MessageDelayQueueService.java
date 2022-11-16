@@ -56,6 +56,7 @@ public class MessageDelayQueueService {
             if (CollectionUtils.isEmpty(strings)) {
                 return null;
             }
+            redisService.removeZsetRangeByScore(queue, 0, System.currentTimeMillis());
             
             messageList = strings.stream().map(item -> {
                 Message message = null;
