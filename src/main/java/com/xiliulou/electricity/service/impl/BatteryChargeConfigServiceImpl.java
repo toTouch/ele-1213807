@@ -127,10 +127,7 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
         BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
         BeanUtils.copyProperties(query, batteryChargeConfig);
         batteryChargeConfig.setConfig(JsonUtil.toJson(query.getConfigList()));
-        batteryChargeConfig.setTenantId(TenantContextHolder.getTenantId());
-        batteryChargeConfig.setCreateTime(System.currentTimeMillis());
-        batteryChargeConfig.setUpdateTime(System.currentTimeMillis());
-
+        
         return this.batteryChargeConfigMapper.insertOrUpdate(batteryChargeConfig);
     }
 }

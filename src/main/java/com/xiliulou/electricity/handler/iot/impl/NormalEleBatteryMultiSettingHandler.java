@@ -40,7 +40,6 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
     private RedisService redisService;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
     
         BatteryChargeMultiDTO batteryChargeMultiDTO = JsonUtil.fromJson(receiverMessage.getOriginContent(), BatteryChargeMultiDTO.class);

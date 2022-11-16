@@ -139,9 +139,7 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
                 || Objects.equals(command, RESTART_APP)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
                 || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
                 || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING)
                 || Objects.equals(command, ELE_BATTERY_MULTI_PARAMS_READ);
 
