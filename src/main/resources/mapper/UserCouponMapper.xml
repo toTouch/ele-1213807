@@ -96,7 +96,7 @@
                 status = #{status},
             </if>
         </set>
-        where id = #{couponId} and tenant_id = #{tenantId}
+        where id = #{id} and tenant_id = #{tenantId}
     </update>
 
 

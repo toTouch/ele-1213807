@@ -857,10 +857,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
+
         Long now = System.currentTimeMillis();
-        if (now > franchiseeUserInfo.getMemberCardExpireTime()) {
-            log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
-            return R.fail("100013", "用户套餐已经过期");
+        if (Objects.equals(usableStatus,ElectricityMemberCard.STATUS_UN_USEABLE)) {
+            if (now > franchiseeUserInfo.getMemberCardExpireTime()) {
+                log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
+                return R.fail("100013", "用户套餐已经过期");
+            }
         }
 
         //启用月卡时判断用户是否有电池，收取服务费
