@@ -1282,6 +1282,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100029", "输入的天数过大");
         }
 
+        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            log.error("admin editUserMemberCard ERROR!  ");
+            return R.fail("100244", "续费套餐时间不能小于当前时间");
+        }
+
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
