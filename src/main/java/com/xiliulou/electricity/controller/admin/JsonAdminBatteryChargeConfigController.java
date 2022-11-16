@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
 import com.xiliulou.electricity.service.BatteryChargeConfigService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,19 @@ public class JsonAdminBatteryChargeConfigController {
      */
     @GetMapping("batteryChargeConfig/{electricityCabinetId}")
     public R selectByElectricityCabinetId(@PathVariable("electricityCabinetId") Long electricityCabinetId) {
-        return R.ok(this.batteryChargeConfigService.selectByElectricityCabinetId(electricityCabinetId));
+        
+        Integer tenantId=null;
+        
+        if(!SecurityUtils.isAdmin()){
+            tenantId= TenantContextHolder.getTenantId();
+        }
+    
+        BatteryChargeConfigQuery query = new BatteryChargeConfigQuery();
+        query.setElectricityCabinetId(electricityCabinetId);
+        query.setDelFlag(BatteryChargeConfig.DEL_NORMAL);
+        query.setTenantId(tenantId);
+    
+        return R.ok(this.batteryChargeConfigService.selectByElectricityCabinetId(query));
     }
 
 //    @GetMapping("batteryChargeConfig/{id}")

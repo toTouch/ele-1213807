@@ -63,7 +63,7 @@ public interface BatteryChargeConfigService {
      */
     Boolean deleteById(Long id);
 
-    BatteryChargeConfigVO selectByElectricityCabinetId(Long electricityCabinetId);
+    BatteryChargeConfigVO selectByElectricityCabinetId(BatteryChargeConfigQuery query);
 
     int insertOrUpdate(BatteryChargeConfigQuery query);
 }

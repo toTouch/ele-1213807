@@ -104,14 +104,11 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     }
 
     @Override
-    public BatteryChargeConfigVO selectByElectricityCabinetId(Long electricityCabinetId) {
+    public BatteryChargeConfigVO selectByElectricityCabinetId(BatteryChargeConfigQuery query) {
         BatteryChargeConfigVO batteryChargeConfigVO = new BatteryChargeConfigVO();
 
-        BatteryChargeConfig batteryChargeConfig = this.batteryChargeConfigMapper.selectOne(new LambdaQueryWrapper<BatteryChargeConfig>()
-                .eq(BatteryChargeConfig::getElectricityCabinetId, electricityCabinetId)
-                .eq(BatteryChargeConfig::getTenantId, TenantContextHolder.getTenantId())
-                .eq(BatteryChargeConfig::getDelFlag, BatteryChargeConfig.DEL_NORMAL));
-
+        BatteryChargeConfig batteryChargeConfig = this.batteryChargeConfigMapper.selectByQuery(query);
+        
         if (Objects.isNull(batteryChargeConfig)) {
             return batteryChargeConfigVO;
         }

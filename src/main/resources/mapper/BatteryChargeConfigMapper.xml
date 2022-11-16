@@ -27,14 +27,12 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="BatteryChargeConfigMap">
         <include refid="selectBatteryChargeConfig"/>
-        from t_battery_charge_config
         limit #{offset}, #{limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="BatteryChargeConfigMap">
         <include refid="selectBatteryChargeConfig"/>
-        from t_battery_charge_config
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -61,6 +59,7 @@
                 and update_time = #{updateTime}
             </if>
         </where>
+        limit 1;
     </select>
 
     <!--新增所有列-->
