@@ -73,9 +73,9 @@ public class JsonAdminUserCouponController {
 
     //核销优惠券
     @PostMapping(value = "/admin/userCoupon/destruction")
-    public R destruction(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
-        Long[] uids = (Long[]) JSONUtil.parseArray(uid).toArray(Long[].class);
-        return userCouponService.adminBatchRelease(id, uids);
+    public R destruction(@RequestParam("couponId") String couponId) {
+        Long[] couponIds = (Long[]) JSONUtil.parseArray(couponId).toArray(Long[].class);
+        return userCouponService.destruction(couponIds);
     }
 
 }

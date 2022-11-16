@@ -29,4 +29,6 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     List<UserCoupon> getExpiredUserCoupon(@Param("currentTime") Long currentTime, @Param("offset") Integer offset, @Param("size") Integer size);
 
     Integer queryCount(@Param("query") UserCouponQuery userCouponQuery);
+
+    int update(UserCoupon userCoupon);
 }

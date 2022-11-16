@@ -76,5 +76,21 @@
         </where>
     </select>
 
+    <update id="update">
+        update t_user_coupon
+        <set>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{couponId} and tenant_id = #{tenantId}
+    </update>
+
 
 </mapper>
