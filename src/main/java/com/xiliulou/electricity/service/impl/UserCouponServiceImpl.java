@@ -208,12 +208,6 @@ public class UserCouponServiceImpl implements UserCouponService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         for (Long couponId : couponIds) {
-            Coupon coupon = couponService.queryByIdFromCache(couponId.intValue());
-            if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
-                log.error("Coupon  ERROR! not found coupon ! couponId={} ", couponId);
-                return R.fail("ELECTRICITY.0085", "未找到优惠券");
-            }
-
             UserCoupon couponBuild = UserCoupon.builder()
                     .id(couponId)
                     .status(UserCoupon.STATUS_USED)
