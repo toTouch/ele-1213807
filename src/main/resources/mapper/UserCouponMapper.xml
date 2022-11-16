@@ -9,8 +9,9 @@
         tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time  as createTime,
         tuc.update_time  as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
-        tuc.discount_type  as discountType,tc.amount AS amount,tc.discount AS discount
+        tuc.discount_type  as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
         from t_user_coupon as tuc
+        left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
@@ -18,6 +19,9 @@
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and tuc.phone = #{query.phone}
+            </if>
+            <if test="query.userName != null and query.userName != ''">
+                and tui.name = #{query.userName}
             </if>
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}

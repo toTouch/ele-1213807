@@ -30,6 +30,7 @@ public class JsonAdminUserCouponController {
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "couponId", required = false) Integer couponId,
+                       @RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "phone", required = false) String phone) {
         if (size < 0 || size > 50) {
@@ -45,6 +46,7 @@ public class JsonAdminUserCouponController {
                 .size(size)
                 .couponId(couponId)
                 .uid(uid)
+                .userName(userName)
                 .phone(phone)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return userCouponService.queryList(userCouponQuery);

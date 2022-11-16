@@ -38,4 +38,6 @@ public class UserCouponQuery {
     private List<Integer> typeList;
 
     private Integer tenantId;
+
+    private String userName;
 }
