@@ -26,6 +26,9 @@
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}
             </if>
+            <if test="query.discountType != null">
+                and tuc.discount_type = #{query.discountType}
+            </if>
             <if test="query.statusList!=null and query.statusList!=''">
                 and tuc.status in
                 <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">

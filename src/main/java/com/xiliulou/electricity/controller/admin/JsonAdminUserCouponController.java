@@ -32,6 +32,7 @@ public class JsonAdminUserCouponController {
                        @RequestParam(value = "couponId", required = false) Integer couponId,
                        @RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "discountType", required = false) Integer discountType,
                        @RequestParam(value = "phone", required = false) String phone) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -48,6 +49,7 @@ public class JsonAdminUserCouponController {
                 .uid(uid)
                 .userName(userName)
                 .phone(phone)
+                .discountType(discountType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return userCouponService.queryList(userCouponQuery);
     }

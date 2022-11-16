@@ -40,4 +40,6 @@ public class UserCouponQuery {
     private Integer tenantId;
 
     private String userName;
+
+    private Integer discountType;
 }
