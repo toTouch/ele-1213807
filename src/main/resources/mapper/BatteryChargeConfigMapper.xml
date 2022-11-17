@@ -40,9 +40,6 @@
             <if test="applicationModel != null and applicationModel != ''">
                 and application_model = #{applicationModel}
             </if>
-            <if test="config != null and config != ''">
-                and config = #{config}
-            </if>
             <if test="electricityCabinetId != null">
                 and electricity_cabinet_id = #{electricityCabinetId}
             </if>
@@ -51,12 +48,6 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
             </if>
         </where>
         limit 1;
