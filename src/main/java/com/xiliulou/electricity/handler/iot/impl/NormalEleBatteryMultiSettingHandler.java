@@ -76,6 +76,7 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
     
     @Data
     class BatteryChargeMultiDTO{
+        private Boolean success;
         private String sessionId;
         private List<BatteryMultiConfigDTO> list;
     }
