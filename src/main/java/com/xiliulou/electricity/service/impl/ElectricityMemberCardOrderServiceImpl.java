@@ -865,7 +865,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //            return R.fail("100013", "用户套餐已经过期");
 //        }
         Long now = System.currentTimeMillis();
-        if (Objects.equals(usableStatus,ElectricityMemberCard.STATUS_UN_USEABLE)) {
+        if (Objects.equals(usableStatus, ElectricityMemberCard.STATUS_UN_USEABLE)) {
             if (now > franchiseeUserInfo.getMemberCardExpireTime()) {
                 log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
                 return R.fail("100013", "用户套餐已经过期");
@@ -1332,6 +1332,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long useCount = oldFranchiseeUserInfo.getRemainingNumber();
         if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
             useCount = memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
+        } else {
+            useCount = ElectricityMemberCard.UN_LIMITED_COUNT;
         }
 
         //套餐订单
