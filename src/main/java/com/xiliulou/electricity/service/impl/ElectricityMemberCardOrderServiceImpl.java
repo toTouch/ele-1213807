@@ -1340,7 +1340,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
         electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
-        electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
+        electricityMemberCardOrder.setMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
@@ -1384,7 +1384,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
         franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
-        franchiseeUserInfoUpdate.setRemainingNumber(oldFranchiseeUserInfo.getRemainingNumber());
+        franchiseeUserInfoUpdate.setRemainingNumber(franchiseeUserInfoUpdate.getRemainingNumber());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
@@ -1413,7 +1413,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .oldValidDays(oldCardDay.intValue())
                 .newValidDays(carDayTemp.intValue())
                 .oldMaxUseCount(oldFranchiseeUserInfo.getRemainingNumber())
-                .newMaxUseCount(oldFranchiseeUserInfo.getRemainingNumber())
+                .newMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount())
                 .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();

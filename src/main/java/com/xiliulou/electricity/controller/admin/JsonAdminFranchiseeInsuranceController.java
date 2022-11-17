@@ -124,9 +124,9 @@ public class JsonAdminFranchiseeInsuranceController {
      * @return
      */
     @GetMapping("admin/franchiseeInsurance/queryCount")
-    public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type,
+    public R getElectricityMemberCardPage(@RequestParam(value = "insuranceType", required = false) Integer insuranceType,
                                           @RequestParam(value = "status", required = false) Integer status,
-                                          @RequestParam(value = "cardModel", required = false) Integer cardModel) {
+                                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -137,7 +137,6 @@ public class JsonAdminFranchiseeInsuranceController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long franchiseeId = null;
         if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
@@ -146,7 +145,7 @@ public class JsonAdminFranchiseeInsuranceController {
             }
         }
 
-        return franchiseeInsuranceService.queryCount(status, type, tenantId, franchiseeId);
+        return franchiseeInsuranceService.queryCount(status, insuranceType, tenantId, franchiseeId);
     }
 
 }
