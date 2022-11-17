@@ -1339,7 +1339,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Long useCount = oldFranchiseeUserInfo.getRemainingNumber();
         if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
-            useCount=memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
+            useCount = memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
         }
 
         //套餐订单
@@ -1382,11 +1382,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
+        Long remainingNumber = oldFranchiseeUserInfo.getRemainingNumber();
+        if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
+            remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
+        }
+
         franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
         franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
-        franchiseeUserInfoUpdate.setRemainingNumber(useCount);
+        franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
