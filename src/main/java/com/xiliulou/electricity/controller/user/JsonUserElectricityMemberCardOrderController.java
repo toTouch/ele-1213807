@@ -60,6 +60,16 @@ public class JsonUserElectricityMemberCardOrderController {
         return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
     }
 
+    /**
+     * 限制时间停卡
+     * @param disableCardDays
+     * @return
+     */
+    @PutMapping("user/memberCard/disableMemberCardForLimitTime")
+    public R disableMemberCardForLimitTime(@RequestParam("usableStatus") Integer disableCardDays){
+        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays);
+    }
+
     @GetMapping("user/memberCard/getDisableMemberCardList")
     public R getDisableMemberCardList(@RequestParam("offset") Long offset, @RequestParam("size") Long size){
 

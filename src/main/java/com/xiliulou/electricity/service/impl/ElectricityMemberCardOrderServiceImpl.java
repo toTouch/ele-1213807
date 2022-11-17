@@ -818,6 +818,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public R disableMemberCardForLimitTime(Integer usableStatus) {
+        return null;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid) {
 
