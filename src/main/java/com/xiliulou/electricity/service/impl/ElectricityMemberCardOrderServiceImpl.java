@@ -1332,6 +1332,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
 
+        if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber()) && memberCardOrderAddAndUpdate.getMaxUseCount() < oldFranchiseeUserInfo.getRemainingNumber()) {
+            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+            return R.fail("100245", "续费套餐次数不能小于原套餐次数!");
+        }
+
+        Long useCount = oldFranchiseeUserInfo.getRemainingNumber();
+        if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
+            useCount=memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
+        }
+
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -1340,12 +1350,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
         electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
-        electricityMemberCardOrder.setMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount());
+        electricityMemberCardOrder.setMaxUseCount(useCount);
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getUserName());
-//            electricityMemberCardOrder.setValidDays(memberCardOrderAddAndUpdate.getValidDays());
         electricityMemberCardOrder.setValidDays(0);
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
@@ -1358,21 +1367,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24.0);
             electricityMemberCardOrder.setValidDays(validDays.intValue());
         }
-
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//        Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
-//        Long memberCardExpireTime = System.currentTimeMillis() +  memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
         Long memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
 
-//        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
-//            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
-//        }
         Long now = System.currentTimeMillis();
         if (memberCardExpireTime < now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
-//            remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
             if (memberCardExpireTime <= now) {
                 memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
             } else {
@@ -1384,11 +1386,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
         franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
-        franchiseeUserInfoUpdate.setRemainingNumber(memberCardOrderAddAndUpdate.getMaxUseCount());
+        franchiseeUserInfoUpdate.setRemainingNumber(useCount);
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-
 
         franchiseeUserInfoService.updateMemberCardExpire(franchiseeUserInfoUpdate);
 
@@ -1396,10 +1397,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (oldFranchiseeUserInfo.getMemberCardExpireTime() - now > 0) {
             oldCardDay = Math.ceil((oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
         }
-//        Long oldMaxUseCount = null;
-//        if (Objects.nonNull(memberCardOrderAddAndUpdate.getMaxUseCount())) {
-//            oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
-//        }
 
         Double carDayTemp = Math.ceil((franchiseeUserInfoUpdate.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
 
