@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 电池充电设置
@@ -68,6 +69,8 @@ public class NormalEleBatteryMultiSettingHandler extends AbstractElectricityIotH
         batteryChargeConfigQuery.setCreateTime(System.currentTimeMillis());
         batteryChargeConfigQuery.setUpdateTime(System.currentTimeMillis());
         batteryChargeConfigService.insertOrUpdate(batteryChargeConfigQuery);
+    
+        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + receiverMessage.getSessionId(), batteryChargeMultiDTO, 30L, TimeUnit.SECONDS);
     }
     
     
