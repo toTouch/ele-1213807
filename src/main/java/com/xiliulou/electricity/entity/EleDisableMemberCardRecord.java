@@ -81,6 +81,26 @@ public class EleDisableMemberCardRecord {
      */
     private Long cardDays;
 
+    /**
+     * 用户选择的停卡天数
+     */
+    private Integer chooseDays;
+
+    /**
+     * 用户真实的停卡天数
+     */
+    private Integer realDays;
+
+    /**
+     * 停卡付费状态(0--初始化 1--未支付服务费，2--已支付服务费)
+     */
+    private Integer payStatus;
+
+    /**
+     * 电池服务费收费标准 按天计费
+     */
+    private BigDecimal chargeRate;
+
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;

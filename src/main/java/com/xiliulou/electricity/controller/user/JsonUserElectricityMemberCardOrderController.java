@@ -66,7 +66,7 @@ public class JsonUserElectricityMemberCardOrderController {
      * @return
      */
     @PutMapping("user/memberCard/disableMemberCardForLimitTime")
-    public R disableMemberCardForLimitTime(@RequestParam("usableStatus") Integer disableCardDays){
+    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays){
         return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays);
     }
 
