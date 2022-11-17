@@ -1329,11 +1329,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100245", "续费套餐次数不能小于原套餐次数!");
         }
 
-        Long useCount = oldFranchiseeUserInfo.getRemainingNumber();
+        Long useCount = electricityMemberCard.getMaxUseCount();
         if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
             useCount = memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
-        } else {
-            useCount = ElectricityMemberCard.UN_LIMITED_COUNT;
         }
 
         //套餐订单
