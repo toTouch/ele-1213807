@@ -1315,15 +1315,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
-        if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && memberCardOrderAddAndUpdate.getValidDays() > 65535) {
-            log.error("admin editUserMemberCard ERROR! not found user ");
-            return R.fail("100029", "输入的天数过大");
-        }
-
-        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() < System.currentTimeMillis()) {
-            log.error("admin editUserMemberCard ERROR!  ");
-            return R.fail("100244", "续费套餐时间不能小于当前时间");
-        }
+//        if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && memberCardOrderAddAndUpdate.getValidDays() > 65535) {
+//            log.error("admin editUserMemberCard ERROR! not found user ");
+//            return R.fail("100029", "输入的天数过大");
+//        }
+//
+//        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() < System.currentTimeMillis()) {
+//            log.error("admin editUserMemberCard ERROR!  ");
+//            return R.fail("100244", "续费套餐时间不能小于当前时间");
+//        }
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1416,15 +1416,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
 
-        if (!ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, oldFranchiseeUserInfo.getRemainingNumber()) && memberCardOrderAddAndUpdate.getMaxUseCount() < oldFranchiseeUserInfo.getRemainingNumber()) {
-            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
-            return R.fail("100245", "续费套餐次数不能小于原套餐次数!");
-        }
+//        if (!ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, oldFranchiseeUserInfo.getRemainingNumber()) && memberCardOrderAddAndUpdate.getMaxUseCount() < oldFranchiseeUserInfo.getRemainingNumber()) {
+//            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+//            return R.fail("100245", "续费套餐次数不能小于原套餐次数!");
+//        }
 
-        Long useCount = electricityMemberCard.getMaxUseCount();
-        if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
-            useCount = memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
-        }
+//        Long useCount = electricityMemberCard.getMaxUseCount();
+//        if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
+//            useCount = memberCardOrderAddAndUpdate.getMaxUseCount() - oldFranchiseeUserInfo.getRemainingNumber();
+//        }
 
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
@@ -1434,7 +1434,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
         electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
-        electricityMemberCardOrder.setMaxUseCount(useCount);
+        electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
@@ -1445,29 +1445,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
-
-        //计算套餐剩余天数
-        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
-            Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24.0);
-            electricityMemberCardOrder.setValidDays(validDays.intValue());
-        }
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
         Long memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
 
-//        if (memberCardExpireTime < now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
-//            if (memberCardExpireTime <= now) {
-//                memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
-//            } else {
-//                memberCardExpireTime = System.currentTimeMillis();
-//            }
-//        }
 
         Long remainingNumber = oldFranchiseeUserInfo.getRemainingNumber();
         if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
-            remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
+            remainingNumber = electricityMemberCard.getMaxUseCount();
         }
 
         franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
