@@ -1275,6 +1275,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
+        if (remainingNumber == FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER) {
+            remainingNumber = ElectricityMemberCard.UN_LIMITED_COUNT;
+        }
+
         franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
         franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
@@ -1292,9 +1296,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             oldCardDay = Math.ceil((oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
         }
 
-        Double carDayTemp=0.0;
-        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime()>now) {
+        Double carDayTemp = 0.0;
+        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > now) {
             carDayTemp = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
+        }
+
+
+        Long oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
+        if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT)) {
+            oldMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
         }
 
 
@@ -1307,7 +1317,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .name(user.getUsername())
                 .oldValidDays(oldCardDay.intValue())
                 .newValidDays(carDayTemp.intValue())
-                .oldMaxUseCount(oldFranchiseeUserInfo.getRemainingNumber())
+                .oldMaxUseCount(oldMaxUseCount)
                 .newMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount())
                 .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
