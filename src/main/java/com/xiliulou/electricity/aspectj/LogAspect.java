@@ -108,10 +108,6 @@ public class LogAspect {
             log.info("requestId={} ip={} uid={} method={} uri={} result={}", requestId, ip, currentUser.getUid(),
                     ServletUtils.getRequest().getMethod(), ServletUtils.getRequest().getRequestURI(),
                     JsonUtil.toJson(jsonResult));
-    
-            if (e == null) {
-                throw new RuntimeException("异常啦");
-            }
             
             // 保存到数据库
             executorService.execute(() -> saveSysOperLog(operLog));
