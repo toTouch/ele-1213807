@@ -1180,6 +1180,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
+        ElectricityMemberCard oldElectricityMemberCard = electricityMemberCardService.queryByCache(oldFranchiseeUserInfo.getCardId());
+        if (Objects.isNull(electricityMemberCard) || !Objects.equals(electricityMemberCard.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("admin editUserMemberCard ERROR ,NOT FOUND MEMBER_CARD BY ID={},uid={}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
+        }
+        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
+            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0088", "月卡已禁用!");
+        }
+
         Long now = System.currentTimeMillis();
         long cardDays = 0;
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
@@ -1303,10 +1313,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 
         Long oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
-        if (Objects.nonNull(oldMaxUseCount) && Objects.equals(oldMaxUseCount, ElectricityMemberCard.UN_LIMITED_COUNT)) {
-            oldMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+        if (Objects.nonNull(oldElectricityMemberCard) && Objects.equals(oldElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            oldMaxUseCount=FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
         }
-
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
@@ -1496,15 +1505,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Double carDayTemp = Math.ceil((franchiseeUserInfoUpdate.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
 
         Long oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
-        if (Objects.nonNull(oldMaxUseCount) && Objects.equals(oldMaxUseCount, ElectricityMemberCard.UN_LIMITED_COUNT)) {
-            oldMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
-        }
-
         Long newMaxUseCount = electricityMemberCard.getMaxUseCount();
-        if (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, oldFranchiseeUserInfo.getRemainingNumber())) {
-            newMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
-        }
 
+        if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            oldMaxUseCount=FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+            newMaxUseCount=FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+        }
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
