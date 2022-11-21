@@ -1492,7 +1492,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .oldValidDays(oldCardDay.intValue())
                 .newValidDays(carDayTemp.intValue())
                 .oldMaxUseCount(oldFranchiseeUserInfo.getRemainingNumber())
-                .newMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount())
+                .newMaxUseCount(remainingNumber)
                 .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
