@@ -1450,7 +1450,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-        Long memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
+        Long memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
+        if (memberCardExpireTime < now) {
+            //当前时间加购买的套餐过期时间
+            memberCardExpireTime = now + electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        } else {
+            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime() + electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        }
 
 
         Long remainingNumber = oldFranchiseeUserInfo.getRemainingNumber();
