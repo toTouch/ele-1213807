@@ -1461,7 +1461,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Long remainingNumber = oldFranchiseeUserInfo.getRemainingNumber();
         if (!ObjectUtil.equal(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER, oldFranchiseeUserInfo.getRemainingNumber())) {
-            remainingNumber = electricityMemberCard.getMaxUseCount();
+            remainingNumber = electricityMemberCard.getMaxUseCount() + oldFranchiseeUserInfo.getRemainingNumber();
         }
 
         franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
