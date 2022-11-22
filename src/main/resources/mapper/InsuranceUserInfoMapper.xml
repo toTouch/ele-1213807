@@ -38,7 +38,8 @@
     <select id="queryByUidAndTenantId" resultType="com.xiliulou.electricity.vo.InsuranceUserInfoVo">
         select tiui.uid,tiui.franchisee_id,tiui.premium,tiui.forehead,tiui.insurance_id,tiui.insurance_order_id
          ,tiui.insurance_expire_time,tiui.del_flag,tiui.is_use,tiui.create_time,tiui.update_time
-         ,tfi.name as insuranceName ,tfi.cid from t_insurance_user_info tiui left join t_franchisee_insurance tfi on tiui.insurance_id=tfi.id
+         ,tfi.name as insuranceName ,tfi.cid,tio.update_time as payInsuranceTime from t_insurance_user_info tiui left join t_franchisee_insurance tfi on tiui.insurance_id=tfi.id
+         left join t_insurance_order tio on tiui.insurance_order_id=tio.order_id
          where tiui.tenant_id=#{tenantId} and tiui.uid=#{uid} and tiui.del_flag=0
     </select>
 

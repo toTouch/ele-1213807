@@ -71,5 +71,10 @@ public class InsuranceUserInfoVo {
 
     private Integer cid;
 
+    /**
+     * 保险购买时间
+     */
+    private Long payInsuranceTime;
+
 
 }
