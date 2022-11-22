@@ -49,6 +49,7 @@
                 and oper_time &lt;=#{endTime}
             </if>
         </where>
+        order by oper_time desc
         limit #{offset}, #{size}
     </select>
     
