@@ -78,15 +78,4 @@ public class FranchiseeVO {
      */
     private BigDecimal batteryServiceFee;
 
-    /**
-     *  是否开启电池服务费功能 (0--开启，1--关闭)
-     */
-    private Integer isOpenServiceFee;
-
-    /**
-     * 停卡是否限制时间 (0--不限制，1--限制)
-     */
-    private Integer disableCardTimeType;
-
-
 }
