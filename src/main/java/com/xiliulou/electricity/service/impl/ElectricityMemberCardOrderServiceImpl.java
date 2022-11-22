@@ -485,7 +485,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .uid(user.getUid())
                     .payAmount(electricityMemberCardOrder.getPayAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_MEMBER_CARD)
-                    .attach(ElectricityTradeOrder.ATTACH_MEMBER)
+                    .attach(String.valueOf(electricityMemberCardOrderQuery.getUserCouponId()))
                     .description("月卡收费")
                     .tenantId(tenantId).build();
 
@@ -1314,7 +1314,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Long oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
         if (Objects.nonNull(oldElectricityMemberCard) && Objects.equals(oldElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-            oldMaxUseCount=FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+            oldMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
         }
 
         //生成后台操作记录
@@ -1507,9 +1507,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
         Long newMaxUseCount = electricityMemberCard.getMaxUseCount();
 
-        if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-            oldMaxUseCount=FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
-            newMaxUseCount=FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            oldMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+            newMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+        } else {
+            newMaxUseCount = oldMaxUseCount + newMaxUseCount;
         }
 
         //生成后台操作记录

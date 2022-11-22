@@ -96,12 +96,12 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
             electricityTradeOrderService.notifyRentCarDepositOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)) {
             electricityTradeOrderService.notifyRentCarMemberOrder(callBackResource);
-        } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_MEMBER)) {
-            electricityTradeOrderService.notifyMemberOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_INSURANCE)) {
             electricityTradeOrderService.notifyInsuranceOrder(callBackResource);
-        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_UNION_INSURANCE_AND_DEPOSIT)){
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_UNION_INSURANCE_AND_DEPOSIT)) {
             unionTradeOrderService.notifyUnionDepositAndInsurance(callBackResource);
+        } else {
+            electricityTradeOrderService.notifyMemberOrder(callBackResource);
         }
     }
 
