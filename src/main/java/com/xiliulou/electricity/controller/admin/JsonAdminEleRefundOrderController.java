@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -172,7 +171,7 @@ public class JsonAdminEleRefundOrderController {
 
     //后台租车线下退款处理
     @PostMapping("/admin/handleOffLineRefund")
-    @Log(title = "后台租车线下退款处理")
+    @Log(title = "后台线下退款处理")
     public R handleOffLineRefund(@RequestParam("refundOrderNo") String refundOrderNo,
                                  @RequestParam("status") Integer status,
                                  @RequestParam(value = "errMsg", required = false) String errMsg,
@@ -182,6 +181,37 @@ public class JsonAdminEleRefundOrderController {
         return eleRefundOrderService.handleOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
     }
 
+
+    /**
+     * 租车押金后台线上退款
+     * @return
+     */
+    @PostMapping("/admin/refundDepositCarByOnline")
+    @Log(title = "租车押金后台线上退款")
+    public R refundDepositCarByOnline(@RequestParam("refundOrderNo") String refundOrderNo,
+                          @RequestParam("status") Integer status,
+                          @RequestParam(value = "errMsg", required = false) String errMsg,
+                          @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+                          @RequestParam("uid") Long uid,
+                          HttpServletRequest request) {
+        return eleRefundOrderService.handleRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+    }
+
+    /**
+     * 租车押金后台线下退款
+     */
+    @PostMapping("/admin/refundDepositCarByOffline")
+    @Log(title = "租车押金后台线下退款")
+    public R refundDepositCarByOffline(@RequestParam("refundOrderNo") String refundOrderNo,
+                                 @RequestParam("status") Integer status,
+                                 @RequestParam(value = "errMsg", required = false) String errMsg,
+                                 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+                                 @RequestParam("uid") Long uid,
+                                 HttpServletRequest request) {
+        return eleRefundOrderService.handleOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+    }
+
+
     //用户电池押金缴纳方式
     @GetMapping("/admin/queryUserDepositPayType")
     public R queryUserDepositPayType(@RequestParam("uid") Long uid) {
@@ -190,7 +220,7 @@ public class JsonAdminEleRefundOrderController {
 
 	//后台电池线下退款处理
 	@PostMapping("/admin/batteryOffLineRefund")
-    @Log(title = "后台电池退款处理")
+    @Log(title = "电池后台线下退押金")
 	public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
 								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
 								 @RequestParam("uid") Long uid,
@@ -198,5 +228,13 @@ public class JsonAdminEleRefundOrderController {
 		return eleRefundOrderService.batteryOffLineRefund( errMsg,refundAmount, uid, refundType);
 	}
 
-
+    //后台电池线上退款处理
+    @PostMapping("/admin/batteryOnLineRefund")
+    @Log(title = "电池后台线上退押金")
+    public R batteryOnLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
+                                  @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+                                  @RequestParam("uid") Long uid,
+                                  @RequestParam("refundType") Integer refundType) {
+        return eleRefundOrderService.batteryOffLineRefund( errMsg,refundAmount, uid, refundType);
+    }
 }
