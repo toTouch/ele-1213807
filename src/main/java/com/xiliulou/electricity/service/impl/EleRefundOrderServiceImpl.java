@@ -5,8 +5,10 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
@@ -20,6 +22,7 @@ import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +71,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     EleRefundOrderHistoryService eleRefundOrderHistoryService;
     @Autowired
     EleUserOperateRecordService eleUserOperateRecordService;
+    @Autowired
+    UnionTradeOrderService unionTradeOrderService;
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
 
     /**
@@ -101,18 +108,30 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //第三方订单号
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
+        String tradeOrderNo = null;
+        Integer total = null;
         if (Objects.isNull(electricityTradeOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
             throw new CustomBusinessException("未找到交易订单!");
+        }
+        tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+        total = refundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue();
+
+        if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
+            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
+            if (Objects.nonNull(unionTradeOrder)) {
+                tradeOrderNo = unionTradeOrder.getTradeOrderNo();
+                total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
+            }
         }
 
         //退款
         WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
         wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
-        wechatV3RefundQuery.setTotal(refundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
+        wechatV3RefundQuery.setTotal(total);
         wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
         wechatV3RefundQuery.setReason("退款");
-        wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
+        wechatV3RefundQuery.setOrderId(tradeOrderNo);
         wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl() + electricityTradeOrder.getTenantId());
         wechatV3RefundQuery.setCurrency("CNY");
         wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
@@ -140,14 +159,28 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByTradeOrderNo(outTradeNo);
+
+        String orderNo = null;
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", outTradeNo);
-            return Pair.of(false, "未找到交易订单!");
+            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(outTradeNo);
+            if (Objects.isNull(unionTradeOrder)) {
+                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", outTradeNo);
+                return Pair.of(false, "未找到交易订单!");
+            }
+            String jsonOrderId = unionTradeOrder.getJsonOrderId();
+            List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+            if (CollectionUtils.isEmpty(orderIdLIst)) {
+                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", outTradeNo);
+                return Pair.of(false, "未找到交易订单");
+            }
+            orderNo = orderIdLIst.get(0);
+        } else {
+            orderNo = electricityTradeOrder.getOrderNo();
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 
@@ -193,6 +226,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 franchiseeUserInfo.setRemainingNumber(null);
                 franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
                 franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
+
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
+                }
             } else {
                 franchiseeUserInfo.setRentCarOrderId(null);
                 franchiseeUserInfo.setRentCarDeposit(null);
@@ -232,7 +271,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if(!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())){
+        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
@@ -300,6 +339,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateFranchiseeUserInfo.setRemainingNumber(null);
                     updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
                     franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                        redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+                    }
                 } else {
                     updateFranchiseeUserInfo.setRentCarOrderId(null);
                     updateFranchiseeUserInfo.setRentCarDeposit(null);
@@ -356,7 +401,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R handleOffLineRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
-    
+
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo)
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
@@ -372,7 +417,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if(!Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
@@ -450,7 +495,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public R queryUserDepositPayType(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("admin query user deposit pay type  ERROR! not found user,uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
@@ -461,7 +506,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("admin query user deposit pay type ERROR! not found user! uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if(!Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
@@ -470,7 +515,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId(),EleDepositOrder.ELECTRICITY_DEPOSIT);
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
         return R.ok(eleDepositOrder.getPayType());
     }
 
@@ -489,7 +534,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if(!Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
@@ -514,7 +559,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //退款中
         Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
-        if (Objects.nonNull(refundStatus) && (Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)  || Objects.equals(refundStatus,EleRefundOrder.STATUS_INIT))) {
+        if (Objects.nonNull(refundStatus) && (Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND) || Objects.equals(refundStatus, EleRefundOrder.STATUS_INIT))) {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid={}", uid);
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
@@ -569,6 +614,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateFranchiseeUserInfo.setMemberCardExpireTime(null);
             updateFranchiseeUserInfo.setRemainingNumber(null);
             franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+            if (Objects.nonNull(insuranceUserInfo)) {
+                insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+            }
 
 
             //生成后台操作记录
@@ -679,8 +730,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType) {
-        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId,todayStartTime,refundOrderType)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType) {
+        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId, todayStartTime, refundOrderType)).orElse(BigDecimal.valueOf(0));
     }
 
     public String generateOrderId(Long uid) {

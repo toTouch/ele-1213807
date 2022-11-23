@@ -143,4 +143,14 @@ public class UserBatteryInfoVO {
      * 电池业务状态
      */
     private Integer businessStatus;
+
+    /**
+     * 是否购买不保险
+     */
+    private Integer isUse;
+
+    /**
+     * 保险过期时间
+     */
+    private Long insuranceExpireTime;
 }

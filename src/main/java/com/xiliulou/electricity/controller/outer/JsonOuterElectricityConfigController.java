@@ -44,4 +44,14 @@ public class JsonOuterElectricityConfigController {
         return electricityPayParamsService.getTenantId(appId);
     }
 
+
+    /**
+     * 根据小程序appId获取tenantId及租户配置信息
+     *
+     */
+    @GetMapping(value = "/outer/tenantConfig")
+    public R tenantConfig(@RequestParam("appId") String appId) {
+        return R.ok(electricityConfigService.getTenantConfig(appId));
+    }
+
 }

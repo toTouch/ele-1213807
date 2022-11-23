@@ -84,6 +84,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     EleDepositOrderService eleDepositOrderService;
     @Autowired
+    OffLineElectricityCabinetService offLineElectricityCabinetService;
+    @Autowired
     FranchiseeService franchiseeService;
 
     @Autowired
@@ -99,6 +101,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -252,7 +257,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime);
+        CompletableFuture<Void> queryInsurance = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.stream().forEach(item -> {
+                if (Objects.nonNull(item.getUid())) {
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(), userInfoQuery.getTenantId());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        item.setIsUse(insuranceUserInfo.getIsUse());
+                        item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
+                    }
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -738,7 +758,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        if (!Objects.equals(tenantId,oldUserInfo.getTenantId())) {
+        if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
             return R.ok();
         }
 
@@ -864,7 +884,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        if (!Objects.equals(tenantId,oldUserInfo.getTenantId())) {
+        if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
             return R.ok();
         }
 
@@ -1061,8 +1081,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public R queryUserBelongFranchisee(Long franchiseeId,Integer tenantId) {
-        return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId,tenantId));
+    public R queryUserBelongFranchisee(Long franchiseeId, Integer tenantId) {
+        return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId, tenantId));
     }
 
     @Override
@@ -1127,6 +1147,76 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisByUserStatus(tenantId, userStatus, beginTime, endTime);
     }
+
+    @Override
+    public UserInfoDetailVO selectUserInfoDetail() {
+        UserInfoDetailVO userInfoDetailVO = new UserInfoDetailVO();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user ");
+            return userInfoDetailVO;
+        }
+
+        //审核状态
+        UserInfo userInfo = this.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
+            return userInfoDetailVO;
+        }
+        userInfoDetailVO.setAuthStatus(userInfo.getAuthStatus());
+
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("ELE ERROR! not found franchiseeUserInfo,uid={}", userInfo.getUid());
+            return userInfoDetailVO;
+        }
+        //套餐状态
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
+        } else {
+            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.EXIST_MEMBER_CARD);
+        }
+
+        //服务状态
+        userInfoDetailVO.setServiceStatus(getServiceStatus(userInfo, franchiseeUserInfo));
+
+
+        //电池服务费
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = franchiseeUserInfoService.queryUserBatteryServiceFee(user.getUid());
+        userInfoDetailVO.setBatteryServiceFee(eleBatteryServiceFeeVO);
+
+
+        //用户状态(离线换电)
+        UserFrontDetectionVO userFrontDetection = offLineElectricityCabinetService.getUserFrontDetection(userInfo, franchiseeUserInfo);
+        userInfoDetailVO.setUserFrontDetection(userFrontDetection);
+
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(user.getUid(), user.getTenantId());
+        userInfoDetailVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+        return userInfoDetailVO;
+    }
+
+    private Integer getServiceStatus(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
+        Integer serviceStatus = userInfo.getServiceStatus();
+
+        if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+            serviceStatus = franchiseeUserInfo.getServiceStatus();
+        }
+
+//        //用户是否开通月卡
+//        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+//            log.error("ELE ERROR! not found memberCard,uid={} ", userInfo.getUid());
+//            serviceStatus = -1;
+//        } else if (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis() || franchiseeUserInfo.getRemainingNumber() == 0) {
+//            log.error("ELE ERROR! memberCard  is Expire,uid={} ", userInfo.getUid());
+//            serviceStatus = -1;
+//        }
+
+        return serviceStatus;
+    }
+
 
     @Override
     public R deleteUserInfo(Long uid) {

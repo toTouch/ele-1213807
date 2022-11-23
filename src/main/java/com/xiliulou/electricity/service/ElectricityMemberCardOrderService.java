@@ -57,6 +57,8 @@ public interface ElectricityMemberCardOrderService {
 
     R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
 
+    R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
+
     R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);

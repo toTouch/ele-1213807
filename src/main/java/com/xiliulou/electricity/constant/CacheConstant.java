@@ -212,5 +212,15 @@ public interface CacheConstant {
      */
     String WARN_MESSAGE_EXPORT_CACHE="warn_message_export_cache:";
 
+    /**
+     * 保险缓存
+     */
+    String CACHE_FRANCHISEE_INSURANCE = "CACHE_FRANCHISEE_INSURANCE:";
+
+    /**
+     * insuranceUserInfo的缓存
+     */
+    String CACHE_INSURANCE_USER_INFO = "insurance_user_info:";
+
     String SERVICE_FEE_USER_INFO = "service_fee_user_info:";
 }

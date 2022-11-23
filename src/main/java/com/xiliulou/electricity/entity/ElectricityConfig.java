@@ -86,6 +86,11 @@ public class ElectricityConfig {
      */
     private Integer isEnableReturnBoxCheck;
 
+    /**
+     * 是否开启保险 （0--是 1--否）
+     */
+    private Integer isOpenInsurance;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
@@ -121,5 +126,12 @@ public class ElectricityConfig {
      */
     public static Integer ENABLE_RETURN_BOX_CHECK = 0;
     public static Integer DISABLE_RETURN_BOX_CHECK = 1;
+
+
+    /**
+     * 是否开启保险 0--开启 1--关闭
+     */
+    public static Integer ENABLE_INSURANCE = 0;
+    public static Integer DISABLE_INSURANCE = 1;
 
 }
