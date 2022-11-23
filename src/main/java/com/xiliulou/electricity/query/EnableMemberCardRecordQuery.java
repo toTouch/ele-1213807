@@ -38,5 +38,6 @@ public class EnableMemberCardRecordQuery {
 
     private List<Long> franchiseeIds;
 
+    private Long uid;
 
 }
