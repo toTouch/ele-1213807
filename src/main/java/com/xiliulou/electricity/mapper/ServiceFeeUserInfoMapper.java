@@ -20,4 +20,6 @@ public interface ServiceFeeUserInfoMapper extends BaseMapper<ServiceFeeUserInfo>
 
     int update(ServiceFeeUserInfo serviceFeeUserInfo);
 
+    int updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);
+
 }

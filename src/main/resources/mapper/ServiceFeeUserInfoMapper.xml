@@ -15,4 +15,29 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
 
+    <update id="updateByUid">
+        update t_service_fee_user_info
+        <set>
+            <if test="existBatteryServiceFee != null">
+                exist_battery_service_fee = #{existBatteryServiceFee},
+            </if>
+            <if test="disableMemberCardNo != null">
+                disable_member_card_no = #{disableMemberCardNo},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where uid = #{uid} and tenant_id = #{tenantId}
+    </update>
+
 </mapper>

@@ -80,6 +80,8 @@ public class ElectricityTradeOrderServiceImpl extends
     UserAmountService userAmountService;
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -494,6 +496,14 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoUpdate.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+            }
         }
 
         //交易订单

@@ -928,7 +928,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             existServiceFee = ServiceFeeUserInfo.EXIST_SERVICE_FEE;
         }
 
-        ServiceFeeUserInfo serviceFeeUserInfo = ServiceFeeUserInfo.builder()
+        ServiceFeeUserInfo insertOrUpdateServiceFeeUserInfo = ServiceFeeUserInfo.builder()
                 .existBatteryServiceFee(existServiceFee)
                 .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                 .franchiseeId(franchiseeUserInfo.getFranchiseeId())
@@ -936,7 +936,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .uid(user.getUid())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
-        serviceFeeUserInfoService.insert(serviceFeeUserInfo);
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
+        }else {
+            serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
+        }
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());

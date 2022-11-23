@@ -61,5 +61,10 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 		return serviceFeeUserInfo;
 	}
 
+	@Override
+	public int updateByUid(ServiceFeeUserInfo serviceFeeUserInfo) {
+		return serviceFeeUserInfoMapper.updateByUid(serviceFeeUserInfo);
+	}
+
 
 }
