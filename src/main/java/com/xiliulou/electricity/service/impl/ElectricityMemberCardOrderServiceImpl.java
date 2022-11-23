@@ -925,7 +925,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Integer existServiceFee = ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE;
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            existServiceFee=ServiceFeeUserInfo.EXIST_SERVICE_FEE;
+            existServiceFee = ServiceFeeUserInfo.EXIST_SERVICE_FEE;
         }
 
         ServiceFeeUserInfo serviceFeeUserInfo = ServiceFeeUserInfo.builder()
@@ -968,7 +968,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            log.error("ENABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -977,7 +977,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //未缴纳押金
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR!not found user! userId={}", user.getUid());
+            log.error("ENABLE MEMBER CARD ERROR!not found user! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -988,20 +988,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("DISABLE MEMBER CARD ERROR! disable review userId:{}", user.getUid());
+            log.error("ENABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
 
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
-            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
+            log.error("ENABLE MEMBER CARD ERROR! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={}", franchiseeUserInfo.getFranchiseeId());
+            log.error("ENABLE  ERROR! not found Franchisee ！franchiseeId={}", franchiseeUserInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            log.error("ENABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), user.getTenantId());
@@ -1019,7 +1025,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //判断服务费
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
             BigDecimal franchiseeBatteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
             //计算服务费
             BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));

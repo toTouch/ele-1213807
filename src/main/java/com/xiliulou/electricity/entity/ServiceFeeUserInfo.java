@@ -63,4 +63,8 @@ public class ServiceFeeUserInfo {
     public static final Integer NOT_EXIST_SERVICE_FEE = 0;
     public static final Integer EXIST_SERVICE_FEE = 1;
 
+
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
+
 }

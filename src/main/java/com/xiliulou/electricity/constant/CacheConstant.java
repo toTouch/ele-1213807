@@ -211,4 +211,6 @@ public interface CacheConstant {
      * 异常告警导出缓存
      */
     String WARN_MESSAGE_EXPORT_CACHE="warn_message_export_cache:";
+
+    String SERVICE_FEE_USER_INFO = "service_fee_user_info:";
 }
