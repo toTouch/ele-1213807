@@ -232,6 +232,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PutMapping(value = "/admin/electricityMemberCard/renewalUserMemberCard")
+    @Log(title = "用户套餐续费")
     public R renewalUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
 
         return electricityMemberCardOrderService.renewalUserMemberCard(memberCardOrderAddAndUpdate);
