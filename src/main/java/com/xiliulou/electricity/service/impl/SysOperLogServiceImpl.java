@@ -1,26 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.SysOperLog;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.SysOperLogMapper;
 import com.xiliulou.electricity.query.SysOperLogQuery;
 import com.xiliulou.electricity.service.SysOperLogService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.vo.SysOperLogVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 操作日志记录(SysOperLog)表服务实现类
@@ -36,7 +33,7 @@ public class SysOperLogServiceImpl implements SysOperLogService {
     private SysOperLogMapper sysOperLogMapper;
     
     @Autowired
-    private UserInfoService userInfoService;
+    private UserService userService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -76,10 +73,10 @@ public class SysOperLogServiceImpl implements SysOperLogService {
         List<SysOperLogVO> sysOperLogVOList = sysOperLogs.parallelStream().map(item -> {
             SysOperLogVO sysOperLogVO = new SysOperLogVO();
             BeanUtils.copyProperties(item, sysOperLogVO);
-            
-            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getOperatorUid());
-            if (Objects.nonNull(userInfo)) {
-                sysOperLogVO.setOperatorUserName(userInfo.getName());
+
+            User user = userService.queryByUidFromCache(item.getOperatorUid());
+            if (Objects.nonNull(user)) {
+                sysOperLogVO.setOperatorUserName(user.getName());
             }
             return sysOperLogVO;
         }).collect(Collectors.toList());

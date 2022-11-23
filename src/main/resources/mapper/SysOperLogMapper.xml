@@ -31,7 +31,7 @@
         <include refid="selectSysOperLog"/>
         <where>
             <if test="title != null and title != ''">
-                and title = #{title}
+                and title like concat('%',#{title},'%')
             </if>
             <if test="operatorUid != null">
                 and operator_uid = #{operatorUid}
@@ -58,7 +58,7 @@
        select count(1)   from t_sys_oper_log
         <where>
             <if test="title != null and title != ''">
-                and title = #{title}
+                and title like concat('%',#{title},'%')
             </if>
             <if test="operatorUid != null">
                 and operator_uid = #{operatorUid}

@@ -31,6 +31,7 @@ public class JsonAdminSysOperLogController extends BaseController {
     @RequestMapping("/admin/sysOperLog/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         
@@ -48,7 +49,7 @@ public class JsonAdminSysOperLogController extends BaseController {
         }
         
         SysOperLogQuery sysOperLogQuery = SysOperLogQuery.builder().size(size).offset(offset).status(status)
-                .beginTime(beginTime).endTime(endTime).tenantId(tenantId).build();
+                .title(title).beginTime(beginTime).endTime(endTime).tenantId(tenantId).build();
         
         List<SysOperLogVO> sysOperLogs = sysOperLogService.selectByPage(sysOperLogQuery);
         return R.ok(sysOperLogs);
@@ -56,11 +57,12 @@ public class JsonAdminSysOperLogController extends BaseController {
     
     @GetMapping("/admin/sysOperLog/pageCount")
     public R pageCount(@RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
         
         SysOperLogQuery sysOperLogQuery = SysOperLogQuery.builder().status(status).beginTime(beginTime).endTime(endTime)
-                .tenantId(TenantContextHolder.getTenantId()).build();
+                .title(title).tenantId(TenantContextHolder.getTenantId()).build();
     
         int count=sysOperLogService.pageCount(sysOperLogQuery);
         
