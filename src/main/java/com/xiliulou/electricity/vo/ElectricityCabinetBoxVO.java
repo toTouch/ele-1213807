@@ -103,6 +103,16 @@ public class ElectricityCabinetBoxVO {
      * 锁仓类型 0--人为锁仓 1--系统锁仓
      */
     private Integer lockType;
+    
+    /**
+     * 锁仓原因
+     */
+    private Integer lockReason;
+    
+    /**
+     * 备注
+     */
+    private String remark;
 
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;

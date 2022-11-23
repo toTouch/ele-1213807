@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserDataScopeMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.UserDataScope" id="UserDataScopeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="dataId" column="data_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectUserDataScope">
+       	select   id, uid, data_id        from t_user_data_scope
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="UserDataScopeMap">
+        <include refid="selectUserDataScope"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectByUid" resultMap="UserDataScopeMap">
+        <include refid="selectUserDataScope"/>
+        where uid = #{uid}
+    </select>
+
+    <select id="selectDataIdByUid" resultType="long">
+        select   data_id     from t_user_data_scope
+        where uid = #{uid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="UserDataScopeMap">
+        <include refid="selectUserDataScope"/>
+        from t_user_data_scope
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="UserDataScopeMap">
+        <include refid="selectUserDataScope"/>
+        from t_user_data_scope
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="dataId != null">
+                and data_id = #{dataId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_data_scope(uid, data_id)
+        values (#{uid}, #{dataId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_user_data_scope
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="dataId != null">
+                data_id = #{dataId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_user_data_scope where id = #{id}
+    </delete>
+
+
+    <delete id="deleteByUid">
+        delete from t_user_data_scope where uid = #{uid}
+    </delete>
+
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        insert into t_user_data_scope( id , uid , data_id ) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.id}, #{item.uid}, #{item.dataId})
+        </foreach>
+    </insert>
+
+
+</mapper>

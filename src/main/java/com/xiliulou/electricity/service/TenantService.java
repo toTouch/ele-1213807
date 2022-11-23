@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
+import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -32,6 +32,5 @@ public interface TenantService {
 	R queryCount(TenantQuery tenantQuery);
 
 	Integer querySumCount(TenantQuery tenantQuery);
-
 
 }

@@ -94,6 +94,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     ElectricityCarService electricityCarService;
     @Autowired
     EleUserOperateRecordService eleUserOperateRecordService;
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -275,7 +277,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
 
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
-            return R.ok();
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
 
@@ -475,6 +476,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfo.setBatteryDeposit(null);
             franchiseeUserInfo.setOrderId(null);
             franchiseeUserInfoService.updateRefund(franchiseeUserInfo);
+
+
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+            if (Objects.nonNull(insuranceUserInfo)) {
+                insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
+                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + user.getUid());
+            }
             return R.ok();
         }
 
@@ -566,10 +574,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 || Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
                 && Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
 
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+
             if (Objects.equals(franchiseeUserInfo.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
                 map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
                 map.put("time", String.valueOf(System.currentTimeMillis()));
+                map.put("franchiseeName", franchisee.getName());
             } else {
                 //是否退款
                 Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
@@ -580,9 +591,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 }
 
                 EleDepositOrder eleDepositOrder = queryByOrderId(franchiseeUserInfo.getRentCarOrderId());
-                if(Objects.isNull(eleDepositOrder)) {
+                if (Objects.isNull(eleDepositOrder)) {
                     map.put("store", null);
-                }else {
+                } else {
                     Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
                     if (Objects.nonNull(store)) {
                         map.put("store", store.getName());
@@ -594,6 +605,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
                 //最后一次缴纳押金时间
                 map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
+
+                map.put("franchiseeName", franchisee.getName());
             }
             return R.ok(map);
 
@@ -621,6 +634,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             excelVo.setPhone(eleDepositOrder.getPhone());
             excelVo.setName(eleDepositOrder.getName());
             excelVo.setPayAmount(eleDepositOrder.getPayAmount());
+            excelVo.setStoreName(eleDepositOrder.getStoreName());
 
             if (Objects.nonNull(eleDepositOrder.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(eleDepositOrder.getCreateTime())));
@@ -837,10 +851,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
-        String nowBattery="";
+        String nowBattery = "";
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
         if (!Objects.isNull(electricityBattery)) {
-            nowBattery=electricityBattery.getSn();
+            nowBattery = electricityBattery.getSn();
         }
 
 
@@ -1279,8 +1293,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
-        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId, Integer depositType) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId, depositType);
     }
 
 
@@ -1310,10 +1324,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("admin payRentCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -1374,6 +1390,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .name(user.getUsername())
                 .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
                 .newBatteryDeposit(batteryDepositAdd.getPayAmount())
+                .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
@@ -1395,17 +1412,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId) {
-        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeId)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> franchiseeIds) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
+    public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, franchiseeId, beginTime, enTime);
     }
 
     @Override
-    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, Long franchiseeId, Long beginTime, Long enTime) {
+    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
     }
 }

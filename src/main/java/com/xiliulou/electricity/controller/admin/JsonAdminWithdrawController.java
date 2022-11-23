@@ -14,11 +14,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,110 +28,102 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminWithdrawController extends BaseController {
-	@Autowired
-	WithdrawRecordService withdrawRecordService;
+    @Autowired
+    WithdrawRecordService withdrawRecordService;
 
-	@Autowired
-	RedisService redisService;
+    @Autowired
+    RedisService redisService;
 
-	@Autowired
-	UserService userService;
+    @Autowired
+    UserService userService;
 
-	@Autowired
-	WechatConfig wechatConfig;
+    @Autowired
+    WechatConfig wechatConfig;
 
-
-
-	@PostMapping(value = "/admin/handleWithdraw")
+    @PostMapping(value = "/admin/handleWithdraw")
 	@Log(title = "提现审核")
 	public R withdraw(@Validated @RequestBody HandleWithdrawQuery handleWithdrawQuery) {
 		/*Integer tenantId = TenantContextHolder.getTenantId();
 		if(!Objects.equals(tenantId,wechatConfig.getTenantId())){
 			return R.fail("ELECTRICITY.0066", "用户权限不足");
 		}*/
-		return withdrawRecordService.handleWithdraw(handleWithdrawQuery);
-	}
+        return withdrawRecordService.handleWithdraw(handleWithdrawQuery);
+    }
 
-	@GetMapping(value = "/admin/withdraw/list")
-	public R queryList(@RequestParam(value = "size", required = false) Long size,
-			@RequestParam(value = "offset", required = false) Long offset,
-			@RequestParam(value = "uid", required = false) Long uid,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "orderId", required = false) String orderId,
-			@RequestParam(value = "phone", required = false) String phone,
-			@RequestParam(value = "type", required = false) Integer type) {
-		if (Objects.isNull(size)) {
-			size = 10L;
-		}
+    @GetMapping(value = "/admin/withdraw/list")
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
+                       @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "orderId", required = false) String orderId,
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "type", required = false) Integer type) {
+        if (Objects.isNull(size)) {
+            size = 10L;
+        }
 
-		if (Objects.isNull(offset) || offset < 0) {
-			offset = 0L;
-		}
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        List<Integer> statusList = new ArrayList<>();
+        if (Objects.equals(status, -1)) {
+            statusList.add(WithdrawRecord.CHECK_PASS);
+            statusList.add(WithdrawRecord.WITHDRAWING);
+        } else {
+            if (Objects.nonNull(status)) {
+                statusList.add(status);
+            }
+        }
 
-		List<Integer> statusList=new ArrayList<>();
-		if(Objects.equals(status,-1)){
-			statusList.add(WithdrawRecord.CHECK_PASS);
-			statusList.add(WithdrawRecord.WITHDRAWING);
-		}else {
-			if(Objects.nonNull(status)) {
-				statusList.add(status);
-			}
-		}
+        WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder()
+                .offset(offset)
+                .size(size)
+                .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(statusList)
+                .orderId(orderId)
+                .phone(phone)
+                .type(type)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
-		WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder()
-				.offset(offset)
-				.size(size)
-				.uid(uid)
-				.beginTime(beginTime)
-				.endTime(endTime)
-				.status(statusList)
-				.orderId(orderId)
-				.phone(phone)
-				.type(type)
-				.tenantId(tenantId).build();
+        return withdrawRecordService.queryList(withdrawRecordQuery);
+    }
 
-		return withdrawRecordService.queryList(withdrawRecordQuery);
-	}
-
-	@GetMapping(value = "/admin/withdraw/queryCount")
-	public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "orderId", required = false) String orderId,
-			@RequestParam(value = "phone", required = false) String phone,
-			@RequestParam(value = "type", required = false) Integer type) {
+    @GetMapping(value = "/admin/withdraw/queryCount")
+    public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "orderId", required = false) String orderId,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "type", required = false) Integer type) {
 
 
-		List<Integer> statusList=new ArrayList<>();
-		if(Objects.equals(status,-1)){
-			statusList.add(WithdrawRecord.CHECK_PASS);
-			statusList.add(WithdrawRecord.WITHDRAWING);
-		}else {
-			if(Objects.nonNull(status)) {
-				statusList.add(status);
-			}
-		}
+        List<Integer> statusList = new ArrayList<>();
+        if (Objects.equals(status, -1)) {
+            statusList.add(WithdrawRecord.CHECK_PASS);
+            statusList.add(WithdrawRecord.WITHDRAWING);
+        } else {
+            if (Objects.nonNull(status)) {
+                statusList.add(status);
+            }
+        }
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder()
+                .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(statusList)
+                .orderId(orderId)
+                .phone(phone)
+                .type(type)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
-		WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder()
-				.uid(uid)
-				.beginTime(beginTime)
-				.endTime(endTime)
-				.status(statusList)
-				.orderId(orderId)
-				.phone(phone)
-				.type(type)
-				.tenantId(tenantId).build();
-
-		return withdrawRecordService.queryCount(withdrawRecordQuery);
-	}
+        return withdrawRecordService.queryCount(withdrawRecordQuery);
+    }
 
 }

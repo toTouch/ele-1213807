@@ -14,4 +14,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface EleAuthEntryMapper extends BaseMapper<EleAuthEntry>{
 
 
+    Integer update(EleAuthEntry eleAuthEntry);
+
 }

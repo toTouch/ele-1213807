@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -46,10 +47,13 @@ public interface FranchiseeService {
 
 	R queryByTenantId(Integer tenantId);
 
-	R queryByCabinetId(Integer cabinetId);
+	R queryByCabinetId(Integer id, Integer cabinetId);
 
 
 
 	Franchisee queryByUserId(Long uid);
 
+    Franchisee queryByIdAndTenantId(Long id,Integer tenantId);
+
+    Triple<Boolean, String, Object> selectListByQuery(FranchiseeQuery franchiseeQuery);
 }

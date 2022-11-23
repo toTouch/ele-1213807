@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import com.xiliulou.electricity.mapper.TemplateConfigMapper;
 import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,8 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
     @Autowired
     private RedisService redisService;
+    @Autowired
+    private TemplateConfigMapper templateConfigMapper;
 
     @Override
     public TemplateConfigEntity queryByTenantIdFromCache(Integer tenantId) {
@@ -75,8 +78,9 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
             return R.fail("id不能为空");
         }
         templateConfig.setUpdateTime(System.currentTimeMillis());
+        templateConfig.setTenantId(TenantContextHolder.getTenantId());
 
-        int i = this.baseMapper.updateById(templateConfig);
+        int i = templateConfigMapper.update(templateConfig);
         if (i > 0) {
             redisService.delete(CacheConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
         }
@@ -85,7 +89,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
     @Override
     public R removeByIdFromDB(Long id) {
-        int i = this.baseMapper.deleteById(id);
+        int i = templateConfigMapper.deleteById(id,TenantContextHolder.getTenantId());
         if (i > 0) {
             redisService.delete(CacheConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
         }
@@ -108,12 +112,46 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
         TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
         if(Objects.nonNull(templateConfigEntity)){
-            result.add(templateConfigEntity.getBatteryOuttimeTemplate());
-            result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryOuttimeTemplate())) {
+                result.add(templateConfigEntity.getBatteryOuttimeTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getElectricQuantityRemindTemplate())) {
+                result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getCarMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getCarMemberCardExpiringTemplate());
+            }
             //result.add(templateConfigEntity.getMemberCardExpiringTemplate());
         }
 
         return R.ok(result);
     }
 
+    @Override
+    public List<String> selectTemplateId(Integer tenantId) {
+        List<String> result = new ArrayList<>(2);
+
+        TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
+
+        if(Objects.nonNull(templateConfigEntity)){
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryOuttimeTemplate())) {
+                result.add(templateConfigEntity.getBatteryOuttimeTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getElectricQuantityRemindTemplate())) {
+                result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getBatteryMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
+            }
+            if (StringUtils.isNotEmpty(templateConfigEntity.getCarMemberCardExpiringTemplate())) {
+                result.add(templateConfigEntity.getCarMemberCardExpiringTemplate());
+            }
+            //result.add(templateConfigEntity.getMemberCardExpiringTemplate());
+        }
+
+        return result;
+    }
 }

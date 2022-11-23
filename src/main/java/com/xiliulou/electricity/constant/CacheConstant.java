@@ -193,7 +193,32 @@ public interface CacheConstant {
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
     String CACHE_ELE_SET_MAP_KEY = "ele_set_map_key:";
+    String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_battery_member_card_expired_last_time:";
+    String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_car_member_card_expired_last_time:";
+    String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK = "cache_ele_battery_member_card_expired_lock:";
+    String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LOCK = "cache_ele_car_member_card_expired_lock:";
 
     String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
     String OTA_PROCESS_CACHE = "ota_process_cache";
+
+    /**
+     * 满仓柜机缓存
+     */
+    String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
+
+    String OTA_OPERATE_CACHE = "ota_operate_cache:";
+    /**
+     * 异常告警导出缓存
+     */
+    String WARN_MESSAGE_EXPORT_CACHE="warn_message_export_cache:";
+
+    /**
+     * 保险缓存
+     */
+    String CACHE_FRANCHISEE_INSURANCE = "CACHE_FRANCHISEE_INSURANCE:";
+
+    /**
+     * insuranceUserInfo的缓存
+     */
+    String CACHE_INSURANCE_USER_INFO = "insurance_user_info:";
 }

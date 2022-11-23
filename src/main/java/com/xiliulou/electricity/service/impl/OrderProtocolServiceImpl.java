@@ -39,14 +39,12 @@ public class OrderProtocolServiceImpl implements OrderProtocolService {
 	@Override
 	public Triple<Boolean, String, Object> update(OrderProtocolQuery orderProtocolQuery) {
 		if (Objects.isNull(orderProtocolQuery.getId())) {
-			//tenant
-			Integer tenantId = TenantContextHolder.getTenantId();
-
+		
 			OrderProtocol orderProtocol = new OrderProtocol();
 			orderProtocol.setContent(orderProtocolQuery.getContent());
 			orderProtocol.setCreateTime(System.currentTimeMillis());
 			orderProtocol.setUpdateTime(System.currentTimeMillis());
-			orderProtocol.setTenantId(tenantId);
+			orderProtocol.setTenantId(TenantContextHolder.getTenantId());
 			orderProtocolMapper.insert(orderProtocol);
 		} else {
 
@@ -54,7 +52,8 @@ public class OrderProtocolServiceImpl implements OrderProtocolService {
 			orderProtocol.setId(orderProtocolQuery.getId());
 			orderProtocol.setContent(orderProtocolQuery.getContent());
 			orderProtocol.setUpdateTime(System.currentTimeMillis());
-			orderProtocolMapper.updateById(orderProtocol);
+			orderProtocol.setTenantId(TenantContextHolder.getTenantId());
+			orderProtocolMapper.update(orderProtocol);
 		}
 		return Triple.of(true, null, null);
 	}

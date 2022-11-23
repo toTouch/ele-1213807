@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.UserAmountQuery;
 import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -21,57 +20,49 @@ import javax.annotation.Resource;
 @RestController
 @Slf4j
 public class JsonAdminUserAmountController {
-	/**
-	 * 服务对象
-	 */
-	@Resource
-	private UserAmountService userAmountService;
+    /**
+     * 服务对象
+     */
+    @Resource
+    private UserAmountService userAmountService;
 
 
+    /**
+     * 用户余额列表
+     */
+    @GetMapping(value = "/admin/userAmount/list")
+    public R queryList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "phone", required = false) String phone) {
 
-	/**
-	 * 用户余额列表
-	 */
-	@GetMapping(value = "/admin/userAmount/list")
-	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "phone", required = false) String phone) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
+        if (offset < 0) {
+            offset = 0L;
+        }
 
-		if (offset < 0) {
-			offset = 0L;
-		}
+        UserAmountQuery userAmountQuery = UserAmountQuery.builder()
+                .offset(offset)
+                .size(size)
+                .phone(phone)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        return userAmountService.queryList(userAmountQuery);
+    }
 
-		UserAmountQuery userAmountQuery = UserAmountQuery.builder()
-				.offset(offset)
-				.size(size)
-				.phone(phone)
-				.tenantId(tenantId).build();
+    /**
+     * 用户余额列表
+     */
+    @GetMapping(value = "/admin/userAmount/queryCount")
+    public R queryCount(@RequestParam(value = "phone", required = false) String phone) {
 
-		return userAmountService.queryList(userAmountQuery);
-	}
+        UserAmountQuery userAmountQuery = UserAmountQuery.builder()
+                .phone(phone)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
-	/**
-	 * 用户余额列表
-	 */
-	@GetMapping(value = "/admin/userAmount/queryCount")
-	public R queryCount(@RequestParam(value = "phone", required = false) String phone) {
-
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		UserAmountQuery userAmountQuery = UserAmountQuery.builder()
-				.phone(phone)
-				.tenantId(tenantId).build();
-
-		return userAmountService.queryCount(userAmountQuery);
-	}
+        return userAmountService.queryCount(userAmountQuery);
+    }
 
 }

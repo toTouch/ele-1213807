@@ -7,7 +7,7 @@
 		select
 		id ,order_id ,type , msg , create_time,seq,result,tenant_id
 		from t_electricity_cabinet_order_oper_history
-		where order_id = #{query.orderId}
+		where order_id = #{query.orderId} and tenant_id=#{query.tenantId}
 		AND type =#{query.type}
 		order by seq asc
         <if test="query.offset != null and query.size != null">
@@ -18,7 +18,7 @@
     <select id="queryCountByOrderId" resultType="java.lang.Integer">
 		select count(1)
 		from t_electricity_cabinet_order_oper_history
-		where tecooh.order_id = #{query.orderId}
+		where tecooh.order_id = #{query.orderId} and tenant_id=#{query.tenantId}
 		AND type =#{query.type}
 	</select>
 

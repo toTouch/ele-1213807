@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -24,13 +25,15 @@ public interface ElectricityCabinetBoxService {
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetBox queryByIdFromDB(Long id);
+    ElectricityCabinetBox queryByIdFromDB(Long id,Integer tenantId);
 
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
 
     void batchDeleteBoxByElectricityCabinetId(Integer id);
 
     R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
+    
+    R selectBoxList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
     R modify(ElectricityCabinetBox electricityCabinetBox);
 
@@ -49,6 +52,8 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> queryUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
     List<ElectricityCabinetBox> findUsableEmptyCellNo(Integer eid);
+    
+    int selectUsableEmptyCellNumber(Integer eid, Integer tenantId);
 
     /**
      * 禁用异常仓门
@@ -65,4 +70,6 @@ public interface ElectricityCabinetBoxService {
     R queryBoxCount(Integer electricityCabinet,Integer tenantId);
 
     ElectricityCabinetBox selectByBatteryId(Long id);
+    
+    Triple<Boolean, String, Object> selectAvailableBoxNumber(Integer electricityCabinetId, Integer tenantId);
 }

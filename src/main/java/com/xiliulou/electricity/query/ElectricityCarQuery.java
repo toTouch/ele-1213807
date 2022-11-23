@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 
 /**
  * @author: hrp
@@ -24,22 +26,18 @@ public class ElectricityCarQuery {
      * 车辆型号
      */
     private String model;
-
     /**
      * 车辆状态 0--空闲 1--租借
      */
     private Integer status;
-
     /**
      * 门店Id
      */
     private Long storeId;
-
     /**
      * 加盟商Id
      */
-    private Long franchiseeId;
-
+    private List<Long> franchiseeIds;
     /**
      * 手机号
      */
@@ -55,4 +53,5 @@ public class ElectricityCarQuery {
 
     private Integer tenantId;
 
+    private List<Long> storeIds;
 }

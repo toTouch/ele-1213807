@@ -10,24 +10,29 @@ import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.PermissionResourceTree;
+import com.xiliulou.electricity.entity.PermissionTemplate;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
+import com.xiliulou.electricity.service.PermissionTemplateService;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -57,6 +62,8 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 
 	@Autowired
 	RolePermissionConfig rolePermissionConfig;
+	@Autowired
+	PermissionTemplateService permissionTemplateService;
 
 
 	/**
@@ -150,7 +157,9 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL)
+				&& isIllegalMethod(permissionResource.getMethod())
+				&& StringUtils.isNotBlank(permissionResourceQuery.getUri())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -193,7 +202,9 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.nonNull(permissionResource.getMethod()) && Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL)
+				&& isIllegalMethod(permissionResource.getMethod())
+				&& StringUtils.isNotBlank(permissionResourceQuery.getUri())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -223,6 +234,19 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		if (Objects.isNull(role)) {
 			return Pair.of(false, "角色查询不到！");
 		}
+		
+		if(!Objects.equals(role.getTenantId(), TenantContextHolder.getTenantId())){
+			return Pair.of(true, "");
+		}
+		
+		//校验前端传过来的权限是否包含  /**
+		if(!CollectionUtils.isEmpty(pids)){
+			List<Long> list = pids.stream().filter(item -> item <= 4).collect(Collectors.toList());
+			if(!CollectionUtils.isEmpty(list)){
+				return Pair.of(true, "");
+			}
+		}
+		
 		//删除旧的
 		rolePermissionService.deleteByRoleId(roleId);
 
@@ -255,26 +279,52 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@DS("slave_1")
 	public Pair<Boolean, Object> getList() {
-		TokenUser userInfo = SecurityUtils.getUserInfo();
+//		TokenUser userInfo = SecurityUtils.getUserInfo();
 
 		List<PermissionResource> permissionResources = this.permissionResourceMapper.queryAll();
 		if (!DataUtil.collectionIsUsable(permissionResources)) {
 			return Pair.of(false, "查询不到任何权限！");
 		}
 
-		//如果不是超级管理员，就不用返回前4个权限
-		if (!Objects.equals(userInfo.getType(), User.TYPE_USER_SUPER)) {
-			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4&& !rolePermissionConfig.getUnShow().contains(e.getId())).collect(Collectors.toList());
+//		//如果不是超级管理员，就不用返回前4个权限
+//		if (!Objects.equals(userInfo.getType(), User.TYPE_USER_SUPER)) {
+//			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4&& !rolePermissionConfig.getUnShow().contains(e.getId())).collect(Collectors.toList());
+//		}
+//
+//		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+//
+//
+//		return Pair.of(true, permissionResourceTrees);
+		
+		
+		//超级管理员
+		if (SecurityUtils.isAdmin()) {
+			List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+			return Pair.of(true, permissionResourceTrees);
+		} else {
+			//普通管理员
+			
+			//获取不显示的权限列表
+			List<Long> permissionIds = permissionTemplateService.selectByType(PermissionTemplate.TYPE_UNSHOW);
+			permissionResources = permissionResources.stream().filter(e -> !permissionIds.contains(e.getId()))
+					.collect(Collectors.toList());
+			
+			List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+			
+			return Pair.of(true, permissionResourceTrees);
 		}
-
-		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
-
-
-		return Pair.of(true, permissionResourceTrees);
 	}
 
 	@Override
 	public Pair<Boolean, Object> getPermissionsByRole(Long rid) {
+		Role role = roleService.queryByIdFromDB(rid);
+		if (Objects.isNull(role)) {
+			return Pair.of(false, "角色不存在！");
+		}
+		
+		if(!Objects.equals(role.getTenantId(), TenantContextHolder.getTenantId())){
+			return Pair.of(true, "");
+		}
 
 		List<PermissionResource> permissionResources = queryPermissionsByRole(rid);
 		if (DataUtil.collectionIsUsable(permissionResources)) {
@@ -298,5 +348,21 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		}
 		return result;
 	}
-
+	
+	@Override
+	public Pair<Boolean, Object> getPermissionTempleteList() {
+		List<PermissionResource> permissionResources = this.permissionResourceMapper.queryAll();
+		if (!DataUtil.collectionIsUsable(permissionResources)) {
+			return Pair.of(false, "查询不到任何权限！");
+		}
+		
+		//获取不显示的权限列表
+		List<Long> permissionIds = permissionTemplateService.selectByType(PermissionTemplate.TYPE_UNSHOW);
+		permissionResources = permissionResources.stream().filter(e -> !permissionIds.contains(e.getId()))
+				.collect(Collectors.toList());
+		
+		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+		
+		return Pair.of(true, permissionResourceTrees);
+	}
 }

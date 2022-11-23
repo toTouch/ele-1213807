@@ -760,12 +760,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Transactional
     public R endOrder(String orderId) {
         //结束异常订单只改订单状态，不用考虑其他
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId).eq(ElectricityCabinetOrder::getTenantId,TenantContextHolder.getTenantId())
                 .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_CANCEL, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL));
         if (Objects.isNull(electricityCabinetOrder)) {
-            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+            log.error("ELECTRICITY  ERROR! not found order,orderId={} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+    
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.ORDER_CANCEL) || Objects
+                .equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+            return R.fail("100230", "订单状态异常");
+        }
+        
+        
         ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
         newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
         newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
@@ -1330,6 +1337,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("ORDER ERROR! not found user info,uid={} ", user.getUid());
                 return Triple.of(false, "100205", "未找到用户审核信息");
             }
+    
+            //用户是否可用
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.error("ORDER ERROR! user is unUsable,uid={} ", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
 
             if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
                 log.error("ORDER ERROR! userinfo is UN AUTH! uid={}", user.getUid());
@@ -1350,7 +1363,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
             if (!usableEmptyCellNo.getLeft()) {
-                return Triple.of(false, "100215", "换电柜暂无空仓");
+                return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
             }
 
             Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged(), store.getFranchiseeId());

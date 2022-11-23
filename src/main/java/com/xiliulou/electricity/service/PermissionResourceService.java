@@ -62,4 +62,6 @@ public interface PermissionResourceService {
 	Pair<Boolean, Object> getPermissionsByRole(Long rid);
 
 	List<PermissionResource> queryPermissionsByRole(Long rid);
+    
+    Pair<Boolean, Object> getPermissionTempleteList();
 }

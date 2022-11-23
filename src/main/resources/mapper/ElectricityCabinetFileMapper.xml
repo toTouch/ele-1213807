@@ -9,6 +9,11 @@
             and other_id = #{otherId}
         </if>
     </delete>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_electricity_cabinet_file where id = #{id} and tenant_id = #{tenantId}
+    </delete>
 
 
 </mapper>

@@ -145,11 +145,21 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//查询该租户是否有邀请活动，有则不能添加
-		int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
-		if (count > 0) {
-			return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+//		int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
+//				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+//		if (count > 0) {
+//			return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+//		}
+		
+		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
+			int count = shareActivityMapper.selectCount(
+					new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId)
+							.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+			if (count > 0) {
+				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+			}
 		}
+		
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
@@ -265,6 +275,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		if (Objects.isNull(shareActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+		
+		if(!Objects.equals(shareActivity.getTenantId(),TenantContextHolder.getTenantId())){
+			return R.ok();
 		}
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();

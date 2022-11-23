@@ -39,8 +39,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId);
 
-    Integer updateBatteryById(ElectricityBattery electricityBattery);
-
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
@@ -61,7 +59,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
-
+    
     BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn);
@@ -74,7 +72,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery);
 
-    R batteryStatistical(Integer tenantId);
+    R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
     R bindFranchisee(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
@@ -83,4 +81,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
     
     List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
+    
+    boolean checkBatteryIsExchange(String batteryName, Double fullyCharged);
 }

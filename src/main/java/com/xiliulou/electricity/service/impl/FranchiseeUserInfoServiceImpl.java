@@ -9,6 +9,8 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -135,7 +137,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 
         this.updateByUserInfoId(franchiseeUserInfo);
-        return Triple.of(true, "",null);
+        return Triple.of(true, "", null);
     }
 
     @Override
@@ -160,8 +162,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public List<FranchiseeUserInfo> selectByMemberCardId(Integer memberCardId) {
-        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId)
+    public List<FranchiseeUserInfo> selectByMemberCardId(Integer memberCardId, Integer tenantId) {
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId).eq(FranchiseeUserInfo::getTenantId,tenantId)
                 .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
     }
 
@@ -190,6 +192,17 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo) {
         return franchiseeUserInfoMapper.unBindNowBatterySn(franchiseeUserInfo);
+    }
+
+    @Override public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
+        Long firstTime, Long lastTime) {
+        return franchiseeUserInfoMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+    }
+
+    @Override
+    public List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime) {
+        return franchiseeUserInfoMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
     @Override
@@ -308,7 +321,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 cardDays = 1;
             }
         }
-
 
         if (Objects.nonNull(franchiseeUserInfo.getServiceStatus()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
             //查询用户是否存在电池服务费

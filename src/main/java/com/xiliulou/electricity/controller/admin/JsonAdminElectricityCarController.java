@@ -12,6 +12,7 @@ import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -19,10 +20,14 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜表(TElectricityCar)表控制层
@@ -44,6 +49,8 @@ public class JsonAdminElectricityCarController {
     StoreService storeService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -86,8 +93,6 @@ public class JsonAdminElectricityCarController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -96,22 +101,26 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
-            Store store=storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)){
-                storeId=store.getId();
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
-        Long franchiseeId = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
+
+            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
+            if(CollectionUtils.isEmpty(stores)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+
+            storeIds=stores.stream().map(Store::getId).collect(Collectors.toList());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -122,11 +131,11 @@ public class JsonAdminElectricityCarController {
                 .Phone(phone)
                 .status(status)
                 .storeId(storeId)
-                .franchiseeId(franchiseeId)
+                .storeIds(storeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCarService.queryList(electricityCarQuery);
     }
 
@@ -141,9 +150,6 @@ public class JsonAdminElectricityCarController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -151,22 +157,23 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
-            Store store=storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)){
-                storeId=store.getId();
-            }
+        List<Long> storeIds=null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
-        Long franchiseeId = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
+
+            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
+            if(CollectionUtils.isEmpty(stores)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+
+            storeIds=stores.stream().map(Store::getId).collect(Collectors.toList());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -175,11 +182,11 @@ public class JsonAdminElectricityCarController {
                 .Phone(phone)
                 .status(status)
                 .storeId(storeId)
-                .franchiseeId(franchiseeId)
+                .storeIds(storeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return electricityCarService.queryCount(electricityCarQuery);
     }

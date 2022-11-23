@@ -39,14 +39,11 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	@Override
 	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery) {
 		if (Objects.isNull(userNoticeQuery.getId())) {
-			//tenant
-			Integer tenantId = TenantContextHolder.getTenantId();
-
 			UserNotice userNotice = new UserNotice();
 			userNotice.setContent(userNoticeQuery.getContent());
 			userNotice.setCreateTime(System.currentTimeMillis());
 			userNotice.setUpdateTime(System.currentTimeMillis());
-			userNotice.setTenantId(tenantId);
+			userNotice.setTenantId(TenantContextHolder.getTenantId());
 			userNoticeMapper.insert(userNotice);
 		} else {
 
@@ -54,7 +51,8 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 			userNotice.setId(userNoticeQuery.getId());
 			userNotice.setContent(userNoticeQuery.getContent());
 			userNotice.setUpdateTime(System.currentTimeMillis());
-			userNoticeMapper.updateById(userNotice);
+			userNotice.setTenantId(TenantContextHolder.getTenantId());
+			userNoticeMapper.update(userNotice);
 		}
 		return Triple.of(true, null, null);
 	}

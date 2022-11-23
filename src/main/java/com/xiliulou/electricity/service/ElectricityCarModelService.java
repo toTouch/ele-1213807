@@ -32,4 +32,6 @@ public interface ElectricityCarModelService {
     R queryList(ElectricityCarModelQuery electricityCarModelQuery);
 
 	R queryCount(ElectricityCarModelQuery electricityCarModelQuery);
+    
+    R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery);
 }

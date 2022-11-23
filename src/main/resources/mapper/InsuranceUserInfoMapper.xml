@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.InsuranceUserInfoMapper">
+
+
+
+    <update id="update">
+        update t_insurance_user_info
+        <set>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="premium != null">
+                premium = #{premium},
+            </if>
+            <if test="forehead != null">
+                forehead = #{forehead},
+            </if>
+            <if test="insuranceId != null">
+                insurance_id = #{insuranceId},
+            </if>
+            <if test="insuranceExpireTime != null">
+                insurance_expire_time = #{insuranceExpireTime},
+            </if>
+            <if test="isUse != null">
+                is_use = #{isUse},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+        </set>
+        where uid = #{uid} and tenant_id = #{tenantId}
+    </update>
+
+    <select id="queryByUidAndTenantId" resultType="com.xiliulou.electricity.vo.InsuranceUserInfoVo">
+        select tiui.uid,tiui.franchisee_id,tiui.premium,tiui.forehead,tiui.insurance_id,tiui.insurance_order_id
+         ,tiui.insurance_expire_time,tiui.del_flag,tiui.is_use,tiui.create_time,tiui.update_time
+         ,tfi.name as insuranceName ,tfi.cid,tio.update_time as payInsuranceTime from t_insurance_user_info tiui left join t_franchisee_insurance tfi on tiui.insurance_id=tfi.id
+         left join t_insurance_order tio on tiui.insurance_order_id=tio.order_id
+         where tiui.tenant_id=#{tenantId} and tiui.uid=#{uid} and tiui.del_flag=0
+    </select>
+
+</mapper>

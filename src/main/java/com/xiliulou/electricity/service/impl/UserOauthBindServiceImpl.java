@@ -84,8 +84,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
 
     @Override
     @DS(value = "slave_1")
-    public Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone) {
-        List<UserOauthBind> list = this.userOauthBindMapper.queryListByCondition(size, offset, uid, thirdId, phone);
+    public Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone,Integer tenantId) {
+        List<UserOauthBind> list = this.userOauthBindMapper.queryListByCondition(size, offset, uid, thirdId, phone,tenantId);
         return Pair.of(true, list);
     }
 

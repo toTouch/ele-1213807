@@ -156,7 +156,7 @@
         when type=1
         then type
         end ) systemWarnMsgCount
-        from t_ele_warn_msg
+        from t_ele_warn_msg where electricity_cabinet_id=#{query.electricityCabinetId}
         group by cell_no limit #{query.offset}, #{query.size}
     </select>
 

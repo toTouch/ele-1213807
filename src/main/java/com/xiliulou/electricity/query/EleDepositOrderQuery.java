@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -26,7 +28,10 @@ public class EleDepositOrderQuery {
 
     private Integer tenantId;
 
+    private List<Long> franchiseeIds;
+
     private Long franchiseeId;
+
     private String franchiseeName;
 
     private Long uid;
@@ -36,8 +41,11 @@ public class EleDepositOrderQuery {
 
     private Integer refundOrderType;
 
+    private List<Long> storeIds;
+
     private Long storeId;
 
     private String carModel;
 
+    private String storeName;
 }

@@ -53,9 +53,6 @@ public class JsonAdminElectricityCabinetPowerController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         ElectricityCabinetPowerQuery electricityCabinetPowerQuery = ElectricityCabinetPowerQuery
             .builder()
             .offset(offset)
@@ -64,7 +61,7 @@ public class JsonAdminElectricityCabinetPowerController {
             .endTime(endTime)
             .electricityCabinetId(electricityCabinetId)
             .electricityCabinetName(electricityCabinetName)
-            .tenantId(tenantId)
+            .tenantId(TenantContextHolder.getTenantId())
             .date(date)
             .build();
 
@@ -84,21 +81,18 @@ public class JsonAdminElectricityCabinetPowerController {
         if (days > 92) {
             throw new CustomBusinessException("搜索日期不能大于3个月");
         }
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
-            throw new CustomBusinessException("未找到用户");
+            throw new CustomBusinessException("未找到用户!");
         }
 
         //限制解锁权限
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-            && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            log.info("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+            && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
+            log.info("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             throw new CustomBusinessException("用户权限不足");
         }
 
@@ -108,7 +102,7 @@ public class JsonAdminElectricityCabinetPowerController {
             .endTime(endTime)
             .electricityCabinetId(electricityCabinetId)
             .electricityCabinetName(electricityCabinetName)
-            .tenantId(tenantId)
+            .tenantId(TenantContextHolder.getTenantId())
             .date(date)
             .build();
         electricityCabinetPowerService.exportExcel(electricityCabinetPowerQuery, response);

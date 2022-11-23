@@ -2,15 +2,18 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -33,14 +36,15 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return ;
         }
+        Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
 
-
-        //操作回调的放在redis中
-        if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
-            redisService.set(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
-        } else {
-            redisService.set(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
-        }
+//        //操作回调的放在redis中
+//        if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
+//            redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, operateVo, 30L, TimeUnit.SECONDS);
+//        } else {
+//            redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, operateVo, 30L, TimeUnit.SECONDS);
+//        }
+        redisService.saveWithString(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, map, 30L, TimeUnit.SECONDS);
     }
 
 }

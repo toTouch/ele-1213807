@@ -4,8 +4,11 @@
 
 
     <select id="queryList" resultType="com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory">
-        select * from t_franchisee_split_account_history
+        select franchisee_id,create_time,split_amount,current_total_income,pay_amount,percent,percent from t_franchisee_split_account_history
         <where>
+            <if test="orderId != null and ''!=orderId">
+                and order_id = #{orderId}
+            </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
@@ -23,6 +26,9 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1) from t_franchisee_split_account_history
         <where>
+            <if test="orderId != null and ''!=orderId">
+                and order_id = #{orderId}
+            </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>

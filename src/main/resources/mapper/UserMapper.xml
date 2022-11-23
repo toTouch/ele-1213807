@@ -34,7 +34,7 @@
 
 	<select id="queryListUserByCriteria" resultType="com.xiliulou.electricity.entity.User">
 		select uid, phone, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,
-		city,province,address,cid,ref_id,lang,tenant_id
+		city,province,address,cid,ref_id,lang,tenant_id,data_type
 		from t_user
 		<where>
 			del_flag = 0

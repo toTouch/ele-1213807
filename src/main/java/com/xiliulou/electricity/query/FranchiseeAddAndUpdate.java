@@ -71,5 +71,4 @@ public class FranchiseeAddAndUpdate {
      */
     private BigDecimal batteryServiceFee;
 
-
 }

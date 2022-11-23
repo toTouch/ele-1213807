@@ -263,6 +263,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     if (!Objects.equals(purePhoneNumber, updateUserInfo.getPhone())) {
                         updateUserInfo.setPhone(purePhoneNumber);
                         updateUserInfo.setUid(uid);
+                        updateUserInfo.setTenantId(tenantId);
                         updateUserInfo.setUpdateTime(System.currentTimeMillis());
                         userInfoService.update(updateUserInfo);
                     }

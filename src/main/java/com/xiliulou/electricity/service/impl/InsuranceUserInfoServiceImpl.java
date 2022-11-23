@@ -1,0 +1,182 @@
+package com.xiliulou.electricity.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
+import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * 换电柜保险用户绑定(FranchiseeInsurance)表服务接口
+ *
+ * @author makejava
+ * @since 2022-11-02 13:37:11
+ */
+@Service("insuranceUserInfoService")
+@Slf4j
+public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoMapper, InsuranceUserInfo> implements InsuranceUserInfoService {
+
+    @Resource
+    InsuranceUserInfoMapper insuranceUserInfoMapper;
+
+    @Autowired
+    UserInfoService userInfoService;
+
+    @Autowired
+    RedisService redisService;
+
+    @Autowired
+    CityService cityService;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
+
+    @Override
+    public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
+        return insuranceUserInfoMapper.selectList(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getInsuranceId, id).eq(InsuranceUserInfo::getTenantId, tenantId)
+                .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public InsuranceUserInfo queryByUid(Long uid, Integer tenantId) {
+        return insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getTenantId, tenantId)
+                .eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public R updateInsuranceStatus(Long uid, Integer insuranceStatus) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
+        updateInsuranceUserInfo.setIsUse(insuranceStatus);
+        updateInsuranceUserInfo.setUid(uid);
+        updateInsuranceUserInfo.setTenantId(tenantId);
+        updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        return R.ok(insuranceUserInfoMapper.update(updateInsuranceUserInfo));
+    }
+
+    @Override
+    public InsuranceUserInfo queryByUidFromCache(Long uid) {
+
+        InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
+        if (Objects.nonNull(cache)) {
+            if (Objects.nonNull(cache.getInsuranceExpireTime()) && cache.getInsuranceExpireTime() < System.currentTimeMillis()) {
+                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+            } else {
+                return cache;
+            }
+        }
+
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
+        if (Objects.isNull(insuranceUserInfo)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, insuranceUserInfo);
+        return insuranceUserInfo;
+    }
+
+    @Override
+    public Integer insert(InsuranceUserInfo insuranceUserInfo) {
+        return insuranceUserInfoMapper.insert(insuranceUserInfo);
+    }
+
+    @Override
+    public Integer update(InsuranceUserInfo insuranceUserInfo) {
+        return insuranceUserInfoMapper.update(insuranceUserInfo);
+    }
+
+    @Override
+    public InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId) {
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoMapper.queryByUidAndTenantId(uid, tenantId);
+
+        if (Objects.nonNull(insuranceUserInfoVo)) {
+            //获取城市名称
+            City city = cityService.queryByIdFromDB(insuranceUserInfoVo.getCid());
+            if (Objects.nonNull(city)) {
+                insuranceUserInfoVo.setCityName(city.getName());
+            }
+        }
+        return insuranceUserInfoVo;
+    }
+
+    @Override
+    public R queryUserInsurance() {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户信息
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user! userId={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payDeposit  ERROR! not found user! userId={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+        InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
+        if (Objects.isNull(insuranceUserInfoVo)) {
+            return R.ok();
+        }
+
+        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            return R.ok();
+        }
+
+        return R.ok(insuranceUserInfoVo);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteById(Integer id) {
+        return baseMapper.deleteById(id);
+    }
+}

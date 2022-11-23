@@ -77,7 +77,6 @@ public class Franchisee {
      */
     private BigDecimal batteryServiceFee;
 
-
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

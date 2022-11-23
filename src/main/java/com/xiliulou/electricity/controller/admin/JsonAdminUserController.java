@@ -5,6 +5,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -42,6 +43,8 @@ public class JsonAdminUserController extends BaseController {
     UserService userService;
     @Autowired
     RoleService roleService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
 
     @PostMapping("/user/register")
@@ -71,8 +74,8 @@ public class JsonAdminUserController extends BaseController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
-            tenantId=null;
+        if (SecurityUtils.isAdmin() && Objects.nonNull(type) && type == -1) {
+            tenantId = null;
         }
 
         return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
@@ -94,9 +97,13 @@ public class JsonAdminUserController extends BaseController {
         if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
             tenantId=null;
         }
-        log.info("tenantId is -->{}",tenantId);
 
         return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
+    }
+
+    @GetMapping("/user/scope/{uid}")
+    public R UserDataScope(@PathVariable("uid") Long uid) {
+        return R.ok(userDataScopeService.selectByUid(uid));
     }
 
     @PutMapping("/user")
@@ -141,10 +148,11 @@ public class JsonAdminUserController extends BaseController {
 
 
     //结束限制订单
-    @PutMapping(value = "/user/endLimitUser")
-    public R endLimitUser(@RequestParam("uid") Long uid) {
-        return userService.endLimitUser(uid);
-    }
+//    @Deprecated
+//    @PutMapping(value = "/user/endLimitUser")
+//    public R endLimitUser(@RequestParam("uid") Long uid) {
+//        return userService.endLimitUser(uid);
+//    }
 
     @DeleteMapping("/user/del/{uid}")
     @Log(title = "删除普通用户")

@@ -10,12 +10,16 @@ import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -95,16 +99,23 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (Objects.isNull(electricityCarModel.getId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+        
         ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(electricityCarModel.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
+        
+        if(!Objects.equals(oldElectricityCarModel.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
+        
         Integer count = electricityCarService.queryByModelId(electricityCarModel.getId());
         if (count > 0) {
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
-        int update = electricityCarModelMapper.updateById(electricityCarModel);
+        electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
+        int update = electricityCarModelMapper.update(electricityCarModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
@@ -128,7 +139,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         electricityCarModel.setId(id);
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
-        int update = electricityCarModelMapper.updateById(electricityCarModel);
+        int update = electricityCarModelMapper.update(electricityCarModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id);
@@ -147,5 +158,23 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public R queryCount(ElectricityCarModelQuery electricityCarModelQuery) {
         return R.ok(electricityCarModelMapper.queryCount(electricityCarModelQuery));
     }
-
+    
+    @Override
+    public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
+        Store store = storeService.queryByIdFromCache(electricityCarModelQuery.getStoreId());
+        if(Objects.isNull(store)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        ElectricityCarModelQuery modelQuery = new ElectricityCarModelQuery();
+        modelQuery.setFranchiseeId(store.getFranchiseeId());
+        modelQuery.setOffset(0L);
+        modelQuery.setSize(Long.MAX_VALUE);
+        List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(modelQuery);
+        if(!CollectionUtils.isEmpty(electricityCarModelVOS)){
+            return R.ok(electricityCarModelVOS);
+        }
+    
+        return R.ok(Collections.EMPTY_LIST);
+    }
 }

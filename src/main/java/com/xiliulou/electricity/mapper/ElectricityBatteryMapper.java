@@ -32,8 +32,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
 
-    Integer updateBatteryById(ElectricityBattery electricityBattery);
-
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
@@ -62,7 +60,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBattery> queryBatteryOverview(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 
-    BatteryStatisticalVo batteryStatistical(Integer tenantId);
+    BatteryStatisticalVo batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
 
     int unbindFranchiseeId(@Param("franchiseeId") Integer franchiseeId, @Param("updateBattery") ElectricityBattery updateBattery);
 
@@ -71,4 +69,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBattery> selectByBatteryIds(@Param("batteryIds") List<Long> batteryIds);
     
     List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
+    
+    Integer update(ElectricityBattery electricityBattery);
+    
+    Integer deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
+    
+    ElectricityBattery selectById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
 }

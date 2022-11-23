@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleOtaUpgradeHistoryMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.EleOtaUpgradeHistory" id="EleOtaUpgradeHistoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
+        <result property="cellNo" column="cell_no" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="upgradeVersion" column="upgrade_version" jdbcType="VARCHAR"/>
+        <result property="historyVersion" column="history_version" jdbcType="VARCHAR"/>
+        <result property="upgradeSha256Value" column="upgrade_sha256_value" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="upgradeTime" column="upgrade_time" jdbcType="INTEGER"/>
+        <result property="finishTime" column="finish_time" jdbcType="INTEGER"/>
+        <result property="errMsg" column="err_msg" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="sessionId" column="session_id" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="EleOtaUpgradeHistoryMap">
+        select
+          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id
+        from t_ele_ota_upgrade_history
+        where id = #{id}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="EleOtaUpgradeHistoryMap">
+        select
+          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id 
+        from t_ele_ota_upgrade_history
+        limit #{offset}, #{limit}
+    </select>
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EleOtaUpgradeHistoryMap">
+        select
+        id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version,
+        upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time,
+        session_id
+        from t_ele_ota_upgrade_history
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="electricityCabinetId != null">
+                and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="cellNo != null and cellNo != ''">
+                and cell_no = #{cellNo}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="upgradeVersion != null and upgradeVersion != ''">
+                and upgrade_version = #{upgradeVersion}
+            </if>
+            <if test="historyVersion != null and historyVersion != ''">
+                and history_version = #{historyVersion}
+            </if>
+            <if test="upgradeSha256Value != null and upgradeSha256Value != ''">
+                and upgrade_sha256_value = #{upgradeSha256Value}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="upgradeTime != null">
+                and upgrade_time = #{upgradeTime}
+            </if>
+            <if test="finishTime != null">
+                and finish_time = #{finishTime}
+            </if>
+            <if test="errMsg != null and errMsg != ''">
+                and err_msg = #{errMsg}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="sessionId  != null and sessionId != ''">
+                and session_id = #{sessionId}
+            </if>
+        </where>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_ota_upgrade_history(electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id)
+        values (#{electricityCabinetId}, #{cellNo}, #{type}, #{upgradeVersion}, #{historyVersion}, #{upgradeSha256Value}, #{status}, #{upgradeTime}, #{finishTime}, #{errMsg}, #{createTime}, #{updateTime}, #{sessionId})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ele_ota_upgrade_history
+        <set>
+            <if test="electricityCabinetId != null">
+                electricity_cabinet_id = #{electricityCabinetId},
+            </if>
+            <if test="cellNo != null and cellNo != ''">
+                cell_no = #{cellNo},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="upgradeVersion != null and upgradeVersion != ''">
+                upgrade_version = #{upgradeVersion},
+            </if>
+            <if test="historyVersion != null and historyVersion != ''">
+                history_version = #{historyVersion},
+            </if>
+            <if test="upgradeSha256Value != null and upgradeSha256Value != ''">
+                upgrade_sha256_value = #{upgradeSha256Value},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="upgradeTime != null">
+                upgrade_time = #{upgradeTime},
+            </if>
+            <if test="finishTime != null">
+                finish_time = #{finishTime},
+            </if>
+            <if test="errMsg != null and errMsg != ''">
+                err_msg = #{errMsg},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="sessionId != null and sessionId != ''">
+                session_id = #{sessionId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ele_ota_upgrade_history where id = #{id}
+    </delete>
+    
+    <select id="queryByCellNoAndSessionId" resultMap="EleOtaUpgradeHistoryMap">
+        select
+          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id
+        from t_ele_ota_upgrade_history
+        where electricity_cabinet_id = #{eid} and session_id = #{sessionId}
+        <if test="cellNo != null">
+            and cell_no = #{cellNo}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+    </select>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.EleOtaUpgradeHistoryVo">
+        select
+        teouh.id, ec.name as electricity_name , teouh.cell_no, teouh.type, teouh.upgrade_version, teouh.history_version,
+        teouh.upgrade_sha256_value, teouh.status, teouh.upgrade_time, teouh.finish_time, teouh.err_msg,
+        teouh.create_time, teouh.update_time, teouh.session_id
+        from t_ele_ota_upgrade_history teouh
+        left join t_electricity_cabinet ec on ec.id = teouh.electricity_cabinet_id
+        <where>
+            <if test="eid != null">
+                and teouh.electricity_cabinet_id = #{eid}
+            </if>
+            <if test="cellNo != null">
+                and cell_no = #{cellNo}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="upgradeVersion != null">
+                and upgrade_version = #{upgradeVersion}
+            </if>
+            <if test="upgradeVersion != null and upgradeVersion != ''">
+                and upgrade_version = #{upgradeVersion}
+            </if>
+            <if test="historyVersion != null and historyVersion != ''">
+                and history_version = #{historyVersion}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and wo.create_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
+    </select>
+    
+    <select id="queryCount" resultType="long">
+        select
+        count(*)
+        from t_ele_ota_upgrade_history teouh
+        left join t_electricity_cabinet ec on ec.id = teouh.electricity_cabinet_id
+        <where>
+            <if test="eid != null">
+                and teouh.electricity_cabinet_id = #{eid}
+            </if>
+            <if test="cellNo != null">
+                and cell_no = #{cellNo}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="upgradeVersion != null">
+                and upgrade_version = #{upgradeVersion}
+            </if>
+            <if test="upgradeVersion != null and upgradeVersion != ''">
+                and upgrade_version = #{upgradeVersion}
+            </if>
+            <if test="historyVersion != null and historyVersion != ''">
+                and history_version = #{historyVersion}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and wo.create_time BETWEEN #{startTime} and #{endTime}
+            </if>
+        </where>
+    </select>
+</mapper>

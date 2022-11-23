@@ -1,21 +1,26 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -33,9 +38,10 @@ public class JsonAdminBatteryServiceFeeController {
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
-
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
 
     /**
@@ -71,7 +77,7 @@ public class JsonAdminBatteryServiceFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return eleBatteryServiceFeeOrderService.queryListForAdmin(offset, size, queryStartTime, queryEndTime, uid, status);
+        return eleBatteryServiceFeeOrderService.queryListForAdmin(offset, size, queryStartTime, queryEndTime, uid, status,tenantId);
     }
 
     /**
@@ -81,6 +87,10 @@ public class JsonAdminBatteryServiceFeeController {
      */
     @GetMapping("/admin/batteryServiceFee/query")
     public R queryBatteryServiceFee(@RequestParam("uid") Long uid) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -93,6 +103,11 @@ public class JsonAdminBatteryServiceFeeController {
             log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        if (!Objects.equals(userInfo.getTenantId(),tenantId)){
+            return R.ok();
+        }
+
         return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
     }
 
@@ -127,14 +142,23 @@ public class JsonAdminBatteryServiceFeeController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
         }
 
         BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
@@ -146,7 +170,8 @@ public class JsonAdminBatteryServiceFeeController {
                 .name(name)
                 .sn(sn)
                 .status(status)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIds(franchiseeIds)
                 .source(source)
                 .phone(phone).build();
 
@@ -173,14 +198,25 @@ public class JsonAdminBatteryServiceFeeController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "source", required = false) Integer source) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+       
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok();
+            }
         }
 
         BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
@@ -190,7 +226,8 @@ public class JsonAdminBatteryServiceFeeController {
                 .status(status)
                 .name(name)
                 .sn(sn)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeIds(franchiseeIds)
                 .source(source)
                 .phone(phone).build();
 

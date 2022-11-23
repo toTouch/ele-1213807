@@ -30,6 +30,10 @@ public class PermissionResource {
     */
     private Integer type;
     /**
+     * 权限标识,给前端做按钮显示
+     */
+    private String permission;
+    /**
     * 权限
     */
     private String uri;

@@ -6,17 +6,24 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.TemplateConfigService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,6 +38,12 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
     @Resource
     ElectricityConfigMapper electricityConfigMapper;
+    @Autowired
+    TemplateConfigService templateConfigService;
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    UserService userService;
     @Autowired
     RedisService redisService;
 
@@ -78,6 +91,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
+            electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -93,6 +107,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
         electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
         electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
+        electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
+        electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
         int updateResult = electricityConfigMapper.updateById(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId);
@@ -120,5 +136,33 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     @Override
     public void insertElectricityConfig(ElectricityConfig electricityConfig) {
         this.electricityConfigMapper.insert(electricityConfig);
+    }
+
+    @Override
+    public TenantConfigVO getTenantConfig(String appId) {
+
+        TenantConfigVO tenantConfigVO = new TenantConfigVO();
+
+        //根据appId获取租户id
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.selectTenantId(appId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("ELE ERROR! not found tenant,appId={}", appId);
+            return tenantConfigVO;
+        }
+        Integer tenantId = electricityPayParams.getTenantId();
+
+        //获取租户配置信息
+        ElectricityConfig electricityConfig = this.queryFromCacheByTenantId(tenantId);
+        BeanUtils.copyProperties(electricityConfig, tenantConfigVO);
+
+        //获取租户模板id
+        List<String> templateConfigList = templateConfigService.selectTemplateId(tenantId);
+        tenantConfigVO.setTemplateConfigList(templateConfigList);
+
+        //获取客服电话
+        String servicePhone = userService.selectServicePhone(tenantId);
+        tenantConfigVO.setServicePhone(servicePhone);
+
+        return tenantConfigVO;
     }
 }

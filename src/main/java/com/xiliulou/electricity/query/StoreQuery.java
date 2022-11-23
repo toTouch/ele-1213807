@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.query;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -10,8 +12,11 @@ import java.util.List;
  * @Description:
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class StoreQuery {
+	private Long id;
 	private Long size;
 	private Long offset;
 	/**
@@ -28,6 +33,10 @@ public class StoreQuery {
 	 */
 	private Integer usableStatus;
 	/**
+	 * 支付类型
+	 */
+	private Integer payType;
+	/**
 	 * 门店地址
 	 */
 	private String address;
@@ -37,6 +46,8 @@ public class StoreQuery {
 	private Integer tenantId;
 
 	private Long franchiseeId;
+	
+	private List<Long> franchiseeIds;
 
 	private Long uid;
 

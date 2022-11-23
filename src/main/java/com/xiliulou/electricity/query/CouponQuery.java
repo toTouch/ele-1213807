@@ -23,11 +23,12 @@ public class CouponQuery {
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
     private Integer discountType;
-
     /**
      * 加盟商Id
      */
     private Long franchiseeId;
+    
+    private List<Long> franchiseeIds;
     /**
      * 适用类型  1--邀请活动优惠券  2--普通活动优惠券
      */

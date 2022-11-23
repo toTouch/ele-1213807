@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -32,9 +34,11 @@ import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -69,6 +73,8 @@ public class StoreServiceImpl implements StoreService {
     StoreAmountService storeAmountService;
     @Autowired
     RoleService roleService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -102,7 +108,8 @@ public class StoreServiceImpl implements StoreService {
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
 
-        adminUserQuery.setUserType(User.TYPE_USER_STORE);
+        adminUserQuery.setUserType(User.TYPE_USER_NORMAL_ADMIN);
+        adminUserQuery.setDataType(User.DATA_TYPE_STORE);
         if (!Objects.equals(tenantId, 1)) {
             //普通租户新增加盟商
             //1、查普通租户加盟商角色
@@ -161,7 +168,13 @@ public class StoreServiceImpl implements StoreService {
                     .tenantId(tenantId)
                     .build();
             storeAmountService.insert(storeAmount);
-
+            
+            //保存用户数据可见范围
+            UserDataScope userDataScope = new UserDataScope();
+            userDataScope.setUid(store.getUid());
+            userDataScope.setDataId(store.getId());
+            userDataScopeService.insert(userDataScope);
+    
             return null;
         });
 
@@ -180,6 +193,9 @@ public class StoreServiceImpl implements StoreService {
         Store oldStore = queryByIdFromCache(store.getId());
         if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
             if (checkParam(storeAddAndUpdate, store)) {
@@ -208,6 +224,9 @@ public class StoreServiceImpl implements StoreService {
         Store store = queryByIdFromCache(id);
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if(!Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //查询门店是否绑定换电柜
@@ -295,8 +314,10 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-
-
+        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
+        
         Store store = new Store();
         store.setId(id);
         store.setUpdateTime(System.currentTimeMillis());
@@ -439,7 +460,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public void updateById(Store store) {
-        int update = storeMapper.updateById(store);
+        int update = storeMapper.update(store);
 
 
         DbUtils.dbOperateSuccessThen(update, () -> {
@@ -465,10 +486,30 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public List<Long> queryStoreIdByFranchiseeId(Long id) {
+    public List<Long> queryStoreIdByFranchiseeId(List<Long> id) {
         return storeMapper.queryStoreIdByFranchiseeId(id);
     }
 
+    @Override
+    public List<Store> selectByFranchiseeIds(List<Long> franchiseeIds) {
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getFranchiseeId, franchiseeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectListByQuery(StoreQuery storeQuery) {
+        List<Store> stores = storeMapper.selectListByQuery(storeQuery);
+        if (CollectionUtils.isEmpty(stores)) {
+            return Triple.of(true, "", Collections.EMPTY_LIST);
+        }
+
+        return Triple.of(true, "", stores);
+    }
+    
+    @Override
+    public List<Store> selectByStoreIds(List<Long> storeIds) {
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getId, storeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+    
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

@@ -25,4 +25,6 @@ public class HomepageBatteryFrequencyQuery {
     private String batterySn;
 
     private Long franchiseeId;
+    
+    private List<Long> franchiseeIds;
 }

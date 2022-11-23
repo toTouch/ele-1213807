@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.UserOauthBindService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.web.query.OauthBindQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,7 +42,10 @@ public class JsonAdminUserOauthBindController extends BaseController {
 			size = 10;
 		}
 
-		return returnPairResult(userOauthBindService.queryListByCondition(size, offset, uid, thirdId, phone));
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		return returnPairResult(userOauthBindService.queryListByCondition(size, offset, uid, thirdId, phone,tenantId));
 	}
 
 	@PreAuthorize(value = "hasAuthority('oauth_bind_modify')")
