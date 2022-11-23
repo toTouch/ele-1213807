@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_electricity_cabinet_order")
+@TableName("t_enable_member_card_record")
 public class EnableMemberCardRecord {
 
     @TableId(value = "id", type = IdType.AUTO)
