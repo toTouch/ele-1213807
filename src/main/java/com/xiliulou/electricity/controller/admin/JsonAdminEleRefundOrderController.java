@@ -220,7 +220,7 @@ public class JsonAdminEleRefundOrderController {
 
 	//后台电池线下退款处理
 	@PostMapping("/admin/batteryOffLineRefund")
-    @Log(title = "电池后台线下退押金")
+    @Log(title = "电池押金后台线下退款")
 	public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
 								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
 								 @RequestParam("uid") Long uid,
@@ -230,7 +230,7 @@ public class JsonAdminEleRefundOrderController {
 
     //后台电池线上退款处理
     @PostMapping("/admin/batteryOnLineRefund")
-    @Log(title = "电池后台线上退押金")
+    @Log(title = "电池押金后台线上退款")
     public R batteryOnLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
                                   @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                                   @RequestParam("uid") Long uid,
