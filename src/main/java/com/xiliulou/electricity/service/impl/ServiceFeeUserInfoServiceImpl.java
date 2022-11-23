@@ -57,7 +57,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 			return null;
 		}
 
-		redisService.saveWithHash(CacheConstant.CACHE_USER_INFO + uid, serviceFeeUserInfo);
+		redisService.saveWithHash(CacheConstant.SERVICE_FEE_USER_INFO + uid, serviceFeeUserInfo);
 		return serviceFeeUserInfo;
 	}
 
