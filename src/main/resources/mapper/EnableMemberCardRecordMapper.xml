@@ -22,8 +22,8 @@
             <if test="franchiseeId != null">
                 and franchisee_id =#{franchiseeId}
             </if>
-            <if test="startTime != null">
-                and create_time &gt;=#{startTime}
+            <if test="beginTime != null">
+                and create_time &gt;=#{beginTime}
             </if>
             <if test="endTime != null">
                 and create_time &lt;=#{endTime}
@@ -60,8 +60,8 @@
             <if test="franchiseeId != null">
                 and franchisee_id =#{franchiseeId}
             </if>
-            <if test="startTime != null">
-                and create_time &gt;=#{startTime}
+            <if test="beginTime != null">
+                and create_time &gt;=#{beginTime}
             </if>
             <if test="endTime != null">
                 and create_time &lt;=#{endTime}
