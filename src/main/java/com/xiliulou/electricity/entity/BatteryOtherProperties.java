@@ -5,9 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @TableName("t_battery_other_properties")
 public class BatteryOtherProperties {
@@ -126,4 +123,9 @@ public class BatteryOtherProperties {
     private Long expDischargeTime;
 
 
+    /**
+     * 删除状态 0：正常，1：删除
+     */
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 }

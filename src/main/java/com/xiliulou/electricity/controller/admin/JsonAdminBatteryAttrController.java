@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryAlert;
 import com.xiliulou.electricity.entity.BatteryAttr;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
+import com.xiliulou.electricity.entity.VoltageCurrentChange;
 import jodd.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,39 @@ public class JsonAdminBatteryAttrController {
 		String sql = "select * from t_battery_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
 		return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
 	}
+
+	/**
+	 * 电池电压电流、充电器电压电流变化记录
+	 */
+	@GetMapping(value = "/admin/voltageCurrent/change/list")
+	public R batteryVoltageCurrentChangelist(@RequestParam("beginTime") Long beginTime,
+								   @RequestParam("endTime") Long endTime,
+								   @RequestParam(value = "offset") Long offset,
+								   @RequestParam(value = "size") Long size,
+								   @RequestParam(value = "electricityCabinetId") String electricityCabinetId,
+								   @RequestParam(value = "cellNo") String cellNo) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+		LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+		String begin = formatter.format(beginLocalDateTime);
+		String end = formatter.format(endLocalDateTime);
+
+		if (verifyTime(begin, end, 5)) {
+			return R.failMsg("查询时间区间不能超过5天!");
+		}
+
+		String sql = "select * from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc  limit ?,?";
+		return R.ok(clickHouseService.queryList(VoltageCurrentChange.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
+	}
+
+
 
 	/**
 	 * 判断间隔时间
