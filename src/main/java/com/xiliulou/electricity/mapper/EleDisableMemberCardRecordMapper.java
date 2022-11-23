@@ -19,4 +19,6 @@ public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableM
     List<EleDisableMemberCardRecord> queryList( @Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
     Integer queryCount(@Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
+
+    EleDisableMemberCardRecord queryCreateTimeMaxEleDisableMemberCardRecord(@Param("uid") Long uid,@Param("tenantId") Integer tenantId);
 }

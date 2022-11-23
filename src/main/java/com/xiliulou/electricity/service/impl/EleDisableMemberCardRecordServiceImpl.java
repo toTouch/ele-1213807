@@ -46,6 +46,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public EleDisableMemberCardRecord queryCreateTimeMaxEleDisableMemberCardRecord(Long uid, Integer tenantId) {
+        return eleDisableMemberCardRecordMapper.queryCreateTimeMaxEleDisableMemberCardRecord(uid, tenantId);
+    }
+
+    @Override
     public R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status) {
 
         //租户

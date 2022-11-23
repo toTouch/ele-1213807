@@ -19,6 +19,8 @@ public interface EleDisableMemberCardRecordService {
 
     R list(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
+    EleDisableMemberCardRecord queryCreateTimeMaxEleDisableMemberCardRecord(Long uid, Integer tenantId);
+
     R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status);
 
     R queryCount(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);

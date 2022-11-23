@@ -120,6 +120,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     TemplateConfigService templateConfigService;
     @Autowired
     WeChatAppTemplateService weChatAppTemplateService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     /**
      * 创建月卡订单
@@ -820,8 +822,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R disableMemberCardForLimitTime(Integer disableCardDays) {
-
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -836,10 +838,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0034", "操作频繁,请稍后再试!");
         }
 
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR! not found user,uid:{} ", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -848,7 +855,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //未缴纳押金
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR!not found user! userId:{}", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR!not found user! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -865,13 +872,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
-            log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
-        if (Objects.isNull(franchisee)){
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", franchiseeUserInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={}", franchiseeUserInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -884,12 +891,126 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .uid(userInfo.getUid())
                 .tenantId(userInfo.getTenantId())
                 .uid(user.getUid())
+                .chooseDays(disableCardDays)
+                .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
+                .chargeRate(franchisee.getBatteryServiceFee())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
-        return null;
+        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+        updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW);
+        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+        return R.ok();
     }
+
+    @Override
+    public R enableMemberCardForLimitTime() {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //限频
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return R.fail("ELECTRICITY.0034", "操作频繁,请稍后再试!");
+        }
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //校验用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未缴纳押金
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("DISABLE MEMBER CARD ERROR!not found user! userId={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(franchiseeUserInfo.getOrderId());
+        if (refundCount > 0) {
+            return R.fail("100018", "押金退款审核中");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("DISABLE MEMBER CARD ERROR! disable review userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
+        }
+
+        //判断套餐是否为新用户送的次数卡
+        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
+            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId={}", franchiseeUserInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+//        //判断服务费
+//        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)){
+//
+//        }
+
+
+        return R.ok();
+    }
+
+    @Override
+    public R enableOrDisableMemberCardIsLimitTime() {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //校验用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未缴纳押金
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("DISABLE MEMBER CARD ERROR!not found user! userId={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+            if (Objects.isNull(franchisee)) {
+                log.error("DISABLE MEMBER CARD ERROR！franchiseeId={}", franchiseeUserInfo.getFranchiseeId());
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
+            return R.ok(franchisee.getDisableCardTimeType());
+        } else {
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), user.getTenantId());
+            return R.ok(eleDisableMemberCardRecord.getDisableCardTimeType());
+        }
+    }
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
