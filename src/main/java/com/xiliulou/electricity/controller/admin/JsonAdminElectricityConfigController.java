@@ -25,7 +25,7 @@ public class JsonAdminElectricityConfigController {
 
     //编辑平台名称
     @PutMapping(value = "/admin/electricityConfig")
-    @Log(title = "编辑平台名称")
+    @Log(title = "编辑平台信息")
     public R edit(@RequestBody @Validated(value = CreateGroup.class)ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         return electricityConfigService.edit(electricityConfigAddAndUpdateQuery);
     }

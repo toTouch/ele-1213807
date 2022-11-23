@@ -203,7 +203,7 @@ public class JsonAdminEleRefundOrderController {
 
 	//后台电池线下退款处理
 	@PostMapping("/admin/batteryOffLineRefund")
-    @Log(title = "后台电池线下退款处理")
+    @Log(title = "后台电池退款处理")
 	public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
 								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
 								 @RequestParam("uid") Long uid,

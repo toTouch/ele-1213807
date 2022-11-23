@@ -2,10 +2,10 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.SysOperLog;
 import com.xiliulou.electricity.query.SysOperLogQuery;
 import com.xiliulou.electricity.service.SysOperLogService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.SysOperLogVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,9 +41,14 @@ public class JsonAdminSysOperLogController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
+
+        Integer tenantId=null;
+        if(!SecurityUtils.isAdmin()){
+            tenantId=TenantContextHolder.getTenantId();
+        }
         
         SysOperLogQuery sysOperLogQuery = SysOperLogQuery.builder().size(size).offset(offset).status(status)
-                .beginTime(beginTime).endTime(endTime).tenantId(TenantContextHolder.getTenantId()).build();
+                .beginTime(beginTime).endTime(endTime).tenantId(tenantId).build();
         
         List<SysOperLogVO> sysOperLogs = sysOperLogService.selectByPage(sysOperLogQuery);
         return R.ok(sysOperLogs);
