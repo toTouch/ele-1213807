@@ -210,6 +210,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
+    @Log(title = "用户绑定套餐")
     public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
         return electricityMemberCardOrderService.addUserMemberCard(memberCardOrderAddAndUpdate);
     }
