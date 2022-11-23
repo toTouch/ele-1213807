@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
@@ -240,13 +239,21 @@ public class JsonAdminElectricityMemberCardOrderController {
 
     /**
      * 暂停用户套餐
-     *
-     * @param usableStatus
      * @return
      */
-    @PutMapping("/admin/memberCard/openOrDisableMemberCard")
+    @PutMapping("/admin/memberCard/disableUserMemberCard")
 	@Log(title = "暂停用户套餐")
-	public R adminOpenOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
+	public R adminDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
+        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid);
+    }
+
+    /**
+     * 启用用户套餐
+     * @return
+     */
+    @PutMapping("/admin/memberCard/enableUserMemberCard")
+    @Log(title = "启用用户套餐")
+    public R adminEnableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
         return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid);
     }
 
