@@ -37,4 +37,6 @@ public interface EnableMemberCardRecordService {
 
 
     R queryCount(EnableMemberCardRecordQuery enableMemberCardRecordQuery);
+
+    EnableMemberCardRecord queryByDisableCardNO(String disableCardNO,Integer tenantId);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -59,5 +60,10 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
     @Override
     public R queryCount(EnableMemberCardRecordQuery enableMemberCardRecordQuery) {
         return R.ok(enableMemberCardRecordMapper.queryCount(enableMemberCardRecordQuery));
+    }
+
+    @Override
+    public EnableMemberCardRecord queryByDisableCardNO(String disableCardNO, Integer tenantId) {
+        return enableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EnableMemberCardRecord>().eq(EnableMemberCardRecord::getDisableMemberCardNo, disableCardNO).eq(EnableMemberCardRecord::getTenantId, tenantId));
     }
 }

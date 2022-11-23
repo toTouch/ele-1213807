@@ -90,6 +90,12 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
 
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
+    @Autowired
+    EnableMemberCardRecordService enableMemberCardRecordService;
+
+
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -498,6 +504,36 @@ public class ElectricityTradeOrderServiceImpl extends
                 Long memberCardExpireTime = System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime());
                 franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
                 franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
+
+                EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
+
+
+                EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
+                if (Objects.isNull(enableMemberCardRecord)) {
+                    Long cardDays = (System.currentTimeMillis() - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+                    EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
+                            .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
+                            .memberCardName(franchiseeUserInfo.getCardName())
+                            .enableTime(System.currentTimeMillis())
+                            .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
+                            .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
+                            .disableDays(cardDays.intValue())
+                            .disableTime(eleDisableMemberCardRecord.getCreateTime())
+                            .franchiseeId(franchiseeUserInfo.getFranchiseeId())
+                            .phone(userInfo.getPhone())
+                            .createTime(System.currentTimeMillis())
+                            .tenantId(userInfo.getTenantId())
+                            .uid(userInfo.getUid())
+                            .userName(userInfo.getName())
+                            .updateTime(System.currentTimeMillis()).build();
+                    enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
+                }else {
+                    EnableMemberCardRecord enableMemberCardRecordUpdate=new EnableMemberCardRecord();
+                    enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
+                    enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS);
+                    enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                    enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
+                }
             }
             franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
@@ -778,14 +814,14 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if (Objects.equals(insuranceOrderStatus,InsuranceOrder.STATUS_SUCCESS)) {
+        if (Objects.equals(insuranceOrderStatus, InsuranceOrder.STATUS_SUCCESS)) {
             InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
             updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
             updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
             updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
             updateOrAddInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
             updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
-            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis()+franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
             updateOrAddInsuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
             updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
             updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
