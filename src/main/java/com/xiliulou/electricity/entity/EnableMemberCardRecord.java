@@ -90,9 +90,15 @@ public class EnableMemberCardRecord {
     /**
      * 加盟商Id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
+
+    public static final Integer SYSTEM_ENABLE = 0;
+    public static final Integer ARTIFICIAL_ENABLE = 1;
 
 
+    public static final Integer STATUS_INIT = 0;
+    public static final Integer STATUS_SUCCESS = 1;
+    public static final Integer STATUS_FAIL = 2;
 
 
 }

@@ -55,11 +55,12 @@ public class ServiceFeeUserInfo {
     /**
      * 加盟商Id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     private Integer delFlag;
 
 
-
+    public static final Integer NOT_EXIST_SERVICE_FEE = 0;
+    public static final Integer EXIST_SERVICE_FEE = 1;
 
 }
