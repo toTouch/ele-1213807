@@ -848,7 +848,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R disableMemberCardForLimitTime(Integer disableCardDays) {
+    public R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -917,6 +917,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .tenantId(userInfo.getTenantId())
                 .uid(user.getUid())
                 .chooseDays(disableCardDays)
+                .disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
                 .chargeRate(franchisee.getBatteryServiceFee())
                 .createTime(System.currentTimeMillis())
@@ -940,7 +941,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
             serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
-        }else {
+        } else {
             serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
         }
 
@@ -2099,6 +2100,63 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 item.setMemberCardExpiringTemplate(templateConfigEntity.getCarMemberCardExpiringTemplate());
                 item.setRentCarMemberCardExpireTimeStr(simp.format(date));
                 sendCarMemberCardExpiringTemplate(item);
+            });
+            offset += size;
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void systemEnableMemberCardTask() {
+
+        int offset = 0;
+        int size = 300;
+        Date date = new Date();
+        long nowTime = System.currentTimeMillis();
+
+        while (true) {
+            List<EleDisableMemberCardRecord> eleDisableMemberCardRecordList = eleDisableMemberCardRecordService.queryDisableCardExpireRecord(offset, size, nowTime);
+
+            if (!DataUtil.collectionIsUsable(eleDisableMemberCardRecordList)) {
+                return;
+            }
+
+            eleDisableMemberCardRecordList.parallelStream().forEach(item -> {
+
+                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(item.getUid());
+
+                EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
+                        .disableMemberCardNo(item.getDisableMemberCardNo())
+                        .memberCardName(franchiseeUserInfo.getCardName())
+                        .enableTime(System.currentTimeMillis())
+                        .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
+                        .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_NOT_PAY)
+                        .disableDays(item.getChooseDays())
+                        .disableTime(item.getCreateTime())
+                        .franchiseeId(franchiseeUserInfo.getFranchiseeId())
+                        .phone(item.getPhone())
+                        .createTime(System.currentTimeMillis())
+                        .tenantId(franchiseeUserInfo.getTenantId())
+                        .uid(item.getUid())
+                        .userName(item.getUserName())
+                        .updateTime(System.currentTimeMillis()).build();
+                enableMemberCardRecordService.insert(enableMemberCardRecord);
+
+                FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+                Long memberCardExpireTime = System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime());
+                updateFranchiseeUserInfo.setMemberCardExpireTime(memberCardExpireTime);
+                updateFranchiseeUserInfo.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
+                updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
+                updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+                updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
+                franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+
+                EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate=new EleDisableMemberCardRecord();
+                eleDisableMemberCardRecordUpdate.setId(item.getId());
+                eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
+                eleDisableMemberCardRecordUpdate.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_NOT_DISABLE);
+                eleDisableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
             });
             offset += size;
         }

@@ -53,4 +53,12 @@
         t_ele_disable_member_card_record
         where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
+
+    <select id="queryDisableCardExpireRecord" resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
+        select id,uid,tenant_id,disable_member_card_no,choose_days,user_name,phone from t_ele_disable_member_card_record
+        where status=1 and disable_card_time_type=1 and real_days is null and disable_deadline &gt;=#{nowTime}
+        limit #{offset},#{size};
+    </select>
+
+
 </mapper>

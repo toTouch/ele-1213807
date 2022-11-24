@@ -25,4 +25,8 @@ public interface EleDisableMemberCardRecordService {
 
     R queryCount(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
+    List<EleDisableMemberCardRecord> queryDisableCardExpireRecord(Integer offset, Integer size, Long nowTime);
+
+    int updateBYId(EleDisableMemberCardRecord eleDisableMemberCardRecord);
+
 }

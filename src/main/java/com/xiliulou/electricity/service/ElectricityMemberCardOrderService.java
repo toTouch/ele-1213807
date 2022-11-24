@@ -41,13 +41,13 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
-    R disableMemberCardForLimitTime(Integer disableCardDays);
+    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline);
 
     R enableMemberCardForLimitTime();
 
     R enableOrDisableMemberCardIsLimitTime();
 
-    R adminOpenOrDisableMemberCard(Integer usableStatus,Long uid);
+    R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid);
 
     R cleanBatteryServiceFee(Long uid);
 
@@ -76,6 +76,8 @@ public interface ElectricityMemberCardOrderService {
     void batteryMemberCardExpireReminder();
 
     void carMemberCardExpireReminder();
+
+    void systemEnableMemberCardTask();
 
     void expireReminderHandler();
 }

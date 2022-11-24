@@ -56,7 +56,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo).eq(EleDisableMemberCardRecord::getTenantId,tenantId));
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo).eq(EleDisableMemberCardRecord::getTenantId, tenantId));
 
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO:{}", disableMemberCardNo);
@@ -81,13 +81,17 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
 
         EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
+        updateEleDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
         updateEleDisableMemberCardRecord.setDisableMemberCardNo(disableMemberCardNo);
         updateEleDisableMemberCardRecord.setStatus(status);
         updateEleDisableMemberCardRecord.setErrMsg(errMsg);
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
         updateEleDisableMemberCardRecord.setCardDays((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
+        if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME) && Objects.equals(status, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
+            updateEleDisableMemberCardRecord.setDisableDeadline(System.currentTimeMillis() + eleDisableMemberCardRecord.getChooseDays() * (24 * 60 * 60 * 1000L));
+        }
 
-        eleDisableMemberCardRecordMapper.update(updateEleDisableMemberCardRecord, new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo));
+        eleDisableMemberCardRecordMapper.updateById(updateEleDisableMemberCardRecord);
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -107,5 +111,15 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Override
     public R queryCount(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
         return R.ok(eleDisableMemberCardRecordMapper.queryCount(electricityMemberCardRecordQuery));
+    }
+
+    @Override
+    public List<EleDisableMemberCardRecord> queryDisableCardExpireRecord(Integer offset, Integer size, Long nowTime) {
+        return eleDisableMemberCardRecordMapper.queryDisableCardExpireRecord(offset, size, nowTime);
+    }
+
+    @Override
+    public int updateBYId(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
+        return eleDisableMemberCardRecordMapper.updateById(eleDisableMemberCardRecord);
     }
 }

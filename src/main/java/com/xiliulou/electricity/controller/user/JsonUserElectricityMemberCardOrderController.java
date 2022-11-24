@@ -41,7 +41,7 @@ public class JsonUserElectricityMemberCardOrderController {
 
     @GetMapping("user/memberCardOrder/list")
     public R queryUserList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-                                    @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
         return electricityMemberCardOrderService.queryUserList(offset, size, queryStartTime, queryEndTime);
     }
 
@@ -56,22 +56,24 @@ public class JsonUserElectricityMemberCardOrderController {
     }
 
     @PutMapping("user/memberCard/openOrDisableMemberCard")
-    public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus){
+    public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus) {
         return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
     }
 
     /**
      * 限制时间停卡
+     *
      * @param disableCardDays
      * @return
      */
     @PutMapping("user/memberCard/disableMemberCardForLimitTime")
-    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays){
-        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays);
+    public R disableMemberCardForLimitTime(@RequestParam("disableCardDays") Integer disableCardDays, @RequestParam("disableDeadline") Long disableDeadline) {
+        return electricityMemberCardOrderService.disableMemberCardForLimitTime(disableCardDays, disableDeadline);
     }
 
     /**
      * 限制时间启用卡
+     *
      * @return
      */
     @PutMapping("user/memberCard/enableMemberCardForLimitTime")
@@ -81,6 +83,7 @@ public class JsonUserElectricityMemberCardOrderController {
 
     /**
      * 用户获取停卡是否限制时间
+     *
      * @return
      */
     @GetMapping("user/memberCard/enableOrDisableMemberCardIsLimitTime")
@@ -89,7 +92,7 @@ public class JsonUserElectricityMemberCardOrderController {
     }
 
     @GetMapping("user/memberCard/getDisableMemberCardList")
-    public R getDisableMemberCardList(@RequestParam("offset") Long offset, @RequestParam("size") Long size){
+    public R getDisableMemberCardList(@RequestParam("offset") Long offset, @RequestParam("size") Long size) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -106,7 +109,7 @@ public class JsonUserElectricityMemberCardOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery= ElectricityMemberCardRecordQuery.builder()
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder()
                 .size(size)
                 .offset(offset)
                 .uid(user.getUid()).build();
@@ -119,7 +122,6 @@ public class JsonUserElectricityMemberCardOrderController {
     public R payRentCarMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
         return electricityMemberCardOrderService.payRentCarMemberCard(electricityMemberCardOrderQuery, request);
     }
-
 
 
 }
