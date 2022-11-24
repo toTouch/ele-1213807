@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class VoltageCurrentChange {
 
-    private String electricityCabinetId;
+    private Long electricityCabinetId;
     private Integer cellNo;
     //充电器电压
     private Double chargeV;

@@ -470,7 +470,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), eleBatteryVO.getCellNo(), eleBatteryVO.getChargeV(), eleBatteryVO.getChargeA(), eleBatteryVO.batteryOtherProperties.getBatteryV(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()), eleBatteryVO.getChargeV(), eleBatteryVO.getChargeA(), eleBatteryVO.batteryOtherProperties.getBatteryV(),
                     eleBatteryVO.batteryOtherProperties.getBatteryChargeA(), sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
         } catch (Exception e) {
             log.error("ELE BATTERY REPORT ERROR! save voltageCurrent to clickHouse error!", e);

@@ -138,8 +138,8 @@ public class JsonAdminBatteryAttrController {
 								   @RequestParam("endTime") Long endTime,
 								   @RequestParam(value = "offset") Long offset,
 								   @RequestParam(value = "size") Long size,
-								   @RequestParam(value = "electricityCabinetId") String electricityCabinetId,
-								   @RequestParam(value = "cellNo") String cellNo) {
+								   @RequestParam(value = "electricityCabinetId") Long electricityCabinetId,
+								   @RequestParam(value = "cellNo") Integer cellNo) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
