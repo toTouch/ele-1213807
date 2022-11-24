@@ -24,6 +24,6 @@ public class VoltageCurrentChange {
     private Double batteryChargeA;
 
     private String sessionId;
-    private Long reportTime;
-    private Long createTime;
+    private String reportTime;
+    private String createTime;
 }
