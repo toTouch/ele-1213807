@@ -289,7 +289,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
 
     //禁启用换电柜
     @PutMapping(value = "/admin/electricityCabinet/updateStatus")
-    @Log(title = "禁启用换电柜")
+    @Log(title = "禁/启用换电柜")
     public R updateStatus(@RequestParam("id") Integer id, @RequestParam("usableStatus") Integer usableStatus) {
         return electricityCabinetService.updateStatus(id, usableStatus);
     }

@@ -221,7 +221,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
-	@Log(title = "清除用户电池服务费")
+	@Log(title = "编辑用户套餐")
 	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
         return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
     }
