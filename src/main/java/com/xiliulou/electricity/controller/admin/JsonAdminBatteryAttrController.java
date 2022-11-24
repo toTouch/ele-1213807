@@ -157,7 +157,7 @@ public class JsonAdminBatteryAttrController {
 			return R.failMsg("查询时间区间不能超过5天!");
 		}
 
-		String sql = "select * from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc  limit ?,?";
+		String sql = "select electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc  limit ?,?";
 		return R.ok(clickHouseService.queryList(VoltageCurrentChange.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
 	}
 
