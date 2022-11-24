@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.filter;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.utils.UUIDUtil;
 import com.xiliulou.electricity.utils.WebUtils;
 import com.xiliulou.electricity.web.entity.BodyReaderHttpServletRequestWrapper;
 import io.prometheus.client.CollectorRegistry;
@@ -113,7 +113,7 @@ public class RequestFilter implements Filter {
 
         Long uid = SecurityUtils.getUid();
         String ip = WebUtils.getIP(httpServletRequest);
-        String requestId = UUIDUtil.uuid();
+        String requestId = IdUtil.simpleUUID();
 
         httpServletRequest.setAttribute(REQUEST_ID, requestId);
 

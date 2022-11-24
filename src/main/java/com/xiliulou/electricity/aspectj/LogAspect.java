@@ -105,7 +105,7 @@ public class LogAspect {
             getControllerMethodDescription(joinPoint, controllerLog, operLog, jsonResult);
 
             //Logstash日志
-            log.info("requestId={} ip={} uid={} method={} uri={} result={}", requestId, ip, currentUser.getUid(),
+            log.debug("requestId={} ip={} uid={} method={} uri={} result={}", requestId, ip, currentUser.getUid(),
                     ServletUtils.getRequest().getMethod(), ServletUtils.getRequest().getRequestURI(),
                     JsonUtil.toJson(jsonResult));
             
