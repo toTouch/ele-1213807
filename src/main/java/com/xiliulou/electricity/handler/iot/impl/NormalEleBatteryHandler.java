@@ -450,8 +450,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     || !Objects.equals(eleBox.getChargeV(), eleBatteryVO.getChargeV())
                     || !Objects.equals(batteryOtherProperties.getBatteryChargeA(), batteryOtherPropertiesQuery.getBatteryChargeA())
                     || !Objects.equals(batteryOtherProperties.getBatteryV(), batteryOtherPropertiesQuery.getBatteryV());
-
-            if (flag) {
+    
+            if (flag && redisService.setNx(CacheConstant.CACHE_VOLTAGE_CURRENT_CHANGE + electricityCabinet.getId() + ":" + eleBox.getCellNo(), "1", 60 * 1000L, false)) {
                 saveVoltageCurrentToClickHouse(electricityCabinet, eleBatteryVO, sessionId);
             }
         });

@@ -221,4 +221,9 @@ public interface CacheConstant {
      * insuranceUserInfo的缓存
      */
     String CACHE_INSURANCE_USER_INFO = "insurance_user_info:";
+    
+    /**
+     * 电池电压电流变化记录缓存
+     */
+    String CACHE_VOLTAGE_CURRENT_CHANGE="voltage_current_change:";
 }
