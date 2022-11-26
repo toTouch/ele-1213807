@@ -891,7 +891,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("DISABLE MEMBER CARD ERROR! disable review userId:{}", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
 
@@ -2111,7 +2111,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         int offset = 0;
         int size = 300;
-        Date date = new Date();
         long nowTime = System.currentTimeMillis();
 
         while (true) {
@@ -2151,7 +2150,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
                 franchiseeUserInfoService.update(updateFranchiseeUserInfo);
 
-                EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate=new EleDisableMemberCardRecord();
+                EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
                 eleDisableMemberCardRecordUpdate.setId(item.getId());
                 eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
                 eleDisableMemberCardRecordUpdate.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_NOT_DISABLE);
