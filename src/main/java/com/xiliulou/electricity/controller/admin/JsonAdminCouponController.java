@@ -54,6 +54,7 @@ public class JsonAdminCouponController extends BaseController {
         return couponService.update(coupon);
     }
     @DeleteMapping("/admin/coupon/delete/{id}")
+    @Log(title = "删除优惠券")
     public R delete(@PathVariable("id") Long id){
         return returnTripleResult(couponService.deleteById(id));
     }
