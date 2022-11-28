@@ -1174,7 +1174,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return userInfoDetailVO;
         }
         //套餐状态
-        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis() && Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE))) {
             userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
         } else {
             userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.EXIST_MEMBER_CARD);
