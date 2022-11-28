@@ -80,7 +80,7 @@ public class RequestFilter implements Filter {
             return;
         }
         Long uid = SecurityUtils.getUid();
-        log.info("requestId={} ip={} uid={} method={} uri={} time={}", requestId, ip, uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
+        log.info("ip={} uid={} method={} uri={} time={}", ip, uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
 
     }
 
@@ -118,15 +118,15 @@ public class RequestFilter implements Filter {
         httpServletRequest.setAttribute(REQUEST_ID, requestId);
 
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
-            log.info("requestId={} ip={} uid={} method={} uri={} params={}", requestId, ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+            log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             filterChain.doFilter(httpServletRequest, servletResponse);
         } else {
             httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
             if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-                log.info("requestId={} ip={} uid={} method={} uri={} params={}", requestId, ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
+                log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
             } else {
-                log.info("requestId={} ip={} uid={} method={} uri={} params={}", requestId, ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+                log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             }
 
             filterChain.doFilter(httpServletRequest, servletResponse);
