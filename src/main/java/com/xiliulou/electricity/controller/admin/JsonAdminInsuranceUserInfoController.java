@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
@@ -77,6 +78,7 @@ public class JsonAdminInsuranceUserInfoController {
      * @return
      */
     @PutMapping(value = "/admin/insuranceUserInfo/insuranceStatus")
+    @Log(title = "修改用户保险状态")
     public R updateServiceStatus(@RequestParam("uid") Long uid, @RequestParam("insuranceStatus") Integer insuranceStatus) {
         return insuranceUserInfoService.updateInsuranceStatus(uid, insuranceStatus);
     }

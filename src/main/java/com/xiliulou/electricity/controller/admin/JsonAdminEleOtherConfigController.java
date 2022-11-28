@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.EleOtherConfig;
 import com.xiliulou.electricity.service.EleOtherConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -32,7 +33,7 @@ public class JsonAdminEleOtherConfigController extends BaseController {
         if(Objects.nonNull(eleOtherConfig) && SecurityUtils.isAdmin()){
             return R.ok(eleOtherConfig);
         }
-        
+
         if (Objects.isNull(eleOtherConfig) || !Objects.equals(eleOtherConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
@@ -41,7 +42,8 @@ public class JsonAdminEleOtherConfigController extends BaseController {
     }
 
     @PutMapping("/admin/ele/other/config")
-    public R updateEleOtherConfig(@RequestBody EleOtherConfig eleOtherConfig) {
+    @Log(title = "修改柜机其他配置")
+    public R updateEleOtherConfig(@RequestBody EleOtherConfig eleOtherConfig){
         return eleOtherConfigService.updateEleOtherConfig(eleOtherConfig);
     }
 

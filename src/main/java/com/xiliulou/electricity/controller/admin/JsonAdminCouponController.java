@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -47,6 +48,7 @@ public class JsonAdminCouponController {
 
     //修改--暂时无此功能
     @PutMapping(value = "/admin/coupon")
+    @Log(title = "修改优惠券")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) Coupon coupon) {
         return couponService.update(coupon);
     }
