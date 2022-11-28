@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -24,6 +25,7 @@ public class JsonAdminElectricityConfigController {
 
     //编辑平台名称
     @PutMapping(value = "/admin/electricityConfig")
+    @Log(title = "编辑平台信息")
     public R edit(@RequestBody @Validated(value = CreateGroup.class)ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         return electricityConfigService.edit(electricityConfigAddAndUpdateQuery);
     }

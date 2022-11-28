@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.*;
@@ -55,18 +56,20 @@ public class JsonAdminFranchiseeController extends BaseController {
 
     //修改加盟商
     @PutMapping(value = "/admin/franchisee")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+	@Log(title = "修改加盟商")
+	public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
         return franchiseeService.edit(franchiseeAddAndUpdate);
     }
 
-    //删除加盟商
-    @DeleteMapping(value = "/admin/franchisee/{id}")
-    public R delete(@PathVariable("id") Long id) {
-        if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return franchiseeService.delete(id);
-    }
+	//删除加盟商
+	@DeleteMapping(value = "/admin/franchisee/{id}")
+	@Log(title = "删除加盟商")
+	public R delete(@PathVariable("id") Long id) {
+		if (Objects.isNull(id)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		return franchiseeService.delete(id);
+	}
 
     //列表查询
     @GetMapping(value = "/admin/franchisee/list")
@@ -96,7 +99,7 @@ public class JsonAdminFranchiseeController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -119,13 +122,13 @@ public class JsonAdminFranchiseeController extends BaseController {
      */
     @GetMapping(value = "/admin/franchisee/selectListByTenantId")
     public R selectFranchiseeList(){
-    
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -133,11 +136,11 @@ public class JsonAdminFranchiseeController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
-        
+
         FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
         franchiseeQuery.setIds(ids);
         franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
@@ -156,7 +159,7 @@ public class JsonAdminFranchiseeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -164,7 +167,7 @@ public class JsonAdminFranchiseeController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -194,7 +197,8 @@ public class JsonAdminFranchiseeController extends BaseController {
 
     //分账设置
     @PostMapping(value = "/admin/franchisee/setSplit")
-    public R setSplit(@RequestBody List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList) {
+	@Log(title = "加盟商分帐设置")
+	public R setSplit(@RequestBody List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList) {
         return franchiseeService.setSplit(franchiseeSetSplitQueryList);
     }
 
@@ -221,7 +225,7 @@ public class JsonAdminFranchiseeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -229,7 +233,7 @@ public class JsonAdminFranchiseeController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -268,7 +272,7 @@ public class JsonAdminFranchiseeController extends BaseController {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -342,7 +346,8 @@ public class JsonAdminFranchiseeController extends BaseController {
 
     //修改余额
     @PostMapping("/admin/franchisee/modifyAccount")
-    public R modifyShopAccountAmount(@RequestParam("franchiseeId") Long franchiseeId,
+	@Log(title = "修改加盟商余额")
+	public R modifyShopAccountAmount(@RequestParam("franchiseeId") Long franchiseeId,
                                      @RequestParam("balance") BigDecimal modifyBalance) {
         if (franchiseeId <= 0 || modifyBalance.compareTo(BigDecimal.valueOf(0.0)) >= 0) {
             return R.fail("LOCKER.10005", "不合法的参数");

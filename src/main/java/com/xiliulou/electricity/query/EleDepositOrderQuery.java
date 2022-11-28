@@ -29,6 +29,9 @@ public class EleDepositOrderQuery {
     private Integer tenantId;
 
     private List<Long> franchiseeIds;
+
+    private Long franchiseeId;
+
     private String franchiseeName;
 
     private Long uid;
@@ -39,6 +42,8 @@ public class EleDepositOrderQuery {
     private Integer refundOrderType;
 
     private List<Long> storeIds;
+
+    private Long storeId;
 
     private String carModel;
 

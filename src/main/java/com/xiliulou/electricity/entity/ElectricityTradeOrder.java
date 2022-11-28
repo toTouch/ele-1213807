@@ -41,6 +41,8 @@ public class ElectricityTradeOrder {
     //
     private Integer tenantId;
 
+    private Long parentOrderId;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = -1;
@@ -57,6 +59,9 @@ public class ElectricityTradeOrder {
     //租车月卡支付
     public static final Integer ORDER_TYPE_RENT_MEMBER_CARD = 5;
 
+    //保险支付
+    public static final Integer ORDER_TYPE_INSURANCE = 6;
+
     //押金支付附加信息
     public static final String ATTACH_DEPOSIT = "deposit";
 
@@ -71,6 +76,9 @@ public class ElectricityTradeOrder {
 
     //租车月卡附加信息
     public static final String ATTACH_RENT_CAR_MEMBER_CARD = "rentCarMemberCard";
+
+    //保险附加信息
+    public static final String ATTACH_INSURANCE = "insurance";
 
 
 }

@@ -12,6 +12,7 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 public interface ElectricityTradeOrderService {
 
@@ -38,9 +39,18 @@ public interface ElectricityTradeOrderService {
     //租车月卡回调
     Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
 
+    //保险回调
+    Pair<Boolean, Object> notifyInsuranceOrder(WechatJsapiOrderCallBackResource callBackResource);
+
 
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
 
 
     ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
+
+    void insert(ElectricityTradeOrder electricityTradeOrder);
+
+    List<ElectricityTradeOrder> selectTradeOrderByParentOrderId(Long parentOrderId);
+
+    Integer updateElectricityTradeOrderById(ElectricityTradeOrder electricityTradeOrder);
 }

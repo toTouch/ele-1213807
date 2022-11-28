@@ -95,4 +95,6 @@ public interface UserService {
     R userAutoCodeCheck(String autoCode);
     
     User queryByUserPhoneFromDB(String purePhoneNumber, Integer typeUserNormalWxPro, Integer tenantId);
+
+    String selectServicePhone(Integer tenantId);
 }
