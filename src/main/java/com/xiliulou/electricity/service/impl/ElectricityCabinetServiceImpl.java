@@ -3289,7 +3289,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return;
             }
     
-            Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinetId, "1", 3600 * 1000L, false);
+            Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinetId, "1", 1800 * 1000L, false);
             if (cacheFlag) {
                 List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
                 if (CollectionUtils.isEmpty(messageNotifyList)) {
