@@ -3,20 +3,15 @@ package com.xiliulou.electricity.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -53,6 +48,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Autowired
     ElectricityBatteryService electricityBatteryService;
 
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
     /**
      * 修改数据
@@ -163,7 +160,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     @Override
     public List<FranchiseeUserInfo> selectByMemberCardId(Integer memberCardId, Integer tenantId) {
-        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId).eq(FranchiseeUserInfo::getTenantId,tenantId)
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId).eq(FranchiseeUserInfo::getTenantId, tenantId)
                 .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
     }
 
@@ -194,14 +191,15 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         return franchiseeUserInfoMapper.unBindNowBatterySn(franchiseeUserInfo);
     }
 
-    @Override public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
-        Long firstTime, Long lastTime) {
+    @Override
+    public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
+                                                                            Long firstTime, Long lastTime) {
         return franchiseeUserInfoMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
     @Override
     public List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
-        Long lastTime) {
+                                                                    Long lastTime) {
         return franchiseeUserInfoMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
@@ -305,7 +303,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
-
         Long now = System.currentTimeMillis();
         long cardDays = 0;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
@@ -313,6 +310,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+
             eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE);
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             //不足一天按一天计算
@@ -340,9 +338,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                     }
                 }
             } else {
-                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                 //计算服务费
-                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                BigDecimal batteryServiceFee = queryServiceFeeChargeRateByMemberCardStatus(franchiseeUserInfo, franchisee, uid).multiply(new BigDecimal(cardDays));
                 eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
                 return eleBatteryServiceFeeVO;
             }
@@ -364,5 +361,15 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
         franchiseeUserInfoMapper.modifyRentCarStatusByUserInfoId(franchiseeUserInfo);
+    }
+
+    private BigDecimal queryServiceFeeChargeRateByMemberCardStatus(FranchiseeUserInfo franchiseeUserInfo, Franchisee franchisee, Long uid) {
+        BigDecimal batteryServiceFee = franchisee.getBatteryServiceFee();
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(uid, franchiseeUserInfo.getTenantId());
+            batteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
+        }
+        return batteryServiceFee;
     }
 }

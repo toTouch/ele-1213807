@@ -1171,12 +1171,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
 
                     //判断用户是否产生电池服务费
-                    long cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+                    Long cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
                     //不足一天按一天计算
                     double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
                     if (time < 24) {
-                        cardDays = 1;
+                        cardDays = 1L;
                     }
 
                     if (cardDays >= 1) {
@@ -1204,21 +1204,40 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                             }
                         }
                     }
+                    EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), user.getTenantId());
+
+                    EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
+                            .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
+                            .memberCardName(franchiseeUserInfo.getCardName())
+                            .enableTime(System.currentTimeMillis())
+                            .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
+                            .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_INIT)
+                            .disableDays(cardDays.intValue())
+                            .disableTime(eleDisableMemberCardRecord.getCreateTime())
+                            .franchiseeId(franchiseeUserInfo.getFranchiseeId())
+                            .phone(user.getPhone())
+                            .createTime(System.currentTimeMillis())
+                            .tenantId(user.getTenantId())
+                            .uid(user.getUid())
+                            .userName(userInfo.getName())
+                            .updateTime(System.currentTimeMillis()).build();
+                    enableMemberCardRecordService.insert(enableMemberCardRecord);
                 }
             }
+        } else {
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
+                    .disableMemberCardNo(generateOrderId(uid))
+                    .memberCardName(franchiseeUserInfo.getCardName())
+                    .phone(userInfo.getPhone())
+                    .userName(userInfo.getName())
+                    .status(usableStatus)
+                    .tenantId(userInfo.getTenantId())
+                    .uid(uid)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         }
 
-        EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
-                .disableMemberCardNo(generateOrderId(uid))
-                .memberCardName(franchiseeUserInfo.getCardName())
-                .phone(userInfo.getPhone())
-                .userName(userInfo.getName())
-                .status(usableStatus)
-                .tenantId(userInfo.getTenantId())
-                .uid(uid)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
-        eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
