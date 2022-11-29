@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryDepositAdd;
@@ -238,12 +239,14 @@ public class JsonAdminEleDepositOrderController {
 
     //缴纳电池押金
     @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
+    @Log(title = "缴纳电池押金")
     public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
         return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
     }
 
     //缴纳租车押金
     @PostMapping(value = "/admin/eleDepositOrder/rentCarDeposit")
+    @Log(title = "缴纳租车押金")
     public R rentCarDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
 
         //租户

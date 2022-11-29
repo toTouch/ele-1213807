@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -52,12 +55,14 @@ public class JsonAdminElectricityCarModelController {
 
     //修改换电柜车辆型号
     @PutMapping(value = "/admin/electricityCarModel")
+    @Log(title = "修改换电柜车辆型号")
     public R update(@RequestBody ElectricityCarModel electricityCarModel) {
         return electricityCarModelService.edit(electricityCarModel);
     }
 
     //删除换电柜型号
     @DeleteMapping(value = "/admin/electricityCarModel/{id}")
+    @Log(title = "删除换电柜型号")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -94,12 +99,12 @@ public class JsonAdminElectricityCarModelController {
             if(CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
-            
+
             List<Store> stores=storeService.selectByStoreIds(storeIds);
             if(CollectionUtils.isEmpty(stores)){
                 return R.ok(Collections.EMPTY_LIST);
             }
-    
+
             franchiseeIds = stores.stream().map(Store::getFranchiseeId).collect(Collectors.toList());
         }
 
@@ -131,22 +136,22 @@ public class JsonAdminElectricityCarModelController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         List<Long> franchiseeIds=null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if(CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
-        
+
             List<Store> stores=storeService.selectByStoreIds(storeIds);
             if(CollectionUtils.isEmpty(stores)){
                 return R.ok(Collections.EMPTY_LIST);
             }
-        
+
             franchiseeIds = stores.stream().map(Store::getFranchiseeId).collect(Collectors.toList());
         }
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
@@ -158,15 +163,15 @@ public class JsonAdminElectricityCarModelController {
 
         return electricityCarModelService.queryCount(electricityCarModelQuery);
     }
-    
+
     //列表查询
     @GetMapping(value = "/admin/electricityCarModel/selectByStoreId")
     public R queryCount(@RequestParam(value = "storeId", required = false) Long storeId) {
-        
+
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .storeId(storeId)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-        
+
         return electricityCarModelService.selectByStoreId(electricityCarModelQuery);
     }
 

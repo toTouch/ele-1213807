@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
@@ -71,7 +71,7 @@ public class JsonAdminElectricityMemberCardOrderController {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -123,11 +123,11 @@ public class JsonAdminElectricityMemberCardOrderController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -175,11 +175,11 @@ public class JsonAdminElectricityMemberCardOrderController {
             log.error("ELE ERROR! not found user");
             throw new CustomBusinessException("查不到订单");
         }
-    
+
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             throw new CustomBusinessException("订单不存在");
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -210,6 +210,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
+    @Log(title = "用户绑定套餐")
     public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
         return electricityMemberCardOrderService.addUserMemberCard(memberCardOrderAddAndUpdate);
     }
@@ -220,7 +221,8 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
-    public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
+	@Log(title = "编辑用户套餐")
+	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
         return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
     }
 
@@ -230,6 +232,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PutMapping(value = "/admin/electricityMemberCard/renewalUserMemberCard")
+    @Log(title = "用户套餐续费")
     public R renewalUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
 
         return electricityMemberCardOrderService.renewalUserMemberCard(memberCardOrderAddAndUpdate);
@@ -237,12 +240,21 @@ public class JsonAdminElectricityMemberCardOrderController {
 
     /**
      * 暂停用户套餐
-     *
-     * @param usableStatus
      * @return
      */
-    @PutMapping("/admin/memberCard/openOrDisableMemberCard")
-    public R adminOpenOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
+    @PutMapping("/admin/memberCard/disableUserMemberCard")
+	@Log(title = "暂停用户套餐")
+	public R adminDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
+        return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid);
+    }
+
+    /**
+     * 启用用户套餐
+     * @return
+     */
+    @PutMapping("/admin/memberCard/enableUserMemberCard")
+    @Log(title = "启用用户套餐")
+    public R adminEnableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam("uid") Long uid) {
         return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus, uid);
     }
 
@@ -253,7 +265,8 @@ public class JsonAdminElectricityMemberCardOrderController {
      * @return
      */
     @PutMapping("/admin/memberCard/cleanBatteryServiceFee")
-    public R cleanBatteryServiceFee(@RequestParam("uid") Long uid) {
+	@Log(title = "清除用户电池服务费")
+	public R cleanBatteryServiceFee(@RequestParam("uid") Long uid) {
         return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
     }
 

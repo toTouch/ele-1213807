@@ -85,6 +85,11 @@
 		<appender-ref ref="request"/>
 	</logger>
 
+
+	<logger name="com.xiliulou.electricity.aspectj.LogAspect" level="INFO" additivity="false">
+		<appender-ref ref="request"/>
+	</logger>
+
 	<!-- Level: FATAL 0  ERROR 3  WARN 4  INFO 6  DEBUG 7 -->
 	<root level="INFO">
 		<appender-ref ref="console"/>
