@@ -69,15 +69,16 @@ public class JsonAdminUserCouponController {
         return userCouponService.queryCount(userCouponQuery);
     }
 
-	//批量发放优惠券
-	@PostMapping(value = "/admin/userCoupon/batchRelease")
-	@Log(title = "批量发放优惠券")
-	public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
-		Long[] uids = (Long[]) JSONUtil.parseArray(uid).toArray(Long[].class);
-		return userCouponService.adminBatchRelease(id, uids);
-	}
+    //批量发放优惠券
+    @PostMapping(value = "/admin/userCoupon/batchRelease")
+    @Log(title = "批量发放优惠券")
+    public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
+        Long[] uids = (Long[]) JSONUtil.parseArray(uid).toArray(Long[].class);
+        return userCouponService.adminBatchRelease(id, uids);
+    }
 
     //核销优惠券
+    @Log(title = "核销优惠券")
     @PostMapping(value = "/admin/userCoupon/destruction")
     public R destruction(@RequestParam("couponId") String couponId) {
         Long[] couponIds = (Long[]) JSONUtil.parseArray(couponId).toArray(Long[].class);
