@@ -2246,7 +2246,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     private void sendDisableMemberCardMessage(UserInfo userInfo) {
-        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildAuthenticationAuditMessageNotify(userInfo);
+        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.builDisableMemberCardMessageNotify(userInfo);
         if (org.springframework.util.CollectionUtils.isEmpty(messageNotifyList)) {
             return;
         }
@@ -2258,7 +2258,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
 
-    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
+    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> builDisableMemberCardMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
             log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={}", userInfo.getTenantId());
