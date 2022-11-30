@@ -813,6 +813,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             if (Objects.equals(franchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)) {
                 eleDisableMemberCardRecord.setChargeRate(franchisee.getBatteryServiceFee());
+            } else {
+                eleDisableMemberCardRecord.setChargeRate(BigDecimal.valueOf(0));
             }
             eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         } else {
@@ -925,6 +927,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         if (Objects.equals(franchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)) {
             eleDisableMemberCardRecord.setChargeRate(franchisee.getBatteryServiceFee());
+        } else {
+            eleDisableMemberCardRecord.setChargeRate(BigDecimal.valueOf(0));
         }
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
@@ -1247,6 +1251,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             if (Objects.equals(franchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)) {
                 eleDisableMemberCardRecord.setChargeRate(franchisee.getBatteryServiceFee());
+            } else {
+                eleDisableMemberCardRecord.setChargeRate(BigDecimal.valueOf(0));
             }
             eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
         }
