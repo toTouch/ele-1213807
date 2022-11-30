@@ -54,4 +54,10 @@ public class MaintenanceUserNotifyConfig {
      */
     public static Integer P_HARDWARE_INFO = 0;
 
+
+    /**
+     * 暂停套餐审核
+     */
+    public static Integer TYPE_DISABLE_MEMBER_CARD = 16;
+
 }

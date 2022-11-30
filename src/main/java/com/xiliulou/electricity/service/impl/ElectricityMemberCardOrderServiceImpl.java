@@ -2265,8 +2265,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Collections.EMPTY_LIST;
         }
 
-        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT)
-                != MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT) {
+        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD)
+                != MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD) {
             log.info("ELE ERROR! not maintenance permission,permissions={}", notifyConfig.getPermissions());
             return Collections.EMPTY_LIST;
         }
