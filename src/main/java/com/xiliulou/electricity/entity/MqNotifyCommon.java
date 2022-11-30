@@ -46,5 +46,7 @@ public class MqNotifyCommon<T> {
      */
     public static final Integer TYPE_ABNORMAL_ALARM = 6;
 
+    public static final Integer TYPE_DISABLE_MEMBER_CARD = 10;
+
     public static final String PROJECT_NAME = "换电柜";
 }

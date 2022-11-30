@@ -1279,6 +1279,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+
+        sendDisableMemberCardMessage(userInfo);
         return R.ok();
     }
 
@@ -2245,6 +2247,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     }
 
+    //停卡审核通知
     private void sendDisableMemberCardMessage(UserInfo userInfo) {
         List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.builDisableMemberCardMessageNotify(userInfo);
         if (org.springframework.util.CollectionUtils.isEmpty(messageNotifyList)) {
@@ -2286,7 +2289,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
             authMessageNotifyCommon.setTime(System.currentTimeMillis());
-            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_AUTHENTICATION_AUDIT);
+            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_DISABLE_MEMBER_CARD);
             authMessageNotifyCommon.setPhone(item);
             authMessageNotifyCommon.setData(messageNotify);
             return authMessageNotifyCommon;
