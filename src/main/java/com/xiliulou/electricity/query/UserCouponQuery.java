@@ -42,4 +42,6 @@ public class UserCouponQuery {
     private String userName;
 
     private Integer discountType;
+
+    private Integer status;
 }

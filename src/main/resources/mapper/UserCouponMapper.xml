@@ -26,6 +26,9 @@
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}
             </if>
+            <if test="query.status != null">
+                and tuc.status = #{query.status}
+            </if>
             <if test="query.discountType != null">
                 and tuc.discount_type = #{query.discountType}
             </if>
