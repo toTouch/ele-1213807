@@ -1162,6 +1162,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("DISABLE MEMBER CARD ERROR! not found franchisee ！franchiseeId={}", franchiseeUserInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
         //启用月卡时判断用户是否有电池，收取服务费
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
 
@@ -1181,7 +1187,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     if (cardDays >= 1) {
                         //查询用户是否存在电池服务费
-                        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
                         Integer modelType = franchisee.getModelType();
                         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
@@ -1232,6 +1237,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .userName(userInfo.getName())
                     .status(usableStatus)
                     .tenantId(userInfo.getTenantId())
+                    .chargeRate(franchisee.getBatteryServiceFee())
                     .uid(uid)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
