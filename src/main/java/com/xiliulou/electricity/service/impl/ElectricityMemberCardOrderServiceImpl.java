@@ -960,6 +960,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW);
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+
+        sendDisableMemberCardMessage(userInfo);
         return R.ok();
     }
 
