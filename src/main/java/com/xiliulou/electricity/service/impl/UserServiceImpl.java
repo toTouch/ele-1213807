@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
         }
 
         redisService.saveWithHash(CacheConstant.CACHE_USER_UID + uid, user);
-        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType(), user);
 
         return user;
     }
@@ -133,7 +133,8 @@ public class UserServiceImpl implements UserService {
         int insert = this.userMapper.insert(user);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
-            redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+            redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":"
+                    + user.getUserType(), user);
             return user;
         });
 
@@ -305,7 +306,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User queryByUserPhone(String phone, Integer type, Integer tenantId) {
-        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + phone + ":" + type, User.class);
+        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":"+ phone + ":" + type, User.class);
         if (Objects.nonNull(cacheUser)) {
             return cacheUser;
         }
@@ -316,11 +317,21 @@ public class UserServiceImpl implements UserService {
         }
 
         redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
-        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType(), user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":"+ user.getPhone() + ":" + user.getUserType(), user);
 
         return user;
     }
-
+    
+    @Override
+    public User queryByUserPhoneFromDB(String phone, Integer type, Integer tenantId) {
+        User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
+        if (Objects.isNull(user)) {
+            return null;
+        }
+        
+        return user;
+    }
+    
     @Override
     @DS("slave_1")
     public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
@@ -474,7 +485,7 @@ public class UserServiceImpl implements UserService {
 
         if (deleteById(uid)) {
             redisService.delete(CacheConstant.CACHE_USER_UID + uid);
-            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
 
             //删除加盟商或门店
             if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -525,7 +536,7 @@ public class UserServiceImpl implements UserService {
         Integer update = update(updateUser);
         if (update > 0) {
             redisService.delete(CacheConstant.CACHE_USER_UID + oldUser.getUid());
-            redisService.delete(CacheConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + oldUser.getTenantId() + ":" + oldUser.getPhone() + ":" + oldUser.getUserType());
         }
         return update;
     }
@@ -703,7 +714,7 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(user)) {
             if (deleteById(uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_UID + uid);
-                redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":"+ user.getPhone() + ":" + user.getUserType());
             }
         }
     }
@@ -818,7 +829,7 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(user)) {
             if (deleteById(uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_UID + uid);
-                redisService.delete(CacheConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + user.getPhone() + ":" + user.getUserType());
             }
         }
     }

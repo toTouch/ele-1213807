@@ -205,6 +205,8 @@ public interface CacheConstant {
      * 满仓柜机缓存
      */
     String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
+    
+    String CHECK_FULL_BATTERY_CACHE="check_full_battery_cache:";
 
     String OTA_OPERATE_CACHE = "ota_operate_cache:";
     /**

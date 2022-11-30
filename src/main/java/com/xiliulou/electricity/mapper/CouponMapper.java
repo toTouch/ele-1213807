@@ -29,4 +29,6 @@ public interface CouponMapper extends BaseMapper<Coupon>{
     List<Coupon> getExpiredCoupon(@Param("currentTime") Long currentTime);
 
     Integer queryCount(@Param("query") CouponQuery couponQuery);
+    
+    int deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
 }
