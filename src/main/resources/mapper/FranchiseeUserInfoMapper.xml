@@ -162,7 +162,8 @@
 		    card_name = #{cardName},
 		    card_type = #{cardType},
 		    update_time = #{updateTime},
-		    battery_service_fee_generate_time=#{batteryServiceFeeGenerateTime}
+		    battery_service_fee_generate_time=#{batteryServiceFeeGenerateTime},
+		    member_card_disable_status=#{memberCardDisableStatus}
         where id = #{id} and del_flag=0
     </update>
 
