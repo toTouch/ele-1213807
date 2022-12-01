@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -94,6 +96,8 @@ public class ElectricityTradeOrderServiceImpl extends
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
     @Autowired
     EnableMemberCardRecordService enableMemberCardRecordService;
+    @Autowired
+    RedisService redisService;
 
 
     @Override
@@ -547,6 +551,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+                redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
             }
         }
 

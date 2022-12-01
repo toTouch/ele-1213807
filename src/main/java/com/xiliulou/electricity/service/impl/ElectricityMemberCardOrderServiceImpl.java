@@ -841,6 +841,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
             } else {
                 serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
+                redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + user.getUid());
             }
         } else {
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), user.getTenantId());
@@ -977,6 +978,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
         } else {
             serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
+            redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + user.getUid());
         }
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
@@ -1302,6 +1304,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
             } else {
                 serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
+                redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + user.getUid());
             }
         }
 
@@ -1376,6 +1379,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+                redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + user.getUid());
             }
 
             Long now = System.currentTimeMillis();
@@ -2364,29 +2368,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      */
     public BigDecimal checkUserBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord) {
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(serviceFeeUserInfo)) {
+        if (Objects.isNull(serviceFeeUserInfo) || Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)) {
             return BigDecimal.valueOf(0);
         }
-
-        System.out.println("查询用户点击服务费========服务费绑定表" + serviceFeeUserInfo);
-
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(uid, franchiseeUserInfo.getTenantId());
         }
-
-        System.out.println("查询用户点击服务费========停卡记录======" + eleDisableMemberCardRecord);
-
         //判断服务费
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
             BigDecimal franchiseeBatteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
-
-            System.out.println("查询用户点击服务费========时间======" + cardDays);
-
             //计算服务费
             BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-
-
-            System.out.println("查询用户点击服务费========计算费用======" + batteryServiceFee);
             return batteryServiceFee;
         } else {
             return BigDecimal.valueOf(0);
