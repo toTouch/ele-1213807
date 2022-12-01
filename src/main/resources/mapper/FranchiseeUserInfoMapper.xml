@@ -158,28 +158,28 @@
         update t_franchisee_user_info
         set
         <if test="memberCardExpireTime != null">
-            member_card_expire_time = #{memberCardExpireTime}
+            member_card_expire_time = #{memberCardExpireTime},
         </if>
         <if test="remainingNumber != null">
-            remaining_number = #{remainingNumber}
+            remaining_number = #{remainingNumber},
         </if>
         <if test="cardId != null">
-            card_id = #{cardId}
+            card_id = #{cardId},
         </if>
         <if test="cardName != null and cardName !=''">
-            card_name = #{cardName}
+            card_name = #{cardName},
         </if>
         <if test="cardType != null">
-            card_type = #{cardType}
+            card_type = #{cardType},
         </if>
         <if test="updateTime != null">
-            update_time = #{updateTime}
+            update_time = #{updateTime},
         </if>
         <if test="batteryServiceFeeGenerateTime != null">
-            battery_service_fee_generate_time = #{batteryServiceFeeGenerateTime}
+            battery_service_fee_generate_time = #{batteryServiceFeeGenerateTime},
         </if>
         <if test="memberCardDisableStatus != null">
-            member_card_disable_status = #{memberCardDisableStatus}
+            member_card_disable_status = #{memberCardDisableStatus},
         </if>
         where id = #{id} and del_flag=0
     </update>
