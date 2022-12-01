@@ -68,6 +68,9 @@
             <if test="query.couponId != null">
                 and coupon_id = #{query.couponId}
             </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
             <if test="query.statusList!=null and query.statusList!=''">
                 and status in
                 <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
