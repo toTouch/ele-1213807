@@ -2368,15 +2368,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return BigDecimal.valueOf(0);
         }
 
+        System.out.println("查询用户点击服务费========服务费绑定表" + serviceFeeUserInfo);
+
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(uid, franchiseeUserInfo.getTenantId());
         }
 
+        System.out.println("查询用户点击服务费========停卡记录======" + eleDisableMemberCardRecord);
+
         //判断服务费
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
             BigDecimal franchiseeBatteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
+
+            System.out.println("查询用户点击服务费========时间======" + cardDays);
+
             //计算服务费
             BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+
+
+            System.out.println("查询用户点击服务费========计算费用======" + batteryServiceFee);
             return batteryServiceFee;
         } else {
             return BigDecimal.valueOf(0);
