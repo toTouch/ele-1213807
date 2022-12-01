@@ -2319,12 +2319,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * @return
      */
     public BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, FranchiseeUserInfo franchiseeUserInfo) {
-        Integer modelType = franchisee.getModelType();
 
         BigDecimal batteryServiceFee = BigDecimal.valueOf(0);
         if (Objects.equals(franchisee.getIsOpenServiceFee(), Franchisee.CLOSE_SERVICE_FEE)) {
             return batteryServiceFee;
         }
+
+        Integer modelType = franchisee.getModelType();
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
@@ -2379,12 +2380,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
         }
 
+        System.out.println("加盟商=================" + franchisee);
+
         BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, franchiseeUserInfo);
 
         //判断服务费
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+
+            System.out.println("电池服务费单价==================" + batteryServiceFee);
+
             //计算服务费
             BigDecimal userMemberCardExpireBatteryServiceFee = batteryServiceFee.multiply(new BigDecimal(cardDays));
+
+            System.out.println("计算电池服务费=================" + userMemberCardExpireBatteryServiceFee);
+
             return userMemberCardExpireBatteryServiceFee;
         } else {
             return BigDecimal.valueOf(0);
