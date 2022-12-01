@@ -96,6 +96,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     EleUserOperateRecordService eleUserOperateRecordService;
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -422,32 +424,35 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 cardDays = 1;
             }
         }
-
-        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
-//        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
-            //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
-            Integer modelType = franchisee.getModelType();
-            if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-                Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
-                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
-                        //计算服务费
-                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-                        if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
-                        }
-                    }
-                }
-            } else {
-                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
-                //计算服务费
-                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-                if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-                    return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
-                }
-            }
+//        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+////        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+//            //查询用户是否存在电池服务费
+//            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+//            Integer modelType = franchisee.getModelType();
+//            if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
+//                Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
+//                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+//                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+//                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+//                        //计算服务费
+//                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+//                        if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+//                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+//                        }
+//                    }
+//                }
+//            } else {
+//                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+//                //计算服务费
+//                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+//                if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+//                    return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+//                }
+//            }
+//        }
+        BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserBatteryService(oldFranchiseeUserInfo, userInfo.getUid(), cardDays, null);
+        if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+            return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
         }
 
         //判断是否退电池

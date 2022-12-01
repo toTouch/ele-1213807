@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
@@ -80,4 +79,8 @@ public interface ElectricityMemberCardOrderService {
     void systemEnableMemberCardTask();
 
     void expireReminderHandler();
+
+    BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, FranchiseeUserInfo franchiseeUserInfo);
+
+    BigDecimal checkUserBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord);
 }
