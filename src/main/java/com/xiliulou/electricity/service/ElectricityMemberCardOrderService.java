@@ -82,5 +82,7 @@ public interface ElectricityMemberCardOrderService {
 
     BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, FranchiseeUserInfo franchiseeUserInfo);
 
-    BigDecimal checkUserBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord);
+    BigDecimal checkUserDisableCardBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord);
+
+    BigDecimal checkUserMemberCardExpireBatteryService(FranchiseeUserInfo franchiseeUserInfo, Franchisee franchisee, Long cardDays);
 }

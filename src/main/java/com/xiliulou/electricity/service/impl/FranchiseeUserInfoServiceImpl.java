@@ -305,14 +305,20 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
+
+        BigDecimal userChangeServiceFee=BigDecimal.valueOf(0);
         Long now = System.currentTimeMillis();
         long cardDays = 0;
+        //用户产生的套餐过期电池服务费
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            //查询用户是否存在套餐过期电池服务费
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, franchisee, cardDays);
+            userChangeServiceFee = serviceFee;
         }
 
+        //用户产生的停卡电池服务费
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
-
             eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE);
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             //不足一天按一天计算
@@ -320,6 +326,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             if (time < 24) {
                 cardDays = 1;
             }
+
+            BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(franchiseeUserInfo, uid, cardDays, null);
+            userChangeServiceFee = batteryServiceFee;
         }
 //        if (Objects.nonNull(franchiseeUserInfo.getServiceStatus()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
 //            //查询用户是否存在电池服务费
@@ -345,8 +354,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 //                return eleBatteryServiceFeeVO;
 //            }
 //        }
-        BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserBatteryService(franchiseeUserInfo, uid, cardDays, null);
-        eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
+        eleBatteryServiceFeeVO.setUserBatteryServiceFee(userChangeServiceFee);
 
         return eleBatteryServiceFeeVO;
     }

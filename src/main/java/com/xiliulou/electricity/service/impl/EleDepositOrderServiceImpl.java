@@ -450,9 +450,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //                }
 //            }
 //        }
-        BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserBatteryService(oldFranchiseeUserInfo, userInfo.getUid(), cardDays, null);
+        BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldFranchiseeUserInfo, userInfo.getUid(), cardDays, null);
         if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-            return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
+            return R.fail("ELECTRICITY.100000", "存在电池服务费", batteryServiceFee);
         }
 
         //判断是否退电池
