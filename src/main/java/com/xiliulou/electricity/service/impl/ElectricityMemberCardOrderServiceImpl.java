@@ -2379,21 +2379,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(franchisee)) {
             franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
         }
-
-        System.out.println("加盟商=================" + franchisee);
-
         BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, franchiseeUserInfo);
 
         //判断服务费
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
-
-            System.out.println("电池服务费单价==================" + batteryServiceFee);
-
             //计算服务费
             BigDecimal userMemberCardExpireBatteryServiceFee = batteryServiceFee.multiply(new BigDecimal(cardDays));
-
-            System.out.println("计算电池服务费=================" + userMemberCardExpireBatteryServiceFee);
-
             return userMemberCardExpireBatteryServiceFee;
         } else {
             return BigDecimal.valueOf(0);
