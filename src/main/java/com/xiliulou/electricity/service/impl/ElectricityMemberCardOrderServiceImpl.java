@@ -141,7 +141,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("rentBattery  ERROR! not found user ");
+            log.error("CREATE MEMBER_ORDER ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -190,8 +190,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //判断是否缴纳押金
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
                 || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
+            log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //判断是否缴纳押金
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
+            return R.fail("100241", "当前套餐暂停中，请先启用套餐");
         }
 
         Long now = System.currentTimeMillis();
