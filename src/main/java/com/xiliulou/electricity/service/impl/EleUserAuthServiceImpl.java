@@ -202,27 +202,26 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         messageNotifyList.forEach(i -> {
             rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
-            log.info("ELE INFO! user authentication audit notify,msg={}", JsonUtil.toJson(i));
         });
     }
     
     private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={}", userInfo.getTenantId());
+            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(),userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
     
         if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT)
                 != MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT) {
-            log.info("ELE ERROR! not maintenance permission,permissions={}", notifyConfig.getPermissions());
+            log.info("ELE ERROR! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(),userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
         
         
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
-            log.error("ELE ERROR! phones is empty,tenantId={}", userInfo.getTenantId());
+            log.error("ELE ERROR! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return Collections.EMPTY_LIST;
         }
         
