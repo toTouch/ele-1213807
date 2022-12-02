@@ -1605,8 +1605,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             //查询用户是否存在套餐过期电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
-            BigDecimal serviceFee = checkUserMemberCardExpireBatteryService(oldFranchiseeUserInfo, franchisee, cardDays);
+            BigDecimal serviceFee = checkUserMemberCardExpireBatteryService(oldFranchiseeUserInfo, null, cardDays);
             userChangeServiceFee = serviceFee;
         }
 

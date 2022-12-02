@@ -406,9 +406,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         Long now = System.currentTimeMillis();
+        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
         long cardDays = 0;
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            //查询用户是否存在套餐过期电池服务费
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(oldFranchiseeUserInfo, null, cardDays);
+            userChangeServiceFee = serviceFee;
         }
 
         Long disableMemberCardTime = oldFranchiseeUserInfo.getDisableMemberCardTime();
@@ -423,6 +427,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             if (time < 24) {
                 cardDays = 1;
             }
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldFranchiseeUserInfo, user.getUid(), cardDays, null);
+            userChangeServiceFee = serviceFee;
         }
 //        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
 ////        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
@@ -450,9 +456,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //                }
 //            }
 //        }
-        BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldFranchiseeUserInfo, userInfo.getUid(), cardDays, null);
-        if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-            return R.fail("ELECTRICITY.100000", "存在电池服务费", batteryServiceFee);
+        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
+            return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
         }
 
         //判断是否退电池
