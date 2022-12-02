@@ -11,6 +11,7 @@ import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.mapper.ServiceFeeUserInfoMapper;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,42 +30,50 @@ import java.util.Objects;
 @Slf4j
 public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService {
 
-	@Resource
-	ServiceFeeUserInfoMapper serviceFeeUserInfoMapper;
+    @Resource
+    ServiceFeeUserInfoMapper serviceFeeUserInfoMapper;
 
-	@Autowired
-	RedisService redisService;
+    @Autowired
+    RedisService redisService;
 
-	@Override
-	public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
-		return serviceFeeUserInfoMapper.insert(serviceFeeUserInfo);
-	}
+    @Override
+    public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
+        return serviceFeeUserInfoMapper.insert(serviceFeeUserInfo);
+    }
 
-	@Override
-	public int update(ServiceFeeUserInfo serviceFeeUserInfo) {
-		return serviceFeeUserInfoMapper.update(serviceFeeUserInfo);
-	}
+    @Override
+    public int update(ServiceFeeUserInfo serviceFeeUserInfo) {
+        return serviceFeeUserInfoMapper.update(serviceFeeUserInfo);
+    }
 
-	@Override
-	public ServiceFeeUserInfo queryByUidFromCache(Long uid) {
-		ServiceFeeUserInfo cache = redisService.getWithHash(CacheConstant.SERVICE_FEE_USER_INFO + uid, ServiceFeeUserInfo.class);
-		if (Objects.nonNull(cache)) {
-			return cache;
-		}
+    @Override
+    public ServiceFeeUserInfo queryByUidFromCache(Long uid) {
+        ServiceFeeUserInfo cache = redisService.getWithHash(CacheConstant.SERVICE_FEE_USER_INFO + uid, ServiceFeeUserInfo.class);
+        if (Objects.nonNull(cache)) {
+            return cache;
+        }
 
-		ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoMapper.selectOne(new LambdaQueryWrapper<ServiceFeeUserInfo>().eq(ServiceFeeUserInfo::getUid, uid).eq(ServiceFeeUserInfo::getDelFlag, ServiceFeeUserInfo.DEL_NORMAL));
-		if (Objects.isNull(serviceFeeUserInfo)) {
-			return null;
-		}
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoMapper.selectOne(new LambdaQueryWrapper<ServiceFeeUserInfo>().eq(ServiceFeeUserInfo::getUid, uid).eq(ServiceFeeUserInfo::getDelFlag, ServiceFeeUserInfo.DEL_NORMAL));
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            return null;
+        }
 
-		redisService.saveWithHash(CacheConstant.SERVICE_FEE_USER_INFO + uid, serviceFeeUserInfo);
-		return serviceFeeUserInfo;
-	}
+        redisService.saveWithHash(CacheConstant.SERVICE_FEE_USER_INFO + uid, serviceFeeUserInfo);
+        return serviceFeeUserInfo;
+    }
 
-	@Override
-	public int updateByUid(ServiceFeeUserInfo serviceFeeUserInfo) {
-		return serviceFeeUserInfoMapper.updateByUid(serviceFeeUserInfo);
-	}
+    @Override
+    public void updateByUid(ServiceFeeUserInfo serviceFeeUserInfo) {
+
+        int update = serviceFeeUserInfoMapper.updateByUid(serviceFeeUserInfo);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+			redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + serviceFeeUserInfo.getUid());
+            return null;
+        });
+        return;
+    }
 
 
 }

@@ -551,7 +551,6 @@ public class ElectricityTradeOrderServiceImpl extends
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
-                redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + userInfo.getUid());
             }
         }
 
