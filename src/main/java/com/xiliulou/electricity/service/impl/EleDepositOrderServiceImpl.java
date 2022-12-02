@@ -430,32 +430,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldFranchiseeUserInfo, user.getUid(), cardDays, null);
             userChangeServiceFee = serviceFee;
         }
-//        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
-////        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
-//            //查询用户是否存在电池服务费
-//            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
-//            Integer modelType = franchisee.getModelType();
-//            if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-//                Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
-//                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-//                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-//                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
-//                        //计算服务费
-//                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-//                        if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-//                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
-//                        }
-//                    }
-//                }
-//            } else {
-//                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
-//                //计算服务费
-//                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-//                if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-//                    return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
-//                }
-//            }
-//        }
+
         if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
             return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
         }
