@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
@@ -2214,7 +2215,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
-            List<ModelBatteryDeposit> list = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+            List<ModelBatteryDeposit> list = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : list) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                     batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee();
