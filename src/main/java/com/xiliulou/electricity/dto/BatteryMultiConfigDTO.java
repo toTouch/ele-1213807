@@ -12,7 +12,7 @@ public class BatteryMultiConfigDTO {
     /**
      * 多型号电池长名字
      * */
-    private String batteryLongName;
+//    private String batteryLongName;
     
     /**
      * 多型号电池短名字
@@ -22,7 +22,7 @@ public class BatteryMultiConfigDTO {
     /**
      * 多型号电池默认充电器电压
      * */
-    private Float batteryDefaultChargeV;
+//    private Float batteryDefaultChargeV;
     
     /**
      * 多型号电池设置的充电器电压
