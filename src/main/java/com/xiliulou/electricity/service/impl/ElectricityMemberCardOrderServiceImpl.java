@@ -2125,7 +2125,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
                         .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_NOT_PAY)
                         .disableDays(item.getChooseDays())
-                        .disableTime(item.getCreateTime())
+                        .disableTime(item.getUpdateTime())
                         .franchiseeId(franchiseeUserInfo.getFranchiseeId())
                         .phone(item.getPhone())
                         .createTime(System.currentTimeMillis())
