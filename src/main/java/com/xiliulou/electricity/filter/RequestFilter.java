@@ -46,7 +46,7 @@ public class RequestFilter implements Filter {
     static final Gauge PROGRESSING_REQUESTS = Gauge.build().name("progressing_requests").help("Inprogress requesets.")
             .register();
     
-    static final Gauge REQUEST_LATENCY_GAUGE = Gauge.build().name("progressing_requests")
+    static final Gauge REQUEST_LATENCY_GAUGE = Gauge.build().name("request_latency_gauge")
             .labelNames("path", "method", "code").help("request_latency_gauge").register();
     
     static final Histogram REQUEST_LATENCY_HISTOGRAM = Histogram.build().labelNames("path", "method", "code")
