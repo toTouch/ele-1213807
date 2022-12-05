@@ -2109,6 +2109,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         while (true) {
             List<EleDisableMemberCardRecord> eleDisableMemberCardRecordList = eleDisableMemberCardRecordService.queryDisableCardExpireRecord(offset, size, nowTime);
 
+            log.info("-----eleDisableMemberCardRecordList>>>>>{}", eleDisableMemberCardRecordList);
+
             if (!DataUtil.collectionIsUsable(eleDisableMemberCardRecordList)) {
                 return;
             }

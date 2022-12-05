@@ -24,6 +24,8 @@ public class SystemEnableMemberCardTask extends IJobHandler {
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         try {
+            log.info("XXL-JOB---systemEnableMemberCardTask>>>>>开始执行启用套餐查询>>>>>>>");
+
             electricityMemberCardOrderService.systemEnableMemberCardTask();
         } catch (Exception e) {
             log.error("xxl-job启用停卡中套餐处理失败", e);
