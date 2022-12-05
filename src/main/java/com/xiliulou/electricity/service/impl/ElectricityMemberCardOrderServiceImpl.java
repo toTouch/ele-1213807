@@ -2100,7 +2100,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void systemEnableMemberCardTask() {
 
         int offset = 0;
