@@ -525,6 +525,7 @@ public class ElectricityTradeOrderServiceImpl extends
                             .disableTime(eleDisableMemberCardRecord.getCreateTime())
                             .franchiseeId(franchiseeUserInfo.getFranchiseeId())
                             .phone(userInfo.getPhone())
+                            .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee())
                             .createTime(System.currentTimeMillis())
                             .tenantId(userInfo.getTenantId())
                             .uid(userInfo.getUid())
@@ -535,6 +536,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     EnableMemberCardRecord enableMemberCardRecordUpdate=new EnableMemberCardRecord();
                     enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
                     enableMemberCardRecordUpdate.setDisableDays(cardDays.intValue());
+                    enableMemberCardRecordUpdate.setServiceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee());
                     enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS);
                     enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
                     enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
