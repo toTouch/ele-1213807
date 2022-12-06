@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryAlert;
@@ -8,6 +10,7 @@ import com.xiliulou.electricity.entity.BatteryAttr;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.VoltageCurrentChange;
 import jodd.util.StringUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -157,9 +162,23 @@ public class JsonAdminBatteryAttrController {
 		if (verifyTime(begin, end, 1)) {
 			return R.failMsg("查询时间区间不能超过1天!");
 		}
-
+		
 		String sql = "select electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc";
-		return R.ok(clickHouseService.queryList(VoltageCurrentChange.class, sql, electricityCabinetId, cellNo, begin, end));
+		
+		List<VoltageCurrentChange> list = clickHouseService.queryList(VoltageCurrentChange.class, sql, electricityCabinetId, cellNo, begin, end);
+		if (CollectionUtils.isEmpty(list)) {
+			return R.ok(Collections.EMPTY_LIST);
+		}
+		
+		list.parallelStream().peek(item -> {
+			Double batteryChargeA = item.getBatteryChargeA();
+			Double chargeA = item.getChargeA();
+			
+			item.setBatteryChargeA(ObjectUtil.isNull(batteryChargeA) ? 0 : NumberUtil.round(batteryChargeA, 2).doubleValue());
+			item.setChargeA(ObjectUtil.isNull(chargeA) ? 0 : NumberUtil.round(chargeA, 2).doubleValue());
+		});
+		
+		return R.ok(list);
 	}
 
 
