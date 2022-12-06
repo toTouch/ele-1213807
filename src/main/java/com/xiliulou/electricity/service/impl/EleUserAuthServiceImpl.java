@@ -130,7 +130,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         if (Objects.nonNull(electricityConfig)) {
             if (Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.AUTO_REVIEW)) {
                 status = EleUserAuth.STATUS_REVIEW_PASSED;
-                userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+//                userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
             }
         }
 
@@ -202,8 +202,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     }
 
     @Override
+    @Deprecated
     public R getEleUserServiceStatus() {
-
+/*
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -244,7 +245,8 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 //            }
 //        }
 
-        return R.ok(serviceStatus);
+        return R.ok(serviceStatus);*/
+        return R.ok();
     }
 
     @Override

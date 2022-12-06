@@ -395,8 +395,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//未实名认证
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
+		if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+			log.error("order  ERROR! user not auth,uid={} ", user.getUid());
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 

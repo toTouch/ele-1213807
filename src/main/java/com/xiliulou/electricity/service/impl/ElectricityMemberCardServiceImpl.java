@@ -294,8 +294,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //未实名认证
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("rentBattery  ERROR! not auth! uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("rentBattery  ERROR! not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
@@ -393,8 +393,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //未实名认证
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("rentCar  ERROR! not auth! uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("rentCar  ERROR! not auth! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 

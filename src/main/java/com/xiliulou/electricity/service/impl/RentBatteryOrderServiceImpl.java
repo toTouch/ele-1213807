@@ -215,7 +215,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //未实名认证
-            if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! not auth,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0041", "未实名认证");
@@ -1206,7 +1206,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //未实名认证
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order ERROR! user not auth!  uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");

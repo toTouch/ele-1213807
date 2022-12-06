@@ -65,8 +65,8 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //用户是否实名认证
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("OffLINE ELECTRICITY  ERROR! user not auth!  uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("OffLINE ELECTRICITY  ERROR! user not auth!  uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
@@ -177,7 +177,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //用户是否实名认证
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_AUTHENTICATION);
             return R.ok(userFrontDetectionVO);
         }
@@ -276,7 +276,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //用户是否实名认证
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_AUTHENTICATION);
             return userFrontDetectionVO;
         }

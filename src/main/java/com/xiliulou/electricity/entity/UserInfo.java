@@ -35,7 +35,7 @@ public class UserInfo {
      * 用户名
      */
     @Deprecated
-//    private String userName;
+    private String userName;
     /**
      * 用户姓名
      */
@@ -44,13 +44,13 @@ public class UserInfo {
      * 身份证号
      */
     private String idNumber;
-    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过,3--活体检测失败,4--活体检测成功)
+    //审核状态 0--等待审核中,1--审核被拒绝,2--审核通过
     private Integer authStatus;
     /**
      * 服务状态 (0--初始化,1--已实名认证)
      */
     @Deprecated
-    private Integer serviceStatus;
+//    private Integer serviceStatus;
     /**
      * 可用状态(0--启用，1--禁用)
      */

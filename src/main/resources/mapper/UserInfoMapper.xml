@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
         tui.id as id, tui.uid as uid, tui.name as name,
-        tui.phone as phone, tui.id_number as idNumber, tui.service_status as serviceStatus,
+        tui.phone as phone, tui.id_number as idNumber,
         tui.auth_status as authStatus,tui.usable_status as usableStatus, tui.del_flag as delFlag,
         tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
         from t_user_info as tui
@@ -34,7 +34,7 @@
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>
-        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 1">
@@ -42,7 +42,7 @@
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
-        </if>
+        </if>-->
         order by tfui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -51,7 +51,7 @@
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
         tui.id as user_info_id,tui.phone,tui.name,tui.uid,tui.create_time as
-        userCertificationTime,tui.auth_status,tui.usable_status,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
+        userCertificationTime,tui.auth_status,tui.usable_status,tfui.card_name,tfui.member_card_expire_time,
         tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.business_status as businessStatus,
         tfui.battery_type as model,tfui.model_type,
         tfui.order_id
@@ -95,7 +95,7 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and tfui.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
-        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 1">
@@ -103,7 +103,7 @@
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
-        </if>
+        </if>-->
         <if test="query.sortType == null or query.sortType == 0">
             order by tfui.member_card_expire_time desc
         </if>
@@ -145,7 +145,7 @@
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>
-        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+ <!--       <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 1">
@@ -153,7 +153,7 @@
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
-        </if>
+        </if>-->
     </select>
 
     <select id="queryCountForBatteryService" resultType="java.lang.Integer">
@@ -198,7 +198,7 @@
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>
-        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 1">
@@ -206,7 +206,7 @@
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
-        </if>
+        </if>-->
     </select>
 
     <select id="queryAuthenticationCount" resultType="java.lang.Integer">
@@ -253,7 +253,7 @@
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>
-        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 1">
@@ -261,7 +261,7 @@
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
-        </if>
+        </if>-->
     </select>
 
 
@@ -292,7 +292,7 @@
     <select id="queryAuthenticationUserCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_info as tui
-        where tui.del_flag=0 and tui.service_status=1
+        where tui.del_flag=0 and tui.auth_status=2
         <if test="tenantId != null">
             and tui.tenant_id = #{tenantId}
         </if>
@@ -352,9 +352,9 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-            <if test="serviceStatus != null">
+<!--            <if test="serviceStatus != null">
                 service_status = #{serviceStatus},
-            </if>
+            </if>-->
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
@@ -389,9 +389,9 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-            <if test="serviceStatus != null">
+<!--            <if test="serviceStatus != null">
                 service_status = #{serviceStatus},
-            </if>
+            </if>-->
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
