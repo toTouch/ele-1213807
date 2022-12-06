@@ -449,10 +449,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      * @param sessionId
      */
     private void saveVoltageCurrentToClickHouse(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, String sessionId) {
-
+    
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
-        Double batteryChargeA=Objects.isNull(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA())?eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA(): BigDecimal.valueOf(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
-        Double chargeA= Objects.isNull(eleBatteryVO.getChargeA())?eleBatteryVO.getChargeA(): BigDecimal.valueOf(eleBatteryVO.getChargeA()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+        BigDecimal batteryChargeA = Objects.isNull(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()) ? BigDecimal.valueOf(0)
+                        : BigDecimal.valueOf(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal chargeA = Objects.isNull(eleBatteryVO.getChargeA()) ? BigDecimal.valueOf(0)
+                : BigDecimal.valueOf(eleBatteryVO.getChargeA()).setScale(2, BigDecimal.ROUND_HALF_UP);
        
         String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
 
