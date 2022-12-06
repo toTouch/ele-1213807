@@ -826,6 +826,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
+        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfoService.updatePayServiceFeeById(updateFranchiseeUserInfo);
         return R.ok();
     }
@@ -1046,10 +1047,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
+        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         if (Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)) {
             updateFranchiseeUserInfo.setDisableMemberCardTime(null);
         }
-
+        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfoService.updatePayServiceFeeById(updateFranchiseeUserInfo);
         return R.ok();
     }
