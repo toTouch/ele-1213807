@@ -740,7 +740,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //判断用户是否产生电池服务费
         Long now = System.currentTimeMillis();
-        Long cardDays=0L;
+        Long cardDays = 0L;
         if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
@@ -822,10 +822,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             updateFranchiseeUserInfo.setMemberCardExpireTime(memberCardExpireTime);
             updateFranchiseeUserInfo.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
+            updateFranchiseeUserInfo.setDisableMemberCardTime(null);
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
-        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+        franchiseeUserInfoService.updatePayServiceFeeById(updateFranchiseeUserInfo);
         return R.ok();
     }
 
@@ -1045,7 +1046,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
-        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+        if (Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)) {
+            updateFranchiseeUserInfo.setDisableMemberCardTime(null);
+        }
+
+        franchiseeUserInfoService.updatePayServiceFeeById(updateFranchiseeUserInfo);
         return R.ok();
     }
 
