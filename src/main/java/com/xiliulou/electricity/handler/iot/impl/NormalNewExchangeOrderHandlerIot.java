@@ -101,9 +101,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         //处理取走电池的相关信息
         handleTakeBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
-
-        //确认订单结束
-        senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
     }
 
     private void senOrderSuccessMsg(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder) {
@@ -201,6 +198,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(newElectricityBattery);
+
+        //确认订单结束
+        senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
     }
 
     private void handlePlaceBatteryInfo(ExchangeOrderRsp exchangeOrderRsp, ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet) {
