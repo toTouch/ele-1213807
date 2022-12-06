@@ -64,7 +64,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(exchangeOrderRsp.getOrderId());
         if (Objects.isNull(electricityCabinetOrder)) {
             //确认订单结束
-            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
             log.error("EXCHANGE ORDER ERROR! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
             return;
         }
