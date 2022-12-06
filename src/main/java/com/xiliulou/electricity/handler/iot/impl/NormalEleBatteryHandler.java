@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
@@ -23,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -60,7 +63,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     @Autowired
     ClickHouseService clickHouseService;
     
-    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    private static DateTimeFormatter formatter= DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
 
     
     private static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
