@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author: Miss.Li
@@ -145,6 +147,7 @@ public class JsonAdminBatteryAttrController {
 //								   @RequestParam(value = "size") Long size,
 								   @RequestParam(value = "electricityCabinetId") Long electricityCabinetId,
 								   @RequestParam(value = "cellNo") Integer cellNo) {
+		DecimalFormat df = new DecimalFormat("0.00");
 //		if (size < 0 || size > 50) {
 //			size = 10L;
 //		}
@@ -170,15 +173,16 @@ public class JsonAdminBatteryAttrController {
 			return R.ok(Collections.EMPTY_LIST);
 		}
 		
-		list.parallelStream().peek(item -> {
+		List<VoltageCurrentChange> voltageCurrentChangeList = list.parallelStream().map(item -> {
 			Double batteryChargeA = item.getBatteryChargeA();
 			Double chargeA = item.getChargeA();
 			
-			item.setBatteryChargeA(ObjectUtil.isNull(batteryChargeA) ? 0 : NumberUtil.round(batteryChargeA, 2).doubleValue());
-			item.setChargeA(ObjectUtil.isNull(chargeA) ? 0 : NumberUtil.round(chargeA, 2).doubleValue());
-		});
+			item.setBatteryChargeA(ObjectUtil.isNull(batteryChargeA) ? 0 : Double.parseDouble(df.format(batteryChargeA)));
+			item.setChargeA(ObjectUtil.isNull(chargeA) ? 0 : Double.parseDouble(df.format(chargeA)));
+			return item;
+		}).collect(Collectors.toList());
 		
-		return R.ok(list);
+		return R.ok(voltageCurrentChangeList);
 	}
 
 
