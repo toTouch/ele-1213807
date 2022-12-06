@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -38,6 +39,7 @@ public class JsonAdminElectricityCabinetServerController {
     }
 
     @DeleteMapping("admin/electricityCabinetServer/delete/{id}")
+    @Log(title = "删除电柜服务")
     public R deleteOne(@PathVariable("id") Long id) {
 
         //租户
@@ -47,6 +49,7 @@ public class JsonAdminElectricityCabinetServerController {
     }
 
     @PutMapping("admin/electricityCabinetServer/update")
+    @Log(title = "修改电柜服务")
     public R updateOne(@RequestParam(value = "id") Long id,
                        @RequestParam(value = "serverBeginTime") Long serverBeginTime,
                        @RequestParam(value = "serverEndTime") Long serverEndTime) {

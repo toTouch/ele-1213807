@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.User;
@@ -185,18 +186,21 @@ public class JsonAdminUserInfoController extends BaseController {
 
     //禁/启用
     @PutMapping(value = "/admin/userInfo/updateStatus")
+    @Log(title = "禁/启用用户")
     public R updateStatus(@RequestParam("uid") Long uid, @RequestParam("usableStatus") Integer usableStatus) {
         return userInfoService.updateStatus(uid, usableStatus);
     }
 
     //后台审核实名认证
     @PostMapping(value = "/admin/userInfo/verifyAuth")
+    @Log(title = "实名认证审核")
     public R verifyAuth(@RequestParam("id") Long id, @RequestParam("authStatus") Integer authStatus) {
         return userInfoService.verifyAuth(id, authStatus);
     }
 
     //编辑实名认证
     @PutMapping(value = "/admin/userInfo")
+    @Log(title = "编辑实名认证")
     public R updateAuth(@RequestBody UserInfo userInfo) {
         return userInfoService.updateAuth(userInfo);
     }
@@ -215,6 +219,7 @@ public class JsonAdminUserInfoController extends BaseController {
      * @return
      */
     @PutMapping(value = "/admin/userInfo/serviceStatus")
+    @Log(title = "修改用户服务状态")
     public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
         return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
     }
@@ -279,12 +284,14 @@ public class JsonAdminUserInfoController extends BaseController {
 
     //绑定电池
     @PutMapping(value = "/admin/userInfo/bindBattery")
+    @Log(title = "后台绑定电池")
     public R webBindBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         return userInfoService.webBindBattery(userInfoBatteryAddAndUpdate);
     }
 
     //解绑电池
     @PutMapping(value = "/admin/userInfo/unBindBattery/{uid}")
+    @Log(title = "后台解绑电池")
     public R webUnBindBattery(@PathVariable("uid") Long uid) {
         return userInfoService.webUnBindBattery(uid);
     }
@@ -322,6 +329,7 @@ public class JsonAdminUserInfoController extends BaseController {
      * 会员列表删除
      */
     @DeleteMapping(value = "/admin/userInfo/{uid}")
+    @Log(title = "会员列表删除")
     public R deleteUserInfo(@PathVariable("uid") Long uid) {
         return userInfoService.deleteUserInfo(uid);
     }

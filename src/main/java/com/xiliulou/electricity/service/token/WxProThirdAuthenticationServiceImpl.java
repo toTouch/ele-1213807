@@ -414,7 +414,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
     
     
     private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber, Integer tenantId) {
-        User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+//        User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+        User user = userService.queryByUserPhoneFromDB(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
         return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
     }
     

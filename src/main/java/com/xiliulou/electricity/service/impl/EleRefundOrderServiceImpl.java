@@ -537,6 +537,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
+        
+        if(Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(),franchiseeUserInfo.MEMBER_CARD_DISABLE)){
+            log.error("BATTERY DEPOSIT REFUND ERROR! user membercard is disable,uid={}", uid);
+            return R.fail("100211", "用户套餐已暂停！");
+        }
 
         //判断是否退电池
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {

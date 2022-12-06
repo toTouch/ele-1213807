@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -31,11 +32,13 @@ public class JsonAdminElectricityPayParamsController {
      * @return
      */
     @PostMapping(value = "/admin/electricityPayParams")
+    @Log(title = "修改支付参数")
     public R save(@RequestBody @Validated ElectricityPayParams electricityPayParams) {
         return electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams);
     }
 
     @PostMapping(value = "/admin/electricityPayParams/uploadFile")
+    @Log(title = "上传支付文件")
     public R save(@RequestParam("file") MultipartFile file,@RequestParam(value = "type", required = false) Integer type) {
         return electricityPayParamsService.uploadFile(file,type);
     }

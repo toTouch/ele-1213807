@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.filter;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -36,6 +37,8 @@ public class RequestFilter implements Filter {
     @Autowired
     CollectorRegistry collectorRegistry;
 
+    public static final String REQUEST_ID = "requestId";
+
     private static final String REQ_TIME = "req_time";
     private static final String REQ_HISTOGRAM_TIMER = "req_histogram_time";
 
@@ -51,7 +54,7 @@ public class RequestFilter implements Filter {
         collectorRegistry.register(REQUEST_LATENCY_HISTOGRAM);
     }
 
-    public void afterCompletion(String ip, HttpServletRequest request) {
+    public void afterCompletion(String ip, HttpServletRequest request, String requestId) {
         PROGRESSING_REQUESTS.dec();
 
         Object attribute = request.getAttribute(REQ_TIME);
@@ -110,6 +113,9 @@ public class RequestFilter implements Filter {
 
         Long uid = SecurityUtils.getUid();
         String ip = WebUtils.getIP(httpServletRequest);
+        String requestId = IdUtil.simpleUUID();
+
+        httpServletRequest.setAttribute(REQUEST_ID, requestId);
 
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
             log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
@@ -124,9 +130,8 @@ public class RequestFilter implements Filter {
             }
 
             filterChain.doFilter(httpServletRequest, servletResponse);
-
         }
-        afterCompletion(ip, httpServletRequest);
 
+        afterCompletion(ip, httpServletRequest, requestId);
     }
 }
