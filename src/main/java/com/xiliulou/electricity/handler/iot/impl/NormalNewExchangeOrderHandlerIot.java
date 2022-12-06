@@ -94,6 +94,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityCabinetOrder.setNewElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
         newElectricityCabinetOrder.setOldCellNo(exchangeOrderRsp.getPlaceCellNo());
         newElectricityCabinetOrder.setNewCellNo(exchangeOrderRsp.getTakeCellNo());
+        if(exchangeOrderRsp.getOrderStatus().equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+            newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
+        }
         electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
         //处理放入电池的相关信息
