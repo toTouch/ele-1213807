@@ -78,8 +78,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     StoreService storeService;
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
     ElectricityConfigService electricityConfigService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;

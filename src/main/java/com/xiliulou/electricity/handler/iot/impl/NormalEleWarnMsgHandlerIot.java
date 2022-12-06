@@ -53,8 +53,6 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
     StoreService storeService;
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;

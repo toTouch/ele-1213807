@@ -4,12 +4,10 @@ import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -42,8 +40,6 @@ import java.util.Objects;
 public class JsonAdminElectricityCabinetBatteryController {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
     @Autowired
     FranchiseeService franchiseeService;
     @Autowired

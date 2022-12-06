@@ -52,8 +52,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;

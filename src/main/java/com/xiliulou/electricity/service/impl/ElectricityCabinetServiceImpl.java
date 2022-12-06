@@ -112,8 +112,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;

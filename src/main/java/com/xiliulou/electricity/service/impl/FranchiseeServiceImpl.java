@@ -44,9 +44,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     FranchiseeMapper franchiseeMapper;
 
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-
-    @Autowired
     FranchiseeService franchiseeService;
 
     @Autowired

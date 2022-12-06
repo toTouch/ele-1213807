@@ -73,9 +73,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ProvinceService provinceService;
 
-    @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-
     @Value("${security.encode.key:xiliu&lo@u%12345}")
     private String encodeKey;
 

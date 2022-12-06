@@ -58,8 +58,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
     @Autowired
     RedisService redisService;
