@@ -542,6 +542,7 @@ public class ElectricityTradeOrderServiceImpl extends
             }
             franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoUpdate.setDisableMemberCardTime(null);
             franchiseeUserInfoUpdate.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
