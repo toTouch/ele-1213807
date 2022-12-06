@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
@@ -449,12 +450,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private void saveVoltageCurrentToClickHouse(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, String sessionId) {
 
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
+        Double batteryChargeA=Objects.isNull(eleBatteryVO.batteryOtherProperties.getBatteryChargeA())?eleBatteryVO.batteryOtherProperties.getBatteryChargeA(): NumberUtil.round(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA(),2).doubleValue();
 
         String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()), eleBatteryVO.getChargeV(), eleBatteryVO.getChargeA(), eleBatteryVO.batteryOtherProperties.getBatteryV(),
-                    eleBatteryVO.batteryOtherProperties.getBatteryChargeA(), sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
+                    batteryChargeA , sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
         } catch (Exception e) {
             log.error("ELE BATTERY REPORT ERROR! save voltageCurrent to clickHouse error!", e);
         }
