@@ -114,8 +114,11 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName, electricityCabinet.getTenantId());
-        
-        //检查电池是否在未录入表中
+        if (Objects.isNull(electricityBattery)) {
+            log.error("ELE BATTERY REPORT ERROR! not found battery,batteryName={},sessionId={}", batteryName, sessionId);
+            return;
+        }
+/*        //检查电池是否在未录入表中
         NotExistSn notExistSn = notExistSnService.queryByBatteryName(batteryName);
         //未录入
         if (Objects.isNull(electricityBattery)) {
@@ -125,7 +128,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //已录入
         if (Objects.nonNull(electricityBattery) && Objects.nonNull(notExistSn)) {
             notExistSnService.deleteNotExistSn(notExistSn);
-        }
+        }*/
 
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("ELE BATTERY REPORT ERROR! tenantId is not equal,tenantId1={},tenantId2={},sessionId={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId(), sessionId);
