@@ -275,9 +275,6 @@
         <if test="batteryType != null and batteryType !=''">
             battery_type = #{batteryType},
         </if>
-        <if test="disableMemberCardTime != null">
-            disable_member_card_time = #{disableMemberCardTime},
-        </if>
         <if test="rentCarStatus != null">
             rent_car_status = #{rentCarStatus},
         </if>
@@ -302,7 +299,8 @@
         <if test="rentCarMemberCardExpireTime != null">
             rent_car_member_card_expire_time = #{rentCarMemberCardExpireTime},
         </if>
-        update_time = #{updateTime}
+        update_time = #{updateTime},
+        disable_member_card_time = #{disableMemberCardTime}
         where id = #{id}
     </update>
 </mapper>
