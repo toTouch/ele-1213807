@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 @TableName("t_franchisee_user_info")
+@Deprecated
 public class FranchiseeUserInfo {
 
     @TableId(value = "id", type = IdType.AUTO)

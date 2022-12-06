@@ -17,6 +17,7 @@ import org.apache.ibatis.annotations.Update;
  * @author makejava
  * @since 2021-06-17 10:10:13
  */
+@Deprecated
 public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo>{
 
 	@Deprecated

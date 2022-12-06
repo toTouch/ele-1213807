@@ -190,7 +190,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 if (!existUserInfo.getLeft()) {
                     UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
                             .createTime(System.currentTimeMillis()).phone(existPhone.getRight().getPhone())
-                            .userName(existPhone.getRight().getName()).serviceStatus(UserInfo.STATUS_INIT)
+                            .name(existPhone.getRight().getName()).serviceStatus(UserInfo.STATUS_INIT)
                             .authStatus(UserInfo.AUTH_STATUS_STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
@@ -243,7 +243,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(uid);
                 if (!existUserInfo.getLeft()) {
                     UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
-                            .createTime(System.currentTimeMillis()).phone(purePhoneNumber).userName(user.getName())
+                            .createTime(System.currentTimeMillis()).phone(purePhoneNumber).name(user.getName())
                             .serviceStatus(UserInfo.STATUS_INIT).delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
@@ -304,7 +304,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 if (!existUserInfo.getLeft()) {
                     UserInfo insertUserInfo = UserInfo.builder().uid(uid).updateTime(System.currentTimeMillis())
                             .createTime(System.currentTimeMillis()).phone(existPhone.getRight().getPhone())
-                            .userName(existPhone.getRight().getName()).serviceStatus(UserInfo.STATUS_INIT)
+                            .name(existPhone.getRight().getName()).serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL).usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId)
                             .build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
@@ -370,7 +370,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         
         //添加到user_info表中
         UserInfo insertUserInfo = UserInfo.builder().uid(insert.getUid()).updateTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis()).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).userName("")
+                .createTime(System.currentTimeMillis()).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).name("")
                 .tenantId(tenantId).serviceStatus(UserInfo.STATUS_INIT).delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);

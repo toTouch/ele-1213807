@@ -34,7 +34,8 @@ public class UserInfo {
     /**
      * 用户名
      */
-    private String userName;
+    @Deprecated
+//    private String userName;
     /**
      * 用户姓名
      */
@@ -48,6 +49,7 @@ public class UserInfo {
     /**
      * 服务状态 (0--初始化,1--已实名认证)
      */
+    @Deprecated
     private Integer serviceStatus;
     /**
      * 可用状态(0--启用，1--禁用)

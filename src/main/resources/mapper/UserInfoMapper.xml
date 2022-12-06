@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
-        tui.id as id, tui.uid as uid, tui.user_name as userName,tui.name as name,
+        tui.id as id, tui.uid as uid, tui.name as name,
         tui.phone as phone, tui.id_number as idNumber, tui.service_status as serviceStatus,
         tui.auth_status as authStatus,tui.usable_status as usableStatus, tui.del_flag as delFlag,
         tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
@@ -343,9 +343,6 @@
             <if test="phone != null and phone != ''">
                 phone = #{phone},
             </if>
-            <if test="userName != null and userName != ''">
-                user_name = #{userName},
-            </if>
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
@@ -382,9 +379,6 @@
         <set>
             <if test="phone != null and phone != ''">
                 phone = #{phone},
-            </if>
-            <if test="userName != null and userName != ''">
-                user_name = #{userName},
             </if>
             <if test="name != null and name != ''">
                 name = #{name},

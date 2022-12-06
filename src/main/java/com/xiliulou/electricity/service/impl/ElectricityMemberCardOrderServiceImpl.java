@@ -359,7 +359,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(payAmount);
-        electricityMemberCardOrder.setUserName(userInfo.getUserName());
+        electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
@@ -1078,7 +1078,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
-        electricityMemberCardOrder.setUserName(userInfo.getUserName());
+        electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(0);
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
@@ -1254,7 +1254,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
             electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
             electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
-            electricityMemberCardOrder.setUserName(userInfo.getUserName());
+            electricityMemberCardOrder.setUserName(userInfo.getName());
             electricityMemberCardOrder.setValidDays(0);
             electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
             electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
@@ -1461,7 +1461,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
-        electricityMemberCardOrder.setUserName(userInfo.getUserName());
+        electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
@@ -1628,7 +1628,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(payAmount);
-        electricityMemberCardOrder.setUserName(userInfo.getUserName());
+        electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(electricityMemberCard.getFranchiseeId());
