@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -450,12 +451,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private void saveVoltageCurrentToClickHouse(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, String sessionId) {
 
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
-        Double batteryChargeA=Objects.isNull(eleBatteryVO.batteryOtherProperties.getBatteryChargeA())?eleBatteryVO.batteryOtherProperties.getBatteryChargeA(): NumberUtil.round(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA(),2).doubleValue();
-
+        Double batteryChargeA=Objects.isNull(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA())?eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA(): BigDecimal.valueOf(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+        Double chargeA= Objects.isNull(eleBatteryVO.getChargeA())?eleBatteryVO.getChargeA(): BigDecimal.valueOf(eleBatteryVO.getChargeA()).setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+       
         String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()), eleBatteryVO.getChargeV(), eleBatteryVO.getChargeA(), eleBatteryVO.batteryOtherProperties.getBatteryV(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()), eleBatteryVO.getChargeV(), chargeA, eleBatteryVO.getBatteryOtherProperties().getBatteryV(),
                     batteryChargeA , sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
         } catch (Exception e) {
             log.error("ELE BATTERY REPORT ERROR! save voltageCurrent to clickHouse error!", e);
