@@ -740,12 +740,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //判断用户是否产生电池服务费
         Long now = System.currentTimeMillis();
-        Long cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+        Long cardDays=0L;
+        if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
+            cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
-        //不足一天按一天计算
-        double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-        if (time < 24) {
-            cardDays = 1L;
+            //不足一天按一天计算
+            double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1L;
+            }
         }
 
         //启用月卡时判断用户是否有电池，收取服务费
