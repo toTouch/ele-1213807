@@ -118,4 +118,6 @@ public class ElectricityCabinetOtherSetting {
     private Integer maxBatteryStandard;
 
     private Integer enableBatteryExceptionCheck;
+
+    private String bms;
 }

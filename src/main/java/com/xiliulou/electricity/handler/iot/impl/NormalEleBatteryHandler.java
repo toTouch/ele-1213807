@@ -1,21 +1,22 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.date.DatePattern;
-import com.alibaba.fastjson.JSON;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -26,7 +27,6 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -52,33 +52,27 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
     @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
     StoreService storeService;
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     NotExistSnService notExistSnService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     ElectricityCabinetModelService electricityCabinetModelService;
     @Autowired
-    RocketMqService rocketMqService;
-    @Autowired
-    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
-
+    MessageDelayQueueService messageDelayQueueService;
     @Autowired
     ClickHouseService clickHouseService;
     
-    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    private static DateTimeFormatter formatter= DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+
     
-    public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
-    public static final String IRON_LITHIUM = "IRON_LITHIUM";
+    private static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
+    private static final String IRON_LITHIUM = "IRON_LITHIUM";
     /**
      * 柜机ANCHI模式
      */
-    public static final String ANCHI_BATTERY_PROTOCOL = "MULTI_V";
+    private static final String ANCHI_BATTERY_PROTOCOL = "MULTI_V";
 
 
     @Override
@@ -178,7 +172,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
         
         //检查柜机电池是否满仓
-//        this.checkElectricityCabinetBatteryFull(electricityCabinet);
+        this.checkElectricityCabinetBatteryFull(electricityCabinet);
     }
 
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {
@@ -260,16 +254,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //更新原仓门中的电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
-        //            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-        //                ElectricityBattery updateBattery = new ElectricityBattery();
-        //                updateBattery.setId(electricityBattery.getId());
-        //                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
-        //                updateBattery.setElectricityCabinetId(null);
-        //                updateBattery.setElectricityCabinetName(null);
-        ////                updateBattery.setUid(null);
-        //                updateBattery.setUpdateTime(System.currentTimeMillis());
-        //                electricityBatteryService.updateByOrder(updateBattery);
-        //            }
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
@@ -365,7 +349,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
 
-        /**
+        /*
          * 1.如果柜机模式为 MULTI_V，不管nacos是否开启电量变化检测，都不进行电量变化太大检测
          */
         if (StringUtils.isNotBlank(applicationMode) && ANCHI_BATTERY_PROTOCOL.equals(applicationMode)) {
@@ -373,7 +357,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             return power;
         }
 
-        /**
+        /*
          * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
         if (Objects.nonNull(electricityBattery.getPower())
@@ -466,23 +450,30 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private void saveVoltageCurrentToClickHouse(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, String sessionId) {
 
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
+        Double batteryChargeA=Objects.isNull(eleBatteryVO.batteryOtherProperties.getBatteryChargeA())?eleBatteryVO.batteryOtherProperties.getBatteryChargeA(): NumberUtil.round(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA(),2).doubleValue();
 
         String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()), eleBatteryVO.getChargeV(), eleBatteryVO.getChargeA(), eleBatteryVO.batteryOtherProperties.getBatteryV(),
-                    eleBatteryVO.batteryOtherProperties.getBatteryChargeA(), sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
+                    batteryChargeA , sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
         } catch (Exception e) {
             log.error("ELE BATTERY REPORT ERROR! save voltageCurrent to clickHouse error!", e);
         }
     }
 
     /**
-     * 柜子电池满仓发送MQ通知
+     * 检查柜子电池是否满仓
      *
      * @param electricityCabinet
      */
     private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet) {
+    
+        
+        boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1", 300 * 1000L, false);
+        if(!cacheFlag){
+            return;
+        }
     
         //获取所有启用的格挡
         List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
@@ -491,79 +482,25 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
     
         //过滤没有电池的格挡
-        List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
+        List<ElectricityCabinetBox> notHaveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
             return;
         }
     
-        //柜机仓内电池已满  发送MQ消息通知
-        Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinet.getId(), "1", 3600 * 1000L, false);
-        if (cacheFlag) {
-            List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
-            if (CollectionUtils.isEmpty(messageNotifyList)) {
-                return;
-            }
-        
-            messageNotifyList.forEach(item -> {
-                rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(item), "", "", 0);
-                log.info("ELE BATTERY REPORT INFO! ele abnormal notify,msg={}", JsonUtil.toJson(item));
-            });
-        }
+        //柜机仓内电池已满
+        log.info("ELE BATTERY REPORT INFO! push battery full message,electricityCabinetId={}", electricityCabinet.getId());
+        messageDelayQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE, buildDelyQueueMessage(electricityCabinet), 5 * 60);
     }
     
-    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
-        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
-        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
-            log.error("ELE BATTERY REPORT ERROR! not found maintenanceUserNotifyConfig,tenantId={}",
-                    electricityCabinet.getTenantId());
-            return Collections.EMPTY_LIST;
-        }
+    
+    private Message buildDelyQueueMessage(ElectricityCabinet electricityCabinet){
+        Message message = new Message();
+        message.setId(IdUtil.simpleUUID());
+        message.setMsg(String.valueOf(electricityCabinet.getId()));
         
-        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
-        if (CollectionUtils.isEmpty(phones)) {
-            log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
-            return Collections.EMPTY_LIST;
-        }
-        
-        return phones.parallelStream().map(item -> {
-            ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
-            abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
-            abnormalMessageNotify.setEquipmentNumber(electricityCabinet.getName());
-            abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
-            abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
-            abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-            
-            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
-            abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
-            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
-            abnormalMessageNotifyCommon.setPhone(item);
-            abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
-            return abnormalMessageNotifyCommon;
-        }).collect(Collectors.toList());
-        
+        return message;
     }
-
-    /**
-     * 解绑电池uid的同时  解绑用户绑定的电池
-     *
-     * @param batteryName
-     */
-//    private void unbindUserBattery(String batteryName) {
-//        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService
-//            .selectByNowElectricityBatterySn(batteryName);
-//        if (CollectionUtils.isEmpty(franchiseeUserInfoList)) {
-//            return;
-//        }
-//
-//        franchiseeUserInfoList.forEach(item -> {
-//            FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
-//                .id(item.getId())
-//                .nowElectricityBatterySn(null)
-//                .serviceStatus(item.getServiceStatus())
-//                .updateTime(System.currentTimeMillis()).build();
-//            franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
-//        });
-//    }
+    
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
         if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
             return "";
