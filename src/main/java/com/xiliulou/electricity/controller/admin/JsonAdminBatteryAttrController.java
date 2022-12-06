@@ -140,21 +140,22 @@ public class JsonAdminBatteryAttrController {
 								   @RequestParam(value = "size") Long size,
 								   @RequestParam(value = "electricityCabinetId") Long electricityCabinetId,
 								   @RequestParam(value = "cellNo") Integer cellNo) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-
-		if (offset < 0) {
-			offset = 0L;
-		}
+//		if (size < 0 || size > 50) {
+//			size = 10L;
+//		}
+//
+//		if (offset < 0) {
+//			offset = 0L;
+//		}
+		
 
 		LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
 		LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
 		String begin = formatter.format(beginLocalDateTime);
 		String end = formatter.format(endLocalDateTime);
 
-		if (verifyTime(begin, end, 5)) {
-			return R.failMsg("查询时间区间不能超过5天!");
+		if (verifyTime(begin, end, 1)) {
+			return R.failMsg("查询时间区间不能超过1天!");
 		}
 
 		String sql = "select electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc  limit ?,?";
