@@ -303,7 +303,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             return eleBatteryServiceFeeVO;
         }
         eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
-        eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
 
         if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             return eleBatteryServiceFeeVO;
