@@ -98,6 +98,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     InsuranceUserInfoService insuranceUserInfoService;
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -807,6 +809,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         long cardDays = 0;
         Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+
+            BigDecimal chargeRate=electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee,franchiseeUserInfo);
+            batteryServiceFee=chargeRate;
+
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, null, cardDays);
             payAmount = serviceFee;
@@ -821,8 +827,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 cardDays = 1;
             }
 
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(franchiseeUserInfo, user.getUid(), cardDays, null);
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), franchiseeUserInfo.getTenantId());
+
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(franchiseeUserInfo, user.getUid(), cardDays, eleDisableMemberCardRecord);
             payAmount = serviceFee;
+
+            batteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
         }
 
 
