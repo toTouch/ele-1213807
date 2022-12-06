@@ -1171,10 +1171,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .disableDays(cardDays.intValue())
                     .disableTime(eleDisableMemberCardRecord.getUpdateTime())
                     .franchiseeId(franchiseeUserInfo.getFranchiseeId())
-                    .phone(user.getPhone())
+                    .phone(userInfo.getPhone())
                     .createTime(System.currentTimeMillis())
                     .tenantId(user.getTenantId())
-                    .uid(user.getUid())
+                    .uid(uid)
                     .userName(userInfo.getName())
                     .updateTime(System.currentTimeMillis()).build();
             enableMemberCardRecordService.insert(enableMemberCardRecord);
@@ -1203,11 +1203,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                     .franchiseeId(franchiseeUserInfo.getFranchiseeId())
                     .tenantId(eleDisableMemberCardRecord.getTenantId())
-                    .uid(user.getUid())
+                    .uid(uid)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
 
-            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(user.getUid());
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(serviceFeeUserInfo)) {
                 serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
             } else {
@@ -1309,10 +1309,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .disableDays(cardDays.intValue())
                     .disableTime(eleDisableMemberCardRecord.getUpdateTime())
                     .franchiseeId(franchiseeUserInfo.getFranchiseeId())
-                    .phone(user.getPhone())
+                    .phone(userInfo.getPhone())
                     .createTime(System.currentTimeMillis())
                     .tenantId(user.getTenantId())
-                    .uid(user.getUid())
+                    .uid(uid)
                     .userName(userInfo.getName())
                     .updateTime(System.currentTimeMillis()).build();
             enableMemberCardRecordService.insert(enableMemberCardRecord);

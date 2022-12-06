@@ -513,8 +513,8 @@ public class ElectricityTradeOrderServiceImpl extends
 
 
                 EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
+                Long cardDays = (System.currentTimeMillis() - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
                 if (Objects.isNull(enableMemberCardRecord)) {
-                    Long cardDays = (System.currentTimeMillis() - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
                     EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                             .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                             .memberCardName(franchiseeUserInfo.getCardName())
@@ -534,6 +534,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 }else {
                     EnableMemberCardRecord enableMemberCardRecordUpdate=new EnableMemberCardRecord();
                     enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
+                    enableMemberCardRecordUpdate.setDisableDays(cardDays.intValue());
                     enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS);
                     enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
                     enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
