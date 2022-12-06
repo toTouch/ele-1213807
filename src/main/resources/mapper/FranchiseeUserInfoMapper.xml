@@ -224,7 +224,7 @@
                 limit #{offset}, #{size}
     </select>
 
-    <update id="updateById">
+    <update id="updatePayServiceFeeById">
         update t_franchisee_user_info
         set
         <if test="serviceStatus != null">
@@ -253,9 +253,6 @@
         </if>
         <if test="cardType != null">
             card_type = #{cardType},
-        </if>
-        <if test="updateTime != null">
-            update_time = #{updateTime},
         </if>
         <if test="batteryServiceFeeGenerateTime != null">
             battery_service_fee_generate_time = #{batteryServiceFeeGenerateTime},
@@ -305,6 +302,7 @@
         <if test="rentCarMemberCardExpireTime != null">
             rent_car_member_card_expire_time = #{rentCarMemberCardExpireTime},
         </if>
+        update_time = #{updateTime}
         where id = #{id}
     </update>
 </mapper>

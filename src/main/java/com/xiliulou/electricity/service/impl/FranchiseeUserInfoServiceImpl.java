@@ -67,6 +67,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public int updatePayServiceFeeById(FranchiseeUserInfo franchiseeUserInfo) {
+        return this.franchiseeUserInfoMapper.updatePayServiceFeeById(franchiseeUserInfo);
+    }
+
+    @Override
     public FranchiseeUserInfo queryByUserInfoId(Long id) {
         return franchiseeUserInfoMapper.selectOne(new LambdaQueryWrapper<FranchiseeUserInfo>()
                 .eq(FranchiseeUserInfo::getUserInfoId, id).eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));

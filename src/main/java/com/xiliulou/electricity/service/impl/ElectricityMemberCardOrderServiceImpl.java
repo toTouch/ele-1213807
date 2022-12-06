@@ -1319,7 +1319,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             enableMemberCardRecordService.insert(enableMemberCardRecord);
         }
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        franchiseeUserInfoService.updatePayServiceFeeById(franchiseeUserInfoUpdate);
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
