@@ -51,7 +51,7 @@
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
         tui.id as user_info_id,tui.phone,tui.name,tui.uid,tui.create_time as
-        userCertificationTime,tui.auth_status,tui.usable_status,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
+        userCertificationTime,tui.auth_status,tui.usable_status,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,tfui.disable_member_card_time,
         tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.business_status as businessStatus,
         tfui.battery_type as model,tfui.model_type,
         tfui.order_id,tui.tenant_id
