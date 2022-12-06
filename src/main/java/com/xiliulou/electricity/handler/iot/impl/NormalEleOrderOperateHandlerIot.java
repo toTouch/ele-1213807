@@ -74,7 +74,7 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
 
             //加入操作记录表
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                    .createTime(System.currentTimeMillis())
+                    .createTime(eleOrderOperateVO.createTime)
                     .orderId(eleOrderOperateVO.getOrderId())
                     .type(type)
                     .tenantId(electricityCabinet.getTenantId())
