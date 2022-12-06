@@ -136,8 +136,8 @@ public class JsonAdminBatteryAttrController {
 	@GetMapping(value = "/admin/voltageCurrent/change/list")
 	public R batteryVoltageCurrentChangelist(@RequestParam("beginTime") Long beginTime,
 								   @RequestParam("endTime") Long endTime,
-								   @RequestParam(value = "offset") Long offset,
-								   @RequestParam(value = "size") Long size,
+//								   @RequestParam(value = "offset") Long offset,
+//								   @RequestParam(value = "size") Long size,
 								   @RequestParam(value = "electricityCabinetId") Long electricityCabinetId,
 								   @RequestParam(value = "cellNo") Integer cellNo) {
 //		if (size < 0 || size > 50) {
@@ -158,8 +158,8 @@ public class JsonAdminBatteryAttrController {
 			return R.failMsg("查询时间区间不能超过1天!");
 		}
 
-		String sql = "select electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc  limit ?,?";
-		return R.ok(clickHouseService.queryList(VoltageCurrentChange.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
+		String sql = "select electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime from t_voltage_current_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  reportTime desc";
+		return R.ok(clickHouseService.queryList(VoltageCurrentChange.class, sql, electricityCabinetId, cellNo, begin, end));
 	}
 
 
