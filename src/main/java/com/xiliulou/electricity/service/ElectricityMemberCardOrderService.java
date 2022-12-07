@@ -80,9 +80,9 @@ public interface ElectricityMemberCardOrderService {
 
     void expireReminderHandler();
 
-    BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, FranchiseeUserInfo franchiseeUserInfo);
+    BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, UserInfo userInfo, UserBattery userBattery);
 
-    BigDecimal checkUserDisableCardBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord);
+    BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord,ServiceFeeUserInfo serviceFeeUserInfo);
 
-    BigDecimal checkUserMemberCardExpireBatteryService(FranchiseeUserInfo franchiseeUserInfo, Franchisee franchisee, Long cardDays);
+    BigDecimal checkUserMemberCardExpireBatteryService(UserInfo userInfo, Franchisee franchisee, Long cardDays);
 }

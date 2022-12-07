@@ -127,6 +127,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     EnableMemberCardRecordService enableMemberCardRecordService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    @Autowired
+    UserBatteryService userBatteryService;
 
     /**
      * 创建月卡订单
@@ -2218,20 +2220,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * 区分单型号或者多型号的服务费收费标准
      *
      * @param franchisee
-     * @param franchiseeUserInfo
+     * @param userBattery
+     * @param userInfo
      * @return
      */
-    public BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, FranchiseeUserInfo franchiseeUserInfo) {
+    public BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, UserInfo userInfo, UserBattery userBattery) {
 
         BigDecimal batteryServiceFee = BigDecimal.valueOf(0);
         if (Objects.equals(franchisee.getIsOpenServiceFee(), Franchisee.CLOSE_SERVICE_FEE)) {
             return batteryServiceFee;
         }
 
+        if (Objects.isNull(userBattery)) {
+            userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        }
+
         Integer modelType = franchisee.getModelType();
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+            Integer model = BatteryConstant.acquireBattery(userBattery.getBatteryType());
             List<ModelBatteryDeposit> list = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : list) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {
@@ -2247,21 +2254,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     /**
      * 计算停卡用户电池服务费
-     *
-     * @param franchiseeUserInfo
+     * @param userInfo
      * @param uid
+     * @param cardDays
+     * @param eleDisableMemberCardRecord
+     * @param serviceFeeUserInfo
      * @return
      */
-    public BigDecimal checkUserDisableCardBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord) {
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(uid);
+    public BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord, ServiceFeeUserInfo serviceFeeUserInfo) {
+
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(uid);
+        }
         if (Objects.isNull(serviceFeeUserInfo) || Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)) {
             return BigDecimal.valueOf(0);
         }
         if (Objects.isNull(eleDisableMemberCardRecord)) {
-            eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(uid, franchiseeUserInfo.getTenantId());
+            eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(uid, userInfo.getTenantId());
         }
         //判断服务费
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
             BigDecimal franchiseeBatteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
             //计算服务费
             BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(BigDecimal.valueOf(cardDays));
@@ -2274,18 +2286,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     /**
      * 计算套餐过期用户电池服务费
      *
-     * @param franchiseeUserInfo
+     * @param userInfo
+     * @param franchisee
+     * @param cardDays
      * @return
      */
-    public BigDecimal checkUserMemberCardExpireBatteryService(FranchiseeUserInfo franchiseeUserInfo, Franchisee franchisee, Long cardDays) {
+    public BigDecimal checkUserMemberCardExpireBatteryService(UserInfo userInfo, Franchisee franchisee, Long cardDays) {
 
         if (Objects.isNull(franchisee)) {
-            franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+            franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         }
-        BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, franchiseeUserInfo);
+        BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, userInfo, null);
 
         //判断服务费
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //计算服务费
             BigDecimal userMemberCardExpireBatteryServiceFee = batteryServiceFee.multiply(BigDecimal.valueOf(cardDays));
             return userMemberCardExpireBatteryServiceFee;
