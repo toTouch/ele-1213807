@@ -2138,7 +2138,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_NOT_PAY)
                         .disableDays(item.getChooseDays())
                         .disableTime(item.getUpdateTime())
-                        .serviceFee(item.getChargeRate().multiply(BigDecimal.valueOf(item.getChooseDays())))
                         .franchiseeId(franchiseeUserInfo.getFranchiseeId())
                         .phone(item.getPhone())
                         .createTime(System.currentTimeMillis())
@@ -2146,6 +2145,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         .uid(item.getUid())
                         .userName(item.getUserName())
                         .updateTime(System.currentTimeMillis()).build();
+                if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.nonNull(item.getChargeRate())) {
+                    enableMemberCardRecord.setServiceFee(item.getChargeRate().multiply(BigDecimal.valueOf(item.getChooseDays())));
+                }
                 enableMemberCardRecordService.insert(enableMemberCardRecord);
 
                 FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
