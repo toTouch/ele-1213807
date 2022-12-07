@@ -51,5 +51,12 @@ public interface UserBatteryMemberCardService {
      * @return 是否成功
      */
     Integer deleteByUid(Long id);
+
+    /**
+     * 用户套餐减次数
+     * @param id
+     * @return
+     */
+    Integer minCount(Long id);
     
 }

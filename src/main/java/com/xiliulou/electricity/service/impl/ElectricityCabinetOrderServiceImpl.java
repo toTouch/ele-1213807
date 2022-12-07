@@ -1439,7 +1439,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             //修改按此套餐的次数
-            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(franchiseeUserInfo, user);
+            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, user);
             if (!modifyResult.getLeft()) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
@@ -1498,13 +1498,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return String.valueOf(uid) + System.currentTimeMillis() / 1000 + RandomUtil.randomNumbers(3);
     }
 
-    private Triple<Boolean, String, String> checkAndModifyMemberCardCount(FranchiseeUserInfo franchiseeUserInfo, TokenUser user) {
+    private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user) {
         //这里的memberCard不能为空
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
-            Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
+            Integer row = franchiseeUserInfoService.minCount(userBatteryMemberCard.getId());
             if (row < 1) {
-                log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), franchiseeUserInfo.getCardId());
+                log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), electricityMemberCard.getId());
                 return Triple.of(false, "100213", "套餐剩余次数不足");
             }
         }

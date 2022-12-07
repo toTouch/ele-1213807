@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * (UserBatteryMemberCard)表数据库访问层
@@ -54,5 +55,7 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
      * @return 影响行数
      */
     int deleteByUid(@Param("uid") Long uid);
+
+    Integer minCount(Long id);
     
 }
