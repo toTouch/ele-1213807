@@ -26,6 +26,8 @@ public interface FranchiseeService {
     R delete(Long id);
 
     Franchisee queryByIdFromDB(Long id);
+    
+    Franchisee queryByIdFromCache(Long id);
 
     R queryList(FranchiseeQuery franchiseeQuery);
 

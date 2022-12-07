@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserInfoDetailVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -110,5 +111,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R deleteUserInfo(Long uid);
 
     Integer updateByUid(UserInfo userInfo);
-
+    
+    Triple<Boolean, String, Object> updateRentStatus(Long uid, Integer rentStatus);
 }

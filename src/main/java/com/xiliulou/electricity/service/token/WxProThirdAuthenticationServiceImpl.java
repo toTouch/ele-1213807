@@ -195,15 +195,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
                     
-                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
-                            insertUserInfo.getId());
-                    if (!existFranchiseeUserInfo.getLeft()) {
-                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
-                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
-                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-                    }
+//                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
+//                            insertUserInfo.getId());
+//                    if (!existFranchiseeUserInfo.getLeft()) {
+//                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+//                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
+//                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+//                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
+//                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+//                    }
                     
                 }
                 //相同登录
@@ -248,15 +248,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
                     
-                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
-                            insertUserInfo.getId());
-                    if (!existFranchiseeUserInfo.getLeft()) {
-                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
-                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
-                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-                    }
+//                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
+//                            insertUserInfo.getId());
+//                    if (!existFranchiseeUserInfo.getLeft()) {
+//                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+//                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
+//                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+//                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
+//                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+//                    }
                     
                 } else {
                     UserInfo updateUserInfo = existUserInfo.getRight();
@@ -309,15 +309,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
                     
-                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
-                            insertUserInfo.getId());
-                    if (!existFranchiseeUserInfo.getLeft()) {
-                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
-                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
-                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-                    }
+//                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
+//                            insertUserInfo.getId());
+//                    if (!existFranchiseeUserInfo.getLeft()) {
+//                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+//                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
+//                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+//                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
+//                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+//                    }
                     
                 }
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
@@ -375,22 +375,22 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
         
-        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder().userInfoId(userInfo.getId())
-                .updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
-                .serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT).delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
+//        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder().userInfoId(userInfo.getId())
+//                .updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
+//                .serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT).delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
         
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();
         if (Objects.nonNull(newUserActivity)) {
             
             //次数
-            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
-                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
-                insertFranchiseeUserInfo.setRemainingNumber(newUserActivity.getCount().longValue());
-                insertFranchiseeUserInfo.setMemberCardExpireTime(
-                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
-                insertFranchiseeUserInfo.setCardType(FranchiseeUserInfo.TYPE_COUNT);
-            }
+//            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
+//                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
+//                insertFranchiseeUserInfo.setRemainingNumber(newUserActivity.getCount().longValue());
+//                insertFranchiseeUserInfo.setMemberCardExpireTime(
+//                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
+//                insertFranchiseeUserInfo.setCardType(FranchiseeUserInfo.TYPE_COUNT);
+//            }
             
             //优惠券
             if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(
@@ -403,11 +403,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             }
         }
         
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
         
-        //用户迁移数据则进行迁移
-        
-        /*	moveUser(insertUserInfo, franchiseeUserInfo);*/
         
         return createSecurityUser(insertUser, oauthBind);
     }

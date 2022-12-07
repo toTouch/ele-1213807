@@ -278,7 +278,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchiseeMapper.selectById(id);
 
     }
-
+    
+    @Override
+    public Franchisee queryByIdFromCache(Long id) {
+        // TODO userFirstLogin分支
+        return null;
+    }
+    
     @Override
     public R queryList(FranchiseeQuery franchiseeQuery) {
         List<FranchiseeVO> franchiseeVOList = franchiseeMapper.queryList(franchiseeQuery);

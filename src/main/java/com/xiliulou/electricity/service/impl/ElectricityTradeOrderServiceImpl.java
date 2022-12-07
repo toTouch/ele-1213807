@@ -87,6 +87,8 @@ public class ElectricityTradeOrderServiceImpl extends
     InsuranceUserInfoService insuranceUserInfoService;
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
+    @Autowired
+    UserDepositService userDepositService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -405,20 +407,39 @@ public class ElectricityTradeOrderServiceImpl extends
         //用户押金
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
-            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
-            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
-            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-
-            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-
+//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+//            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
+//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+//            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
+//            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
+//            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+//
+//            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
+//
+//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+//                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
+//            }
+//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+    
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+    
+            UserDeposit userDeposit = new UserDeposit();
+            userDeposit.setUid(userInfo.getUid());
+            userDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userDeposit.setUpdateTime(System.currentTimeMillis());
+            userDepositService.updateByUid(userDeposit);
+    
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
+                UserBattery userBattery = new UserBattery();
+                userBattery.setUid(userInfo.getUid());
+                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
+                userBattery.setUpdateTime(System.currentTimeMillis());
             }
-            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         }
 
         //交易订单

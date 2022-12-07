@@ -93,7 +93,7 @@ public class UserDepositServiceImpl implements UserDepositService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer update(UserDeposit userDeposit) {
+    public Integer updateByUid(UserDeposit userDeposit) {
         int update = this.userDepositMapper.updateByUid(userDeposit);
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userDeposit.getUid());

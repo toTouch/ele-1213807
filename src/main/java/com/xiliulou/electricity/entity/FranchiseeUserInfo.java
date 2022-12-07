@@ -31,7 +31,8 @@ public class FranchiseeUserInfo {
     /**
      * 服务状态 (2--已缴纳押金，3--已租电池)
      */
-    private Integer serviceStatus;
+
+//    private Integer serviceStatus;
     /**
      * 加盟商id
      */

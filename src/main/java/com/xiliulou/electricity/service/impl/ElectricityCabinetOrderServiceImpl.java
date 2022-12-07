@@ -270,9 +270,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         
             //判断是否缴纳押金
-            if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT) || Objects
-                    .isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects
-                    .isNull(franchiseeUserInfo.getOrderId())) {
+//            if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT) || Objects
+//                    .isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects
+//                    .isNull(franchiseeUserInfo.getOrderId())) {
+//                eleLockFlag = Boolean.FALSE;
+//                log.error("order  ERROR! not pay deposit! uid:{} ", user.getUid());
+//                return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//            }
+            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR! not pay deposit! uid:{} ", user.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
@@ -295,7 +300,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         
             //未租电池
-            if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+            if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR! user not rent battery! uid:{} ", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
@@ -1128,17 +1133,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR! not pay deposit! uid:{} ", user.getUid());
+            log.error("self open cell order  ERROR! not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         //未租电池
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR! user not rent battery! uid:{} ", user.getUid());
+            log.error("self open cell order  ERROR! user not rent battery,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
@@ -1351,7 +1355,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             //判断用户有没有条件下单（套餐，月卡）
             FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            Triple<Boolean, String, Object> checkConditionResult = checkUserHasConditionOrder(franchiseeUserInfo, store, user);
+            Triple<Boolean, String, Object> checkConditionResult = checkUserHasConditionOrder(userInfo,franchiseeUserInfo, store, user);
             if (!checkConditionResult.getLeft()) {
                 return checkConditionResult;
             }
@@ -1445,7 +1449,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, null);
     }
 
-    private Triple<Boolean, String, Object> checkUserHasConditionOrder(FranchiseeUserInfo franchiseeUserInfo, Store store, TokenUser user) {
+    private Triple<Boolean, String, Object> checkUserHasConditionOrder(UserInfo userInfo,FranchiseeUserInfo franchiseeUserInfo, Store store, TokenUser user) {
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("ORDER ERROR! not found franchiseeUser! uid={}", user.getUid());
             return Triple.of(false, "100207", "用户加盟商信息未找到");
@@ -1456,12 +1460,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
         }
 
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.warn("ORDER WARN! user didn't pay a deposit,uid={},fid={}", user.getUid(), franchiseeUserInfo.getId());
             return Triple.of(false, "100209", "用户未缴纳押金");
         }
 
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.warn("ORDER WARN! user not rent battery! uid={}", user.getUid());
             return Triple.of(false, "100222", "用户还没有租借电池");
         }
@@ -1499,7 +1503,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-        if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) || cardDays < 1) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) || cardDays < 1) {
 //        if (Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn()) || cardDays < 1) {
             return Triple.of(true, null, null);
         }

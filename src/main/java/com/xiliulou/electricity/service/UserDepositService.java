@@ -42,7 +42,7 @@ public interface UserDepositService {
      * @param userDeposit 实例对象
      * @return 实例对象
      */
-    Integer update(UserDeposit userDeposit);
+    Integer updateByUid(UserDeposit userDeposit);
     
     /**
      * 通过主键删除数据

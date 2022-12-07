@@ -149,13 +149,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
+    
     @Autowired
     private ElectricityCabinetServerService electricityCabinetServerService;
-        @Autowired
-        RocketMqService rocketMqService;
-        @Autowired
-        MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
-
+    
+    @Autowired
+    RocketMqService rocketMqService;
+    
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
@@ -1646,9 +1649,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            log.error("queryByDevice  ERROR! user not pay deposit! uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("queryByDevice  ERROR! user not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -1660,13 +1662,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         Long now = System.currentTimeMillis();
         if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-            log.error("queryByDevice  ERROR!  memberCard is  Expire !  uid:{} ", user.getUid());
+            log.error("queryByDevice ERROR!  memberCard is  Expire !  uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
 
         //未租电池
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-            log.error("queryByDevice  ERROR! USER not rent battery!  uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.error("queryByDevice ERROR! user not rent battery,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
@@ -1829,9 +1831,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            log.error("queryByDevice  ERROR! user not pay deposit! uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("queryByDevice  ERROR! user not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -1841,10 +1842,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("rentBattery  ERROR! not found memberCard ! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
-        if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             Long now = System.currentTimeMillis();
             if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-                log.error("rentBattery  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+                log.error("rentBattery  ERROR! memberCard  is Expire,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0023", "月卡已过期");
             }
         }
@@ -1873,7 +1874,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //已租电池则还电池
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             if (noElectricityBattery <= 0) {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }

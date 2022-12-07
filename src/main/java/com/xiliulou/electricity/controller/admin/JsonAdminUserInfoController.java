@@ -218,10 +218,22 @@ public class JsonAdminUserInfoController extends BaseController {
      * @param serviceStatus
      * @return
      */
+//    @PutMapping(value = "/admin/userInfo/serviceStatus")
+//    @Log(title = "修改用户租赁状态")
+//    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
+//        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
+//    }
+    
+    /**
+     * 修改用户租赁状态
+     * @param uid
+     * @param serviceStatus
+     * @return
+     */
     @PutMapping(value = "/admin/userInfo/serviceStatus")
-    @Log(title = "修改用户服务状态")
-    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
-        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
+    @Log(title = "修改用户租赁状态")
+    public R updateRentStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
+        return returnTripleResult(userInfoService.updateRentStatus(uid,serviceStatus));
     }
 
     //列表查询

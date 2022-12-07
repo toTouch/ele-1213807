@@ -16,6 +16,7 @@ import java.util.List;
  * @author makejava
  * @since 2021-06-17 10:10:13
  */
+@Deprecated
 public interface FranchiseeUserInfoService {
 
     /**
