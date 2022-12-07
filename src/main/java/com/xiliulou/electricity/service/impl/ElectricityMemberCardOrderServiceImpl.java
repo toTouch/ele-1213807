@@ -833,6 +833,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             updateFranchiseeUserInfo.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             updateFranchiseeUserInfo.setDisableMemberCardTime(null);
+        }else {
             sendDisableMemberCardMessage(userInfo);
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
