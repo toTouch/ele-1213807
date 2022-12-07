@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -87,6 +89,16 @@ public class ElectricityTradeOrderServiceImpl extends
     InsuranceUserInfoService insuranceUserInfoService;
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
+
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
+    @Autowired
+    EnableMemberCardRecordService enableMemberCardRecordService;
+    @Autowired
+    RedisService redisService;
+
     @Autowired
     UserDepositService userDepositService;
 
@@ -421,19 +433,19 @@ public class ElectricityTradeOrderServiceImpl extends
 //                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
 //            }
 //            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
-    
+
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
-    
+
             UserDeposit userDeposit = new UserDeposit();
             userDeposit.setUid(userInfo.getUid());
             userDeposit.setOrderId(eleDepositOrder.getOrderId());
             userDeposit.setUpdateTime(System.currentTimeMillis());
             userDepositService.updateByUid(userDeposit);
-    
+
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 UserBattery userBattery = new UserBattery();
                 userBattery.setUid(userInfo.getUid());
@@ -517,11 +529,54 @@ public class ElectricityTradeOrderServiceImpl extends
                 Long memberCardExpireTime = System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime());
                 franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
                 franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
+
+                EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
+
+
+                EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
+                Long cardDays = (System.currentTimeMillis() - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+                if (Objects.isNull(enableMemberCardRecord)) {
+                    EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
+                            .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
+                            .memberCardName(franchiseeUserInfo.getCardName())
+                            .enableTime(System.currentTimeMillis())
+                            .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
+                            .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
+                            .disableDays(cardDays.intValue())
+                            .disableTime(eleDisableMemberCardRecord.getCreateTime())
+                            .franchiseeId(franchiseeUserInfo.getFranchiseeId())
+                            .phone(userInfo.getPhone())
+                            .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee())
+                            .createTime(System.currentTimeMillis())
+                            .tenantId(userInfo.getTenantId())
+                            .uid(userInfo.getUid())
+                            .userName(userInfo.getName())
+                            .updateTime(System.currentTimeMillis()).build();
+                    enableMemberCardRecordService.insert(enableMemberCardRecordInsert);
+                }else {
+                    EnableMemberCardRecord enableMemberCardRecordUpdate=new EnableMemberCardRecord();
+                    enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
+                    enableMemberCardRecordUpdate.setDisableDays(cardDays.intValue());
+                    enableMemberCardRecordUpdate.setServiceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee());
+                    enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS);
+                    enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
+                    enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
+                }
             }
             franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoUpdate.setDisableMemberCardTime(null);
             franchiseeUserInfoUpdate.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
-            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+            franchiseeUserInfoService.updatePayServiceFeeById(franchiseeUserInfoUpdate);
+
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+            }
         }
 
         //交易订单
@@ -788,14 +843,14 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if (Objects.equals(insuranceOrderStatus,InsuranceOrder.STATUS_SUCCESS)) {
+        if (Objects.equals(insuranceOrderStatus, InsuranceOrder.STATUS_SUCCESS)) {
             InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
             updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
             updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
             updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
             updateOrAddInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
             updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
-            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis()+franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
             updateOrAddInsuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
             updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
             updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());

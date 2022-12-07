@@ -92,4 +92,6 @@ public interface FranchiseeUserInfoService {
 
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
         Long lastTime);
+
+    int updatePayServiceFeeById(FranchiseeUserInfo franchiseeUserInfo);
 }

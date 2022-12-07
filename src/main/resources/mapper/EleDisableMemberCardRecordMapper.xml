@@ -5,7 +5,8 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
         select member_card_name, status, user_name,phone, create_time, update_time,tenant_id, err_msg,
-        disable_member_card_no,card_days from t_ele_disable_member_card_record
+        disable_member_card_no,card_days,choose_days , real_days , pay_status,charge_rate,disable_card_time_type from
+        t_ele_disable_member_card_record
         <where>
             <if test="query.tenantId !=null">
                 and tenant_id=#{query.tenantId}
@@ -45,4 +46,20 @@
             </if>
         </where>
     </select>
+
+    <select id="queryCreateTimeMaxEleDisableMemberCardRecord"
+            resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
+        select member_card_name, status, user_name,phone, create_time, update_time,tenant_id, err_msg,
+        disable_member_card_no,card_days,choose_days , real_days , pay_status,charge_rate,disable_card_time_type from
+        t_ele_disable_member_card_record
+        where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
+    </select>
+
+    <select id="queryDisableCardExpireRecord" resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
+        select id,uid,tenant_id,disable_member_card_no,choose_days,user_name,phone,update_time,charge_rate from t_ele_disable_member_card_record
+        where status=1 and disable_card_time_type=1 and real_days is null and disable_deadline &lt;=#{nowTime}
+        limit #{offset},#{size};
+    </select>
+
+
 </mapper>

@@ -223,24 +223,31 @@ public interface CacheConstant {
      * insuranceUserInfo的缓存
      */
     String CACHE_INSURANCE_USER_INFO = "insurance_user_info:";
-    
+
     /**
      * 用户电池缓存
      */
     String CACHE_USER_BATTERY="user_battery:";
-    
+
     /**
      * 用户电池套餐缓存
      */
     String CACHE_USER_BATTERY_MEMBERCARD="user_battery_membercard:";
-    
+
     /**
      * 用户电池服务费缓存
      */
     String CACHE_USER_BATTERY_SERVICE_FEE="user_battery_service_fee:";
-    
+
     /**
      * 用户电池押金缓存
      */
     String CACHE_USER_DEPOSIT="user_deposit:";
+
+    /**
+     * 电池电压电流变化记录缓存
+     */
+    String CACHE_VOLTAGE_CURRENT_CHANGE="voltage_current_change:";
+
+    String SERVICE_FEE_USER_INFO = "service_fee_user_info:";
 }

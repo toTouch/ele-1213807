@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
@@ -41,7 +40,13 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
-    R adminOpenOrDisableMemberCard(Integer usableStatus,Long uid);
+    R disableMemberCardForLimitTime(Integer disableCardDays, Long disableDeadline);
+
+    R enableMemberCardForLimitTime();
+
+    R enableOrDisableMemberCardIsLimitTime();
+
+    R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid);
 
     R cleanBatteryServiceFee(Long uid);
 
@@ -71,5 +76,13 @@ public interface ElectricityMemberCardOrderService {
 
     void carMemberCardExpireReminder();
 
+    void systemEnableMemberCardTask();
+
     void expireReminderHandler();
+
+    BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, FranchiseeUserInfo franchiseeUserInfo);
+
+    BigDecimal checkUserDisableCardBatteryService(FranchiseeUserInfo franchiseeUserInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord);
+
+    BigDecimal checkUserMemberCardExpireBatteryService(FranchiseeUserInfo franchiseeUserInfo, Franchisee franchisee, Long cardDays);
 }

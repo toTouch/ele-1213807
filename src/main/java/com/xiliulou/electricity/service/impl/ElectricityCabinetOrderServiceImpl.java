@@ -87,6 +87,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
     /**

@@ -33,7 +33,7 @@ import java.util.Objects;
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
     @Resource
-    private UserCouponMapper userCouponMapper;
+    private UserCouponMapper  userCouponMapper;
     @Autowired
     private CouponService couponService;
 
@@ -130,7 +130,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         Coupon coupon = couponService.queryByIdFromCache(id);
-        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(),tenantId)) {
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), tenantId)) {
             log.error("Coupon  ERROR! not found coupon ! couponId={} ", id);
             return R.fail("ELECTRICITY.0085", "未找到优惠券");
         }
@@ -184,6 +184,37 @@ public class UserCouponServiceImpl implements UserCouponService {
             couponIssueOperateRecord.tenantId(tenantId);
             CouponIssueOperateRecord couponIssueOperateRecordBuild = couponIssueOperateRecord.build();
             couponIssueOperateRecordService.insert(couponIssueOperateRecordBuild);
+        }
+
+        return R.ok();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R destruction(Long[] couponIds) {
+
+        //用户区分
+        TokenUser operateUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(operateUser)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (ObjectUtil.isEmpty(couponIds)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        for (Long couponId : couponIds) {
+            UserCoupon couponBuild = UserCoupon.builder()
+                    .id(couponId)
+                    .status(UserCoupon.STATUS_DESTRUCTION)
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(tenantId).build();
+
+            userCouponMapper.update(couponBuild);
         }
 
         return R.ok();

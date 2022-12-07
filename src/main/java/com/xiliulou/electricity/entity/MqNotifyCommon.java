@@ -45,6 +45,11 @@ public class MqNotifyCommon<T> {
      * 故障通知告警
      */
     public static final Integer TYPE_ABNORMAL_ALARM = 6;
+    
+    /**
+     * 实名认证审核通知
+     */
+    public static final Integer TYPE_AUTHENTICATION_AUDIT=9;
 
     public static final String PROJECT_NAME = "换电柜";
 }
