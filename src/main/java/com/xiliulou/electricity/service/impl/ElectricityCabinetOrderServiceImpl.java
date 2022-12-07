@@ -262,10 +262,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         
             //判断该换电柜加盟商和用户加盟商是否一致
-            if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+            if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
                 eleLockFlag = Boolean.FALSE;
-                log.error("order  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}",
-                        user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+                log.error("order  ERROR!FranchiseeId is not equal!uid={}, FranchiseeId1={} ,FranchiseeId2={}",
+                        user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
         
@@ -1126,9 +1126,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+            log.error("self open cell order  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
@@ -1455,8 +1455,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100207", "用户加盟商信息未找到");
         }
 
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
-            log.error("ORDER ERROR! store's fId  is not equal franchieseeId uid={} , store's fid:{} ,fid:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+            log.error("ORDER ERROR! store's fId  is not equal franchieseeId uid={} , store's fid={} ,fid={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return Triple.of(false, "100208", "柜机加盟商和用户加盟商不一致，请联系客服处理");
         }
 
@@ -1509,7 +1509,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //这里开始计费用户电池服务费
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
             List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);

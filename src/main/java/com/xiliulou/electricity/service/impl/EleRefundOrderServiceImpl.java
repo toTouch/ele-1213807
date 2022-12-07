@@ -534,7 +534,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
         return R.ok(eleDepositOrder.getPayType());
     }
 

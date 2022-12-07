@@ -230,9 +230,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //判断该换电柜加盟商和用户加盟商是否一致
-            if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+            if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
                 eleLockFlag = Boolean.FALSE;
-                log.error("RENTBATTERY ERROR!FranchiseeId is not equal,uid={}, FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+                log.error("RENTBATTERY ERROR!FranchiseeId is not equal,uid={}, FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
 
@@ -314,9 +314,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //分配电池 --只分配满电电池
             Triple<Boolean, String, Object> tripleResult;
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-                tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(), null);
+                tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), userInfo.getFranchiseeId(), null);
             } else {
-                tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, franchiseeUserInfo.getFranchiseeId(), null);
+                tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, userInfo.getFranchiseeId(), null);
             }
 
             if (Objects.isNull(tripleResult) || !tripleResult.getLeft()) {
@@ -520,10 +520,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             
             //判断该换电柜加盟商和用户加盟商是否一致
-            if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+            if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RETURNBATTERY ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}",
-                        user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+                        user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
             
@@ -1221,9 +1221,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+            log.error("self open cell order  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 

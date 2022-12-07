@@ -448,7 +448,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
 //        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
@@ -603,7 +603,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 || Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES))
                 && Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
 
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
 
             if (Objects.equals(franchiseeUserInfo.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
@@ -839,7 +839,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("pay battery service fee  ERROR! not found user ");
             return R.fail("ELECTRICITY.0038", "未找到加盟商");

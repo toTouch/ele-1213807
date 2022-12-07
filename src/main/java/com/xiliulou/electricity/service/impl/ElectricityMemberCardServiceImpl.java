@@ -316,12 +316,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, franchiseeUserInfo.getFranchiseeId())) {
-            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), franchiseeId, franchiseeUserInfo.getFranchiseeId());
+        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
+            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), franchiseeId, userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
-        franchiseeId = franchiseeUserInfo.getFranchiseeId();
+        franchiseeId = userInfo.getFranchiseeId();
 
         List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
         //多电池型号查询套餐

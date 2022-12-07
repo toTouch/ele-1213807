@@ -88,8 +88,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R webUnBindBattery(Long uid);
 
-    R userMove(UserMoveHistory userMoveHistory);
-
     Integer deleteByUid(Long uid);
 
     R queryUserBelongFranchisee(Long franchiseeId,Integer tenantId);
@@ -113,4 +111,6 @@ public interface UserInfoService extends IService<UserInfo> {
     Integer updateByUid(UserInfo userInfo);
     
     Triple<Boolean, String, Object> updateRentStatus(Long uid, Integer rentStatus);
+    
+    int selectCountByFranchiseeId(Long id);
 }
