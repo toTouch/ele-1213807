@@ -522,7 +522,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //用户套餐过期服务费
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, null, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo,franchiseeUserInfo, null, cardDays);
             userChangeServiceFee = serviceFee;
         }
 
@@ -535,7 +535,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (time < 24) {
                 cardDays = 1;
             }
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(franchiseeUserInfo, userInfo.getUid(), cardDays, null);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo,franchiseeUserInfo, userInfo.getUid(), cardDays, null);
             userChangeServiceFee = serviceFee;
         }
 
@@ -916,7 +916,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //用户套餐过期服务费
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(oldFranchiseeUserInfo, null, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(oldUserInfo,oldFranchiseeUserInfo, null, cardDays);
             userChangeServiceFee = serviceFee;
         }
 
@@ -929,7 +929,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (time < 24) {
                 cardDays = 1;
             }
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldFranchiseeUserInfo, uid, cardDays, null);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldUserInfo,oldFranchiseeUserInfo, uid, cardDays, null);
             userChangeServiceFee = serviceFee;
         }
 

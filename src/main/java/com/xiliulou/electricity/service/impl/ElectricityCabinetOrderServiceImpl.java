@@ -90,6 +90,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    @Autowired
+    UserBatteryService userBatteryService;
 
     /**
      * 修改数据
@@ -256,6 +258,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return R.fail("ELECTRICITY.0041", "未实名认证");
             }
 
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if(Objects.isNull(franchisee)){
+                eleLockFlag = Boolean.FALSE;
+                log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+
             //
             FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
             if (Objects.isNull(franchiseeUserInfo)) {
@@ -416,11 +426,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             }
 
-            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
             } else {
+                UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userBattery)) {
+                    eleLockFlag = Boolean.FALSE;
+                    log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
+                    return R.fail("ELECTRICITY.0033", "加盟商不存在");
+                }
+
                 dataMap.put("model_type", true);
-                dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+                dataMap.put("multiBatteryModelName", userBattery.getBatteryType());
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(
@@ -521,6 +538,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+
         //
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
         if (Objects.isNull(franchiseeUserInfo)) {
@@ -554,11 +578,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             }
 
-            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
             } else {
+                UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+                if(Objects.isNull(userBattery)){
+                    redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                    log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
+                    return R.fail("ELECTRICITY.0033", "加盟商不存在");
+                }
+
                 dataMap.put("model_type", true);
-                dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+                dataMap.put("multiBatteryModelName", userBattery.getBatteryType());
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -1357,8 +1388,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100206", "用户未审核");
             }
 
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if(Objects.isNull(franchisee)){
+                log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
+                return Triple.of(false,"ELECTRICITY.0038", "加盟商不存在");
+            }
+
+            UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBattery)){
+                log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+                return Triple.of(false,"ELECTRICITY.0033", "用户未绑定电池型号");
+            }
+
             //判断用户押金
-//            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
             Triple<Boolean, String, Object> checkUserDepositResult = checkUserDeposit(userInfo, store, user);
             if (!checkUserDepositResult.getLeft()) {
                 return checkUserDepositResult;
@@ -1384,7 +1427,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
             }
 
-            Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged(), store.getFranchiseeId());
+            Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), userBattery.getBatteryType(), electricityCabinet.getFullyCharged(), store.getFranchiseeId());
             if (!usableBatteryCellNoResult.getLeft()) {
                 return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
             }
@@ -1425,8 +1468,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
             }
 
-            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-                commandData.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                commandData.put("multiBatteryModelName", userBattery.getBatteryType());
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()

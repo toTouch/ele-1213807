@@ -85,6 +85,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    UserBatteryService userBatteryService;
 
 
     /**
@@ -236,6 +240,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
 
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if(Objects.isNull(franchisee)){
+                eleLockFlag = Boolean.FALSE;
+                log.error("ELE ERROR! not found franchisee,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+
             //判断是否缴纳押金
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 eleLockFlag = Boolean.FALSE;
@@ -313,8 +324,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //分配电池 --只分配满电电池
             Triple<Boolean, String, Object> tripleResult;
-            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-                tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), userInfo.getFranchiseeId(), null);
+            if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+                if(Objects.isNull(userBattery)){
+                    eleLockFlag = Boolean.FALSE;
+                    log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+                    return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
+                }
+
+                tripleResult = findUsableBatteryCellNo(electricityCabinet, null, userBattery.getBatteryType(), userInfo.getFranchiseeId(), null);
             } else {
                 tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, userInfo.getFranchiseeId(), null);
             }
@@ -518,6 +536,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.error("RETURNBATTERY ERROR! not found user,userId={}", user.getUid());
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+            if(Objects.isNull(franchisee)){
+                eleLockFlag = Boolean.FALSE;
+                log.error("ELE ERROR! not found franchisee,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0038", "加盟商不存在");
+            }
+
             
             //判断该换电柜加盟商和用户加盟商是否一致
             if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
@@ -584,11 +610,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             }
             
-            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+            if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
             } else {
+                UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+                if(Objects.isNull(userBattery)){
+                    eleLockFlag = Boolean.FALSE;
+                    log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+                    return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
+                }
+
                 dataMap.put("model_type", true);
-                dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+                dataMap.put("multiBatteryModelName", userBattery.getBatteryType());
             }
             
             HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(

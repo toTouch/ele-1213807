@@ -31,11 +31,12 @@ public class FranchiseeUserInfo {
     /**
      * 服务状态 (2--已缴纳押金，3--已租电池)
      */
-
-//    private Integer serviceStatus;
+    @Deprecated
+    private Integer serviceStatus;
     /**
      * 加盟商id
      */
+    @Deprecated
     private Long franchiseeId;
     /**
      * 套餐id 这个值只有真的购买套餐才会有值，送的会为null
@@ -60,10 +61,12 @@ public class FranchiseeUserInfo {
     /**
      * 初始电池编号
      */
+    @Deprecated
     private String initElectricityBatterySn;
     /**
      * 当前电池编号
      */
+    @Deprecated
 //    private String nowElectricityBatterySn;
     /**
      * 租电池押金
@@ -99,10 +102,12 @@ public class FranchiseeUserInfo {
     /**
      * 加盟商类型 1--老（不分型号） 2--新（分型号）
      */
+    @Deprecated
     private Integer modelType;
     /**
      * 电池类型
      */
+    @Deprecated
     private String batteryType;
     /**
      * 月卡停启用状态 0--启用 1--停用

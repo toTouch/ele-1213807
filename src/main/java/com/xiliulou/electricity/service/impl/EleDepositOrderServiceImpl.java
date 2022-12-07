@@ -435,7 +435,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             //查询用户是否存在套餐过期电池服务费
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(oldFranchiseeUserInfo, null, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo,oldFranchiseeUserInfo, null, cardDays);
             userChangeServiceFee = serviceFee;
         }
 
@@ -451,7 +451,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             if (time < 24) {
                 cardDays = 1;
             }
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(oldFranchiseeUserInfo, user.getUid(), cardDays, null);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo,oldFranchiseeUserInfo, user.getUid(), cardDays, null);
             userChangeServiceFee = serviceFee;
         }
 
@@ -571,15 +571,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
 
-        String batteryType = franchiseeUserInfo.getBatteryType();
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBattery)){
+            log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
+
+        String batteryType = userBattery.getBatteryType();
         if (Objects.nonNull(batteryType)) {
             map.put("batteryType", BatteryConstant.acquireBattery(batteryType).toString());
         } else {
@@ -832,6 +836,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBattery)){
+            log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+//            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
+
         BigDecimal payAmount = null;
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
@@ -839,11 +849,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
 
-            BigDecimal chargeRate=electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee,franchiseeUserInfo);
+            BigDecimal chargeRate=electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(userInfo,franchisee,franchiseeUserInfo);
             batteryServiceFee=chargeRate;
 
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, null, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo,franchiseeUserInfo, null, cardDays);
             payAmount = serviceFee;
         }
 
@@ -858,7 +868,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), franchiseeUserInfo.getTenantId());
 
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(franchiseeUserInfo, user.getUid(), cardDays, eleDisableMemberCardRecord);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo,franchiseeUserInfo, user.getUid(), cardDays, eleDisableMemberCardRecord);
             payAmount = serviceFee;
 
             batteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
@@ -887,7 +897,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .source(source)
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
-                .batteryType(franchiseeUserInfo.getBatteryType())
+                .batteryType(Objects.isNull(userBattery)?"":userBattery.getBatteryType())
                 .sn(nowBattery)
                 .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
