@@ -1,22 +1,33 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.MqConstant;
+import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
+import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -25,9 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -62,6 +75,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     ElectricityConfigService electricityConfigService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    RocketMqService rocketMqService;
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
 
     /**
      * 新增数据
@@ -165,11 +182,64 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         userInfo.setAuthStatus(status);
         userInfo.setTenantId(tenantId);
         userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfoService.update(userInfo);
-
+        Integer result = userInfoService.update(userInfo);
+    
+        boolean flag = result > 0 && Objects.nonNull(electricityConfig)
+                && Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.MANUAL_REVIEW);
+        
+        if (flag) {
+            sendAuthenticationAuditMessage(userInfo);
+        }
+    
         return R.ok();
     }
-
+    
+    private void sendAuthenticationAuditMessage(UserInfo userInfo) {
+        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildAuthenticationAuditMessageNotify(userInfo);
+        if (CollectionUtils.isEmpty(messageNotifyList)) {
+            return;
+        }
+    
+        messageNotifyList.forEach(i -> {
+            rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+        });
+    }
+    
+    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildAuthenticationAuditMessageNotify(UserInfo userInfo) {
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
+            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(),userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+    
+        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT)
+                != MaintenanceUserNotifyConfig.P_AUTHENTICATION_AUDIT) {
+            log.info("ELE ERROR! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(),userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+        
+        
+        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
+            log.error("ELE ERROR! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+        
+        return phones.parallelStream().map(item -> {
+            AuthenticationAuditMessageNotify messageNotify = new AuthenticationAuditMessageNotify();
+            messageNotify.setBusinessCode(StringUtils.isBlank(userInfo.getIdNumber()) ? "/" : userInfo.getIdNumber().substring(userInfo.getIdNumber().length() - 6));
+            messageNotify.setUserName(userInfo.getName());
+            messageNotify.setAuthTime(DateUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN));
+            
+            MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
+            authMessageNotifyCommon.setTime(System.currentTimeMillis());
+            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_AUTHENTICATION_AUDIT);
+            authMessageNotifyCommon.setPhone(item);
+            authMessageNotifyCommon.setData(messageNotify);
+            return authMessageNotifyCommon;
+        }).collect(Collectors.toList());
+    }
+    
     @Override
     public R getEleUserAuthSpecificStatus(Long uid) {
 

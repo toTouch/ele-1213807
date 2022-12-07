@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -94,6 +96,8 @@ public class ElectricityTradeOrderServiceImpl extends
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
     @Autowired
     EnableMemberCardRecordService enableMemberCardRecordService;
+    @Autowired
+    RedisService redisService;
 
 
     @Override
@@ -509,8 +513,8 @@ public class ElectricityTradeOrderServiceImpl extends
 
 
                 EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
+                Long cardDays = (System.currentTimeMillis() - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
                 if (Objects.isNull(enableMemberCardRecord)) {
-                    Long cardDays = (System.currentTimeMillis() - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
                     EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                             .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                             .memberCardName(franchiseeUserInfo.getCardName())
@@ -521,6 +525,7 @@ public class ElectricityTradeOrderServiceImpl extends
                             .disableTime(eleDisableMemberCardRecord.getCreateTime())
                             .franchiseeId(franchiseeUserInfo.getFranchiseeId())
                             .phone(userInfo.getPhone())
+                            .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee())
                             .createTime(System.currentTimeMillis())
                             .tenantId(userInfo.getTenantId())
                             .uid(userInfo.getUid())
@@ -530,6 +535,8 @@ public class ElectricityTradeOrderServiceImpl extends
                 }else {
                     EnableMemberCardRecord enableMemberCardRecordUpdate=new EnableMemberCardRecord();
                     enableMemberCardRecordUpdate.setId(enableMemberCardRecord.getId());
+                    enableMemberCardRecordUpdate.setDisableDays(cardDays.intValue());
+                    enableMemberCardRecordUpdate.setServiceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee());
                     enableMemberCardRecordUpdate.setBatteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS);
                     enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
                     enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
@@ -537,8 +544,9 @@ public class ElectricityTradeOrderServiceImpl extends
             }
             franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoUpdate.setDisableMemberCardTime(null);
             franchiseeUserInfoUpdate.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
-            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+            franchiseeUserInfoService.updatePayServiceFeeById(franchiseeUserInfoUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {

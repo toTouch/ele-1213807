@@ -78,7 +78,7 @@ public class Franchisee {
     private BigDecimal batteryServiceFee;
 
     /**
-     *  是否开启电池服务费功能 (0--开启，1--关闭)
+     * 是否开启电池服务费功能 (0--开启，1--关闭)
      */
     private Integer isOpenServiceFee;
 
@@ -93,6 +93,9 @@ public class Franchisee {
 
     public static final Integer OLD_MODEL_TYPE = 1;
     public static final Integer NEW_MODEL_TYPE = 2;
+
+    public static final Integer OPEN_SERVICE_FEE = 0;
+    public static final Integer CLOSE_SERVICE_FEE = 1;
 
     public static final Integer DISABLE_MEMBER_CARD_PAY_TYPE = 1;
 

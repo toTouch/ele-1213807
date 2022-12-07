@@ -63,4 +63,6 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 																  @Param("endExpireTime") long endExpireTime);
 	@Deprecated
     FranchiseeUserInfo selectByNowBattery(@Param("batteryName") String batteryName);
+
+	int updatePayServiceFeeById(FranchiseeUserInfo franchiseeUserInfo);
 }

@@ -14,4 +14,6 @@ public interface BatteryOtherPropertiesService {
     void insertOrUpdate(BatteryOtherProperties batteryOtherProperties);
 
     R queryBySn(String sn);
+
+    BatteryOtherProperties selectByBatteryName(String sn);
 }

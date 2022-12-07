@@ -20,5 +20,5 @@ public interface ServiceFeeUserInfoService {
 
     ServiceFeeUserInfo queryByUidFromCache(Long uid);
 
-    int updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);
+    void updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);
 }

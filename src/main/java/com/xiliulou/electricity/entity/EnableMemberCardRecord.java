@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 /**
  * 启用套餐(TEnableMemberCardRecord)实体类
@@ -91,6 +93,11 @@ public class EnableMemberCardRecord {
      * 加盟商Id
      */
     private Long franchiseeId;
+
+    /**
+     * 服务费金额
+     */
+    private BigDecimal serviceFee;
 
     public static final Integer SYSTEM_ENABLE = 0;
     public static final Integer ARTIFICIAL_ENABLE = 1;

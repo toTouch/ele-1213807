@@ -4,8 +4,10 @@
 
 
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EnableMemberCardRecord">
-        select id ,user_name,phone,member_card_name,enable_type,disable_days,battery_service_fee_status,disable_member_card_no
-        ,uid,franchisee_id,disable_time,enable_time,create_time,update_time,tenant_id from t_enable_member_card_record
+        select id
+        ,user_name,phone,member_card_name,enable_type,disable_days,battery_service_fee_status,disable_member_card_no
+        ,uid,franchisee_id,disable_time,enable_time,create_time,update_time,tenant_id,service_fee from
+        t_enable_member_card_record
         <where>
             <if test="uid != null">
                 and uid = #{uid}
@@ -30,7 +32,7 @@
             </if>
             <if test="franchiseeIds != null">
                 and franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -68,7 +70,7 @@
             </if>
             <if test="franchiseeIds != null">
                 and franchisee_id in
-                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>

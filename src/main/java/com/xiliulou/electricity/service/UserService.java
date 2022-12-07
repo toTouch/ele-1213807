@@ -93,6 +93,8 @@ public interface UserService {
     R userAutoCodeGeneration();
 
     R userAutoCodeCheck(String autoCode);
+    
+    User queryByUserPhoneFromDB(String purePhoneNumber, Integer typeUserNormalWxPro, Integer tenantId);
 
     String selectServicePhone(Integer tenantId);
 }

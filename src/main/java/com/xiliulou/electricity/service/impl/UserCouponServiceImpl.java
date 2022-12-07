@@ -402,4 +402,10 @@ public class UserCouponServiceImpl implements UserCouponService {
         Integer count = userCouponMapper.queryCount(userCouponQuery);
         return R.ok(count);
     }
+    
+    @Override
+    public List<UserCoupon> selectCouponUserCountById(Long id) {
+        return userCouponMapper.selectList(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getCouponId, id)
+                        .eq(UserCoupon::getDelFlag, UserCoupon.DEL_NORMAL).eq(UserCoupon::getStatus,UserCoupon.STATUS_UNUSED).eq(UserCoupon::getTenantId,TenantContextHolder.getTenantId()));
+    }
 }
