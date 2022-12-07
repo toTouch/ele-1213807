@@ -36,11 +36,6 @@ public class UserBattery {
     private Long uid;
     
     /**
-     * 租电池订单id
-     */
-    private Long rentBatteryOrderId;
-    
-    /**
      * 初始电池编号
      */
     private String initBatterySn;

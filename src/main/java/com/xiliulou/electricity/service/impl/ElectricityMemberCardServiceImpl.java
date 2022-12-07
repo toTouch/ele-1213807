@@ -68,6 +68,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+    @Autowired
+    UserBatteryService userBatteryService;
 
     /**
      * 新增卡包
@@ -321,15 +323,27 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            log.error("ELE ERROR! not found franchisee,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+
         franchiseeId = userInfo.getFranchiseeId();
 
         List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
         //多电池型号查询套餐
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-            if (Objects.isNull(franchiseeUserInfo.getBatteryType())) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBattery)){
+                log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
+            }
+
+            if (Objects.isNull(userBattery.getBatteryType())) {
                 return R.ok();
             }
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, franchiseeUserInfo.getBatteryType(), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, userBattery.getBatteryType(), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         } else {
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }

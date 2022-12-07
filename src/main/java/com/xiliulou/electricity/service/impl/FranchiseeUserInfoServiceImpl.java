@@ -269,7 +269,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
         franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-        franchiseeUserInfoUpdate.setBatteryType(batteryType);
+//        franchiseeUserInfoUpdate.setBatteryType(batteryType);
         update(franchiseeUserInfoUpdate);
         return R.ok();
     }
@@ -325,7 +325,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             //查询用户是否存在套餐过期电池服务费
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, franchisee, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo,franchiseeUserInfo, franchisee, cardDays);
             userChangeServiceFee = serviceFee;
         }
 
@@ -338,7 +338,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 cardDays = 1;
             }
 
-            BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(franchiseeUserInfo, uid, cardDays, null);
+            BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo,franchiseeUserInfo, uid, cardDays, null);
             userChangeServiceFee = batteryServiceFee;
         }
         eleBatteryServiceFeeVO.setMemberCardStatus(franchiseeUserInfo.getMemberCardDisableStatus());

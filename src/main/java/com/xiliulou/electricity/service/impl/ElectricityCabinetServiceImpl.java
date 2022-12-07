@@ -164,6 +164,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StorageService storageService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    @Autowired
+    UserBatteryService userBatteryService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -1672,13 +1674,26 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBattery)){
+            log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
+        }
+
+
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 //        查满仓空仓数
         Triple<Boolean, String, Object> tripleResult;
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), userInfo.getFranchiseeId());
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), userBattery.getBatteryType(), userInfo.getFranchiseeId());
         } else {
             tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), null, userInfo.getFranchiseeId(), electricityCabinet.getTenantId());
         }
@@ -1850,6 +1865,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+
+
+
         //组装数据
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -1867,8 +1890,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         Triple<Boolean, String, Object> tripleResult;
         //查满仓空仓数
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), userInfo.getFranchiseeId());
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
+            UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBattery)){
+                log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
+            }
+
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), userBattery.getBatteryType(), userInfo.getFranchiseeId());
         } else {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, userInfo.getFranchiseeId());
         }

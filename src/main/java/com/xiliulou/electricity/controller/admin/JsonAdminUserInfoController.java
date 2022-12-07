@@ -308,12 +308,6 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.webUnBindBattery(uid);
     }
 
-    //迁移用户数据
-    @PostMapping(value = "/admin/userInfo/userMove")
-    public R userMove(@RequestBody UserMoveHistory userMoveHistory) {
-        return userInfoService.userMove(userMoveHistory);
-    }
-
     /**
      * 查询用户所属加盟商
      *

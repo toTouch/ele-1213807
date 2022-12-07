@@ -544,7 +544,7 @@ public class ElectricityTradeOrderServiceImpl extends
                             .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
                             .disableDays(cardDays.intValue())
                             .disableTime(eleDisableMemberCardRecord.getCreateTime())
-                            .franchiseeId(franchiseeUserInfo.getFranchiseeId())
+                            .franchiseeId(userInfo.getFranchiseeId())
                             .phone(userInfo.getPhone())
                             .serviceFee(eleBatteryServiceFeeOrder.getBatteryServiceFee())
                             .createTime(System.currentTimeMillis())
