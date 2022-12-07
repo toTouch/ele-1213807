@@ -1517,54 +1517,63 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, null);
     }
 
-    private Triple<Boolean, String, Object> checkUserBatteryServiceFee(UserBatteryMemberCard userBatteryMemberCard, TokenUser user) {
+    private Triple<Boolean, String, Object> checkUserBatteryServiceFee(UserBatteryMemberCard userBatteryMemberCard,UserInfo userInfo,ServiceFeeUserInfo serviceFeeUserInfo, TokenUser user) {
 
+        if (Objects.isNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+            return Triple.of(true, null, null);
+        }
+
+        Long now=System.currentTimeMillis();
+        long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) || cardDays < 1) {
+            return Triple.of(true, null, null);
+        }
 
         return null;
     }
 
-//    private Triple<Boolean, String, Object> checkUserHasConditionOrder(UserInfo userInfo, Store store, TokenUser user) {
-//
-//        if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
-//            return Triple.of(true, null, null);
-//        }
-//
-//        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-//        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) || cardDays < 1) {
-////        if (Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn()) || cardDays < 1) {
-//            return Triple.of(true, null, null);
-//        }
-//
-//        //这里开始计费用户电池服务费
-//        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
-//        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-//            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
-//            List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-//
-//            Optional<ModelBatteryDeposit> modelBatteryDepositOptional = modelBatteryDepositList.stream().filter(m -> model.equals(m.getModel())).findFirst();
-//            if (modelBatteryDepositOptional.isEmpty()) {
-//                log.error("ORDER ERROR! modelBattery is null ,uid={},cardId={}", user.getUid(), franchiseeUserInfo.getCardType());
-//                return Triple.of(true, null, null);
-//            }
-//
-//            //计算服务费
-//            BigDecimal batteryServiceFee = modelBatteryDepositOptional.get().getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-//            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-//                return Triple.of(false, "100220", batteryServiceFee);
-//            }
-//        } else {
-//            BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
-//            //计算服务费
-//            BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-//            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-//                return Triple.of(false, "100220", batteryServiceFee);
-//            }
-//        }
-//
-//        return Triple.of(true, null, null);
-//
-//
-//    }
+    private Triple<Boolean, String, Object> checkUserHasConditionOrder(UserInfo userInfo, Store store, TokenUser user) {
+
+        if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            return Triple.of(true, null, null);
+        }
+
+        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) || cardDays < 1) {
+//        if (Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn()) || cardDays < 1) {
+            return Triple.of(true, null, null);
+        }
+
+        //这里开始计费用户电池服务费
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+            List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+
+            Optional<ModelBatteryDeposit> modelBatteryDepositOptional = modelBatteryDepositList.stream().filter(m -> model.equals(m.getModel())).findFirst();
+            if (modelBatteryDepositOptional.isEmpty()) {
+                log.error("ORDER ERROR! modelBattery is null ,uid={},cardId={}", user.getUid(), franchiseeUserInfo.getCardType());
+                return Triple.of(true, null, null);
+            }
+
+            //计算服务费
+            BigDecimal batteryServiceFee = modelBatteryDepositOptional.get().getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                return Triple.of(false, "100220", batteryServiceFee);
+            }
+        } else {
+            BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+            //计算服务费
+            BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                return Triple.of(false, "100220", batteryServiceFee);
+            }
+        }
+
+        return Triple.of(true, null, null);
+
+
+    }
 
     private Triple<Boolean, String, Object> checkUserExistsUnFinishOrder(Long uid) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);
