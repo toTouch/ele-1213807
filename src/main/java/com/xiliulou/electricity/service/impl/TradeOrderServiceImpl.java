@@ -121,7 +121,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("payDeposit  ERROR! user is rent deposit! ,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }

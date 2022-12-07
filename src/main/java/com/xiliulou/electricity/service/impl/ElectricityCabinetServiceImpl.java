@@ -1643,8 +1643,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
-            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
@@ -1678,18 +1678,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 //        查满仓空仓数
         Triple<Boolean, String, Object> tripleResult;
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), userInfo.getFranchiseeId());
         } else {
-            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId(), electricityCabinet.getTenantId());
+            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), null, userInfo.getFranchiseeId(), electricityCabinet.getTenantId());
         }
 
         if (Objects.isNull(tripleResult)) {
-            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", value);
         }
 
         if (!tripleResult.getLeft()) {
-            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
 //        Triple<Boolean, String, Object> tripleResult;
@@ -1825,8 +1825,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
-            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
@@ -1868,9 +1868,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Triple<Boolean, String, Object> tripleResult;
         //查满仓空仓数
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), userInfo.getFranchiseeId());
         } else {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, userInfo.getFranchiseeId());
         }
 
         //已租电池则还电池

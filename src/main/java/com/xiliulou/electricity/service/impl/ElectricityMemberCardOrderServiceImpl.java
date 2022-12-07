@@ -195,7 +195,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
 //            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
                 //查询用户是否存在电池服务费
-                Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
                 if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                     Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
@@ -240,7 +240,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
-        Long franchiseeId = franchiseeUserInfo.getFranchiseeId();
+        Long franchiseeId = userInfo.getFranchiseeId();
 
         if (Objects.nonNull(electricityMemberCardOrderQuery.getProductKey())
                 && Objects.nonNull(electricityMemberCardOrderQuery.getDeviceName())) {
@@ -761,7 +761,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     if (cardDays >= 1) {
                         //查询用户是否存在电池服务费
-                        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
                         Integer modelType = franchisee.getModelType();
                         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
@@ -890,7 +890,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     if (cardDays >= 1) {
                         //查询用户是否存在电池服务费
-                        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
                         Integer modelType = franchisee.getModelType();
                         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
@@ -1079,7 +1079,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(0);
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
+        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
@@ -1209,7 +1209,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
@@ -1254,7 +1254,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setUserName(userInfo.getName());
             electricityMemberCardOrder.setValidDays(0);
             electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-            electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
+            electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
@@ -1406,7 +1406,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
@@ -1459,7 +1459,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
+        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);

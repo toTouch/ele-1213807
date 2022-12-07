@@ -535,7 +535,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
 //        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
@@ -947,7 +947,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         if (Objects.equals(oldUserInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
@@ -999,87 +999,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return R.ok();
     }
-
-    @Override
-    public R userMove(UserMoveHistory userMoveHistory) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        //根据手机号查询用户
-        User user = userService.queryByUserPhone(userMoveHistory.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
-
-        if (Objects.isNull(user)) {
-            log.error("userMove  ERROR! not found user,phone:{} ", userMoveHistory.getPhone());
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-
-        UserInfo userInfo = queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("userMove  ERROR! not found franchiseeUserInfo,uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-
-        if (Objects.equals(franchiseeUserInfo.getFranchiseeId(), userMoveHistory.getFranchiseeId())) {
-            return R.fail("ELECTRICITY.00108", "换电柜加盟商和用户加盟商不一致");
-        }
-
-        if ((!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES))) {
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
-
-        Integer cardId = null;
-        String cardName = null;
-        Integer cardType = null;
-        Long memberCardExpireTime = null;
-        Long remainingNumber = null;
-        if (Objects.nonNull(userMoveHistory.getCardId())) {
-            if (Objects.isNull(userMoveHistory.getMemberCardExpireTime())
-                    || Objects.isNull(userMoveHistory.getRemainingNumber())) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
-            //查看套餐
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userMoveHistory.getCardId());
-
-            if (Objects.isNull(electricityMemberCard)) {
-                log.error("userMove  ERROR! not found user,electricityMemberCardId:{} ", userMoveHistory.getCardId());
-                return R.fail("ELECTRICITY.0087", "未找到月卡套餐");
-            }
-
-            cardId = userMoveHistory.getCardId();
-            cardName = electricityMemberCard.getName();
-            cardType = electricityMemberCard.getType();
-            memberCardExpireTime = userMoveHistory.getMemberCardExpireTime();
-            remainingNumber = userMoveHistory.getRemainingNumber();
-        }
-
-        Integer finalCardId = cardId;
-        String finalCardName = cardName;
-        Integer finalCardType = cardType;
-        Long finalMemberCardExpireTime = memberCardExpireTime;
-        Long finalRemainingNumber = remainingNumber;
-
-
-        franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
-        franchiseeUserInfo.setCardId(finalCardId);
-        franchiseeUserInfo.setCardName(finalCardName);
-        franchiseeUserInfo.setCardType(finalCardType);
-        franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
-        franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
-        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.update(franchiseeUserInfo);
-
-        //记录一下数据迁移，迁移了哪些数据
-        userMoveHistory.setUid(user.getUid());
-        userMoveHistory.setCreateTime(System.currentTimeMillis());
-        userMoveHistory.setTenantId(user.getTenantId());
-        userMoveHistoryService.insert(userMoveHistory);
-        return R.ok();
-    }
+    
 
     @Override
     public Integer deleteByUid(Long uid) {
@@ -1269,7 +1189,31 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public Triple<Boolean, String, Object> updateRentStatus(Long uid, Integer rentStatus) {
-        return null;
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+    
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_YES)) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
+            if (!Objects.isNull(battery)) {
+                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));
+            }
+        }
+    
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setBatteryRentStatus(rentStatus);
+        updateUserInfo.setTenantId(TenantContextHolder.getTenantId());
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+    
+        this.updateByUid(updateUserInfo);
+        return Triple.of(true, "", null);
+    }
+    
+    @Override
+    public int selectCountByFranchiseeId(Long id) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getFranchiseeId, id));
     }
     
     @Override

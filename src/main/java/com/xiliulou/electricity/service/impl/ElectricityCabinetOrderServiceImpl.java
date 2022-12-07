@@ -264,10 +264,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             //判断该换电柜加盟商和用户加盟商是否一致
-            if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+            if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
                 eleLockFlag = Boolean.FALSE;
-                log.error("order  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}",
-                        user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+                log.error("order  ERROR!FranchiseeId is not equal!uid={}, FranchiseeId1={} ,FranchiseeId2={}",
+                        user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
 
@@ -1128,9 +1128,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
+            log.error("self open cell order  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 

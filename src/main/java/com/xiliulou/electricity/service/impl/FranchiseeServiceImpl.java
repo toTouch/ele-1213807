@@ -75,6 +75,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    UserInfoService userInfoService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -386,8 +389,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
 
         //查询加盟商是否绑定普通用户
-        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
-
+//        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
+        int count2 = userInfoService.selectCountByFranchiseeId(franchisee.getId());
+    
         if (count1 > 0 || count2 > 0) {
             return 1;
         }
