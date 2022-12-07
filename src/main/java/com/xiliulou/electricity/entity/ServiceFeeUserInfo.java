@@ -59,6 +59,11 @@ public class ServiceFeeUserInfo {
 
     private Integer delFlag;
 
+    /**
+     * 服务费产生时间
+     */
+    private Long serviceFeeGenerateTime;
+
 
     public static final Integer NOT_EXIST_SERVICE_FEE = 0;
     public static final Integer EXIST_SERVICE_FEE = 1;
