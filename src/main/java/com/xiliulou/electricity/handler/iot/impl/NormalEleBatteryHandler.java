@@ -1,8 +1,13 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -20,8 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +41,11 @@ import java.util.stream.Collectors;
 @Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
 @Slf4j
 public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
-    
+
+    ExecutorService voltageCurrentExecutorService = XllThreadPoolExecutors.newFixedThreadPool("eleSaveVoltageCurrent", 1, "ele_Save_Voltage_Current");
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
@@ -49,6 +62,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     ElectricityCabinetModelService electricityCabinetModelService;
     @Autowired
     MessageDelayQueueService messageDelayQueueService;
+    @Autowired
+    ClickHouseService clickHouseService;
+
+    private static DateTimeFormatter formatter= DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
 
     
     private static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
@@ -134,6 +151,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             log.error("ELE BATTERY REPORT ERROR! tenantId is not equal,tenantId1={},tenantId2={},sessionId={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId(), sessionId);
             return;
         }
+
+        //保存电池电压电流&充电器电压电流
+        this.checkBatteryAndCharger(electricityCabinet,eleBox,electricityBattery,eleBatteryVO,sessionId);
 
         //获取电池电量
         Double power = getBatteryPower(eleBatteryVO, electricityBattery, electricityCabinet, sessionId);
@@ -389,6 +409,63 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             batteryOtherProperties.setBatteryName(batteryName);
             batteryOtherProperties.setBatteryCoreVList(JsonUtil.toJson(batteryOtherPropertiesQuery.getBatteryCoreVList()));
             batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+        }
+    }
+
+    /**
+     * 检查电池电压电流、充电器电压电流是否变化
+     *
+     * @param eleBox
+     * @param electricityBattery
+     * @param eleBatteryVO
+     * @param sessionId
+     */
+    private void checkBatteryAndCharger(ElectricityCabinet electricityCabinet, ElectricityCabinetBox eleBox, ElectricityBattery electricityBattery, EleBatteryVO eleBatteryVO, String sessionId) {
+        voltageCurrentExecutorService.execute(() -> {
+            BatteryOtherPropertiesQuery batteryOtherPropertiesQuery = eleBatteryVO.getBatteryOtherProperties();
+            if (Objects.isNull(batteryOtherPropertiesQuery)) {
+                log.error("ELE BATTERY REPORT ERROR! batteryOtherPropertiesQuery is null,sessionId={}", sessionId);
+                return;
+            }
+
+            BatteryOtherProperties batteryOtherProperties = batteryOtherPropertiesService.selectByBatteryName(electricityBattery.getSn());
+            if (Objects.isNull(batteryOtherProperties)) {
+                log.error("ELE BATTERY REPORT ERROR! batteryOtherProperties is null,sessionId={},sn={}", sessionId, electricityBattery.getSn());
+                return;
+            }
+
+            boolean flag = !Objects.equals(eleBox.getChargeA(), eleBatteryVO.getChargeA())
+                    || !Objects.equals(eleBox.getChargeV(), eleBatteryVO.getChargeV())
+                    || !Objects.equals(batteryOtherProperties.getBatteryChargeA(), batteryOtherPropertiesQuery.getBatteryChargeA())
+                    || !Objects.equals(batteryOtherProperties.getBatteryV(), batteryOtherPropertiesQuery.getBatteryV());
+
+            if (flag && redisService.setNx(CacheConstant.CACHE_VOLTAGE_CURRENT_CHANGE + electricityCabinet.getId() + ":" + eleBox.getCellNo(), "1", 60 * 1000L, false)) {
+                saveVoltageCurrentToClickHouse(electricityCabinet, eleBatteryVO, sessionId);
+            }
+        });
+    }
+
+    /**
+     * 电池电压电流、充电器电压电流保存到ClickHouse
+     *
+     * @param eleBatteryVO
+     * @param sessionId
+     */
+    private void saveVoltageCurrentToClickHouse(ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO, String sessionId) {
+
+        LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleBatteryVO.getReportTime()) ? 0L : eleBatteryVO.getReportTime());
+        BigDecimal batteryChargeA = Objects.isNull(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()) ? BigDecimal.valueOf(0)
+                        : BigDecimal.valueOf(eleBatteryVO.getBatteryOtherProperties().getBatteryChargeA()).setScale(2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal chargeA = Objects.isNull(eleBatteryVO.getChargeA()) ? BigDecimal.valueOf(0)
+                : BigDecimal.valueOf(eleBatteryVO.getChargeA()).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        String sql = "insert into t_voltage_current_change (electricityCabinetId,cellNo,chargeV,chargeA,batteryChargeV,batteryChargeA,sessionId,reportTime,createTime) values(?,?,?,?,?,?,?,?,?);";
+
+        try {
+            clickHouseService.insert(sql, electricityCabinet.getId(), Integer.parseInt(eleBatteryVO.getCellNo()), eleBatteryVO.getChargeV(), chargeA, eleBatteryVO.getBatteryOtherProperties().getBatteryV(),
+                    batteryChargeA , sessionId, formatter.format(reportDateTime), formatter.format(LocalDateTime.now()));
+        } catch (Exception e) {
+            log.error("ELE BATTERY REPORT ERROR! save voltageCurrent to clickHouse error!", e);
         }
     }
 
