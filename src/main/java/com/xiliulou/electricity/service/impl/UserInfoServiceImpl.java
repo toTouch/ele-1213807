@@ -1269,7 +1269,26 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public Triple<Boolean, String, Object> updateRentStatus(Long uid, Integer rentStatus) {
-        return null;
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+    
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_YES)) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
+            if (!Objects.isNull(battery)) {
+                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));
+            }
+        }
+    
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setBatteryRentStatus(rentStatus);
+        updateUserInfo.setTenantId(TenantContextHolder.getTenantId());
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+    
+        this.updateByUid(updateUserInfo);
+        return Triple.of(true, "", null);
     }
     
     @Override

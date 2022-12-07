@@ -115,29 +115,29 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public Triple<Boolean, String, Object> updateServiceStatus(Long uid, Integer serviceStatus) {
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
-        }
-
-        if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-            ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
-            if (!Objects.isNull(battery)) {
-                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));
-            }
-        } else if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-
-        } else {
-            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
-        }
-
-        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        franchiseeUserInfo.setServiceStatus(serviceStatus);
-        franchiseeUserInfo.setUserInfoId(userInfo.getId());
-        franchiseeUserInfo.setTenantId(TenantContextHolder.getTenantId());
-        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-
-        this.updateByUserInfoId(franchiseeUserInfo);
+//        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+//        if (Objects.isNull(userInfo)) {
+//            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+//        }
+//
+//        if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+//            ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
+//            if (!Objects.isNull(battery)) {
+//                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));
+//            }
+//        } else if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+//
+//        } else {
+//            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+//        }
+//
+//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//        franchiseeUserInfo.setServiceStatus(serviceStatus);
+//        franchiseeUserInfo.setUserInfoId(userInfo.getId());
+//        franchiseeUserInfo.setTenantId(TenantContextHolder.getTenantId());
+//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//
+//        this.updateByUserInfoId(franchiseeUserInfo);
         return Triple.of(true, "", null);
     }
 
@@ -281,11 +281,18 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {
+        
         //获取新用户所绑定的加盟商的电池服务费
         Franchisee franchisee = franchiseeService.queryByUserId(uid);
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
         //计算用户所产生的电池服务费
         if (Objects.isNull(franchisee)) {
+            return eleBatteryServiceFeeVO;
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found user,uid={}",uid);
             return eleBatteryServiceFeeVO;
         }
 
@@ -323,7 +330,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             }
         }
 
-        if (Objects.nonNull(franchiseeUserInfo.getServiceStatus()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());

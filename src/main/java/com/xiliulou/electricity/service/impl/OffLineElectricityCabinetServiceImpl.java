@@ -81,9 +81,8 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            log.error("OffLINE ELECTRICITY  ERROR! not pay deposit! uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("OffLINE ELECTRICITY  ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -136,7 +135,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //未租电池
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
@@ -191,8 +190,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+        if ((!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES))) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_DEPOSIT);
             return R.ok(userFrontDetectionVO);
         }
@@ -240,7 +238,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             }
         }
         //未租电池
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_BIND_BATTERY);
             return R.ok(userFrontDetectionVO);
         }
@@ -288,7 +286,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 //        }
 
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT) || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_DEPOSIT);
             return userFrontDetectionVO;
         }
@@ -335,7 +333,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             }
         }
         //未租电池
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_BIND_BATTERY);
             return userFrontDetectionVO;
         }

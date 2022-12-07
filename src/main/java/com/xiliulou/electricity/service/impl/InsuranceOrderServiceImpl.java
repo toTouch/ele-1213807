@@ -151,11 +151,10 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("CREATE INSURANCE_ORDER ERROR! not found user! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+        
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 

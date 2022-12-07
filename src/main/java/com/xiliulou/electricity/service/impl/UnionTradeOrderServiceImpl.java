@@ -66,9 +66,15 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
-
+    
     @Autowired
     ElectricityTradeOrderService electricityTradeOrderService;
+    
+    @Autowired
+    UserDepositService userDepositService;
+    
+    @Autowired
+    UserBatteryService userBatteryService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -215,22 +221,43 @@ public class UnionTradeOrderServiceImpl extends
 
         //用户押金和保险
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-
-            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
-            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
-            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-
-            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-
+//
+//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+//            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
+//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+//            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
+//            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
+//            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+//
+//            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
+//
+//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+//                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
+//            }
+//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+    
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+    
+            UserDeposit userDeposit = new UserDeposit();
+            userDeposit.setUid(userInfo.getUid());
+            userDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userDeposit.setUpdateTime(System.currentTimeMillis());
+            userDepositService.updateByUid(userDeposit);
+    
+            UserBattery userBattery = new UserBattery();
+            userBattery.setUid(userInfo.getUid());
+            userBattery.setUpdateTime(System.currentTimeMillis());
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
+                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             }
-            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
-
+            userBatteryService.updateByUid(userBattery);
+            
+    
             InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
             updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
             updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
