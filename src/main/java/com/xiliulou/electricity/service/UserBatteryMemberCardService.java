@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -51,5 +52,21 @@ public interface UserBatteryMemberCardService {
      * @return 是否成功
      */
     Integer deleteByUid(Long id);
+
+    /**
+     * 用户套餐减次数
+     * @param id
+     * @return
+     */
+    Integer minCount(Long id);
+
+    /**
+     * 离线换电扣除套餐
+     * @param id
+     * @return
+     */
+    Integer minCountForOffLineEle(Long id);
+
+    Integer plusCount(Long id);
     
 }

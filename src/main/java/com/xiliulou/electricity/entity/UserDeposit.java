@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 
 /**
  * (UserDeposit)表实体类
@@ -44,6 +46,11 @@ public class UserDeposit {
      * 押金订单编号
      */
     private String orderId;
+
+    /**
+     * 押金金额
+     */
+    private BigDecimal batteryDeposit;
     
     /**
      * 0--正常 1--删除

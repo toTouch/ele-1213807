@@ -80,5 +80,7 @@ public class UserBatteryMemberCard {
 
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
+
+    public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
     
 }

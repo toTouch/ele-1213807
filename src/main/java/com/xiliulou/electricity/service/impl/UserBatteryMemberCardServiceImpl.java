@@ -124,4 +124,19 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         
         return delete;
     }
+
+    @Override
+    public Integer minCount(Long id) {
+        return userBatteryMemberCardMapper.minCount(id);
+    }
+
+    @Override
+    public Integer minCountForOffLineEle(Long id) {
+        return userBatteryMemberCardMapper.minCountForOffLineEle(id);
+    }
+
+    @Override
+    public Integer plusCount(Long id) {
+        return userBatteryMemberCardMapper.plusCount(id);
+    }
 }
