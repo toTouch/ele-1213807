@@ -34,6 +34,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
 
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
@@ -64,26 +66,32 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(eleDisableMemberCardRecord.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDisableMemberCardRecord.getUid());
 
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found user,uid={} ", eleDisableMemberCardRecord.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId={}", eleDisableMemberCardRecord.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//
+//        //未找到用户
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            log.error("payDeposit  ERROR! not found user! userId={}", eleDisableMemberCardRecord.getUid());
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+//        }
+        //判断用户套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+            log.warn("REVIEW_DISABLE_MEMBER_CARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
+            return R.fail("100210", "用户未开通套餐");
         }
 
         //未找到用户
-        if (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
-            return R.fail("100246", "套餐已过去，无法尽心停卡审核");
+            return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
 
         EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
@@ -92,25 +100,37 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         updateEleDisableMemberCardRecord.setStatus(status);
         updateEleDisableMemberCardRecord.setErrMsg(errMsg);
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-        updateEleDisableMemberCardRecord.setCardDays((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
+        updateEleDisableMemberCardRecord.setCardDays((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
         if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME) && Objects.equals(status, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
             updateEleDisableMemberCardRecord.setDisableDeadline(System.currentTimeMillis() + eleDisableMemberCardRecord.getChooseDays() * (24 * 60 * 60 * 1000L));
         }
 
         eleDisableMemberCardRecordMapper.updateById(updateEleDisableMemberCardRecord);
 
-        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        updateFranchiseeUserInfo.setMemberCardDisableStatus(status);
-        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
-        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
-            updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
+
+        UserBatteryMemberCard updateUserBatteryMemberCard=new UserBatteryMemberCard();
+        updateUserBatteryMemberCard.setUid(userBatteryMemberCard.getUid());
+        updateUserBatteryMemberCard.setMemberCardStatus(status);
+        updateUserBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+            updateUserBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         }
-        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
+        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
         }
 
-        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+//        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+//        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//        updateFranchiseeUserInfo.setMemberCardDisableStatus(status);
+//        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+//        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+//            updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
+//        }
+//        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+//            updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
+//        }
+
+        userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
         return R.ok();
     }
 

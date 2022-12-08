@@ -57,5 +57,8 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     int deleteByUid(@Param("uid") Long uid);
 
     Integer minCount(Long id);
-    
+
+    Integer minCountForOffLineEle(Long id);
+
+    Integer plusCount(Long id);
 }

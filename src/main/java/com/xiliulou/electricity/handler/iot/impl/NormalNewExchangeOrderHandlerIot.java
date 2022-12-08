@@ -113,11 +113,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
-        if(Objects.isNull(oldFranchiseeUserInfo)){
-            log.error("EXCHANGE ORDER ERROR! not found franchiseeUserInfo,uid={},requestId={}",userInfo.getUid(), exchangeOrderRsp.getSessionId());
-            return ;
-        }
+//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
+//        if(Objects.isNull(oldFranchiseeUserInfo)){
+//            log.error("EXCHANGE ORDER ERROR! not found franchiseeUserInfo,uid={},requestId={}",userInfo.getUid(), exchangeOrderRsp.getSessionId());
+//            return ;
+//        }
 
 //        //用户绑新电池
 //        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
@@ -194,11 +194,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("EXCHANGE ORDER ERROR! franchiseeUserInfo is null! uid={},requestId={},orderId:{}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), electricityCabinetOrder.getOrderId());
-            return;
-        }
+//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//        if (Objects.isNull(oldFranchiseeUserInfo)) {
+//            log.error("EXCHANGE ORDER ERROR! franchiseeUserInfo is null! uid={},requestId={},orderId:{}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), electricityCabinetOrder.getOrderId());
+//            return;
+//        }
 
 //        //用户解绑旧电池 旧电池到底是哪块，不确定
 //        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
