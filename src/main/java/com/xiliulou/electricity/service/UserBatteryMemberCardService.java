@@ -68,5 +68,13 @@ public interface UserBatteryMemberCardService {
     Integer minCountForOffLineEle(Long id);
 
     Integer plusCount(Long id);
+
+    /**
+     * 修改数据
+     *
+     * @param userBatteryMemberCard 实例对象
+     * @return 实例对象
+     */
+    Integer updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
     
 }
