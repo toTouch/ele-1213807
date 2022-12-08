@@ -27,7 +27,7 @@ public class OwnMemberCardInfoVo {
     /**
      * 套餐id
      */
-    private Integer cardId;
+    private Integer /**/cardId;
 
     private Integer memberCardDisableStatus;
 

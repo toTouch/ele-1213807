@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import org.apache.ibatis.annotations.Update;
 
@@ -78,5 +79,7 @@ public interface UserBatteryMemberCardService {
      * @return 实例对象
      */
     Integer updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
+
+    List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId);
     
 }

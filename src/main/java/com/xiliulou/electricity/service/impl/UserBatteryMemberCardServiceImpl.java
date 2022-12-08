@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
@@ -162,5 +164,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         });
 
         return update;
+    }
+
+    @Override
+    public List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId) {
+        return userBatteryMemberCardMapper.selectList(new LambdaQueryWrapper<UserBatteryMemberCard>().eq(UserBatteryMemberCard::getMemberCardId, id).eq(UserBatteryMemberCard::getTenantId, tenantId)
+                .eq(UserBatteryMemberCard::getDelFlag, UserBatteryMemberCard.DEL_NORMAL));
     }
 }
