@@ -4,7 +4,6 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -13,14 +12,16 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
@@ -29,6 +30,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,16 +122,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("payDeposit  ERROR! not found user ");
+            log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         Long storeId = null;
 
-        //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -137,69 +137,43 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("ELE DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
-
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            log.error("ELE DEPOSIT ERROR!not found userOauthBind,uid={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
-        //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-
-        //用户是否可用
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("payDeposit  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("payDeposit  ERROR! user not auth! ,uid={} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
-        }
-
+        //是否缴纳押金
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("payDeposit  ERROR! user is rent deposit,uid={} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! user already rent deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
         if (Objects.isNull(franchiseeId)) {
-            //换电柜
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
-            if (Objects.isNull(electricityCabinet)) {
-                log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
-                return R.fail("ELECTRICITY.0005", "未找到换电柜");
-            }
-
-            //计算押金
-            //查找换电柜门店
-            if (Objects.isNull(electricityCabinet.getStoreId())) {
-                log.error("payDeposit  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
-                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
-            }
-            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            Store store = storeService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(store)) {
-                log.error("payDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+                log.error("ELE DEPOSIT ERROR! not found store,uid={},p={},d={}", user.getUid(), productKey, deviceName);
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
 
             //查找门店加盟商
             if (Objects.isNull(store.getFranchiseeId())) {
-                log.error("payDeposit  ERROR! not found Franchisee ！storeId{}", store.getId());
+                log.error("ELE DEPOSIT ERROR! not found franchiseeId,storeId={},uid={}", store.getId(), user.getUid());
                 return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
             }
 
@@ -207,47 +181,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             storeId = store.getId();
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeId);
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", franchiseeId);
+            log.error("ELE DEPOSIT ERROR! franchisee is null,uid={},franchiseeId={}", user.getUid(), franchiseeId);
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        BigDecimal payAmount = null;
-
-        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            payAmount = franchisee.getBatteryDeposit();
-        }
-
-        //型号押金计算
-        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            if (Objects.isNull(model)) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
-
-            //型号押金
-            List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
-            if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId{}", franchiseeId);
-                return R.fail("ELECTRICITY.00110", "未找到押金");
-            }
-
-
-            for (Map map : modelBatteryDepositList) {
-                if ((double) (map.get("model")) - model < 1 && (double) (map.get("model")) - model >= 0) {
-                    payAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
-                    break;
-                }
-            }
-
-        }
-
-        if (Objects.isNull(payAmount)) {
-            log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{}", franchiseeId);
+        //根据加盟商计算押金
+        Pair<Boolean, Object> depositPair = caculDepositByFranchisee(franchisee, model, userInfo);
+        if (Boolean.TRUE.equals(depositPair.getLeft()) || Objects.isNull(depositPair.getRight())) {
+            log.error("ELE DEPOSIT ERROR! deposit is null,franchiseeId={},uid={}", franchiseeId, user.getUid());
             return R.fail("ELECTRICITY.00110", "未找到押金");
         }
 
-        String orderId = generateOrderId(user.getUid());
+        BigDecimal payAmount = BigDecimal.valueOf((double) depositPair.getRight());
+
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, user.getUid());
 
         //生成订单
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
@@ -263,52 +212,41 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .storeId(storeId)
-                .modelType(franchisee.getModelType()).build();
-
-        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(model));
-        }
+                .modelType(franchisee.getModelType())
+                .batteryType(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : null)
+                .build();
 
         //支付零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            eleDepositOrderMapper.insert(eleDepositOrder);
+            int insert = eleDepositOrderMapper.insert(eleDepositOrder);
+            DbUtils.dbOperateSuccessThen(insert, () -> {
 
-//            //用户缴纳押金
-//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//            franchiseeUserInfoUpdate.setId(userInfo.getId());
-//            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-//            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
-//            franchiseeUserInfoUpdate.setOrderId(orderId);
-//            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-//
-//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-//                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
-//            }
-//
-//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                UserDeposit userDeposit = new UserDeposit();
+                userDeposit.setUid(userInfo.getUid());
+                userDeposit.setOrderId(orderId);
+                userDeposit.setCreateTime(System.currentTimeMillis());
+                userDeposit.setUpdateTime(System.currentTimeMillis());
+                userDepositService.insertOrUpdate(userDeposit);
 
-            UserDeposit userDeposit = new UserDeposit();
-            userDeposit.setUid(userInfo.getUid());
-            userDeposit.setOrderId(orderId);
-            userDeposit.setUpdateTime(System.currentTimeMillis());
+                if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                    UserBattery userBattery = new UserBattery();
+                    userBattery.setUid(userInfo.getUid());
+                    userBattery.setBatteryType(eleDepositOrder.getBatteryType());
+                    userBattery.setUpdateTime(System.currentTimeMillis());
+                    userBatteryService.updateByUid(userBattery);
+                }
 
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                UserBattery userBattery = new UserBattery();
-                userBattery.setUid(userInfo.getUid());
-                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
-                userBattery.setUpdateTime(System.currentTimeMillis());
-                userBatteryService.updateByUid(userBattery);
-            }
-
+                return null;
+            });
         }
+
+
         eleDepositOrderMapper.insert(eleDepositOrder);
 
         //调起支付
@@ -326,7 +264,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (WechatPayException e) {
-            log.error("payDeposit ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+            log.error("ELE DEPOSIT ERROR! wechat v3 deposit order error,uid={}", user.getUid(), e);
         }
 
         return R.fail("ELECTRICITY.0099", "下单失败");
@@ -335,40 +273,27 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R returnDeposit(HttpServletRequest request) {
-        //登录用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("returnDeposit  ERROR! not found user ");
+            log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
         }
 
-        //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("returnDeposit  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("returnDeposit  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! user is disable! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
-        }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("returnDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
         }
 
         if (Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
@@ -381,10 +306,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.100004", "月卡已暂停");
         }
 
-
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("returnDeposit  ERROR! not pay deposit,uid={} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -400,10 +324,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
-        if (Objects.equals(oldFranchiseeUserInfo.getOrderId(), "-1")) {
-            return R.fail("ELECTRICITY.00115", "请线下退押");
+        UserDeposit userDeposit = userDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userDeposit)) {
+            log.error("ELE DEPOSIT ERROR! not found userDeposit! userId={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户信息");
         }
 
+
+        if (Objects.equals(userDeposit.getOrderId(), "-1")) {
+            return R.fail("ELECTRICITY.00115", "请线下退押");
+        }
 
         //是否存在未完成的租电池订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
@@ -415,7 +345,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
-
         //是否存在未完成的换电订单
         ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(user.getUid());
         if (Objects.nonNull(oldElectricityCabinetOrder)) {
@@ -425,11 +354,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
+            log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        BigDecimal deposit = oldFranchiseeUserInfo.getBatteryDeposit();
+        BigDecimal deposit = userDeposit.getBatteryDeposit();
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
+            log.error("ELE DEPOSIT ERROR! illegal deposit! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
@@ -439,7 +370,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             //查询用户是否存在套餐过期电池服务费
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo,oldFranchiseeUserInfo, null, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, oldFranchiseeUserInfo, null, cardDays);
             userChangeServiceFee = serviceFee;
         }
 
@@ -455,7 +386,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             if (time < 24) {
                 cardDays = 1;
             }
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo,oldFranchiseeUserInfo, user.getUid(), cardDays, null);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, oldFranchiseeUserInfo, user.getUid(), cardDays, null);
             userChangeServiceFee = serviceFee;
         }
 
@@ -465,11 +396,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //判断是否退电池
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("returnDeposit  ERROR! not return battery,uid={} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not return battery,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
 
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+            log.error("ELE DEPOSIT ERROR! travel to store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
 
@@ -479,24 +411,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //退款零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            eleDepositOrderMapper.insert(eleDepositOrder);
+            int insert = eleDepositOrderMapper.insert(eleDepositOrder);
 
-//            //用户
-//            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//            franchiseeUserInfo.setId(userInfo.getId());
-//            franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_INIT);
-//            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfo.setBatteryDeposit(null);
-//            franchiseeUserInfo.setOrderId(null);
-//            franchiseeUserInfoService.updateRefund(franchiseeUserInfo);
+            DbUtils.dbOperateSuccessThen(insert, () -> {
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
 
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
+                userDepositService.deleteByUid(userInfo.getUid());
+                return null;
+            });
 
-            userDepositService.deleteByUid(userInfo.getUid());
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
             if (Objects.nonNull(insuranceUserInfo)) {
@@ -509,10 +436,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //是否有正在进行中的退款
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
         if (refundCount > 0) {
+            log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String orderId = generateOrderId(user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND,user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -555,50 +483,100 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryUserDeposit() {
         Map<String, String> map = new HashMap<>();
-        //用户信息
+
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
+            log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //用户是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
+        //是否缴纳押金
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("ELE DEPOSIT ERROR! user not rent deposit,uid={}", user.getUid());
+            return R.ok(null);
         }
 
         UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userBattery)){
-            log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        if (Objects.isNull(userBattery)) {
+            log.error("ELE DEPOSIT ERROR! not found userBattery,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
+        }
+
+        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userDeposit)){
+            log.error("ELE DEPOSIT ERROR! not found userDeposit,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCarDeposit)){
+            log.error("ELE DEPOSIT ERROR! not found userCarDeposit,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
         }
 
         String batteryType = userBattery.getBatteryType();
         if (Objects.nonNull(batteryType)) {
-            map.put("batteryType", BatteryConstant.acquireBattery(batteryType).toString());
+            Integer acquireBattery = BatteryConstant.acquireBattery(batteryType);
+            map.put("batteryType", Objects.isNull(acquireBattery) ? null : String.valueOf(acquireBattery));
+//            map.put("batteryType", BatteryConstant.acquireBattery(batteryType).toString());
         } else {
             map.put("batteryType", null);
         }
 
-        if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
-                || Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES))
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+
+        if (Objects.equals(userDeposit.getOrderId(), "-1")) {
+            map.put("refundStatus", null);
+            map.put("deposit", userDeposit.getBatteryDeposit().toString());
+            map.put("time", String.valueOf(System.currentTimeMillis()));
+            map.put("franchiseeName", Objects.nonNull(franchisee)?franchisee.getName():"");
+        } else {
+            //是否退款
+            Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userDeposit.getOrderId());
+            if (Objects.nonNull(refundStatus)) {
+                map.put("refundStatus", refundStatus.toString());
+            } else {
+                map.put("refundStatus", null);
+            }
+
+            EleDepositOrder eleDepositOrder = queryByOrderId(userCarDeposit.getOrderId());
+            if (Objects.isNull(eleDepositOrder)) {
+                map.put("store", null);
+            } else {
+                Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+                if (Objects.nonNull(store)) {
+                    map.put("store", store.getName());
+                } else {
+                    map.put("store", null);
+                }
+            }
+
+            map.put("deposit", userDeposit.getBatteryDeposit().toString());
+            //最后一次缴纳押金时间
+            map.put("time", this.queryByOrderId(userDeposit.getOrderId()).getUpdateTime().toString());
+
+            map.put("franchiseeName", franchisee.getName());
+        }
+
+        return R.ok(map);
+
+/*        if ((Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
+                || Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
                 && Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
 
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
 
             if (Objects.equals(franchiseeUserInfo.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
@@ -635,7 +613,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok(map);
 
         }
-        return R.ok(null);
+        return R.ok(null);*/
     }
 
     @Override
@@ -696,9 +674,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public R queryDeposit(String productKey, String deviceName, Long franchiseeId) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE DEPOSIT ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
         if (Objects.isNull(franchiseeId)) {
-            //换电柜
+/*            //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(electricityCabinet)) {
                 log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
@@ -723,12 +706,26 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
             }
 
+            franchiseeId = store.getFranchiseeId();*/
+
+            Store store = storeService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
+            if (Objects.isNull(store)) {
+                log.error("ELE DEPOSIT ERROR! not found store,uid={},p={},d={}", user.getUid(), productKey, deviceName);
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
+
+            //查找门店加盟商
+            if (Objects.isNull(store.getFranchiseeId())) {
+                log.error("ELE DEPOSIT ERROR! not found franchiseeId,storeId={},uid={}", store.getId(), user.getUid());
+                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+            }
+
             franchiseeId = store.getFranchiseeId();
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeId);
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
-            log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", franchiseeId);
+            log.error("ELE DEPOSIT ERROR! not found franchisee,franchiseeId={}", franchiseeId);
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -757,31 +754,31 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
-            log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+            log.error("ELE DEPOSIT ERROR! not found electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
         //查询押金
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
-            log.error("queryDeposit  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+            log.error("ELE DEPOSIT ERROR! not found store,electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
         }
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            log.error("queryDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+            log.error("ELE DEPOSIT ERROR! not found store,storeId={}", electricityCabinet.getStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
-            log.error("queryDeposit  ERROR! not found Franchisee ！storeId{}", store.getId());
+            log.error("ELE DEPOSIT ERROR! not found franchiseeId,storeId={}", store.getId());
             return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(store.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
+            log.error("ELE DEPOSIT ERROR! not found franchisee,franchiseeId={}", store.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -827,21 +824,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("pay battery service fee  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("pay battery service fee  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            log.error("pay battery service fee  ERROR! not found user ");
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+//        }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("pay battery service fee  ERROR! not found user ");
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
         UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userBattery)){
+        if (Objects.isNull(userBattery)) {
             log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
 //            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
@@ -853,11 +850,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
 
-            BigDecimal chargeRate=electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(userInfo,franchisee,franchiseeUserInfo);
-            batteryServiceFee=chargeRate;
+            BigDecimal chargeRate = electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(userInfo, franchisee, franchiseeUserInfo);
+            batteryServiceFee = chargeRate;
 
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo,franchiseeUserInfo, null, cardDays);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchiseeUserInfo, null, cardDays);
             payAmount = serviceFee;
         }
 
@@ -872,7 +869,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), franchiseeUserInfo.getTenantId());
 
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo,franchiseeUserInfo, user.getUid(), cardDays, eleDisableMemberCardRecord);
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, franchiseeUserInfo, user.getUid(), cardDays, eleDisableMemberCardRecord);
             payAmount = serviceFee;
 
             batteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
@@ -901,7 +898,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .source(source)
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
-                .batteryType(Objects.isNull(userBattery)?"":userBattery.getBatteryType())
+                .batteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType())
                 .sn(nowBattery)
                 .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
@@ -932,22 +929,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd) {
         UserInfo userInfo = userInfoService.queryUserInfoByPhone(rentCarDepositAdd.getPhone(), rentCarDepositAdd.getTenantId());
         if (Objects.isNull(userInfo)) {
-            log.error("admin payRentCarDeposit  ERROR! not found user! phone={}", rentCarDepositAdd.getPhone());
+            log.error("ELE CAR DEPOSIT ERROR! not found user! phone={}", rentCarDepositAdd.getPhone());
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payCarDeposit  ERROR! not found user! userId={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
         }
 
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("payCarDeposit  ERROR! user is rent deposit,uid={} ", userInfo.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! user is rent car deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
@@ -975,34 +962,33 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .carModelId(rentCarDepositAdd.getCarModelId())
                 .franchiseeId(rentCarDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT).build();
-        eleDepositOrderMapper.insert(eleDepositOrder);
+        int insert = eleDepositOrderMapper.insert(eleDepositOrder);
 
-//        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//        franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-//        franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//        franchiseeUserInfoUpdate.setRentCarDeposit(payAmount);
-//        franchiseeUserInfoUpdate.setBindCarModelId(rentCarDepositAdd.getCarModelId());
-//        franchiseeUserInfoUpdate.setRentCarOrderId(orderId);
-//        franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
-//        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
-        UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(userInfo.getUid());
-        updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
-        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-        userInfoService.updateByUid(updateUserInfo);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
 
-        UserCarDeposit userCarDeposit = new UserCarDeposit();
-        userCarDeposit.setUid(userInfo.getUid());
-        userCarDeposit.setOrderId(orderId);
-        userCarDeposit.setUpdateTime(System.currentTimeMillis());
-        userCarDepositService.updateByUid(userCarDeposit);
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
 
-        UserCar userCar = new UserCar();
-        userCar.setUid(userInfo.getUid());
-        userCar.setCarModel(rentCarDepositAdd.getCarModelId().longValue());
-        userCar.setUpdateTime(System.currentTimeMillis());
-        userCarService.updateByUid(userCar);
+            UserCarDeposit userCarDeposit = new UserCarDeposit();
+            userCarDeposit.setUid(userInfo.getUid());
+            userCarDeposit.setOrderId(orderId);
+            userCarDeposit.setCreateTime(System.currentTimeMillis());
+            userCarDeposit.setUpdateTime(System.currentTimeMillis());
+            userCarDepositService.insertOrUpdate(userCarDeposit);
+
+            UserCar userCar = new UserCar();
+            userCar.setUid(userInfo.getUid());
+            userCar.setCarModel(rentCarDepositAdd.getCarModelId().longValue());
+            userCar.setCreateTime(System.currentTimeMillis());
+            userCar.setUpdateTime(System.currentTimeMillis());
+            userCarService.insertOrUpdate(userCar);
+
+            return null;
+        });
 
         return R.ok();
     }
@@ -1010,18 +996,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request) {
-        //用户
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("payCarDeposit  ERROR! not found user ");
+            log.error("ELE CAR DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //限频
-        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -1029,70 +1013,58 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("ELE DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
 
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            log.error("ELE DEPOSIT ERROR!not found userOauthBind,uid={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
-        //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-
-        //用户是否可用
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("payCarDeposit  ERROR! not found userInfo,uid:{} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
+
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("payCarDeposit  ERROR! user not auth! ,uid={} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payCarDeposit  ERROR! not found user! userId:{}", user.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//
-//        }
-
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("payCarDeposit  ERROR! user is rent deposit,uid={} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! user already rent deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
         //门店
         Store store = storeService.queryByIdFromCache(storeId);
         if (Objects.isNull(store)) {
-            log.error("payCarDeposit  ERROR! not store! ,uid:{} ", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not found store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
-            log.error("payCarDeposit  ERROR! not support online pay deposit!,storeId{}", store.getId());
+            log.error("ELE DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), user.getUid());
             return R.fail("100008", "不支持线上缴纳租车押金");
         }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carModelId);
         if (Objects.isNull(electricityCarModel)) {
-            log.error("payCarDeposit  ERROR! not find carMode, carModelId{}", carModelId);
+            log.error("ELE DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, user.getUid());
             return R.fail("100009", "未找到该型号车辆");
         }
 
         StoreGoods storeGoods = storeGoodsService.queryByStoreIdAndCarModelId(storeId, carModelId);
         if (Objects.isNull(storeGoods)) {
-            log.error("payCarDeposit  ERROR! not find carMode, carModelId{}", carModelId);
+            log.error("ELE DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, user.getUid());
             return R.fail("100009", "未找到该型号车辆");
         }
 
-        String orderId = generateOrderId(user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT,user.getUid());
 
         //生成订单
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
@@ -1117,39 +1089,30 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //支付零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            eleDepositOrderMapper.insert(eleDepositOrder);
+            int insert = eleDepositOrderMapper.insert(eleDepositOrder);
 
-//            //用户缴纳押金
-//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//            franchiseeUserInfoUpdate.setId(userInfo.getId());
-//            franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
-//            franchiseeUserInfoUpdate.setRentCarDeposit(BigDecimal.valueOf(0));
-//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfoUpdate.setRentCarOrderId(orderId);
-//            franchiseeUserInfoUpdate.setBindCarModelId(carModelId);
-//
-//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+            DbUtils.dbOperateSuccessThen(insert, () -> {
 
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
 
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
+                UserCarDeposit userCarDeposit = new UserCarDeposit();
+                userCarDeposit.setUid(userInfo.getUid());
+                userCarDeposit.setOrderId(orderId);
+                userCarDeposit.setUpdateTime(System.currentTimeMillis());
+                userCarDepositService.insertOrUpdate(userCarDeposit);
 
-            UserCarDeposit userCarDeposit = new UserCarDeposit();
-            userCarDeposit.setUid(userInfo.getUid());
-            userCarDeposit.setOrderId(orderId);
-            userCarDeposit.setUpdateTime(System.currentTimeMillis());
-            userCarDepositService.updateByUid(userCarDeposit);
+                UserCar userCar = new UserCar();
+                userCar.setUid(userInfo.getUid());
+                userCar.setCarModel(carModelId.longValue());
+                userCar.setUpdateTime(System.currentTimeMillis());
+                userCarService.insertOrUpdate(userCar);
 
-            UserCar userCar = new UserCar();
-            userCar.setUid(userInfo.getUid());
-            userCar.setCarModel(carModelId.longValue());
-            userCar.setUpdateTime(System.currentTimeMillis());
-            userCarService.updateByUid(userCar);
-
-
+                return null;
+            });
 
             return R.ok();
         }
@@ -1170,7 +1133,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (WechatPayException e) {
-            log.error("payCarDeposit ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+            log.error("ELE CAR DEPOSIT ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
 
         return null;
@@ -1180,14 +1143,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Transactional(rollbackFor = Exception.class)
     public R refundRentCarDeposit(HttpServletRequest request) {
 
-        //登录用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("returnRentCarDeposit  ERROR! not found user ");
+            log.error("ELE REFUND ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
@@ -1196,68 +1157,58 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("returnRentCarDeposit  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("ELE REFUND ERROR! not found user,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("returnRentCarDeposit  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("ELE REFUND ERROR! user is disable,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("returnRentCarDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
-        }
-
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("returnRentCarDeposit  ERROR! user is not rent deposit,uid:{} ", user.getUid());
+            log.error("ELE REFUND ERROR! user is not rent deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("ELE REFUND ERROR! not found userCarDeposit! uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户信息");
+        }
+
         //查找缴纳押金订单
-        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getRentCarOrderId()));
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userCarDeposit.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
+            log.error("ELE REFUND ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),userCarDeposit.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-//TODO 用户押金表增加押金字段
-//        BigDecimal deposit = oldFranchiseeUserInfo.getRentCarDeposit();
-//        if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
-//            return R.fail("ELECTRICITY.0044", "退款金额不符");
-//        }
+
+        BigDecimal deposit = userCarDeposit.getCarDeposit();
+        if (eleDepositOrder.getPayAmount().compareTo(deposit)==0) {
+            log.error("ELE REFUND ERROR! deposit not equals! uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0044", "退款金额不符");
+        }
 
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
 
         //退款零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            eleDepositOrderMapper.insert(eleDepositOrder);
-//            //用户
-//            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//            franchiseeUserInfo.setId(userInfo.getId());
-//            franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
-//            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfo.setRentCarDeposit(null);
-//            franchiseeUserInfo.setRentCarOrderId(null);
-//            franchiseeUserInfo.setBindCarModelId(null);
-//            franchiseeUserInfo.setBindCarId(null);
-//            franchiseeUserInfo.setRentCarCardId(null);
-//            franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-//            franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
+            int insert = eleDepositOrderMapper.insert(eleDepositOrder);
 
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getId());
-            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(updateUserInfo);
+            DbUtils.dbOperateSuccessThen(insert, () -> {
 
-            userCarDepositService.deleteByUid(userInfo.getId());
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getId());
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
+
+                userCarDepositService.deleteByUid(userInfo.getId());
+                return null;
+            });
 
             return R.ok();
         }
@@ -1265,10 +1216,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //是否有正在进行中的退款
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
         if (refundCount > 0) {
+            log.error("ELE REFUND ERROR! have refunding order! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String orderId = generateOrderId(user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND,user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -1293,11 +1245,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //用户信息
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
+            log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("queryRentCarDeposit  ERROR! not found user! userId:{}", uid);
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -1308,16 +1262,73 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("queryRentCarDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("ELE DEPOSIT ERROR! not found userCar,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
         }
 
+        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userDeposit)){
+            log.error("ELE DEPOSIT ERROR! not found userDeposit,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCarDeposit)){
+            log.error("ELE DEPOSIT ERROR! not found userCarDeposit,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
+        }
+        if(Objects.isNull(userCarDeposit.getCarDeposit())|| Objects.isNull(userCarDeposit.getOrderId())){
+            log.error("ELE DEPOSIT ERROR! not pay deposit,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+
+            if (Objects.equals(userCarDeposit.getOrderId(), "-1")) {
+                map.put("store", null);
+                map.put("carModel", null);
+                map.put("refundStatus", null);
+                map.put("deposit", userCarDeposit.getCarDeposit().toString());
+                map.put("time", String.valueOf(System.currentTimeMillis()));
+            } else {
+                //是否退款
+                Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
+                if (Objects.nonNull(refundStatus)) {
+                    map.put("refundStatus", refundStatus.toString());
+                } else {
+                    map.put("refundStatus", null);
+                }
+
+                EleDepositOrder eleDepositOrder = queryByOrderId(userCarDeposit.getOrderId());
+
+                if (Objects.isNull(eleDepositOrder)) {
+                    map.put("store", null);
+                    map.put("carModel", null);
+                    map.put("payType", null);
+                } else {
+                    map.put("payType", eleDepositOrder.getPayType().toString());
+                    Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+                    if (Objects.nonNull(store)) {
+                        map.put("store", store.getName());
+                    } else {
+                        map.put("store", null);
+                    }
+                    ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(userCar.getCarModel().intValue());
+                    if (Objects.nonNull(electricityCarModel)) {
+                        map.put("carModel", electricityCarModel.getName());
+                    } else {
+                        map.put("carModel", null);
+                    }
+                }
+
+                map.put("deposit", userCarDeposit.getCarDeposit().toString());
+                //最后一次缴纳押金时间
+                map.put("time", this.queryByOrderId(userCarDeposit.getOrderId()).getUpdateTime().toString());
+            }
+
+
+        return R.ok(map);
 
 //        if ((Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT)
 //                || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR))
@@ -1367,7 +1378,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //            return R.ok(map);
 //
 //        }
-        return R.ok(null);
+//        return R.ok(null);
     }
 
     @Override
@@ -1390,43 +1401,40 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Transactional(rollbackFor = Exception.class)
     public R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("admin payRentCarDeposit  ERROR! not found user ");
+            log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(batteryDepositAdd.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
+            log.error("ELE DEPOSIT ERROR! not found user,uid={}", batteryDepositAdd.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("admin payRentCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
+        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userDeposit)) {
+            log.error("ELE DEPOSIT ERROR! not found userDeposit! uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户信息");
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(batteryDepositAdd.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryDepositAdd.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("admin payRentCarDeposit ERROR! not found Franchisee ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
+            log.error("ELE DEPOSIT ERROR! not found Franchisee,franchiseeId={},uid={}", batteryDepositAdd.getFranchiseeId(),userInfo.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("admin payRentCarDeposit ERROR! user is rent deposit,uid={}", userInfo.getUid());
+            log.error("ELE DEPOSIT ERROR! user is rent deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.isNull(batteryDepositAdd.getModel())) {
-            log.error("admin payRentCarDeposit ERROR! not select batteyType ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
+            log.error("ELE DEPOSIT ERROR! not select batteyType,franchiseeId={},uid={}", batteryDepositAdd.getFranchiseeId(),userInfo.getUid());
             return R.fail("100027", "未选择电池型号");
         }
 
@@ -1448,7 +1456,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .status(EleDepositOrder.STATUS_SUCCESS)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
-                .tenantId(franchiseeUserInfo.getTenantId())
+                .tenantId(userInfo.getTenantId())
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
                 .storeId(batteryDepositAdd.getStoreId())
@@ -1456,7 +1464,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
         }
-        eleDepositOrderMapper.insert(eleDepositOrder);
+        int insert = eleDepositOrderMapper.insert(eleDepositOrder);
 
 
         //生成后台操作记录
@@ -1466,26 +1474,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .operateUid(user.getUid())
                 .uid(batteryDepositAdd.getUid())
                 .name(user.getUsername())
-                .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
+                .oldBatteryDeposit(userDeposit.getBatteryDeposit())
                 .newBatteryDeposit(batteryDepositAdd.getPayAmount())
                 .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
-
-        //用户缴纳押金
-//        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//        franchiseeUserInfoUpdate.setId(userInfo.getId());
-//        franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-//        franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-//        franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//        franchiseeUserInfoUpdate.setBatteryDeposit(batteryDepositAdd.getPayAmount());
-//        franchiseeUserInfoUpdate.setOrderId(orderId);
-//        franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-//        if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-//            franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
-//        }
-//        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
@@ -1493,11 +1487,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
-        UserDeposit userDeposit = new UserDeposit();
-        userDeposit.setUid(userInfo.getUid());
-        userDeposit.setOrderId(orderId);
-        userDeposit.setUpdateTime(System.currentTimeMillis());
-        userDepositService.updateByUid(userDeposit);
+        UserDeposit updateUserDeposit = new UserDeposit();
+        updateUserDeposit.setUid(userInfo.getUid());
+        updateUserDeposit.setOrderId(orderId);
+        updateUserDeposit.setUpdateTime(System.currentTimeMillis());
+        userDepositService.insertOrUpdate(updateUserDeposit);
 
         return R.ok();
     }
@@ -1515,5 +1509,46 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
+    }
+
+    /**
+     * 根据型号计算押金
+     *
+     * @param franchisee
+     * @param model
+     * @param userInfo
+     * @return
+     */
+    private Pair<Boolean, Object> caculDepositByFranchisee(Franchisee franchisee, Integer model, UserInfo userInfo) {
+        //单型号
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            return Pair.of(Boolean.TRUE, franchisee.getBatteryDeposit());
+        }
+
+        //多型号押金
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (Objects.isNull(model)) {
+                log.error("ELE DEPOSIT ERROR! illegal model,uid={},model={}", userInfo.getUid(), model);
+                return Pair.of(Boolean.FALSE, null);
+            }
+
+            //型号押金
+            List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+            if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
+                log.error("ELE DEPOSIT ERROR! not found modelBatteryDepositList,uid={}", userInfo.getUid());
+                return Pair.of(Boolean.FALSE, null);
+            }
+
+            //没看懂
+            for (Map map : modelBatteryDepositList) {
+                if ((double) (map.get("model")) - model < 1 && (double) (map.get("model")) - model >= 0) {
+//                    payAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
+//                    break;
+                    return Pair.of(Boolean.TRUE, BigDecimal.valueOf((double) map.get("batteryDeposit")));
+                }
+            }
+        }
+
+        return Pair.of(Boolean.FALSE, null);
     }
 }

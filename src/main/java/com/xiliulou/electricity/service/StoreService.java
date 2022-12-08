@@ -76,4 +76,6 @@ public interface StoreService {
     Triple<Boolean, String, Object> selectListByQuery(StoreQuery storeQuery);
     
     List<Store> selectByStoreIds(List<Long> storeIds);
+
+    Store queryFromCacheByProductAndDeviceName(String productKey, String deviceName);
 }

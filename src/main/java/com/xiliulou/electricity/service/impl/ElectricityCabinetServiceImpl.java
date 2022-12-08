@@ -1784,14 +1784,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //动态查询在线状态
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
-            log.error("queryByRentBattery  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            log.error("queryByRentBattery  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
         //换电柜是否出现异常被锁住
         String isLock = redisService.get(CacheConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
         if (StringUtils.isNotEmpty(isLock)) {
-            log.error("queryByRentBattery  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            log.error("queryByRentBattery  ERROR!  electricityCabinet is lock ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
 
@@ -1803,7 +1803,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
-            log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+            log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
         }
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
@@ -1814,20 +1814,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
-            log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+            log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
             return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
         }
 
         //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("queryByRentBattery  ERROR! not found user!uid:{} ", user.getUid());
+            log.error("queryByRentBattery  ERROR! not found user!uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("queryByRentBattery  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("queryByRentBattery  ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -1952,7 +1952,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
-            log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+            log.error("ele battery error! no electricityBattery,sn={}", batteryName);
             return R.ok();
         }
 
@@ -2082,7 +2082,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
-            log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), electricityBattery.getFranchiseeId());
+            log.error("checkBattery error! franchisee is not equal,franchiseeId1={},franchiseeId2={}", store.getFranchiseeId(), electricityBattery.getFranchiseeId());
             return R.failMsg("电池加盟商与电柜加盟商不匹配");
         }
 
@@ -2251,14 +2251,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //换电柜
         ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
-            log.error("getFranchisee  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+            log.error("getFranchisee  ERROR! not found electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("getFranchisee  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+            log.error("getFranchisee  ERROR! not found store,electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
         }
 
@@ -2266,14 +2266,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("getFranchisee  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+            log.error("getFranchisee  ERROR! not found store,storeId={}", electricityCabinet.getStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("getFranchisee  ERROR! not found Franchisee ！storeId{}", store.getId());
+            log.error("getFranchisee  ERROR! not found Franchisee,storeId={}", store.getId());
             return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
         }
 

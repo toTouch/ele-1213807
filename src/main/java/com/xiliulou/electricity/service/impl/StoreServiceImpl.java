@@ -509,7 +509,22 @@ public class StoreServiceImpl implements StoreService {
     public List<Store> selectByStoreIds(List<Long> storeIds) {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getId, storeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
-    
+
+    @Override
+    public Store queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELE ERROR! not found electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
+            return null;
+        }
+
+        if (Objects.isNull(electricityCabinet.getStoreId())) {
+            log.error("ELE ERROR! not found store,electricityCabinetId={}", electricityCabinet.getId());
+            return null;
+        }
+       return this.queryByIdFromCache(electricityCabinet.getStoreId());
+    }
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

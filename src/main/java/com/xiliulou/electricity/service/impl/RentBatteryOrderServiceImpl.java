@@ -669,7 +669,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, rentOpenDoorQuery.getOrderId()));
         if (Objects.isNull(rentBatteryOrder)) {
-            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", rentOpenDoorQuery.getOrderId());
+            log.error("ELECTRICITY  ERROR! not found order,orderId={} ", rentOpenDoorQuery.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
