@@ -80,6 +80,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     UserDepositService userDepositService;
 
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    @Autowired
+    UserCarService userCarService;
+
     /**
      * 新增数据
      *
@@ -244,15 +249,23 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
                 }
             } else {
-                franchiseeUserInfo.setRentCarOrderId(null);
-                franchiseeUserInfo.setRentCarDeposit(null);
-                franchiseeUserInfo.setBindCarId(null);
-                franchiseeUserInfo.setBindCarModelId(null);
-                franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-                franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
-                franchiseeUserInfo.setRentCarCardId(null);
-                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-                franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
+//                franchiseeUserInfo.setRentCarOrderId(null);
+//                franchiseeUserInfo.setRentCarDeposit(null);
+//                franchiseeUserInfo.setBindCarId(null);
+//                franchiseeUserInfo.setBindCarModelId(null);
+//                franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+//                franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+//                franchiseeUserInfo.setRentCarCardId(null);
+//                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//                franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
+
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
+
+                userCarDepositService.deleteByUid(userInfo.getUid());
             }
         }
 
@@ -277,16 +290,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("未找到退款订单!");
         }
 
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.isNull(franchiseeUserInfo)) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
-        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
             return R.fail("100012", "用户绑定车辆");
         }
@@ -365,16 +378,24 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
                     }
                 } else {
-                    updateFranchiseeUserInfo.setRentCarOrderId(null);
-                    updateFranchiseeUserInfo.setRentCarDeposit(null);
-                    updateFranchiseeUserInfo.setBindCarId(null);
-                    updateFranchiseeUserInfo.setBindCarModelId(null);
-                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-                    updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
-                    updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-                    updateFranchiseeUserInfo.setRentCarCardId(null);
-                    franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
+//                    updateFranchiseeUserInfo.setRentCarOrderId(null);
+//                    updateFranchiseeUserInfo.setRentCarDeposit(null);
+//                    updateFranchiseeUserInfo.setBindCarId(null);
+//                    updateFranchiseeUserInfo.setBindCarModelId(null);
+//                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+//                    updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+//                    updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+//                    updateFranchiseeUserInfo.setRentCarCardId(null);
+//                    franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
+
+                    UserInfo updateUserInfo = new UserInfo();
+                    updateUserInfo.setUid(uid);
+                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                    updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                    userInfoService.updateByUid(updateUserInfo);
+
+                    userDepositService.deleteByUid(uid);
                 }
                 return R.ok();
 
@@ -431,16 +452,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("未找到退款订单!");
         }
 
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.isNull(franchiseeUserInfo)) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
-        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
             return R.fail("100012", "用户绑定车辆");
         }
@@ -485,18 +506,27 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //查询押金绑定表的id
             Long id = eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
 
-            FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-            updateFranchiseeUserInfo.setUserInfoId(id);
-            updateFranchiseeUserInfo.setRentCarOrderId(null);
-            updateFranchiseeUserInfo.setRentCarDeposit(null);
-            updateFranchiseeUserInfo.setBindCarId(null);
-            updateFranchiseeUserInfo.setBindCarModelId(null);
-            updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-            updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
-            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-            updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-            updateFranchiseeUserInfo.setRentCarCardId(null);
-            franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
+//            FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+//            updateFranchiseeUserInfo.setUserInfoId(id);
+//            updateFranchiseeUserInfo.setRentCarOrderId(null);
+//            updateFranchiseeUserInfo.setRentCarDeposit(null);
+//            updateFranchiseeUserInfo.setBindCarId(null);
+//            updateFranchiseeUserInfo.setBindCarModelId(null);
+//            updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+//            updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+//            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//            updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+//            updateFranchiseeUserInfo.setRentCarCardId(null);
+//            franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
+
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(uid);
+            updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+
+            userCarService.deleteByUid(uid);
+
             return R.ok();
         }
 

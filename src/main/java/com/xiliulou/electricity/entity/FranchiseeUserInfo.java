@@ -83,7 +83,7 @@ public class FranchiseeUserInfo {
     /**
      * 租车押金
      */
-    private BigDecimal rentCarDeposit;
+//    private BigDecimal rentCarDeposit;
     /**
      * 0--正常 1--删除
      */
@@ -129,26 +129,26 @@ public class FranchiseeUserInfo {
     /**
      * 服务状态 (1--已缴纳押金，2--已租车辆)
      */
-    private Integer rentCarStatus;
+//    private Integer rentCarStatus;
     /**
      * 绑定的车辆Id
      */
-    private Integer bindCarId;
+//    private Integer bindCarId;
 
     /**
      * 绑定的车辆Id
      */
-    private Integer bindCarModelId;
+//    private Integer bindCarModelId;
 
     /**
      * 租车套餐id
      */
-    private Integer rentCarCardId;
+//    private Integer rentCarCardId;
 
     /**
      * 租车月卡过期时间
      */
-    private Long rentCarMemberCardExpireTime;
+//    private Long rentCarMemberCardExpireTime;
 
     //初始化
     public static final Integer STATUS_IS_INIT = 1;

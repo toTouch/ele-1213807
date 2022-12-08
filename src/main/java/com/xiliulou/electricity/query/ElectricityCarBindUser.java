@@ -27,5 +27,5 @@ public class ElectricityCarBindUser {
     @NotNull(message = "车辆Id不能为空!", groups = {UpdateGroup.class})
     private Integer carId;
 
-
+    private String sn;
 }

@@ -70,6 +70,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     ElectricityCarModelService electricityCarModelService;
     @Autowired
     UserBatteryService userBatteryService;
+    @Autowired
+    UserCarService userCarService;
 
     /**
      * 新增卡包
@@ -388,20 +390,20 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("rentCar  ERROR! not found user ");
+            log.error("rentCar  ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("rentCar  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("rentCar  ERROR! not found user,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("rentCar  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("rentCar  ERROR! user is unUsable,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -411,33 +413,38 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("rentCar  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
+        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
+        if(Objects.isNull(userCar)){
+            log.error("rentCar ERROR! not found userCar,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//
+//        //未找到用户
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            log.error("rentCar  ERROR! not found user! userId:{}", user.getUid());
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+//
+//        }
+
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getRentCarDeposit()) || Objects.isNull(franchiseeUserInfo.getRentCarOrderId())) {
-            log.error("rentCar  ERROR! not pay deposit! uid:{} ", user.getUid());
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("rentCar  ERROR! not pay car deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         //用户押金缴纳的车辆型号所属的加盟商
-        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(franchiseeUserInfo.getBindCarModelId());
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(userCar.getCarModel().intValue());
         if (Objects.isNull(electricityCarModel)) {
-            log.error("rentCar ERROR! franchisee not carModel,carModelId:{}", franchiseeUserInfo.getBindCarModelId());
+            log.error("rentCar ERROR! franchisee not carModel,carModelId={}", userCar.getCarModel());
             return R.fail("100011", "加盟商没有对应的车辆型号");
         }
 
         List<Long> franchiseeIds= Arrays.asList(electricityCarModel.getFranchiseeId());
 
-        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, franchiseeUserInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, franchiseeIds , franchiseeUserInfo.getBindCarModelId()));
+        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, userInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, franchiseeIds , userCar.getCarModel().intValue()));
     }
 
     @Override

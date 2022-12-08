@@ -108,6 +108,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     UserBatteryService userBatteryService;
 
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
+
+    @Autowired
+    UserCarService userCarService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -418,41 +424,42 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R getRentCarMemberCardInfo(Long uid) {
 
-        UserInfo userInfo = selectUserByUid(uid);
+        UserInfo userInfo = queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
             return R.failMsg("未找到用户信息!");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
-        }
-
         //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getRentCarDeposit()) || Objects.isNull(franchiseeUserInfo.getRentCarOrderId())) {
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("returnBattery  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getRentCarCardId());
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(uid);
+        if(Objects.isNull(userCarMemberCard)){
+            log.error("not found userCarMemberCard,uid={}", uid);
+            return R.failMsg("未找到用户信息!");
+        }
+
+        UserCar userCar = userCarService.selectByUidFromCache(uid);
+        if(Objects.isNull(userCar)){
+            log.error("not found userCar,uid={}", uid);
+            return R.failMsg("未找到用户信息!");
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userCarMemberCard.getCardId().intValue());
         if (Objects.isNull(electricityMemberCard)) {
             return R.ok();
         }
 
-        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(franchiseeUserInfo.getBindCarModelId());
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(userCar.getCarModel().intValue());
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", userInfo.getUid());
             return R.fail("100005", "未找到车辆型号");
         }
 
-        Long memberCardExpireTime = franchiseeUserInfo.getRentCarMemberCardExpireTime();
+        Long memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime();
 
         if (Objects.isNull(memberCardExpireTime) || System.currentTimeMillis() >= memberCardExpireTime) {
             return R.ok();
@@ -463,7 +470,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setCarName(electricityCarModel.getName());
         ownMemberCardInfoVo.setType(electricityMemberCard.getType());
         ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
-        ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getRentCarCardId());
+        ownMemberCardInfoVo.setCardId(electricityMemberCard.getId());
         return R.ok(ownMemberCardInfoVo);
     }
 
@@ -566,16 +573,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //租车未购买套餐
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR) && Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime())) {
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("order ERROR! not rent car member card! uid:{}", user.getUid());
             return R.fail("100012", "未购买租车套餐");
         }
 
-
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR) && Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
-            log.error("order ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
-            return R.fail("100013", "租车套餐已过期");
-        }
+//
+//        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR) && Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
+//            log.error("order ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
+//            return R.fail("100013", "租车套餐已过期");
+//        }
 
         return R.ok(userInfo);
     }

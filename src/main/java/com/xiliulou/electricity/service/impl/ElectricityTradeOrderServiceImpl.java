@@ -101,6 +101,10 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Autowired
     UserDepositService userDepositService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -641,7 +645,7 @@ public class ElectricityTradeOrderServiceImpl extends
         //用户
         UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), tradeOrderNo);
+            log.error("NOTIFY ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
@@ -650,20 +654,31 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+            log.error("payDeposit ERROR! not found user! userId:{}", userInfo.getUid());
             return Pair.of(false, "未找到用户信息!");
         }
 
         //用户押金
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-            franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
-            franchiseeUserInfoUpdate.setRentCarDeposit(eleDepositOrder.getPayAmount());
-            franchiseeUserInfoUpdate.setRentCarOrderId(eleDepositOrder.getOrderId());
-            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoUpdate.setBindCarModelId(eleDepositOrder.getCarModelId());
-            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+//            franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
+//            franchiseeUserInfoUpdate.setRentCarDeposit(eleDepositOrder.getPayAmount());
+//            franchiseeUserInfoUpdate.setRentCarOrderId(eleDepositOrder.getOrderId());
+//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+//            franchiseeUserInfoUpdate.setBindCarModelId(eleDepositOrder.getCarModelId());
+//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+
+            UserCarDeposit userCarDeposit = new UserCarDeposit();
+            userCarDeposit.setUid(userInfo.getUid());
+            userCarDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userCarDepositService.updateByUid(userCarDeposit);
         }
 
 
@@ -733,31 +748,48 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCarMemberCard)){
+            log.error("payDeposit ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
             return Pair.of(false, "未找到用户信息!");
         }
+
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//
+//        //未找到用户
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+//            return Pair.of(false, "未找到用户信息!");
+//        }
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
-            if (Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) || franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
+            if (userCarMemberCard.getMemberCardExpireTime() < now) {
                 memberCardExpireTime = System.currentTimeMillis() +
                         electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             } else {
-                memberCardExpireTime = franchiseeUserInfo.getRentCarMemberCardExpireTime() +
+                memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime() +
                         electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             }
-            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-            franchiseeUserInfoUpdate.setRentCarMemberCardExpireTime(memberCardExpireTime);
-            franchiseeUserInfoUpdate.setRentCarCardId(electricityMemberCardOrder.getMemberCardId());
-            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+//            franchiseeUserInfoUpdate.setRentCarMemberCardExpireTime(memberCardExpireTime);
+//            franchiseeUserInfoUpdate.setRentCarCardId(electricityMemberCardOrder.getMemberCardId());
+//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+            UserCarMemberCard updateUserCarMemberCard=new UserCarMemberCard();
+            updateUserCarMemberCard.setUid(userInfo.getUid());
+            updateUserCarMemberCard.setCardId(electricityMemberCardOrder.getMemberCardId().longValue());
+            updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+            updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
+
+            userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+
+
+
         }
 
 
