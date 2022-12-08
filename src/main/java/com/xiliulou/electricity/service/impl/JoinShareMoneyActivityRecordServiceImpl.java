@@ -2,19 +2,9 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityRecordMapper;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -52,6 +42,8 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 
 	@Autowired
 	UserService userService;
+	@Autowired
+	UserBatteryMemberCardService userBatteryMemberCardService;
 
 	/**
 	 * 修改数据
@@ -219,17 +211,19 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	private Boolean checkUserIsCard(UserInfo userInfo) {
 
 		//是否缴纳押金，是否绑定电池
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+		UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
 
 		//未找到用户
-		if (Objects.isNull(franchiseeUserInfo)) {
+		if (Objects.isNull(userBatteryMemberCard)) {
 			return false;
 
 		}
 
 		//用户是否开通月卡
-		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-				&& Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+		if (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+				&& Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
 			return false;
 		}
 

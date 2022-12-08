@@ -73,6 +73,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Autowired
     UserCarService userCarService;
 
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+
     /**
      * 新增卡包
      *
@@ -177,8 +180,10 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //判断是否有用户绑定该套餐
-        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
-        if (!CollectionUtils.isEmpty(franchiseeUserInfoList)) {
+//        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
+
+        List<UserBatteryMemberCard> userBatteryMemberCardList=userBatteryMemberCardService.selectByMemberCardId(id,tenantId);
+        if (!CollectionUtils.isEmpty(userBatteryMemberCardList)) {
             log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);
             return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
         }
