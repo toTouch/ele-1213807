@@ -35,7 +35,9 @@ public interface UserDepositService {
      * @return 实例对象
      */
     UserDeposit insert(UserDeposit userDeposit);
-    
+
+    UserDeposit insertOrUpdate(UserDeposit userDeposit);
+
     /**
      * 修改数据
      *

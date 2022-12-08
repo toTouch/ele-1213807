@@ -80,6 +80,18 @@ public class UserCarServiceImpl implements UserCarService {
         return userCar;
     }
 
+    @Override
+    public UserCar insertOrUpdate(UserCar userCar) {
+        int insert = this.userCarMapper.insertOrUpdate(userCar);
+
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_CAR + userCar.getUid());
+            return null;
+        });
+
+        return userCar;
+    }
+
     /**
      * 修改数据
      *

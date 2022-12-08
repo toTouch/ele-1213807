@@ -35,7 +35,9 @@ public interface UserBatteryServiceFeeService {
      * @return 实例对象
      */
     UserBatteryServiceFee insert(UserBatteryServiceFee userBatteryServiceFee);
-    
+
+    UserBatteryServiceFee insertOrUpdate(UserBatteryServiceFee userBatteryServiceFee);
+
     /**
      * 修改数据
      *

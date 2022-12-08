@@ -7,14 +7,16 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="did" column="did" jdbcType="INTEGER"/>
         <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="carDeposit" column="car_deposit" jdbcType="NUMERIC"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 基础字段 -->
     <sql id="selectUserCarDeposit">
-       	select   id, uid, did, order_id, del_flag, create_time, update_time        from t_user_car_deposit
+       	select   id, uid, did, order_id, car_deposit, del_flag, create_time, update_time        from t_user_car_deposit
     </sql>
 
     <!--查询单个-->
@@ -42,6 +44,9 @@
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
             <if test="createTime != null">
                 and create_time = #{createTime}
             </if>
@@ -53,8 +58,15 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_car_deposit(uid, did, order_id, del_flag, create_time, update_time)
-        values (#{uid}, #{did}, #{orderId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car_deposit(uid, did, order_id, car_deposit, del_flag, create_time, update_time)
+        values (#{uid}, #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_car_deposit(uid, did, order_id, car_deposit, del_flag, create_time, update_time)
+        values (#{uid}, #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{createTime}, #{updateTime})
+        on duplicate key
+        update #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{updateTime}
     </insert>
 
     <!--通过主键修改数据-->
@@ -70,11 +82,14 @@
             <if test="orderId != null and orderId != ''">
                 order_id = #{orderId},
             </if>
+            <if test="carDeposit != null">
+                car_deposit = #{carDeposit},
+            </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},

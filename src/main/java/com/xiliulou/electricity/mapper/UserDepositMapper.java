@@ -54,5 +54,6 @@ public interface UserDepositMapper extends BaseMapper<UserDeposit> {
      * @return 影响行数
      */
     int deleteByUid(Long uid);
-    
+
+    int insertOrUpdate(UserDeposit userDeposit);
 }

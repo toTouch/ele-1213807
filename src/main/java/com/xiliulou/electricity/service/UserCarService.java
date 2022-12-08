@@ -36,6 +36,8 @@ public interface UserCarService {
      */
     UserCar insert(UserCar userCar);
 
+    UserCar insertOrUpdate(UserCar userCar);
+
     /**
      * 修改数据
      *

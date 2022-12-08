@@ -36,6 +36,8 @@ public interface UserCarDepositService {
      */
     UserCarDeposit insert(UserCarDeposit userCarDeposit);
 
+    UserCarDeposit insertOrUpdate(UserCarDeposit userCarDeposit);
+
     /**
      * 修改数据
      *

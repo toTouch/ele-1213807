@@ -36,6 +36,8 @@ public interface UserCarMemberCardService {
      */
     UserCarMemberCard insert(UserCarMemberCard userCarMemberCard);
 
+    UserCarMemberCard insertOrUpdate(UserCarMemberCard userCarMemberCard);
+
     /**
      * 修改数据
      *

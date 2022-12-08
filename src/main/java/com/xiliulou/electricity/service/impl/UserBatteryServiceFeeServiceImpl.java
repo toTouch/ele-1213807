@@ -83,7 +83,17 @@ public class UserBatteryServiceFeeServiceImpl implements UserBatteryServiceFeeSe
         });
         return userBatteryServiceFee;
     }
-    
+
+    @Override
+    public UserBatteryServiceFee insertOrUpdate(UserBatteryServiceFee userBatteryServiceFee) {
+        int insert = this.userBatteryServiceFeeMapper.insertOrUpdate(userBatteryServiceFee);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_SERVICE_FEE + userBatteryServiceFee.getUid());
+            return null;
+        });
+        return userBatteryServiceFee;
+    }
+
     /**
      * 修改数据
      *

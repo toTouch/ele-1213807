@@ -35,7 +35,9 @@ public interface UserBatteryService {
      * @return 实例对象
      */
     UserBattery insert(UserBattery userBattery);
-    
+
+    UserBattery insertOrUpdate(UserBattery userBattery);
+
     /**
      * 修改数据
      *

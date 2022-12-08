@@ -9,6 +9,7 @@
         <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="batteryDeposit" column="battery_deposit" jdbcType="DECIMAL"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
@@ -43,6 +44,9 @@
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
             <if test="createTime != null">
                 and create_time = #{createTime}
             </if>
@@ -56,6 +60,13 @@
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_deposit(uid, did, order_id, del_flag,battery_deposit, create_time, update_time)
         values (#{uid}, #{did}, #{orderId}, #{delFlag},#{batteryDeposit}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_deposit(uid, did, order_id, del_flag,battery_deposit, create_time, update_time)
+        values (#{uid}, #{did}, #{orderId}, #{delFlag},#{batteryDeposit}, #{createTime}, #{updateTime})
+        on duplicate key
+        update #{did}, #{orderId}, #{delFlag},#{batteryDeposit}, #{updateTime}
     </insert>
 
     <!--通过主键修改数据-->
@@ -79,6 +90,9 @@
             </if>
             <if test="batteryDeposit != null">
                 battery_deposit = #{batteryDeposit},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},

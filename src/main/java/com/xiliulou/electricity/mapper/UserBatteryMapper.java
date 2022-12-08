@@ -54,5 +54,6 @@ public interface UserBatteryMapper extends BaseMapper<UserBattery> {
      * @return 影响行数
      */
     int deleteByUid(@Param("uid") Long uid);
-    
+
+    int insertOrUpdate(UserBattery userBattery);
 }

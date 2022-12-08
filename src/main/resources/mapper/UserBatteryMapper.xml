@@ -9,6 +9,7 @@
         <result property="nowBatterySn" column="now_battery_sn" jdbcType="VARCHAR"/>
         <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
@@ -46,6 +47,9 @@
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
             </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
             <if test="createTime != null">
                 and create_time = #{createTime}
             </if>
@@ -59,6 +63,13 @@
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_battery(uid, init_battery_sn, now_battery_sn, battery_type, del_flag, create_time, update_time)
         values (#{uid}, #{initBatterySn}, #{nowBatterySn}, #{batteryType}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_battery(uid, init_battery_sn, now_battery_sn, battery_type, del_flag, create_time, update_time)
+        values (#{uid}, #{initBatterySn}, #{nowBatterySn}, #{batteryType}, #{delFlag}, #{createTime}, #{updateTime})
+        on duplicate key
+        update #{initBatterySn}, #{nowBatterySn}, #{batteryType}, #{delFlag} #{updateTime}
     </insert>
     
     <!--通过主键修改数据-->
@@ -80,8 +91,8 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},

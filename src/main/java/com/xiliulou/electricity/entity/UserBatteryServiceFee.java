@@ -54,6 +54,8 @@ public class UserBatteryServiceFee {
      * 0--正常 1--删除
      */
     private Integer delFlag;
+
+    private Integer tenantId;
     
     private Long createTime;
     

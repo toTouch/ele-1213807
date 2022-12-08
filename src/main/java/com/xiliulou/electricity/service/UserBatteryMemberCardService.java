@@ -36,7 +36,9 @@ public interface UserBatteryMemberCardService {
      * @return 实例对象
      */
     UserBatteryMemberCard insert(UserBatteryMemberCard userBatteryMemberCard);
-    
+
+    UserBatteryMemberCard insertOrUpdate(UserBatteryMemberCard userBatteryMemberCard);
+
     /**
      * 修改数据
      *

@@ -81,6 +81,18 @@ public class UserCarDepositServiceImpl implements UserCarDepositService {
         return userCarDeposit;
     }
 
+    @Override
+    public UserCarDeposit insertOrUpdate(UserCarDeposit userCarDeposit) {
+        int insert = this.userCarDepositMapper.insertOrUpdate(userCarDeposit);
+
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_CAR_DEPOSIT + userCarDeposit.getUid());
+            return null;
+        });
+
+        return userCarDeposit;
+    }
+
     /**
      * 修改数据
      *

@@ -80,6 +80,18 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         return userCarMemberCard;
     }
 
+    @Override
+    public UserCarMemberCard insertOrUpdate(UserCarMemberCard userCarMemberCard) {
+        int insert = this.userCarMemberCardMapper.insertOrUpdate(userCarMemberCard);
+
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_CAR_MEMBERCARD + userCarMemberCard.getUid());
+            return null;
+        });
+
+        return userCarMemberCard;
+    }
+
     /**
      * 修改数据
      *

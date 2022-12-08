@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 
 /**
  * (UserCarDeposit)表实体类
@@ -38,9 +40,15 @@ public class UserCarDeposit {
      */
     private String orderId;
     /**
+     * 押金金额
+     */
+    private BigDecimal carDeposit;
+    /**
      * 0--正常 1--删除
      */
     private Integer delFlag;
+
+    private Integer tenantId;
 
     private Long createTime;
 

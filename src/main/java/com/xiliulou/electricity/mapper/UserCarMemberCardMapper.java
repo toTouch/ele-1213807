@@ -55,4 +55,5 @@ public interface UserCarMemberCardMapper extends BaseMapper<UserCarMemberCard> {
      */
     int deleteByUid(@Param("uid") Long uid);
 
+    int insertOrUpdate(UserCarMemberCard userCarMemberCard);
 }

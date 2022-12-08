@@ -55,4 +55,5 @@ public interface UserCarDepositMapper extends BaseMapper<UserCarDeposit> {
      */
     int deleteByUid(@Param("uid") Long uid);
 
+    int insertOrUpdate(UserCarDeposit userCarDeposit);
 }

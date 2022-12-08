@@ -54,5 +54,6 @@ public interface UserBatteryServiceFeeMapper extends BaseMapper<UserBatteryServi
      * @return 影响行数
      */
     int deleteByUid(@Param("uid") Long uid);
-    
+
+    int insertOrUpdate(UserBatteryServiceFee userBatteryServiceFee);
 }
