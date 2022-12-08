@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.UserBatteryMapper">
-    
-    <resultMap type="com.xiliulou.electricity.entity.UserBattery" id="UserBatteryMap">
+<mapper namespace="com.xiliulou.electricity.mapper.UserCarMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.UserCar" id="UserCarMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="initBatterySn" column="init_battery_sn" jdbcType="VARCHAR"/>
-        <result property="nowBatterySn" column="now_battery_sn" jdbcType="VARCHAR"/>
-        <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        <result property="cid" column="cid" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="carModel" column="car_model" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
-    
+
     <!-- 基础字段 -->
-    <sql id="selectUserBattery">
-       	select   id, uid, init_battery_sn, now_battery_sn, battery_type, del_flag, create_time, update_time        from t_user_battery
+    <sql id="selectUserCar">
+       	select   id, uid, cid, sn, car_model, del_flag, create_time, update_time        from t_user_car
     </sql>
-    
+
     <!--查询单个-->
-    <select id="selectByUid" resultMap="UserBatteryMap">
-        <include refid="selectUserBattery"/>
+    <select id="selectByUid" resultMap="UserCarMap">
+        <include refid="selectUserCar"/>
         where uid = #{uid}
     </select>
-    
+
     <!--通过实体作为筛选条件查询-->
-    <select id="selectByQuery" resultMap="UserBatteryMap">
-        <include refid="selectUserBattery"/>
+    <select id="selectByQuery" resultMap="UserCarMap">
+        <include refid="selectUserCar"/>
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -35,14 +35,14 @@
             <if test="uid != null">
                 and uid = #{uid}
             </if>
-            <if test="initBatterySn != null and initBatterySn != ''">
-                and init_battery_sn = #{initBatterySn}
+            <if test="cid != null">
+                and cid = #{cid}
             </if>
-            <if test="nowBatterySn != null and nowBatterySn != ''">
-                and now_battery_sn = #{nowBatterySn}
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
             </if>
-            <if test="batteryType != null and batteryType != ''">
-                and battery_type = #{batteryType}
+            <if test="carModel != null">
+                and car_model = #{carModel}
             </if>
             <if test="delFlag != null">
                 and del_flag = #{delFlag}
@@ -58,35 +58,35 @@
             </if>
         </where>
     </select>
-    
+
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery(uid, init_battery_sn, now_battery_sn, battery_type, del_flag, create_time, update_time)
-        values (#{uid}, #{initBatterySn}, #{nowBatterySn}, #{batteryType}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car(uid, cid, sn, car_model, del_flag, create_time, update_time)
+        values (#{uid}, #{cid}, #{sn}, #{carModel}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery(uid, init_battery_sn, now_battery_sn, battery_type, del_flag, create_time, update_time)
-        values (#{uid}, #{initBatterySn}, #{nowBatterySn}, #{batteryType}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car(uid, cid, sn, car_model, del_flag, create_time, update_time)
+        values (#{uid}, #{cid}, #{sn}, #{carModel}, #{delFlag}, #{createTime}, #{updateTime})
         on duplicate key
-        update #{initBatterySn}, #{nowBatterySn}, #{batteryType}, #{delFlag} #{updateTime}
+        update #{cid}, #{sn}, #{carModel}, #{delFlag}, #{updateTime}
     </insert>
-    
+
     <!--通过主键修改数据-->
     <update id="updateByUid">
-        update t_user_battery
+        update t_user_car
         <set>
             <if test="uid != null">
                 uid = #{uid},
             </if>
-            <if test="initBatterySn != null and initBatterySn != ''">
-                init_battery_sn = #{initBatterySn},
+            <if test="cid != null">
+                cid = #{cid},
             </if>
-            <if test="nowBatterySn != null and nowBatterySn != ''">
-                now_battery_sn = #{nowBatterySn},
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
             </if>
-            <if test="batteryType != null and batteryType != ''">
-                battery_type = #{batteryType},
+            <if test="carModel != null">
+                car_model = #{carModel},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
@@ -100,10 +100,10 @@
         </set>
         where uid = #{uid}
     </update>
-    
+
     <!--通过主键删除-->
     <delete id="deleteByUid">
-        delete from t_user_battery where uid = #{uid}
+        delete from t_user_car where uid = #{uid}
     </delete>
 
 </mapper>

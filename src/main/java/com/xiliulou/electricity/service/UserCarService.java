@@ -1,51 +1,51 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserCar;
 
 import java.util.List;
 
 /**
- * (UserBattery)表服务接口
+ * (UserCar)表服务接口
  *
  * @author zzlong
- * @since 2022-12-06 13:39:24
+ * @since 2022-12-07 17:35:15
  */
-public interface UserBatteryService {
-    
+public interface UserCarService {
+
     /**
      * 通过ID查询单条数据从数据库
      *
      * @param uid 主键
      * @return 实例对象
      */
-    UserBattery selectByUidFromDB(Long uid);
-    
+    UserCar selectByUidFromDB(Long uid);
+
     /**
      * 通过ID查询单条数据从缓存
      *
      * @param uid 主键
      * @return 实例对象
      */
-    UserBattery selectByUidFromCache(Long uid);
-    
+    UserCar selectByUidFromCache(Long uid);
+
     /**
      * 新增数据
      *
-     * @param userBattery 实例对象
+     * @param userCar 实例对象
      * @return 实例对象
      */
-    UserBattery insert(UserBattery userBattery);
+    UserCar insert(UserCar userCar);
 
-    UserBattery insertOrUpdate(UserBattery userBattery);
+    UserCar insertOrUpdate(UserCar userCar);
 
     /**
      * 修改数据
      *
-     * @param userBattery 实例对象
+     * @param userCar 实例对象
      * @return 实例对象
      */
-    Integer updateByUid(UserBattery userBattery);
-    
+    Integer updateByUid(UserCar userCar);
+
     /**
      * 通过主键删除数据
      *
@@ -53,5 +53,5 @@ public interface UserBatteryService {
      * @return 是否成功
      */
     Integer deleteByUid(Long uid);
-    
+
 }

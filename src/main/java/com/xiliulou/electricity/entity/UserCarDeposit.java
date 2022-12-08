@@ -1,68 +1,60 @@
 package com.xiliulou.electricity.entity;
 
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 
 /**
- * (UserBatteryServiceFee)表实体类
+ * (UserCarDeposit)表实体类
  *
  * @author zzlong
- * @since 2022-12-06 13:39:50
+ * @since 2022-12-07 17:35:45
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_user_battery_service_fee")
-public class UserBatteryServiceFee {
-    
+@TableName("t_user_car_deposit")
+public class UserCarDeposit {
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    
     /**
-     * 用户id
+     * uid
      */
     private Long uid;
-    
     /**
-     * 服务费订单id
+     * 租车订单表id
      */
-    private String batteryServiceFeeOrderId;
-    
+    private Long did;
     /**
-     * 电池服务费状态 (0--未支付1--已支付)
+     * 租车押金订单编号
      */
-    private Integer serviceFeeStatus;
-    
+    private String orderId;
     /**
-     * 电池服务费产生时间
+     * 押金金额
      */
-    private Long serviceFeeGenerateTime;
-    
+    private BigDecimal carDeposit;
     /**
      * 0--正常 1--删除
      */
     private Integer delFlag;
 
     private Integer tenantId;
-    
+
     private Long createTime;
-    
+
     private Long updateTime;
-    
+
     public static final Integer DEL_NORMAL = 0;
-    
     public static final Integer DEL_DEL = 1;
-    
+
 }

@@ -243,6 +243,18 @@ public interface CacheConstant {
      * 用户电池押金缓存
      */
     String CACHE_USER_DEPOSIT="user_deposit:";
+    /**
+     * 用户电租车押金缓存
+     */
+    String CACHE_USER_CAR_DEPOSIT="user_car_deposit:";
+    /**
+     * 用户租车套餐缓存
+     */
+    String CACHE_USER_CAR_MEMBERCARD="user_car_membercard:";
+    /**
+     * 用户车辆缓存
+     */
+    String CACHE_USER_CAR="user_car:";
 
     /**
      * 电池电压电流变化记录缓存

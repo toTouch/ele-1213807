@@ -82,7 +82,17 @@ public class UserBatteryServiceImpl implements UserBatteryService {
         });
         return userBattery;
     }
-    
+
+    @Override
+    public UserBattery insertOrUpdate(UserBattery userBattery) {
+        int insert = this.userBatteryMapper.insertOrUpdate(userBattery);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY + userBattery.getUid());
+            return null;
+        });
+        return userBattery;
+    }
+
     /**
      * 修改数据
      *

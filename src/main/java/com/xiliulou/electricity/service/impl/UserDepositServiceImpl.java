@@ -84,7 +84,17 @@ public class UserDepositServiceImpl implements UserDepositService {
         });
         return userDeposit;
     }
-    
+
+    @Override
+    public UserDeposit insertOrUpdate(UserDeposit userDeposit) {
+        int insert = this.userDepositMapper.insertOrUpdate(userDeposit);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + userDeposit.getUid());
+            return null;
+        });
+        return userDeposit;
+    }
+
     /**
      * 修改数据
      *

@@ -63,4 +63,6 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     Integer plusCount(Long id);
 
     int updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
+
+    int insertOrUpdate(UserBatteryMemberCard userBatteryMemberCard);
 }

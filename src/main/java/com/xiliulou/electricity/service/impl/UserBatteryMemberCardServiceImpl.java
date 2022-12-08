@@ -86,7 +86,19 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         
         return userBatteryMemberCard;
     }
-    
+
+    @Override
+    public UserBatteryMemberCard insertOrUpdate(UserBatteryMemberCard userBatteryMemberCard) {
+        int insert = this.userBatteryMemberCardMapper.insertOrUpdate(userBatteryMemberCard);
+
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
+            return null;
+        });
+
+        return userBatteryMemberCard;
+    }
+
     /**
      * 修改数据
      *

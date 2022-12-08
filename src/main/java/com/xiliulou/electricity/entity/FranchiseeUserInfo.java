@@ -67,7 +67,7 @@ public class FranchiseeUserInfo {
      * 当前电池编号
      */
     @Deprecated
-//    private String nowElectricityBatterySn;
+    private String nowElectricityBatterySn;
     /**
      * 租电池押金
      */
@@ -83,6 +83,7 @@ public class FranchiseeUserInfo {
     /**
      * 租车押金
      */
+    @Deprecated
     private BigDecimal rentCarDeposit;
     /**
      * 0--正常 1--删除
@@ -129,25 +130,30 @@ public class FranchiseeUserInfo {
     /**
      * 服务状态 (1--已缴纳押金，2--已租车辆)
      */
+    @Deprecated
     private Integer rentCarStatus;
     /**
      * 绑定的车辆Id
      */
+    @Deprecated
     private Integer bindCarId;
 
     /**
      * 绑定的车辆Id
      */
+    @Deprecated
     private Integer bindCarModelId;
 
     /**
      * 租车套餐id
      */
+    @Deprecated
     private Integer rentCarCardId;
 
     /**
      * 租车月卡过期时间
      */
+    @Deprecated
     private Long rentCarMemberCardExpireTime;
 
     //初始化

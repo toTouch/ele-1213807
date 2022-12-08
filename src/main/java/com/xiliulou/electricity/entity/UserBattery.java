@@ -51,6 +51,8 @@ public class UserBattery {
     private String batteryType;
     
     private Integer delFlag;
+
+    private Integer tenantId;
     
     private Long createTime;
     
