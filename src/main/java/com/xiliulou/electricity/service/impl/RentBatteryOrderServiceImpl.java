@@ -250,15 +250,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //判断是否缴纳押金
-            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                eleLockFlag = Boolean.FALSE;
-                log.error("RENTBATTERY ERROR! not pay deposit,uid={}", user.getUid());
-                return R.fail("ELECTRICITY.0042", "未缴纳押金");
-            }
-
-            //是否有正在退款中的退款
             UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userDeposit)) {
+            if (Objects.isNull(userDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! not pay deposit,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");

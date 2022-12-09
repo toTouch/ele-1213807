@@ -916,12 +916,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //
-//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
-//        if (Objects.isNull(oldFranchiseeUserInfo)) {
-//            log.error("WEBUNBIND ERROR! not found user,uid={}", oldUserInfo.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//        }
         if (!Objects.equals(oldUserInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.error("WEBUNBIND ERROR! not  rent battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
