@@ -4,10 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -39,6 +36,9 @@ public class JsonAdminBatteryServiceFeeController {
     UserInfoService userInfoService;
     @Autowired
     UserDataScopeService userDataScopeService;
+
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
 
 
     /**
@@ -105,7 +105,7 @@ public class JsonAdminBatteryServiceFeeController {
             return R.ok();
         }
 
-        return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
+        return R.ok(serviceFeeUserInfoService.queryUserBatteryServiceFee(uid));
     }
 
     /**

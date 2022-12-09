@@ -53,5 +53,7 @@ public interface UserBatteryService {
      * @return 是否成功
      */
     Integer deleteByUid(Long uid);
+
+
     
 }

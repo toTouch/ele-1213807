@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class JsonUserBatteryServiceFeeController {
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
+
     /**
      * 查询电池服务费
      *
@@ -38,7 +42,7 @@ public class JsonUserBatteryServiceFeeController {
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-        return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
+        return R.ok(serviceFeeUserInfoService.queryUserBatteryServiceFee(uid));
     }
 
     /**

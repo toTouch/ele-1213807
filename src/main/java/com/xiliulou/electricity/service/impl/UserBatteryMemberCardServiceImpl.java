@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardService {
     
-    @Autowired
+    @Resource
     private UserBatteryMemberCardMapper userBatteryMemberCardMapper;
     
     @Autowired
@@ -170,5 +171,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId) {
         return userBatteryMemberCardMapper.selectList(new LambdaQueryWrapper<UserBatteryMemberCard>().eq(UserBatteryMemberCard::getMemberCardId, id).eq(UserBatteryMemberCard::getTenantId, tenantId)
                 .eq(UserBatteryMemberCard::getDelFlag, UserBatteryMemberCard.DEL_NORMAL));
+    }
+
+    @Override
+    public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
+                                                                            Long firstTime, Long lastTime) {
+        return userBatteryMemberCardMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
     }
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -81,5 +82,7 @@ public interface UserBatteryMemberCardService {
     Integer updateByUidForDisableCard(UserBatteryMemberCard userBatteryMemberCard);
 
     List<UserBatteryMemberCard> selectByMemberCardId(Integer id, Integer tenantId);
-    
+
+    List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime,
+                                                                     Long lastTime);
 }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 
 import java.util.List;
 
@@ -21,4 +22,6 @@ public interface ServiceFeeUserInfoService {
     ServiceFeeUserInfo queryByUidFromCache(Long uid);
 
     void updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);
+
+    EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
 }
