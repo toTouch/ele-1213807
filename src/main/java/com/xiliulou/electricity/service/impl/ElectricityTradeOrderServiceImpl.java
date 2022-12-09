@@ -89,14 +89,12 @@ public class ElectricityTradeOrderServiceImpl extends
     FranchiseeInsuranceService franchiseeInsuranceService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
-
     @Autowired
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
     @Autowired
     EnableMemberCardRecordService enableMemberCardRecordService;
     @Autowired
     RedisService redisService;
-
     @Autowired
     UserDepositService userDepositService;
     @Autowired
@@ -107,6 +105,8 @@ public class ElectricityTradeOrderServiceImpl extends
     UserBatteryService userBatteryService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    @Autowired
+    UserCarService userCarService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -384,23 +384,23 @@ public class ElectricityTradeOrderServiceImpl extends
         //系统订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.error("DEPOSIT NOTIFY ERROR!not found electricity trade order,orderNo={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            log.error("DEPOSIT NOTIFY ERROR! electricity trade order  status is not init, orderNo={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
 
         //押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
+            log.error("DEPOSIT NOTIFY ERROR!not found electricity deposit order orderNo={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "未找到订单!");
         }
 
         if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
+            log.error("DEPOSIT NOTIFY ERROR!electricity_deposit_order  status is not init,orderNo={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "押金订单已处理!");
         }
 
@@ -412,32 +412,17 @@ public class ElectricityTradeOrderServiceImpl extends
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
+            log.error("DEPOSIT NOTIFY ERROR!notify redult pay fail,orderNo={}" + tradeOrderNo);
         }
 
-        UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeOrderNo);
+            log.error("DEPOSIT NOTIFY ERROR!not found userinfo,userId={},orderNo={}", eleDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
         //用户押金
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-
-//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-//            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
-//            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
-//            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-//
-//            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-//
-//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-//                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
-//            }
-//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
@@ -447,17 +432,22 @@ public class ElectricityTradeOrderServiceImpl extends
 
             UserDeposit userDeposit = new UserDeposit();
             userDeposit.setUid(userInfo.getUid());
+            userDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
             userDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userDeposit.setTenantId(eleDepositOrder.getTenantId());
+            userDeposit.setCreateTime(System.currentTimeMillis());
             userDeposit.setUpdateTime(System.currentTimeMillis());
-            userDepositService.updateByUid(userDeposit);
+            userDepositService.insertOrUpdate(userDeposit);
 
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                UserBattery userBattery = new UserBattery();
-                userBattery.setUid(userInfo.getUid());
-                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
-                userBattery.setUpdateTime(System.currentTimeMillis());
-                userBatteryService.insertOrUpdate(userBattery);
-            }
+
+            UserBattery userBattery = new UserBattery();
+            userBattery.setUid(userInfo.getUid());
+            userBattery.setBatteryType(eleDepositOrder.getBatteryType());
+            userBattery.setTenantId(eleDepositOrder.getTenantId());
+            userBattery.setCreateTime(System.currentTimeMillis());
+            userBattery.setUpdateTime(System.currentTimeMillis());
+            userBatteryService.insertOrUpdate(userBattery);
+
         }
 
         //交易订单
@@ -488,22 +478,22 @@ public class ElectricityTradeOrderServiceImpl extends
         //系统订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER orderNo={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, orderNo={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
         //电池服务费订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.queryEleBatteryServiceFeeOrderByOrderId(electricityTradeOrder.getOrderNo());
         if (ObjectUtil.isEmpty(eleBatteryServiceFeeOrder)) {
-            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER orderNo={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "未找到订单!");
         }
 
         if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, eleBatteryServiceFeeOrder.getStatus())) {
-            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, orderNo={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "押金订单已处理!");
         }
 
@@ -521,7 +511,7 @@ public class ElectricityTradeOrderServiceImpl extends
         //用户
         UserInfo userInfo = userInfoService.selectUserByUid(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},orderNo={}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
@@ -649,7 +639,7 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
 
-        UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
@@ -676,9 +666,19 @@ public class ElectricityTradeOrderServiceImpl extends
             UserCarDeposit userCarDeposit = new UserCarDeposit();
             userCarDeposit.setUid(userInfo.getUid());
             userCarDeposit.setOrderId(eleDepositOrder.getOrderId());
-            userCarDepositService.updateByUid(userCarDeposit);
-        }
+            userCarDeposit.setTenantId(eleDepositOrder.getTenantId());
+            userCarDeposit.setCreateTime(System.currentTimeMillis());
+            userCarDeposit.setUpdateTime(System.currentTimeMillis());
+            userCarDepositService.insertOrUpdate(userCarDeposit);
 
+            UserCar userCar = new UserCar();
+            userCar.setUid(userInfo.getUid());
+            userCar.setCarModel(eleDepositOrder.getCarModelId().longValue());
+            userCar.setTenantId(userInfo.getTenantId());
+            userCar.setCreateTime(System.currentTimeMillis());
+            userCar.setUpdateTime(System.currentTimeMillis());
+            userCarService.insertOrUpdate(userCar);
+        }
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
