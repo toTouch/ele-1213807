@@ -121,5 +121,5 @@ public class ElectricityCabinetOtherSetting {
 
     private String bms;
 
-    private boolean serverHeartBeat;
+    private Integer serverHeartBeat;
 }
