@@ -2,12 +2,10 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -17,7 +15,6 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
@@ -26,7 +23,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
-import com.xxl.job.core.util.DateUtil;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -36,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +114,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     ServiceFeeUserInfoService serviceFeeUserInfoService;
 
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -785,9 +780,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
-        if(Objects.isNull(userDeposit)){
-            log.error("WEBBIND ERROR ERROR! not found userDeposit,uid={} ", userInfoBatteryAddAndUpdate.getUid());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
+        if(Objects.isNull(userBatteryDeposit)){
+            log.error("WEBBIND ERROR ERROR! not found userBatteryDeposit,uid={} ", userInfoBatteryAddAndUpdate.getUid());
             return R.fail("100247", "未找到用户信息");
         }
 
@@ -853,7 +848,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setName(oldUserInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
             rentBatteryOrder.setElectricityBatterySn(updateUserBattery.getInitBatterySn());
-            rentBatteryOrder.setBatteryDeposit(userDeposit.getBatteryDeposit());
+            rentBatteryOrder.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);

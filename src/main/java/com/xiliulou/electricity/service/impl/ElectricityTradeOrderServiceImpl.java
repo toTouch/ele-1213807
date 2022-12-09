@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -96,7 +95,7 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     RedisService redisService;
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
     @Autowired
     UserCarDepositService userCarDepositService;
     @Autowired
@@ -430,14 +429,14 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
-            UserDeposit userDeposit = new UserDeposit();
-            userDeposit.setUid(userInfo.getUid());
-            userDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
-            userDeposit.setOrderId(eleDepositOrder.getOrderId());
-            userDeposit.setTenantId(eleDepositOrder.getTenantId());
-            userDeposit.setCreateTime(System.currentTimeMillis());
-            userDeposit.setUpdateTime(System.currentTimeMillis());
-            userDepositService.insertOrUpdate(userDeposit);
+            UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+            userBatteryDeposit.setUid(userInfo.getUid());
+            userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setTenantId(eleDepositOrder.getTenantId());
+            userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
             UserBattery userBattery = new UserBattery();

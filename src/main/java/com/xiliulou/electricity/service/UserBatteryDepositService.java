@@ -1,16 +1,14 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.UserDeposit;
-
-import java.util.List;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
 
 /**
- * (UserDeposit)表服务接口
+ * (UserBatteryDeposit)表服务接口
  *
  * @author zzlong
  * @since 2022-12-06 13:40:21
  */
-public interface UserDepositService {
+public interface UserBatteryDepositService {
     
     /**
      * 通过ID查询单条数据从数据库
@@ -18,7 +16,7 @@ public interface UserDepositService {
      * @param uid 主键
      * @return 实例对象
      */
-    UserDeposit selectByUidFromDB(Long uid);
+    UserBatteryDeposit selectByUidFromDB(Long uid);
     
     /**
      * 通过ID查询单条数据从缓存
@@ -26,25 +24,25 @@ public interface UserDepositService {
      * @param uid 主键
      * @return 实例对象
      */
-    UserDeposit selectByUidFromCache(Long uid);
+    UserBatteryDeposit selectByUidFromCache(Long uid);
     
     /**
      * 新增数据
      *
-     * @param userDeposit 实例对象
+     * @param userBatteryDeposit 实例对象
      * @return 实例对象
      */
-    UserDeposit insert(UserDeposit userDeposit);
+    UserBatteryDeposit insert(UserBatteryDeposit userBatteryDeposit);
 
-    UserDeposit insertOrUpdate(UserDeposit userDeposit);
+    UserBatteryDeposit insertOrUpdate(UserBatteryDeposit userBatteryDeposit);
 
     /**
      * 修改数据
      *
-     * @param userDeposit 实例对象
+     * @param userBatteryDeposit 实例对象
      * @return 实例对象
      */
-    Integer updateByUid(UserDeposit userDeposit);
+    Integer updateByUid(UserBatteryDeposit userBatteryDeposit);
     
     /**
      * 通过主键删除数据

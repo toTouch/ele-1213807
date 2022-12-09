@@ -90,7 +90,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
 
 
     /**
@@ -250,8 +250,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //判断是否缴纳押金
-            UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! not pay deposit,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
@@ -277,7 +277,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //是否有正在退款中的退款
-            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userDeposit.getOrderId());
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId());
             if (refundCount > 0) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! deposit is being refunded,uid={}", user.getUid());
@@ -389,7 +389,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .uid(user.getUid())
                     .phone(userInfo.getPhone())
                     .name(userInfo.getName())
-                    .batteryDeposit(userDeposit.getBatteryDeposit())
+                    .batteryDeposit(userBatteryDeposit.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RENT)
                     .orderSeq(RentBatteryOrder.STATUS_INIT)
                     .status(RentBatteryOrder.INIT)
@@ -562,8 +562,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //是否有正在退款中的退款
-            UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-            if (Objects.isNull(userDeposit)) {
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! not pay deposit,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
@@ -593,7 +593,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
                     .phone(userInfo.getPhone()).name(userInfo.getName())
-                    .batteryDeposit(userDeposit.getBatteryDeposit())
+                    .batteryDeposit(userBatteryDeposit.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RETURN)
                     .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT)
                     .electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
