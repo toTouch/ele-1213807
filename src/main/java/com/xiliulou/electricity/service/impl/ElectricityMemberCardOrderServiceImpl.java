@@ -6,7 +6,9 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
@@ -20,6 +22,7 @@ import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.*;
@@ -28,10 +31,12 @@ import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +56,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -127,6 +133,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     EnableMemberCardRecordService enableMemberCardRecordService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    @Autowired
+    RocketMqService rocketMqService;
 
     /**
      * 创建月卡订单
@@ -823,6 +833,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             updateFranchiseeUserInfo.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             updateFranchiseeUserInfo.setDisableMemberCardTime(null);
+        }else {
+            sendDisableMemberCardMessage(userInfo);
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
@@ -935,6 +947,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW);
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+
+        sendDisableMemberCardMessage(userInfo);
         return R.ok();
     }
 
@@ -1251,6 +1265,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+
         return R.ok();
     }
 
@@ -2295,5 +2310,54 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         } else {
             return BigDecimal.valueOf(0);
         }
+    }
+
+    //停卡审核通知
+    private void sendDisableMemberCardMessage(UserInfo userInfo) {
+        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildDisableMemberCardMessageNotify(userInfo);
+        if (CollectionUtils.isEmpty(messageNotifyList)) {
+            return;
+        }
+
+        messageNotifyList.forEach(i -> {
+            rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+            log.info("ELE INFO! user authentication audit notify,msg={},uid={}", JsonUtil.toJson(i), userInfo.getUid());
+        });
+    }
+
+
+    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildDisableMemberCardMessageNotify(UserInfo userInfo) {
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
+            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+
+        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD)
+                != MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD) {
+            log.info("ELE ERROR! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+
+
+        List<String> phones = JsonUtil.fromJsonArray(notifyConfig.getPhones(), String.class);
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
+            log.error("ELE ERROR! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+
+        return phones.parallelStream().map(item -> {
+            AuthenticationAuditMessageNotify messageNotify = new AuthenticationAuditMessageNotify();
+            messageNotify.setBusinessCode(StringUtils.isBlank(userInfo.getIdNumber()) ? "/" : userInfo.getIdNumber().substring(userInfo.getIdNumber().length() - 6));
+            messageNotify.setUserName(userInfo.getName());
+            messageNotify.setAuthTime(DateUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN));
+
+            MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
+            authMessageNotifyCommon.setTime(System.currentTimeMillis());
+            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_DISABLE_MEMBER_CARD);
+            authMessageNotifyCommon.setPhone(item);
+            authMessageNotifyCommon.setData(messageNotify);
+            return authMessageNotifyCommon;
+        }).collect(Collectors.toList());
     }
 }
