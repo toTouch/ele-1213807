@@ -1215,6 +1215,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, franchiseeUserInfo);
             eleDisableMemberCardRecord.setChargeRate(batteryServiceFee);
+            eleDisableMemberCardRecord.setCardDays((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
             eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
             Integer existServiceFee = ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE;
@@ -2177,8 +2178,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
                 eleDisableMemberCardRecordUpdate.setId(item.getId());
                 eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
-                eleDisableMemberCardRecordUpdate.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_NOT_DISABLE);
-                eleDisableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
                 eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
             });
             offset += size;
