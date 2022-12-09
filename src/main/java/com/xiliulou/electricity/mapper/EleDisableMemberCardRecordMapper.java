@@ -16,7 +16,11 @@ import java.util.List;
  */
 public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableMemberCardRecord> {
 
-    List<EleDisableMemberCardRecord> queryList( @Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
+    List<EleDisableMemberCardRecord> queryList(@Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
     Integer queryCount(@Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
+
+    EleDisableMemberCardRecord queryCreateTimeMaxEleDisableMemberCardRecord(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+
+    List<EleDisableMemberCardRecord> queryDisableCardExpireRecord(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
 }

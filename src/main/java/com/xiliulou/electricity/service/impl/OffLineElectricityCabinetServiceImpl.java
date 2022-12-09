@@ -251,4 +251,99 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
         return R.ok(userFrontDetectionVO);
     }
+
+    @Override
+    public UserFrontDetectionVO getUserFrontDetection(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo){
+        UserFrontDetectionVO userFrontDetectionVO = new UserFrontDetectionVO();
+
+        //用户验证
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.NOT_FOUND_USER);
+            return userFrontDetectionVO;
+        }
+
+//        //校验用户
+//        if (Objects.isNull(userInfo)) {
+//            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.NOT_FOUND_USER);
+//            return userFrontDetectionVO;
+//        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_IS_DISABLE);
+            return userFrontDetectionVO;
+        }
+
+        //用户是否实名认证
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_AUTHENTICATION);
+            return userFrontDetectionVO;
+        }
+
+        //未缴纳押金
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_DEPOSIT);
+//            return userFrontDetectionVO;
+//        }
+
+        //判断是否缴纳押金
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT) || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_DEPOSIT);
+            return userFrontDetectionVO;
+        }
+
+        //用户是否开通月卡
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())          || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_MEMBER_CARD);
+            return userFrontDetectionVO;
+        }
+
+        //判断套餐是否为新用户送的次数卡
+        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.IS_NEW_USER_ACTIVITY_CARD);
+            return userFrontDetectionVO;
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+        if (Objects.isNull(electricityMemberCard)) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_NOT_EXIST);
+            return userFrontDetectionVO;
+        }
+
+
+        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_OVER_DUE);
+            return userFrontDetectionVO;
+        }
+
+        if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            if (franchiseeUserInfo.getRemainingNumber() < 0) {
+                //用户需购买相同套餐，补齐所欠换电次数
+                userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_NEGATIVE_NUMBER);
+                return userFrontDetectionVO;
+            }
+
+            if (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
+                userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_OVER_DUE);
+                return userFrontDetectionVO;
+            }
+
+            if (franchiseeUserInfo.getRemainingNumber() == 0) {
+                userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.MEMBER_CARD_USE_UP);
+                return userFrontDetectionVO;
+            }
+        }
+        //未租电池
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+            userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_BIND_BATTERY);
+            return userFrontDetectionVO;
+        }
+
+        userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_CAN_OFFLINE_ELECTRICITY);
+        userFrontDetectionVO.setSecret(eleOffLineSecretConfig.getSecret());
+        userFrontDetectionVO.setStep(eleOffLineSecretConfig.getStep());
+
+        return userFrontDetectionVO;
+    }
 }

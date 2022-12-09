@@ -200,7 +200,7 @@
 	</select>
 
 	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
-        select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
+        select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage, teb.longitude,teb.latitude,
         teb.capacity as capacity,teb.physics_status as physicsStatus ,teb.business_status as businessStatus, teb.create_time as createTime, teb.update_time as updateTime,
         teb.electricity_cabinet_id as electricityCabinetId,
         tbop.battery_v as battery_v, tbop.battery_charge_a as battery_charge_a,

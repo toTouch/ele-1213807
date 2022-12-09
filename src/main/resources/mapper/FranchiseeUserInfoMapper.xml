@@ -38,21 +38,21 @@
         where id = #{id} and del_flag=0
 	</update>
 
-<!--    <update id="updateByUserInfoId">
-        update t_franchisee_user_info
-        set now_electricity_battery_sn = #{nowElectricityBatterySn},
-        <if test="serviceStatus != null">
-            service_status = #{serviceStatus},
-        </if>
-        <if test="initElectricityBatterySn != null">
-            init_electricity_battery_sn = #{initElectricityBatterySn},
-        </if>
-        <if test="batteryServiceFeeStatus != null">
-            battery_service_fee_status = #{batteryServiceFeeStatus},
-        </if>
-        update_time = #{updateTime}
-        where user_info_id = #{userInfoId} and del_flag=0
-    </update>-->
+    <!--    <update id="updateByUserInfoId">
+            update t_franchisee_user_info
+            set now_electricity_battery_sn = #{nowElectricityBatterySn},
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            <if test="initElectricityBatterySn != null">
+                init_electricity_battery_sn = #{initElectricityBatterySn},
+            </if>
+            <if test="batteryServiceFeeStatus != null">
+                battery_service_fee_status = #{batteryServiceFeeStatus},
+            </if>
+            update_time = #{updateTime}
+            where user_info_id = #{userInfoId} and del_flag=0
+        </update>-->
     <update id="updateByUserInfoId">
         update t_franchisee_user_info
         set
@@ -155,14 +155,33 @@
     </update>
 
     <update id="updateMemberCardExpire">
-          update t_franchisee_user_info
-        set member_card_expire_time = #{memberCardExpireTime},
-		    remaining_number = #{remainingNumber},
-		    card_id = #{cardId},
-		    card_name = #{cardName},
-		    card_type = #{cardType},
-		    update_time = #{updateTime},
-		    battery_service_fee_generate_time=#{batteryServiceFeeGenerateTime}
+        update t_franchisee_user_info
+        <set>
+            <if test="memberCardExpireTime != null">
+                member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
+            </if>
+            <if test="cardId != null">
+                card_id = #{cardId},
+            </if>
+            <if test="cardName != null and cardName !=''">
+                card_name = #{cardName},
+            </if>
+            <if test="cardType != null">
+                card_type = #{cardType},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="batteryServiceFeeGenerateTime != null">
+                battery_service_fee_generate_time = #{batteryServiceFeeGenerateTime},
+            </if>
+            <if test="memberCardDisableStatus != null">
+                member_card_disable_status = #{memberCardDisableStatus},
+            </if>
+        </set>
         where id = #{id} and del_flag=0
     </update>
 
@@ -204,4 +223,84 @@
                 and fui.rent_car_member_card_expire_time &lt;= #{lastTime}
                 limit #{offset}, #{size}
     </select>
+
+    <update id="updatePayServiceFeeById">
+        update t_franchisee_user_info
+        set
+        <if test="serviceStatus != null">
+            service_status = #{serviceStatus},
+        </if>
+        <if test="initElectricityBatterySn != null">
+            init_electricity_battery_sn = #{initElectricityBatterySn},
+        </if>
+        <if test="batteryServiceFeeStatus != null">
+            battery_service_fee_status = #{batteryServiceFeeStatus},
+        </if>
+        <if test="tenantId != null">
+            tenant_id = #{tenantId},
+        </if>
+        <if test="cardId != null">
+            card_id = #{cardId},
+        </if>
+        <if test="cardName != null and cardName !=''">
+            card_name = #{cardName},
+        </if>
+        <if test="memberCardExpireTime != null">
+            member_card_expire_time = #{memberCardExpireTime},
+        </if>
+        <if test="remainingNumber != null">
+            remaining_number = #{remainingNumber},
+        </if>
+        <if test="cardType != null">
+            card_type = #{cardType},
+        </if>
+        <if test="batteryServiceFeeGenerateTime != null">
+            battery_service_fee_generate_time = #{batteryServiceFeeGenerateTime},
+        </if>
+        <if test="memberCardDisableStatus != null">
+            member_card_disable_status = #{memberCardDisableStatus},
+        </if>
+        <if test="batteryDeposit != null">
+            battery_deposit = #{batteryDeposit},
+        </if>
+        <if test="orderId != null">
+            order_id = #{orderId},
+        </if>
+        <if test="delFlag != null">
+            del_flag = #{delFlag},
+        </if>
+        <if test="modelType != null">
+            model_type = #{modelType},
+        </if>
+        <if test="batteryType != null and batteryType !=''">
+            battery_type = #{batteryType},
+        </if>
+        <if test="rentCarStatus != null">
+            rent_car_status = #{rentCarStatus},
+        </if>
+        <if test="rentCarStatus != null">
+            rent_car_status = #{rentCarStatus},
+        </if>
+        <if test="rentCarOrderId != null and rentCarOrderId !=''">
+            rent_car_order_id = #{rentCarOrderId},
+        </if>
+        <if test="rentCarDeposit != null">
+            rent_car_deposit = #{rentCarDeposit},
+        </if>
+        <if test="bindCarId != null">
+            bind_car_id = #{bindCarId},
+        </if>
+        <if test="bindCarModelId != null">
+            bind_car_model_id = #{bindCarModelId},
+        </if>
+        <if test="rentCarCardId != null">
+            rent_car_card_id = #{rentCarCardId},
+        </if>
+        <if test="rentCarMemberCardExpireTime != null">
+            rent_car_member_card_expire_time = #{rentCarMemberCardExpireTime},
+        </if>
+        update_time = #{updateTime},
+        disable_member_card_time = #{disableMemberCardTime}
+        where id = #{id}
+    </update>
 </mapper>

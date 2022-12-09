@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
@@ -58,6 +59,7 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @PutMapping("admin/electricityMemberCard")
+    @Log(title = "修改套餐")
     public R update(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
         if (Objects.isNull(electricityMemberCard)) {
             return R.failMsg("请求参数不能为空!");
@@ -71,6 +73,7 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @DeleteMapping("admin/electricityMemberCard/{id}")
+    @Log(title = "删除套餐")
     public R delete(@PathVariable(value = "id") Integer id) {
         return electricityMemberCardService.delete(id);
     }
@@ -283,6 +286,7 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @PostMapping(value = "/admin/electricityMemberCard/reviewDisableMemberCard")
+    @Log(title = "用户暂停套餐审核")
     public R reviewDisableMemberCard(@RequestParam("disableMemberCardNo") String disableMemberCardNo,
                                      @RequestParam("status") Integer status,
                                      @RequestParam(value = "errMsg", required = false) String errMsg) {

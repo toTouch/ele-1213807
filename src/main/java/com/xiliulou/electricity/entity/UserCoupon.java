@@ -106,6 +106,8 @@ public class UserCoupon {
     public static final Integer STATUS_USED = 2;
     //已过期
     public static final Integer STATUS_EXPIRED = 3;
+    //已过期
+    public static final Integer STATUS_DESTRUCTION = 4;
 
     //减免劵
     public static final Integer FULL_REDUCTION=1;

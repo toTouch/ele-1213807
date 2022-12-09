@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class JsonAdminWithdrawPasswordController {
 	 * 编辑提现密码
 	 */
 	@PutMapping(value = "/admin/withdrawPassword")
+	@Log(title = "编辑提现密码")
 	public R update(@Validated @RequestBody WithdrawPassword withdrawPassword) {
 		return withdrawPasswordService.update(withdrawPassword);
 	}

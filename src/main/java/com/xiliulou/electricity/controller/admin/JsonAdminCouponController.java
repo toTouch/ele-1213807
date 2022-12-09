@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -29,7 +31,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminCouponController {
+public class JsonAdminCouponController extends BaseController {
     /**
      * 服务对象
      */
@@ -47,8 +49,14 @@ public class JsonAdminCouponController {
 
     //修改--暂时无此功能
     @PutMapping(value = "/admin/coupon")
+    @Log(title = "修改优惠券")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) Coupon coupon) {
         return couponService.update(coupon);
+    }
+    @DeleteMapping("/admin/coupon/delete/{id}")
+    @Log(title = "删除优惠券")
+    public R delete(@PathVariable("id") Long id){
+        return returnTripleResult(couponService.deleteById(id));
     }
 
     //列表查询
