@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -104,7 +103,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     UserBatteryService userBatteryService;
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
     @Autowired
     UserCarDepositService userCarDepositService;
     @Autowired
@@ -233,13 +232,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-                UserDeposit userDeposit = new UserDeposit();
-                userDeposit.setUid(userInfo.getUid());
-                userDeposit.setOrderId(orderId);
-                userDeposit.setBatteryDeposit(payAmount);
-                userDeposit.setCreateTime(System.currentTimeMillis());
-                userDeposit.setUpdateTime(System.currentTimeMillis());
-                userDepositService.insertOrUpdate(userDeposit);
+                UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+                userBatteryDeposit.setUid(userInfo.getUid());
+                userBatteryDeposit.setOrderId(orderId);
+                userBatteryDeposit.setBatteryDeposit(payAmount);
+                userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+                userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+                userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
                 UserBattery userBattery = new UserBattery();
@@ -330,13 +329,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //判断是否缴纳押金
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid().longValue());
-        if (Objects.isNull(userDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid().longValue());
+        if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        if (Objects.equals(userDeposit.getOrderId(), "-1")) {
+        if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
             return R.fail("ELECTRICITY.00115", "请线下退押");
         }
 
@@ -357,13 +356,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //查找缴纳押金订单
-        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userDeposit.getOrderId()));
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
             log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        BigDecimal deposit = userDeposit.getBatteryDeposit();
+        BigDecimal deposit = userBatteryDeposit.getBatteryDeposit();
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
             log.error("ELE DEPOSIT ERROR! illegal deposit! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0044", "退款金额不符");
@@ -428,7 +427,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
 
-                userDepositService.deleteByUid(userInfo.getUid());
+                userBatteryDepositService.deleteByUid(userInfo.getUid());
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
@@ -525,9 +524,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100247", "用户信息不存在");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userDeposit)){
-            log.error("ELE DEPOSIT ERROR! not found userDeposit,uid={}", user.getUid());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryDeposit)){
+            log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", user.getUid());
             return R.fail("100247", "用户信息不存在");
         }
 
@@ -548,14 +547,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
 
-        if (Objects.equals(userDeposit.getOrderId(), "-1")) {
+        if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
             map.put("refundStatus", null);
-            map.put("deposit", userDeposit.getBatteryDeposit().toString());
+            map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
             map.put("time", String.valueOf(System.currentTimeMillis()));
             map.put("franchiseeName", Objects.nonNull(franchisee)?franchisee.getName():"");
         } else {
             //是否退款
-            Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userDeposit.getOrderId());
+            Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(refundStatus)) {
                 map.put("refundStatus", refundStatus.toString());
             } else {
@@ -574,9 +573,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 }
             }
 
-            map.put("deposit", userDeposit.getBatteryDeposit().toString());
+            map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
             //最后一次缴纳押金时间
-            map.put("time", this.queryByOrderId(userDeposit.getOrderId()).getUpdateTime().toString());
+            map.put("time", this.queryByOrderId(userBatteryDeposit.getOrderId()).getUpdateTime().toString());
 
             map.put("franchiseeName", franchisee.getName());
         }
@@ -1290,9 +1289,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100247", "用户信息不存在");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userDeposit)){
-            log.error("ELE DEPOSIT ERROR! not found userDeposit,uid={}", user.getUid());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryDeposit)){
+            log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", user.getUid());
             return R.fail("100247", "用户信息不存在");
         }
 
@@ -1306,7 +1305,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-
+//TODO 移除魔法值
             if (Objects.equals(userCarDeposit.getOrderId(), "-1")) {
                 map.put("store", null);
                 map.put("carModel", null);
@@ -1438,9 +1437,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userDeposit)) {
-            log.error("ELE DEPOSIT ERROR! not found userDeposit! uid={}", userInfo.getUid());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit! uid={}", userInfo.getUid());
             return R.fail("100247", "未找到用户信息");
         }
 
@@ -1498,7 +1497,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .operateUid(user.getUid())
                     .uid(batteryDepositAdd.getUid())
                     .name(user.getUsername())
-                    .oldBatteryDeposit(userDeposit.getBatteryDeposit())
+                    .oldBatteryDeposit(userBatteryDeposit.getBatteryDeposit())
                     .newBatteryDeposit(batteryDepositAdd.getPayAmount())
                     .tenantId(TenantContextHolder.getTenantId())
                     .createTime(System.currentTimeMillis())
@@ -1511,14 +1510,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
-            UserDeposit updateUserDeposit = new UserDeposit();
-            updateUserDeposit.setUid(userInfo.getUid());
-            updateUserDeposit.setOrderId(orderId);
-            updateUserDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
-            updateUserDeposit.setTenantId(userInfo.getTenantId());
-            updateUserDeposit.setCreateTime(System.currentTimeMillis());
-            updateUserDeposit.setUpdateTime(System.currentTimeMillis());
-            userDepositService.insertOrUpdate(updateUserDeposit);
+            UserBatteryDeposit updateUserBatteryDeposit = new UserBatteryDeposit();
+            updateUserBatteryDeposit.setUid(userInfo.getUid());
+            updateUserBatteryDeposit.setOrderId(orderId);
+            updateUserBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            updateUserBatteryDeposit.setTenantId(userInfo.getTenantId());
+            updateUserBatteryDeposit.setCreateTime(System.currentTimeMillis());
+            updateUserBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDepositService.insertOrUpdate(updateUserBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();
             userBattery.setUid(userInfo.getUid());

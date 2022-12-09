@@ -76,7 +76,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     InsuranceUserInfoService insuranceUserInfoService;
 
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
 
     @Autowired
     UserCarDepositService userCarDepositService;
@@ -233,7 +233,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
 
-                userDepositService.deleteByUid(userInfo.getUid());
+                userBatteryDepositService.deleteByUid(userInfo.getUid());
 
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
@@ -362,7 +362,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateUserInfo.setUpdateTime(System.currentTimeMillis());
                     userInfoService.updateByUid(updateUserInfo);
 
-                    userDepositService.deleteByUid(uid);
+                    userBatteryDepositService.deleteByUid(uid);
 
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
                     if (Objects.nonNull(insuranceUserInfo)) {
@@ -387,7 +387,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateUserInfo.setUpdateTime(System.currentTimeMillis());
                     userInfoService.updateByUid(updateUserInfo);
 
-                    userDepositService.deleteByUid(uid);
+                    userBatteryDepositService.deleteByUid(uid);
                 }
                 return R.ok();
 
@@ -603,27 +603,27 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(userDeposit)) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
         //查找缴纳押金订单
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userDeposit.getOrderId());
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        BigDecimal deposit = userDeposit.getBatteryDeposit();
+        BigDecimal deposit = userBatteryDeposit.getBatteryDeposit();
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid={}", uid);
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
         //退款中
-        Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userDeposit.getOrderId());
+        Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.nonNull(refundStatus) && (Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND) || Objects.equals(refundStatus, EleRefundOrder.STATUS_INIT))) {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid={}", uid);
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
@@ -644,11 +644,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderHistory.setTenantId(userBatteryMemberCard.getTenantId());
             eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
         } else {
-            refundAmount = userDeposit.getBatteryDeposit();
+            refundAmount = userBatteryDeposit.getBatteryDeposit();
         }
 
         EleRefundOrder eleRefundOrder = new EleRefundOrder();
-        eleRefundOrder.setOrderId(userDeposit.getOrderId());
+        eleRefundOrder.setOrderId(userBatteryDeposit.getOrderId());
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
         eleRefundOrder.setTenantId(userBatteryMemberCard.getTenantId());
         eleRefundOrder.setCreateTime(System.currentTimeMillis());
@@ -686,7 +686,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
-            userDepositService.deleteByUid(userInfo.getUid());
+            userBatteryDepositService.deleteByUid(userInfo.getUid());
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
             if (Objects.nonNull(insuranceUserInfo)) {
@@ -702,7 +702,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .operateUid(user.getUid())
                     .uid(uid)
                     .name(user.getUsername())
-                    .oldBatteryDeposit(userDeposit.getBatteryDeposit())
+                    .oldBatteryDeposit(userBatteryDeposit.getBatteryDeposit())
                     .newBatteryDeposit(null)
                     .tenantId(TenantContextHolder.getTenantId())
                     .createTime(System.currentTimeMillis())
@@ -738,7 +738,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
 
-                userDepositService.deleteByUid(userInfo.getUid());
+                userBatteryDepositService.deleteByUid(userInfo.getUid());
                 return R.ok();
             }
 

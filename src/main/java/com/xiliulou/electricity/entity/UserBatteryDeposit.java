@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 
 
 /**
- * (UserDeposit)表实体类
+ * (UserBatteryDeposit)表实体类
  *
  * @author zzlong
  * @since 2022-12-06 13:40:21
@@ -23,8 +23,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_user_deposit")
-public class UserDeposit {
+@TableName("t_user_battery_deposit")
+public class UserBatteryDeposit {
     
     /**
      * 主键

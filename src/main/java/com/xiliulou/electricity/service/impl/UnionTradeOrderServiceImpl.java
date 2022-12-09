@@ -6,8 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
-import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -68,7 +66,7 @@ public class UnionTradeOrderServiceImpl extends
     ElectricityTradeOrderService electricityTradeOrderService;
     
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
     
     @Autowired
     UserBatteryService userBatteryService;
@@ -240,11 +238,11 @@ public class UnionTradeOrderServiceImpl extends
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
     
-            UserDeposit userDeposit = new UserDeposit();
-            userDeposit.setUid(userInfo.getUid());
-            userDeposit.setOrderId(eleDepositOrder.getOrderId());
-            userDeposit.setUpdateTime(System.currentTimeMillis());
-            userDepositService.updateByUid(userDeposit);
+            UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+            userBatteryDeposit.setUid(userInfo.getUid());
+            userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDepositService.updateByUid(userBatteryDeposit);
     
             UserBattery userBattery = new UserBattery();
             userBattery.setUid(userInfo.getUid());

@@ -7,7 +7,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -32,17 +31,13 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 
-import java.util.concurrent.TimeUnit;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.ibatis.ognl.ObjectElementsAccessor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -130,7 +125,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
     @Autowired
-    UserDepositService userDepositService;
+    UserBatteryDepositService userBatteryDepositService;
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
 
@@ -722,8 +717,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userDeposit)) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("DISABLE MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
@@ -751,7 +746,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userDeposit.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
         if (refundCount > 0) {
             return R.fail("100018", "押金退款审核中");
         }
@@ -919,14 +914,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userDeposit)) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("DISABLE MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userDeposit.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
         if (refundCount > 0) {
             return R.fail("100018", "押金退款审核中");
         }
@@ -1050,8 +1045,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userDeposit)) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("ENABLE MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
@@ -1070,7 +1065,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userDeposit.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
         if (refundCount > 0) {
             return R.fail("100018", "押金退款审核中");
         }
@@ -1226,8 +1221,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userDeposit)) {
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("admin saveUserMemberCard  ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
@@ -1245,7 +1240,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userDeposit.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(userBatteryDeposit.getOrderId());
         if (refundCount > 0) {
             return R.fail("100018", "押金退款审核中");
         }
