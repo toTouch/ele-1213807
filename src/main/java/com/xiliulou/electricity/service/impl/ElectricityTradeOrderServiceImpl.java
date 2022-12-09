@@ -509,7 +509,7 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(eleBatteryServiceFeeOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},orderNo={}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
@@ -740,7 +740,7 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(electricityMemberCardOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", electricityMemberCardOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
@@ -849,7 +849,7 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(insuranceOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(insuranceOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO={}", insuranceOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
