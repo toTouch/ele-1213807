@@ -118,6 +118,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
 
+    @Autowired
+    UserDepositService userDepositService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -782,6 +785,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+        UserDeposit userDeposit = userDepositService.selectByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
+        if(Objects.isNull(userDeposit)){
+            log.error("WEBBIND ERROR ERROR! not found userDeposit,uid={} ", userInfoBatteryAddAndUpdate.getUid());
+            return R.fail("100247", "未找到用户信息");
+        }
+
 //        //已绑定电池
 //        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 //            log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
@@ -844,7 +853,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setName(oldUserInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
             rentBatteryOrder.setElectricityBatterySn(updateUserBattery.getInitBatterySn());
-            rentBatteryOrder.setBatteryDeposit(oldFranchiseeUserInfo.getBatteryDeposit());
+            rentBatteryOrder.setBatteryDeposit(userDeposit.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
