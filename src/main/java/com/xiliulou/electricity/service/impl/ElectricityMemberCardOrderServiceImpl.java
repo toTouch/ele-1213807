@@ -168,7 +168,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -2071,7 +2071,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //用户
-        UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found user,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");

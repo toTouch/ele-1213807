@@ -360,7 +360,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @DS("slave_1")
     public R getMemberCardInfo(Long uid) {
-        UserInfo userInfo = selectUserByUid(uid);
+        UserInfo userInfo = queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
             return R.failMsg("未找到用户信息!");

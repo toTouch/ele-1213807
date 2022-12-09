@@ -643,7 +643,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     }
                 }
 
-                UserInfo userInfo = userInfoService.selectUserByUid(e.getUid());
+                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
                 if (Objects.nonNull(userInfo)) {
                     e.setUName(userInfo.getName());
                 }

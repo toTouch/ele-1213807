@@ -202,7 +202,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeRefundNo);
         }
 
-        UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), tradeRefundNo);
             return Pair.of(false, "未找到用户信息!");
