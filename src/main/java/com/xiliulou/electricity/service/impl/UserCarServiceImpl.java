@@ -111,6 +111,22 @@ public class UserCarServiceImpl implements UserCarService {
     }
 
     /**
+     * 解绑用户车辆
+     * @param userCar
+     * @return
+     */
+    @Override
+    public Integer unBindingCarByUid(UserCar userCar) {
+        int update = this.userCarMapper.unBindingCarByUid(userCar);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_CAR + userCar.getUid());
+            return null;
+        });
+
+        return update;
+    }
+
+    /**
      * 通过主键删除数据
      *
      * @param uid 主键

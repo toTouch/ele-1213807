@@ -101,6 +101,27 @@
         where uid = #{uid}
     </update>
 
+    <update id="unBindingCarByUid">
+        update t_user_car
+        <set>
+            <if test="carModel != null">
+                car_model = #{carModel},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            cid = #{cid},
+            sn = #{sn}
+        </set>
+        where uid = #{uid}
+    </update>
+
     <!--通过主键删除-->
     <delete id="deleteByUid">
         delete from t_user_car where uid = #{uid}

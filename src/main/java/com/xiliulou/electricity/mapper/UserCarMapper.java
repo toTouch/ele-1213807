@@ -56,4 +56,6 @@ public interface UserCarMapper extends BaseMapper<UserCar> {
     int deleteByUid(@Param("uid") Long uid);
 
     int insertOrUpdate(UserCar userCar);
+
+    int unBindingCarByUid(UserCar userCar);
 }

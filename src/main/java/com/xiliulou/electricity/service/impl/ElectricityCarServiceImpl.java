@@ -257,13 +257,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY CAR  ERROR! not found user ");
+            log.error("ELE CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到操作用户");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
+            log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -474,7 +474,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateUserCar.setUid(user.getUid());
         updateUserCar.setCid(null);
         updateUserCar.setSn("");
-        userCarService.updateByUid(updateUserCar);
+        userCarService.unBindingCarByUid(updateUserCar);
 
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()

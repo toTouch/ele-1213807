@@ -46,6 +46,8 @@ public interface UserCarService {
      */
     Integer updateByUid(UserCar userCar);
 
+    Integer unBindingCarByUid(UserCar userCar);
+
     /**
      * 通过主键删除数据
      *
