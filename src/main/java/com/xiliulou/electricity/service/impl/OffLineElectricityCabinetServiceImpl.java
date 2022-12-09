@@ -27,8 +27,6 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
     @Autowired
     UserInfoService userInfoService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     ElectricityMemberCardService electricityMemberCardService;
     @Autowired
     RedisService redisService;

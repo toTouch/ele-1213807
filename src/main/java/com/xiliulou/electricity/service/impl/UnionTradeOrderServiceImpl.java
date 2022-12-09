@@ -59,9 +59,6 @@ public class UnionTradeOrderServiceImpl extends
     FranchiseeInsuranceService franchiseeInsuranceService;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-
-    @Autowired
     InsuranceOrderService insuranceOrderService;
 
     @Autowired
@@ -209,15 +206,15 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-            return Pair.of(false, "未找到用户信息!");
-
-        }
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//
+//        //未找到用户
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+//            return Pair.of(false, "未找到用户信息!");
+//
+//        }
 
         //用户押金和保险
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {

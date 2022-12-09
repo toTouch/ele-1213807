@@ -84,8 +84,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     UserCouponService userCouponService;
     @Autowired
     CouponService couponService;

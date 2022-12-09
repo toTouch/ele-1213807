@@ -3,8 +3,6 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -26,8 +23,7 @@ import java.util.Objects;
 public class JsonUserBatteryServiceFeeController {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
+
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 

@@ -62,8 +62,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     EleRefundOrderService eleRefundOrderService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     WechatV3JsapiService wechatV3JsapiService;
     @Autowired
     WechatConfig wechatConfig;
@@ -210,19 +208,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Pair.of(false, "未找到用户信息!");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("NOTIFY  ERROR! not found user! uid:{} ", userInfo.getUid());
-            return Pair.of(false, "未找到用户信息!");
-
-        }
 
         if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
-            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-            franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
+//            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//            franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
             if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
 //                franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
 //                franchiseeUserInfo.setBatteryDeposit(null);
@@ -551,14 +540,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("admin query user deposit pay type  ERROR! not found user,uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("admin query user deposit pay type ERROR! not found user! uid:{} ", uid);
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-        if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 

@@ -46,8 +46,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Autowired
     UserInfoService userInfoService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     EleBindCarRecordService eleBindCarRecordService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;

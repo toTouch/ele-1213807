@@ -74,8 +74,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     StoreService storeService;
     @Autowired
     ElectricityConfigService electricityConfigService;
@@ -753,8 +751,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //是否开启电池检测
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
             if (Objects.nonNull(electricityConfig)) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//                UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+//                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
                     dataMap.put("user_binding_battery_sn", electricityBattery.getSn());
@@ -1262,16 +1260,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR! not found user,userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
-        }
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//
+//        //未找到用户
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+//            log.error("self open cell order  ERROR! not found user,userId={}", user.getUid());
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+//
+//        }
 
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {

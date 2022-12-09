@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
 @Slf4j
 public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHandler {
@@ -41,8 +40,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
     @Autowired
     UserInfoService userInfoService;
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
     @Autowired
@@ -113,19 +110,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
-//        if(Objects.isNull(oldFranchiseeUserInfo)){
-//            log.error("EXCHANGE ORDER ERROR! not found franchiseeUserInfo,uid={},requestId={}",userInfo.getUid(), exchangeOrderRsp.getSessionId());
-//            return ;
-//        }
-
-//        //用户绑新电池
-//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//        franchiseeUserInfo.setUserInfoId(userInfo.getId());
-//        franchiseeUserInfo.setNowElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
-//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
-
         //查看用户是否有以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
@@ -194,19 +178,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//        if (Objects.isNull(oldFranchiseeUserInfo)) {
-//            log.error("EXCHANGE ORDER ERROR! franchiseeUserInfo is null! uid={},requestId={},orderId:{}", electricityCabinetOrder.getUid(), exchangeOrderRsp.getSessionId(), electricityCabinetOrder.getOrderId());
-//            return;
-//        }
-
-//        //用户解绑旧电池 旧电池到底是哪块，不确定
-//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-//        franchiseeUserInfo.setNowElectricityBatterySn(null);
-//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        franchiseeUserInfoService.update(franchiseeUserInfo);
-
         //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
@@ -273,7 +244,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //上报的订单状态值
         String orderStatus = exchangeOrderRsp.getOrderStatus();
         if (Objects.isNull(orderStatus)) {
-            log.error("ELE LOCK CELL orderStatus is null! orderId:{}", exchangeOrderRsp.getOrderId());
+            log.error("ELE LOCK CELL orderStatus is null! orderId={}", exchangeOrderRsp.getOrderId());
             return;
         }
 
@@ -297,7 +268,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
-            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", exchangeOrderRsp.getOrderId());
+            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId={}", exchangeOrderRsp.getOrderId());
             return;
         }
 

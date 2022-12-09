@@ -46,8 +46,6 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     EleDepositOrderService eleDepositOrderService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     WechatConfig wechatConfig;
     @Autowired
     WechatV3JsapiService wechatV3JsapiService;
@@ -417,21 +415,10 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
         }
 
-        //用户
         UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
-        }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId={}", userInfo.getUid());
-            return Pair.of(false, "未找到用户信息!");
-
         }
 
         //用户押金
@@ -662,21 +649,12 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
 
-        //用户
         UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit ERROR! not found user! userId={}", userInfo.getUid());
-            return Pair.of(false, "未找到用户信息!");
-        }
 
         //用户押金
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
@@ -774,14 +752,6 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
@@ -882,15 +852,6 @@ public class ElectricityTradeOrderServiceImpl extends
         UserInfo userInfo = userInfoService.selectUserByUid(insuranceOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO={}", insuranceOrder.getUid(), tradeOrderNo);
-            return Pair.of(false, "未找到用户信息!");
-        }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId={}", userInfo.getUid());
             return Pair.of(false, "未找到用户信息!");
         }
 

@@ -30,9 +30,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     EleDisableMemberCardRecordMapper eleDisableMemberCardRecordMapper;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-
-    @Autowired
     UserInfoService userInfoService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;

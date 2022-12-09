@@ -11,7 +11,6 @@ import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +40,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
 
     @Autowired
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
-
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
 
     @Autowired
     ElectricityBatteryService electricityBatteryService;

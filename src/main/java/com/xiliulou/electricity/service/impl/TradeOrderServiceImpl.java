@@ -40,7 +40,6 @@ import java.util.Objects;
 @Slf4j
 public class TradeOrderServiceImpl implements TradeOrderService {
 
-
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
 
@@ -49,9 +48,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     UserInfoService userInfoService;
-
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
 
     @Autowired
     FranchiseeService franchiseeService;
@@ -114,13 +110,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found user! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("payDeposit  ERROR! user is rent deposit! ,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
@@ -158,7 +147,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     break;
                 }
             }
-
         }
 
         if (Objects.isNull(depositPayAmount)) {

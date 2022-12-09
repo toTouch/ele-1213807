@@ -36,9 +36,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     UserInfoService userInfoService;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-
-    @Autowired
     ShareActivityService shareActivityService;
 
     @Autowired

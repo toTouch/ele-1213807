@@ -47,8 +47,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Autowired
     UserInfoService userInfoService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     ElectricityConfigService electricityConfigService;

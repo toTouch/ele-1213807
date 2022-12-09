@@ -76,8 +76,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     EleUserAuthService eleUserAuthService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     ElectricityMemberCardService electricityMemberCardService;
     @Autowired
     UserMoveHistoryService userMoveHistoryService;
@@ -776,13 +774,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (!Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("WEBBIND ERROR! user not auth! uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
-        }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
-        if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("WEBBIND ERROR ERROR! not found user! userId={}", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //判断是否缴纳押金

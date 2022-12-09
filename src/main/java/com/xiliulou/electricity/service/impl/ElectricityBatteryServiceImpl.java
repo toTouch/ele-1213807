@@ -74,8 +74,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Autowired
     TemplateConfigService templateConfigService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     UserOauthBindService userOauthBindService;
 
     /**
@@ -88,7 +86,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Transactional
     public R saveElectricityBattery(ElectricityBattery electricityBattery) {
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -118,21 +115,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
 
         electricityBattery.setFranchiseeId(franchiseeId);
-//        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
         electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBattery.setTenantId(tenantId);
         electricitybatterymapper.insert(electricityBattery);
-
-
-//        if (Objects.nonNull(franchiseeId)){
-//            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
-//            franchiseeBindElectricityBattery.setFranchiseeId(franchiseeId.intValue());
-//            franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBattery.getId());
-//            franchiseeBindElectricityBatteryService.insert(franchiseeBindElectricityBattery);
-//        }
 
         return R.ok();
     }
@@ -210,14 +198,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
             }
 
-//            Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
-//            if (Objects.nonNull(franchisee)) {
-//                electricityBatteryVO.setFranchiseeName(franchisee.getName());
-//            }
-
             Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityBattery.getFranchiseeId());
             electricityBatteryVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-
 
             electricityBatteryVOList.add(electricityBatteryVO);
         }
@@ -393,7 +375,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 eq(ElectricityBattery::getElectricityCabinetId, electricityCabinetId).eq(ElectricityBattery::getPhysicsStatus, ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).
                 eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
     }
-    
 
     /**
      * 更新电池绑定的用户

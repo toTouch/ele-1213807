@@ -76,8 +76,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;

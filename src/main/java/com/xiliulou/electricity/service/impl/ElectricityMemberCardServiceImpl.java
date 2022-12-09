@@ -55,9 +55,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     ElectricityCabinetService electricityCabinetService;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-
-    @Autowired
     StoreService storeService;
 
     @Autowired
@@ -306,16 +303,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("rentBattery  ERROR! not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
-        }
-
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
         }
 
         //判断是否缴纳押金

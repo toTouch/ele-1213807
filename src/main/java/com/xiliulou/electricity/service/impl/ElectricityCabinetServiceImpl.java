@@ -112,8 +112,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     RentBatteryOrderService rentBatteryOrderService;
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
@@ -581,10 +579,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
         Integer totalCount = ids.size();
         return totalCount;
-    }
-
-    private boolean checkBatteryIsExchange(String batteryName, Double fullyCharged) {
-        return electricityBatteryService.checkBatteryIsExchange(batteryName, fullyCharged);
     }
 
     public Triple<Boolean, String, Object> queryFullyElectricityBatteryByExchangeOrder(Integer id, String batteryType, Long franchiseeId, Integer tenantId) {

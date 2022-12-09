@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -34,8 +33,6 @@ import java.util.Objects;
 public class JsonAdminBatteryServiceFeeController {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     @Autowired

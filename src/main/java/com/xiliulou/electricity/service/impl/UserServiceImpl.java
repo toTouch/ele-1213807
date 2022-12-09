@@ -89,8 +89,6 @@ public class UserServiceImpl implements UserService {
     StoreService storeService;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     private UserDataScopeService userDataScopeService;
 
     /**
@@ -757,7 +755,7 @@ public class UserServiceImpl implements UserService {
         }
         //删除套餐
         UserInfo userInfo1 = userInfoService.queryByUidFromCache(uid);
-        franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
+//        franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
         //删除用户
         deleteWxProUser(uid, userInfo1.getTenantId());
         userInfoService.deleteByUid(uid);

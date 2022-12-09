@@ -10,20 +10,15 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
-import com.xiliulou.electricity.entity.EleUserAuth;
-import com.xiliulou.electricity.entity.EleUserAuthOld;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.OldCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.entity.UserInfoOld;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.service.EleUserAuthOldService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.OldCardService;
 import com.xiliulou.electricity.service.UserCouponService;
@@ -36,9 +31,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -54,7 +47,6 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -87,10 +79,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
     
     @Autowired
     UserInfoService userInfoService;
-    
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    
+
     @Autowired
     UserInfoOldService userInfoOldService;
     
@@ -336,10 +325,10 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
     }
     
-    private Pair<Boolean, FranchiseeUserInfo> checkFranchiseeUserInfoExists(Long uid) {
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(uid);
-        return Objects.nonNull(franchiseeUserInfo) ? Pair.of(true, franchiseeUserInfo) : Pair.of(false, null);
-    }
+//    private Pair<Boolean, FranchiseeUserInfo> checkFranchiseeUserInfoExists(Long uid) {
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(uid);
+//        return Objects.nonNull(franchiseeUserInfo) ? Pair.of(true, franchiseeUserInfo) : Pair.of(false, null);
+//    }
     
     private SecurityUser createSecurityUser(User user, UserOauthBind oauthBind) {
         ArrayList<String> dbAuthsSet = Lists.newArrayList();

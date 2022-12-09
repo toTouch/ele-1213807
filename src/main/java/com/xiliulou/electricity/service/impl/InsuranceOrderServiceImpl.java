@@ -51,9 +51,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     UserInfoService userInfoService;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-
-    @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
 
     @Autowired
@@ -143,13 +140,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("CREATE INSURANCE_ORDER ERROR! user not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
-        }
-
-        //
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found user! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
         //判断是否缴纳押金

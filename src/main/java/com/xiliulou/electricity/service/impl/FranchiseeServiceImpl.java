@@ -56,9 +56,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     UserService userService;
 
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-
-    @Autowired
     StoreService storeService;
 
     @Autowired
@@ -237,23 +234,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding store,franchiseeId={}",id);
             return R.fail(id,"100102", "删除失败，该加盟商已绑定门店！");
         }
-
-        //查询加盟商是否绑定普通用户
-        List<FranchiseeUserInfo> franchiseeUserInfoList=franchiseeUserInfoService.selectByFranchiseeId(id);
-        if(!CollectionUtils.isEmpty(franchiseeUserInfoList)){
-            log.error("ELE ERROR! delete franchisee fail,franchisee has binding user,franchiseeId={}",id);
-            return R.fail(id,"100103", "删除失败，该加盟商已绑定用户！");
-        }
-
-        //查询加盟商是否绑定门店，绑定门店则不能删除
-//        Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
-
-        //查询加盟商是否绑定普通用户
-//        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
-
-//        if (count1 > 0 || count2 > 0) {
-//            return R.fail("加盟商已绑定门店或用户");
-//        }
 
         //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());

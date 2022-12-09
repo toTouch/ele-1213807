@@ -74,8 +74,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
     @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
     StoreService storeService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
@@ -541,12 +539,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("payDeposit  ERROR! not found user! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+//            log.error("payDeposit  ERROR! not found user! userId={}", user.getUid());
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+//        }
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
         if (Objects.isNull(electricityBattery)) {
@@ -1145,16 +1143,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //是否缴纳押金，是否绑定电池
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR! not found user! userId={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-
-        }
+//        //是否缴纳押金，是否绑定电池
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+//        if (Objects.isNull(franchiseeUserInfo)) {
+//            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+//            log.error("self open cell order  ERROR! not found user! userId={}", user.getUid());
+//            return R.fail("ELECTRICITY.0001", "未找到用户");
+//        }
 
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {

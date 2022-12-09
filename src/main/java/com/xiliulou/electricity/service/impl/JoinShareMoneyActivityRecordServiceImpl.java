@@ -35,9 +35,6 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	UserInfoService userInfoService;
 
 	@Autowired
-	FranchiseeUserInfoService franchiseeUserInfoService;
-
-	@Autowired
 	ShareMoneyActivityService shareMoneyActivityService;
 
 	@Autowired
