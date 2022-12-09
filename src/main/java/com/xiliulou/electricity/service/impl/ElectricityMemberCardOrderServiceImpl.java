@@ -2286,7 +2286,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         while (true) {
             List<CarMemberCardExpiringSoonQuery> franchiseeUserInfos =
-                    franchiseeUserInfoService.carMemberCardExpire(offset, size, firstTime, lastTime);
+                    userBatteryMemberCardService.carMemberCardExpire(offset, size, firstTime, lastTime);
             if (!DataUtil.collectionIsUsable(franchiseeUserInfos)) {
                 return;
             }
