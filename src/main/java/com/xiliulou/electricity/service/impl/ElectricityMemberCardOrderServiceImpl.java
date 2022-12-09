@@ -1785,7 +1785,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
-        if (Objects.equals(remainingNumber, FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER)) {
+        if (Objects.equals(remainingNumber, UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER)) {
             remainingNumber = ElectricityMemberCard.UN_LIMITED_COUNT;
         }
 
