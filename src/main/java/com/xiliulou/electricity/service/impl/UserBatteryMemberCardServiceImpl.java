@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,5 +178,12 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
                                                                             Long firstTime, Long lastTime) {
         return userBatteryMemberCardMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+    }
+
+
+    @Override
+    public List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
+                                                                    Long lastTime) {
+        return userBatteryMemberCardMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 }
