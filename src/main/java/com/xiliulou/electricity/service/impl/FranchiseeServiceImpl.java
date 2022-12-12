@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -16,6 +17,8 @@ import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -69,12 +72,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
-    
+
     @Autowired
     UserDataScopeService userDataScopeService;
-    
+
     @Autowired
     UserInfoService userInfoService;
+
+    @Autowired
+    RegionService regionService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -151,13 +158,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 .tenantId(tenantId)
                 .build();
         franchiseeAmountService.insert(franchiseeAmount);
-        
+
         //保存用户数据可见范围
         UserDataScope userDataScope = new UserDataScope();
         userDataScope.setUid(franchisee.getUid());
         userDataScope.setDataId(franchisee.getId());
         userDataScopeService.insert(userDataScope);
-    
+
         if (insert > 0) {
             return R.ok();
         }
@@ -174,7 +181,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        if(!Objects.equals(oldFranchisee.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(oldFranchisee.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
@@ -217,22 +224,22 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        if(!Objects.equals(franchisee.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(franchisee.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
         //查询加盟商是否绑定的有套餐
-        List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id,franchisee.getTenantId());
-        if(!CollectionUtils.isEmpty(electricityMemberCardList)){
-            log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}",id);
-            return R.fail(id,"100101", "删除失败，该加盟商已绑定套餐！");
+        List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.selectByFranchiseeId(id, franchisee.getTenantId());
+        if (!CollectionUtils.isEmpty(electricityMemberCardList)) {
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}", id);
+            return R.fail(id, "100101", "删除失败，该加盟商已绑定套餐！");
         }
 
         //查询加盟商是否绑定门店
-        List<Store> storeList=storeService.selectByFranchiseeId(id);
-        if(!CollectionUtils.isEmpty(storeList)){
-            log.error("ELE ERROR! delete franchisee fail,franchisee has binding store,franchiseeId={}",id);
-            return R.fail(id,"100102", "删除失败，该加盟商已绑定门店！");
+        List<Store> storeList = storeService.selectByFranchiseeId(id);
+        if (!CollectionUtils.isEmpty(storeList)) {
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding store,franchiseeId={}", id);
+            return R.fail(id, "100102", "删除失败，该加盟商已绑定门店！");
         }
 
         //再删除加盟商
@@ -261,13 +268,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchiseeMapper.selectById(id);
 
     }
-    
+
     @Override
     public Franchisee queryByIdFromCache(Long id) {
         // TODO userFirstLogin分支
         return null;
     }
-    
+
     @Override
     public R queryList(FranchiseeQuery franchiseeQuery) {
         List<FranchiseeVO> franchiseeVOList = franchiseeMapper.queryList(franchiseeQuery);
@@ -308,6 +315,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Deprecated
     public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
         //先删除
 /*        franchiseeBindElectricityBatteryService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
@@ -371,7 +379,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         //查询加盟商是否绑定普通用户
 //        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
         int count2 = userInfoService.selectCountByFranchiseeId(franchisee.getId());
-    
+
         if (count1 > 0 || count2 > 0) {
             return 1;
         }
@@ -441,17 +449,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R queryByCabinetId(Integer id, Integer tenantId) {
-        return R.ok(franchiseeMapper.queryByCabinetId(id,tenantId));
+        return R.ok(franchiseeMapper.queryByCabinetId(id, tenantId));
     }
 
-	@Override
-	public Franchisee queryByUserId(Long uid) {
-		return franchiseeMapper.queryByUserId(uid);
-	}
+    @Override
+    public Franchisee queryByUserId(Long uid) {
+        return franchiseeMapper.queryByUserId(uid);
+    }
 
     @Override
     public Franchisee queryByIdAndTenantId(Long id, Integer tenantId) {
-        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId,tenantId));
+        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId, tenantId));
     }
 
     @Override
@@ -462,5 +470,119 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         return Triple.of(true, "", franchisees);
+    }
+
+    /**
+     * 根据区（县）查询加盟商
+     * 1.区（县）下没有加盟商（用户定位与加盟商定位不匹配，查询当前市加盟商）
+     * 1.1当前城市没有加盟商
+     * 1.2当前城市只有一个加盟商
+     * 1.3当前城市有多个加盟商（加盟商没设置区（县）代表 全区）
+     * 1.3.1若只有一个加盟商没设置区（县），返回当前加盟商
+     * 1.3.2若多个加盟商没设置区（县），返回没设置区（县）加盟商列表
+     * 1.3.3若都设置了区域，返回区（县）列表
+     * <p>
+     * 2.区（县）下有加盟商（用户定位与加盟商定位匹配）
+     * 2.1有一个加盟商 返回当前加盟商
+     * 2.2有多个加盟商，返回加盟商列表  选择加盟商
+     *
+     * @param regionCode
+     * @param cityCode
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode, String cityCode) {
+        FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
+
+        Region region = regionService.selectByCodeFromCache(regionCode);
+        if (Objects.isNull(region)) {
+            log.error("ELE ERROR! not found region,code={},uid={}", regionCode, SecurityUtils.getUid());
+            return Triple.of(false, "100248", "区域不存在");
+        }
+
+        FranchiseeQuery franchiseeRegionQuery = new FranchiseeQuery();
+        franchiseeRegionQuery.setRegionId(region.getId());
+        franchiseeRegionQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        List<Franchisee> franchiseeListByRegion = franchiseeMapper.selectListByQuery(franchiseeRegionQuery);
+
+        if (CollectionUtils.isEmpty(franchiseeListByRegion)) {
+            //1.当前区（县）内无加盟商
+            return handleNotFoundFranchiseeByRegion(regionCode, cityCode, franchiseeAreaVO);
+
+        } else if (Objects.equals(NumberConstant.ONE, franchiseeListByRegion.size())) {
+            //2.1有一个加盟商 返回当前加盟商
+            franchiseeAreaVO.setResult(FranchiseeAreaVO.ONE_FRANCHISEE);
+            franchiseeAreaVO.setFranchiseeList(franchiseeListByRegion);
+            return Triple.of(true, "", franchiseeAreaVO);
+
+        } else {
+            //2.2有多个加盟商，返回加盟商列表  选择加盟商
+            franchiseeAreaVO.setResult(FranchiseeAreaVO.MULTIPLE_FRANCHISEE);
+            franchiseeAreaVO.setFranchiseeList(franchiseeListByRegion);
+            return Triple.of(true, "", franchiseeAreaVO);
+
+        }
+    }
+
+    private Triple<Boolean, String, Object> handleNotFoundFranchiseeByRegion(String regionCode,String cityCode,FranchiseeAreaVO franchiseeAreaVO ){
+        City city = cityService.queryByCodeFromCache(cityCode);
+        if (Objects.isNull(city)) {
+            log.error("ELE ERROR! not found city,regionCode={},uid={}", regionCode, SecurityUtils.getUid());
+            return Triple.of(false, "100249", "城市不存在");
+        }
+
+        //查询本市加盟商
+        FranchiseeQuery franchiseeCityQuery = new FranchiseeQuery();
+        franchiseeCityQuery.setCid(city.getId());
+        franchiseeCityQuery.setTenantId(TenantContextHolder.getTenantId());
+        List<Franchisee> franchiseeListByCity = franchiseeMapper.selectListByQuery(franchiseeCityQuery);
+
+        if (CollectionUtils.isEmpty(franchiseeListByCity)) {
+            //1.1当前城市没有加盟商
+            franchiseeAreaVO.setResult(FranchiseeAreaVO.NOT_FRANCHISEE_CITY);
+            franchiseeAreaVO.setFranchiseeList(Collections.EMPTY_LIST);
+            return Triple.of(true, "", franchiseeAreaVO);
+
+        } else if (Objects.equals(NumberConstant.ONE, franchiseeListByCity.size())) {
+            //1.2当前城市只有一个加盟商
+            franchiseeAreaVO.setResult(FranchiseeAreaVO.ONE_FRANCHISEE_CITY);
+            franchiseeAreaVO.setFranchiseeList(franchiseeListByCity);
+            return Triple.of(true, "", franchiseeAreaVO);
+
+        } else {
+            //1.3当前城市有多个加盟商
+
+            //检查是否有没设置区域的加盟商
+            List<Franchisee> cityFranchiseeList = franchiseeListByCity.parallelStream().filter(item -> Objects.equals(NumberConstant.ZERO, item.getRegionId())).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(cityFranchiseeList)) {
+                //1.3.3若城市多个加盟商都设置了区域，获取区域编码
+                Set<String> regionCodeList = new HashSet<>();
+                franchiseeListByCity.forEach(item -> {
+                    Region franchiseeRegion = regionService.selectByIdFromCache(item.getRegionId());
+                    if (Objects.isNull(franchiseeRegion)) {
+                        log.error("ELE ERROR!not found franchiseeRegion regionId={},uid={}", item.getRegionId(), SecurityUtils.getUid());
+                    }
+                    regionCodeList.add(franchiseeRegion.getCode());
+                });
+
+                franchiseeAreaVO.setResult(FranchiseeAreaVO.MULTIPLE_FRANCHISEE_CITY_HAVE_REGION);
+                franchiseeAreaVO.setRegionList(regionCodeList);
+                return Triple.of(true, "", franchiseeAreaVO);
+
+            } else if (Objects.equals(cityFranchiseeList.size(), FranchiseeAreaVO.ONE_FRANCHISEE_CITY)) {
+                //1.3.1若只有一个加盟商没设置区域
+                franchiseeAreaVO.setResult(FranchiseeAreaVO.ONE_FRANCHISEE_CITY);
+                franchiseeAreaVO.setFranchiseeList(cityFranchiseeList);
+                return Triple.of(true, "", franchiseeAreaVO);
+
+            } else {
+                //1.3.2若多个加盟商没设置区（县），返回没设置区（县）加盟商列表
+                franchiseeAreaVO.setResult(FranchiseeAreaVO.MULTIPLE_FRANCHISEE_CITY_NOT_REGION);
+                franchiseeAreaVO.setFranchiseeList(cityFranchiseeList);
+                return Triple.of(true, "", franchiseeAreaVO);
+
+            }
+        }
     }
 }

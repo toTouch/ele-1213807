@@ -26,6 +26,14 @@ public interface RegionService {
      * @param code
      * @return 实例对象
      */
+    Region selectByCodeFromCache(String code);
+
+    /**
+     * 通过code查询单条数据
+     *
+     * @param code
+     * @return 实例对象
+     */
     Region selectByCode(String code);
 
     /**
@@ -37,28 +45,5 @@ public interface RegionService {
      */
     List<Region> selectByPage(int offset, int limit);
 
-    /**
-     * 新增数据
-     *
-     * @param region 实例对象
-     * @return 实例对象
-     */
-    Region insert(Region region);
-
-    /**
-     * 修改数据
-     *
-     * @param region 实例对象
-     * @return 实例对象
-     */
-    Integer update(Region region);
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteById(Integer id);
-
+    Region selectByIdFromCache(Integer regionId);
 }

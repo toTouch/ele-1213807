@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -7,6 +8,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
-public class JsonUserFranchiseeController {
+public class JsonUserFranchiseeController extends BaseController {
 	/**
 	 * 服务对象
 	 */
@@ -43,7 +45,16 @@ public class JsonUserFranchiseeController {
 	@GetMapping(value = "/user/franchisee/getFranchisee")
 	public R getFranchisee(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
 		return electricityCabinetService.getFranchisee(productKey,deviceName);
+	}
 
+	/**
+	 * 根据区县编码查加盟商
+	 */
+	@GetMapping(value = "/user/franchisee/region")
+	public R selectFranchiseeByArea(@RequestParam(value = "regionCode") String regionCode,
+									@RequestParam(value = "cityCode")String cityCode){
+
+		return returnTripleResult(franchiseeService.selectFranchiseeByArea(regionCode,cityCode));
 	}
 
 

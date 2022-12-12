@@ -87,6 +87,10 @@ public class Franchisee {
      */
     private Integer disableCardTimeType;
 
+    /**
+     * 区域id
+     */
+    private Integer regionId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
