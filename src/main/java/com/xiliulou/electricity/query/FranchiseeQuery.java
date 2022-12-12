@@ -30,4 +30,14 @@ public class FranchiseeQuery {
 	private Long uid;
 	private List<Long> ids;
 
+	/**
+	 * 区域id
+	 */
+	private Integer regionId;
+
+	/**
+	 * 城市id
+	 */
+	private Integer cid;
+
 }

@@ -262,4 +262,15 @@ public interface CacheConstant {
     String CACHE_VOLTAGE_CURRENT_CHANGE="voltage_current_change:";
 
     String SERVICE_FEE_USER_INFO = "service_fee_user_info:";
+
+    /**
+     * 区/县缓存
+     */
+    String CACHE_REGION_CODE="region_code:";
+    String CACHE_REGION_ID="region_id:";
+
+    /**
+     * 城市缓存
+     */
+    String CACHE_CITY_CODE="city_code:";
 }

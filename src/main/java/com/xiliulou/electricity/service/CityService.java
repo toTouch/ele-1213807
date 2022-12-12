@@ -21,6 +21,8 @@ public interface CityService {
 
     City queryCityByCode(String cityCode);
 
+    City queryByCodeFromCache(String cityCode);
+
     List<City> queryCityListByPid(Integer pid);
 
 }

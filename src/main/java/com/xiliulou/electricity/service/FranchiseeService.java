@@ -31,6 +31,7 @@ public interface FranchiseeService {
 
     R queryList(FranchiseeQuery franchiseeQuery);
 
+    @Deprecated
     R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
     R getElectricityBatteryList(Long id);
@@ -58,4 +59,7 @@ public interface FranchiseeService {
     Franchisee queryByIdAndTenantId(Long id,Integer tenantId);
 
     Triple<Boolean, String, Object> selectListByQuery(FranchiseeQuery franchiseeQuery);
+
+
+    Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode,String cityCode);
 }

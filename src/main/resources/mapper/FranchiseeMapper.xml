@@ -4,26 +4,31 @@
 
     <!-- 基础字段 -->
     <sql id="selectFranchisee">
-       	select   id, name, tenant_id  from t_franchisee
+       	select   id, name, cid, region_id, tenant_id  from t_franchisee
     </sql>
 
     <!--列表查询-->
     <select id="selectListByQuery" resultType="com.xiliulou.electricity.entity.Franchisee">
         <include refid="selectFranchisee"/>
-            where del_flag=0
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            <if test="ids != null">
-                and id in
-                <foreach collection="ids" item="id" index="index" open="(" close=")"  separator=",">
-                    #{id}
-                </foreach>
-            </if>
-
+        where del_flag=0
+        <if test="id != null">
+            and id = #{id}
+        </if>
+        <if test="regionId != null">
+            and region_id = #{regionId}
+        </if>
+        <if test="cid != null">
+            and cid = #{cid}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="ids != null">
+            and id in
+            <foreach collection="ids" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
 
@@ -141,8 +146,8 @@
         f.model_type,f.model_battery_deposit,f.battery_service_fee,f.is_open_service_fee from t_franchisee f
         left join t_franchisee_user_info tf on f.id =tf.franchisee_id left join t_user_info tu on tu.id=tf.user_info_id where tu.uid=#{uid}
     </select>
-    
-    
+
+
     <!--通过主键修改数据-->
     <update id="update">
         update t_franchisee

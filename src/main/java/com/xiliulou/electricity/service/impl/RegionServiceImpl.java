@@ -1,17 +1,16 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.mapper.RegionMapper;
 import com.xiliulou.electricity.service.RegionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.Objects;
 
 /**
  * (Region)表服务实现类
@@ -24,6 +23,26 @@ import lombok.extern.slf4j.Slf4j;
 public class RegionServiceImpl implements RegionService {
     @Autowired
     private RegionMapper regionMapper;
+    @Autowired
+    private RedisService redisService;
+
+    @Override
+    public Region selectByIdFromCache(Integer id) {
+
+        Region cacheRegion = redisService.getWithHash(CacheConstant.CACHE_REGION_ID + id, Region.class);
+        if (Objects.nonNull(cacheRegion)) {
+            return cacheRegion;
+        }
+
+        Region region = this.selectByIdFromDB(id);
+        if (Objects.isNull(region)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_REGION_ID + id, region);
+
+        return region;
+    }
 
     /**
      * 通过ID查询单条数据从DB
@@ -34,6 +53,23 @@ public class RegionServiceImpl implements RegionService {
     @Override
     public Region selectByIdFromDB(Integer id) {
         return this.regionMapper.selectById(id);
+    }
+
+    @Override
+    public Region selectByCodeFromCache(String code) {
+        Region cacheRegion = redisService.getWithHash(CacheConstant.CACHE_REGION_CODE + code, Region.class);
+        if (Objects.nonNull(cacheRegion)) {
+            return cacheRegion;
+        }
+
+        Region region = this.selectByCode(code);
+        if (Objects.isNull(region)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_REGION_CODE + code, region);
+
+        return region;
     }
 
     /**
@@ -60,41 +96,5 @@ public class RegionServiceImpl implements RegionService {
         return this.regionMapper.selectByPage(offset, limit);
     }
 
-    /**
-     * 新增数据
-     *
-     * @param region 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Region insert(Region region) {
-        this.regionMapper.insertOne(region);
-        return region;
-    }
 
-    /**
-     * 修改数据
-     *
-     * @param region 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(Region region) {
-        return this.regionMapper.update(region);
-
-    }
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Integer id) {
-        return this.regionMapper.deleteById(id) > 0;
-    }
 }
