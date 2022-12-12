@@ -9,53 +9,35 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-import java.math.BigDecimal;
-
 
 /**
- * (UserCarDeposit)表实体类
+ * (Region)表实体类
  *
  * @author zzlong
- * @since 2022-12-07 17:35:45
+ * @since 2022-12-12 11:38:20
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_user_car_deposit")
-public class UserCarDeposit {
-    /**
-     * 主键
-     */
+@TableName("t_region")
+public class Region {
+
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private Integer id;
     /**
-     * uid
+     * 区域code
      */
-    private Long uid;
+    private String code;
     /**
-     * 租车订单表id
+     * pid
      */
-    private Long did;
+    private Integer pid;
     /**
-     * 租车押金订单编号
+     * 区域名称
      */
-    private String orderId;
-    /**
-     * 押金金额
-     */
-    private BigDecimal carDeposit;
-    /**
-     * 0--正常 1--删除
-     */
-    private Integer delFlag;
-
-    private Integer tenantId;
-
-    private Long createTime;
-
-    private Long updateTime;
+    private String name;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
