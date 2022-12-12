@@ -11,7 +11,7 @@
         tui.auth_status as authStatus,tui.usable_status as usableStatus, tui.del_flag as delFlag,
         tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
         from t_user_info as tui
-        left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
+        left join t_user_battery_member_card as tfui on tui.uid=tfui.uid
         where tui.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tui.name = #{query.name}

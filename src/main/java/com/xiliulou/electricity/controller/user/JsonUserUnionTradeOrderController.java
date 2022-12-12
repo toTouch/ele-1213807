@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
+import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.UnionTradeOrderAdd;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceOrderService;
@@ -39,6 +40,11 @@ public class JsonUserUnionTradeOrderController {
     }
 
 
+    //缴纳保险和押金
+    @PostMapping("/user/integratedPayment")
+    public R payDeposit(@RequestBody IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
+        return tradeOrderService.integratedPayment(integratedPaymentAdd, request);
+    }
 
 
 }
