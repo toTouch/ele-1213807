@@ -122,6 +122,7 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, OFFLINE_EXCHANGE_ORDER_ACK_RSP)
                 || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS)
+                || Objects.equals(command, EXCHANGE_ORDER_MANAGE_SUCCESS)
                 || Objects.equals(command, ELE_OTHER_SETTING)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
@@ -296,6 +297,8 @@ public class ElectricityIotConstant {
     public static final String OFFLINE_EXCHANGE_ORDER_ACK_RSP = "offline_exchange_order_ack_rsp";
 
     public static final String OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS = "offline_exchange_order_ack";
+
+    public static final String EXCHANGE_ORDER_MANAGE_SUCCESS = "exchange_order_rsp_ack";
     /**
      * 核心板数据上报
      */
@@ -409,8 +412,9 @@ public class ElectricityIotConstant {
 
 
         COMMAND_HANDLER_MAPS.put(OFFLINE_ELE_EXCHANGE_ORDER_RSP, NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER);
-        COMMAND_HANDLER_MAPS.put(OFFLINE_EXCHANGE_ORDER_ACK_RSP, NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER);
+//        COMMAND_HANDLER_MAPS.put(OFFLINE_EXCHANGE_ORDER_ACK_RSP, NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER);
         COMMAND_HANDLER_MAPS.put(OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS, NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(EXCHANGE_ORDER_MANAGE_SUCCESS, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put(API_ORDER_OPER_HISTORY, NORMAL_ELE_ORDER_OPERATE_HANDLER);
