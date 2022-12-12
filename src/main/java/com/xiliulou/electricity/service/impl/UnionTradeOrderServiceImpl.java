@@ -204,33 +204,8 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//
-//        }
-
         //用户押金和保险
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-//
-//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-//            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
-//            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
-//            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-//
-//            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-//
-//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-//                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
-//            }
-//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
