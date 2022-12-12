@@ -21,6 +21,9 @@ public interface UnionTradeOrderService {
     //押金保险混合回调
     Pair<Boolean, Object> notifyUnionDepositAndInsurance(WechatJsapiOrderCallBackResource callBackResource);
 
+    //押金保险混合回调
+    Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource);
+
 
     UnionTradeOrder selectTradeOrderByOrderId(String orderId);
 

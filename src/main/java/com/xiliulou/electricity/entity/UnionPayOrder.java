@@ -39,6 +39,9 @@ public class UnionPayOrder {
     //保险支付
     public static final Integer ORDER_TYPE_INSURANCE = 2;
 
+    //换电套餐
+    public static final Integer ORDER_TYPE_MEMBER_CARD = 3;
+
 
     //保险附加信息
     public static final String ATTACH_INSURANCE_UNION_DEPOSIT = "insurance_union_deposit";

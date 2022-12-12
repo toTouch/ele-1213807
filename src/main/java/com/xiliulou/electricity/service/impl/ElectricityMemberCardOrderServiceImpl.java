@@ -2529,6 +2529,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return BigDecimal.valueOf(0);
         }
     }
+
+    @Override
+    public int insert(ElectricityMemberCardOrder electricityMemberCardOrder) {
+        return baseMapper.insert(electricityMemberCardOrder);
+    }
+
+    @Override
+    public int updateByID(ElectricityMemberCardOrder electricityMemberCardOrder) {
+        return baseMapper.updateById(electricityMemberCardOrder);
+    }
+
+
 }
 
 

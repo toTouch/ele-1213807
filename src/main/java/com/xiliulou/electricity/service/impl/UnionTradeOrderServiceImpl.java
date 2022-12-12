@@ -61,13 +61,13 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
-    
+
     @Autowired
     ElectricityTradeOrderService electricityTradeOrderService;
-    
+
     @Autowired
     UserBatteryDepositService userBatteryDepositService;
-    
+
     @Autowired
     UserBatteryService userBatteryService;
 
@@ -231,19 +231,19 @@ public class UnionTradeOrderServiceImpl extends
 //                franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
 //            }
 //            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
-    
+
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
-    
+
             UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.updateByUid(userBatteryDeposit);
-    
+
             UserBattery userBattery = new UserBattery();
             userBattery.setUid(userInfo.getUid());
             userBattery.setUpdateTime(System.currentTimeMillis());
@@ -251,8 +251,8 @@ public class UnionTradeOrderServiceImpl extends
                 userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             }
             userBatteryService.updateByUid(userBattery);
-            
-    
+
+
             InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
             updateOrAddInsuranceUserInfo.setUid(userInfo.getUid());
             updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -308,6 +308,66 @@ public class UnionTradeOrderServiceImpl extends
         updateInsuranceOrder.setStatus(depositOrderStatus);
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
         return Pair.of(result, null);
+    }
+
+    @Override
+    public Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource) {
+
+        //回调参数
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+
+        UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(unionTradeOrder)) {
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+
+        List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
+        if (Objects.isNull(electricityTradeOrderList)) {
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+
+        //处理保险订单
+        String jsonOrderId = unionTradeOrder.getJsonOrderId();
+        List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+        if (CollectionUtils.isEmpty(orderIdLIst)) {
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单");
+        }
+
+        //押金订单
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderIdLIst.get(0));
+        if (ObjectUtil.isEmpty(eleDepositOrder)) {
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderIdLIst.get(0));
+            return Pair.of(false, "未找到订单!");
+        }
+
+        if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderIdLIst.get(0));
+            return Pair.of(false, "押金订单已处理!");
+        }
+
+        //保险订单
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderIdLIst.get(1));
+        if (ObjectUtil.isEmpty(insuranceOrder)) {
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderIdLIst.get(1));
+            return Pair.of(false, "未找到订单!");
+        }
+
+        if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, insuranceOrder.getStatus())) {
+            log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderIdLIst.get(1));
+            return Pair.of(false, "押金订单已处理!");
+
+        }
+
+        return null;
     }
 
     @Override

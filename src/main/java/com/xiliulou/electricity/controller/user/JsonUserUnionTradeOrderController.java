@@ -41,7 +41,7 @@ public class JsonUserUnionTradeOrderController extends BaseController{
     }
 
 
-    //缴纳保险和押金
+    //集成支付
     @PostMapping("/user/integratedPayment")
     public R payDeposit(@RequestBody IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
         return returnTripleResult(tradeOrderService.integratedPayment(integratedPaymentAdd, request));

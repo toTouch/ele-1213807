@@ -85,4 +85,8 @@ public interface ElectricityMemberCardOrderService {
     BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord,ServiceFeeUserInfo serviceFeeUserInfo);
 
     BigDecimal checkUserMemberCardExpireBatteryService(UserInfo userInfo, Franchisee franchisee, Long cardDays);
+
+    int insert(ElectricityMemberCardOrder electricityMemberCardOrder);
+
+    int updateByID(ElectricityMemberCardOrder electricityMemberCardOrder);
 }

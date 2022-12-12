@@ -55,4 +55,7 @@ public class UnionTradeOrder {
     public static final String ATTACH_UNION_INSURANCE_AND_DEPOSIT = "insuranceUnionDeposit";
 
 
+    public static final String ATTACH_INTEGRATED_PAYMENT = "integratedPayment";
+
+
 }

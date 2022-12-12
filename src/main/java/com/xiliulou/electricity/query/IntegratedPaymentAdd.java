@@ -22,5 +22,7 @@ public class IntegratedPaymentAdd {
 
 	private Integer memberCardId;
 
+	private Integer userCouponId;
+
 
 }
