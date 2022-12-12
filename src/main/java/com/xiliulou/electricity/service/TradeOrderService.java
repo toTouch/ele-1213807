@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
 import com.xiliulou.electricity.query.UnionTradeOrderAdd;
+import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,6 +20,6 @@ public interface TradeOrderService {
 
     R createOrder(UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request);
 
-    R integratedPayment(IntegratedPaymentAdd integratedPaymentAdd,HttpServletRequest request);
+    Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request);
 
 }

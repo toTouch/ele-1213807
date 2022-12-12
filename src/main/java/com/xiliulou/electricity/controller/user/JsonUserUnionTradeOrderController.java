@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
@@ -23,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @Slf4j
-public class JsonUserUnionTradeOrderController {
+public class JsonUserUnionTradeOrderController extends BaseController{
     /**
      * 服务对象
      */
@@ -43,7 +44,7 @@ public class JsonUserUnionTradeOrderController {
     //缴纳保险和押金
     @PostMapping("/user/integratedPayment")
     public R payDeposit(@RequestBody IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
-        return tradeOrderService.integratedPayment(integratedPaymentAdd, request);
+        return returnTripleResult(tradeOrderService.integratedPayment(integratedPaymentAdd, request));
     }
 
 
