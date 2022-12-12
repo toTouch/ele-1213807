@@ -306,6 +306,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
+//        if (Objects.nonNull())
+
         return null;
     }
 
