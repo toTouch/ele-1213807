@@ -42,7 +42,6 @@ public class JsonAdminFranchiseeInsuranceController {
 
     /**
      * 新增保险配置
-     *
      */
     @PostMapping(value = "/admin/franchiseeInsurance")
     public R updateEleAuthEntries(@RequestBody @Validated FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
@@ -146,6 +145,24 @@ public class JsonAdminFranchiseeInsuranceController {
         }
 
         return franchiseeInsuranceService.queryCount(status, insuranceType, tenantId, franchiseeId);
+    }
+
+    /**
+     * 多型号下查询可新增的保险的型号
+     * @param franchiseeId
+     * @return
+     */
+    @GetMapping("admin/franchiseeInsurance/queryCanAddInsuranceBatteryType")
+    public R queryCanAddInsuranceBatteryType(@RequestParam(value = "franchiseeId") Long franchiseeId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return franchiseeInsuranceService.queryCanAddInsuranceBatteryType(franchiseeId);
     }
 
 }

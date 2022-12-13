@@ -84,4 +84,12 @@ public class FranchiseeInsuranceAddAndUpdate {
      */
     @NotEmpty(message = "保险说明不能为空!")
     private String instruction;
+
+    /**
+     * 电池类型套餐
+     */
+    private String batteryType;
+
+    private List<String> batteryTypeList;
+
 }

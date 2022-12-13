@@ -305,25 +305,27 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //判断是否缴纳押金
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        if (Objects.nonNull(userInfo.getFranchiseeId())) {
+            //判断是否缴纳押金
+            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
+                return R.fail("ELECTRICITY.0042", "未缴纳押金");
+            }
+
+            //判断该换电柜加盟商和用户加盟商是否一致
+            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
+                log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), franchiseeId, userInfo.getFranchiseeId());
+                return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+            }
+
+            franchiseeId = userInfo.getFranchiseeId();
         }
 
-        //判断该换电柜加盟商和用户加盟商是否一致
-        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
-            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), franchiseeId, userInfo.getFranchiseeId());
-            return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
-        }
-
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-        if(Objects.isNull(franchisee)){
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        if (Objects.isNull(franchisee)) {
             log.error("ELE ERROR! not found franchisee,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
-
-        franchiseeId = userInfo.getFranchiseeId();
 
         List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
         //多电池型号查询套餐

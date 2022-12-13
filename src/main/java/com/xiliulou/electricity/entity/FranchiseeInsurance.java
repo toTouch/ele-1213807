@@ -74,6 +74,11 @@ public class FranchiseeInsurance {
     private Integer status;
 
     /**
+     * 电池类型套餐
+     */
+    private String batteryType;
+
+    /**
      * 是否强制购买 0--非强制 1--强制
      */
     private Integer isConstraint;

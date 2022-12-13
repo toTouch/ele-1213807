@@ -4,22 +4,28 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.InsuranceInstructionService;
 import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,6 +51,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Autowired
     InsuranceInstructionService insuranceInstructionService;
 
+    @Autowired
+    FranchiseeService franchiseeService;
+
     @Override
     public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
 
@@ -66,7 +75,6 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         franchiseeInsurance.setStatus(FranchiseeInsurance.STATUS_UN_USABLE);
         franchiseeInsurance.setTenantId(tenantId);
         franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
-        Integer insert = baseMapper.insert(franchiseeInsurance);
 
         InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
@@ -75,7 +83,26 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
         insuranceInstruction.setCreateTime(System.currentTimeMillis());
         insuranceInstruction.setUpdateTime(System.currentTimeMillis());
-        insuranceInstructionService.insert(insuranceInstruction);
+
+        Integer insert = null;
+
+        if (Objects.nonNull(franchiseeInsuranceAddAndUpdate.getBatteryTypeList())) {
+            for (String batteryType : franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) {
+                franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(franchiseeInsurance.getBatteryType())));
+                int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                        .eq(FranchiseeInsurance::getTenantId, tenantId)
+                        .eq(FranchiseeInsurance::getBatteryType, batteryType)
+                        .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
+                        .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL));
+                if (existCount == 0) {
+                    insert = baseMapper.insert(franchiseeInsurance);
+                    insuranceInstructionService.insert(insuranceInstruction);
+                }
+            }
+        } else {
+            insert = baseMapper.insert(franchiseeInsurance);
+            insuranceInstructionService.insert(insuranceInstruction);
+        }
 
         DbUtils.dbOperateSuccessThen(insert, () -> {
             return null;
@@ -103,6 +130,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, newFranchiseeInsurance);
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
         newFranchiseeInsurance.setTenantId(tenantId);
+        if (StringUtils.isNotEmpty(franchiseeInsuranceAddAndUpdate.getBatteryType())) {
+            newFranchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(franchiseeInsuranceAddAndUpdate.getBatteryType())));
+        }
         Integer update = baseMapper.update(newFranchiseeInsurance);
 
         InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
@@ -138,17 +168,16 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-        //查询该租户是否有邀请活动，有则不能启用
-        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
-            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
-                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
-                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
-                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
-                    .notIn(FranchiseeInsurance::getId, id));
-            if (count > 0) {
-                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
-            }
-        }
+//        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
+//            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+//                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+//                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
+//                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
+//                    .notIn(FranchiseeInsurance::getId, id));
+//            if (count > 0) {
+//                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
+//            }
+//        }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
         newFranchiseeInsurance.setId(franchiseeInsurance.getId());
@@ -219,8 +248,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Override
     public FranchiseeInsurance queryByCache(Integer id) {
-        FranchiseeInsurance franchiseeInsurance = null;
-        franchiseeInsurance = redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE_INSURANCE + id, FranchiseeInsurance.class);
+        FranchiseeInsurance franchiseeInsurance = redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE_INSURANCE + id, FranchiseeInsurance.class);
         if (Objects.isNull(franchiseeInsurance)) {
             franchiseeInsurance = baseMapper.selectById(id);
             if (Objects.nonNull(franchiseeInsurance)) {
@@ -233,5 +261,39 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId) {
         return franchiseeInsuranceMapper.selectOne(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getFranchiseeId, franchiseeId).eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE));
+    }
+
+    @Override
+    public R queryCanAddInsuranceBatteryType(Long franchiseeId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        if (Objects.isNull(franchisee)) {
+            log.error("ELE edit insurance query battery model ERROR! franchisee is null,franchiseeId={}", franchiseeId);
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        if (Objects.equals(tenantId, franchisee.getTenantId())) {
+            return R.ok();
+        }
+
+        List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+
+        List<Integer> batteryList = new ArrayList<>();
+
+        for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+            int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                    .eq(FranchiseeInsurance::getTenantId, tenantId)
+                    .eq(FranchiseeInsurance::getBatteryType, BatteryConstant.acquireBattery(modelBatteryDeposit.getModel().toString()))
+                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeId)
+                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL));
+            if (existCount == 0) {
+                batteryList.add(modelBatteryDeposit.getModel());
+            }
+        }
+
+        return R.ok(batteryList);
     }
 }
