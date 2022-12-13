@@ -2372,7 +2372,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
                 userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
-                ServiceFeeUserInfo serviceFeeUserInfoUpdate=new ServiceFeeUserInfo();
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(item.getUid());
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
                 serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
@@ -2538,6 +2538,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public int updateByID(ElectricityMemberCardOrder electricityMemberCardOrder) {
         return baseMapper.updateById(electricityMemberCardOrder);
+    }
+
+    @Override
+    public ElectricityMemberCardOrder selectByOrderNo(String orderNo) {
+        return baseMapper.selectByOrderNo(orderNo);
     }
 
 

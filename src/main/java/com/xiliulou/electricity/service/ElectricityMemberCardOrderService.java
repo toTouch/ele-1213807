@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import org.apache.ibatis.annotations.Param;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -89,4 +90,7 @@ public interface ElectricityMemberCardOrderService {
     int insert(ElectricityMemberCardOrder electricityMemberCardOrder);
 
     int updateByID(ElectricityMemberCardOrder electricityMemberCardOrder);
+
+    ElectricityMemberCardOrder selectByOrderNo(String orderNo);
+
 }

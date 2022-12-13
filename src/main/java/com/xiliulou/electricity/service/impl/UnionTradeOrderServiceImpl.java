@@ -71,6 +71,9 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     UserBatteryService userBatteryService;
 
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -286,6 +289,7 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource) {
 
         //回调参数
@@ -309,40 +313,197 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "未找到交易订单!");
         }
 
+
+        String jsonOrderType = unionTradeOrder.getJsonOrderType();
+        List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
+
         //处理保险订单
         String jsonOrderId = unionTradeOrder.getJsonOrderId();
         List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
+
         if (CollectionUtils.isEmpty(orderIdLIst)) {
             log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
 
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
+        boolean result = false;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+            depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
+            result = true;
+        } else {
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
+        }
+
+        for (int i = 0; i <= orderTypeList.size(); i++) {
+            if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
+                manageDepositOrder(orderIdLIst.get(i), depositOrderStatus);
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                manageInsuranceOrder(orderIdLIst.get(i), depositOrderStatus);
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
+            }
+        }
+
+
+        //系统订单
+        UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
+        unionTradeOrderUpdate.setId(unionTradeOrder.getId());
+        unionTradeOrderUpdate.setStatus(tradeOrderStatus);
+        unionTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        unionTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(unionTradeOrderUpdate);
+
+        //混合支付的子订单
+        electricityTradeOrderList.parallelStream().forEach(item -> {
+            ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
+            electricityTradeOrder.setId(item.getId());
+            electricityTradeOrder.setStatus(item.getStatus());
+            electricityTradeOrder.setUpdateTime(System.currentTimeMillis());
+            electricityTradeOrder.setChannelOrderNo(transactionId);
+            electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
+        });
+        return Pair.of(result, null);
+    }
+
+
+    //处理押金订单
+    private Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus) {
+
         //押金订单
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderIdLIst.get(0));
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderIdLIst.get(0));
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 
         if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderIdLIst.get(0));
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderNo);
             return Pair.of(false, "押金订单已处理!");
         }
 
+        //用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), orderNo);
+            return Pair.of(false, "未找到用户信息!");
+        }
+
+        //用户押金
+        if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+
+            UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
+            userBatteryDeposit.setUid(userInfo.getUid());
+            userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDepositService.updateByUid(userBatteryDeposit);
+
+            UserBattery userBattery = new UserBattery();
+            userBattery.setUid(userInfo.getUid());
+            userBattery.setUpdateTime(System.currentTimeMillis());
+            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
+            }
+            userBatteryService.updateByUid(userBattery);
+        }
+
+        //押金订单
+        EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
+        eleDepositOrderUpdate.setId(eleDepositOrder.getId());
+        eleDepositOrderUpdate.setStatus(orderStatus);
+        eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleDepositOrderService.update(eleDepositOrderUpdate);
+        return Pair.of(true, null);
+    }
+
+
+    //处理购卡订单
+    private Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus) {
+
+        //购卡订单
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
+        if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", orderNo);
+            return Pair.of(false, "未找到订单!");
+        }
+        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
+            return Pair.of(false, "套餐订单已处理!");
+        }
+
+
+
+
+
+
+        //月卡订单
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+        electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setStatus(orderStatus);
+        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+        return Pair.of(true, null);
+    }
+
+
+    //处理保险订单
+    private Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus) {
+
         //保险订单
-        InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderIdLIst.get(1));
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(insuranceOrder)) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderIdLIst.get(1));
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 
         if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, insuranceOrder.getStatus())) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderIdLIst.get(1));
+            log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderNo);
             return Pair.of(false, "押金订单已处理!");
-
         }
 
-        return null;
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrder.getInsuranceId());
+        if (ObjectUtil.isEmpty(insuranceOrder)) {
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderNo);
+            return Pair.of(false, "未找到订单!");
+        }
+
+        if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
+            updateOrAddInsuranceUserInfo.setUid(insuranceOrder.getUid());
+            updateOrAddInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
+            updateOrAddInsuranceUserInfo.setInsuranceOrderId(insuranceOrder.getOrderId());
+            updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis() + franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+            updateOrAddInsuranceUserInfo.setTenantId(insuranceOrder.getTenantId());
+            updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
+            updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
+            updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
+            updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
+
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(insuranceOrder.getUid());
+            if (Objects.isNull(insuranceUserInfo)) {
+                insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
+            } else {
+                insuranceUserInfoService.update(updateOrAddInsuranceUserInfo);
+            }
+        }
+
+        //保险订单
+        InsuranceOrder updateInsuranceOrder = new InsuranceOrder();
+        updateInsuranceOrder.setId(insuranceOrder.getId());
+        updateInsuranceOrder.setUpdateTime(System.currentTimeMillis());
+        updateInsuranceOrder.setStatus(orderStatus);
+        insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
+
+        return Pair.of(true, null);
     }
 
     @Override
