@@ -74,6 +74,45 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+
+    @Autowired
+    OldUserActivityService oldUserActivityService;
+
+    @Autowired
+    UserCouponService userCouponService;
+
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
+
+    @Autowired
+    JoinShareActivityRecordService joinShareActivityRecordService;
+
+    @Autowired
+    JoinShareActivityHistoryService joinShareActivityHistoryService;
+
+    @Autowired
+    ShareActivityRecordService shareActivityRecordService;
+
+    @Autowired
+    JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+
+    @Autowired
+    JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+
+    @Autowired
+    ShareMoneyActivityService shareMoneyActivityService;
+
+    @Autowired
+    ShareMoneyActivityRecordService shareMoneyActivityRecordService;
+
+    @Autowired
+    UserAmountService userAmountService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -313,11 +352,9 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "未找到交易订单!");
         }
 
-
         String jsonOrderType = unionTradeOrder.getJsonOrderType();
         List<Integer> orderTypeList = JsonUtil.fromJsonArray(jsonOrderType, Integer.class);
 
-        //处理保险订单
         String jsonOrderId = unionTradeOrder.getJsonOrderId();
         List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
 
@@ -339,14 +376,22 @@ public class UnionTradeOrderServiceImpl extends
 
         for (int i = 0; i <= orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
-                manageDepositOrder(orderIdLIst.get(i), depositOrderStatus);
+                Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus);
+                if (!manageDepositOrderResult.getLeft()) {
+                    return manageDepositOrderResult;
+                }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_INSURANCE)) {
-                manageInsuranceOrder(orderIdLIst.get(i), depositOrderStatus);
+                Pair<Boolean, Object> manageInsuranceOrderResult = manageInsuranceOrder(orderIdLIst.get(i), depositOrderStatus);
+                if (!manageInsuranceOrderResult.getLeft()) {
+                    return manageInsuranceOrderResult;
+                }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
-                manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
+                Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
+                if (!manageMemberCardOrderResult.getLeft()) {
+                    return manageMemberCardOrderResult;
+                }
             }
         }
-
 
         //系统订单
         UnionTradeOrder unionTradeOrderUpdate = new UnionTradeOrder();
@@ -425,7 +470,7 @@ public class UnionTradeOrderServiceImpl extends
 
 
     //处理购卡订单
-    private Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus) {
+    private Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus, WechatJsapiOrderCallBackResource callBackResource) {
 
         //购卡订单
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
@@ -438,8 +483,19 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "套餐订单已处理!");
         }
 
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
+            return Pair.of(false, "未找到用户信息!");
+        }
 
-        if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)){
+
+        Long now = System.currentTimeMillis();
+        Long memberCardExpireTime;
+        Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
+
+
+        if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
 
             //查看月卡是否绑定活动
@@ -568,16 +624,8 @@ public class UnionTradeOrderServiceImpl extends
                     }
 
                 }
-
             }
-
-            //月卡分账
-            handleSplitAccount(electricityMemberCardOrder);
-
-
         }
-
-
 
 
         //月卡订单
