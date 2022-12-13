@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.InsuranceInstructionMapper">
+
+
+    <update id="update">
+        update t_insurance_instruction
+        <set>
+            <if test="instruction != null and instruction != ''">
+                instruction = #{instruction},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+        </set>
+        where insurance_id = #{insuranceId} and tenant_id=#{tenantId}
+    </update>
+
+
+</mapper>

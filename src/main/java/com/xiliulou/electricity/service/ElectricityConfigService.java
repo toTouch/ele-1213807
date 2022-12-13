@@ -3,6 +3,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
+import com.xiliulou.electricity.vo.TenantConfigVO;
 
 
 /**
@@ -18,4 +19,6 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
     ElectricityConfig queryFromCacheByTenantId(Integer tenantId);
 
     void insertElectricityConfig(ElectricityConfig electricityConfig);
+
+    TenantConfigVO getTenantConfig(String appId);
 }

@@ -53,5 +53,15 @@ public class MaintenanceUserNotifyConfig {
      * 设备消息通知
      */
     public static Integer P_HARDWARE_INFO = 0;
+    /**
+     * 实名认证审核通知
+     */
+    public static final Integer P_AUTHENTICATION_AUDIT=8;
+
+
+    /**
+     * 暂停套餐审核
+     */
+    public static Integer TYPE_DISABLE_MEMBER_CARD = 16;
 
 }

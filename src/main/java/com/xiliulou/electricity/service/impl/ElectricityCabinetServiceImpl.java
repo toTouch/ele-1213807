@@ -21,6 +21,7 @@ import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
@@ -32,11 +33,13 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.api.ApiRentOrderVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -58,6 +61,8 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -74,9 +79,12 @@ import java.util.stream.Collectors;
 @Service("electricityCabinetService")
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
-    
+
+    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+
+
     private static final String BATTERY_FULL_CONDITION="batteryFullCondition";
-    
+
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
     @Autowired
@@ -149,6 +157,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StorageConfig storageConfig;
     @Autowired
     private ElectricityCabinetServerService electricityCabinetServerService;
+        @Autowired
+        RocketMqService rocketMqService;
+        @Autowired
+        MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
 
     @Qualifier("aliyunOssService")
     @Autowired
@@ -357,12 +369,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //修改柜机服务时间信息
             electricityCabinetServerService
                     .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
-    
+
             //云端下发命令修改换电标准
             if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
                 this.updateFullyChargedByCloud(electricityCabinet);
             }
-            
+
             return null;
         });
         return R.ok();
@@ -1521,7 +1533,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-        return R.ok(electricityCabinet);
+        ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+        BeanUtils.copyProperties(electricityCabinet, electricityCabinetVO);
+
+        Franchisee franchisee= (Franchisee) franchiseeService.queryByCabinetId(electricityCabinet.getId(),electricityCabinet.getTenantId()).getData();
+        if (Objects.nonNull(franchisee)){
+            electricityCabinetVO.setFranchiseeName(franchisee.getName());
+            electricityCabinetVO.setFranchiseeId(franchisee.getId());
+        }
+
+        return R.ok(electricityCabinetVO);
 
     }
 
@@ -2199,8 +2220,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Pair.of(false, null);
         }
 //        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
-    
-    
+
+
         String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size())).getCellNo();
         return Pair.of(true, Integer.parseInt(cellNo));
     }
@@ -3254,26 +3275,109 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryName(null, id));
     }
     
-    
+
     /**
      * 通过云端下发命令更新换电标准
      */
     private void updateFullyChargedByCloud(ElectricityCabinet electricityCabinet) {
-        
+
         Map<String, Object> params = Maps.newHashMap();
         params.put(BATTERY_FULL_CONDITION, electricityCabinet.getFullyCharged());
-        
+
         EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
         commandQuery.setProductKey(electricityCabinet.getProductKey());
         commandQuery.setDeviceName(electricityCabinet.getDeviceName());
         commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
         commandQuery.setData(params);
-        
+
         try {
             sendCommandToEleForOuter(commandQuery);
         } catch (Exception e) {
             log.error("ELE ERROR！set batteryFullCondition error,electricityCabinetId={}", electricityCabinet.getId(), e);
         }
     }
-    
+
+
+    /**
+     * 满仓提醒
+     * @param messages
+     */
+    @Override
+    public void sendFullBatteryMessage(List<Message>  messages) {
+        if(CollectionUtils.isEmpty(messages)){
+            return;
+        }
+
+        messages.parallelStream().forEach(item->{
+            log.info("DELY QUEUE LISTENER INFO! full battery message={}",JsonUtil.toJson(item));
+
+            if(StringUtils.isBlank(item.getMsg())){
+                return;
+            }
+
+            Integer electricityCabinetId=Integer.parseInt(item.getMsg());
+
+            ElectricityCabinet electricityCabinet = this.queryByIdFromCache(electricityCabinetId);
+            if(Objects.isNull(electricityCabinet)){
+                return;
+            }
+
+            //获取所有启用的格挡
+            List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+                return;
+            }
+
+            //过滤没有电池的格挡
+            List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(e -> StringUtils.isBlank(e.getSn())).collect(Collectors.toList());
+            if (org.apache.commons.collections.CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
+                return;
+            }
+
+            Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinetId, "1", 1800 * 1000L, false);
+            if (cacheFlag) {
+                List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
+                if (CollectionUtils.isEmpty(messageNotifyList)) {
+                    return;
+                }
+
+                messageNotifyList.forEach(i -> {
+                    rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+                    log.info("ELE FULL BATTERY INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
+                });
+            }
+        });
+    }
+
+    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
+            log.error("ELE BATTERY REPORT ERROR! not found maintenanceUserNotifyConfig,tenantId={}",
+                    electricityCabinet.getTenantId());
+            return Collections.EMPTY_LIST;
+        }
+
+        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
+            log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
+            return Collections.EMPTY_LIST;
+        }
+
+        return phones.parallelStream().map(item -> {
+            ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
+            abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
+            abnormalMessageNotify.setEquipmentNumber(electricityCabinet.getName());
+            abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
+            abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
+            abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
+
+            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
+            abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
+            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
+            abnormalMessageNotifyCommon.setPhone(item);
+            abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
+            return abnormalMessageNotifyCommon;
+        }).collect(Collectors.toList());
+
+    }
 }

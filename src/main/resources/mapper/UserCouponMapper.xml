@@ -9,8 +9,9 @@
         tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
         tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time  as createTime,
         tuc.update_time  as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
-        tuc.discount_type  as discountType,tc.amount AS amount,tc.discount AS discount
+        tuc.discount_type  as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
         from t_user_coupon as tuc
+        left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
@@ -19,8 +20,17 @@
             <if test="query.phone != null and query.phone != ''">
                 and tuc.phone = #{query.phone}
             </if>
+            <if test="query.userName != null and query.userName != ''">
+                and tui.name = #{query.userName}
+            </if>
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}
+            </if>
+            <if test="query.status != null">
+                and tuc.status = #{query.status}
+            </if>
+            <if test="query.discountType != null">
+                and tuc.discount_type = #{query.discountType}
             </if>
             <if test="query.statusList!=null and query.statusList!=''">
                 and tuc.status in
@@ -58,6 +68,9 @@
             <if test="query.couponId != null">
                 and coupon_id = #{query.couponId}
             </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
             <if test="query.statusList!=null and query.statusList!=''">
                 and status in
                 <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
@@ -75,6 +88,22 @@
             </if>
         </where>
     </select>
+
+    <update id="update">
+        update t_user_coupon
+        <set>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
 
 
 </mapper>

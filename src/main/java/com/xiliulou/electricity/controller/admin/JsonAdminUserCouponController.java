@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -30,7 +31,10 @@ public class JsonAdminUserCouponController {
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "couponId", required = false) Integer couponId,
+                       @RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "discountType", required = false) Integer discountType,
                        @RequestParam(value = "phone", required = false) String phone) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -45,7 +49,10 @@ public class JsonAdminUserCouponController {
                 .size(size)
                 .couponId(couponId)
                 .uid(uid)
+                .status(status)
+                .userName(userName)
                 .phone(phone)
+                .discountType(discountType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return userCouponService.queryList(userCouponQuery);
     }
@@ -54,21 +61,32 @@ public class JsonAdminUserCouponController {
     @GetMapping(value = "/admin/userCoupon/queryCount")
     public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "phone", required = false) String phone) {
 
         UserCouponQuery userCouponQuery = UserCouponQuery.builder()
                 .couponId(couponId)
                 .uid(uid)
+                .status(status)
                 .phone(phone)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return userCouponService.queryCount(userCouponQuery);
     }
 
-	//批量发放优惠券
-	@PostMapping(value = "/admin/userCoupon/batchRelease")
-	public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
-		Long[] uids = (Long[]) JSONUtil.parseArray(uid).toArray(Long[].class);
-		return userCouponService.adminBatchRelease(id, uids);
-	}
+    //批量发放优惠券
+    @PostMapping(value = "/admin/userCoupon/batchRelease")
+    @Log(title = "批量发放优惠券")
+    public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
+        Long[] uids = (Long[]) JSONUtil.parseArray(uid).toArray(Long[].class);
+        return userCouponService.adminBatchRelease(id, uids);
+    }
+
+    //核销优惠券
+    @Log(title = "核销优惠券")
+    @PostMapping(value = "/admin/userCoupon/destruction")
+    public R destruction(@RequestParam("couponId") String couponId) {
+        Long[] couponIds = (Long[]) JSONUtil.parseArray(couponId).toArray(Long[].class);
+        return userCouponService.destruction(couponIds);
+    }
 
 }

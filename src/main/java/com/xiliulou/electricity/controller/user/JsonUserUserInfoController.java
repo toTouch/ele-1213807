@@ -28,7 +28,13 @@ public class JsonUserUserInfoController {
         return userInfoService.queryUserInfo();
     }
 
-
+    /**
+     * 小程序首页获取用户详情
+     */
+    @GetMapping(value = "/user/userInfoDetail")
+    public R userInfoDetail() {
+        return R.ok(userInfoService.selectUserInfoDetail());
+    }
 
 
 

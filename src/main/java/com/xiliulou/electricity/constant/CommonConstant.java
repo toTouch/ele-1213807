@@ -27,4 +27,9 @@ public interface CommonConstant {
 
     String BUCKET_NAME="bucketName";
     String FILE_NAME="fileName";
+    
+    /**
+     * 满仓消息队列名称
+     */
+    String  FULL_BATTERY_DELY_QUEUE="full_battery_dely_queue";
 }

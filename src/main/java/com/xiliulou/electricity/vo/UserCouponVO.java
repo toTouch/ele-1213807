@@ -91,4 +91,9 @@ public class UserCouponVO {
      */
     private BigDecimal discount;
 
+    /**
+     * 用户名
+     */
+    private String userName;
+
 }

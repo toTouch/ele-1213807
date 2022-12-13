@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.EleTenantMapKeyAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.EleTenantMapKeyService;
@@ -28,6 +29,7 @@ public class JsonAdminEleTenantMapKeyController {
 
     //编辑租户高德地图key
     @PutMapping(value = "/admin/eleTenantMapKey")
+    @Log(title = "编辑租户高德地图key")
     public R edit(@RequestBody @Validated EleTenantMapKeyAddAndUpdate eleTenantMapKeyAddAndUpdate) {
         return eleTenantMapKeyService.edit(eleTenantMapKeyAddAndUpdate);
     }

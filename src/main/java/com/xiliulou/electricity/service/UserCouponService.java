@@ -22,6 +22,8 @@ public interface UserCouponService {
 
     R adminBatchRelease(Integer id, Long[] uids);
 
+    R destruction(Long[] couponIds);
+
     void handelUserCouponExpired();
 
     R queryMyCoupon( List<Integer> statusList,List<Integer> typeList);
@@ -35,4 +37,6 @@ public interface UserCouponService {
 	void update(UserCoupon userCoupon);
 
     R queryCount(UserCouponQuery userCouponQuery);
+    
+    List<UserCoupon> selectCouponUserCountById(Long id);
 }
