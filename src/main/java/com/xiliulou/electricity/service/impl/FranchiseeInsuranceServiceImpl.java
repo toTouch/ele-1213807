@@ -259,8 +259,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     }
 
     @Override
-    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId) {
-        return franchiseeInsuranceMapper.selectOne(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getFranchiseeId, franchiseeId).eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE));
+    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType) {
+        return franchiseeInsuranceMapper.queryByFranchiseeIdAndBatteryType(franchiseeId,batteryType);
     }
 
     @Override
@@ -286,7 +286,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
             int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
                     .eq(FranchiseeInsurance::getTenantId, tenantId)
-                    .eq(FranchiseeInsurance::getBatteryType, BatteryConstant.acquireBattery(modelBatteryDeposit.getModel().toString()))
+                    .eq(FranchiseeInsurance::getBatteryType, BatteryConstant.acquireBatteryShort(modelBatteryDeposit.getModel()))
                     .eq(FranchiseeInsurance::getFranchiseeId, franchiseeId)
                     .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL));
             if (existCount == 0) {

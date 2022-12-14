@@ -31,7 +31,7 @@ public interface FranchiseeInsuranceService {
 
     FranchiseeInsurance queryByCache(Integer id);
 
-    FranchiseeInsurance queryByFranchiseeId(Long franchiseeId);
+    FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType);
 
     R queryCanAddInsuranceBatteryType(Long franchiseeId);
 

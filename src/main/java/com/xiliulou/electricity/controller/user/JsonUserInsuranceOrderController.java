@@ -37,14 +37,20 @@ public class JsonUserInsuranceOrderController {
 
     //缴纳保险
     @PostMapping("/user/payInsurance")
-    public R payDeposit(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
+    public R payInsurance(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
         return insuranceOrderService.createOrder(insuranceOrderAdd, request);
     }
 
     //用户查询保险
     @GetMapping(value = "/user/queryInsurance")
-    public R queryDeposit(@RequestParam(value = "franchiseeId",required = false) Long franchiseeId) {
-        return insuranceOrderService.queryInsurance(franchiseeId);
+    public R queryInsurance() {
+        return insuranceOrderService.queryInsurance();
+    }
+
+    //用户查询保险
+    @GetMapping(value = "/user/homeOneQueryInsurance")
+    public R homeOneQueryInsurance(@RequestParam(value = "model") Integer model) {
+        return insuranceOrderService.queryInsurance(model);
     }
 
 

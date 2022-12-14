@@ -22,60 +22,84 @@ import java.util.Objects;
 @Slf4j
 public class JsonUserElectricityCabinetMemberCardController {
 
-	@Autowired
-	ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
 
-	/**
-	 * 月卡分页
-	 *
-	 * @param
-	 * @return
-	 */
-	@GetMapping(value = "/user/memberCard/list")
-	public R queryUserList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "productKey", required = false) String productKey,
-			@RequestParam(value = "deviceName", required = false) String deviceName) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
+    /**
+     * 月卡分页
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/user/memberCard/list")
+    public R queryUserList(@RequestParam("size") Long size,
+                           @RequestParam("offset") Long offset,
+                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                           @RequestParam(value = "productKey", required = false) String productKey,
+                           @RequestParam(value = "deviceName", required = false) String deviceName) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (offset < 0) {
-			offset = 0L;
-		}
-		return electricityMemberCardService.queryUserList(offset, size,productKey,deviceName,franchiseeId);
-	}
-
-
-	/**
-	 * 月卡详情
-	 *
-	 * @param
-	 * @return
-	 */
-	@GetMapping(value = "/user/memberCard/{id}")
-	public R queryUserList(@PathVariable("id") Integer id) {
-		return R.ok(electricityMemberCardService.queryByStatus(id));
-	}
+        if (offset < 0) {
+            offset = 0L;
+        }
+        return electricityMemberCardService.queryUserList(offset, size, productKey, deviceName, franchiseeId);
+    }
 
 
-	/**
-	 * 租车月卡分页
-	 *
-	 * @param
-	 * @return
-	 */
-	@GetMapping(value = "/user/rentCarMemberCard/list")
-	public R queryRentCarMemberCardList(@RequestParam("size") Long size,
-						   @RequestParam("offset") Long offset) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
+    /**
+     * 首次购买套餐分页
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/user/firstPayMemberCard/list")
+    public R queryFirstPayMemberCard(@RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "model") Integer model,
+                                     @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                                     @RequestParam(value = "productKey", required = false) String productKey,
+                                     @RequestParam(value = "deviceName", required = false) String deviceName) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (offset < 0) {
-			offset = 0L;
-		}
-		return electricityMemberCardService.queryRentCarMemberCardList(offset, size);
-	}
+        if (offset < 0) {
+            offset = 0L;
+        }
+        return electricityMemberCardService.queryFirstPayMemberCard(offset, size, productKey, deviceName, franchiseeId, model);
+    }
+
+
+    /**
+     * 月卡详情
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/user/memberCard/{id}")
+    public R queryUserList(@PathVariable("id") Integer id) {
+        return R.ok(electricityMemberCardService.queryByStatus(id));
+    }
+
+
+    /**
+     * 租车月卡分页
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/user/rentCarMemberCard/list")
+    public R queryRentCarMemberCardList(@RequestParam("size") Long size,
+                                        @RequestParam("offset") Long offset) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+        return electricityMemberCardService.queryRentCarMemberCardList(offset, size);
+    }
 }

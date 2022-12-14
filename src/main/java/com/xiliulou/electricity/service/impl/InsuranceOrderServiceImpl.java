@@ -68,6 +68,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     CityService cityService;
 
+    @Autowired
+    UserBatteryService userBatteryService;
+
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
 
@@ -141,7 +144,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("CREATE INSURANCE_ORDER ERROR! user not auth! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-        
+
         //判断是否缴纳押金
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit,uid={}", user.getUid());
@@ -256,34 +259,41 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     }
 
     @Override
-    public R queryInsurance(Long franchiseeId) {
+    public R queryInsurance() {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("queryInsurance  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("queryInsurance  ERROR! not found user,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
-            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", franchiseeId);
+            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
             return R.ok();
         }
 
-        if (Objects.isNull(franchiseeId)) {
-            //用户区分
-            TokenUser user = SecurityUtils.getUserInfo();
-            if (Objects.isNull(user)) {
-                log.error("ELECTRICITY  ERROR! not found user ");
-                return R.fail("ELECTRICITY.0001", "未找到用户");
-            }
-
-            UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-            if (Objects.isNull(userInfo)) {
-                log.error("ELECTRICITY  ERROR! not found user,uid={}",user.getUid());
-                return R.fail("ELECTRICITY.0001", "未找到用户");
-            }
-    
-            franchiseeId = userInfo.getFranchiseeId();
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBattery)) {
+            log.error("queryInsurance  ERROR! not pay deposit,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(),userBattery.getBatteryType()));
+    }
+
+    @Override
+    public R homeOneQueryInsurance(Integer model) {
+        return null;
     }
 
     @Override

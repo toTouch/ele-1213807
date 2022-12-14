@@ -376,6 +376,109 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return R.ok(electricityMemberCardVOList);
     }
 
+
+    @Override
+    public R queryFirstPayMemberCard(Long offset, Long size, String productKey, String deviceName, Long franchiseeId, Integer model) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("rentBattery  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.isNull(franchiseeId) && Objects.nonNull(productKey) && Objects.nonNull(deviceName)) {
+            //换电柜
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
+            if (Objects.isNull(electricityCabinet)) {
+                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+                return R.fail("ELECTRICITY.0005", "未找到换电柜");
+            }
+
+            //3、查出套餐
+            //查找换电柜门店
+            if (Objects.isNull(electricityCabinet.getStoreId())) {
+                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+            }
+            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            if (Objects.isNull(store)) {
+                log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
+
+            //查找门店加盟商
+            if (Objects.isNull(store.getFranchiseeId())) {
+                log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+            }
+            franchiseeId = store.getFranchiseeId();
+        }
+
+        //判断用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("rentBattery  ERROR! not found user,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("rentBattery  ERROR! user is unUsable! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        franchiseeId = userInfo.getFranchiseeId();
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        if (Objects.isNull(franchisee)) {
+            log.error("ELE ERROR! not found franchisee,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+
+
+        List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
+
+        //多电池型号查询套餐
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, BatteryConstant.acquireBatteryShort(model), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+        } else {
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+        }
+
+        if (ObjectUtil.isEmpty(electricityMemberCardList)) {
+            return R.ok(electricityMemberCardList);
+        }
+
+        List<ElectricityMemberCardVO> electricityMemberCardVOList = new ArrayList<>();
+        for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
+            ElectricityMemberCardVO electricityMemberCardVO = new ElectricityMemberCardVO();
+            BeanUtils.copyProperties(electricityMemberCard, electricityMemberCardVO);
+
+            if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
+                OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
+                if (Objects.nonNull(oldUserActivity)) {
+
+                    OldUserActivityVO oldUserActivityVO = new OldUserActivityVO();
+                    BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
+
+                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
+
+                        Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
+                        if (Objects.nonNull(coupon)) {
+                            oldUserActivityVO.setCoupon(coupon);
+                        }
+
+                    }
+                    electricityMemberCardVO.setOldUserActivityVO(oldUserActivityVO);
+                }
+            }
+
+            electricityMemberCardVOList.add(electricityMemberCardVO);
+        }
+
+        return R.ok(electricityMemberCardVOList);
+    }
+
     @Override
     public R queryRentCarMemberCardList(Long offset, Long size) {
 

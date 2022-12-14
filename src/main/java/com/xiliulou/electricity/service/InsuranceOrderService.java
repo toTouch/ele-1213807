@@ -28,7 +28,9 @@ public interface InsuranceOrderService {
 
     Integer updateOrderStatusById(InsuranceOrder insuranceOrder);
 
-    R queryInsurance(Long franchiseeId);
+    R queryInsurance();
+
+    R homeOneQueryInsurance(Integer model);
 
     void insert(InsuranceOrder insuranceOrder);
 }
