@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.StoreTagMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.StoreTag" id="StoreTagMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="seq" column="seq" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectStoreTag">
+       	select   id, title, store_id, seq, status, del_flag, tenant_id, create_time, update_time        from t_store_tag
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="StoreTagMap">
+        <include refid="selectStoreTag"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="StoreTagMap">
+        <include refid="selectStoreTag"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="title != null and title != ''">
+                and title = #{title}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="seq != null">
+                and seq = #{seq}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+        order by seq desc
+        limit #{offset}, #{size}
+    </select>
+
+
+    <select id="selectPageCount" resultType="int">
+        select count(1) from t_store_tag
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="title != null and title != ''">
+                and title = #{title}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="seq != null">
+                and seq = #{seq}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="StoreTagMap">
+        <include refid="selectStoreTag"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="title != null and title != ''">
+                and title = #{title}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="seq != null">
+                and seq = #{seq}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_store_tag(title, store_id, seq, status, del_flag, tenant_id, create_time, update_time)
+        values (#{title}, #{storeId}, #{seq}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+        insert into t_store_tag(title, store_id, seq, status, del_flag, tenant_id, create_time, update_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{title}, #{storeId}, #{seq}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+        </foreach>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_store_tag
+        <set>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="seq != null">
+                seq = #{seq},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_store_tag where id = #{id}
+    </delete>
+
+    <delete id="deleteByStoreId">
+        delete from t_store_tag where store_id = #{storeId}
+    </delete>
+
+</mapper>

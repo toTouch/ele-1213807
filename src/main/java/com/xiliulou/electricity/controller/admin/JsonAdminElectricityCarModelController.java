@@ -62,7 +62,7 @@ public class JsonAdminElectricityCarModelController {
 
     //删除换电柜型号
     @DeleteMapping(value = "/admin/electricityCarModel/{id}")
-    @Log(title = "删除换电柜型号")
+    @Log(title = "删除换电柜车辆型号")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -86,7 +86,6 @@ public class JsonAdminElectricityCarModelController {
             offset = 0L;
         }
 
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");

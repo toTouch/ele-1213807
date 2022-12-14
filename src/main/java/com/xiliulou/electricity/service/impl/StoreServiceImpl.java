@@ -5,28 +5,16 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Role;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.StoreAmount;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserDataScope;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.StoreAmountService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -34,6 +22,7 @@ import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,6 +64,12 @@ public class StoreServiceImpl implements StoreService {
     RoleService roleService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    @Autowired
+    StoreTagService storeTagService;
+    @Autowired
+    StoreDetailService storeDetailService;
+    @Autowired
+    PictureService pictureService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -168,6 +163,16 @@ public class StoreServiceImpl implements StoreService {
                     .tenantId(tenantId)
                     .build();
             storeAmountService.insert(storeAmount);
+
+
+            //保存门店标签
+            storeTagService.batchInsert(this.buildStoreTags(store,storeAddAndUpdate));
+
+            //保存门店详情
+            storeDetailService.insert(this.buildStoreDetail(store,storeAddAndUpdate));
+
+            //保存门店图片
+            pictureService.batchInsert(this.buildStorePicture(store,storeAddAndUpdate));
             
             //保存用户数据可见范围
             UserDataScope userDataScope = new UserDataScope();
@@ -206,6 +211,19 @@ public class StoreServiceImpl implements StoreService {
         store.setUpdateTime(System.currentTimeMillis());
         int update = storeMapper.updateById(store);
         DbUtils.dbOperateSuccessThen(update, () -> {
+
+            //保存门店标签
+            storeTagService.deleteByStoreId(store.getId());
+            storeTagService.batchInsert(this.buildStoreTags(store,storeAddAndUpdate));
+
+            //保存门店详情
+            storeDetailService.deleteByStoreId(store.getId());
+            storeDetailService.insert(this.buildStoreDetail(store,storeAddAndUpdate));
+
+            //保存门店图片
+            pictureService.deleteByBusinessId(store.getId());
+            pictureService.batchInsert(this.buildStorePicture(store,storeAddAndUpdate));
+
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_STORE + store.getId(), store);
             return null;
@@ -248,6 +266,16 @@ public class StoreServiceImpl implements StoreService {
 
             //删除门店账号
             storeAmountService.deleteByStoreId(id);
+
+            //删除门店标签
+            storeTagService.deleteByStoreId(store.getId());
+
+            //删除门店详情
+            storeDetailService.deleteByStoreId(store.getId());
+
+            //删除门店图片
+            pictureService.deleteByBusinessId(store.getId());
+
             return null;
         });
 
@@ -568,6 +596,67 @@ public class StoreServiceImpl implements StoreService {
             update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS : ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
             electricityCabinetService.idempotentUpdateCupboard(electricityCabinet, update);
         }
+    }
+
+    private List<StoreTag> buildStoreTags(Store store,StoreAddAndUpdate storeAddAndUpdate){
+        List<StoreTag> list=new ArrayList<>();
+        String serviceType = storeAddAndUpdate.getServiceType();
+        if(StringUtils.isBlank(serviceType)){
+            return list;
+        }
+
+        List<StoreTag> storeTags = JsonUtil.fromJsonArray(serviceType, StoreTag.class);
+        if(CollectionUtils.isEmpty(storeTags)){
+            return list;
+        }
+
+        return storeTags.parallelStream().peek(item->{
+            item.setStoreId(store.getId());
+            item.setStatus(StoreTag.STATUS_ENABLE);
+            item.setDelFlag(StoreTag.DEL_NORMAL);
+            item.setTenantId(store.getTenantId());
+            item.setCreateTime(System.currentTimeMillis());
+            item.setUpdateTime(System.currentTimeMillis());
+        }).collect(Collectors.toList());
+    }
+
+    private StoreDetail buildStoreDetail(Store store,StoreAddAndUpdate storeAddAndUpdate){
+        StoreDetail storeDetail=null;
+        if (StringUtils.isBlank(storeAddAndUpdate.getDetail())) {
+            return storeDetail;
+        }
+        storeDetail=new StoreDetail();
+        storeDetail.setStoreId(store.getId());
+        storeDetail.setDetail(storeAddAndUpdate.getDetail());
+        storeDetail.setStatus(StoreDetail.STATUS_ENABLE);
+        storeDetail.setDelFlag(StoreDetail.DEL_NORMAL);
+        storeDetail.setTenantId(store.getTenantId());
+        storeDetail.setCreateTime(System.currentTimeMillis());
+        storeDetail.setUpdateTime(System.currentTimeMillis());
+        return storeDetail;
+    }
+
+    private List<Picture> buildStorePicture(Store store,StoreAddAndUpdate storeAddAndUpdate){
+        List<Picture> list=new ArrayList<>();
+        String pictures = storeAddAndUpdate.getPictureList();
+        if(StringUtils.isBlank(pictures)){
+            return list;
+        }
+
+        List<Picture> pictureList = JsonUtil.fromJsonArray(pictures, Picture.class);
+        if(CollectionUtils.isEmpty(pictureList)){
+            return list;
+        }
+
+        return pictureList.parallelStream().peek(item->{
+            Picture picture = new Picture();
+            picture.setBusinessId(store.getId());
+            picture.setStatus(Picture.STATUS_ENABLE);
+            picture.setDelFlag(Picture.DEL_NORMAL);
+            picture.setTenantId(store.getTenantId());
+            picture.setCreateTime(System.currentTimeMillis());
+            picture.setUpdateTime(System.currentTimeMillis());
+        }).collect(Collectors.toList());
     }
 
 }

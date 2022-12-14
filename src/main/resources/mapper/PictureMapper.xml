@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.PictureMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.Picture" id="PictureMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="businessId" column="business_id" jdbcType="INTEGER"/>
+        <result property="pictureUrl" column="picture_url" jdbcType="VARCHAR"/>
+        <result property="seq" column="seq" jdbcType="INTEGER"/>
+        <result property="imgType" column="img_type" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectPicture">
+       	select   id, business_id, picture_url, seq, img_type, status, del_flag, tenant_id, create_time, update_time        from t_picture
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="PictureMap">
+        <include refid="selectPicture"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="PictureMap">
+        <include refid="selectPicture"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="PictureMap">
+        <include refid="selectPicture"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="businessId != null">
+                and business_id = #{businessId}
+            </if>
+            <if test="pictureUrl != null and pictureUrl != ''">
+                and picture_url = #{pictureUrl}
+            </if>
+            <if test="seq != null">
+                and seq = #{seq}
+            </if>
+            <if test="imgType != null">
+                and img_type = #{imgType}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_picture(business_id, picture_url, seq, img_type, status, del_flag, tenant_id, create_time, update_time)
+        values (#{businessId}, #{pictureUrl}, #{seq}, #{imgType}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        insert into t_picture(business_id, picture_url, seq, img_type, status, del_flag, tenant_id, create_time, update_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{businessId}, #{pictureUrl}, #{seq}, #{imgType}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+        </foreach>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_picture
+        <set>
+            <if test="businessId != null">
+                business_id = #{businessId},
+            </if>
+            <if test="pictureUrl != null and pictureUrl != ''">
+                picture_url = #{pictureUrl},
+            </if>
+            <if test="seq != null">
+                seq = #{seq},
+            </if>
+            <if test="imgType != null">
+                img_type = #{imgType},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_picture where id = #{id}
+    </delete>
+
+    <delete id="deleteByBusinessId">
+        delete from t_picture where business_id = #{businessId}
+    </delete>
+
+</mapper>
