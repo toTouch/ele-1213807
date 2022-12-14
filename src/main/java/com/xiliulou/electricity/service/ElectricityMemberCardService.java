@@ -18,6 +18,8 @@ public interface ElectricityMemberCardService {
 
     R queryUserList(Long offset, Long size, String productKey, String deviceName, Long franchiseeId);
 
+    R queryFirstPayMemberCard(Long offset, Long size, String productKey, String deviceName, Long franchiseeId,Integer model);
+
 	R queryRentCarMemberCardList(Long offset, Long size);
 
 	List<ElectricityMemberCard> queryByFranchisee(Long id);

@@ -20,10 +20,13 @@ import java.util.List;
  */
 public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsurance> {
 
-    Integer queryCount(@Param("status") Integer status, @Param("insuranceType") Integer insuranceType,@Param("tenantId") Integer tenantId,@Param("franchiseeId") Long franchiseeId,@Param("name") String name);
+    Integer queryCount(@Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("name") String name);
 
     int update(FranchiseeInsurance franchiseeInsurance);
 
     List<FranchiseeInsuranceVo> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+
+    FranchiseeInsurance queryByFranchiseeIdAndBatteryType(@Param("franchiseeId") Long franchiseeId, @Param("batteryType") String batteryType);
+
 
 }
