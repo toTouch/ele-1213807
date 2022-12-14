@@ -1084,14 +1084,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
             return userInfoDetailVO;
         }
-        userInfoDetailVO.setAuthStatus(userInfo.getAuthStatus());
+        BeanUtils.copyProperties(userInfo,userInfoDetailVO);
 
-
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("ELE ERROR! not found franchiseeUserInfo,uid={}", userInfo.getUid());
-//            return userInfoDetailVO;
-//        }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
 
@@ -1121,6 +1115,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoDetailVO;
     }
 
+    @Deprecated
     private Integer getServiceStatus(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
 
 ////        Integer serviceStatus = userInfo.getServiceStatus();

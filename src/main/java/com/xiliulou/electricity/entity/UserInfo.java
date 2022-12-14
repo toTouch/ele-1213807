@@ -73,12 +73,12 @@ public class UserInfo {
     private Integer batteryDepositStatus;
     
     /**
-     *
+     * 车辆租赁状态
      */
     private Integer carRentStatus;
     
     /**
-     *
+     * 车辆押金状态
      */
     private Integer carDepositStatus;
     
