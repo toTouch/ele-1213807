@@ -120,4 +120,6 @@ public class ElectricityCabinetOtherSetting {
     private Integer enableBatteryExceptionCheck;
 
     private String bms;
+
+    private Integer serverHeartBeat;
 }
