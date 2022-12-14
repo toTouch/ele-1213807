@@ -11,8 +11,27 @@ import lombok.Data;
  */
 @Data
 public class UserInfoDetailVO {
-    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过)
+    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过，审核通过表示已实名认证)
     private Integer authStatus;
+    /**
+     * 电池租赁状态 0--未租电池，1--已租电池
+     */
+    private Integer batteryRentStatus;
+
+    /**
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中,3--押金退款失败
+     */
+    private Integer batteryDepositStatus;
+
+    /**
+     * 车辆租赁状态
+     */
+    private Integer carRentStatus;
+
+    /**
+     * 车辆押金状态
+     */
+    private Integer carDepositStatus;
     /**
      * 服务状态 (0--初始化,1--已实名认证)
      */
