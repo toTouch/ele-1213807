@@ -93,4 +93,6 @@ public interface ElectricityMemberCardOrderService {
 
     ElectricityMemberCardOrder selectByOrderNo(String orderNo);
 
+    R queryUserExistMemberCard();
+
 }

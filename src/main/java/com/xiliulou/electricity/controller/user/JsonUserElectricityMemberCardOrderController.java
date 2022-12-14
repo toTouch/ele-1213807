@@ -124,4 +124,14 @@ public class JsonUserElectricityMemberCardOrderController {
     }
 
 
+    /**
+     * 查询用户是否存在换电和租车套餐
+     * @return
+     */
+    @GetMapping("user/memberCard/queryUserExistMemberCard")
+    public R queryUserExistMemberCard(){
+        return electricityMemberCardOrderService.queryUserExistMemberCard();
+    }
+
+
 }

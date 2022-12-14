@@ -2545,6 +2545,41 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return baseMapper.selectByOrderNo(orderNo);
     }
 
+    @Override
+    public R queryUserExistMemberCard() {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //校验用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        Map<String, Boolean> map = new HashMap<>();
+        map.put("isExistBatteryMemberCard", false);
+        map.put("isExistCarMemberCard", false);
+
+        Long now = System.currentTimeMillis();
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
+            map.put("isExistBatteryMemberCard", true);
+        }
+
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userCarMemberCard) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
+            map.put("isExistCarMemberCard", true);
+        }
+
+        return R.ok(map);
+    }
+
 
 }
 
