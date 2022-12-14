@@ -179,7 +179,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //判断是否有用户绑定该套餐
 //        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
 
-        List<UserBatteryMemberCard> userBatteryMemberCardList=userBatteryMemberCardService.selectByMemberCardId(id,tenantId);
+        List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectByMemberCardId(id, tenantId);
         if (!CollectionUtils.isEmpty(userBatteryMemberCardList)) {
             log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);
             return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
@@ -212,7 +212,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @DS("slave_1")
-    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel,List<Long> franchiseeIds) {
+    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel, List<Long> franchiseeIds) {
         List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, franchiseeIds, null);
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
@@ -305,21 +305,19 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        if (Objects.nonNull(userInfo.getFranchiseeId())) {
-            //判断是否缴纳押金
-            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
-                return R.fail("ELECTRICITY.0042", "未缴纳押金");
-            }
-
-            //判断该换电柜加盟商和用户加盟商是否一致
-            if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
-                log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), franchiseeId, userInfo.getFranchiseeId());
-                return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
-            }
-
-            franchiseeId = userInfo.getFranchiseeId();
+        //判断是否缴纳押金
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
+
+        //判断该换电柜加盟商和用户加盟商是否一致
+        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
+            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), franchiseeId, userInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+        }
+
+        franchiseeId = userInfo.getFranchiseeId();
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
@@ -331,7 +329,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //多电池型号查询套餐
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-            if(Objects.isNull(userBattery)){
+            if (Objects.isNull(userBattery)) {
                 log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
             }
@@ -408,7 +406,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        if(Objects.isNull(userCar)){
+        if (Objects.isNull(userCar)) {
             log.error("rentCar ERROR! not found userCar,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
@@ -436,9 +434,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("100011", "加盟商没有对应的车辆型号");
         }
 
-        List<Long> franchiseeIds= Arrays.asList(electricityCarModel.getFranchiseeId());
+        List<Long> franchiseeIds = Arrays.asList(electricityCarModel.getFranchiseeId());
 
-        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, userInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, franchiseeIds , userCar.getCarModel().intValue()));
+        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, userInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, franchiseeIds, userCar.getCarModel().intValue()));
     }
 
     @Override
