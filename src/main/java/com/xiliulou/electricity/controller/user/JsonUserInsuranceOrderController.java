@@ -47,10 +47,10 @@ public class JsonUserInsuranceOrderController {
         return insuranceOrderService.queryInsurance();
     }
 
-    //用户查询保险
+    //用户首次联合查询保险
     @GetMapping(value = "/user/homeOneQueryInsurance")
     public R homeOneQueryInsurance(@RequestParam(value = "model") Integer model) {
-        return insuranceOrderService.queryInsurance(model);
+        return insuranceOrderService.homeOneQueryInsurance(model);
     }
 
 

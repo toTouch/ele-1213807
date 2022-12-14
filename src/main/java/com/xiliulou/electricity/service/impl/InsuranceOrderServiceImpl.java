@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
@@ -288,12 +289,35 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(),userBattery.getBatteryType()));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType()));
     }
 
     @Override
     public R homeOneQueryInsurance(Integer model) {
-        return null;
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("queryInsurance  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("queryInsurance  ERROR! not found user,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
+            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
+            return R.ok();
+        }
+
+        String batteryType = BatteryConstant.acquireBatteryShort(model);
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), batteryType));
+
     }
 
     @Override
