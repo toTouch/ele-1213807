@@ -386,7 +386,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.isNull(franchiseeId) && Objects.nonNull(productKey) && Objects.nonNull(deviceName)) {
+        if (Objects.nonNull(productKey) && Objects.nonNull(deviceName)) {
             //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(electricityCabinet)) {
@@ -427,7 +427,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        franchiseeId = userInfo.getFranchiseeId();
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
