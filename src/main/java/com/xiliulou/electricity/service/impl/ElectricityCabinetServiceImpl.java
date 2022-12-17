@@ -1928,7 +1928,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
-            log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+            log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
         }
         
