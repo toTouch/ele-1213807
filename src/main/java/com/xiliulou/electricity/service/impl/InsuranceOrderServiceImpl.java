@@ -293,7 +293,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     }
 
     @Override
-    public R homeOneQueryInsurance(Integer model) {
+    public R homeOneQueryInsurance(Integer model,Long franchiseeId) {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -316,7 +316,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         String batteryType = BatteryConstant.acquireBatteryShort(model);
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), batteryType));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType));
 
     }
 

@@ -79,7 +79,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-			redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + serviceFeeUserInfo.getUid());
+            redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + serviceFeeUserInfo.getUid());
             return null;
         });
         return;
@@ -121,27 +121,27 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
             cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             //查询用户是否存在套餐过期电池服务费
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
-            userChangeServiceFee = serviceFee;
+            userChangeServiceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
 
+        Integer memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE;
+
         //用户产生的停卡电池服务费
         if (Objects.nonNull(userBatteryMemberCard)) {
-            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
                 cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
                 //不足一天按一天计算
                 double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
                 if (time < 24) {
                     cardDays = 1;
                 }
-
-                BigDecimal batteryServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, uid, cardDays, null, serviceFeeUserInfo);
-                userChangeServiceFee = batteryServiceFee;
+                userChangeServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, uid, cardDays, null, serviceFeeUserInfo);
+                memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_DISABLE;
             }
         }
-        eleBatteryServiceFeeVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
+        eleBatteryServiceFeeVO.setMemberCardStatus(memberCardStatus);
         eleBatteryServiceFeeVO.setUserBatteryServiceFee(userChangeServiceFee);
 
         return eleBatteryServiceFeeVO;

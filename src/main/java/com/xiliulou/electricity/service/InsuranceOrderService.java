@@ -30,7 +30,7 @@ public interface InsuranceOrderService {
 
     R queryInsurance();
 
-    R homeOneQueryInsurance(Integer model);
+    R homeOneQueryInsurance(Integer model,Long franchiseeId);
 
     void insert(InsuranceOrder insuranceOrder);
 }

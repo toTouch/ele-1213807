@@ -58,7 +58,7 @@ public class JsonUserElectricityCabinetMemberCardController {
     public R queryFirstPayMemberCard(@RequestParam("size") Long size,
                                      @RequestParam("offset") Long offset,
                                      @RequestParam(value = "model") Integer model,
-                                     @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                                     @RequestParam(value = "franchiseeId") Long franchiseeId,
                                      @RequestParam(value = "productKey", required = false) String productKey,
                                      @RequestParam(value = "deviceName", required = false) String deviceName) {
         if (size < 0 || size > 50) {

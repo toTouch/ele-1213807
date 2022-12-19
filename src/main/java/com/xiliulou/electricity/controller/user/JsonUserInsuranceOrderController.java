@@ -49,8 +49,8 @@ public class JsonUserInsuranceOrderController {
 
     //用户首次联合查询保险
     @GetMapping(value = "/user/homeOneQueryInsurance")
-    public R homeOneQueryInsurance(@RequestParam(value = "model") Integer model) {
-        return insuranceOrderService.homeOneQueryInsurance(model);
+    public R homeOneQueryInsurance(@RequestParam(value = "model") Integer model, @RequestParam("franchiseeId") Long franchiseeId) {
+        return insuranceOrderService.homeOneQueryInsurance(model, franchiseeId);
     }
 
 
