@@ -281,8 +281,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
 
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        }else {
+            eleDepositOrderMapper.insert(eleDepositOrder);
         }
-        eleDepositOrderMapper.insert(eleDepositOrder);
 
         //调起支付
         try {
