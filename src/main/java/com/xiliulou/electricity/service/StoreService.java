@@ -80,4 +80,5 @@ public interface StoreService {
 
     List<StoreVO> selectListByDistance(StoreQuery storeQuery);
 
+    StoreVO selectDetailById(Long id);
 }

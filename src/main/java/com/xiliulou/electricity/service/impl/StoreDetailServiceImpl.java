@@ -3,16 +3,13 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.StoreDetail;
 import com.xiliulou.electricity.mapper.StoreDetailMapper;
 import com.xiliulou.electricity.service.StoreDetailService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 门店详情表(StoreDetail)表服务实现类
@@ -106,5 +103,10 @@ public class StoreDetailServiceImpl implements StoreDetailService {
     @Override
     public int deleteByStoreId(Long id) {
         return this.storeDetailMapper.deleteByStoreId(id);
+    }
+
+    @Override
+    public StoreDetail selectByStoreId(Long id) {
+        return this.storeDetailMapper.selectByStoreId(id);
     }
 }

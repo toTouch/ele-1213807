@@ -25,6 +25,11 @@
         where id = #{id}
     </select>
 
+    <select id="selectByStoreId" resultMap="StoreDetailMap">
+        <include refid="selectStoreDetail"/>
+        where store_id = #{storeId}
+    </select>
+
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="StoreDetailMap">
         <include refid="selectStoreDetail"/>
@@ -106,6 +111,10 @@
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_store_detail where id = #{id}
+    </delete>
+
+    <delete id="deleteByStoreId">
+        delete from t_store_detail where store_id = #{storeId}
     </delete>
 
 </mapper>

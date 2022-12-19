@@ -62,4 +62,6 @@ public interface StoreDetailService {
     Boolean deleteById(Long id);
 
     int deleteByStoreId(Long id);
+
+    StoreDetail selectByStoreId(Long id);
 }

@@ -7,18 +7,15 @@ import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StorePictureQuery;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 图片表(Picture)表服务实现类
@@ -124,6 +121,11 @@ public class PictureServiceImpl implements PictureService {
     @Override
     public int deleteByBusinessId(Long id) {
         return this.pictureMapper.deleteByBusinessId(id);
+    }
+
+    @Override
+    public List<Picture> selectByByBusinessId(Long id) {
+        return this.pictureMapper.selectByByBusinessId(id);
     }
 
     @Override

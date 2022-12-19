@@ -24,6 +24,7 @@ import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -555,17 +556,41 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public List<StoreVO> selectListByDistance(StoreQuery storeQuery) {
-        List<Store> list=storeMapper.selectListByDistance(storeQuery);
-        if(CollectionUtils.isEmpty(list)){
+        List<Store> list = storeMapper.selectListByDistance(storeQuery);
+        if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
 
+        List<StoreVO> storeList = list.parallelStream().map(item -> {
+            StoreVO storeVO = new StoreVO();
+            BeanUtils.copyProperties(item, storeVO);
 
+            List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
+            if (CollectionUtils.isEmpty(pictures)) {
+                storeVO.setPictureList(pictures);
+            }
 
+            return storeVO;
+        }).collect(Collectors.toList());
 
-
+        return storeList;
     }
 
+    @Override
+    public StoreVO selectDetailById(Long id) {
+        StoreVO storeVO = new StoreVO();
+
+        Store store = this.queryByIdFromCache(id);
+        if (Objects.isNull(store) || Objects.equals(TenantContextHolder.getTenantId(), store.getTenantId())) {
+            return storeVO;
+        }
+
+        BeanUtils.copyProperties(store, storeVO);
+        storeVO.setPictureList(pictureService.selectByByBusinessId(id));
+        storeVO.setStoreDetail(storeDetailService.selectByStoreId(id));
+
+        return storeVO;
+    }
 
     public Long getTime(Long time) {
         Date date1 = new Date(time);

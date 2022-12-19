@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.StoreDetail;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * 门店详情表(StoreDetail)表数据库访问层
@@ -66,4 +65,6 @@ public interface StoreDetailMapper extends BaseMapper<StoreDetail> {
     int deleteById(Long id);
 
     int deleteByStoreId(@Param("storeId") Long storeId);
+
+    StoreDetail selectByStoreId(@Param("storeId") Long id);
 }

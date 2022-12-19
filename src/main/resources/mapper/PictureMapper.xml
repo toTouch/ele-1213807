@@ -26,6 +26,11 @@
         where id = #{id}
     </select>
 
+    <select id="selectByByBusinessId" resultMap="PictureMap">
+        <include refid="selectPicture"/>
+        where business_id = #{businessId}
+    </select>
+
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="PictureMap">
         <include refid="selectPicture"/>

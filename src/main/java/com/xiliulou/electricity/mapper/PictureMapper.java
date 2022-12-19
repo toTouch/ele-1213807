@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.Picture;
-
-import java.util.List;
-
 import com.xiliulou.electricity.query.PictureQuery;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * 图片表(Picture)表数据库访问层
@@ -68,4 +67,6 @@ public interface PictureMapper extends BaseMapper<Picture> {
     int deleteById(Long id);
 
     int deleteByBusinessId(@Param("businessId") Long businessId);
+
+    List<Picture> selectByByBusinessId(@Param("businessId")  Long id);
 }

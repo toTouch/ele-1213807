@@ -7,7 +7,6 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * 门店表(TStore)实体类
@@ -89,7 +88,10 @@ public class StoreAddAndUpdate {
      * 省编号
      */
     private Integer provinceId;
-
+    /**
+     * 区编号
+     */
+    private Integer regionId;
 
     /**
      * 加盟商Id

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -71,6 +72,14 @@ public class JsonUserStoreController {
                 .name(name).build();
 
         return R.ok(storeService.selectListByDistance(storeQuery));
+    }
+
+    /**
+     * 门店详情
+     */
+    @GetMapping(value = "/user/store/{id}")
+    public R storeDetail(@PathVariable("id") Long id){
+        return R.ok(storeService.selectDetailById(id));
     }
 
 
