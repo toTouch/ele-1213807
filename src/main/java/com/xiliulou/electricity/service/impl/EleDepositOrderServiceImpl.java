@@ -281,9 +281,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
 
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
-        }else {
-            eleDepositOrderMapper.insert(eleDepositOrder);
+
+            return R.ok();
         }
+        eleDepositOrderMapper.insert(eleDepositOrder);
 
         //调起支付
         try {
@@ -811,8 +812,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
 
-            BigDecimal chargeRate=electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee,franchiseeUserInfo);
-            batteryServiceFee=chargeRate;
+            BigDecimal chargeRate = electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee, franchiseeUserInfo);
+            batteryServiceFee = chargeRate;
 
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, null, cardDays);
