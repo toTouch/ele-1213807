@@ -470,7 +470,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //退款零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-            eleRefundOrderService.insert(eleRefundOrder);
 
             //用户
             FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
