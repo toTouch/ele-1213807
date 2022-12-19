@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 /**
  * 换电柜表(TElectricityCarModel)实体类
@@ -31,13 +33,35 @@ public class ElectricityCarModel {
      * 型号名称
      */
     private String name;
-
+    /**
+     * 加盟商Id
+     */
+    private Long storeId;
     /**
      * 加盟商Id
      */
     private Long franchiseeId;
 
     private Integer delFlag;
+
+    /**
+     * 租赁方式
+     */
+    private String rentType;
+
+    /**
+     * 租赁周期
+     */
+    private Integer rentTime;
+    /**
+     * 租车押金
+     */
+    private BigDecimal carDeposit;
+
+    /**
+     * 其它参数
+     */
+    private String otherProperties;
 
     /**
      * 创建时间
@@ -49,7 +73,6 @@ public class ElectricityCarModel {
     private Long updateTime;
 
     private Integer tenantId;
-
 
 
     public static final Integer DEL_NORMAL = 0;
