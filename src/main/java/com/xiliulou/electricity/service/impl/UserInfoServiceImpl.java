@@ -11,7 +11,6 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
@@ -23,13 +22,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -39,7 +31,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -182,7 +179,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     Long now = System.currentTimeMillis();
                     long carDays = 0;
                     if (item.getMemberCardExpireTime() > now) {
-//                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
                         Double carDayTemp = Math.ceil((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24.0);
                         carDays = carDayTemp.longValue();
                     }
@@ -210,26 +206,32 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     }
                 }
 
-//                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
-//                    item.setServiceStatus(UserInfo.STATUS_INIT);
-//                }
-
-                if (Objects.nonNull(item.getModel())) {
-                    item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
+                UserBattery userBattery = userBatteryService.selectByUidFromCache(item.getUid());
+                if(Objects.nonNull(userBattery)){
+                    item.setModel(userBattery.getBatteryType());
                 }
 
-                if (StringUtils.isNotBlank(item.getOrderId())) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
-                    if (Objects.nonNull(eleDepositOrder)) {
-                        item.setStoreId(eleDepositOrder.getStoreId());
-                    }
+                UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+                if(Objects.nonNull(userBatteryDeposit)){
+                    item.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
                 }
 
-//                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(item.getUid());
+                //if (Objects.nonNull(item.getModel())) {
+                //    item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
+                //}
+                //
+                //if (StringUtils.isNotBlank(item.getOrderId())) {
+                //    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
+                //    if (Objects.nonNull(eleDepositOrder)) {
+                //        item.setStoreId(eleDepositOrder.getStoreId());
+                //    }
+                //}
+
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
                 ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
                 if (Objects.nonNull(userBatteryMemberCard) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
                     item.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());
+                    item.setCardName(electricityMemberCard.getName());
                 }
 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());

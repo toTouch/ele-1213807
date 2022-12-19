@@ -50,13 +50,24 @@
 
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
-        tui.id as user_info_id,tui.phone,tui.name,tui.uid,tui.create_time as
-        userCertificationTime,tui.auth_status,tui.usable_status,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,tfui.disable_member_card_time,
-        tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.business_status as businessStatus,
-        tfui.battery_type as model,tfui.model_type,
-        tfui.order_id,tui.tenant_id
+        tui.id as user_info_id,
+        tui.phone,
+        tui.name,
+        tui.uid,
+        tui.create_time as userCertificationTime,
+        tui.auth_status,
+        tui.usable_status,
+        tui.battery_rent_status
+        tui.franchisee_id,
+        ubmc.member_card_expire_time,
+        ubmc.disable_member_card_time,
+        ubmc.remaining_number,
+        ubmc.member_card_id as card_id,
+        teb.power,
+        teb.business_status as businessStatus,
+        tui.tenant_id
         from t_user_info  tui
-        left join t_franchisee_user_info tfui on tfui.user_info_id=tui.id
+        left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
         left join t_electricity_battery teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
         <if test="query.tenantId != null">
@@ -75,10 +86,7 @@
             and tui.uid = #{query.uid}
         </if>
         <if test="query.memberCardId != null ">
-            and tfui.card_id = #{query.memberCardId}
-        </if>
-        <if test="query.cardName != null and query.cardName != ''">
-            and tfui.card_name = #{query.cardName}
+            and ubmc.member_card_id = #{query.memberCardId}
         </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}
@@ -90,22 +98,13 @@
             and tui.auth_status =#{query.authStatus}
         </if>
         <if test="query.memberCardExpireTimeBegin !=null">
-            and tfui.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+            and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
         </if>
         <if test="query.memberCardExpireTimeEnd !=null">
-            and tfui.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+            and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
-<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
-            and tui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 1">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>-->
         <if test="query.sortType == null or query.sortType == 0">
-            order by tfui.member_card_expire_time desc
+            order by ubmc.member_card_expire_time desc
         </if>
         <if test="query.sortType == 1">
             order by tui.create_time desc
@@ -116,7 +115,6 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_user_info as tui
-        left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
         where tui.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tui.name = #{query.name}
@@ -130,9 +128,6 @@
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
         </if>
-        <if test="query.memberCardId != null ">
-            and tfui.card_id = #{query.memberCardId}
-        </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}
         </if>
@@ -145,21 +140,12 @@
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>
- <!--       <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
-            and tui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 1">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>-->
     </select>
 
     <select id="queryCountForBatteryService" resultType="java.lang.Integer">
         select COUNT(1)
         from t_user_info as tui
-        left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
+        left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
         left join t_electricity_battery as teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
         <if test="query.name != null and query.name != ''">
@@ -178,7 +164,7 @@
             and teb.id = #{query.batteryId}
         </if>
         <if test="query.memberCardId != null ">
-            and tfui.card_id = #{query.memberCardId}
+            and ubmc.member_card_id = #{query.memberCardId}
         </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}
@@ -187,32 +173,19 @@
             and tui.create_time &lt;=#{query.endTime}
         </if>
         <if test="query.memberCardExpireTimeBegin !=null">
-            and tfui.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+            and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
         </if>
         <if test="query.memberCardExpireTimeEnd !=null">
-            and tfui.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
-        </if>
-        <if test="query.cardName != null and query.cardName != ''">
-            and tfui.card_name = #{query.cardName}
+            and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>
-<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
-            and tui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 1">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>-->
     </select>
 
     <select id="queryAuthenticationCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_user_info as tui
-        left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
         where tui.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tui.name = #{query.name}
@@ -226,26 +199,11 @@
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
         </if>
-        <if test="query.nowElectricityBatterySn != null and query.nowElectricityBatterySn != ''">
-            and tfui.now_electricity_battery_sn = #{query.nowElectricityBatterySn}
-        </if>
-        <if test="query.memberCardId != null ">
-            and tfui.card_id = #{query.memberCardId}
-        </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}
         </if>
         <if test="query.endTime != null">
             and tui.create_time &lt;=#{query.endTime}
-        </if>
-        <if test="query.memberCardExpireTimeBegin !=null">
-            and tfui.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
-        </if>
-        <if test="query.memberCardExpireTimeEnd !=null">
-            and tfui.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
-        </if>
-        <if test="query.cardName != null and query.cardName != ''">
-            and tfui.card_name = #{query.cardName}
         </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
@@ -253,15 +211,6 @@
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>
-<!--        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
-            and tui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 1">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>
-        <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
-            and tfui.service_status =#{query.serviceStatus}
-        </if>-->
     </select>
 
 
