@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CarModelTagMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.CarModelTag" id="CarModelTagMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="carModelId" column="car_model_id" jdbcType="INTEGER"/>
+        <result property="seq" column="seq" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectCarModelTag">
+       	select   id, title, car_model_id, seq, status, del_flag, tenant_id, create_time, update_time        from t_car_model_tag
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="CarModelTagMap">
+        <include refid="selectCarModelTag"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="CarModelTagMap">
+        <include refid="selectCarModelTag"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="CarModelTagMap">
+        <include refid="selectCarModelTag"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="title != null and title != ''">
+                and title = #{title}
+            </if>
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+            <if test="seq != null">
+                and seq = #{seq}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_car_model_tag(title, car_model_id, seq, status, del_flag, tenant_id, create_time, update_time)
+        values (#{title}, #{carModelId}, #{seq}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_car_model_tag
+        <set>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="carModelId != null">
+                car_model_id = #{carModelId},
+            </if>
+            <if test="seq != null">
+                seq = #{seq},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_car_model_tag where id = #{id}
+    </delete>
+
+</mapper>

@@ -7,6 +7,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * 门店表(TStore)实体类
@@ -81,7 +82,7 @@ public class StoreAddAndUpdate {
     /**
      * 城市编号
      */
-    @NotNull(message = "城市编号不能为空!", groups = {CreateGroup.class})
+//    @NotNull(message = "城市编号不能为空!", groups = {CreateGroup.class})
     private Integer cityId;
 
     /**
@@ -95,12 +96,21 @@ public class StoreAddAndUpdate {
      */
     private Integer franchiseeId;
 
-
     /**
      * 缴纳押金方式
      */
     private Integer payType;
-
-
+    /**
+     * 服务类型
+     */
+    private String serviceType;
+    /**
+     * 门店图片列表
+     */
+    private String pictureList;
+    /**
+     * 门店详情
+     */
+    private String detail;
 
 }

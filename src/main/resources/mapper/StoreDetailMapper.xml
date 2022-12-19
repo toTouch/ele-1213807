@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.StoreDetailMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.StoreDetail" id="StoreDetailMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="detail" column="detail" jdbcType="VARCHAR"/>
+        <result property="attr" column="attr" jdbcType="VARCHAR"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectStoreDetail">
+       	select   id, detail, attr, store_id, status, del_flag, tenant_id, create_time, update_time        from t_store_detail
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="StoreDetailMap">
+        <include refid="selectStoreDetail"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="StoreDetailMap">
+        <include refid="selectStoreDetail"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="StoreDetailMap">
+        <include refid="selectStoreDetail"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="detail != null and detail != ''">
+                and detail = #{detail}
+            </if>
+            <if test="attr != null and attr != ''">
+                and attr = #{attr}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_store_detail(detail, attr, store_id, status, del_flag, tenant_id, create_time, update_time)
+        values (#{detail}, #{attr}, #{storeId}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_store_detail
+        <set>
+            <if test="detail != null and detail != ''">
+                detail = #{detail},
+            </if>
+            <if test="attr != null and attr != ''">
+                attr = #{attr},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_store_detail where id = #{id}
+    </delete>
+
+</mapper>

@@ -62,4 +62,6 @@ public interface FranchiseeService {
 
 
     Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode,String cityCode);
+
+    Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode);
 }
