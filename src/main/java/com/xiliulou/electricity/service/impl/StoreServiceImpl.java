@@ -525,6 +525,20 @@ public class StoreServiceImpl implements StoreService {
        return this.queryByIdFromCache(electricityCabinet.getStoreId());
     }
 
+    @Override
+    public List<StoreVO> selectListByDistance(StoreQuery storeQuery) {
+        List<Store> list=storeMapper.selectListByDistance(storeQuery);
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.EMPTY_LIST;
+        }
+
+
+
+
+
+    }
+
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
