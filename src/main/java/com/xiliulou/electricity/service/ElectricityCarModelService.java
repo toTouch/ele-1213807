@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 换电柜型号表(TElectricityCarModel)表服务接口
@@ -39,6 +40,8 @@ public interface ElectricityCarModelService {
     List<ElectricityCarModel> selectByQuery(ElectricityCarModelQuery query);
 
     List<ElectricityCarModel> selectByPage(ElectricityCarModelQuery query);
+
+    Map<String,Double> parseRentCarPriceRule(ElectricityCarModel electricityCarModel);
 
     List<ElectricityCarModelVO> selectList(ElectricityCarModelQuery query);
 

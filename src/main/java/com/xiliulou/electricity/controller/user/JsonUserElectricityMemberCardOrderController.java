@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
@@ -123,8 +124,8 @@ public class JsonUserElectricityMemberCardOrderController {
      * @return
      */
     @PostMapping("user/memberCard/payRentCarMemberCard")
-    public R payRentCarMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
-        return electricityMemberCardOrderService.payRentCarMemberCard(electricityMemberCardOrderQuery, request);
+    public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
+        return electricityMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request);
     }
 
 

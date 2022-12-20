@@ -8,6 +8,7 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
+import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -106,6 +107,8 @@ public class ElectricityTradeOrderServiceImpl extends
     UserBatteryMemberCardService userBatteryMemberCardService;
     @Autowired
     UserCarService userCarService;
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -647,14 +650,6 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //用户押金
         if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-//            franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
-//            franchiseeUserInfoUpdate.setRentCarDeposit(eleDepositOrder.getPayAmount());
-//            franchiseeUserInfoUpdate.setRentCarOrderId(eleDepositOrder.getOrderId());
-//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfoUpdate.setBindCarModelId(eleDepositOrder.getCarModelId());
-//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
@@ -751,33 +746,27 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        Long now = System.currentTimeMillis();
-        Long memberCardExpireTime;
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
-            if (userCarMemberCard.getMemberCardExpireTime() < now) {
-                memberCardExpireTime = System.currentTimeMillis() +
-                        electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            } else {
-                memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime() +
-                        electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            }
-//            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-//            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-//            franchiseeUserInfoUpdate.setRentCarMemberCardExpireTime(memberCardExpireTime);
-//            franchiseeUserInfoUpdate.setRentCarCardId(electricityMemberCardOrder.getMemberCardId());
-//            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-//            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+            CarMemberCardOrderQuery carMemberCardOrderQuery=new CarMemberCardOrderQuery();
+            carMemberCardOrderQuery.setRentType(electricityMemberCardOrder.getCardName());
+            carMemberCardOrderQuery.setRentTime(electricityMemberCardOrder.getValidDays());
+
+            //if (userCarMemberCard.getMemberCardExpireTime() < now) {
+            //    memberCardExpireTime = System.currentTimeMillis() +
+            //            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            //} else {
+            //    memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime() +
+            //            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            //}
 
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
             updateUserCarMemberCard.setCardId(electricityMemberCardOrder.getMemberCardId().longValue());
-            updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+            updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrderQuery, userCarMemberCard));
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.updateByUid(updateUserCarMemberCard);
-
-
         }
 
 

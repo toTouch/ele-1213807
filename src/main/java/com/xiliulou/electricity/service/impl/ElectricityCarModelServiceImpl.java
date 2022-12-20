@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
@@ -12,6 +14,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,9 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -76,22 +77,24 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public R save(ElectricityCarModel electricityCarModel) {
         ElectricityCarModelQuery electricityCarModelQuery=ElectricityCarModelQuery.builder()
                 .franchiseeId(electricityCarModel.getFranchiseeId())
+                .storeId(electricityCarModel.getStoreId())
                 .name(electricityCarModel.getName()).build();
         Integer count = electricityCarModelMapper.queryCount(electricityCarModelQuery);
         if (count > 0) {
             return R.fail("该型号车辆已存在!");
         }
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        //插入数据库
+
         electricityCarModel.setCreateTime(System.currentTimeMillis());
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-        electricityCarModel.setTenantId(tenantId);
+        electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
         int insert = electricityCarModelMapper.insert(electricityCarModel);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
+            //保存车辆型号图片
+            pictureService.batchInsert(buildPictureList(electricityCarModel));
+
             return null;
         });
         return R.ok();
@@ -100,10 +103,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R edit(ElectricityCarModel electricityCarModel) {
-        if (Objects.isNull(electricityCarModel.getId())) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        
+
         ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(electricityCarModel.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
@@ -117,12 +117,17 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (count > 0) {
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
+
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
         int update = electricityCarModelMapper.update(electricityCarModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
+
+            pictureService.deleteByBusinessId(electricityCarModel.getId().longValue());
+            //保存车辆型号图片
+            pictureService.batchInsert(buildPictureList(electricityCarModel));
             return null;
         });
         return R.ok();
@@ -147,6 +152,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id);
+
+            pictureService.deleteByBusinessId(electricityCarModel.getId().longValue());
             return null;
         });
         return R.ok();
@@ -165,14 +172,28 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
     @Override
     public List<ElectricityCarModel> selectByQuery(ElectricityCarModelQuery query) {
-        //TODO
-        return null;
+        return electricityCarModelMapper.selectByQuery(query);
     }
 
     @Override
     public List<ElectricityCarModel> selectByPage(ElectricityCarModelQuery query) {
-        //TODO
-        return null;
+        return electricityCarModelMapper.selectByPage(query);
+    }
+
+    @Override
+    public Map<String,Double> parseRentCarPriceRule(ElectricityCarModel electricityCarModel){
+        Map<String,Double> rentTypeMap=new HashMap<>(2);
+
+        if (StringUtils.isBlank(electricityCarModel.getRentType())) {
+            return rentTypeMap;
+        }
+
+        List<RentCarTypeDTO> rentCarTypeDTOS = JsonUtil.fromJsonArray(electricityCarModel.getRentType(), RentCarTypeDTO.class);
+        if(CollectionUtils.isEmpty(rentCarTypeDTOS)){
+            return rentTypeMap;
+        }
+
+        return rentCarTypeDTOS.stream().collect(Collectors.toMap(RentCarTypeDTO::getRentType, RentCarTypeDTO::getPrice));
     }
 
     /**
@@ -240,5 +261,20 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
     
         return R.ok(Collections.EMPTY_LIST);
+    }
+
+    private List<Picture> buildPictureList(ElectricityCarModel carModel) {
+        if (StringUtils.isBlank(carModel.getPictures())) {
+            return null;
+        }
+
+        List<Picture> pictures = JsonUtil.fromJsonArray(carModel.getPictures(), Picture.class);
+        if(!CollectionUtils.isEmpty(pictures)){
+            pictures.forEach(item->{
+                item.setBusinessId(carModel.getId().longValue());
+            });
+        }
+
+        return pictures;
     }
 }

@@ -2,8 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -14,6 +12,8 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,14 +49,14 @@ public class JsonAdminElectricityCarModelController {
 
     //新增换电柜车辆型号
     @PostMapping(value = "/admin/electricityCarModel")
-    public R save(@RequestBody @Validated ElectricityCarModel electricityCarModel) {
+    public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModel electricityCarModel) {
         return electricityCarModelService.save(electricityCarModel);
     }
 
     //修改换电柜车辆型号
     @PutMapping(value = "/admin/electricityCarModel")
     @Log(title = "修改换电柜车辆型号")
-    public R update(@RequestBody ElectricityCarModel electricityCarModel) {
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarModel electricityCarModel) {
         return electricityCarModelService.edit(electricityCarModel);
     }
 

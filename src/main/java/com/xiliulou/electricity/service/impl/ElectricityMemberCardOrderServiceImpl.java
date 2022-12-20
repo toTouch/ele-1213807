@@ -21,6 +21,7 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -34,6 +35,7 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,6 +131,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     UserBatteryDepositService userBatteryDepositService;
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
+    @Autowired
+    CalcRentCarPriceFactory calcRentCarPriceFactory;
 
     /**
      * 创建月卡订单
@@ -2039,7 +2045,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
+    public R payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -2048,7 +2054,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityPayParams)) {
             log.error("ELE CAR MEMBER CARD ERROR!not found pay params,uid={}", user.getUid());
@@ -2061,7 +2066,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
-        //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found userInfo,uid={}", user.getUid());
@@ -2086,25 +2090,41 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
-        if (Objects.isNull(electricityMemberCard)) {
-            log.error("ELE CAR MEMBER CARD ERROR! not found electricityMemberCard id={},uid={}", electricityMemberCardOrderQuery.getMemberId(), user.getUid());
-            return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
+        //获取车辆型号
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrderQuery.getCarModelId());
+        if (Objects.isNull(electricityCarModel)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found electricityCarModel id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
+            return R.fail("ELECTRICITY.0087", "未找到车辆型号!");
         }
-        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("ELE CAR MEMBER CARD ERROR! member card is disable id={},uid={}", electricityMemberCardOrderQuery.getMemberId(), user.getUid());
-            return R.fail("ELECTRICITY.0088", "月卡已禁用!");
+
+        //获取租车套餐计费规则
+        Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
+        if (ObjectUtil.isEmpty(rentCarPriceRule)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
+            return R.fail("ELECTRICITY.0087", "租车套餐计费规则不存在!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
-                && !Objects.equals(userCarMemberCard.getCardId(), electricityMemberCard.getId())) {
+                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
             return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
 
-        BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
+        EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(carMemberCardOrderQuery.getRentType());
+        if (Objects.isNull(calcRentCarPriceInstance)) {
+            log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0087", "租车套餐计费规则不存在!");
+        }
+
+        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, carMemberCardOrderQuery, rentCarPriceRule);
+        if (!calcSavePrice.getLeft()) {
+            return R.fail("ELECTRICITY.0087", "租车套餐计费规则不存在!");
+        }
+
+        BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
+
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, user.getUid());
 
@@ -2113,36 +2133,29 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(electricityMemberCardOrderQuery.getMemberId());
+        electricityMemberCardOrder.setMemberCardId(carMemberCardOrderQuery.getCarModelId());
         electricityMemberCardOrder.setUid(user.getUid());
-        electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
-        electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
-        electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
-        electricityMemberCardOrder.setPayAmount(payAmount);
+        electricityMemberCardOrder.setMaxUseCount(0L);
+        electricityMemberCardOrder.setMemberCardType(0);
+        electricityMemberCardOrder.setCardName(carMemberCardOrderQuery.getRentType());
+        electricityMemberCardOrder.setPayAmount(rentCarPrice);
         electricityMemberCardOrder.setUserName(userInfo.getName());
-        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
-        electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(electricityMemberCard.getFranchiseeId());
-        electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
-        electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setValidDays(carMemberCardOrderQuery.getRentTime());
+        electricityMemberCardOrder.setTenantId(userInfo.getTenantId());
+        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        electricityMemberCardOrder.setIsBindActivity(carMemberCardOrderQuery.getIsBindActivity());
+        electricityMemberCardOrder.setActivityId(carMemberCardOrderQuery.getActivityId());
         electricityMemberCardOrder.setMemberCardModel(ElectricityMemberCardOrder.RENT_CAR_MEMBER_CARD);
 
         //支付金额不能为负数
-        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        if (rentCarPrice.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
             baseMapper.insert(electricityMemberCardOrder);
-
-            Long memberCardExpireTime=null;
-            if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-                memberCardExpireTime = System.currentTimeMillis() +  electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            } else {
-                memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime() + electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            }
 
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
             updateUserCarMemberCard.setCardId(electricityMemberCardOrder.getMemberCardId().longValue());
-            updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+            updateUserCarMemberCard.setMemberCardExpireTime(calcRentCarMemberCardExpireTime(carMemberCardOrderQuery, userCarMemberCard));
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.updateByUid(updateUserCarMemberCard);
@@ -2170,6 +2183,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         return R.fail("ELECTRICITY.0099", "下单失败");
+    }
+
+    @Override
+    public Long calcRentCarMemberCardExpireTime(CarMemberCardOrderQuery carMemberCardOrderQuery, UserCarMemberCard userCarMemberCard) {
+        Long memberCardValidDays = null;
+        if (ElectricityCarModel.RENT_TYPE_MONTH.equals(carMemberCardOrderQuery.getRentType())) {
+            memberCardValidDays = carMemberCardOrderQuery.getRentTime() * 0 * 24 * 60 * 60 * 1000L;
+        } else if (ElectricityCarModel.RENT_TYPE_WEEK.equals(carMemberCardOrderQuery.getRentType())) {
+            memberCardValidDays = carMemberCardOrderQuery.getRentTime() * 7 * 24 * 60 * 60 * 1000L;
+        } else {
+            memberCardValidDays = 0L;
+        }
+
+        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            return System.currentTimeMillis() + memberCardValidDays;
+        } else {
+            return userCarMemberCard.getMemberCardExpireTime() + memberCardValidDays;
+        }
     }
 
     @Override

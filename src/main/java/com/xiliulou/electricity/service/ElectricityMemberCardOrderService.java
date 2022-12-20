@@ -2,12 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
-import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
-import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
-import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import org.apache.ibatis.annotations.Param;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -59,7 +55,9 @@ public interface ElectricityMemberCardOrderService {
 
     R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
 
-    R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
+    R payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
+
+    Long calcRentCarMemberCardExpireTime(CarMemberCardOrderQuery carMemberCardOrderQuery, UserCarMemberCard userCarMemberCard);
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
 
