@@ -1,10 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.vo.ElectricityCarModelVO;
+
+import java.util.List;
 
 /**
  * 换电柜型号表(TElectricityCarModel)表服务接口
@@ -34,4 +35,12 @@ public interface ElectricityCarModelService {
 	R queryCount(ElectricityCarModelQuery electricityCarModelQuery);
     
     R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery);
+
+    List<ElectricityCarModel> selectByQuery(ElectricityCarModelQuery query);
+
+    List<ElectricityCarModel> selectByPage(ElectricityCarModelQuery query);
+
+    List<ElectricityCarModelVO> selectList(ElectricityCarModelQuery query);
+
+    ElectricityCarModelVO selectDetailById(Long id);
 }

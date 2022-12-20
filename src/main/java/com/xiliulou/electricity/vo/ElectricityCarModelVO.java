@@ -1,11 +1,12 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.Picture;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 缴纳电池服务费订单表(tEleBatteryServiceFeeOrder)实体类
@@ -52,5 +53,9 @@ public class ElectricityCarModelVO {
 
     private Integer tenantId;
 
+    /**
+     * 车辆型号图片
+     */
+    List<Picture> pictures;
 
 }

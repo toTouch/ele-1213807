@@ -12,6 +12,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜型号表(TElectricityCarModel)表服务实现类
@@ -41,6 +43,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     ElectricityCarService electricityCarService;
     @Autowired
     StoreService storeService;
+    @Autowired
+    PictureService pictureService;
 
 
     /**
@@ -158,7 +162,67 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public R queryCount(ElectricityCarModelQuery electricityCarModelQuery) {
         return R.ok(electricityCarModelMapper.queryCount(electricityCarModelQuery));
     }
-    
+
+    @Override
+    public List<ElectricityCarModel> selectByQuery(ElectricityCarModelQuery query) {
+        //TODO
+        return null;
+    }
+
+    @Override
+    public List<ElectricityCarModel> selectByPage(ElectricityCarModelQuery query) {
+        //TODO
+        return null;
+    }
+
+    /**
+     * 用户端车辆型号分页列表
+     * @param query
+     * @return
+     */
+    @Override
+    public List<ElectricityCarModelVO> selectList(ElectricityCarModelQuery query) {
+        List<ElectricityCarModel> electricityCarModels = this.selectByPage(query);
+        if(CollectionUtils.isEmpty(electricityCarModels)){
+            return Collections.EMPTY_LIST;
+        }
+
+        List<ElectricityCarModelVO> modelVOList = electricityCarModels.parallelStream().map(item -> {
+            ElectricityCarModelVO carModelVO = new ElectricityCarModelVO();
+            BeanUtils.copyProperties(item, carModelVO);
+
+            List<Picture> pictures = pictureService.selectByByBusinessId(item.getId().longValue());
+            carModelVO.setPictures(pictures);
+            return carModelVO;
+        }).collect(Collectors.toList());
+
+        return modelVOList;
+    }
+
+    /**
+     * 车辆型号详情
+     * @param
+     * @return
+     */
+    @Override
+    public ElectricityCarModelVO selectDetailById(Long id) {
+        ElectricityCarModelVO carModelVO = new ElectricityCarModelVO();
+
+        ElectricityCarModel electricityCarModel = this.queryByIdFromCache(id.intValue());
+        if(Objects.isNull(electricityCarModel) || Objects.equals(electricityCarModel.getTenantId(),TenantContextHolder.getTenantId())){
+            return carModelVO;
+        }
+
+        BeanUtils.copyProperties(electricityCarModel,carModelVO);
+
+        List<Picture> pictures = pictureService.selectByByBusinessId(id);
+        carModelVO.setPictures(pictures);
+
+        return carModelVO;
+    }
+
+
+
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         Store store = storeService.queryByIdFromCache(electricityCarModelQuery.getStoreId());

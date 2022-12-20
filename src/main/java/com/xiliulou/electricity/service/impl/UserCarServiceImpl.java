@@ -2,10 +2,14 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.mapper.UserCarMapper;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.UserCarVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,8 @@ public class UserCarServiceImpl implements UserCarService {
     private UserCarMapper userCarMapper;
     @Autowired
     private RedisService redisService;
+    @Autowired
+    private ElectricityCarModelService carModelService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -143,5 +149,24 @@ public class UserCarServiceImpl implements UserCarService {
         });
 
         return delete;
+    }
+
+    /**
+     * 用户车辆详情
+     * @param uid
+     * @return
+     */
+    @Override
+    public UserCarVO selectDetailByUid(Long uid) {
+        UserCarVO userCarVO = new UserCarVO();
+
+        UserCar userCar = this.selectByUidFromCache(uid);
+        if(Objects.isNull(userCar) || Objects.equals(userCar.getTenantId(), TenantContextHolder.getTenantId())){
+            return userCarVO;
+        }
+
+        ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(userCar.getCarModel().intValue());
+
+        return userCarVO;
     }
 }

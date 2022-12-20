@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserCar;
-
-import java.util.List;
+import com.xiliulou.electricity.vo.UserCarVO;
 
 /**
  * (UserCar)表服务接口
@@ -56,4 +55,5 @@ public interface UserCarService {
      */
     Integer deleteByUid(Long uid);
 
+    UserCarVO selectDetailByUid(Long uid);
 }

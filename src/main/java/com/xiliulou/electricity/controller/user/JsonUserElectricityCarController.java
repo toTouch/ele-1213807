@@ -1,12 +1,13 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
@@ -21,6 +22,8 @@ import java.util.Objects;
 @Slf4j
 public class JsonUserElectricityCarController {
 
+    @Autowired
+    UserCarService userCarService;
 
     @Autowired
     ElectricityCarService electricityCarService;
@@ -34,4 +37,16 @@ public class JsonUserElectricityCarController {
 
         return R.ok(electricityCarService.queryInfoByUid(uid));
     }
+
+
+    /**
+     * 查看用户车辆详情
+     */
+    @GetMapping("user/car/userCar")
+    public R userCar(@RequestParam("uid") Long uid) {
+        return R.ok(userCarService.selectDetailByUid(uid));
+    }
+
+
+
 }
