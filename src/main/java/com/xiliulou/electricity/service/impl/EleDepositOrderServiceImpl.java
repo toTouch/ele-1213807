@@ -980,7 +980,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok();
     }
 
-
+    /**
+     * 用户端缴纳租车押金
+     * @return
+     */
     @Override
     public R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request) {
 
@@ -992,73 +995,73 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
-        if (!getLockSuccess) {
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false)) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("ELE DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("ELE DEPOSIT ERROR!not found userOauthBind,uid={}", user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR!not found userOauthBind,uid={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELE DEPOSIT ERROR! user not auth,uid={}", user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! user already rent deposit,uid={}", user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! user already rent deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
         //门店
         Store store = storeService.queryByIdFromCache(storeId);
         if (Objects.isNull(store)) {
-            log.error("ELE DEPOSIT ERROR! not found store,uid={}", user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
-            log.error("ELE DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), user.getUid());
             return R.fail("100008", "不支持线上缴纳租车押金");
         }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carModelId);
         if (Objects.isNull(electricityCarModel)) {
-            log.error("ELE DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, user.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, user.getUid());
             return R.fail("100009", "未找到该型号车辆");
         }
 
-        StoreGoods storeGoods = storeGoodsService.queryByStoreIdAndCarModelId(storeId, carModelId);
-        if (Objects.isNull(storeGoods)) {
-            log.error("ELE DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, user.getUid());
-            return R.fail("100009", "未找到该型号车辆");
-        }
+        //StoreGoods storeGoods = storeGoodsService.queryByStoreIdAndCarModelId(storeId, carModelId);
+        //if (Objects.isNull(storeGoods)) {
+        //    log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, user.getUid());
+        //    return R.fail("100009", "未找到该型号车辆");
+        //}
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT,user.getUid());
 
-        //生成订单
+        BigDecimal payAmount = electricityCarModel.getCarDeposit();
+
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
                 .orderId(orderId)
                 .uid(user.getUid())
                 .phone(userInfo.getPhone())
                 .name(userInfo.getName())
-                .payAmount(storeGoods.getPrice())
+                .payAmount(payAmount)
                 .status(EleDepositOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
@@ -1069,8 +1072,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .storeId(storeId)
                 .carModelId(carModelId).build();
 
-
-        BigDecimal payAmount = storeGoods.getPrice();
 
         //支付零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -1107,8 +1108,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
             return R.ok();
         }
-        eleDepositOrderMapper.insert(eleDepositOrder);
 
+
+        eleDepositOrderMapper.insert(eleDepositOrder);
         //调起支付
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()

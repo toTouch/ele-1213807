@@ -20,17 +20,18 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
@@ -2038,92 +2039,77 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R payRentCarMemberCard(ElectricityMemberCardOrderQuery
-                                          electricityMemberCardOrderQuery, HttpServletRequest request) {
+    public R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("rentBattery  ERROR! not found user ");
+            log.error("ELE CAR MEMBER CARD ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         //支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("ELE CAR MEMBER CARD ERROR!not found pay params,uid={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
-
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), TenantContextHolder.getTenantId());
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("CREATE MEMBER_ORDER ERROR!not found userOauthBind or thirdId is null,uid={}", user.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR!not found userOauthBind or thirdId is null,uid={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
         //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid={}", user.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! not found userInfo,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unUsable! uid={}", user.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! user is disable,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELE MEMBERCARD ERROR! user not auth,uid={}", user.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//        }
-
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("rentBattery  ERROR! not pay deposit,uid={}", user.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", electricityMemberCardOrderQuery.getMemberId());
+            log.error("ELE CAR MEMBER CARD ERROR! not found electricityMemberCard id={},uid={}", electricityMemberCardOrderQuery.getMemberId(), user.getUid());
             return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", electricityMemberCardOrderQuery.getMemberId());
+            log.error("ELE CAR MEMBER CARD ERROR! member card is disable id={},uid={}", electricityMemberCardOrderQuery.getMemberId(), user.getUid());
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
-        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId()) && !Objects.equals(userCarMemberCard.getCardId(), electricityMemberCard.getId())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
+        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
+                && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
+                && !Objects.equals(userCarMemberCard.getCardId(), electricityMemberCard.getId())) {
+            log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
             return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
 
         BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
 
-        //支付金额不能为负数
-        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            payAmount = BigDecimal.valueOf(0);
-        }
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, user.getUid());
 
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
-        electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
+        electricityMemberCardOrder.setOrderId(orderId);
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
@@ -2140,9 +2126,31 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setMemberCardModel(ElectricityMemberCardOrder.RENT_CAR_MEMBER_CARD);
+
+        //支付金额不能为负数
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
+            baseMapper.insert(electricityMemberCardOrder);
+
+            Long memberCardExpireTime=null;
+            if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+                memberCardExpireTime = System.currentTimeMillis() +  electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            } else {
+                memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime() + electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            }
+
+            UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
+            updateUserCarMemberCard.setUid(userInfo.getUid());
+            updateUserCarMemberCard.setCardId(electricityMemberCardOrder.getMemberCardId().longValue());
+            updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+            updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
+
+            userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+
+            return R.ok();
+        }
+
         baseMapper.insert(electricityMemberCardOrder);
-
-
         //调起支付
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()
@@ -2152,17 +2160,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_RENT_MEMBER_CARD)
                     .attach(ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)
                     .description("租车月卡收费")
-                    .tenantId(tenantId).build();
+                    .tenantId(TenantContextHolder.getTenantId()).build();
 
             WechatJsapiOrderResultDTO resultDTO =
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (WechatPayException e) {
-            log.error("CREATE MEMBER_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+            log.error("ELE CAR MEMBER CARD ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
 
         return R.fail("ELECTRICITY.0099", "下单失败");
-
     }
 
     @Override

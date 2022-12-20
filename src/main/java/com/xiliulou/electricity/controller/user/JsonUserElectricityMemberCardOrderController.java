@@ -117,7 +117,11 @@ public class JsonUserElectricityMemberCardOrderController {
         return electricityMemberCardOrderService.getDisableMemberCardList(electricityMemberCardRecordQuery);
     }
 
-
+    /**
+     * 购买租车套餐
+     * @param
+     * @return
+     */
     @PostMapping("user/memberCard/payRentCarMemberCard")
     public R payRentCarMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
         return electricityMemberCardOrderService.payRentCarMemberCard(electricityMemberCardOrderQuery, request);
