@@ -298,7 +298,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
-
+    
+    // TODO: 2022/12/21 事物
     @Override
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
 
@@ -358,6 +359,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         //生成押金订单
         if (Objects.nonNull(integratedPaymentAdd.getFranchiseeId())) {
+            // TODO: 2022/12/21 spring的事务的坑
             Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, integratedPaymentAdd.getFranchiseeId(), integratedPaymentAdd.getModel());
             if (!generateDepositOrderResult.getLeft()) {
                 return generateDepositOrderResult;
@@ -438,15 +440,16 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (Objects.isNull(model)) {
                 return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
             }
-
+    
+            // TODO: 2022/12/21 jsonArray  对象
             //型号押金
             List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
                 log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", franchiseeId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
-
-
+    
+            // TODO: 2022/12/21 理解一下
             for (Map map : modelBatteryDepositList) {
                 if ((double) (map.get("model")) - model < 1 && (double) (map.get("model")) - model >= 0) {
                     depositPayAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
@@ -485,8 +488,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         return Triple.of(true, null, eleDepositOrder);
     }
-
-
+    
+    // TODO: 2022/12/21 活动问题
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId) {
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());

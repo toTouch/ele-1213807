@@ -569,6 +569,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             //检查是否有没设置区域的加盟商
             List<Franchisee> cityFranchiseeList = franchiseeListByCity.parallelStream().filter(item -> Objects.equals(NumberConstant.ZERO, item.getRegionId())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(cityFranchiseeList)) {
+                // TODO: 2022/12/21 bug
                 //1.3.3若城市多个加盟商都设置了区域，获取区域编码
                 Set<String> regionCodeList = new HashSet<>();
                 franchiseeListByCity.forEach(item -> {

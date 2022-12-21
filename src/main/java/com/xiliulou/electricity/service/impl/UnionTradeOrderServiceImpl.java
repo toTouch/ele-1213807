@@ -335,7 +335,7 @@ public class UnionTradeOrderServiceImpl extends
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
-
+        // TODO: 2022/12/21 幂等
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
             log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);

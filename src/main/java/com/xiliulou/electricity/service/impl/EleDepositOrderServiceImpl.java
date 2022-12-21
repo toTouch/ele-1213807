@@ -689,7 +689,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
+        // TODO: 2022/12/21 没有加盟商id什么情景下
         if (Objects.isNull(franchiseeId)) {
             Store store = storeService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(store)) {
@@ -715,6 +716,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //根据类型分押金
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //型号押金
+            // TODO: 2022/12/21 bug
             List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
             return R.ok(modelBatteryDepositList);
         }
@@ -1064,8 +1066,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .storeId(storeId)
                 .carModelId(carModelId).build();
-
-
+    
+        // TODO: 2022/12/21 支付零元
         //支付零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);

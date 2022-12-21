@@ -385,11 +385,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             log.error("rentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
+        // TODO: 2022/12/21 判断空串 删掉
         if (Objects.nonNull(productKey) && Objects.nonNull(deviceName)) {
             //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(electricityCabinet)) {
+                // TODO: 2022/12/21 日志
                 log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
                 return R.fail("ELECTRICITY.0005", "未找到换电柜");
             }
@@ -447,7 +449,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
         }
-
+        
+        // TODO: 2022/12/21 删除
         List<ElectricityMemberCardVO> electricityMemberCardVOList = new ArrayList<>();
         for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
             ElectricityMemberCardVO electricityMemberCardVO = new ElectricityMemberCardVO();

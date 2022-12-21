@@ -314,7 +314,8 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
             return R.ok();
         }
-
+    
+        // TODO: 2022/12/21 tenantId
         String batteryType = BatteryConstant.acquireBatteryShort(model);
         return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType));
 

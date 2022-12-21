@@ -40,7 +40,8 @@ public class JsonUserInsuranceOrderController {
     public R payInsurance(@RequestBody @Validated(value = CreateGroup.class) InsuranceOrderAdd insuranceOrderAdd, HttpServletRequest request) {
         return insuranceOrderService.createOrder(insuranceOrderAdd, request);
     }
-
+    
+    // TODO: 2022/12/21 旧数据处理
     //用户查询保险
     @GetMapping(value = "/user/queryInsurance")
     public R queryInsurance() {
