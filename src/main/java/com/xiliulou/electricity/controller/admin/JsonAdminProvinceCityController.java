@@ -31,7 +31,7 @@ public class JsonAdminProvinceCityController {
 	}
 
 	@GetMapping(value="/admin/province/test")
-	public void test(){
+	public void test() throws Exception {
 		provinceService.test();
 	}
 
