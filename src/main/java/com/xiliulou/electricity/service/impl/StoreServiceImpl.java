@@ -11,6 +11,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreMapper;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
@@ -165,15 +166,11 @@ public class StoreServiceImpl implements StoreService {
                     .build();
             storeAmountService.insert(storeAmount);
 
-
             //保存门店标签
             storeTagService.batchInsert(this.buildStoreTags(store,storeAddAndUpdate));
 
             //保存门店详情
             storeDetailService.insert(this.buildStoreDetail(store,storeAddAndUpdate));
-
-            //保存门店图片
-            pictureService.batchInsert(this.buildStorePicture(store,storeAddAndUpdate));
             
             //保存用户数据可见范围
             UserDataScope userDataScope = new UserDataScope();
@@ -220,10 +217,6 @@ public class StoreServiceImpl implements StoreService {
             //保存门店详情
             storeDetailService.deleteByStoreId(store.getId());
             storeDetailService.insert(this.buildStoreDetail(store,storeAddAndUpdate));
-
-            //保存门店图片
-            pictureService.deleteByBusinessId(store.getId());
-            pictureService.batchInsert(this.buildStorePicture(store,storeAddAndUpdate));
 
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_STORE + store.getId(), store);
@@ -273,9 +266,6 @@ public class StoreServiceImpl implements StoreService {
 
             //删除门店详情
             storeDetailService.deleteByStoreId(store.getId());
-
-            //删除门店图片
-            pictureService.deleteByBusinessId(store.getId());
 
             return null;
         });
@@ -673,29 +663,6 @@ public class StoreServiceImpl implements StoreService {
         storeDetail.setCreateTime(System.currentTimeMillis());
         storeDetail.setUpdateTime(System.currentTimeMillis());
         return storeDetail;
-    }
-
-    private List<Picture> buildStorePicture(Store store,StoreAddAndUpdate storeAddAndUpdate){
-        List<Picture> list=new ArrayList<>();
-        String pictures = storeAddAndUpdate.getPictureList();
-        if(StringUtils.isBlank(pictures)){
-            return list;
-        }
-
-        List<Picture> pictureList = JsonUtil.fromJsonArray(pictures, Picture.class);
-        if(CollectionUtils.isEmpty(pictureList)){
-            return list;
-        }
-
-        return pictureList.parallelStream().peek(item->{
-            Picture picture = new Picture();
-            picture.setBusinessId(store.getId());
-            picture.setStatus(Picture.STATUS_ENABLE);
-            picture.setDelFlag(Picture.DEL_NORMAL);
-            picture.setTenantId(store.getTenantId());
-            picture.setCreateTime(System.currentTimeMillis());
-            picture.setUpdateTime(System.currentTimeMillis());
-        }).collect(Collectors.toList());
     }
 
 }

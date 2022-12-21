@@ -176,16 +176,4 @@ public class JsonAdminElectricityCarModelController {
     }
 
 
-    /**
-     * 车辆型号图片回调接口
-     * @param callBackQuery
-     * @return
-     */
-    @PostMapping(value = "/admin/electricityCarModel/picture/callback")
-    public R pictureCallBack(@RequestBody CallBackQuery  callBackQuery){
-        electricityCarModelService.pictureCallBack(callBackQuery);
-        return R.ok();
-    }
-
-
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Picture;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StorePictureQuery;
 import com.xiliulou.electricity.service.PictureService;
@@ -24,23 +25,13 @@ public class JsonAdminPictureController extends BaseController {
     private PictureService pictureService;
 
     /**
-     * 保存门店图片
-     * @param storePictureQueryList
-     * @return
-     */
-    @PostMapping("/admin/picture/saveStroePicture")
-    public R saveStroePicture(List<StorePictureQuery> storePictureQueryList){
-        return returnTripleResult(pictureService.saveStroePicture(storePictureQueryList));
-    }
-
-    /**
-     * 查询门店图片
+     * 查询图片
      */
     @GetMapping("/admin/picture/stroePicture")
-    public R storePicture(@RequestParam("storeId") Long storeId){
+    public R storePicture(@RequestParam("businessId") Long businessId){
 
         PictureQuery pictureQuery = new PictureQuery();
-        pictureQuery.setBusinessId(storeId);
+        pictureQuery.setBusinessId(businessId);
         pictureQuery.setStatus(Picture.STATUS_ENABLE);
         pictureQuery.setDelFlag(Picture.DEL_NORMAL);
         pictureQuery.setTenantId(TenantContextHolder.getTenantId());
@@ -48,5 +39,14 @@ public class JsonAdminPictureController extends BaseController {
         return R.ok(pictureService.selectByQuery(pictureQuery));
     }
 
+    /**
+     * 保存图片
+     * @param callBackQuery
+     * @return
+     */
+    @PostMapping(value = "/admin/picture/save/callback")
+    public R pictureCallBack(@RequestBody CallBackQuery callBackQuery){
+        return R.ok(pictureService.savePictureCallBack(callBackQuery));
+    }
 
 }

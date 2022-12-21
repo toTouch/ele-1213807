@@ -48,5 +48,4 @@ public interface ElectricityCarModelService {
 
     ElectricityCarModelVO selectDetailById(Long id);
 
-    void pictureCallBack(CallBackQuery callBackQuery);
 }

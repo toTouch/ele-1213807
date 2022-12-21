@@ -268,39 +268,6 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return R.ok(Collections.EMPTY_LIST);
     }
 
-
-    @Override
-    public void pictureCallBack(CallBackQuery callBackQuery) {
-        if(CollectionUtils.isEmpty(callBackQuery.getFileNameList()) || Objects.isNull(callBackQuery.getOtherId())){
-            return;
-        }
-
-        ElectricityCarModel electricityCarModel = this.queryByIdFromCache(callBackQuery.getOtherId().intValue());
-        if(!Objects.equals(electricityCarModel.getTenantId(),TenantContextHolder.getTenantId())){
-            return;
-        }
-
-        //删除车辆型号图片
-        pictureService.deleteByBusinessId(callBackQuery.getOtherId());
-
-        List<Picture> list= Lists.newArrayList();
-
-        List<String> pictureNameList = callBackQuery.getFileNameList();
-        for (int i = 0; i < pictureNameList.size(); i++) {
-            Picture picture = new Picture();
-            picture.setBusinessId(callBackQuery.getOtherId());
-            picture.setPictureUrl(pictureNameList.get(i));
-            picture.setSeq(i);
-            picture.setTenantId(TenantContextHolder.getTenantId());
-            picture.setCreateTime(System.currentTimeMillis());
-            picture.setUpdateTime(System.currentTimeMillis());
-            list.add(picture);
-        }
-
-        //保存车辆型号图片
-        pictureService.batchInsert(list);
-    }
-
     private List<CarModelTag> buildCarModelTagList(ElectricityCarModel carModel) {
         if (StringUtils.isBlank(carModel.getCarModelTag())) {
             return null;

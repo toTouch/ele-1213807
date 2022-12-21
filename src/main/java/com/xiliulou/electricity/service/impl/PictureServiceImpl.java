@@ -1,11 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Lists;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.mapper.PictureMapper;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StorePictureQuery;
 import com.xiliulou.electricity.service.PictureService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -15,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -128,25 +133,33 @@ public class PictureServiceImpl implements PictureService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> saveStroePicture(List<StorePictureQuery> storePictureQueryList) {
-        if(CollectionUtils.isEmpty(storePictureQueryList)){
-            return Triple.of(true,"",null);
+    public Integer savePictureCallBack(CallBackQuery callBackQuery) {
+        if(CollectionUtils.isEmpty(callBackQuery.getFileNameList()) || Objects.isNull(callBackQuery.getOtherId())){
+            return NumberConstant.ZERO;
         }
 
-        List<Picture> pictures = storePictureQueryList.stream().map(item -> {
+
+        //删除车辆型号图片
+        this.deleteByBusinessId(callBackQuery.getOtherId());
+
+        List<Picture> list= Lists.newArrayList();
+
+        List<String> pictureNameList = callBackQuery.getFileNameList();
+        for (int i = 0; i < pictureNameList.size(); i++) {
             Picture picture = new Picture();
-            picture.setBusinessId(item.getBusinessId());
-            picture.setPictureUrl(item.getPictureUrl());
-            picture.setSeq(item.getSeq());
+            picture.setBusinessId(callBackQuery.getOtherId());
+            picture.setPictureUrl(pictureNameList.get(i));
+            picture.setSeq(i);
             picture.setStatus(Picture.STATUS_ENABLE);
             picture.setDelFlag(Picture.DEL_NORMAL);
             picture.setTenantId(TenantContextHolder.getTenantId());
             picture.setCreateTime(System.currentTimeMillis());
             picture.setUpdateTime(System.currentTimeMillis());
-            return picture;
-        }).collect(Collectors.toList());
+            list.add(picture);
+        }
 
-        this.batchInsert(pictures);
-        return Triple.of(true,"","保存成功！");
+        //保存车辆型号图片
+        return this.batchInsert(list);
     }
+
 }

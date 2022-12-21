@@ -106,10 +106,7 @@ public class StoreAddAndUpdate {
      * 服务类型
      */
     private String serviceType;
-    /**
-     * 门店图片列表
-     */
-    private String pictureList;
+
     /**
      * 门店详情
      */

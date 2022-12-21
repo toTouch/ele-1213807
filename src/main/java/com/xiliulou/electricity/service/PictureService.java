@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.Picture;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StorePictureQuery;
 import org.apache.commons.lang3.tuple.Triple;
@@ -66,11 +67,11 @@ public interface PictureService {
      */
     Boolean deleteById(Long id);
 
-    Triple<Boolean,String,Object> saveStroePicture(List<StorePictureQuery> storePictureQueryList);
-
     List<Picture> selectByQuery(PictureQuery pictureQuery);
 
     int deleteByBusinessId(Long id);
 
     List<Picture> selectByByBusinessId(Long id);
+
+    Integer savePictureCallBack(CallBackQuery callBackQuery);
 }
