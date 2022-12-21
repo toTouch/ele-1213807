@@ -133,26 +133,6 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-//        //隔离门店租车数据
-//        Long storeId = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
-//            Store store = storeService.queryByUid(user.getUid());
-//            if (Objects.nonNull(store)) {
-//                storeId = store.getId();
-//            }
-//        }
-//
-//        Long franchiseeId = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-//                && !Objects.equals(user.getType(),User.TYPE_USER_STORE)) {
-//            //加盟商
-//            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//            if (Objects.nonNull(franchisee)) {
-//                franchiseeId = franchisee.getId();
-//            }
-//        }
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());

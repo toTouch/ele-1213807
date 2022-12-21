@@ -166,7 +166,7 @@ public class JsonAdminEleRefundOrderController {
                           @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                           @RequestParam("uid") Long uid,
                           HttpServletRequest request) {
-        return eleRefundOrderService.handleRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+        return eleRefundOrderService.handleRefundRentCar(refundOrderNo, errMsg, status, refundAmount, uid, request);
     }
 
     //后台租车线下退款处理
@@ -178,7 +178,7 @@ public class JsonAdminEleRefundOrderController {
                                  @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                                  @RequestParam("uid") Long uid,
                                  HttpServletRequest request) {
-        return eleRefundOrderService.handleOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+        return eleRefundOrderService.handleOffLineRefundRentCar(refundOrderNo, errMsg, status, refundAmount, uid, request);
     }
 
 
@@ -194,7 +194,7 @@ public class JsonAdminEleRefundOrderController {
                           @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                           @RequestParam("uid") Long uid,
                           HttpServletRequest request) {
-        return eleRefundOrderService.handleRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+        return eleRefundOrderService.handleRefundRentCar(refundOrderNo, errMsg, status, refundAmount, uid, request);
     }
 
     /**
@@ -208,7 +208,7 @@ public class JsonAdminEleRefundOrderController {
                                  @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                                  @RequestParam("uid") Long uid,
                                  HttpServletRequest request) {
-        return eleRefundOrderService.handleOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+        return eleRefundOrderService.handleOffLineRefundRentCar(refundOrderNo, errMsg, status, refundAmount, uid, request);
     }
 
 

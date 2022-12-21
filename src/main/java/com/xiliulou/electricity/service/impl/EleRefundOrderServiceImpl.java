@@ -271,20 +271,20 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R handleRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
+    public R handleRefundRentCar(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo)
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT,
                                 EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            log.error("REFUND ORDER ERROR! NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO={}", refundOrderNo);
             return R.fail("未找到退款订单!");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO={}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -292,14 +292,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
+            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid={} ", refundOrderNo);
             return R.fail("100012", "用户绑定车辆");
         }
 
 
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
-                log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
+                log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO={}", refundOrderNo);
                 return R.fail("退款金额不能大于支付金额!");
             }
 
@@ -432,7 +432,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R handleOffLineRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
+    public R handleOffLineRefundRentCar(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
 
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo)
@@ -440,13 +440,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT,
                                 EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO={}", refundOrderNo);
             return R.fail("未找到退款订单!");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO={}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -454,13 +454,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
+            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid={} ", refundOrderNo);
             return R.fail("100012", "用户绑定车辆");
         }
 
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
-                log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
+                log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO={}", refundOrderNo);
                 return R.fail("退款金额不能大于支付金额!");
             }
 

@@ -21,4 +21,6 @@ public interface ProvinceService {
 
 
 	List<Province> queryList();
+
+    void test() throws Exception;
 }

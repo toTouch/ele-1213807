@@ -633,26 +633,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        List<Integer> eleIdList = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
@@ -705,24 +685,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
@@ -833,9 +795,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         query.setEleIdList(eleIdList);
         query.setTenantId(TenantContextHolder.getTenantId());
 
-
-        //租户
-//        Integer tenantId = TenantContextHolder.getTenantId();
         return electricityCabinetService.selectByQuery(query);
     }
 
@@ -857,8 +816,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         query.setId(eleId);
         query.setName(name);
 
-        //租户
-//        return electricityCabinetService.superAdminQueryName(eleId);
         return R.ok(electricityCabinetService.superAdminSelectByQuery(query));
     }
 

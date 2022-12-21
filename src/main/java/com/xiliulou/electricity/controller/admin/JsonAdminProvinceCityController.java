@@ -30,4 +30,9 @@ public class JsonAdminProvinceCityController {
 		return R.ok(provinceService.queryList());
 	}
 
+	@GetMapping(value="/admin/province/test")
+	public void test(){
+		provinceService.test();
+	}
+
 }
