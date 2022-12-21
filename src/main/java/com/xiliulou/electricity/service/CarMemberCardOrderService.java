@@ -1,18 +1,16 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.RentCarOrder;
-import com.xiliulou.electricity.query.RentCarOrderQuery;
-import org.apache.commons.lang3.tuple.Triple;
+import com.xiliulou.electricity.entity.CarMemberCardOrder;
 
 import java.util.List;
 
 /**
- * 租车订单表(RentCarOrder)表服务接口
+ * 租车套餐订单表(CarMemberCardOrder)表服务接口
  *
  * @author zzlong
- * @since 2022-12-21 09:47:57
+ * @since 2022-12-21 09:47:25
  */
-public interface RentCarOrderService {
+public interface CarMemberCardOrderService {
 
     /**
      * 通过ID查询单条数据从数据库
@@ -20,7 +18,7 @@ public interface RentCarOrderService {
      * @param id 主键
      * @return 实例对象
      */
-    RentCarOrder selectByIdFromDB(Long id);
+    CarMemberCardOrder selectByIdFromDB(Long id);
 
     /**
      * 通过ID查询单条数据从缓存
@@ -28,7 +26,7 @@ public interface RentCarOrderService {
      * @param id 主键
      * @return 实例对象
      */
-    RentCarOrder selectByIdFromCache(Long id);
+    CarMemberCardOrder selectByIdFromCache(Long id);
 
     /**
      * 查询多条数据
@@ -37,23 +35,23 @@ public interface RentCarOrderService {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<RentCarOrder> selectByPage(int offset, int limit);
+    List<CarMemberCardOrder> selectByPage(int offset, int limit);
 
     /**
      * 新增数据
      *
-     * @param rentCarOrder 实例对象
+     * @param carMemberCardOrder 实例对象
      * @return 实例对象
      */
-    RentCarOrder insert(RentCarOrder rentCarOrder);
+    CarMemberCardOrder insert(CarMemberCardOrder carMemberCardOrder);
 
     /**
      * 修改数据
      *
-     * @param rentCarOrder 实例对象
+     * @param carMemberCardOrder 实例对象
      * @return 实例对象
      */
-    Integer update(RentCarOrder rentCarOrder);
+    Integer update(CarMemberCardOrder carMemberCardOrder);
 
     /**
      * 通过主键删除数据
@@ -63,5 +61,4 @@ public interface RentCarOrderService {
      */
     Boolean deleteById(Long id);
 
-    Triple<Boolean,String,Object> rentCarOrder(RentCarOrderQuery query);
 }

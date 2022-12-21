@@ -15,11 +15,9 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
-import com.xiliulou.electricity.web.query.OauthBindQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -392,7 +390,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 .updateTime(System.currentTimeMillis()).build();
         eleBindCarRecordService.insert(eleBindCarRecord);
 
-        electricityCar.setStatus(ElectricityCar.CAR_IS_RENT);
+        electricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
         electricityCar.setUid(electricityCarBindUser.getUid());
         electricityCar.setPhone(userInfo.getPhone());
         electricityCar.setUserInfoId(userInfo.getId());
@@ -490,7 +488,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 .updateTime(System.currentTimeMillis()).build();
         eleBindCarRecordService.insert(eleBindCarRecord);
 
-        electricityCar.setStatus(ElectricityCar.CAR_NOT_RENT);
+        electricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
         electricityCar.setUid(null);
         electricityCar.setPhone(null);
         electricityCar.setUserInfoId(null);
@@ -507,5 +505,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
         return electricityCarMapper.queryCountByStoreIds(tenantId, storeIds);
+    }
+
+    @Override
+    public ElectricityCar selectBySn(String sn) {
+        return electricityCarMapper.selectBySn(sn);
     }
 }

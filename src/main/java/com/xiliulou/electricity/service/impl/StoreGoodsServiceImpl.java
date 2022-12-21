@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -134,7 +133,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
                     .tenantId(e.getTenantId())
                     .storeId(e.getStoreId())
                     .model(e.getCarModel())
-                    .status(ElectricityCar.CAR_NOT_RENT).build();
+                    .status(ElectricityCar.STATUS_NOT_RENT).build();
             Integer carInventory = (Integer) electricityCarService.queryCount(electricityCarQuery).getData();
             storeGoodsVO.setCarInventory(carInventory);
 

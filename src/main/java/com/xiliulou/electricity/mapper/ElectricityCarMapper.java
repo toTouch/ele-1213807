@@ -32,4 +32,5 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
 
     Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds);
 
+    ElectricityCar selectBySn(@Param("sn") String sn);
 }

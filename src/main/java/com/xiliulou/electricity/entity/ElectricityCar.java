@@ -89,8 +89,8 @@ public class ElectricityCar {
 
     private Integer delFlag;
 
-    public static final Integer CAR_NOT_RENT = 0;
-    public static final Integer CAR_IS_RENT = 1;
+    public static final Integer STATUS_NOT_RENT = 0;
+    public static final Integer STATUS_IS_RENT = 1;
 
 
     public static final Integer DEL_NORMAL = 0;

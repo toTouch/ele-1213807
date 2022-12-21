@@ -53,4 +53,5 @@ public interface ElectricityCarService {
     Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds);
 
 
+    ElectricityCar selectBySn(String sn);
 }

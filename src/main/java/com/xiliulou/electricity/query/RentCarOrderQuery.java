@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Builder;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author: eclair
@@ -11,6 +14,9 @@ import lombok.Data;
 @Data
 @Builder
 public class RentCarOrderQuery {
+    @NotNull(message = "车辆编码不能为空!")
+    private String sn;
+
     private Long size;
     private Long offset;
     /**
