@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Province;
@@ -58,8 +59,8 @@ public class ProvinceServiceImpl implements ProvinceService {
     @Override
     public void test() throws Exception {
 
-        List<Province> provinces = this.queryList();
-        provinces.forEach(item -> {
+        List<City> cities = cityMapper.selectList(new LambdaQueryWrapper<City>().ne(City::getCode, 0));
+        cities.forEach(item -> {
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
