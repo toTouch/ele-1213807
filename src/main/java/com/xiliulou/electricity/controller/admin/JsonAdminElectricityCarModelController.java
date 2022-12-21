@@ -5,6 +5,7 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -173,5 +174,18 @@ public class JsonAdminElectricityCarModelController {
 
         return electricityCarModelService.selectByStoreId(electricityCarModelQuery);
     }
+
+
+    /**
+     * 车辆型号图片回调接口
+     * @param callBackQuery
+     * @return
+     */
+    @PostMapping(value = "/admin/electricityCarModel/picture/callback")
+    public R pictureCallBack(@RequestBody CallBackQuery  callBackQuery){
+        electricityCarModelService.pictureCallBack(callBackQuery);
+        return R.ok();
+    }
+
 
 }

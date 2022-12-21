@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 
@@ -46,4 +47,6 @@ public interface ElectricityCarModelService {
     List<ElectricityCarModelVO> selectList(ElectricityCarModelQuery query);
 
     ElectricityCarModelVO selectDetailById(Long id);
+
+    void pictureCallBack(CallBackQuery callBackQuery);
 }

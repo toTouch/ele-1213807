@@ -69,13 +69,14 @@ public class ElectricityCarModel {
     private BigDecimal carDeposit;
 
     /**
+     * 车辆型号标签
+     */
+    private String carModelTag;
+
+    /**
      * 其它参数
      */
     private String otherProperties;
-    /**
-     * 车辆型号图片
-     */
-    private String pictures;
 
     /**
      * 创建时间

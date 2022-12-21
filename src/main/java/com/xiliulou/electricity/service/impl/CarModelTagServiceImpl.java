@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.CarModelTag;
 import com.xiliulou.electricity.mapper.CarModelTagMapper;
 import com.xiliulou.electricity.service.CarModelTagService;
@@ -12,6 +13,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 车辆型号标签表(CarModelTag)表服务实现类
@@ -96,5 +98,18 @@ public class CarModelTagServiceImpl implements CarModelTagService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.carModelTagMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public Integer batchInsert(List<CarModelTag> carModelTagList) {
+        if(CollectionUtils.isEmpty(carModelTagList)){
+            return NumberConstant.ZERO;
+        }
+        return this.carModelTagMapper.batchInsert(carModelTagList);
+    }
+
+    @Override
+    public Integer deleteByCarModelId(long carModelId) {
+        return this.carModelTagMapper.deleteByCarModelId(carModelId);
     }
 }

@@ -65,4 +65,7 @@ public interface CarModelTagMapper extends BaseMapper<CarModelTag> {
      */
     int deleteById(Long id);
 
+    Integer batchInsert(List<CarModelTag> carModelTagList);
+
+    Integer deleteByCarModelId(@Param("carModelId") long carModelId);
 }

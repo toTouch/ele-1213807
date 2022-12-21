@@ -87,7 +87,6 @@ public class PictureServiceImpl implements PictureService {
     @Transactional(rollbackFor = Exception.class)
     public Integer batchInsert(List<Picture> pictures) {
         if(CollectionUtils.isEmpty(pictures)){
-            log.warn("ELE WARN! pictures is empty");
             return NumberConstant.ZERO;
         }
         return this.pictureMapper.batchInsert(pictures);

@@ -61,4 +61,7 @@ public interface CarModelTagService {
      */
     Boolean deleteById(Long id);
 
+    Integer batchInsert(List<CarModelTag> buildCarModelTagList);
+
+    Integer deleteByCarModelId(long carModelId);
 }
