@@ -27,7 +27,7 @@ public class JsonAdminPictureController extends BaseController {
     /**
      * 查询图片
      */
-    @GetMapping("/admin/picture/stroePicture")
+    @GetMapping("/admin/picture/list")
     public R storePicture(@RequestParam("businessId") Long businessId){
 
         PictureQuery pictureQuery = new PictureQuery();
