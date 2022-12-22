@@ -17,6 +17,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,6 +83,11 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R save(ElectricityCarModelQuery query) {
+        Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
+        if (!verifyResult.getLeft()) {
+            return R.failMsg(verifyResult.getRight());
+        }
+
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .franchiseeId(query.getFranchiseeId())
                 .storeId(query.getStoreId())
@@ -89,6 +96,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (count > 0) {
             return R.fail("该型号车辆已存在!");
         }
+
         ElectricityCarModel electricityCarModel =new  ElectricityCarModel();
         BeanUtils.copyProperties(query,electricityCarModel);
         electricityCarModel.setCreateTime(System.currentTimeMillis());
@@ -96,6 +104,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         electricityCarModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
         electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
         int insert = electricityCarModelMapper.insert(electricityCarModel);
+
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
@@ -105,26 +114,32 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
             return null;
         });
+
         return R.ok(electricityCarModel.getId());
     }
 
     @Override
     @Transactional
     public R edit(ElectricityCarModelQuery query) {
+        Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
+        if (!verifyResult.getLeft()) {
+            return R.failMsg(verifyResult.getRight());
+        }
 
         ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(query.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
-
         if (!Objects.equals(oldElectricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
+
 
         Integer count = electricityCarService.queryByModelId(query.getId());
         if (count > 0) {
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
+
 
         ElectricityCarModel updateCarModel =new  ElectricityCarModel();
         BeanUtils.copyProperties(query,updateCarModel);
@@ -132,6 +147,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         updateCarModel.setUpdateTime(System.currentTimeMillis());
         updateCarModel.setTenantId(TenantContextHolder.getTenantId());
         int update = electricityCarModelMapper.update(updateCarModel);
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + updateCarModel.getId());
 
@@ -140,6 +156,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             carModelTagService.batchInsert(buildCarModelTagList(query,updateCarModel));
             return null;
         });
+
         return R.ok();
     }
 
@@ -285,6 +302,14 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
         return R.ok(Collections.EMPTY_LIST);
+    }
+
+    private Pair<Boolean,String> verifyCarModelQuery(ElectricityCarModelQuery query) {
+        if(query.getCarDeposit().compareTo(BigDecimal.valueOf(0.01)) < 0){
+            return Pair.of(false,"车辆押金不合法！");
+        }
+
+        return Pair.of(true,"");
     }
 
     private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query,ElectricityCarModel carModel) {

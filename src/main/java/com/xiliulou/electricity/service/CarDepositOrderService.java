@@ -69,4 +69,6 @@ public interface CarDepositOrderService {
     Triple<Boolean, String, Object> selectRentCarDeposit();
 
     Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request);
+
+    CarDepositOrder selectByOrderId(String orderNo);
 }

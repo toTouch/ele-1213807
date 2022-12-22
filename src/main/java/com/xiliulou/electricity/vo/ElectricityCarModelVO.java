@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -34,14 +35,24 @@ public class ElectricityCarModelVO {
      * 加盟商Id
      */
     private Long franchiseeId;
-
     /**
      * 加盟商名称
      */
     private String franchiseeName;
+    /**
+     * 租赁方式
+     */
+    private String rentType;
 
     private Integer delFlag;
-
+    /**
+     * 租车押金
+     */
+    private BigDecimal carDeposit;
+    /**
+     * 其它参数
+     */
+    private String otherProperties;
     /**
      * 创建时间
      */
@@ -50,6 +61,11 @@ public class ElectricityCarModelVO {
      * 更新时间
      */
     private Long updateTime;
+    /**
+     * 门店Id
+     */
+    private Long storeId;
+
 
     private Integer tenantId;
 

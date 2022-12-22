@@ -1,15 +1,35 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +44,22 @@ import lombok.extern.slf4j.Slf4j;
 public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService {
     @Autowired
     private CarMemberCardOrderMapper carMemberCardOrderMapper;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    UserOauthBindService userOauthBindService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
+    @Autowired
+    ElectricityTradeOrderService electricityTradeOrderService;
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    CalcRentCarPriceFactory calcRentCarPriceFactory;
 
     /**
      * 通过ID查询单条数据从DB
@@ -96,5 +132,130 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.carMemberCardOrderMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found user");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_CARD_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("ELE CAR MEMBER CARD ERROR!not found pay params,uid={}", user.getUid());
+            return Triple.of(false, "100234", "未配置支付参数!");
+        }
+
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), TenantContextHolder.getTenantId());
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("ELE CAR MEMBER CARD ERROR!not found userOauthBind or thirdId is null,uid={}", user.getUid());
+            return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found userInfo,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELE CAR MEMBER CARD ERROR! user is disable,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ELE CAR MEMBER CARD ERROR! user not auth,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+
+        //判断是否缴纳押金
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //获取车辆型号
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrderQuery.getCarModelId());
+        if (Objects.isNull(electricityCarModel)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found electricityCarModel id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "未找到车辆型号!");
+        }
+
+        //获取租车套餐计费规则
+        Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
+        if (ObjectUtil.isEmpty(rentCarPriceRule)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+        }
+
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
+        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
+                && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
+                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId())) {
+            log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
+        }
+
+        EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(carMemberCardOrderQuery.getRentType());
+        if (Objects.isNull(calcRentCarPriceInstance)) {
+            log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+        }
+
+        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, carMemberCardOrderQuery, rentCarPriceRule);
+        if (!calcSavePrice.getLeft()) {
+            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+        }
+
+        BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
+
+
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, user.getUid());
+
+        CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
+        carMemberCardOrder.setOrderId(orderId);
+        carMemberCardOrder.setCreateTime(System.currentTimeMillis());
+        carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
+        carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
+        carMemberCardOrder.setUid(user.getUid());
+        carMemberCardOrder.setMemberCardType(carMemberCardOrderQuery.getRentType());
+        carMemberCardOrder.setPayAmount(rentCarPrice);
+        carMemberCardOrder.setUserName(userInfo.getName());
+        carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
+        carMemberCardOrder.setTenantId(userInfo.getTenantId());
+        carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        this.insert(carMemberCardOrder);
+
+        //调起支付
+        try {
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(carMemberCardOrder.getOrderId())
+                    .uid(user.getUid())
+                    .payAmount(carMemberCardOrder.getPayAmount())
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_RENT_MEMBER_CARD)
+                    .attach(ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)
+                    .description("租车月卡收费")
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+
+            WechatJsapiOrderResultDTO resultDTO =
+                    electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return Triple.of(true, "", resultDTO);
+        } catch (WechatPayException e) {
+            log.error("ELE CAR MEMBER CARD ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+        }
+
+        return Triple.of(false, "购买失败", null);
     }
 }

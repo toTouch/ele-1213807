@@ -124,6 +124,7 @@ public class JsonUserElectricityMemberCardOrderController {
      * @return
      */
     @PostMapping("user/memberCard/payRentCarMemberCard")
+    @Deprecated
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
         return electricityMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request);
     }

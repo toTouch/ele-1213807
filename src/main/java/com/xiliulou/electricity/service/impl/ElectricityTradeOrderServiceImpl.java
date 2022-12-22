@@ -109,6 +109,8 @@ public class ElectricityTradeOrderServiceImpl extends
     UserCarService userCarService;
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -619,13 +621,13 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         //押金订单
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
-        if (ObjectUtil.isEmpty(eleDepositOrder)) {
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(electricityTradeOrder.getOrderNo());
+        if (ObjectUtil.isEmpty(carDepositOrder)) {
             log.error("NOTIFY_RENT_CAR_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "未找到订单!");
         }
 
-        if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
+        if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, carDepositOrder.getStatus())) {
             log.error("NOTIFY_RENT_CAR_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "押金订单已处理!");
         }
@@ -641,9 +643,9 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeOrderNo);
+            log.error("NOTIFY ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", carDepositOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
@@ -659,15 +661,15 @@ public class ElectricityTradeOrderServiceImpl extends
 
             UserCarDeposit userCarDeposit = new UserCarDeposit();
             userCarDeposit.setUid(userInfo.getUid());
-            userCarDeposit.setOrderId(eleDepositOrder.getOrderId());
-            userCarDeposit.setTenantId(eleDepositOrder.getTenantId());
+            userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+            userCarDeposit.setTenantId(carDepositOrder.getTenantId());
             userCarDeposit.setCreateTime(System.currentTimeMillis());
             userCarDeposit.setUpdateTime(System.currentTimeMillis());
             userCarDepositService.insertOrUpdate(userCarDeposit);
 
             UserCar userCar = new UserCar();
             userCar.setUid(userInfo.getUid());
-            userCar.setCarModel(eleDepositOrder.getCarModelId().longValue());
+            userCar.setCarModel(carDepositOrder.getCarModelId());
             userCar.setTenantId(userInfo.getTenantId());
             userCar.setCreateTime(System.currentTimeMillis());
             userCar.setUpdateTime(System.currentTimeMillis());
@@ -684,7 +686,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //押金订单
         EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
-        eleDepositOrderUpdate.setId(eleDepositOrder.getId());
+        eleDepositOrderUpdate.setId(carDepositOrder.getId());
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleDepositOrderService.update(eleDepositOrderUpdate);

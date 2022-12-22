@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 
 /**
  * 租车套餐订单表(CarMemberCardOrder)表实体类
@@ -58,7 +60,7 @@ public class CarMemberCardOrder {
     /**
      * 支付金额
      */
-    private Double payAmount;
+    private BigDecimal payAmount;
     /**
      * 有效天数
      */
@@ -84,5 +86,12 @@ public class CarMemberCardOrder {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer STATUS_INIT = 0;
+    public static final Integer STATUS_SUCCESS = 1;
+    public static final Integer STATUS_FAIL = 2;
+
+    public static final Integer ONLINE_PAYTYPE = 0;
+    public static final Integer OFFLINE_PAYTYPE = 1;
 
 }

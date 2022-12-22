@@ -134,8 +134,13 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         return this.carDepositOrderMapper.deleteById(id) > 0;
     }
 
+    @Override
+    public CarDepositOrder selectByOrderId(String orderNo) {
+        return this.carDepositOrderMapper.selectOne(new LambdaQueryWrapper<CarDepositOrder>().eq(CarDepositOrder::getOrderId,orderNo));
+    }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -145,7 +150,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
 
@@ -230,12 +235,12 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
             WechatJsapiOrderResultDTO resultDTO =
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-            return Triple.of(true, "", resultDTO);
+            return Triple.of(true, "押金支付成功", resultDTO);
         } catch (WechatPayException e) {
             log.error("ELE CAR DEPOSIT ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
 
-        return Triple.of(true, "", "押金支付成功！");
+        return Triple.of(false, "", "押金支付失败！");
     }
 
     @Override
@@ -246,6 +251,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
