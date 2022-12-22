@@ -284,6 +284,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
                 CarModelTag carModelTag = new CarModelTag();
                 carModelTag.setSeq(i);
                 carModelTag.setTitle(carModelTags.get(i));
+                carModelTag.setCarModelId(carModel.getId().longValue());
                 carModelTag.setTenantId(carModel.getTenantId());
                 carModelTag.setCreateTime(System.currentTimeMillis());
                 carModelTag.setUpdateTime(System.currentTimeMillis());
