@@ -9,7 +9,7 @@
     </sql>
 
     <!--查询单个-->
-    <select id="selectById" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
+    <select id="selectById" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
         <include refid="selectElectricityCarModel"/>
         where id = #{id}
     </select>
