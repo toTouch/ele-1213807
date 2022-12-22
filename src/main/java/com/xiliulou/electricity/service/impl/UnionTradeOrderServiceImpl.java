@@ -338,17 +338,17 @@ public class UnionTradeOrderServiceImpl extends
         // TODO: 2022/12/21 幂等
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(UnionTradeOrder.STATUS_INIT, unionTradeOrder.getStatus())) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO:{}", tradeOrderNo);
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
 
         List<ElectricityTradeOrder> electricityTradeOrderList = electricityTradeOrderService.selectTradeOrderByParentOrderId(unionTradeOrder.getId());
         if (Objects.isNull(electricityTradeOrderList)) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
 
@@ -359,7 +359,7 @@ public class UnionTradeOrderServiceImpl extends
         List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
 
         if (CollectionUtils.isEmpty(orderIdLIst)) {
-            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单");
         }
 
@@ -371,7 +371,7 @@ public class UnionTradeOrderServiceImpl extends
             depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
 
         for (int i = 0; i <= orderTypeList.size(); i++) {
@@ -420,19 +420,19 @@ public class UnionTradeOrderServiceImpl extends
         //押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderNo);
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 
         if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderNo);
+            log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
             return Pair.of(false, "押金订单已处理!");
         }
 
         //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), orderNo);
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), orderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
@@ -644,18 +644,18 @@ public class UnionTradeOrderServiceImpl extends
         //保险订单
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderNo);
         if (ObjectUtil.isEmpty(insuranceOrder)) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderNo);
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 
         if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, insuranceOrder.getStatus())) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", orderNo);
+            log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
             return Pair.of(false, "押金订单已处理!");
         }
 
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrder.getInsuranceId());
         if (ObjectUtil.isEmpty(insuranceOrder)) {
-            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderNo);
+            log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
 

@@ -259,8 +259,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     }
 
     @Override
-    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType) {
-        return franchiseeInsuranceMapper.queryByFranchiseeIdAndBatteryType(franchiseeId,batteryType);
+    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType,Integer tenantId) {
+        return franchiseeInsuranceMapper.queryByFranchiseeIdAndBatteryType(franchiseeId,batteryType,tenantId);
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -132,7 +133,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_INTEGRATED_PAYMENT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -717,7 +718,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //型号押金
             // TODO: 2022/12/21 bug
-            List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+            List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             return R.ok(modelBatteryDepositList);
         }
 

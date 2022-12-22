@@ -289,11 +289,11 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType()));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(), tenantId));
     }
 
     @Override
-    public R homeOneQueryInsurance(Integer model,Long franchiseeId) {
+    public R homeOneQueryInsurance(Integer model, Long franchiseeId) {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -314,10 +314,10 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
             return R.ok();
         }
-    
+
         // TODO: 2022/12/21 tenantId
         String batteryType = BatteryConstant.acquireBatteryShort(model);
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType));
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType, tenantId));
 
     }
 

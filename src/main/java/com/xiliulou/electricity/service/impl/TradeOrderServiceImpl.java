@@ -1,16 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.FaqMapper;
 import com.xiliulou.electricity.query.FaqQuery;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UnionTradeOrderAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -114,6 +118,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Autowired
     UserAmountService userAmountService;
 
+    @Autowired
+    RedisService redisService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R createOrder(UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request) {
@@ -131,7 +138,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS,uid={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
@@ -298,9 +305,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
-    
+
     // TODO: 2022/12/21 事物
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
 
         //用户
@@ -313,10 +321,15 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("CREATE INSURANCE_ORDER ERROR ,NOT FOUND PAY_PARAMS,uid={}", user.getUid());
             return Triple.of(false, "100307", "未配置支付参数!");
         }
 
@@ -440,19 +453,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             if (Objects.isNull(model)) {
                 return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
             }
-    
+
             // TODO: 2022/12/21 jsonArray  对象
             //型号押金
-            List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+            List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
                 log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", franchiseeId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
-    
+
             // TODO: 2022/12/21 理解一下
-            for (Map map : modelBatteryDepositList) {
-                if ((double) (map.get("model")) - model < 1 && (double) (map.get("model")) - model >= 0) {
-                    depositPayAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
+            for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                if ((double) (modelBatteryDeposit.getModel()) - model < 1 && (double) (modelBatteryDeposit.getModel()) - model >= 0) {
+                    depositPayAmount = modelBatteryDeposit.getBatteryDeposit();
                     break;
                 }
             }
@@ -488,7 +501,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         return Triple.of(true, null, eleDepositOrder);
     }
-    
+
     // TODO: 2022/12/21 活动问题
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId) {
 
