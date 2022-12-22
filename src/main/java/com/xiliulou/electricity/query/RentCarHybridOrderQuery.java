@@ -8,6 +8,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder
 public class RentCarHybridOrderQuery {
+    @NotNull(message = "门店不能为空!")
+    private Long storeId;
 
     @NotNull(message = "车辆型号不能为空!")
     private Long carModelId;

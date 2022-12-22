@@ -182,6 +182,8 @@ public interface CacheConstant {
     String ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY = "ele_cache_user_car_deposit_lock_key:";
     //用户购买租车套餐
     String ELE_CACHE_USER_CAR_CARD_LOCK_KEY = "ele_cache_user_car_card_lock_key:";
+    //租车订单
+    String ELE_CACHE_USER_RENT_CAR_LOCK_KEY = "ele_cache_user_rent_car_lock_key:";
 
     //操作银行卡 用户锁
     String BIND_BANK_OPER_USER_LOCK = "bind_Bank_oper_user_lock:";

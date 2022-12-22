@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.RentCarOrderMapper;
@@ -12,6 +14,7 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,14 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     ElectricityCarModelService electricityCarModelService;
     @Autowired
     UserCarService userCarService;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    UserOauthBindService userOauthBindService;
+    @Autowired
+    StoreService storeService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -225,8 +236,100 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
     @Override
     public Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found user");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_RENT_CAR_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
+        //支付相关
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("ELE CAR DEPOSIT ERROR!not found electricityPayParams,uid={}", user.getUid());
+            return Triple.of(false, "100234", "未配置支付参数!");
+        }
+
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("ELE CAR DEPOSIT ERROR!not found userOauthBind,uid={}", user.getUid());
+            return Triple.of(false, "100235", "未找到用户的第三方授权信息!");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ELE CAR DEPOSIT ERROR! user not auth,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR DEPOSIT ERROR! user already rent deposit,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
+        }
+
+        //校验租车相关参数
+        Triple<Boolean, String, Object> verifyRentCarParams = verifyRentCarParams(query, userInfo);
+        if (!verifyRentCarParams.getLeft()) {
+            return verifyRentCarParams;
+        }
+
+        //生成租车押金、租车套餐订单
+
+
+        //处理电池押金相关
+        handleRentBatteryDeposit(query, userInfo);
+
+        //处理电池套餐相关
+//        handleRentBatteryMemberCard();
+        //处理保险套餐相关
 
 
         return Triple.of(false, "", "");
+    }
+
+    public Triple<Boolean, String, Object> handleRentBatteryDeposit(RentCarHybridOrderQuery query, UserInfo userInfo) {
+        if (Objects.nonNull(query.getFranchiseeId()) && Objects.nonNull(query.getModel())) {
+            return Triple.of(true, "", null);
+        }
+
+        return Triple.of(true, "", null);
+    }
+
+    /**
+     * 校验租车相关参数
+     *
+     * @param query
+     * @param userInfo
+     * @return
+     */
+    private Triple<Boolean, String, Object> verifyRentCarParams(RentCarHybridOrderQuery query, UserInfo userInfo) {
+        Store store = storeService.queryByIdFromCache(query.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
+        }
+        if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
+            log.error("ELE CAR DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), userInfo.getUid());
+            return Triple.of(false, "100008", "不支持线上缴纳租车押金");
+        }
+
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
+        if (Objects.isNull(electricityCarModel)) {
+            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
+            return Triple.of(false, "100009", "未找到该型号车辆");
+        }
+
+        return Triple.of(true, "", "");
     }
 }
