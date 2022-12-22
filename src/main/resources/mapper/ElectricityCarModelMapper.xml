@@ -87,8 +87,8 @@
             <if test="carDeposit != null">
                 and car_deposit = #{carDeposit}
             </if>
-            <if test="otherproperties != null and otherproperties != ''">
-                and other_properties = #{otherproperties}
+            <if test="otherProperties != null and otherProperties != ''">
+                and other_properties = #{otherProperties}
             </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
