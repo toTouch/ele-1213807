@@ -11,13 +11,17 @@ import com.xiliulou.electricity.query.StorePictureQuery;
 import com.xiliulou.electricity.service.PictureService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -33,6 +37,11 @@ import java.util.stream.Collectors;
 public class PictureServiceImpl implements PictureService {
     @Autowired
     private PictureMapper pictureMapper;
+    @Autowired
+    StorageConfig storageConfig;
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -72,7 +81,15 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public List<Picture> selectByQuery(PictureQuery pictureQuery) {
-        return this.pictureMapper.selectByQuery(pictureQuery);
+        List<Picture> pictures = this.pictureMapper.selectByQuery(pictureQuery);
+        if (CollectionUtils.isEmpty(pictures)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return pictures.parallelStream().peek(item -> {
+            item.setPictureUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getPictureUrl(), System.currentTimeMillis() + 10 * 60 * 1000L));
+        }).collect(Collectors.toList());
+
     }
 
     /**
@@ -91,7 +108,7 @@ public class PictureServiceImpl implements PictureService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer batchInsert(List<Picture> pictures) {
-        if(CollectionUtils.isEmpty(pictures)){
+        if (CollectionUtils.isEmpty(pictures)) {
             return NumberConstant.ZERO;
         }
         return this.pictureMapper.batchInsert(pictures);
@@ -134,7 +151,7 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public Integer savePictureCallBack(CallBackQuery callBackQuery) {
-        if(CollectionUtils.isEmpty(callBackQuery.getFileNameList()) || Objects.isNull(callBackQuery.getOtherId())){
+        if (CollectionUtils.isEmpty(callBackQuery.getFileNameList()) || Objects.isNull(callBackQuery.getOtherId())) {
             return NumberConstant.ZERO;
         }
 
@@ -142,7 +159,7 @@ public class PictureServiceImpl implements PictureService {
         //删除车辆型号图片
         this.deleteByBusinessId(callBackQuery.getOtherId());
 
-        List<Picture> list= Lists.newArrayList();
+        List<Picture> list = Lists.newArrayList();
 
         List<String> pictureNameList = callBackQuery.getFileNameList();
         for (int i = 0; i < pictureNameList.size(); i++) {
