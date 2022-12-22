@@ -276,13 +276,21 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return null;
         }
 
-        List<CarModelTag> carModelTags = JsonUtil.fromJsonArray(query.getCarModelTag(), CarModelTag.class);
+        List<CarModelTag> list=Lists.newArrayList();
+
+        List<String> carModelTags = JsonUtil.fromJsonArray(query.getCarModelTag(), String.class);
         if (!CollectionUtils.isEmpty(carModelTags)) {
-            carModelTags.forEach(item -> {
-                item.setCarModelId(carModel.getId().longValue());
-            });
+            for (int i = 0; i < carModelTags.size(); i++) {
+                CarModelTag carModelTag = new CarModelTag();
+                carModelTag.setSeq(i);
+                carModelTag.setTitle(carModelTags.get(i));
+                carModelTag.setTenantId(carModel.getTenantId());
+                carModelTag.setCreateTime(System.currentTimeMillis());
+                carModelTag.setUpdateTime(System.currentTimeMillis());
+                list.add(carModelTag);
+            }
         }
 
-        return carModelTags;
+        return list;
     }
 }
