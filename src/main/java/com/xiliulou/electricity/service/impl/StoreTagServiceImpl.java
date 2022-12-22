@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.StoreTag;
 import com.xiliulou.electricity.mapper.StoreTagMapper;
@@ -128,5 +129,10 @@ public class StoreTagServiceImpl implements StoreTagService {
     @Override
     public int deleteByStoreId(Long id) {
         return this.storeTagMapper.deleteByStoreId(id);
+    }
+
+    @Override
+    public List<StoreTag> selectByStoreId(Long id) {
+        return this.storeTagMapper.selectList(new LambdaQueryWrapper<StoreTag>().eq(StoreTag::getStoreId,id).orderByAsc(StoreTag::getSeq));
     }
 }

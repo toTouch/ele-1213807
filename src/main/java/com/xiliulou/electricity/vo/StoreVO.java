@@ -105,9 +105,14 @@ public class StoreVO {
     private List<Picture> pictureList;
 
     /**
-     * 门店图片列表
+     * 门店标签 服务类型
      */
-    private StoreDetail storeDetail;
+    private List<String> serviceType;
+
+    /**
+     * 门店详情
+     */
+    private String detail;
 
 
     //全天

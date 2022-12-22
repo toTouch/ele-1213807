@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.mysql.cj.x.protobuf.MysqlxExpr;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -281,10 +282,10 @@ public class StoreServiceImpl implements StoreService {
     @DS("slave_1")
     public R queryList(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
-        if (ObjectUtil.isEmpty(storeVOList)) {
-            return R.ok(new ArrayList<>());
+        if (CollectionUtils.isEmpty(storeVOList)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
-        if (ObjectUtil.isNotEmpty(storeVOList)) {
+
             storeVOList.parallelStream().forEach(e -> {
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
@@ -314,13 +315,26 @@ public class StoreServiceImpl implements StoreService {
 
                 //加盟商
                 if (Objects.nonNull(e.getFranchiseeId())) {
-                    Franchisee franchisee = franchiseeService.queryByIdFromDB(e.getFranchiseeId());
+                    Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
                     if (Objects.nonNull(franchisee)) {
                         e.setFranchiseeName(franchisee.getName());
                     }
                 }
+
+                //标签
+                List<StoreTag> storeTags = storeTagService.selectByStoreId(e.getId());
+                if(!CollectionUtils.isEmpty(storeTags)){
+                    List<String> tags = storeTags.stream().map(StoreTag::getTitle).collect(Collectors.toList());
+                    e.setServiceType(tags);
+                }
+
+                //详情
+                StoreDetail storeDetail = storeDetailService.selectByStoreId(e.getId());
+                if(Objects.nonNull(storeDetail)){
+                    e.setDetail(storeDetail.getDetail());
+                }
             });
-        }
+
         storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList());
         return R.ok(storeVOList);
     }
@@ -551,7 +565,7 @@ public class StoreServiceImpl implements StoreService {
             return Collections.EMPTY_LIST;
         }
 
-        List<StoreVO> storeList = list.parallelStream().map(item -> {
+        return list.parallelStream().map(item -> {
             StoreVO storeVO = new StoreVO();
             BeanUtils.copyProperties(item, storeVO);
 
@@ -562,8 +576,6 @@ public class StoreServiceImpl implements StoreService {
 
             return storeVO;
         }).collect(Collectors.toList());
-
-        return storeList;
     }
 
     @Override
@@ -577,7 +589,11 @@ public class StoreServiceImpl implements StoreService {
 
         BeanUtils.copyProperties(store, storeVO);
         storeVO.setPictureList(pictureService.selectByByBusinessId(id));
-        storeVO.setStoreDetail(storeDetailService.selectByStoreId(id));
+
+        StoreDetail storeDetail = storeDetailService.selectByStoreId(id);
+        if (Objects.nonNull(storeDetail)) {
+            storeVO.setDetail(storeDetail.getDetail());
+        }
 
         return storeVO;
     }

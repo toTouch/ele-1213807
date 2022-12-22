@@ -64,4 +64,6 @@ public interface StoreTagService {
     Boolean deleteById(Long id);
 
     int deleteByStoreId(Long id);
+
+    List<StoreTag> selectByStoreId(Long id);
 }
