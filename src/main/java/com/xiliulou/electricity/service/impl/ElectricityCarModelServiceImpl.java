@@ -47,6 +47,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Autowired
     StoreService storeService;
     @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
     PictureService pictureService;
     @Autowired
     CarModelTagService carModelTagService;
@@ -170,7 +172,21 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCarModelQuery electricityCarModelQuery) {
-        return R.ok(electricityCarModelMapper.queryList(electricityCarModelQuery));
+        List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(electricityCarModelQuery);
+        if(CollectionUtils.isEmpty(electricityCarModelVOS)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        List<ElectricityCarModelVO> list = electricityCarModelVOS.parallelStream().peek(item -> {
+            if (Objects.nonNull(item.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            }
+
+
+        }).collect(Collectors.toList());
+
+        return R.ok(list);
     }
 
     @Override

@@ -987,6 +987,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
      * @return
      */
     @Override
+    @Deprecated
     public R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1066,7 +1067,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .storeId(storeId)
                 .carModelId(carModelId).build();
-    
+
         // TODO: 2022/12/21 支付零元
         //支付零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {

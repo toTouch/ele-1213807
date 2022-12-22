@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 
 /**
  * (CarDepositOrder)表实体类
@@ -42,11 +44,11 @@ public class CarDepositOrder {
     /**
      * 加盟商id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
     /**
      * 支付金额
      */
-    private Double payAmount;
+    private BigDecimal payAmount;
     /**
      * 状态（0、未支付,1、支付成功,2、支付失败）
      */
@@ -54,11 +56,11 @@ public class CarDepositOrder {
     /**
      * 门店id
      */
-    private Integer storeId;
+    private Long storeId;
     /**
      * 车辆型号Id
      */
-    private Integer carModelId;
+    private Long carModelId;
     /**
      * 交易方式 0--线上 1--线下
      */
@@ -80,5 +82,12 @@ public class CarDepositOrder {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer STATUS_INIT = 0;
+    public static final Integer STATUS_SUCCESS = 1;
+    public static final Integer STATUS_FAIL = 2;
+
+    public static final Integer ONLINE_PAYTYPE = 0;
+    public static final Integer OFFLINE_PAYTYPE = 1;
 
 }

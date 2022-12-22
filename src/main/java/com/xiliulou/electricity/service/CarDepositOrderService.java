@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarDepositOrder;
+import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -61,4 +64,9 @@ public interface CarDepositOrderService {
      */
     Boolean deleteById(Long id);
 
+    Triple<Boolean,String,Object> payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
+
+    Triple<Boolean, String, Object> selectRentCarDeposit();
+
+    Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request);
 }

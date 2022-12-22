@@ -132,6 +132,7 @@ public class JsonUserEleDepositOrderController {
      * @return
      */
     @PostMapping("/user/payRentCarDeposit")
+    @Deprecated
     public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId,
                                @RequestParam(value = "carModelId") Integer carModelId,
                                HttpServletRequest request) {
@@ -140,6 +141,7 @@ public class JsonUserEleDepositOrderController {
 
     //用户查询租车押金
     @GetMapping(value = "/user/queryRentCarDeposit")
+    @Deprecated
     public R queryRentCarDeposit() {
         return eleDepositOrderService.queryRentCarDeposit();
     }
@@ -150,6 +152,7 @@ public class JsonUserEleDepositOrderController {
      * @return
      */
     @PostMapping("/user/refundRentCarDeposit")
+    @Deprecated
     public R refundRentCarDeposit(HttpServletRequest request) {
         return eleDepositOrderService.refundRentCarDeposit(request);
     }
