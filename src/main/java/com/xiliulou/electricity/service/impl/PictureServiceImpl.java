@@ -151,6 +151,7 @@ public class PictureServiceImpl implements PictureService {
             picture.setPictureUrl(pictureNameList.get(i));
             picture.setSeq(i);
             picture.setStatus(Picture.STATUS_ENABLE);
+            picture.setImgType(callBackQuery.getFileType());
             picture.setDelFlag(Picture.DEL_NORMAL);
             picture.setTenantId(TenantContextHolder.getTenantId());
             picture.setCreateTime(System.currentTimeMillis());
