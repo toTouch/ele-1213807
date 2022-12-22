@@ -88,6 +88,9 @@ public interface CacheConstant {
 
     String ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY="ele_cache_user_battery_service_fee_lock_key";
 
+    //用户集成支付
+    String ELE_CACHE_USER_INTEGRATED_PAYMENT_LOCK_KEY = "ele_cache_user_integrated_payment_lock_key:";
+
     //下单周期限制
     String ORDER_TIME_UID = "order_time_uid:";
 

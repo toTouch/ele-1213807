@@ -387,34 +387,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
     
         // TODO: 2022/12/21 判断空串 删掉
-        if (Objects.nonNull(productKey) && Objects.nonNull(deviceName)) {
-            //换电柜
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
-            if (Objects.isNull(electricityCabinet)) {
-                // TODO: 2022/12/21 日志
-                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
-                return R.fail("ELECTRICITY.0005", "未找到换电柜");
-            }
-
-            //3、查出套餐
-            //查找换电柜门店
-            if (Objects.isNull(electricityCabinet.getStoreId())) {
-                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
-                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
-            }
-            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-            if (Objects.isNull(store)) {
-                log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
-                return R.fail("ELECTRICITY.0018", "未找到门店");
-            }
-
-            //查找门店加盟商
-            if (Objects.isNull(store.getFranchiseeId())) {
-                log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
-                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
-            }
-            franchiseeId = store.getFranchiseeId();
-        }
 
         //判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
@@ -446,39 +418,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }
 
-        if (ObjectUtil.isEmpty(electricityMemberCardList)) {
-            return R.ok(electricityMemberCardList);
-        }
-        
         // TODO: 2022/12/21 删除
-        List<ElectricityMemberCardVO> electricityMemberCardVOList = new ArrayList<>();
-        for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
-            ElectricityMemberCardVO electricityMemberCardVO = new ElectricityMemberCardVO();
-            BeanUtils.copyProperties(electricityMemberCard, electricityMemberCardVO);
 
-            if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
-                OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
-                if (Objects.nonNull(oldUserActivity)) {
-
-                    OldUserActivityVO oldUserActivityVO = new OldUserActivityVO();
-                    BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
-
-                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-
-                        Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
-                        if (Objects.nonNull(coupon)) {
-                            oldUserActivityVO.setCoupon(coupon);
-                        }
-
-                    }
-                    electricityMemberCardVO.setOldUserActivityVO(oldUserActivityVO);
-                }
-            }
-
-            electricityMemberCardVOList.add(electricityMemberCardVO);
-        }
-
-        return R.ok(electricityMemberCardVOList);
+        return R.ok(electricityMemberCardList);
     }
 
     @Override

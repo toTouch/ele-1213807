@@ -97,6 +97,9 @@
         <if test="batteryType != null and batteryType != ''">
             and battery_type = #{batteryType}
         </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
     </select>
 
 </mapper>
