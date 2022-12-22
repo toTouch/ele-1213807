@@ -79,16 +79,16 @@
                 update_time = #{updateTime},
             </if>
             <if test="storeId != null">
-                and store_id = #{storeId},
+                store_id = #{storeId},
             </if>
             <if test="rentType != null and rentType != ''">
-                and rent_type = #{rentType},
+                rent_type = #{rentType},
             </if>
             <if test="carDeposit != null">
-                and car_deposit = #{carDeposit},
+                car_deposit = #{carDeposit},
             </if>
             <if test="otherProperties != null and otherProperties != ''">
-                and other_properties = #{otherProperties},
+                other_properties = #{otherProperties},
             </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
