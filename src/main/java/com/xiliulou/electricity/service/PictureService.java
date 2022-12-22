@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.Picture;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.PictureQuery;
 import com.xiliulou.electricity.query.StorePictureQuery;
+import com.xiliulou.electricity.vo.PictureVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -67,7 +68,7 @@ public interface PictureService {
      */
     Boolean deleteById(Long id);
 
-    List<Picture> selectByQuery(PictureQuery pictureQuery);
+    List<PictureVO> selectByQuery(PictureQuery pictureQuery);
 
     int deleteByBusinessId(Long id);
 
