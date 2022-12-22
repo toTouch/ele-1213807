@@ -203,7 +203,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             List<CarModelTag> tagList = carModelTagService.selectByCarModelId(item.getId());
             if (!CollectionUtils.isEmpty(tagList)) {
                 List<String> tags = tagList.stream().map(CarModelTag::getTitle).collect(Collectors.toList());
-                item.setCarModelTags(tags);
+                item.setCarModelTag(tags);
             }
 
 
