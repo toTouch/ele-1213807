@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.RentCarOrderMapper;
+import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.query.RentCarOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -18,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
 
@@ -220,5 +220,13 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         });
 
         return Triple.of(true, "车辆绑定成功", null);
+    }
+
+
+    @Override
+    public Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request) {
+
+
+        return Triple.of(false, "", "");
     }
 }

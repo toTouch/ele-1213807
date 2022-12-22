@@ -64,4 +64,6 @@ public interface CarModelTagService {
     Integer batchInsert(List<CarModelTag> buildCarModelTagList);
 
     Integer deleteByCarModelId(long carModelId);
+
+    List<CarModelTag> selectByCarModelId(Integer id);
 }

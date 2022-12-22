@@ -23,9 +23,6 @@ import java.util.Objects;
 public class JsonUserElectricityCarController {
 
     @Autowired
-    UserCarService userCarService;
-
-    @Autowired
     ElectricityCarService electricityCarService;
 
     @GetMapping("user/electricityCar")
@@ -37,16 +34,4 @@ public class JsonUserElectricityCarController {
 
         return R.ok(electricityCarService.queryInfoByUid(uid));
     }
-
-
-    /**
-     * 查看用户车辆详情
-     */
-    @GetMapping("user/car/userCar")
-    public R userCar(@RequestParam("uid") Long uid) {
-        return R.ok(userCarService.selectDetailByUid(uid));
-    }
-
-
-
 }

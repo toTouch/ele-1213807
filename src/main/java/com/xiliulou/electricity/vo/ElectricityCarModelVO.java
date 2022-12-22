@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.CarModelTag;
 import com.xiliulou.electricity.entity.Picture;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -73,5 +74,10 @@ public class ElectricityCarModelVO {
      * 车辆型号图片
      */
     List<Picture> pictures;
+    /**
+     * 车辆标签
+     */
+    List<CarModelTag> carModelTags;
+
 
 }

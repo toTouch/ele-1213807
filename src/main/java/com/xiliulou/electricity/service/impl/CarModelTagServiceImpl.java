@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.CarModelTag;
 import com.xiliulou.electricity.mapper.CarModelTagMapper;
@@ -111,5 +112,10 @@ public class CarModelTagServiceImpl implements CarModelTagService {
     @Override
     public Integer deleteByCarModelId(long carModelId) {
         return this.carModelTagMapper.deleteByCarModelId(carModelId);
+    }
+
+    @Override
+    public List<CarModelTag> selectByCarModelId(Integer id) {
+        return this.carModelTagMapper.selectList(new LambdaQueryWrapper<CarModelTag>().eq(CarModelTag::getCarModelId,id));
     }
 }

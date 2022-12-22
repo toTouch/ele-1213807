@@ -200,6 +200,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
                 item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             }
 
+            List<CarModelTag> tagList=carModelTagService.selectByCarModelId(item.getId());
+            item.setCarModelTags(tagList);
 
         }).collect(Collectors.toList());
 
