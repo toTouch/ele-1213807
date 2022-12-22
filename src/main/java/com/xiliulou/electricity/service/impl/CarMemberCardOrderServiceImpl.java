@@ -11,6 +11,7 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -87,14 +88,16 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
-    public List<CarMemberCardOrder> selectByPage(int offset, int limit) {
-        return this.carMemberCardOrderMapper.selectByPage(offset, limit);
+    public List<CarMemberCardOrder> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
+        return this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
+    }
+
+    @Override
+    public Integer selectByPageCount(RentCarMemberCardOrderQuery memberCardOrderQuery) {
+        return this.carMemberCardOrderMapper.selectByPageCount(memberCardOrderQuery);
     }
 
     /**

@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
+import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -93,8 +94,13 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      * @return 对象列表
      */
     @Override
-    public List<CarDepositOrder> selectByPage(int offset, int limit) {
-        return this.carDepositOrderMapper.selectByPage(offset, limit);
+    public List<CarDepositOrder> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
+        return this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
+    }
+
+    @Override
+    public Integer selectPageCount(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
+        return this.carDepositOrderMapper.selectPageCount(rentCarDepositOrderQuery);
     }
 
     /**

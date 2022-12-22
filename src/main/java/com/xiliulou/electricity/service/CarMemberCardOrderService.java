@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,12 +35,11 @@ public interface CarMemberCardOrderService {
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
-    List<CarMemberCardOrder> selectByPage(int offset, int limit);
+    List<CarMemberCardOrder> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery);
+
+    Integer selectByPageCount(RentCarMemberCardOrderQuery memberCardOrderQuery);
 
     /**
      * 新增数据

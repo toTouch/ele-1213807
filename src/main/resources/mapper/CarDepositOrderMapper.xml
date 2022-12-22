@@ -34,8 +34,14 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="CarDepositOrderMap">
         <include refid="selectCarDepositOrder"/>
-        limit #{offset}, #{limit}
+        order by create_time desc
+        limit #{offset}, #{size}
     </select>
+
+    <select id="selectPageCount" resultMap="CarDepositOrderMap">
+       select count(1) from t_car_deposit_order
+    </select>
+
 
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="CarDepositOrderMap">
