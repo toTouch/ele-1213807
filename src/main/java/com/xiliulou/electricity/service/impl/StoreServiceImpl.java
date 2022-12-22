@@ -167,22 +167,22 @@ public class StoreServiceImpl implements StoreService {
             storeAmountService.insert(storeAmount);
 
             //保存门店标签
-            storeTagService.batchInsert(this.buildStoreTags(store,storeAddAndUpdate));
+            storeTagService.batchInsert(this.buildStoreTags(store, storeAddAndUpdate));
 
             //保存门店详情
-            storeDetailService.insert(this.buildStoreDetail(store,storeAddAndUpdate));
-            
+            storeDetailService.insert(this.buildStoreDetail(store, storeAddAndUpdate));
+
             //保存用户数据可见范围
             UserDataScope userDataScope = new UserDataScope();
             userDataScope.setUid(store.getUid());
             userDataScope.setDataId(store.getId());
             userDataScopeService.insert(userDataScope);
-    
+
             return null;
         });
 
         if (insert > 0) {
-            return R.ok(store);
+            return R.ok(store.getId());
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
@@ -197,7 +197,7 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(oldStore.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
@@ -212,11 +212,11 @@ public class StoreServiceImpl implements StoreService {
 
             //保存门店标签
             storeTagService.deleteByStoreId(store.getId());
-            storeTagService.batchInsert(this.buildStoreTags(store,storeAddAndUpdate));
+            storeTagService.batchInsert(this.buildStoreTags(store, storeAddAndUpdate));
 
             //保存门店详情
             storeDetailService.deleteByStoreId(store.getId());
-            storeDetailService.insert(this.buildStoreDetail(store,storeAddAndUpdate));
+            storeDetailService.insert(this.buildStoreDetail(store, storeAddAndUpdate));
 
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_STORE + store.getId(), store);
@@ -237,7 +237,7 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        if(!Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
@@ -333,10 +333,10 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(oldStore.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-        
+
         Store store = new Store();
         store.setId(id);
         store.setUpdateTime(System.currentTimeMillis());
@@ -523,7 +523,7 @@ public class StoreServiceImpl implements StoreService {
 
         return Triple.of(true, "", stores);
     }
-    
+
     @Override
     public List<Store> selectByStoreIds(List<Long> storeIds) {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getId, storeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
@@ -541,7 +541,7 @@ public class StoreServiceImpl implements StoreService {
             log.error("ELE ERROR! not found store,electricityCabinetId={}", electricityCabinet.getId());
             return null;
         }
-       return this.queryByIdFromCache(electricityCabinet.getStoreId());
+        return this.queryByIdFromCache(electricityCabinet.getStoreId());
     }
 
     @Override
@@ -627,34 +627,40 @@ public class StoreServiceImpl implements StoreService {
         }
     }
 
-    private List<StoreTag> buildStoreTags(Store store,StoreAddAndUpdate storeAddAndUpdate){
-        List<StoreTag> list=new ArrayList<>();
+    private List<StoreTag> buildStoreTags(Store store, StoreAddAndUpdate storeAddAndUpdate) {
+        List<StoreTag> list = new ArrayList<>();
         String serviceType = storeAddAndUpdate.getServiceType();
-        if(StringUtils.isBlank(serviceType)){
+        if (StringUtils.isBlank(serviceType)) {
             return list;
         }
 
-        List<StoreTag> storeTags = JsonUtil.fromJsonArray(serviceType, StoreTag.class);
-        if(CollectionUtils.isEmpty(storeTags)){
+        List<String> storeTags = JsonUtil.fromJsonArray(serviceType, String.class);
+        if (CollectionUtils.isEmpty(storeTags)) {
             return list;
         }
 
-        return storeTags.parallelStream().peek(item->{
-            item.setStoreId(store.getId());
-            item.setStatus(StoreTag.STATUS_ENABLE);
-            item.setDelFlag(StoreTag.DEL_NORMAL);
-            item.setTenantId(store.getTenantId());
-            item.setCreateTime(System.currentTimeMillis());
-            item.setUpdateTime(System.currentTimeMillis());
-        }).collect(Collectors.toList());
+        for (int i = 0; i < storeTags.size(); i++) {
+            StoreTag storeTag = new StoreTag();
+            storeTag.setSeq(i);
+            storeTag.setTitle(storeTags.get(i));
+            storeTag.setStoreId(store.getId());
+            storeTag.setStatus(StoreTag.STATUS_ENABLE);
+            storeTag.setDelFlag(StoreTag.DEL_NORMAL);
+            storeTag.setTenantId(store.getTenantId());
+            storeTag.setCreateTime(System.currentTimeMillis());
+            storeTag.setUpdateTime(System.currentTimeMillis());
+            list.add(storeTag);
+        }
+
+        return list;
     }
 
-    private StoreDetail buildStoreDetail(Store store,StoreAddAndUpdate storeAddAndUpdate){
-        StoreDetail storeDetail=null;
+    private StoreDetail buildStoreDetail(Store store, StoreAddAndUpdate storeAddAndUpdate) {
+        StoreDetail storeDetail = null;
         if (StringUtils.isBlank(storeAddAndUpdate.getDetail())) {
             return storeDetail;
         }
-        storeDetail=new StoreDetail();
+        storeDetail = new StoreDetail();
         storeDetail.setStoreId(store.getId());
         storeDetail.setDetail(storeAddAndUpdate.getDetail());
         storeDetail.setStatus(StoreDetail.STATUS_ENABLE);

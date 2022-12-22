@@ -103,7 +103,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
             return null;
         });
-        return R.ok(electricityCarModel);
+        return R.ok(electricityCarModel.getId());
     }
 
     @Override
@@ -272,11 +272,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     }
 
     private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query,ElectricityCarModel carModel) {
-        if (StringUtils.isBlank(query.getCarModelTag())) {
-            return null;
-        }
-
         List<CarModelTag> list=Lists.newArrayList();
+        if (StringUtils.isBlank(query.getCarModelTag())) {
+            return list;
+        }
 
         List<String> carModelTags = JsonUtil.fromJsonArray(query.getCarModelTag(), String.class);
         if (!CollectionUtils.isEmpty(carModelTags)) {
