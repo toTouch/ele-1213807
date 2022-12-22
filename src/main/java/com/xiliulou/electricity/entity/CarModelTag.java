@@ -59,4 +59,7 @@ public class CarModelTag {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    public static final Integer STATUS_ENABLE = 0;
+    public static final Integer STATUS_DISABLE = 1;
+
 }
