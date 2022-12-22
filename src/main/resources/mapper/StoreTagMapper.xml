@@ -135,10 +135,10 @@
         values (#{title}, #{storeId}, #{seq}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
 
-    <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
+    <insert id="batchInsert" >
         insert into t_store_tag(title, store_id, seq, status, del_flag, tenant_id, create_time, update_time) values
         <foreach item="item" index="index" collection="list" separator=",">
-            (#{title}, #{storeId}, #{seq}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+            (#{item.title}, #{item.storeId}, #{item.seq}, #{item.status}, #{item.delFlag}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
         </foreach>
     </insert>
 

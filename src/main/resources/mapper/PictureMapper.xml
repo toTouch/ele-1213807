@@ -84,7 +84,7 @@
     <insert id="batchInsert">
         insert into t_picture(business_id, picture_url, seq, img_type, status, del_flag, tenant_id, create_time, update_time) values
         <foreach item="item" index="index" collection="list" separator=",">
-            (#{businessId}, #{pictureUrl}, #{seq}, #{imgType}, #{status}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+            (#{item.businessId}, #{item.pictureUrl}, #{item.seq}, #{item.imgType}, #{item.status}, #{item.delFlag}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
         </foreach>
     </insert>
 

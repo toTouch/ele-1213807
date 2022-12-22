@@ -53,6 +53,7 @@ public interface EleDepositOrderService {
 
     R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 
+    @Deprecated
     R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
 
     R refundRentCarDeposit(HttpServletRequest request);
