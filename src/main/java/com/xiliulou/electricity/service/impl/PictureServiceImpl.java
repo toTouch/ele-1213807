@@ -87,7 +87,7 @@ public class PictureServiceImpl implements PictureService {
         }
 
         return pictures.parallelStream().peek(item -> {
-            item.setPictureUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getPictureUrl(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            item.setPictureUrl(StorageConfig.HTTPS +storageService.getOssFileUrl(storageConfig.getBucketName(), item.getPictureUrl(), System.currentTimeMillis() + 10 * 60 * 1000L));
         }).collect(Collectors.toList());
 
     }
