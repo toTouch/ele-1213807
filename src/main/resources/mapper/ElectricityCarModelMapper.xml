@@ -3,6 +3,17 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarModelMapper">
 
 
+    <!-- 基础字段 -->
+    <sql id="selectElectricityCarModel">
+       	select   id, name, franchisee_id, del_flag, create_time, update_time, tenant_id, store_id, rent_type, car_deposit, otherProperties        from t_electricity_car_model
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
+        <include refid="selectElectricityCarModel"/>
+        where id = #{id}
+    </select>
+
     <!--查询指定行数据-->
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
@@ -65,6 +76,18 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="rentType != null and rentType != ''">
+                and rent_type = #{rentType}
+            </if>
+            <if test="carDeposit != null">
+                and car_deposit = #{carDeposit}
+            </if>
+            <if test="otherproperties != null and otherproperties != ''">
+                and otherProperties = #{otherproperties}
             </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}

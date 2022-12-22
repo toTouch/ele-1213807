@@ -26,9 +26,9 @@ public interface ElectricityCarModelService {
      */
       ElectricityCarModel queryByIdFromCache(Integer id);
 
-    R save(ElectricityCarModel electricityCarModel);
+    R save(ElectricityCarModelQuery electricityCarModelQuery);
 
-    R edit(ElectricityCarModel electricityCarModel);
+    R edit(ElectricityCarModelQuery electricityCarModelQuery);
 
     R delete(Integer id);
 

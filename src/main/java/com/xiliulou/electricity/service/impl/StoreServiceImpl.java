@@ -182,7 +182,7 @@ public class StoreServiceImpl implements StoreService {
         });
 
         if (insert > 0) {
-            return R.ok();
+            return R.ok(store);
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
     }

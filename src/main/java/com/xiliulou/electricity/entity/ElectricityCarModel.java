@@ -31,53 +31,27 @@ public class ElectricityCarModel {
      * 车辆型号Id
      */
     @TableId(value = "id", type = IdType.AUTO)
-    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Integer id;
 
     /**
      * 型号名称
      */
-    @NotBlank(message = "型号名称不能为空", groups = {CreateGroup.class})
     private String name;
-    /**
-     * 门店Id
-     */
-    @NotNull(message = "门店不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Long storeId;
-    /**
-     * 加盟商Id
-     */
-    @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Long franchiseeId;
-
-    private Integer delFlag;
 
     /**
      * 租赁方式
      */
-    @NotBlank(message = "租赁方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private String rentType;
 
-    /**
-     * 租赁周期
-     */
-    //private Integer rentTime;
+    private Integer delFlag;
     /**
      * 租车押金
      */
-    @NotNull(message = "租车押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal carDeposit;
-
-    /**
-     * 车辆型号标签
-     */
-    private String carModelTag;
-
     /**
      * 其它参数
      */
     private String otherProperties;
-
     /**
      * 创建时间
      */
@@ -86,6 +60,14 @@ public class ElectricityCarModel {
      * 更新时间
      */
     private Long updateTime;
+    /**
+     * 门店Id
+     */
+    private Long storeId;
+    /**
+     * 加盟商Id
+     */
+    private Long franchiseeId;
 
     private Integer tenantId;
 
@@ -93,6 +75,9 @@ public class ElectricityCarModel {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    /**
+     * 租赁方式  周租：WEEK_RENT  月租：MONTH_RENT
+     */
     public static final String RENT_TYPE_WEEK = "WEEK_RENT";
     public static final String RENT_TYPE_MONTH = "MONTH_RENT";
 }

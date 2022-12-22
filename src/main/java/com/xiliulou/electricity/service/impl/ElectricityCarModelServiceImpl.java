@@ -78,16 +78,17 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
     @Override
     @Transactional
-    public R save(ElectricityCarModel electricityCarModel) {
+    public R save(ElectricityCarModelQuery query) {
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
-                .franchiseeId(electricityCarModel.getFranchiseeId())
-                .storeId(electricityCarModel.getStoreId())
-                .name(electricityCarModel.getName()).build();
+                .franchiseeId(query.getFranchiseeId())
+                .storeId(query.getStoreId())
+                .name(query.getName()).build();
         Integer count = electricityCarModelMapper.queryCount(electricityCarModelQuery);
         if (count > 0) {
             return R.fail("该型号车辆已存在!");
         }
-
+        ElectricityCarModel electricityCarModel =new  ElectricityCarModel();
+        BeanUtils.copyProperties(query,electricityCarModel);
         electricityCarModel.setCreateTime(System.currentTimeMillis());
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
@@ -98,7 +99,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
 
             //保存车辆标签
-            carModelTagService.batchInsert(buildCarModelTagList(electricityCarModel));
+            carModelTagService.batchInsert(buildCarModelTagList(query,electricityCarModel));
 
             return null;
         });
@@ -107,9 +108,9 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
     @Override
     @Transactional
-    public R edit(ElectricityCarModel electricityCarModel) {
+    public R edit(ElectricityCarModelQuery query) {
 
-        ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(electricityCarModel.getId());
+        ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(query.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
@@ -118,21 +119,23 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return R.ok();
         }
 
-        Integer count = electricityCarService.queryByModelId(electricityCarModel.getId());
+        Integer count = electricityCarService.queryByModelId(query.getId());
         if (count > 0) {
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
 
-        electricityCarModel.setUpdateTime(System.currentTimeMillis());
-        electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
-        int update = electricityCarModelMapper.update(electricityCarModel);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            //更新缓存
-            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
+        ElectricityCarModel updateCarModel =new  ElectricityCarModel();
+        BeanUtils.copyProperties(query,updateCarModel);
 
-            carModelTagService.deleteByCarModelId(electricityCarModel.getId().longValue());
+        updateCarModel.setUpdateTime(System.currentTimeMillis());
+        updateCarModel.setTenantId(TenantContextHolder.getTenantId());
+        int update = electricityCarModelMapper.update(updateCarModel);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + updateCarModel.getId());
+
+            carModelTagService.deleteByCarModelId(updateCarModel.getId().longValue());
             //保存车辆标签
-            carModelTagService.batchInsert(buildCarModelTagList(electricityCarModel));
+            carModelTagService.batchInsert(buildCarModelTagList(query,updateCarModel));
             return null;
         });
         return R.ok();
@@ -268,12 +271,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return R.ok(Collections.EMPTY_LIST);
     }
 
-    private List<CarModelTag> buildCarModelTagList(ElectricityCarModel carModel) {
-        if (StringUtils.isBlank(carModel.getCarModelTag())) {
+    private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query,ElectricityCarModel carModel) {
+        if (StringUtils.isBlank(query.getCarModelTag())) {
             return null;
         }
 
-        List<CarModelTag> carModelTags = JsonUtil.fromJsonArray(carModel.getCarModelTag(), CarModelTag.class);
+        List<CarModelTag> carModelTags = JsonUtil.fromJsonArray(query.getCarModelTag(), CarModelTag.class);
         if (!CollectionUtils.isEmpty(carModelTags)) {
             carModelTags.forEach(item -> {
                 item.setCarModelId(carModel.getId().longValue());

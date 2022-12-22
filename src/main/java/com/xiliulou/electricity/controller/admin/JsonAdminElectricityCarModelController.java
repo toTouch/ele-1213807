@@ -50,15 +50,15 @@ public class JsonAdminElectricityCarModelController {
 
     //新增换电柜车辆型号
     @PostMapping(value = "/admin/electricityCarModel")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModel electricityCarModel) {
-        return electricityCarModelService.save(electricityCarModel);
+    public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
+        return electricityCarModelService.save(electricityCarModelQuery);
     }
 
     //修改换电柜车辆型号
     @PutMapping(value = "/admin/electricityCarModel")
     @Log(title = "修改换电柜车辆型号")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarModel electricityCarModel) {
-        return electricityCarModelService.edit(electricityCarModel);
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
+        return electricityCarModelService.edit(electricityCarModelQuery);
     }
 
     //删除换电柜型号
