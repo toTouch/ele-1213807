@@ -385,19 +385,19 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             log.error("rentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         // TODO: 2022/12/21 判断空串 删掉
 
         //判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("rentBattery  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("rentBattery  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("rentBattery  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("rentBattery  ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -409,7 +409,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
 
-        List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
+        List<ElectricityMemberCard> electricityMemberCardList;
 
         //多电池型号查询套餐
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {

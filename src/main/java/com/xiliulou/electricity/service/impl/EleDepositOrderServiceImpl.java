@@ -692,21 +692,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
     
         // TODO: 2022/12/21 没有加盟商id什么情景下
-        if (Objects.isNull(franchiseeId)) {
-            Store store = storeService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
-            if (Objects.isNull(store)) {
-                log.error("ELE DEPOSIT ERROR! not found store,uid={},p={},d={}", user.getUid(), productKey, deviceName);
-                return R.fail("ELECTRICITY.0018", "未找到门店");
-            }
-
-            //查找门店加盟商
-            if (Objects.isNull(store.getFranchiseeId())) {
-                log.error("ELE DEPOSIT ERROR! not found franchiseeId,storeId={},uid={}", store.getId(), user.getUid());
-                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
-            }
-
-            franchiseeId = store.getFranchiseeId();
-        }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
