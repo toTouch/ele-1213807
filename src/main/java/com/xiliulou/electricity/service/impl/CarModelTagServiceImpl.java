@@ -116,6 +116,6 @@ public class CarModelTagServiceImpl implements CarModelTagService {
 
     @Override
     public List<CarModelTag> selectByCarModelId(Integer id) {
-        return this.carModelTagMapper.selectList(new LambdaQueryWrapper<CarModelTag>().eq(CarModelTag::getCarModelId,id));
+        return this.carModelTagMapper.selectList(new LambdaQueryWrapper<CarModelTag>().eq(CarModelTag::getCarModelId,id).orderByAsc(CarModelTag::getSeq));
     }
 }

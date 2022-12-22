@@ -77,7 +77,7 @@ public class ElectricityCarModelVO {
     /**
      * 车辆标签
      */
-    List<CarModelTag> carModelTags;
+    List<String> carModelTags;
 
 
 }

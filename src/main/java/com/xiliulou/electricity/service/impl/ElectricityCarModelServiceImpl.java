@@ -97,8 +97,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return R.fail("该型号车辆已存在!");
         }
 
-        ElectricityCarModel electricityCarModel =new  ElectricityCarModel();
-        BeanUtils.copyProperties(query,electricityCarModel);
+        ElectricityCarModel electricityCarModel = new ElectricityCarModel();
+        BeanUtils.copyProperties(query, electricityCarModel);
         electricityCarModel.setCreateTime(System.currentTimeMillis());
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
@@ -110,7 +110,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
 
             //保存车辆标签
-            carModelTagService.batchInsert(buildCarModelTagList(query,electricityCarModel));
+            carModelTagService.batchInsert(buildCarModelTagList(query, electricityCarModel));
 
             return null;
         });
@@ -141,8 +141,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
 
-        ElectricityCarModel updateCarModel =new  ElectricityCarModel();
-        BeanUtils.copyProperties(query,updateCarModel);
+        ElectricityCarModel updateCarModel = new ElectricityCarModel();
+        BeanUtils.copyProperties(query, updateCarModel);
 
         updateCarModel.setUpdateTime(System.currentTimeMillis());
         updateCarModel.setTenantId(TenantContextHolder.getTenantId());
@@ -153,7 +153,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
             carModelTagService.deleteByCarModelId(updateCarModel.getId().longValue());
             //保存车辆标签
-            carModelTagService.batchInsert(buildCarModelTagList(query,updateCarModel));
+            carModelTagService.batchInsert(buildCarModelTagList(query, updateCarModel));
             return null;
         });
 
@@ -190,7 +190,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @DS("slave_1")
     public R queryList(ElectricityCarModelQuery electricityCarModelQuery) {
         List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(electricityCarModelQuery);
-        if(CollectionUtils.isEmpty(electricityCarModelVOS)){
+        if (CollectionUtils.isEmpty(electricityCarModelVOS)) {
             return R.ok(Collections.EMPTY_LIST);
         }
 
@@ -200,8 +200,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
                 item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             }
 
-            List<CarModelTag> tagList=carModelTagService.selectByCarModelId(item.getId());
-            item.setCarModelTags(tagList);
+            List<CarModelTag> tagList = carModelTagService.selectByCarModelId(item.getId());
+            if (!CollectionUtils.isEmpty(tagList)) {
+                List<String> tags = tagList.stream().map(CarModelTag::getTitle).collect(Collectors.toList());
+                item.setCarModelTags(tags);
+            }
+
 
         }).collect(Collectors.toList());
 
@@ -306,16 +310,16 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return R.ok(Collections.EMPTY_LIST);
     }
 
-    private Pair<Boolean,String> verifyCarModelQuery(ElectricityCarModelQuery query) {
-        if(query.getCarDeposit().compareTo(BigDecimal.valueOf(0.01)) < 0){
-            return Pair.of(false,"车辆押金不合法！");
+    private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
+        if (query.getCarDeposit().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            return Pair.of(false, "车辆押金不合法！");
         }
 
-        return Pair.of(true,"");
+        return Pair.of(true, "");
     }
 
-    private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query,ElectricityCarModel carModel) {
-        List<CarModelTag> list=Lists.newArrayList();
+    private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query, ElectricityCarModel carModel) {
+        List<CarModelTag> list = Lists.newArrayList();
         if (StringUtils.isBlank(query.getCarModelTag())) {
             return list;
         }
