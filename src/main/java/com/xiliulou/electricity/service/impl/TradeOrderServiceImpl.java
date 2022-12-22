@@ -502,7 +502,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, eleDepositOrder);
     }
 
-    // TODO: 2022/12/21 活动问题
+    // TODO: 2022/12/21 活动问题 活动保留
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId) {
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -514,16 +514,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         Long now = System.currentTimeMillis();
-
-        //判断用户电池服务费
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal userMemberCardExpireServiceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-            if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
-                return Triple.of(false, "100220", userMemberCardExpireServiceFee);
-            }
-        }
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardId);
         if (Objects.isNull(electricityMemberCard)) {
@@ -672,13 +662,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-
-            //服务费
-            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-            serviceFeeUserInfoUpdate.setUid(serviceFeeUserInfo.getUid());
-            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
 
             //月卡订单
