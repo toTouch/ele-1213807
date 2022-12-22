@@ -111,6 +111,8 @@ public class ElectricityTradeOrderServiceImpl extends
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     @Autowired
     CarDepositOrderService carDepositOrderService;
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -713,12 +715,12 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         //购卡订单
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderMapper.selectByOrderNo(electricityTradeOrder.getOrderNo());
-        if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
+        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(electricityTradeOrder.getOrderNo());
+        if (ObjectUtil.isEmpty(carMemberCardOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "未找到订单!");
         }
-        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
+        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, carMemberCardOrder.getStatus())) {
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "套餐订单已处理!");
         }
@@ -736,9 +738,9 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         //用户
-        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", electricityMemberCardOrder.getUid(), tradeOrderNo);
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", carMemberCardOrder.getUid(), tradeOrderNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
@@ -751,20 +753,12 @@ public class ElectricityTradeOrderServiceImpl extends
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
             CarMemberCardOrderQuery carMemberCardOrderQuery=new CarMemberCardOrderQuery();
-            carMemberCardOrderQuery.setRentType(electricityMemberCardOrder.getCardName());
-            carMemberCardOrderQuery.setRentTime(electricityMemberCardOrder.getValidDays());
-
-            //if (userCarMemberCard.getMemberCardExpireTime() < now) {
-            //    memberCardExpireTime = System.currentTimeMillis() +
-            //            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            //} else {
-            //    memberCardExpireTime = userCarMemberCard.getMemberCardExpireTime() +
-            //            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            //}
+            carMemberCardOrderQuery.setRentType(carMemberCardOrder.getMemberCardType());
+            carMemberCardOrderQuery.setRentTime(carMemberCardOrder.getValidDays());
 
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
-            updateUserCarMemberCard.setCardId(electricityMemberCardOrder.getMemberCardId().longValue());
+            updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
             updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrderQuery, userCarMemberCard));
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
@@ -782,7 +776,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //月卡订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
-        electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setId(carMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);

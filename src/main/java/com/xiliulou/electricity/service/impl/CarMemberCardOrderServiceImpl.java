@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -135,6 +136,11 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     }
 
     @Override
+    public CarMemberCardOrder selectByOrderId(String orderNo) {
+        return this.carMemberCardOrderMapper.selectOne(new LambdaQueryWrapper<CarMemberCardOrder>().eq(CarMemberCardOrder::getOrderId, orderNo));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
 
@@ -233,6 +239,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setMemberCardType(carMemberCardOrderQuery.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
+        carMemberCardOrder.setValidDays(carMemberCardOrderQuery.getRentTime());
         carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
         carMemberCardOrder.setTenantId(userInfo.getTenantId());
         carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
@@ -246,7 +253,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                     .payAmount(carMemberCardOrder.getPayAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_RENT_MEMBER_CARD)
                     .attach(ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)
-                    .description("租车月卡收费")
+                    .description("租车套餐收费")
                     .tenantId(TenantContextHolder.getTenantId()).build();
 
             WechatJsapiOrderResultDTO resultDTO =

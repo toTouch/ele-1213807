@@ -66,4 +66,6 @@ public interface CarMemberCardOrderService {
     Boolean deleteById(Long id);
 
     Triple<Boolean,String,Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
+
+    CarMemberCardOrder selectByOrderId(String orderNo);
 }
