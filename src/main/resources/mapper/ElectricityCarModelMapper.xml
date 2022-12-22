@@ -5,7 +5,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectElectricityCarModel">
-       	select   id, name, franchisee_id, del_flag, create_time, update_time, tenant_id, store_id, rent_type, car_deposit, otherProperties        from t_electricity_car_model
+       	select   id, name, franchisee_id, del_flag, create_time, update_time, tenant_id, store_id, rent_type, car_deposit, other_properties  from t_electricity_car_model
     </sql>
 
     <!--查询单个-->
@@ -87,7 +87,7 @@
                 and car_deposit = #{carDeposit}
             </if>
             <if test="otherproperties != null and otherproperties != ''">
-                and otherProperties = #{otherproperties}
+                and other_properties = #{otherproperties}
             </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
