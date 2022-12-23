@@ -22,6 +22,7 @@ import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -91,7 +92,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         Integer insert = null;
 
-        if (Objects.nonNull(franchiseeInsuranceAddAndUpdate.getBatteryTypeList())) {
+        if (Objects.nonNull(franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) && !franchiseeInsuranceAddAndUpdate.getBatteryTypeList().isEmpty()) {
             for (String batteryType : franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) {
                 franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(batteryType)));
                 int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
@@ -245,7 +246,15 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
-        return R.ok(baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId));
+        List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
+        if (Objects.nonNull(franchiseeInsuranceVoList)) {
+            for (FranchiseeInsuranceVo franchiseeInsuranceVo:franchiseeInsuranceVoList) {
+                if (StringUtils.isNotEmpty(franchiseeInsuranceVo.getBatteryType())) {
+                    franchiseeInsuranceVo.setBatteryType(BatteryConstant.acquireBattery(franchiseeInsuranceVo.getBatteryType()).toString());
+                }
+            }
+        }
+        return R.ok(franchiseeInsuranceVoList);
     }
 
     @Override
