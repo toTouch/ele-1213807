@@ -363,23 +363,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         BigDecimal integratedPaAmount = BigDecimal.valueOf(0);
 
-        //生成押金订单
-        if (Objects.nonNull(integratedPaymentAdd.getFranchiseeId())) {
-            // TODO: 2022/12/21 spring的事务的坑
-            Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, integratedPaymentAdd.getFranchiseeId(), integratedPaymentAdd.getModel());
-            if (!generateDepositOrderResult.getLeft()) {
-                return generateDepositOrderResult;
-            }
-            EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(integratedPaymentAdd.getModel()));
-            }
-            eleDepositOrderService.insert(eleDepositOrder);
-
-            orderList.add(eleDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-            allPayAmount.add(eleDepositOrder.getPayAmount());
-            integratedPaAmount.add(eleDepositOrder.getPayAmount());
+        //处理押金订单
+        // TODO: 2022/12/21 spring的事务的坑
+        Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, integratedPaymentAdd.getFranchiseeId(), integratedPaymentAdd.getModel());
+        if (!generateDepositOrderResult.getLeft()) {
+            return generateDepositOrderResult;
         }
 
         //生成套餐订单
@@ -409,6 +397,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
             allPayAmount.add(insuranceOrder.getPayAmount());
             integratedPaAmount.add(insuranceOrder.getPayAmount());
+        }
+
+        if (generateDepositOrderResult.getLeft() && Objects.nonNull(generateDepositOrderResult.getRight())) {
+            EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
+            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(integratedPaymentAdd.getModel()));
+            }
+            eleDepositOrderService.insert(eleDepositOrder);
+
+            orderList.add(eleDepositOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+            allPayAmount.add(eleDepositOrder.getPayAmount());
+            integratedPaAmount.add(eleDepositOrder.getPayAmount());
         }
 
 

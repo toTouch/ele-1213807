@@ -63,7 +63,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             List<FailureMemberCardVo> userBatteryMemberCardList = userBatteryMemberCardService.queryMemberCardExpireUser(offset, size, nowTime);
 
-            log.info("-----expireUserBatteryMemberCardList>>>>>{}", userBatteryMemberCardList);
+            log.debug("-----expireUserBatteryMemberCardList>>>>>{}", userBatteryMemberCardList);
 
             if (!DataUtil.collectionIsUsable(userBatteryMemberCardList)) {
                 return;
