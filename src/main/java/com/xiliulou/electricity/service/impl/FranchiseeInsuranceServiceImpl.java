@@ -88,7 +88,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         if (Objects.nonNull(franchiseeInsuranceAddAndUpdate.getBatteryTypeList())) {
             for (String batteryType : franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) {
-                franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(franchiseeInsurance.getBatteryType())));
+                franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(batteryType)));
                 int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
                         .eq(FranchiseeInsurance::getTenantId, tenantId)
                         .eq(FranchiseeInsurance::getBatteryType, batteryType)
