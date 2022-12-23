@@ -78,17 +78,17 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
-        insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
         insuranceInstruction.setTenantId(tenantId);
         insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
         insuranceInstruction.setCreateTime(System.currentTimeMillis());
         insuranceInstruction.setUpdateTime(System.currentTimeMillis());
 
+
         Integer insert = null;
 
         if (Objects.nonNull(franchiseeInsuranceAddAndUpdate.getBatteryTypeList())) {
             for (String batteryType : franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) {
-                franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(franchiseeInsurance.getBatteryType())));
+                franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(batteryType)));
                 int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
                         .eq(FranchiseeInsurance::getTenantId, tenantId)
                         .eq(FranchiseeInsurance::getBatteryType, batteryType)
@@ -96,11 +96,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                         .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL));
                 if (existCount == 0) {
                     insert = baseMapper.insert(franchiseeInsurance);
+                    insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
                     insuranceInstructionService.insert(insuranceInstruction);
                 }
             }
         } else {
             insert = baseMapper.insert(franchiseeInsurance);
+            insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
             insuranceInstructionService.insert(insuranceInstruction);
         }
 
