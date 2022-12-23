@@ -64,7 +64,7 @@ public class FranchiseeVO {
 
     /**
      * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
-     * */
+     */
     private Integer modelType;
 
     //新分型号押金
@@ -79,7 +79,7 @@ public class FranchiseeVO {
     private BigDecimal batteryServiceFee;
 
     /**
-     *  是否开启电池服务费功能 (0--开启，1--关闭)
+     * 是否开启电池服务费功能 (0--开启，1--关闭)
      */
     private Integer isOpenServiceFee;
 
@@ -88,5 +88,9 @@ public class FranchiseeVO {
      */
     private Integer disableCardTimeType;
 
-
+    /**
+     * 区域id
+     */
+    private Integer regionId;
+    private String regionName;
 }

@@ -34,12 +34,11 @@
 
 
     <!--查询指定行数据-->
-    <select id="queryList"
-            resultType="com.xiliulou.electricity.vo.FranchiseeVO">
+    <select id="queryList"  resultType="com.xiliulou.electricity.vo.FranchiseeVO">
         select
         id, cid, name, uid, del_flag,
         create_time, update_time, battery_deposit,tenant_id,percent,
-        model_type,model_battery_deposit,battery_service_fee,is_open_service_fee,disable_card_time_type
+        model_type,model_battery_deposit,battery_service_fee,is_open_service_fee,disable_card_time_type,region_id
         from t_franchisee
         where del_flag=0
         <if test="query.name != null and query.name != ''">

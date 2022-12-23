@@ -301,6 +301,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                     e.setCityName(city.getName());
                 }
 
+                //获取区县名称
+                Region region = regionService.selectByIdFromCache(e.getRegionId());
+                if(Objects.nonNull(region)){
+                    e.setRegionName(region.getName());
+                }
+
                 //获取用户名称
                 if (Objects.nonNull(e.getUid())) {
                     User user = userService.queryByUidFromCache(e.getUid());
