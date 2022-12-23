@@ -91,6 +91,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
     /**
      * 查询多条数据
+     *
      * @return 对象列表
      */
     @Override
@@ -275,7 +276,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     @Override
     public Triple<Boolean, String, Object> handleRentCarMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo) {
 
-        if(Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())){
+        if (Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())) {
             return Triple.of(true, "", null);
         }
 
@@ -305,7 +306,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
-                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId())) {
+                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId().longValue())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
