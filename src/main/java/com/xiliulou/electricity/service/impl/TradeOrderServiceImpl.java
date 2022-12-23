@@ -356,13 +356,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
         }
 
-
-        List<String> orderList = new ArrayList<>();
-        List<Integer> orderTypeList = new ArrayList<>();
-        List<BigDecimal> allPayAmount = new ArrayList<>();
-
-        BigDecimal integratedPaAmount = BigDecimal.valueOf(0);
-
         //处理押金订单
         // TODO: 2022/12/21 spring的事务的坑
         Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, integratedPaymentAdd.getFranchiseeId(), integratedPaymentAdd.getModel());
@@ -370,35 +363,25 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             return generateDepositOrderResult;
         }
 
-        //生成套餐订单
-        if (Objects.nonNull(integratedPaymentAdd.getMemberCardId())) {
-            Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd.getMemberCardId(), integratedPaymentAdd.getUserCouponId());
-            if (!generateMemberCardOrderResult.getLeft()) {
-                return generateMemberCardOrderResult;
-            }
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
-            electricityMemberCardOrderService.insert(electricityMemberCardOrder);
-            orderList.add(electricityMemberCardOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
-            allPayAmount.add(electricityMemberCardOrder.getPayAmount());
-            integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
+        //处理套餐订单
+        Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd.getMemberCardId(), integratedPaymentAdd.getUserCouponId());
+        if (!generateMemberCardOrderResult.getLeft()) {
+            return generateMemberCardOrderResult;
         }
 
-
-        //生成保险订单
-        if (Objects.nonNull(integratedPaymentAdd.getInsuranceId())) {
-            Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, integratedPaymentAdd.getInsuranceId());
-            if (!generateInsuranceOrderResult.getLeft()) {
-                return generateInsuranceOrderResult;
-            }
-            InsuranceOrder insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
-            insuranceOrderService.insert(insuranceOrder);
-            orderList.add(insuranceOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
-            allPayAmount.add(insuranceOrder.getPayAmount());
-            integratedPaAmount.add(insuranceOrder.getPayAmount());
+        //处理保险订单
+        Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, integratedPaymentAdd.getInsuranceId());
+        if (!generateInsuranceOrderResult.getLeft()) {
+            return generateInsuranceOrderResult;
         }
 
+        List<String> orderList = new ArrayList<>();
+        List<Integer> orderTypeList = new ArrayList<>();
+        List<BigDecimal> allPayAmount = new ArrayList<>();
+
+        BigDecimal integratedPaAmount = BigDecimal.valueOf(0);
+
+        //保存押金订单
         if (generateDepositOrderResult.getLeft() && Objects.nonNull(generateDepositOrderResult.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
@@ -409,7 +392,27 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             orderList.add(eleDepositOrder.getOrderId());
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
             allPayAmount.add(eleDepositOrder.getPayAmount());
-            integratedPaAmount.add(eleDepositOrder.getPayAmount());
+            integratedPaAmount = integratedPaAmount.add(eleDepositOrder.getPayAmount());
+        }
+
+        //保存套餐订单
+        if (generateMemberCardOrderResult.getLeft() && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
+            electricityMemberCardOrderService.insert(electricityMemberCardOrder);
+            orderList.add(electricityMemberCardOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
+            allPayAmount.add(electricityMemberCardOrder.getPayAmount());
+            integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
+        }
+
+        //保存保险订单
+        if (generateInsuranceOrderResult.getLeft() && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
+            InsuranceOrder insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
+            insuranceOrderService.insert(insuranceOrder);
+            orderList.add(insuranceOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
+            allPayAmount.add(insuranceOrder.getPayAmount());
+            integratedPaAmount = integratedPaAmount.add(insuranceOrder.getPayAmount());
         }
 
 
@@ -436,6 +439,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
 
     private Triple<Boolean, String, Object> generateDepositOrder(UserInfo userInfo, Long franchiseeId, Integer model) {
+
+        if (Objects.isNull(franchiseeId)) {
+            return Triple.of(true, "", null);
+        }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
@@ -500,6 +507,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     // TODO: 2022/12/21 活动问题
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId) {
+
+        if (Objects.isNull(memberCardId)) {
+            return Triple.of(true, "", null);
+        }
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardId);
         if (Objects.isNull(electricityMemberCard)) {
@@ -578,6 +589,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     }
 
     private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId) {
+
+        if (Objects.isNull(insuranceId)) {
+            return Triple.of(true, "", null);
+        }
 
         //查询保险
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceId);
