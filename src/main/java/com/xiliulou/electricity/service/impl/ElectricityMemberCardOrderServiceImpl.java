@@ -2157,7 +2157,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
             updateUserCarMemberCard.setCardId(electricityMemberCardOrder.getMemberCardId().longValue());
-            updateUserCarMemberCard.setMemberCardExpireTime(calcRentCarMemberCardExpireTime(carMemberCardOrderQuery, userCarMemberCard));
+            updateUserCarMemberCard.setMemberCardExpireTime(calcRentCarMemberCardExpireTime(carMemberCardOrderQuery.getRentType(), carMemberCardOrderQuery.getRentTime(), userCarMemberCard));
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.updateByUid(updateUserCarMemberCard);
@@ -2188,17 +2188,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public Long calcRentCarMemberCardExpireTime(CarMemberCardOrderQuery carMemberCardOrderQuery, UserCarMemberCard userCarMemberCard) {
+    public Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard) {
         Long memberCardValidDays = null;
-        if (ElectricityCarModel.RENT_TYPE_MONTH.equals(carMemberCardOrderQuery.getRentType())) {
-            memberCardValidDays = carMemberCardOrderQuery.getRentTime() * 0 * 24 * 60 * 60 * 1000L;
-        } else if (ElectricityCarModel.RENT_TYPE_WEEK.equals(carMemberCardOrderQuery.getRentType())) {
-            memberCardValidDays = carMemberCardOrderQuery.getRentTime() * 7 * 24 * 60 * 60 * 1000L;
+        if (ElectricityCarModel.RENT_TYPE_MONTH.equals(rentType)) {
+            memberCardValidDays = rentTime * 0 * 24 * 60 * 60 * 1000L;
+        } else if (ElectricityCarModel.RENT_TYPE_WEEK.equals(rentType)) {
+            memberCardValidDays = rentTime * 7 * 24 * 60 * 60 * 1000L;
         } else {
             memberCardValidDays = 0L;
         }
 
-        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (Objects.isNull(userCarMemberCard) || userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             return System.currentTimeMillis() + memberCardValidDays;
         } else {
             return userCarMemberCard.getMemberCardExpireTime() + memberCardValidDays;
@@ -2622,7 +2622,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public Triple<Boolean, String, Object> handleRentBatteryMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo) {
-        if(Objects.isNull(query.getMemberCardId())){
+        if (Objects.isNull(query.getMemberCardId())) {
             return Triple.of(true, "", null);
         }
 

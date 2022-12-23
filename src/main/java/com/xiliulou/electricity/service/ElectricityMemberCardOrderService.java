@@ -59,7 +59,7 @@ public interface ElectricityMemberCardOrderService {
 
     R payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
 
-    Long calcRentCarMemberCardExpireTime(CarMemberCardOrderQuery carMemberCardOrderQuery, UserCarMemberCard userCarMemberCard);
+    Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard);
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
 
@@ -83,7 +83,7 @@ public interface ElectricityMemberCardOrderService {
 
     BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, UserInfo userInfo, UserBattery userBattery);
 
-    BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord,ServiceFeeUserInfo serviceFeeUserInfo);
+    BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord, ServiceFeeUserInfo serviceFeeUserInfo);
 
     BigDecimal checkUserMemberCardExpireBatteryService(UserInfo userInfo, Franchisee franchisee, Long cardDays);
 

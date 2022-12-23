@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
@@ -112,6 +114,18 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     UserAmountService userAmountService;
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    UserCarService userCarService;
+    @Autowired
+    RedisService redisService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -390,6 +404,18 @@ public class UnionTradeOrderServiceImpl extends
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
+            }else if(Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)){
+                //租车押金
+                Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
+                if (!rentCarDepositOrderResult.getLeft()) {
+                    return rentCarDepositOrderResult;
+                }
+            }else if(Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)){
+                //租车套餐
+                Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
+                if (!rentCarMemberCardOrderResult.getLeft()) {
+                    return rentCarMemberCardOrderResult;
+                }
             }
         }
 
@@ -412,7 +438,6 @@ public class UnionTradeOrderServiceImpl extends
         });
         return Pair.of(result, null);
     }
-
 
     //处理押金订单
     private Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus) {
@@ -687,6 +712,115 @@ public class UnionTradeOrderServiceImpl extends
         updateInsuranceOrder.setUpdateTime(System.currentTimeMillis());
         updateInsuranceOrder.setStatus(orderStatus);
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
+
+        return Pair.of(true, null);
+    }
+
+    /**
+     * 处理租车押金
+     * @return
+     */
+    public Pair<Boolean, Object> handleRentCarDepositOrder(String orderNo, Integer depositOrderStatus, WechatJsapiOrderCallBackResource callBackResource) {
+        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, "1", 5000L, false)) {
+            log.warn("WECHATV3 NOTIFY WARN,repeat callback! orderId={}", orderNo);
+            return Pair.of(false, "");
+        }
+
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
+        if(Objects.isNull(carDepositOrder)){
+            log.error("WECHATV3 NOTIFY ERROR!not found carDepositOrder,orderNo={}", orderNo);
+            return Pair.of(false, "未找到订单!");
+        }
+        if(!Objects.equals(carDepositOrder.getStatus(),CarDepositOrder.STATUS_INIT)){
+            log.error("WECHATV3 NOTIFY ERROR!carDepositOrder status is not init,orderNo={}", orderNo);
+            return Pair.of(false, "订单已处理!");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo,carDepositOrder.getUid());
+            return Pair.of(false, "用户不存在!");
+        }
+
+        //支付成功
+        if(Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)){
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+
+            UserCarDeposit userCarDeposit = new UserCarDeposit();
+            userCarDeposit.setUid(userInfo.getUid());
+            userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+            userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
+            userCarDeposit.setTenantId(userInfo.getTenantId());
+            userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+            userCarDeposit.setCreateTime(System.currentTimeMillis());
+            userCarDeposit.setUpdateTime(System.currentTimeMillis());
+            userCarDepositService.insertOrUpdate(userCarDeposit);
+
+            UserCar userCar = new UserCar();
+            userCar.setUid(userInfo.getUid());
+            userCar.setCarModel(carDepositOrder.getCarModelId());
+            userCar.setTenantId(userInfo.getTenantId());
+            userCar.setCreateTime(System.currentTimeMillis());
+            userCar.setUpdateTime(System.currentTimeMillis());
+            userCarService.insertOrUpdate(userCar);
+        }
+
+        //更新订单状态
+        CarDepositOrder updateCarDepositOrder = new CarDepositOrder();
+        updateCarDepositOrder.setId(carDepositOrder.getId());
+        updateCarDepositOrder.setStatus(depositOrderStatus);
+        updateCarDepositOrder.setUpdateTime(System.currentTimeMillis());
+        carDepositOrderService.update(updateCarDepositOrder);
+        return Pair.of(true, null);
+    }
+
+    /**
+     * 处理租车套餐
+     * @return
+     */
+    public Pair<Boolean, Object> handleRentCarMemberCardOrder(String orderNo, Integer orderStatus, WechatJsapiOrderCallBackResource callBackResource) {
+        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, "1", 5000L, false)) {
+            log.warn("WECHATV3 NOTIFY WARN,repeat callback! orderId={}", orderNo);
+            return Pair.of(false, "");
+        }
+
+        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderNo);
+        if(Objects.isNull(carMemberCardOrder)){
+            log.error("WECHATV3 NOTIFY ERROR!not found carMemberCardOrder,orderNo={}", orderNo);
+            return Pair.of(false, "未找到订单!");
+        }
+        if(!Objects.equals(carMemberCardOrder.getStatus(),CarMemberCardOrder.STATUS_INIT)){
+            log.error("WECHATV3 NOTIFY ERROR!carMemberCardOrder status is not init,orderNo={}", orderNo);
+            return Pair.of(false, "订单已处理!");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrder.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo,carMemberCardOrder.getUid());
+            return Pair.of(false, "用户不存在!");
+        }
+
+        if (Objects.equals(orderStatus, CarMemberCardOrder.STATUS_SUCCESS)) {
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(carMemberCardOrder.getUid());
+
+            UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
+            updateUserCarMemberCard.setUid(userInfo.getUid());
+            updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
+            updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
+            updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
+
+            userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+        }
+
+        CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();
+        updateCarMemberCardOrder.setId(carMemberCardOrder.getId());
+        updateCarMemberCardOrder.setStatus(orderStatus);
+        updateCarMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        carMemberCardOrderService.update(updateCarMemberCardOrder);
 
         return Pair.of(true, null);
     }

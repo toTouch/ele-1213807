@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -611,6 +612,11 @@ public class ElectricityTradeOrderServiceImpl extends
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
 
+        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + tradeOrderNo, "1", 5000L, false)) {
+            log.warn("NOTIFY_MEMBER_ORDER WARN,repeat callback! orderId={}", tradeOrderNo);
+            return Pair.of(false, "");
+        }
+
         //系统订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
@@ -703,6 +709,11 @@ public class ElectricityTradeOrderServiceImpl extends
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
 
+        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + tradeOrderNo, "1", 5000L, false)) {
+            log.warn("NOTIFY_MEMBER_ORDER WARN,repeat callback! orderId={}", tradeOrderNo);
+            return Pair.of(false, "");
+        }
+
         //交易订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
@@ -744,22 +755,19 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarMemberCard)) {
-            log.error("payDeposit ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
-            return Pair.of(false, "未找到用户信息!");
-        }
+//        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+//        if (Objects.isNull(userCarMemberCard)) {
+//            log.error("payDeposit ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
+//            return Pair.of(false, "未找到用户信息!");
+//        }
 
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
-
-            CarMemberCardOrderQuery carMemberCardOrderQuery=new CarMemberCardOrderQuery();
-            carMemberCardOrderQuery.setRentType(carMemberCardOrder.getMemberCardType());
-            carMemberCardOrderQuery.setRentTime(carMemberCardOrder.getValidDays());
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
 
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
             updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
-            updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrderQuery, userCarMemberCard));
+            updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),carMemberCardOrder.getValidDays(), userCarMemberCard));
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.updateByUid(updateUserCarMemberCard);
