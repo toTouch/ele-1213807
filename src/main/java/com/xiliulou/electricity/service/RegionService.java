@@ -46,4 +46,6 @@ public interface RegionService {
     List<Region> selectByPage(int offset, int limit);
 
     Region selectByIdFromCache(Integer regionId);
+
+    List<Region> queryRegionListByPid(Integer pid);
 }

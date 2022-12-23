@@ -144,7 +144,7 @@
         f.id, f.cid, f.name, f.uid, f.del_flag,
         f.create_time, f.update_time, f.battery_deposit,f.tenant_id,f.percent,
         f.model_type,f.model_battery_deposit,f.battery_service_fee,f.is_open_service_fee from t_franchisee f
-        left join t_user_info tu on tu.id=tf.user_info_id where tu.uid=#{uid}
+        left join t_user_info tu on tu.uid=f.uid where tu.uid=#{uid}
     </select>
 
 

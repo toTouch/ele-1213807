@@ -25,6 +25,12 @@
         where code = #{code}
     </select>
 
+    <select id="queryRegionListByPid" resultMap="RegionMap">
+        <include refid="selectRegion"/>
+        where pid = #{pid}
+    </select>
+
+
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="RegionMap">
         <include refid="selectRegion"/>

@@ -71,5 +71,7 @@ public interface RegionMapper extends BaseMapper<Region> {
      * @param code 主键
      * @return 实例对象
      */
-    Region selectByCode(String code);
+    Region selectByCode(@Param("code") String code);
+
+    List<Region> queryRegionListByPid(@Param("pid") Integer pid);
 }

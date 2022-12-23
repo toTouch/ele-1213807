@@ -96,5 +96,8 @@ public class RegionServiceImpl implements RegionService {
         return this.regionMapper.selectByPage(offset, limit);
     }
 
-
+    @Override
+    public List<Region> queryRegionListByPid(Integer pid) {
+        return this.regionMapper.queryRegionListByPid(pid);
+    }
 }
