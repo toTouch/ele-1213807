@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -89,4 +90,6 @@ public interface UserBatteryMemberCardService {
 
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
                                                              Long lastTime);
+
+    List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime);
 }
