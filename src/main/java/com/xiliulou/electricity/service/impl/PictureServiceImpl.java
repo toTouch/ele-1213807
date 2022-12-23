@@ -88,13 +88,17 @@ public class PictureServiceImpl implements PictureService {
             return Collections.EMPTY_LIST;
         }
 
+        return pictureParseVO(pictures);
+    }
+
+    @Override
+    public List<PictureVO> pictureParseVO(List<Picture> pictures) {
         return pictures.parallelStream().map(item -> {
             PictureVO pictureVO = new PictureVO();
             BeanUtils.copyProperties(item, pictureVO);
             pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
             return pictureVO;
         }).collect(Collectors.toList());
-
     }
 
     /**

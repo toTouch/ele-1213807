@@ -75,4 +75,7 @@ public interface PictureService {
     List<Picture> selectByByBusinessId(Long id);
 
     Integer savePictureCallBack(CallBackQuery callBackQuery);
+
+    List<PictureVO> pictureParseVO(List<Picture> pictures);
+
 }

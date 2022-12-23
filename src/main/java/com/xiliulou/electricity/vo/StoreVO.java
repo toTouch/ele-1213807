@@ -102,7 +102,7 @@ public class StoreVO {
     /**
      * 门店图片列表
      */
-    private List<Picture> pictureList;
+    private List<PictureVO> pictureList;
 
     /**
      * 门店标签 服务类型

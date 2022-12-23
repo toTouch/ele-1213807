@@ -21,13 +21,17 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
+import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -73,6 +77,11 @@ public class StoreServiceImpl implements StoreService {
     StoreDetailService storeDetailService;
     @Autowired
     PictureService pictureService;
+    @Autowired
+    StorageConfig storageConfig;
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -570,8 +579,8 @@ public class StoreServiceImpl implements StoreService {
             BeanUtils.copyProperties(item, storeVO);
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
-            if (CollectionUtils.isEmpty(pictures)) {
-                storeVO.setPictureList(pictures);
+            if (!CollectionUtils.isEmpty(pictures)) {
+                storeVO.setPictureList(pictureService.pictureParseVO(pictures));
             }
 
             return storeVO;
@@ -588,7 +597,11 @@ public class StoreServiceImpl implements StoreService {
         }
 
         BeanUtils.copyProperties(store, storeVO);
-        storeVO.setPictureList(pictureService.selectByByBusinessId(id));
+
+        List<Picture> pictures = pictureService.selectByByBusinessId(id);
+        if (!CollectionUtils.isEmpty(pictures)) {
+            storeVO.setPictureList(pictureService.pictureParseVO(pictures));
+        }
 
         StoreDetail storeDetail = storeDetailService.selectByStoreId(id);
         if (Objects.nonNull(storeDetail)) {
