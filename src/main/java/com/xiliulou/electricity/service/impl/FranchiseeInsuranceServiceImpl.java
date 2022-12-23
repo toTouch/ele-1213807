@@ -266,8 +266,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     }
 
     @Override
-    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType,Integer tenantId) {
-        return franchiseeInsuranceMapper.queryByFranchiseeIdAndBatteryType(franchiseeId,batteryType,tenantId);
+    public FranchiseeInsurance queryByFranchiseeId(Long franchiseeId, String batteryType, Integer tenantId) {
+        return franchiseeInsuranceMapper.queryByFranchiseeIdAndBatteryType(franchiseeId, batteryType, tenantId);
     }
 
     @Override
@@ -282,7 +282,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        if (Objects.equals(tenantId, franchisee.getTenantId())) {
+        if (!Objects.equals(tenantId, franchisee.getTenantId())) {
             return R.ok();
         }
 

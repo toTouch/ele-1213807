@@ -69,6 +69,11 @@ public class FranchiseeInsuranceVo {
     private Integer delFlag;
 
     /**
+     * 电池类型套餐
+     */
+    private String batteryType;
+
+    /**
      * 保险说明
      */
     private String instruction;

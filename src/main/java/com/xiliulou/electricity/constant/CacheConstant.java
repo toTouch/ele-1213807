@@ -280,4 +280,10 @@ public interface CacheConstant {
      * 城市缓存
      */
     String CACHE_CITY_CODE="city_code:";
+
+
+    /**
+     * 加盟商缓存
+     */
+    String CACHE_FRANCHISEE = "franchisee:";
 }
