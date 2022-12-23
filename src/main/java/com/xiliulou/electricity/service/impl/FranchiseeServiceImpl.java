@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
@@ -271,8 +272,18 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public Franchisee queryByIdFromCache(Long id) {
-        // TODO userFirstLogin分支
-        return null;
+        Franchisee cacheFranchisee=redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE + id,Franchisee.class);
+        if (Objects.nonNull(cacheFranchisee)) {
+            return cacheFranchisee;
+        }
+
+        Franchisee franchisee = this.queryByIdFromDB(id);
+        if (Objects.isNull(franchisee)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_FRANCHISEE + id, franchisee);
+        return franchisee;
     }
 
     @Override
