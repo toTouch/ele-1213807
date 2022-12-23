@@ -721,10 +721,6 @@ public class UnionTradeOrderServiceImpl extends
      * @return
      */
     public Pair<Boolean, Object> handleRentCarDepositOrder(String orderNo, Integer depositOrderStatus, WechatJsapiOrderCallBackResource callBackResource) {
-        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, "1", 5000L, false)) {
-            log.warn("WECHATV3 NOTIFY WARN,repeat callback! orderId={}", orderNo);
-            return Pair.of(false, "");
-        }
 
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
         if(Objects.isNull(carDepositOrder)){
@@ -783,10 +779,6 @@ public class UnionTradeOrderServiceImpl extends
      * @return
      */
     public Pair<Boolean, Object> handleRentCarMemberCardOrder(String orderNo, Integer orderStatus, WechatJsapiOrderCallBackResource callBackResource) {
-        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + orderNo, "1", 5000L, false)) {
-            log.warn("WECHATV3 NOTIFY WARN,repeat callback! orderId={}", orderNo);
-            return Pair.of(false, "");
-        }
 
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderNo);
         if(Objects.isNull(carMemberCardOrder)){

@@ -305,31 +305,31 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
         //处理租车押金
         Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query, userInfo);
-        if(!rentCarDepositTriple.getLeft()){
+        if (!rentCarDepositTriple.getLeft()) {
             return rentCarDepositTriple;
         }
 
         //处理租车套餐订单
         Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query, userInfo);
-        if(!rentCarMemberCardTriple.getLeft()){
+        if (!rentCarMemberCardTriple.getLeft()) {
             return rentCarMemberCardTriple;
         }
 
         //处理电池押金相关
         Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query, userInfo);
-        if(!rentBatteryDepositTriple.getLeft()){
+        if (!rentBatteryDepositTriple.getLeft()) {
             return rentBatteryDepositTriple;
         }
 
         //处理电池套餐相关
-        Triple<Boolean, String, Object> rentBatteryMemberCardTriple =electricityMemberCardOrderService.handleRentBatteryMemberCard(query, userInfo);
-        if(!rentBatteryMemberCardTriple.getLeft()){
+        Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query, userInfo);
+        if (!rentBatteryMemberCardTriple.getLeft()) {
             return rentBatteryMemberCardTriple;
         }
 
         //处理保险套餐相关
-        Triple<Boolean, String, Object> rentBatteryInsuranceTriple =insuranceOrderService.handleRentBatteryInsurance(query, userInfo);
-        if(!rentBatteryInsuranceTriple.getLeft()){
+        Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query, userInfo);
+        if (!rentBatteryInsuranceTriple.getLeft()) {
             return rentBatteryInsuranceTriple;
         }
 
@@ -341,7 +341,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //保存租车押金订单
-        if(rentCarDepositTriple.getLeft() && Objects.nonNull(rentCarDepositTriple.getRight())){
+        if (rentCarDepositTriple.getLeft() && Objects.nonNull(rentCarDepositTriple.getRight())) {
             CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
             carDepositOrderService.insert(carDepositOrder);
 
@@ -349,11 +349,11 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
             payAmountList.add(carDepositOrder.getPayAmount());
 
-            totalPayAmount=totalPayAmount.add(carDepositOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
         }
 
         //保存租车套餐订单
-        if(rentCarMemberCardTriple.getLeft() && Objects.nonNull(rentCarMemberCardTriple.getRight())){
+        if (rentCarMemberCardTriple.getLeft() && Objects.nonNull(rentCarMemberCardTriple.getRight())) {
             CarMemberCardOrder carMemberCardOrder = (CarMemberCardOrder) rentCarMemberCardTriple.getRight();
             carMemberCardOrderService.insert(carMemberCardOrder);
 
@@ -361,12 +361,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD);
             payAmountList.add(carMemberCardOrder.getPayAmount());
 
-            totalPayAmount=totalPayAmount.add(carMemberCardOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(carMemberCardOrder.getPayAmount());
         }
 
 
         //保存电池押金订单
-        if(rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())){
+        if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
             eleDepositOrderService.insert(eleDepositOrder);
 
@@ -374,12 +374,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
             payAmountList.add(eleDepositOrder.getPayAmount());
 
-            totalPayAmount=totalPayAmount.add(eleDepositOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(eleDepositOrder.getPayAmount());
         }
 
 
         //保存保险订单
-        if(rentBatteryInsuranceTriple.getLeft() && Objects.nonNull(rentBatteryInsuranceTriple.getRight())){
+        if (rentBatteryInsuranceTriple.getLeft() && Objects.nonNull(rentBatteryInsuranceTriple.getRight())) {
             InsuranceOrder insuranceOrder = (InsuranceOrder) rentBatteryInsuranceTriple.getRight();
             insuranceOrderService.insert(insuranceOrder);
 
@@ -387,11 +387,11 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_INSURANCE);
             payAmountList.add(insuranceOrder.getPayAmount());
 
-            totalPayAmount=totalPayAmount.add(insuranceOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(insuranceOrder.getPayAmount());
         }
 
         //保存套餐订单
-        if(rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight())){
+        if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
             ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) rentBatteryMemberCardTriple.getRight();
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
@@ -399,7 +399,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
 
-            totalPayAmount=totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
 
 //            electricityMemberCardOrderService.handleUserCouponAndActivity(userInfo,electricityMemberCardOrder);
         }

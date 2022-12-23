@@ -612,11 +612,6 @@ public class ElectricityTradeOrderServiceImpl extends
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
 
-        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + tradeOrderNo, "1", 5000L, false)) {
-            log.warn("NOTIFY_MEMBER_ORDER WARN,repeat callback! orderId={}", tradeOrderNo);
-            return Pair.of(false, "");
-        }
-
         //系统订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
@@ -708,11 +703,6 @@ public class ElectricityTradeOrderServiceImpl extends
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
-
-        if (!redisService.setNx(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + tradeOrderNo, "1", 5000L, false)) {
-            log.warn("NOTIFY_MEMBER_ORDER WARN,repeat callback! orderId={}", tradeOrderNo);
-            return Pair.of(false, "");
-        }
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
