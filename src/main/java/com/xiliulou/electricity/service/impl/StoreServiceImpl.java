@@ -569,21 +569,19 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public List<StoreVO> selectListByDistance(StoreQuery storeQuery) {
-        List<Store> list = storeMapper.selectListByDistance(storeQuery);
+        List<StoreVO> list = storeMapper.selectListByDistance(storeQuery);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
 
         return list.parallelStream().map(item -> {
-            StoreVO storeVO = new StoreVO();
-            BeanUtils.copyProperties(item, storeVO);
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
             if (!CollectionUtils.isEmpty(pictures)) {
-                storeVO.setPictureList(pictureService.pictureParseVO(pictures));
+                item.setPictureList(pictureService.pictureParseVO(pictures));
             }
 
-            return storeVO;
+            return item;
         }).collect(Collectors.toList());
     }
 
