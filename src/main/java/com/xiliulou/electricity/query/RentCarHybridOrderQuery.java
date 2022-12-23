@@ -17,6 +17,9 @@ public class RentCarHybridOrderQuery {
     @NotNull(message = "车辆租赁时间不能为空!")
     private Integer rentTime;
 
+    @NotNull(message = "车辆租赁方式不能为空!")
+    private String rentType;
+
     private Integer insuranceId;
 
     private Long franchiseeId;

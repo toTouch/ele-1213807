@@ -36,6 +36,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -2119,7 +2120,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0087", "租车套餐计费规则不存在!");
         }
 
-        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, carMemberCardOrderQuery, rentCarPriceRule);
+        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, carMemberCardOrderQuery.getRentTime(), rentCarPriceRule);
         if (!calcSavePrice.getLeft()) {
             return R.fail("ELECTRICITY.0087", "租车套餐计费规则不存在!");
         }
@@ -2619,7 +2620,139 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok(map);
     }
 
+    @Override
+    public Triple<Boolean, String, Object> handleRentBatteryMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo) {
+        if(Objects.isNull(query.getMemberCardId())){
+            return Triple.of(true, "", null);
+        }
 
+        //判断套餐是否暂停
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", userInfo.getUid());
+            return Triple.of(false, "100241", "当前套餐暂停中，请先启用套餐");
+        }
+
+        Long now = System.currentTimeMillis();
+
+        //判断用户电池服务费
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+            long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            BigDecimal userMemberCardExpireServiceFee = this.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+            if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
+                return Triple.of(false, "100220", "用户存在电池服务费");
+            }
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(query.getMemberCardId());
+        if (Objects.isNull(electricityMemberCard)) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID={},uid={}", query.getMemberCardId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "未找到月卡套餐!");
+        }
+        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
+            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={},uid={}", query.getMemberCardId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0088", "月卡已禁用!");
+        }
+
+        //判断是否已绑定限次数套餐并且换电次数为负
+        ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        if (Objects.nonNull(bindElectricityMemberCard) && !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
+            if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                log.error("payDeposit  ERROR! not buy same memberCard uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.00119", "套餐剩余次数为负,应购买相同类型套餐抵扣");
+            }
+        }
+
+
+        //查找计算优惠券
+        //满减折扣劵
+        UserCoupon userCoupon = null;
+        BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
+        if (Objects.nonNull(query.getUserCouponId())) {
+            userCoupon = userCouponService.queryByIdFromDB(query.getUserCouponId());
+            if (Objects.isNull(userCoupon)) {
+                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId={},uid={}", query.getUserCouponId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
+            }
+
+            //优惠券是否使用
+            if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
+                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId={},uid={}", query.getUserCouponId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0090", "您的优惠券已被使用");
+            }
+
+            //优惠券是否过期
+            if (userCoupon.getDeadline() < System.currentTimeMillis()) {
+                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId={},uid={}", query.getUserCouponId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
+            }
+
+            Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
+            if (Objects.isNull(coupon)) {
+                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId={},uid={}", query.getUserCouponId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
+            }
+
+            //使用满减劵
+            if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.FULL_REDUCTION)) {
+                //计算满减
+                payAmount = payAmount.subtract(coupon.getAmount());
+            }
+
+            //使用折扣劵
+            if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.DISCOUNT)) {
+                //计算折扣
+                payAmount = payAmount.multiply(coupon.getDiscount().divide(BigDecimal.valueOf(100)));
+            }
+        }
+
+        //支付金额不能为负数
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
+        Long remainingNumber = electricityMemberCard.getMaxUseCount();
+
+        //同一个套餐可以续费
+        if (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount())) {
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && now < userBatteryMemberCard.getMemberCardExpireTime()) {
+                now = userBatteryMemberCard.getMemberCardExpireTime();
+            }
+            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
+            }
+
+        } else {
+            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
+                    && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
+                    userBatteryMemberCard.getMemberCardExpireTime() > now &&
+                    (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
+                log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED ,uid={}", userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买相同类型的套餐!");
+            }
+        }
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+        electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_PACKAGE, userInfo.getUid()));
+        electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
+        electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        electricityMemberCardOrder.setMemberCardId(query.getMemberCardId());
+        electricityMemberCardOrder.setUid(userInfo.getUid());
+        electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
+        electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
+        electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
+        electricityMemberCardOrder.setPayAmount(payAmount);
+        electricityMemberCardOrder.setUserName(userInfo.getName());
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
+        electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
+        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
+        electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+
+        return Triple.of(true, null, electricityMemberCardOrder);
+    }
 }
 
 

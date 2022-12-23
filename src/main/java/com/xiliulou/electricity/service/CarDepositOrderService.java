@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,4 +72,6 @@ public interface CarDepositOrderService {
     Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request);
 
     CarDepositOrder selectByOrderId(String orderNo);
+
+    Triple<Boolean, String, Object> handleRentCarDeposit(RentCarHybridOrderQuery query, UserInfo userInfo);
 }

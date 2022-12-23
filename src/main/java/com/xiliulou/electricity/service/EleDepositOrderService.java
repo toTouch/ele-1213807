@@ -2,11 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.query.BatteryDepositAdd;
-import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.query.RentCarDepositAdd;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,4 +69,5 @@ public interface EleDepositOrderService {
 
     BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime);
 
+    Triple<Boolean, String, Object> handleRentBatteryDeposit(RentCarHybridOrderQuery query, UserInfo userInfo);
 }

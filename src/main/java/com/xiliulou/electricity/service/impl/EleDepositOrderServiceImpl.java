@@ -15,10 +15,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
-import com.xiliulou.electricity.query.BatteryDepositAdd;
-import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
-import com.xiliulou.electricity.query.RentCarDepositAdd;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -32,6 +29,7 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1501,6 +1499,69 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> handleRentBatteryDeposit(RentCarHybridOrderQuery query, UserInfo userInfo) {
+        EleDepositOrder eleDepositOrder = null;
+        if (Objects.isNull(query.getFranchiseeId()) && Objects.isNull(query.getModel())) {
+            return Triple.of(true, "", null);
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("BATTERY DEPOSIT ERROR! not found Franchisee ！franchiseeId={},uid={}", query.getFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        BigDecimal depositPayAmount = null;
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            depositPayAmount = franchisee.getBatteryDeposit();
+        } else if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            if (Objects.isNull(query.getModel())) {
+                return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+            }
+
+            List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+            if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
+                log.error("BATTERY DEPOSIT ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", query.getFranchiseeId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
+            }
+
+            for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                if ((double) (modelBatteryDeposit.getModel()) - query.getModel() < 1 && (double) (modelBatteryDeposit.getModel()) - query.getModel() >= 0) {
+                    depositPayAmount = modelBatteryDeposit.getBatteryDeposit();
+                    break;
+                }
+            }
+
+            eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
+        }
+
+        if (Objects.isNull(depositPayAmount)) {
+            log.error("BATTERY DEPOSIT ERROR! payAmount is null ！franchiseeId={},uid={}", query.getFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
+        }
+
+        //生成押金独立订单
+        String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
+        eleDepositOrder = EleDepositOrder.builder()
+                .orderId(depositOrderId)
+                .uid(userInfo.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(depositPayAmount)
+                .status(EleDepositOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(userInfo.getTenantId())
+                .franchiseeId(franchisee.getId())
+                .payType(EleDepositOrder.ONLINE_PAYMENT)
+                .storeId(null)
+                .modelType(franchisee.getModelType()).build();
+
+        return Triple.of(true, "", eleDepositOrder);
     }
 
     /**

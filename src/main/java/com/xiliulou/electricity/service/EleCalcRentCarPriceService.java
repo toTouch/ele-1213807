@@ -11,10 +11,10 @@ public interface EleCalcRentCarPriceService {
     /**
      * 获取租车套餐费用
      * @param userInfo
-     * @param carMemberCardOrderQuery
+     * @param rentTime
      * @param rentCarPriceRuleMap
      * @return
      */
-    Pair<Boolean, Object> getRentCarPrice(UserInfo userInfo, CarMemberCardOrderQuery carMemberCardOrderQuery, Map<String, Double> rentCarPriceRuleMap);
+    Pair<Boolean, Object> getRentCarPrice(UserInfo userInfo, Integer rentTime, Map<String, Double> rentCarPriceRuleMap);
 
 }

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
+import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -339,5 +340,48 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         //等到后台同意退款
         return Triple.of(true, "", "提交成功！");
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> handleRentCarDeposit(RentCarHybridOrderQuery query, UserInfo userInfo) {
+        if(Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())){
+            return Triple.of(true, "", null);
+        }
+
+        Store store = storeService.queryByIdFromCache(query.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
+        }
+        if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
+            log.error("ELE CAR DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), userInfo.getUid());
+            return Triple.of(false, "100008", "不支持线上缴纳租车押金");
+        }
+
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
+        if (Objects.isNull(electricityCarModel)) {
+            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
+            return Triple.of(false, "100009", "未找到该型号车辆");
+        }
+
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
+
+        BigDecimal payAmount = electricityCarModel.getCarDeposit();
+
+        CarDepositOrder carDepositOrder = new CarDepositOrder();
+        carDepositOrder.setOrderId(orderId);
+        carDepositOrder.setPhone(userInfo.getPhone());
+        carDepositOrder.setName(userInfo.getName());
+        carDepositOrder.setPayAmount(payAmount);
+        carDepositOrder.setStatus(CarDepositOrder.STATUS_INIT);
+        carDepositOrder.setTenantId(TenantContextHolder.getTenantId());
+        carDepositOrder.setCreateTime(System.currentTimeMillis());
+        carDepositOrder.setUpdateTime(System.currentTimeMillis());
+        carDepositOrder.setFranchiseeId(store.getFranchiseeId());
+        carDepositOrder.setStoreId(query.getStoreId());
+        carDepositOrder.setPayType(CarDepositOrder.ONLINE_PAYTYPE);
+        carDepositOrder.setCarModelId(query.getCarModelId());
+
+        return Triple.of(true, "", carDepositOrder);
     }
 }

@@ -16,7 +16,7 @@ import java.util.Objects;
 @Service(value = ElectricityCarModel.RENT_TYPE_WEEK)
 public class EleWeekRentCarPriceService implements EleCalcRentCarPriceService {
     @Override
-    public Pair<Boolean, Object> getRentCarPrice(UserInfo userInfo, CarMemberCardOrderQuery carMemberCardOrderQuery, Map<String, Double> rentCarPriceRuleMap) {
+    public Pair<Boolean, Object> getRentCarPrice(UserInfo userInfo, Integer rentTime, Map<String, Double> rentCarPriceRuleMap) {
 
         Double price = rentCarPriceRuleMap.get(ElectricityCarModel.RENT_TYPE_WEEK);
         if (Objects.isNull(price)) {
@@ -24,7 +24,7 @@ public class EleWeekRentCarPriceService implements EleCalcRentCarPriceService {
             return Pair.of(false, null);
         }
 
-        BigDecimal totalPrice= BigDecimal.valueOf(price).multiply(BigDecimal.valueOf(carMemberCardOrderQuery.getRentTime()));
+        BigDecimal totalPrice= BigDecimal.valueOf(price).multiply(BigDecimal.valueOf(rentTime));
 
         return Pair.of(true, totalPrice);
     }

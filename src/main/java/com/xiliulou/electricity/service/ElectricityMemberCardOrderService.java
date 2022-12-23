@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.ss.formula.functions.T;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -92,5 +94,7 @@ public interface ElectricityMemberCardOrderService {
     ElectricityMemberCardOrder selectByOrderNo(String orderNo);
 
     R queryUserExistMemberCard();
+
+    Triple<Boolean, String, Object> handleRentBatteryMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo);
 
 }

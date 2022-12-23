@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
+import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -34,5 +34,4 @@ public interface FranchiseeInsuranceService {
     FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType,Integer tenantId);
 
     R queryCanAddInsuranceBatteryType(Long franchiseeId);
-
 }

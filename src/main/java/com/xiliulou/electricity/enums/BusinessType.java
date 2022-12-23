@@ -12,7 +12,7 @@ public enum BusinessType {
     BATTERY_DEPOSIT(11),
     CAR_PACKAGE(12),
     CAR_DEPOSIT(13),
-    CAR_INSURANCE(14),
+    BATTERY_INSURANCE(14),
     BATTERY_REFUND(15),
     CAR_REFUND(16),
     RENT_CAR(17);

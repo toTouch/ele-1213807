@@ -42,6 +42,12 @@ public class UnionPayOrder {
     //换电套餐
     public static final Integer ORDER_TYPE_MEMBER_CARD = 3;
 
+    //租车押金
+    public static final Integer ORDER_TYPE_RENT_CAR_DEPOSIT = 4;
+
+    //租车套餐
+    public static final Integer ORDER_TYPE_RENT_CAR_MEMBER_CARD = 5;
+
 
     //保险附加信息
     public static final String ATTACH_INSURANCE_UNION_DEPOSIT = "insurance_union_deposit";
