@@ -78,11 +78,11 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
-        insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
         insuranceInstruction.setTenantId(tenantId);
         insuranceInstruction.setInstruction(franchiseeInsuranceAddAndUpdate.getInstruction());
         insuranceInstruction.setCreateTime(System.currentTimeMillis());
         insuranceInstruction.setUpdateTime(System.currentTimeMillis());
+
 
         Integer insert = null;
 
@@ -96,11 +96,13 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                         .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL));
                 if (existCount == 0) {
                     insert = baseMapper.insert(franchiseeInsurance);
+                    insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
                     insuranceInstructionService.insert(insuranceInstruction);
                 }
             }
         } else {
             insert = baseMapper.insert(franchiseeInsurance);
+            insuranceInstruction.setInsuranceId(franchiseeInsurance.getId());
             insuranceInstructionService.insert(insuranceInstruction);
         }
 
