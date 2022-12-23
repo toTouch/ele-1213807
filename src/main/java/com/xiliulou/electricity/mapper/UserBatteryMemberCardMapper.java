@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Update;
@@ -73,4 +74,6 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
 
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(@Param("offset") Integer offset,
                                                              @Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
+
+    List<FailureMemberCardVo > queryMemberCardExpireUser(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
 }
