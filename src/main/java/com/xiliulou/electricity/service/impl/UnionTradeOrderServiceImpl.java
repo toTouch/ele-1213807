@@ -404,13 +404,13 @@ public class UnionTradeOrderServiceImpl extends
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
-            }else if(Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)){
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
                 //租车押金
                 Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarDepositOrderResult.getLeft()) {
                     return rentCarDepositOrderResult;
                 }
-            }else if(Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)){
+            } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
                 //租车套餐
                 Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarMemberCardOrderResult.getLeft()) {
@@ -473,7 +473,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-            userBatteryDepositService.updateByUid(userBatteryDeposit);
+            userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();
             userBattery.setUid(userInfo.getUid());
@@ -481,7 +481,7 @@ public class UnionTradeOrderServiceImpl extends
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             }
-            userBatteryService.updateByUid(userBattery);
+            userBatteryService.insertOrUpdate(userBattery);
         }
 
         //押金订单
@@ -509,10 +509,10 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-            return Pair.of(false, "未找到用户信息!");
-        }
+//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
+//            return Pair.of(false, "未找到用户信息!");
+//        }
 
 
         Long now = System.currentTimeMillis();
@@ -552,10 +552,10 @@ public class UnionTradeOrderServiceImpl extends
 
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
+            userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
 
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                if (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < now) {
+                if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < now) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 } else {
@@ -563,7 +563,7 @@ public class UnionTradeOrderServiceImpl extends
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 }
             } else {
-                if (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < now || Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() == 0) {
+                if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < now || Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() == 0) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 } else {
@@ -579,7 +579,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
@@ -718,28 +718,29 @@ public class UnionTradeOrderServiceImpl extends
 
     /**
      * 处理租车押金
+     *
      * @return
      */
     public Pair<Boolean, Object> handleRentCarDepositOrder(String orderNo, Integer depositOrderStatus, WechatJsapiOrderCallBackResource callBackResource) {
 
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
-        if(Objects.isNull(carDepositOrder)){
+        if (Objects.isNull(carDepositOrder)) {
             log.error("WECHATV3 NOTIFY ERROR!not found carDepositOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
-        if(!Objects.equals(carDepositOrder.getStatus(),CarDepositOrder.STATUS_INIT)){
+        if (!Objects.equals(carDepositOrder.getStatus(), CarDepositOrder.STATUS_INIT)) {
             log.error("WECHATV3 NOTIFY ERROR!carDepositOrder status is not init,orderNo={}", orderNo);
             return Pair.of(false, "订单已处理!");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
-        if(Objects.isNull(userInfo)){
-            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo,carDepositOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo, carDepositOrder.getUid());
             return Pair.of(false, "用户不存在!");
         }
 
         //支付成功
-        if(Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)){
+        if (Objects.equals(depositOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
@@ -776,23 +777,24 @@ public class UnionTradeOrderServiceImpl extends
 
     /**
      * 处理租车套餐
+     *
      * @return
      */
     public Pair<Boolean, Object> handleRentCarMemberCardOrder(String orderNo, Integer orderStatus, WechatJsapiOrderCallBackResource callBackResource) {
 
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderNo);
-        if(Objects.isNull(carMemberCardOrder)){
+        if (Objects.isNull(carMemberCardOrder)) {
             log.error("WECHATV3 NOTIFY ERROR!not found carMemberCardOrder,orderNo={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
-        if(!Objects.equals(carMemberCardOrder.getStatus(),CarMemberCardOrder.STATUS_INIT)){
+        if (!Objects.equals(carMemberCardOrder.getStatus(), CarMemberCardOrder.STATUS_INIT)) {
             log.error("WECHATV3 NOTIFY ERROR!carMemberCardOrder status is not init,orderNo={}", orderNo);
             return Pair.of(false, "订单已处理!");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrder.getUid());
-        if(Objects.isNull(userInfo)){
-            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo,carMemberCardOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("WECHATV3 NOTIFY ERROR!userInfo is null,orderNo={},uid={}", orderNo, carMemberCardOrder.getUid());
             return Pair.of(false, "用户不存在!");
         }
 

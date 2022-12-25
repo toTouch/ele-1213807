@@ -199,7 +199,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         BigDecimal payAmount = BigDecimal.valueOf((double) depositPair.getRight());
 
-        String batteryType=Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : "";
+        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : "";
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, user.getUid());
 
@@ -230,6 +230,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
 
                 UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
                 userBatteryDeposit.setUid(userInfo.getUid());
@@ -244,7 +245,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userBattery.setUid(userInfo.getUid());
                 userBattery.setBatteryType(batteryType);
                 userBattery.setUpdateTime(System.currentTimeMillis());
-                userBatteryService.updateByUid(userBattery);
+                userBatteryService.insertOrUpdate(userBattery);
 
                 return null;
             });
@@ -449,7 +450,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND,user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -524,13 +525,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userBatteryDeposit)){
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", user.getUid());
             return R.fail("100247", "用户信息不存在");
         }
 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userCarDeposit)){
+        if (Objects.isNull(userCarDeposit)) {
             log.error("ELE DEPOSIT ERROR! not found userCarDeposit,uid={}", user.getUid());
             return R.fail("100247", "用户信息不存在");
         }
@@ -550,7 +551,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             map.put("refundStatus", null);
             map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
             map.put("time", String.valueOf(System.currentTimeMillis()));
-            map.put("franchiseeName", Objects.nonNull(franchisee)?franchisee.getName():"");
+            map.put("franchiseeName", Objects.nonNull(franchisee) ? franchisee.getName() : "");
         } else {
             //是否退款
             Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
@@ -688,7 +689,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         // TODO: 2022/12/21 没有加盟商id什么情景下
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
@@ -916,7 +917,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             payAmount = BigDecimal.valueOf(0);
         }
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT,userInfo.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
 
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
                 .orderId(orderId)
@@ -968,6 +969,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     /**
      * 用户端缴纳租车押金
+     *
      * @return
      */
     @Override
@@ -1032,7 +1034,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100009", "未找到该型号车辆");
         }
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT,user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, user.getUid());
 
         BigDecimal payAmount = electricityCarModel.getCarDeposit();
 
@@ -1145,7 +1147,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //是否归还车辆
-        if(!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)){
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
             log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", user.getUid());
             return R.fail("100250", "用户未归还车辆");
         }
@@ -1159,12 +1161,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userCarDeposit.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),userCarDeposit.getOrderId());
+            log.error("ELE CAR REFUND ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(), userCarDeposit.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
         BigDecimal deposit = userCarDeposit.getCarDeposit();
-        if (eleDepositOrder.getPayAmount().compareTo(deposit)==0) {
+        if (eleDepositOrder.getPayAmount().compareTo(deposit) == 0) {
             log.error("ELE CAR REFUND ERROR! deposit not equals! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
@@ -1201,7 +1203,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND,user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -1398,7 +1400,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryDepositAdd.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("ELE DEPOSIT ERROR! not found Franchisee,franchiseeId={},uid={}", batteryDepositAdd.getFranchiseeId(),userInfo.getUid());
+            log.error("ELE DEPOSIT ERROR! not found Franchisee,franchiseeId={},uid={}", batteryDepositAdd.getFranchiseeId(), userInfo.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -1408,7 +1410,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && Objects.isNull(batteryDepositAdd.getModel())) {
-            log.error("ELE DEPOSIT ERROR! not select batteyType,franchiseeId={},uid={}", batteryDepositAdd.getFranchiseeId(),userInfo.getUid());
+            log.error("ELE DEPOSIT ERROR! not select batteyType,franchiseeId={},uid={}", batteryDepositAdd.getFranchiseeId(), userInfo.getUid());
             return R.fail("100027", "未选择电池型号");
         }
 
@@ -1418,7 +1420,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             payAmount = BigDecimal.valueOf(0);
         }
 
-        String batteryType=Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ?
+        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ?
                 BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()) : "";
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
