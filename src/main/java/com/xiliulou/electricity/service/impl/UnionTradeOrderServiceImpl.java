@@ -273,7 +273,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-            userBatteryDepositService.updateByUid(userBatteryDeposit);
+            userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();
             userBattery.setUid(userInfo.getUid());
@@ -281,7 +281,7 @@ public class UnionTradeOrderServiceImpl extends
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             }
-            userBatteryService.updateByUid(userBattery);
+            userBatteryService.insertOrUpdate(userBattery);
 
 
             InsuranceUserInfo updateOrAddInsuranceUserInfo = new InsuranceUserInfo();
@@ -581,11 +581,6 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
-            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-            serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
-            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-            serviceFeeUserInfoUpdate.setUid(userBatteryMemberCard.getUid());
-            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
             if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
                 UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
@@ -600,7 +595,7 @@ public class UnionTradeOrderServiceImpl extends
 
             //被邀请新买月卡用户
             //是否是新用户
-            if (Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
                 //是否有人邀请
                 JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
                 if (Objects.nonNull(joinShareActivityRecord)) {
