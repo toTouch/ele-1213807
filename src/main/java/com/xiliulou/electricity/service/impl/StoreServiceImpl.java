@@ -389,32 +389,7 @@ public class StoreServiceImpl implements StoreService {
             storeVOList.parallelStream().forEach(e -> {
 
                 //营业时间
-                if (Objects.nonNull(e.getBusinessTime())) {
-                    String businessTime = e.getBusinessTime();
-                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
-                        e.setBusinessTimeType(StoreVO.ALL_DAY);
-                        e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
-                    } else {
-                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index = businessTime.indexOf("-");
-                        if (!Objects.equals(index, -1) && index > 0) {
-                            e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
-                            Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long beginTime = getTime(totalBeginTime);
-                            Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                            Long endTime = getTime(totalEndTime);
-                            e.setBeginTime(totalBeginTime);
-                            e.setEndTime(totalEndTime);
-                            Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-                            Long now = System.currentTimeMillis();
-                            if (firstToday + beginTime > now || firstToday + endTime < now) {
-                                e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
-                            } else {
-                                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
-                            }
-                        }
-                    }
-                }
+                parseBusinessTime(e);
 
                 //满电电池数
                 Integer fullyElectricityBatteryCount = 0;
@@ -614,6 +589,8 @@ public class StoreServiceImpl implements StoreService {
             storeVO.setServiceType(tags);
         }
 
+        parseBusinessTime(storeVO);
+
         return storeVO;
     }
 
@@ -704,6 +681,35 @@ public class StoreServiceImpl implements StoreService {
         storeDetail.setCreateTime(System.currentTimeMillis());
         storeDetail.setUpdateTime(System.currentTimeMillis());
         return storeDetail;
+    }
+
+    private void parseBusinessTime(StoreVO storeVO) {
+        if (Objects.nonNull(storeVO.getBusinessTime())) {
+            String businessTime = storeVO.getBusinessTime();
+            if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                storeVO.setBusinessTimeType(StoreVO.ALL_DAY);
+                storeVO.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+            } else {
+                storeVO.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                Integer index = businessTime.indexOf("-");
+                if (!Objects.equals(index, -1) && index > 0) {
+                    storeVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                    Long beginTime = getTime(totalBeginTime);
+                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                    Long endTime = getTime(totalEndTime);
+                    storeVO.setBeginTime(totalBeginTime);
+                    storeVO.setEndTime(totalEndTime);
+                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                    Long now = System.currentTimeMillis();
+                    if (firstToday + beginTime > now || firstToday + endTime < now) {
+                        storeVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                    } else {
+                        storeVO.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                    }
+                }
+            }
+        }
     }
 
 }
