@@ -30,11 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 /**
  * 租车套餐订单表(CarMemberCardOrder)表服务实现类
@@ -96,7 +98,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
      */
     @Override
     public List<CarMemberCardOrder> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
-        return this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
+
+        List<CarMemberCardOrder> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
+        if(CollectionUtils.isEmpty(carMemberCardOrders)){
+            return Collections.EMPTY_LIST;
+        }
+
+        return carMemberCardOrders;
     }
 
     @Override

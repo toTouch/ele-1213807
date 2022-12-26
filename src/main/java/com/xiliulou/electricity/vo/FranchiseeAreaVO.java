@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Region;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class FranchiseeAreaVO {
 
     List<Franchisee> franchiseeList;
 
-    Set<String> regionList;
+    Set<Region> regionList;
 
     public static final Integer NOT_FRANCHISEE= 1;
     public static final Integer ONE_FRANCHISEE= 2;

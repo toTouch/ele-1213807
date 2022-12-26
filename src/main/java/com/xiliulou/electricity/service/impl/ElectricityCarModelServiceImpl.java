@@ -261,7 +261,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             BeanUtils.copyProperties(item, carModelVO);
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId().longValue());
-            carModelVO.setPictures(pictures);
+            carModelVO.setPictures(pictureService.pictureParseVO(pictures));
             return carModelVO;
         }).collect(Collectors.toList());
 
@@ -285,7 +285,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         BeanUtils.copyProperties(electricityCarModel, carModelVO);
 
         List<Picture> pictures = pictureService.selectByByBusinessId(id);
-        carModelVO.setPictures(pictures);
+        carModelVO.setPictures(pictureService.pictureParseVO(pictures));
 
         return carModelVO;
     }

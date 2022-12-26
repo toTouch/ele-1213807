@@ -27,10 +27,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 /**
  * (CarDepositOrder)表服务实现类
@@ -96,7 +98,12 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      */
     @Override
     public List<CarDepositOrder> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
-        return this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
+        List<CarDepositOrder> carDepositOrders = this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
+        if(CollectionUtils.isEmpty(carDepositOrders)){
+            return Collections.EMPTY_LIST;
+        }
+
+        return carDepositOrders;
     }
 
     @Override

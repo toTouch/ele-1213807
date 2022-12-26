@@ -588,46 +588,30 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchiseeAreaVO.setResult(FranchiseeAreaVO.NOT_FRANCHISEE_CITY);
             franchiseeAreaVO.setFranchiseeList(Collections.EMPTY_LIST);
             return Triple.of(true, "", franchiseeAreaVO);
-
-        } else if (Objects.equals(NumberConstant.ONE, franchiseeListByCity.size())) {
-            //1.2当前城市只有一个加盟商
-            franchiseeAreaVO.setResult(FranchiseeAreaVO.ONE_FRANCHISEE_CITY);
-            franchiseeAreaVO.setFranchiseeList(franchiseeListByCity);
-            return Triple.of(true, "", franchiseeAreaVO);
-
-        } else {
-            //1.3当前城市有多个加盟商
+        }  else {
+            //1.2当前城市有加盟商
 
             //检查是否有没设置区域的加盟商
             List<Franchisee> cityFranchiseeList = franchiseeListByCity.parallelStream().filter(item -> Objects.equals(NumberConstant.ZERO, item.getRegionId())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(cityFranchiseeList)) {
-                // TODO: 2022/12/21 bug
-                //1.3.3若城市多个加盟商都设置了区域，获取区域编码
-                Set<String> regionCodeList = new HashSet<>();
+                //1.2.1若城市多个加盟商都设置了区域，获取区域编码
+                Set<Region> regionList = new HashSet<>();
                 franchiseeListByCity.forEach(item -> {
                     Region franchiseeRegion = regionService.selectByIdFromCache(item.getRegionId());
                     if (Objects.isNull(franchiseeRegion)) {
                         log.error("ELE ERROR!not found franchiseeRegion regionId={},uid={}", item.getRegionId(), SecurityUtils.getUid());
                     }
-                    regionCodeList.add(franchiseeRegion.getCode());
+                    regionList.add(franchiseeRegion);
                 });
 
                 franchiseeAreaVO.setResult(FranchiseeAreaVO.MULTIPLE_FRANCHISEE_CITY_HAVE_REGION);
-                franchiseeAreaVO.setRegionList(regionCodeList);
+                franchiseeAreaVO.setRegionList(regionList);
                 return Triple.of(true, "", franchiseeAreaVO);
-
-            } else if (Objects.equals(cityFranchiseeList.size(), NumberConstant.ONE)) {
-                //1.3.1若只有一个加盟商没设置区域
-                franchiseeAreaVO.setResult(FranchiseeAreaVO.ONE_FRANCHISEE_CITY);
-                franchiseeAreaVO.setFranchiseeList(cityFranchiseeList);
-                return Triple.of(true, "", franchiseeAreaVO);
-
             } else {
-                //1.3.2若多个加盟商没设置区（县），返回没设置区（县）加盟商列表
+                //1.2.2若多个加盟商没设置区（县），返回没设置区（县）加盟商列表
                 franchiseeAreaVO.setResult(FranchiseeAreaVO.MULTIPLE_FRANCHISEE_CITY_NOT_REGION);
                 franchiseeAreaVO.setFranchiseeList(cityFranchiseeList);
                 return Triple.of(true, "", franchiseeAreaVO);
-
             }
         }
     }

@@ -73,7 +73,7 @@ public class ElectricityCarModelVO {
     /**
      * 车辆型号图片
      */
-    List<Picture> pictures;
+    List<PictureVO> pictures;
     /**
      * 车辆标签
      */
