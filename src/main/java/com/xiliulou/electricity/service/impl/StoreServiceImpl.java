@@ -574,8 +574,8 @@ public class StoreServiceImpl implements StoreService {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
-
-        return list.parallelStream().map(item -> {
+log.error("=====StoreVO:{}",JsonUtil.toJson(list));
+        List<StoreVO> collect = list.parallelStream().map(item -> {
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
             if (!CollectionUtils.isEmpty(pictures)) {
@@ -584,6 +584,8 @@ public class StoreServiceImpl implements StoreService {
 
             return item;
         }).collect(Collectors.toList());
+        log.error("=====StoreVO222:{}",JsonUtil.toJson(collect));
+        return collect;
     }
 
     @Override
