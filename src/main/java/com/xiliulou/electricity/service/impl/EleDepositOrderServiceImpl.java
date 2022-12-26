@@ -237,6 +237,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userBatteryDeposit.setOrderId(orderId);
                 userBatteryDeposit.setBatteryDeposit(payAmount);
                 userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+                userBatteryDeposit.setDid(eleDepositOrder.getId());
                 userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
                 userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
@@ -1468,6 +1469,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             UserBatteryDeposit updateUserBatteryDeposit = new UserBatteryDeposit();
             updateUserBatteryDeposit.setUid(userInfo.getUid());
             updateUserBatteryDeposit.setOrderId(orderId);
+            updateUserBatteryDeposit.setDid(eleDepositOrder.getId());
             updateUserBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
             updateUserBatteryDeposit.setTenantId(userInfo.getTenantId());
             updateUserBatteryDeposit.setCreateTime(System.currentTimeMillis());
