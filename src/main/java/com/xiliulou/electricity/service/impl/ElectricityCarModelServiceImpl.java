@@ -278,7 +278,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         ElectricityCarModelVO carModelVO = new ElectricityCarModelVO();
 
         ElectricityCarModel electricityCarModel = this.queryByIdFromCache(id.intValue());
-        if (Objects.isNull(electricityCarModel) || Objects.equals(electricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(electricityCarModel) || !Objects.equals(electricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return carModelVO;
         }
 

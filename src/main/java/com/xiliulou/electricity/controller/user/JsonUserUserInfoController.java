@@ -36,6 +36,14 @@ public class JsonUserUserInfoController {
         return R.ok(userInfoService.selectUserInfoDetail());
     }
 
+    /**
+     * 小程序首页(新)
+     */
+    @GetMapping(value = "/user/userInfoDetailV2")
+    public R userInfoDetailV2() {
+        return R.ok(userInfoService.selectUserInfoDetailV2());
+    }
+
 
 
 }
