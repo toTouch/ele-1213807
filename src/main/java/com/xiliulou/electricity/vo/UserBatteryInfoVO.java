@@ -87,7 +87,25 @@ public class UserBatteryInfoVO {
      * 租电池押金
      */
     private BigDecimal batteryDeposit;
+    /**
+     * 电池租赁状态 0--未租电池，1--已租电池
+     */
+    private Integer batteryRentStatus;
 
+    /**
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中
+     */
+    private Integer batteryDepositStatus;
+
+    /**
+     * 车辆租赁状态
+     */
+    private Integer carRentStatus;
+
+    /**
+     * 车辆押金状态
+     */
+    private Integer carDepositStatus;
 
     /**
      * 电量
