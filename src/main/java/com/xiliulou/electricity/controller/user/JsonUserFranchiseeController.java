@@ -53,6 +53,13 @@ public class JsonUserFranchiseeController extends BaseController {
     public R franchiseeCityList() {
         return R.ok(franchiseeService.selectFranchiseeCityList());
     }
+    /**
+     * 获取当前城市所有加盟商区域列表
+     */
+    @GetMapping(value = "/user/franchisee/cityList/{cid}")
+    public R franchiseeRegionList(@PathVariable("cid") Integer cid) {
+        return R.ok(franchiseeService.selectFranchiseeRegionList(cid));
+    }
 
 
     /**

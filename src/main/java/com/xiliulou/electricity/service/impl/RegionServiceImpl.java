@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Region;
@@ -99,5 +100,10 @@ public class RegionServiceImpl implements RegionService {
     @Override
     public List<Region> queryRegionListByPid(Integer pid) {
         return this.regionMapper.queryRegionListByPid(pid);
+    }
+
+    @Override
+    public List<Region> selectByRids(List<Integer> rids) {
+        return this.regionMapper.selectList(new LambdaQueryWrapper<Region>().in(Region::getId,rids));
     }
 }

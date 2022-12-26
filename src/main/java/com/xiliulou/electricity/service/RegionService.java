@@ -48,4 +48,6 @@ public interface RegionService {
     Region selectByIdFromCache(Integer regionId);
 
     List<Region> queryRegionListByPid(Integer pid);
+
+    List<Region> selectByRids(List<Integer> rids);
 }

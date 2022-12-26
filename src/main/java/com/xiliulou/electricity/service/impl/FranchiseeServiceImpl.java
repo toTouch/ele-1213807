@@ -508,6 +508,27 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return cityService.selectByCids(cids);
     }
 
+    @Override
+    public List<Region> selectFranchiseeRegionList(Integer cid) {
+        FranchiseeQuery franchiseeQuery=new FranchiseeQuery();
+        franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
+        franchiseeQuery.setCid(cid);
+        Triple<Boolean, String, Object> franchiseeListResult = this.selectListByQuery(franchiseeQuery);
+
+        if(!franchiseeListResult.getLeft()){
+            return Collections.EMPTY_LIST;
+        }
+
+        List<Franchisee> franchisees = (List<Franchisee>) franchiseeListResult.getRight();
+        List<Integer> rids = franchisees.stream().map(Franchisee::getRegionId).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(rids)){
+            return Collections.EMPTY_LIST;
+        }
+
+
+        return regionService.selectByRids(rids);
+    }
+
     /**
      * 根据区（县）查询加盟商
      1.用户区域与加盟商区域一致，1对1
