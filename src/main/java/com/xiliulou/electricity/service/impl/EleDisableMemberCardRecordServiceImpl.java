@@ -81,7 +81,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
 
         //未找到用户
-        if (franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < System.currentTimeMillis()) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }
