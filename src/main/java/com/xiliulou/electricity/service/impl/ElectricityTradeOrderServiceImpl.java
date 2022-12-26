@@ -437,6 +437,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
             userBatteryDeposit.setTenantId(eleDepositOrder.getTenantId());
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+            userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 

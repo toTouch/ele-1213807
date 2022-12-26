@@ -57,7 +57,7 @@
         tui.create_time as userCertificationTime,
         tui.auth_status,
         tui.usable_status,
-        tui.battery_rent_status
+        tui.battery_rent_status,
         tui.franchisee_id,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
