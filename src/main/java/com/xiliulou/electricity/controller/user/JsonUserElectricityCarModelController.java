@@ -20,7 +20,7 @@ public class JsonUserElectricityCarModelController {
     /**
      * 车辆型号列表
      */
-    @GetMapping("user/carModel/list")
+    @GetMapping("/user/carModel/list")
     public R userCar(@RequestParam("storeId") Long storeId) {
         ElectricityCarModelQuery query = new ElectricityCarModelQuery();
         query.setStoreId(storeId);
@@ -30,9 +30,9 @@ public class JsonUserElectricityCarModelController {
     }
 
     /**
-     * 车辆详情
+     * 车辆型号详情
      */
-    @GetMapping("user/carModel/detail")
+    @GetMapping("/user/carModel/detail")
     public R carModelDetail(@RequestParam("id") Long id) {
 
         return R.ok(electricityCarModelService.selectDetailById(id));

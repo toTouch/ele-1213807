@@ -505,9 +505,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Collections.EMPTY_LIST;
         }
 
-        List<City> cityList=cityService.selectByCids(cids);
-
-        return null;
+        return cityService.selectByCids(cids);
     }
 
     /**
@@ -517,7 +515,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      3.用户区域和加盟商不匹配，选区
         1对1
         1对多，选加盟商
-     * @return
      */
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode) {
@@ -532,7 +529,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         FranchiseeQuery franchiseeRegionQuery = new FranchiseeQuery();
         franchiseeRegionQuery.setRegionId(region.getId());
         franchiseeRegionQuery.setTenantId(TenantContextHolder.getTenantId());
-
+        //根据区域id获取加盟商列表
         List<Franchisee> franchiseeListByRegion = franchiseeMapper.selectListByQuery(franchiseeRegionQuery);
 
         if (CollectionUtils.isEmpty(franchiseeListByRegion)) {
@@ -556,7 +553,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchiseeAreaVO.setResult(FranchiseeAreaVO.MULTIPLE_FRANCHISEE);
             franchiseeAreaVO.setFranchiseeList(franchiseeListByRegion);
             return Triple.of(true, "", franchiseeAreaVO);
-
         }
     }
 
@@ -620,7 +616,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 franchiseeAreaVO.setRegionList(regionCodeList);
                 return Triple.of(true, "", franchiseeAreaVO);
 
-            } else if (Objects.equals(cityFranchiseeList.size(), FranchiseeAreaVO.ONE_FRANCHISEE_CITY)) {
+            } else if (Objects.equals(cityFranchiseeList.size(), NumberConstant.ONE)) {
                 //1.3.1若只有一个加盟商没设置区域
                 franchiseeAreaVO.setResult(FranchiseeAreaVO.ONE_FRANCHISEE_CITY);
                 franchiseeAreaVO.setFranchiseeList(cityFranchiseeList);
