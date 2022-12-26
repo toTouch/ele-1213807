@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.service.EleAuthEntryService;
@@ -55,6 +56,7 @@ public class JsonAdminFranchiseeInsuranceController {
      * @return
      */
     @PutMapping("admin/franchiseeInsurance")
+    @Log(title = "修改保险")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
         if (Objects.isNull(franchiseeInsuranceAddAndUpdate)) {
             return R.failMsg("请求参数不能为空!");
@@ -69,6 +71,7 @@ public class JsonAdminFranchiseeInsuranceController {
      * @return
      */
     @PutMapping("admin/franchiseeInsurance/enableOrDisable")
+    @Log(title = "禁启用保险保险")
     public R enableOrDisable(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
         return franchiseeInsuranceService.enableOrDisable(id, usableStatus);
     }
@@ -79,6 +82,7 @@ public class JsonAdminFranchiseeInsuranceController {
      * @return
      */
     @DeleteMapping("admin/franchiseeInsurance/{id}")
+    @Log(title = "删除保险")
     public R delete(@PathVariable(value = "id") Integer id) {
         return franchiseeInsuranceService.delete(id);
     }
