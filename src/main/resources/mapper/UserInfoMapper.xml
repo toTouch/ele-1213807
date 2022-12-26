@@ -59,6 +59,7 @@
         tui.usable_status,
         tui.battery_rent_status,
         tui.franchisee_id,
+        tui.battery_deposit_status,
         ubmc.member_card_expire_time,
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
