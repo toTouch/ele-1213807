@@ -158,6 +158,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
