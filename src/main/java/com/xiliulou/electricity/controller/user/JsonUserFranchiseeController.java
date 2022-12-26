@@ -47,13 +47,21 @@ public class JsonUserFranchiseeController extends BaseController {
     }
 
     /**
+     * 获取当前租户所有加盟商城市列表
+     */
+    @GetMapping(value = "/user/franchisee/cityList")
+    public R franchiseeCityList() {
+        return R.ok(franchiseeService.selectFranchiseeCityList());
+    }
+
+
+    /**
      * 根据区县编码查加盟商
      */
     @GetMapping(value = "/user/franchisee/region")
-    public R selectFranchiseeByArea(@RequestParam(value = "regionCode") String regionCode,
-                                    @RequestParam(value = "cityCode") String cityCode) {
+    public R selectFranchiseeByArea(@RequestParam(value = "regionCode") String regionCode) {
 
-        return returnTripleResult(franchiseeService.selectFranchiseeByArea(regionCode, cityCode));
+        return returnTripleResult(franchiseeService.selectFranchiseeByArea(regionCode));
     }
 
     /**
