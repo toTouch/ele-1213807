@@ -73,6 +73,19 @@ public class ElectricityCarModelQuery {
     private String otherProperties;
 
 
+    private Integer delFlag;
+
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
+
+
+
     private Long size;
     private Long offset;
     private List<Long> franchiseeIds;
