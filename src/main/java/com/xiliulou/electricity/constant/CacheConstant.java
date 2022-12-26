@@ -230,4 +230,9 @@ public interface CacheConstant {
     String CACHE_VOLTAGE_CURRENT_CHANGE="voltage_current_change:";
 
     String SERVICE_FEE_USER_INFO = "service_fee_user_info:";
+
+    /**
+     * 购买套餐下单缓存锁
+     */
+    String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
 }
