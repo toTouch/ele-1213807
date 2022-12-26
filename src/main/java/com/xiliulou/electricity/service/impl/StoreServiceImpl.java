@@ -296,54 +296,54 @@ public class StoreServiceImpl implements StoreService {
             return R.ok(Collections.EMPTY_LIST);
         }
 
-            storeVOList.parallelStream().forEach(e -> {
-                //营业时间
-                if (Objects.nonNull(e.getBusinessTime())) {
-                    String businessTime = e.getBusinessTime();
-                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
-                        e.setBusinessTimeType(StoreVO.ALL_DAY);
-                    } else {
-                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index = businessTime.indexOf("-");
-                        if (!Objects.equals(index, -1) && index > 0) {
-                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
-                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
-                            e.setBeginTime(beginTime);
-                            e.setEndTime(endTime);
-                        }
+        storeVOList.parallelStream().forEach(e -> {
+            //营业时间
+            if (Objects.nonNull(e.getBusinessTime())) {
+                String businessTime = e.getBusinessTime();
+                if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                    e.setBusinessTimeType(StoreVO.ALL_DAY);
+                } else {
+                    e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                    Integer index = businessTime.indexOf("-");
+                    if (!Objects.equals(index, -1) && index > 0) {
+                        e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
                     }
                 }
+            }
 
-                //用户
-                if (Objects.nonNull(e.getUid())) {
-                    User user = userService.queryByUidFromCache(e.getUid());
-                    if (Objects.nonNull(user)) {
-                        e.setUserName(user.getName());
-                    }
+            //用户
+            if (Objects.nonNull(e.getUid())) {
+                User user = userService.queryByUidFromCache(e.getUid());
+                if (Objects.nonNull(user)) {
+                    e.setUserName(user.getName());
                 }
+            }
 
-                //加盟商
-                if (Objects.nonNull(e.getFranchiseeId())) {
-                    Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
-                    if (Objects.nonNull(franchisee)) {
-                        e.setFranchiseeName(franchisee.getName());
-                    }
+            //加盟商
+            if (Objects.nonNull(e.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    e.setFranchiseeName(franchisee.getName());
                 }
+            }
 
-                //标签
-                List<StoreTag> storeTags = storeTagService.selectByStoreId(e.getId());
-                if(!CollectionUtils.isEmpty(storeTags)){
-                    List<String> tags = storeTags.stream().map(StoreTag::getTitle).collect(Collectors.toList());
-                    e.setServiceType(tags);
-                }
+            //标签
+            List<StoreTag> storeTags = storeTagService.selectByStoreId(e.getId());
+            if (!CollectionUtils.isEmpty(storeTags)) {
+                List<String> tags = storeTags.stream().map(StoreTag::getTitle).collect(Collectors.toList());
+                e.setServiceType(tags);
+            }
 
-                //详情
-                StoreDetail storeDetail = storeDetailService.selectByStoreId(e.getId());
-                if(Objects.nonNull(storeDetail)){
-                    e.setDetail(storeDetail.getDetail());
-                }
-            });
+            //详情
+            StoreDetail storeDetail = storeDetailService.selectByStoreId(e.getId());
+            if (Objects.nonNull(storeDetail)) {
+                e.setDetail(storeDetail.getDetail());
+            }
+        });
 
         storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList());
         return R.ok(storeVOList);
@@ -606,6 +606,12 @@ public class StoreServiceImpl implements StoreService {
         StoreDetail storeDetail = storeDetailService.selectByStoreId(id);
         if (Objects.nonNull(storeDetail)) {
             storeVO.setDetail(storeDetail.getDetail());
+        }
+
+        List<StoreTag> storeTags = storeTagService.selectByStoreId(id);
+        if (!CollectionUtils.isEmpty(storeTags)) {
+            List<String> tags = storeTags.stream().map(StoreTag::getTitle).collect(Collectors.toList());
+            storeVO.setServiceType(tags);
         }
 
         return storeVO;
