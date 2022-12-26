@@ -308,6 +308,9 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
+            <if test="batteryDepositStatus != null">
+                battery_deposit_status = #{batteryDepositStatus},
+            </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId}
             </if>
