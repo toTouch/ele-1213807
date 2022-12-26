@@ -584,6 +584,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        if (Objects.nonNull(userCouponId)) {
+            electricityMemberCardOrder.setCouponId(userCouponId.longValue());
+        }
 
         return Triple.of(true, null, electricityMemberCardOrder);
     }

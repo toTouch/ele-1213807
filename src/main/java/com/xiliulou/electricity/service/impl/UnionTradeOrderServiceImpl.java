@@ -584,8 +584,8 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
 
-            if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
-                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
+            if (Objects.nonNull(electricityMemberCardOrder.getCouponId())) {
+                UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
                 if (Objects.nonNull(userCoupon)) {
                     //修改劵可用状态
                     userCoupon.setStatus(UserCoupon.STATUS_USED);
