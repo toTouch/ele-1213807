@@ -93,8 +93,8 @@
             <if test="carDeposit != null">
                 and car_deposit = #{carDeposit}
             </if>
-            <if test="otherproperties != null and otherproperties != ''">
-                and otherProperties = #{otherproperties}
+            <if test="otherProperties != null and otherProperties != ''">
+                and other_properties = #{otherProperties}
             </if>
         </where>
         order by create_time desc
