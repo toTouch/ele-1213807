@@ -359,7 +359,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R getMemberCardInfo(Long uid) {
         UserInfo userInfo = queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
+            log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID={}", uid);
             return R.failMsg("未找到用户信息!");
         }
 

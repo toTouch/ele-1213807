@@ -310,12 +310,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer memberCardOweNumber = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
+                log.error("returnDeposit  ERROR! disable member card is reviewing userId={}", user.getUid());
                 return R.fail("ELECTRICITY.100003", "停卡正在审核中");
             }
 
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
+                log.error("returnDeposit  ERROR! member card is disable userId={}", user.getUid());
                 return R.fail("ELECTRICITY.100004", "月卡已暂停");
             }
 
@@ -777,21 +777,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS UID={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
 
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
         //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("pay battery service fee  ERROR! not found user ");
+            log.error("pay battery service fee  ERROR! not found user UID={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -803,7 +803,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("pay battery service fee  ERROR! not found user ");
+            log.error("pay battery service fee  ERROR! not found user UID={}", user.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 

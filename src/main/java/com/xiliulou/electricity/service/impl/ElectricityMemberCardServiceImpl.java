@@ -262,25 +262,25 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(electricityCabinet)) {
-                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey={},deviceName={}", productKey, deviceName);
                 return R.fail("ELECTRICITY.0005", "未找到换电柜");
             }
 
             //3、查出套餐
             //查找换电柜门店
             if (Objects.isNull(electricityCabinet.getStoreId())) {
-                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
                 return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
             }
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
             if (Objects.isNull(store)) {
-                log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+                log.error("queryByDevice  ERROR! not found store ！storeId={}", electricityCabinet.getStoreId());
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
 
             //查找门店加盟商
             if (Objects.isNull(store.getFranchiseeId())) {
-                log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+                log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
                 return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
             }
             franchiseeId = store.getFranchiseeId();
@@ -289,13 +289,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //判断用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("rentBattery  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("rentBattery  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("rentBattery  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("rentBattery  ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -307,7 +307,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
+            log.error("rentBattery  ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
