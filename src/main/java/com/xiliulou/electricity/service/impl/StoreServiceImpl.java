@@ -216,6 +216,7 @@ public class StoreServiceImpl implements StoreService {
             }
         }
 
+        store.setTenantId(TenantContextHolder.getTenantId());
         store.setUpdateTime(System.currentTimeMillis());
         int update = storeMapper.updateById(store);
         DbUtils.dbOperateSuccessThen(update, () -> {

@@ -25,4 +25,5 @@ public interface CityService {
 
     List<City> queryCityListByPid(Integer pid);
 
+    List<City> selectByCids(List<Integer> cids);
 }

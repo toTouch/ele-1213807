@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
@@ -60,8 +61,9 @@ public interface FranchiseeService {
 
     Triple<Boolean, String, Object> selectListByQuery(FranchiseeQuery franchiseeQuery);
 
+    List<City> selectFranchiseeCityList();
 
-    Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode,String cityCode);
+    Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode);
 
     Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode);
 }

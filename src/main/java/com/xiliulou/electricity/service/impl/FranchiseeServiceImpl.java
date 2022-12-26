@@ -489,6 +489,27 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return Triple.of(true, "", franchisees);
     }
 
+    @Override
+    public List<City> selectFranchiseeCityList() {
+        FranchiseeQuery franchiseeQuery=new FranchiseeQuery();
+        franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
+        Triple<Boolean, String, Object> franchiseeListResult = this.selectListByQuery(franchiseeQuery);
+
+        if(!franchiseeListResult.getLeft()){
+            return Collections.EMPTY_LIST;
+        }
+
+        List<Franchisee> franchisees = (List<Franchisee>) franchiseeListResult.getRight();
+        List<Integer> cids = franchisees.stream().map(Franchisee::getCid).collect(Collectors.toList());
+        if(CollectionUtils.isEmpty(cids)){
+            return Collections.EMPTY_LIST;
+        }
+
+        List<City> cityList=cityService.selectByCids(cids);
+
+        return null;
+    }
+
     /**
      * 根据区（县）查询加盟商
      1.用户区域与加盟商区域一致，1对1
@@ -496,12 +517,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      3.用户区域和加盟商不匹配，选区
         1对1
         1对多，选加盟商
-     * @param regionCode
-     * @param cityCode
      * @return
      */
     @Override
-    public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode, String cityCode) {
+    public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode) {
         FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
 
         Region region = regionService.selectByCodeFromCache(regionCode);
@@ -517,8 +536,14 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         List<Franchisee> franchiseeListByRegion = franchiseeMapper.selectListByQuery(franchiseeRegionQuery);
 
         if (CollectionUtils.isEmpty(franchiseeListByRegion)) {
+            City city = cityService.queryByIdFromDB(region.getPid());
+            if (Objects.isNull(city)) {
+                log.error("ELE ERROR! not found city,cid={},uid={}", region.getPid(), SecurityUtils.getUid());
+                return Triple.of(false, "100249", "城市不存在");
+            }
+
             //1.当前区（县）内无加盟商
-            return handleNotFoundFranchiseeByRegion(cityCode, franchiseeAreaVO);
+            return handleNotFoundFranchiseeByRegion(city, franchiseeAreaVO);
 
         } else if (Objects.equals(NumberConstant.ONE, franchiseeListByRegion.size())) {
             //2.1有一个加盟商 返回当前加盟商
@@ -545,15 +570,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     public Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode) {
         FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
 
-        return this.handleNotFoundFranchiseeByRegion(cityCode, franchiseeAreaVO);
-    }
-
-    private Triple<Boolean, String, Object> handleNotFoundFranchiseeByRegion(String cityCode, FranchiseeAreaVO franchiseeAreaVO) {
         City city = cityService.queryByCodeFromCache(cityCode);
         if (Objects.isNull(city)) {
             log.error("ELE ERROR! not found city,cityCode={},uid={}", cityCode, SecurityUtils.getUid());
             return Triple.of(false, "100249", "城市不存在");
         }
+
+        return this.handleNotFoundFranchiseeByRegion(city, franchiseeAreaVO);
+    }
+
+    private Triple<Boolean, String, Object> handleNotFoundFranchiseeByRegion(City city, FranchiseeAreaVO franchiseeAreaVO) {
 
         //查询本市加盟商
         FranchiseeQuery franchiseeCityQuery = new FranchiseeQuery();
