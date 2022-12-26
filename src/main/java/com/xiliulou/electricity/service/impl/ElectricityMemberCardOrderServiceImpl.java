@@ -160,26 +160,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS UID={}", user.getUid());
             return R.failMsg("未配置支付参数!");
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
         //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("ELECTRICITY  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
+            log.error("ELECTRICITY  ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -224,11 +224,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", electricityMemberCardOrderQuery.getMemberId());
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID={}", electricityMemberCardOrderQuery.getMemberId());
             return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", electricityMemberCardOrderQuery.getMemberId());
+            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID={}", electricityMemberCardOrderQuery.getMemberId());
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
@@ -237,7 +237,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.nonNull(bindElectricityMemberCard) && !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
             if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                log.error("payDeposit  ERROR! not buy same memberCard uid:{}", user.getUid());
+                log.error("payDeposit  ERROR! not buy same memberCard uid={}", user.getUid());
                 return R.fail("ELECTRICITY.00119", "套餐剩余次数为负,应购买相同类型套餐抵扣");
             }
         }
@@ -249,25 +249,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
-                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
+                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey={},deviceName={}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
                 return R.fail("ELECTRICITY.0005", "未找到换电柜");
             }
 
             //3、查出套餐
             //查找换电柜门店
             if (Objects.isNull(electricityCabinet.getStoreId())) {
-                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
                 return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
             }
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
             if (Objects.isNull(store)) {
-                log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+                log.error("queryByDevice  ERROR! not found store ！storeId={}", electricityCabinet.getStoreId());
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
 
             //查找门店加盟商
             if (Objects.isNull(store.getFranchiseeId())) {
-                log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+                log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
                 return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
             }
             franchiseeId = store.getFranchiseeId();
@@ -284,25 +284,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
             userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrderQuery.getUserCouponId());
             if (Objects.isNull(userCoupon)) {
-                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId={} ", electricityMemberCardOrderQuery.getUserCouponId());
                 return R.fail("ELECTRICITY.0085", "未找到优惠券");
             }
 
             //优惠券是否使用
             if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId={} ", electricityMemberCardOrderQuery.getUserCouponId());
                 return R.fail("ELECTRICITY.0090", "您的优惠券已被使用");
             }
 
             //优惠券是否过期
             if (userCoupon.getDeadline() < System.currentTimeMillis()) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId={} ", electricityMemberCardOrderQuery.getUserCouponId());
                 return R.fail("ELECTRICITY.0091", "您的优惠券已过期");
             }
 
             Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
-                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId={} ", electricityMemberCardOrderQuery.getUserCouponId());
                 return R.fail("ELECTRICITY.0085", "未找到优惠券");
             }
 
@@ -344,7 +344,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
                     userBatteryMemberCard.getMemberCardExpireTime() > now &&
                     (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
-                log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
+                log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO={}", userInfo);
                 return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买相同类型的套餐!");
             }
         }
