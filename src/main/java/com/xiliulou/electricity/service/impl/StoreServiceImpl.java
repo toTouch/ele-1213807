@@ -574,8 +574,8 @@ public class StoreServiceImpl implements StoreService {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
-log.error("=====StoreVO:{}",JsonUtil.toJson(list));
-        List<StoreVO> collect = list.parallelStream().map(item -> {
+
+        return list.parallelStream().map(item -> {
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
             if (!CollectionUtils.isEmpty(pictures)) {
@@ -584,8 +584,7 @@ log.error("=====StoreVO:{}",JsonUtil.toJson(list));
 
             return item;
         }).collect(Collectors.toList());
-        log.error("=====StoreVO222:{}",JsonUtil.toJson(collect));
-        return collect;
+
     }
 
     @Override
@@ -593,7 +592,7 @@ log.error("=====StoreVO:{}",JsonUtil.toJson(list));
         StoreVO storeVO = new StoreVO();
 
         Store store = this.queryByIdFromCache(id);
-        if (Objects.isNull(store) || Objects.equals(TenantContextHolder.getTenantId(), store.getTenantId())) {
+        if (Objects.isNull(store) || !Objects.equals(TenantContextHolder.getTenantId(), store.getTenantId())) {
             return storeVO;
         }
 
