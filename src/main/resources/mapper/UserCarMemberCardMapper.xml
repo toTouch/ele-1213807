@@ -65,7 +65,7 @@
         insert into t_user_car_member_card(uid, card_id, member_card_expire_time, del_flag, create_time, update_time)
         values (#{uid}, #{cardId}, #{memberCardExpireTime}, #{delFlag}, #{createTime}, #{updateTime})
         on duplicate key
-        update #{cardId}, #{memberCardExpireTime}, #{delFlag}, #{updateTime}
+        update card_id=#{cardId}, member_card_expire_time=#{memberCardExpireTime}, del_flag=#{delFlag}, update_time=#{updateTime}
     </insert>
 
     <!--通过主键修改数据-->

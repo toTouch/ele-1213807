@@ -58,6 +58,88 @@
             </foreach>
         </if>
     </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
+        <include refid="selectElectricityCarModel"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="rentType != null and rentType != ''">
+                and rent_type = #{rentType}
+            </if>
+            <if test="carDeposit != null">
+                and car_deposit = #{carDeposit}
+            </if>
+            <if test="otherproperties != null and otherproperties != ''">
+                and otherProperties = #{otherproperties}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
+        <include refid="selectElectricityCarModel"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="rentType != null and rentType != ''">
+                and rent_type = #{rentType}
+            </if>
+            <if test="carDeposit != null">
+                and car_deposit = #{carDeposit}
+            </if>
+            <if test="otherproperties != null and otherproperties != ''">
+                and otherProperties = #{otherproperties}
+            </if>
+        </where>
+    </select>
     
     <!--通过主键修改数据-->
     <update id="update">

@@ -69,7 +69,7 @@
         insert into t_user_battery_service_fee(uid, battery_service_fee_order_id, service_fee_status, service_fee_generate_time, del_flag, create_time, update_time)
         values (#{uid}, #{batteryServiceFeeOrderId}, #{serviceFeeStatus}, #{serviceFeeGenerateTime}, #{delFlag}, #{createTime}, #{updateTime})
         on duplicate key
-        update #{batteryServiceFeeOrderId}, #{serviceFeeStatus}, #{serviceFeeGenerateTime}, #{delFlag}, #{updateTime}
+        update battery_service_fee_order_id=#{batteryServiceFeeOrderId}, service_fee_status=#{serviceFeeStatus}, service_fee_generate_time=#{serviceFeeGenerateTime}, del_flag=#{delFlag}, update_time=#{updateTime}
     </insert>
     
     <!--通过主键修改数据-->

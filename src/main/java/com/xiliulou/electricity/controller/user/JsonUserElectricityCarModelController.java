@@ -21,8 +21,12 @@ public class JsonUserElectricityCarModelController {
      * 车辆型号列表
      */
     @GetMapping("/user/carModel/list")
-    public R userCar(@RequestParam("storeId") Long storeId) {
+    public R userCar(@RequestParam("storeId") Long storeId,
+                     @RequestParam("size") Long size,
+                     @RequestParam("offset") Long offset) {
         ElectricityCarModelQuery query = new ElectricityCarModelQuery();
+        query.setSize(size);
+        query.setOffset(offset);
         query.setStoreId(storeId);
         query.setTenantId(TenantContextHolder.getTenantId());
 

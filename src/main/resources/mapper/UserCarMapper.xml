@@ -69,7 +69,7 @@
         insert into t_user_car(uid, cid, sn, car_model, del_flag, create_time, update_time)
         values (#{uid}, #{cid}, #{sn}, #{carModel}, #{delFlag}, #{createTime}, #{updateTime})
         on duplicate key
-        update #{cid}, #{sn}, #{carModel}, #{delFlag}, #{updateTime}
+        update cid=#{cid}, sn=#{sn}, car_model=#{carModel}, del_flag=#{delFlag}, update_time=#{updateTime}
     </insert>
 
     <!--通过主键修改数据-->
