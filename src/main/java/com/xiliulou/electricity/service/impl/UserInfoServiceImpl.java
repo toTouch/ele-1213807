@@ -1117,6 +1117,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoDetailVO;
     }
 
+    @Override
+    public Triple<Boolean, String, Object> selectUserInfoDetailV2() {
+        UserInfoDetailVO userInfoDetailVO = new UserInfoDetailVO();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user ");
+            return Triple.of(false,"100001",userInfoDetailVO);
+        }
+
+        UserInfo userInfo = this.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
+            return Triple.of(false,"100001",userInfoDetailVO);
+        }
+        BeanUtils.copyProperties(userInfo,userInfoDetailVO);
+
+        //套餐状态
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE))) {
+            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
+        } else {
+            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.EXIST_MEMBER_CARD);
+        }
+
+        //电池服务费
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(user.getUid());
+        userInfoDetailVO.setBatteryServiceFee(eleBatteryServiceFeeVO);
+
+        //用户状态(离线换电)
+        UserFrontDetectionVO userFrontDetection = offLineElectricityCabinetService.getUserFrontDetection(userInfo, userBatteryMemberCard);
+        userInfoDetailVO.setUserFrontDetection(userFrontDetection);
+
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(user.getUid(), user.getTenantId());
+        userInfoDetailVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
+
+
+        return Triple.of(true,"",userInfoDetailVO);
+    }
+
     @Deprecated
     private Integer getServiceStatus(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
 

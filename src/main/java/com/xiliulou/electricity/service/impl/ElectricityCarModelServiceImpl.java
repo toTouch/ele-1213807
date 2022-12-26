@@ -278,7 +278,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         ElectricityCarModelVO carModelVO = new ElectricityCarModelVO();
 
         ElectricityCarModel electricityCarModel = this.queryByIdFromCache(id.intValue());
-        if (Objects.isNull(electricityCarModel) || Objects.equals(electricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(electricityCarModel) || !Objects.equals(electricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return carModelVO;
         }
 
@@ -286,6 +286,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
         List<Picture> pictures = pictureService.selectByByBusinessId(id);
         carModelVO.setPictures(pictureService.pictureParseVO(pictures));
+
+        List<CarModelTag> carModelTags = carModelTagService.selectByCarModelId(id.intValue());
+        if(!CollectionUtils.isEmpty(carModelTags)){
+            List<String> tags = carModelTags.stream().map(CarModelTag::getTitle).collect(Collectors.toList());
+            carModelVO.setCarModelTag(tags);
+        }
 
         return carModelVO;
     }
