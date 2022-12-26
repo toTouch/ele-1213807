@@ -60,10 +60,6 @@ public class UserBatteryMemberCard {
      */
     private Long disableMemberCardTime;
 
-    /**
-     * 套餐购买次数
-     */
-    private Integer cardPayCount;
 
     /**
      * 0:正常，1：删除
@@ -94,5 +90,6 @@ public class UserBatteryMemberCard {
     public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 
     public static final Integer MEMBER_CARD_OWE = 1;
+
 
 }
