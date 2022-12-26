@@ -66,6 +66,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -78,9 +79,12 @@ import java.util.stream.Collectors;
 @Service("electricityCabinetService")
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
-    
+
     private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
-    
+
+
+    private static final String BATTERY_FULL_CONDITION="batteryFullCondition";
+
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
     @Autowired
@@ -365,6 +369,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //修改柜机服务时间信息
             electricityCabinetServerService
                     .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
+
+            //云端下发命令修改换电标准
+            if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
+                this.updateFullyChargedByCloud(electricityCabinet);
+            }
+
             return null;
         });
         return R.ok();
@@ -1918,7 +1928,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
-            log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+            log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
         }
         
@@ -2209,8 +2219,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {
             return Pair.of(false, null);
         }
-        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
+//        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
 
+
+        String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size())).getCellNo();
+        return Pair.of(true, Integer.parseInt(cellNo));
     }
 
     @Override
@@ -3262,7 +3275,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryName(null, id));
     }
     
-    
+
+    /**
+     * 通过云端下发命令更新换电标准
+     */
+    private void updateFullyChargedByCloud(ElectricityCabinet electricityCabinet) {
+
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(BATTERY_FULL_CONDITION, electricityCabinet.getFullyCharged());
+
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(electricityCabinet.getProductKey());
+        commandQuery.setDeviceName(electricityCabinet.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+
+        try {
+            sendCommandToEleForOuter(commandQuery);
+        } catch (Exception e) {
+            log.error("ELE ERROR！set batteryFullCondition error,electricityCabinetId={}", electricityCabinet.getId(), e);
+        }
+    }
+
+
     /**
      * 满仓提醒
      * @param messages
@@ -3272,40 +3307,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if(CollectionUtils.isEmpty(messages)){
             return;
         }
-        
+
         messages.parallelStream().forEach(item->{
             log.info("DELY QUEUE LISTENER INFO! full battery message={}",JsonUtil.toJson(item));
-            
+
             if(StringUtils.isBlank(item.getMsg())){
                 return;
             }
-            
+
             Integer electricityCabinetId=Integer.parseInt(item.getMsg());
-    
+
             ElectricityCabinet electricityCabinet = this.queryByIdFromCache(electricityCabinetId);
             if(Objects.isNull(electricityCabinet)){
                 return;
             }
-    
+
             //获取所有启用的格挡
             List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
             if (org.apache.commons.collections.CollectionUtils.isEmpty(electricityCabinetBoxes)) {
                 return;
             }
-    
+
             //过滤没有电池的格挡
             List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(e -> StringUtils.isBlank(e.getSn())).collect(Collectors.toList());
             if (org.apache.commons.collections.CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
                 return;
             }
-    
+
             Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinetId, "1", 1800 * 1000L, false);
             if (cacheFlag) {
                 List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
                 if (CollectionUtils.isEmpty(messageNotifyList)) {
                     return;
                 }
-        
+
                 messageNotifyList.forEach(i -> {
                     rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
                     log.info("ELE FULL BATTERY INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
@@ -3313,7 +3348,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         });
     }
-    
+
     private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
@@ -3321,13 +3356,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinet.getTenantId());
             return Collections.EMPTY_LIST;
         }
-        
+
         List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
             log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
             return Collections.EMPTY_LIST;
         }
-        
+
         return phones.parallelStream().map(item -> {
             ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
             abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
@@ -3335,7 +3370,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
             abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
             abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-            
+
             MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
             abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
             abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
@@ -3343,6 +3378,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             return abnormalMessageNotifyCommon;
         }).collect(Collectors.toList());
-        
+
     }
 }

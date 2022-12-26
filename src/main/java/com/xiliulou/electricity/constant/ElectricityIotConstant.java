@@ -54,6 +54,11 @@ public class ElectricityIotConstant {
     
     public static final String NORMAL_OTA_OPERATE_HANDLER = "normalOtaOperateHandler";
     
+    /**
+     * 电池充电设置
+     */
+    public static final String NORMAL_BATTERY_MULTI_SETTING_HANDLER = "normalEleBatteryMultiSettingHandler";
+
 
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
@@ -135,8 +140,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
                 || Objects.equals(command, RESTART_APP)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY);
+                || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY)
+                || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING)
+                || Objects.equals(command, ELE_BATTERY_MULTI_PARAMS_READ);
 
     }
 
@@ -362,6 +368,15 @@ public class ElectricityIotConstant {
      * 故障上报
      */
     public static final String ELE_COMMAND_WARN_MSG_NOTIFY = "warn_msg_notify";
+    /**
+     * 修改电池充电设置
+     */
+    public static final String ELE_BATTERY_MULTI_PARAM_SETTING = "battery_multi_param_setting";
+    /**
+     * 读取电池充电设置
+     */
+    public static final String ELE_BATTERY_MULTI_PARAMS_READ = "battery_multi_params_read";
+    public static final String ELE_BATTERY_MULTI_PARAMS_READ_RSP = "battery_multi_rsp";
 
 
     static {
@@ -475,6 +490,12 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(OTA_OPERATE_RSP, NORMAL_OTA_OPERATE_HANDLER);
 
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_WARN_MSG_NOTIFY, NORMAL_ELE_WARN_MSG_HANDLER);
+        /**
+         * 电池充电设置
+         */
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ_RSP, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAM_SETTING, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
 
 
     }

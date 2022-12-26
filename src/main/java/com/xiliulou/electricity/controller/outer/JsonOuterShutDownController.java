@@ -33,7 +33,7 @@ public class JsonOuterShutDownController {
         if ("127.0.0.1".equalsIgnoreCase(ip) || "localhost".equalsIgnoreCase(ip)) {
             mnsSubscriber.destroy();
             messageDelayQueueListener.destroy();
-            threadPoolMonitorComponent.shutdown();
+            threadPoolMonitorComponent.destroy();
             return R.ok();
         }
         return R.fail("SYSTEM.0007", ip);

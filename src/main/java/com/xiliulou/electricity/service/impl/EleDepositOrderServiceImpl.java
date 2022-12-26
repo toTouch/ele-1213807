@@ -281,6 +281,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
 
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+            return R.ok();
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
 
@@ -450,10 +452,25 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
 
+        String orderId = generateOrderId(user.getUid());
+
+        //生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
+                .orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(orderId)
+                .payAmount(payAmount)
+                .refundAmount(payAmount)
+                .status(EleRefundOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId())
+                .memberCardOweNumber(memberCardOweNumber).build();
+
         //退款零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            eleDepositOrderMapper.insert(eleDepositOrder);
+
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderService.insert(eleRefundOrder);
 
             //用户
             FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
@@ -479,19 +496,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String orderId = generateOrderId(user.getUid());
-
-        //生成退款订单
-        EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
-                .orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(orderId)
-                .payAmount(payAmount)
-                .refundAmount(payAmount)
-                .status(EleRefundOrder.STATUS_INIT)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId())
-                .memberCardOweNumber(memberCardOweNumber).build();
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款
@@ -810,8 +814,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
 
-            BigDecimal chargeRate=electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee,franchiseeUserInfo);
-            batteryServiceFee=chargeRate;
+            BigDecimal chargeRate = electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee, franchiseeUserInfo);
+            batteryServiceFee = chargeRate;
 
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(franchiseeUserInfo, null, cardDays);
