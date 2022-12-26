@@ -389,7 +389,7 @@ public class UnionTradeOrderServiceImpl extends
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
 
-        for (int i = 0; i <= orderTypeList.size(); i++) {
+        for (int i = 0; i < orderTypeList.size(); i++) {
             if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
                 Pair<Boolean, Object> manageDepositOrderResult = manageDepositOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!manageDepositOrderResult.getLeft()) {
