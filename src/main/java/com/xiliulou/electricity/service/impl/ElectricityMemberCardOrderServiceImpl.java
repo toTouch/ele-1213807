@@ -2781,6 +2781,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder queryCreateTimeMaxMemberCardOrder(Long uid, Integer tenantId) {
         return null;
     }
+
+    @Override
+    public boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserCarMemberCard userCarMemberCard) {
+        //是否停卡产生电池服务费
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
+            return true;
+        }
+
+        //套餐是否过期
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 

@@ -55,6 +55,15 @@ public class UserInfoDetailVO {
      */
     private  InsuranceUserInfoVo insuranceUserInfoVo;
 
+    /**
+     * 电池编号
+     */
+    private String batteryName;
+    /**
+     * 电池电量
+     */
+    private Double batteryPower;
+
     public static final Integer EXIST_MEMBER_CARD = 0;
     public static final Integer NOT_EXIST_MEMBER_CARD = 1;
 }
