@@ -36,6 +36,8 @@ public interface UserCouponService {
 
 	void update(UserCoupon userCoupon);
 
+	int updateStatus(UserCoupon userCoupon);
+
     R queryCount(UserCouponQuery userCouponQuery);
     
     List<UserCoupon> selectCouponUserCountById(Long id);

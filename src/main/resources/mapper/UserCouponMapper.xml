@@ -7,9 +7,9 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserCouponVO">
         select
         tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
-        tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time  as createTime,
-        tuc.update_time  as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
-        tuc.discount_type  as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
+        tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,
+        tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
+        tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
         from t_user_coupon as tuc
         left join t_user_info tui on tuc.uid=tui.uid
         left join t_coupon as tc on tuc.coupon_id=tc.id
@@ -55,7 +55,7 @@
     </select>
 
 
-	<select id="queryCount" resultType="java.lang.Integer">
+    <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_user_coupon
         <where>
@@ -105,5 +105,12 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
 
+    <update id="updateStatus">
+        update t_user_coupon set
+        status = #{status},
+        order_id=#{orderId},
+        update_time = #{updateTime}
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
 
 </mapper>

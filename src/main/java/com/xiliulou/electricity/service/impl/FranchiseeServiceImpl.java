@@ -208,7 +208,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         BeanUtil.copyProperties(franchiseeAddAndUpdate, newFranchisee);
         newFranchisee.setUpdateTime(System.currentTimeMillis());
         newFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
-        int update = franchiseeMapper.updateById(newFranchisee);
+        int update = update(newFranchisee);
 
         if (update > 0) {
             return R.ok();
@@ -246,7 +246,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
-        int update = franchiseeMapper.updateById(franchisee);
+        int update = update(franchisee);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除用户
@@ -272,7 +272,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public Franchisee queryByIdFromCache(Long id) {
-        Franchisee cacheFranchisee=redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE + id,Franchisee.class);
+        Franchisee cacheFranchisee = redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE + id, Franchisee.class);
         if (Objects.nonNull(cacheFranchisee)) {
             return cacheFranchisee;
         }
@@ -303,7 +303,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
                 //获取区县名称
                 Region region = regionService.selectByIdFromCache(e.getRegionId());
-                if(Objects.nonNull(region)){
+                if (Objects.nonNull(region)) {
                     e.setRegionName(region.getName());
                 }
 
@@ -491,17 +491,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public List<City> selectFranchiseeCityList() {
-        FranchiseeQuery franchiseeQuery=new FranchiseeQuery();
+        FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
         franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
         Triple<Boolean, String, Object> franchiseeListResult = this.selectListByQuery(franchiseeQuery);
 
-        if(!franchiseeListResult.getLeft()){
+        if (!franchiseeListResult.getLeft()) {
             return Collections.EMPTY_LIST;
         }
 
         List<Franchisee> franchisees = (List<Franchisee>) franchiseeListResult.getRight();
         List<Integer> cids = franchisees.stream().map(Franchisee::getCid).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(cids)){
+        if (CollectionUtils.isEmpty(cids)) {
             return Collections.EMPTY_LIST;
         }
 
@@ -510,18 +510,18 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public List<Region> selectFranchiseeRegionList(Integer cid) {
-        FranchiseeQuery franchiseeQuery=new FranchiseeQuery();
+        FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
         franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
         franchiseeQuery.setCid(cid);
         Triple<Boolean, String, Object> franchiseeListResult = this.selectListByQuery(franchiseeQuery);
 
-        if(!franchiseeListResult.getLeft()){
+        if (!franchiseeListResult.getLeft()) {
             return Collections.EMPTY_LIST;
         }
 
         List<Franchisee> franchisees = (List<Franchisee>) franchiseeListResult.getRight();
         List<Integer> rids = franchisees.stream().map(Franchisee::getRegionId).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(rids)){
+        if (CollectionUtils.isEmpty(rids)) {
             return Collections.EMPTY_LIST;
         }
 
@@ -531,11 +531,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     /**
      * 根据区（县）查询加盟商
-     1.用户区域与加盟商区域一致，1对1
-     2.用户区域与加盟商匹配，但存在多个加盟商  1对多，选加盟商
-     3.用户区域和加盟商不匹配，选区
-        1对1
-        1对多，选加盟商
+     * 1.用户区域与加盟商区域一致，1对1
+     * 2.用户区域与加盟商匹配，但存在多个加盟商  1对多，选加盟商
+     * 3.用户区域和加盟商不匹配，选区
+     * 1对1
+     * 1对多，选加盟商
      */
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode) {
@@ -596,6 +596,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return this.handleNotFoundFranchiseeByRegion(city, franchiseeAreaVO);
     }
 
+    @Override
+    public int update(Franchisee franchisee) {
+        int result = this.franchiseeMapper.updateById(franchisee);
+        DbUtils.dbOperateSuccessThen(result, () -> {
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE + franchisee.getId());
+            return null;
+        });
+        return result;
+    }
+
     private Triple<Boolean, String, Object> handleNotFoundFranchiseeByRegion(City city, FranchiseeAreaVO franchiseeAreaVO) {
 
         //查询本市加盟商
@@ -609,7 +619,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchiseeAreaVO.setResult(FranchiseeAreaVO.NOT_FRANCHISEE_CITY);
             franchiseeAreaVO.setFranchiseeList(Collections.EMPTY_LIST);
             return Triple.of(true, "", franchiseeAreaVO);
-        }  else {
+        } else {
             //1.2当前城市有加盟商
 
             //检查是否有没设置区域的加盟商

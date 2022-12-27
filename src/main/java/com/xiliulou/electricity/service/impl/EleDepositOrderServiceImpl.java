@@ -531,17 +531,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("100247", "用户信息不存在");
         }
 
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarDeposit)) {
-            log.error("ELE DEPOSIT ERROR! not found userCarDeposit,uid={}", user.getUid());
-            return R.fail("100247", "用户信息不存在");
-        }
-
         String batteryType = userBattery.getBatteryType();
         if (Objects.nonNull(batteryType)) {
             Integer acquireBattery = BatteryConstant.acquireBattery(batteryType);
             map.put("batteryType", Objects.isNull(acquireBattery) ? null : String.valueOf(acquireBattery));
-//            map.put("batteryType", BatteryConstant.acquireBattery(batteryType).toString());
         } else {
             map.put("batteryType", null);
         }
@@ -562,7 +555,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 map.put("refundStatus", null);
             }
 
-            EleDepositOrder eleDepositOrder = queryByOrderId(userCarDeposit.getOrderId());
+            EleDepositOrder eleDepositOrder = queryByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.isNull(eleDepositOrder)) {
                 map.put("store", null);
             } else {
@@ -582,49 +575,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         return R.ok(map);
-
-/*        if ((Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
-                || Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
-                && Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
-
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
-
-            if (Objects.equals(franchiseeUserInfo.getOrderId(), "-1")) {
-                map.put("refundStatus", null);
-                map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
-                map.put("time", String.valueOf(System.currentTimeMillis()));
-                map.put("franchiseeName", franchisee.getName());
-            } else {
-                //是否退款
-                Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
-                if (Objects.nonNull(refundStatus)) {
-                    map.put("refundStatus", refundStatus.toString());
-                } else {
-                    map.put("refundStatus", null);
-                }
-
-                EleDepositOrder eleDepositOrder = queryByOrderId(franchiseeUserInfo.getRentCarOrderId());
-                if (Objects.isNull(eleDepositOrder)) {
-                    map.put("store", null);
-                } else {
-                    Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
-                    if (Objects.nonNull(store)) {
-                        map.put("store", store.getName());
-                    } else {
-                        map.put("store", null);
-                    }
-                }
-
-                map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
-                //最后一次缴纳押金时间
-                map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
-
-                map.put("franchiseeName", franchisee.getName());
-            }
-            return R.ok(map);
-
-        }
-        return R.ok(null);*/
     }
 
     @Override

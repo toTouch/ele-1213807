@@ -70,4 +70,6 @@ public interface FranchiseeService {
 
     Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode);
 
+    int update(Franchisee franchisee);
+
 }
