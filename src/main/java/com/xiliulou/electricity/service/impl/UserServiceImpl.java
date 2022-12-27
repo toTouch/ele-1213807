@@ -517,7 +517,7 @@ public class UserServiceImpl implements UserService {
            return Triple.of(false, null, "用户名不存在");
         }
 
-        if (!Objects.equals(user, oldUser)) {
+        if (!Objects.equals(user.getUid(), oldUser.getUid())) {
             log.error("updatePassword  ERROR! not found userId{},oldUserId{} ", user.getUid(), oldUser.getUid());
             return Triple.of(false, null, "不能修改别人的密码");
         }
