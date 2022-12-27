@@ -649,15 +649,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
+        Map<String, Object> map = new HashMap();
+
         //根据类型分押金
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //型号押金
             // TODO: 2022/12/21 bug
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-            return R.ok(modelBatteryDepositList);
+            map.put("modelType", Franchisee.NEW_MODEL_TYPE);
+            map.put("batteryDeposit", modelBatteryDepositList);
+            return R.ok(map);
         }
 
-        return R.ok(franchisee.getBatteryDeposit());
+        map.put("modelType", Franchisee.OLD_MODEL_TYPE);
+        map.put("batteryDeposit", franchisee.getBatteryDeposit());
+        return R.ok(map);
     }
 
     @Override
