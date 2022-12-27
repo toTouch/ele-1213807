@@ -100,6 +100,11 @@ public class EleBatteryServiceFeeOrderVo {
     private Long batteryServiceFeeGenerateTime;
 
     /**
+     * 服务费产生截止时间
+     */
+    private Long batteryServiceFeeEndTime;
+
+    /**
      * 服务费计费天数
      */
     private Integer batteryGenerateDay;

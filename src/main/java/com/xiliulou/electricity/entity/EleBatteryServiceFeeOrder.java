@@ -89,6 +89,11 @@ public class EleBatteryServiceFeeOrder {
     private Long batteryServiceFeeGenerateTime;
 
     /**
+     * 电池服务费产生截止时间
+     */
+    private Long batteryServiceFeeEndTime;
+
+    /**
      * 服务费来源 0--月卡过期 1--停卡
      */
     private Integer source;

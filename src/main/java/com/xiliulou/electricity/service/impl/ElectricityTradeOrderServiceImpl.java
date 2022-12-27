@@ -550,14 +550,21 @@ public class ElectricityTradeOrderServiceImpl extends
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
 
-        if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+        //电池服务费订单
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime());
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
 
+        if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
                 EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
+
+                eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getDisableMemberCardTime());
+                eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(eleDisableMemberCardRecord.getDisableDeadline());
 
 
                 EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
@@ -599,19 +606,17 @@ public class ElectricityTradeOrderServiceImpl extends
 
 
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-            if (Objects.nonNull(serviceFeeUserInfo)) {
-                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-                serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
-                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                    serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
-                    Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-                }else {
-                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
-                }
-                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+            serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+            } else {
+                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
             }
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
 
         //交易订单
@@ -622,14 +627,10 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(electricityTradeOrderUpdate);
 
-        //电池服务费订单
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        if (Objects.nonNull(serviceFeeUserInfo)) {
-            eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime());
-        }
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
         return Pair.of(result, null);
     }
