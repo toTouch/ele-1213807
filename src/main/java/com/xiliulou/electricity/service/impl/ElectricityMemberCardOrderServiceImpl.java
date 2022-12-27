@@ -2756,14 +2756,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("cancel MEMBER CARD ERROR! not found user ");
             return R.ok();
         }
 
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ENABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            log.error("cancel MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
             return R.ok();
         }
 
@@ -2784,10 +2784,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok();
     }
 
-    @Override
-    public ElectricityMemberCardOrder queryCreateTimeMaxMemberCardOrder(Long uid, Integer tenantId) {
-        return null;
-    }
 }
 
 
