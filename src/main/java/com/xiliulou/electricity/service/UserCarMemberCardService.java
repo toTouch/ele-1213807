@@ -54,4 +54,5 @@ public interface UserCarMemberCardService {
      */
     Integer deleteByUid(Long uid);
 
+    void carMemberCardExpireReminder();
 }

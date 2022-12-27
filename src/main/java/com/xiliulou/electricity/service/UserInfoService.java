@@ -110,9 +110,12 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer updateByUid(UserInfo userInfo);
     
-    Triple<Boolean, String, Object> updateRentStatus(Long uid, Integer rentStatus);
+    Triple<Boolean, String, Object> updateRentBatteryStatus(Long uid, Integer rentStatus);
+
+    Triple<Boolean, String, Object> updateRentCarStatus(Long uid, Integer carRentStatus);
     
     int selectCountByFranchiseeId(Long id);
 
     Triple<Boolean, String, Object> selectUserInfoDetailV2();
+
 }

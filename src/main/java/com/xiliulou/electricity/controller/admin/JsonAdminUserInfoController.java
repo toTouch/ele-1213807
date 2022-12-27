@@ -67,8 +67,6 @@ public class JsonAdminUserInfoController extends BaseController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
@@ -217,15 +215,21 @@ public class JsonAdminUserInfoController extends BaseController {
 //    }
     
     /**
-     * 修改用户租赁状态
+     * 修改用户电池租赁状态
      * @param uid
-     * @param serviceStatus
+     * @param batteryRentStatus
      * @return
      */
-    @PutMapping(value = "/admin/userInfo/serviceStatus")
-    @Log(title = "修改用户租赁状态")
-    public R updateRentStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
-        return returnTripleResult(userInfoService.updateRentStatus(uid,serviceStatus));
+    @PutMapping(value = "/admin/userInfo/batteryRentStatus")
+    @Log(title = "修改用户电池租赁状态")
+    public R updateRentBatteryStatus(@RequestParam("uid") Long uid,@RequestParam("batteryRentStatus") Integer batteryRentStatus){
+        return returnTripleResult(userInfoService.updateRentBatteryStatus(uid,batteryRentStatus));
+    }
+
+    @PutMapping(value = "/admin/userInfo/carRentStatus")
+    @Log(title = "修改用户车辆租赁状态")
+    public R updateRentCarStatus(@RequestParam("uid") Long uid,@RequestParam("carRentStatus") Integer carRentStatus){
+        return returnTripleResult(userInfoService.updateRentCarStatus(uid,carRentStatus));
     }
 
     //列表查询

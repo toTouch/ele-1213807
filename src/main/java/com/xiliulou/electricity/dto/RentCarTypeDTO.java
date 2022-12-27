@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class RentCarTypeDTO {
-    private String rentType;
+    private String type;
     private Double price;
 }

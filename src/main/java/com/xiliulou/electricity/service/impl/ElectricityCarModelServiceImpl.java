@@ -9,7 +9,6 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
-import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -239,8 +238,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (CollectionUtils.isEmpty(rentCarTypeDTOS)) {
             return rentTypeMap;
         }
-log.error("rentCarTypeDTOS:{}",JsonUtil.toJson(rentCarTypeDTOS));
-        return rentCarTypeDTOS.stream().collect(Collectors.toMap(RentCarTypeDTO::getRentType, RentCarTypeDTO::getPrice,(item1,item2)->item1));
+
+        return rentCarTypeDTOS.stream().collect(Collectors.toMap(RentCarTypeDTO::getType, RentCarTypeDTO::getPrice,(item1, item2)->item1));
     }
 
     /**

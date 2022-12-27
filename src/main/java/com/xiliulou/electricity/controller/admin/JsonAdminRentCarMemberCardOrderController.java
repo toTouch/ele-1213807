@@ -35,7 +35,7 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     @Autowired
     UserDataScopeService userDataScopeService;
 
-    @GetMapping("admin/rentCarMemberCardOrder/page")
+    @GetMapping("/admin/rentCarMemberCardOrder/page")
     public R getElectricityMemberCardPage(@RequestParam("size") Long size,
                                           @RequestParam("offset") Long offset,
                                           @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
@@ -44,8 +44,8 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
                                           @RequestParam(value = "memberCardType", required = false) Integer cardType,
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
-                                          @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                                           @RequestParam(value = "userName", required = false) String userName,
+                                          @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 
         if (size < 0 || size > 50) {
@@ -94,7 +94,7 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
      *
      * @return
      */
-    @GetMapping("admin/rentCarMemberCardOrder/queryCount")
+    @GetMapping("/admin/rentCarMemberCardOrder/queryCount")
     public R queryCount(@RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,

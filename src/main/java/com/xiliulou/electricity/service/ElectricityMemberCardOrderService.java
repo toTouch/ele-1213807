@@ -75,6 +75,7 @@ public interface ElectricityMemberCardOrderService {
 
     void batteryMemberCardExpireReminder();
 
+    @Deprecated
     void carMemberCardExpireReminder();
 
     void systemEnableMemberCardTask();
