@@ -86,6 +86,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
+    @Autowired
+    UserBatteryService userBatteryService;
+
     /**
      * 新增数据
      *
@@ -210,23 +213,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 
         if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
-//            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//            franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
             if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
-//                franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-//                franchiseeUserInfo.setBatteryDeposit(null);
-//                franchiseeUserInfo.setOrderId(null);
-//                franchiseeUserInfo.setFranchiseeId(null);
-//                franchiseeUserInfo.setModelType(null);
-//                franchiseeUserInfo.setBatteryType(null);
-//                franchiseeUserInfo.setCardId(null);
-//                franchiseeUserInfo.setCardName(null);
-//                franchiseeUserInfo.setCardType(null);
-//                franchiseeUserInfo.setMemberCardExpireTime(null);
-//                franchiseeUserInfo.setRemainingNumber(null);
-//                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//                franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
-
                 UserInfo updateUserInfo = new UserInfo();
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
@@ -235,22 +222,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 userBatteryDepositService.deleteByUid(userInfo.getUid());
 
+                userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+                userBatteryService.deleteByUid(userInfo.getUid());
+
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
                 }
             } else {
-//                franchiseeUserInfo.setRentCarOrderId(null);
-//                franchiseeUserInfo.setRentCarDeposit(null);
-//                franchiseeUserInfo.setBindCarId(null);
-//                franchiseeUserInfo.setBindCarModelId(null);
-//                franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-//                franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
-//                franchiseeUserInfo.setRentCarCardId(null);
-//                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//                franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
-
                 UserInfo updateUserInfo = new UserInfo();
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
@@ -337,25 +318,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrderService.update(eleRefundOrderUpdate);
 
                 //查询押金绑定表的id
-                Long id = eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
+//                Long id = eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
 
-                FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-                updateFranchiseeUserInfo.setUserInfoId(id);
                 if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
-//                    updateFranchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-//                    updateFranchiseeUserInfo.setBatteryDeposit(null);
-//                    updateFranchiseeUserInfo.setOrderId(null);
-//                    updateFranchiseeUserInfo.setFranchiseeId(null);
-//                    updateFranchiseeUserInfo.setModelType(null);
-//                    updateFranchiseeUserInfo.setBatteryType(null);
-//                    updateFranchiseeUserInfo.setCardId(null);
-//                    updateFranchiseeUserInfo.setCardName(null);
-//                    updateFranchiseeUserInfo.setCardType(null);
-//                    updateFranchiseeUserInfo.setMemberCardExpireTime(null);
-//                    updateFranchiseeUserInfo.setRemainingNumber(null);
-//                    updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//                    franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
-
                     UserInfo updateUserInfo = new UserInfo();
                     updateUserInfo.setUid(uid);
                     updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
@@ -363,6 +328,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     userInfoService.updateByUid(updateUserInfo);
 
                     userBatteryDepositService.deleteByUid(uid);
+
+                    userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+                    userBatteryService.deleteByUid(userInfo.getUid());
 
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
                     if (Objects.nonNull(insuranceUserInfo)) {
@@ -370,24 +339,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
                     }
                 } else {
-//                    updateFranchiseeUserInfo.setRentCarOrderId(null);
-//                    updateFranchiseeUserInfo.setRentCarDeposit(null);
-//                    updateFranchiseeUserInfo.setBindCarId(null);
-//                    updateFranchiseeUserInfo.setBindCarModelId(null);
-//                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-//                    updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
-//                    updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
-//                    updateFranchiseeUserInfo.setRentCarCardId(null);
-//                    franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
-
                     UserInfo updateUserInfo = new UserInfo();
                     updateUserInfo.setUid(uid);
                     updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                     updateUserInfo.setUpdateTime(System.currentTimeMillis());
                     userInfoService.updateByUid(updateUserInfo);
 
-                    userBatteryDepositService.deleteByUid(uid);
+                    userCarDepositService.deleteByUid(uid);
                 }
                 return R.ok();
 
@@ -563,11 +521,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        UserInfo userInfoAdmin = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfoAdmin)) {
-            log.error("admin payRentCarDeposit  ERROR! not found user,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
@@ -578,12 +531,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//        }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
@@ -656,29 +603,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
 
-//        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-//        updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
-
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
 
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrderService.insert(eleRefundOrder);
-
-//            updateFranchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-//            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//            updateFranchiseeUserInfo.setBatteryDeposit(null);
-//            updateFranchiseeUserInfo.setOrderId(null);
-//            updateFranchiseeUserInfo.setFranchiseeId(null);
-//            updateFranchiseeUserInfo.setModelType(null);
-//            updateFranchiseeUserInfo.setBatteryType(null);
-//            updateFranchiseeUserInfo.setCardId(null);
-//            updateFranchiseeUserInfo.setCardName(null);
-//            updateFranchiseeUserInfo.setCardType(null);
-//            updateFranchiseeUserInfo.setMemberCardExpireTime(null);
-//            updateFranchiseeUserInfo.setRemainingNumber(null);
-//            franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
 
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
@@ -687,6 +617,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.updateByUid(updateUserInfo);
 
             userBatteryDepositService.deleteByUid(userInfo.getUid());
+
+            userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+            userBatteryService.deleteByUid(userInfo.getUid());
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
             if (Objects.nonNull(insuranceUserInfo)) {
@@ -718,25 +652,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrderService.insert(eleRefundOrder);
 
-//                franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-//                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//                franchiseeUserInfo.setBatteryDeposit(null);
-//                franchiseeUserInfo.setOrderId(null);
-//                franchiseeUserInfo.setFranchiseeId(null);
-//                franchiseeUserInfo.setModelType(null);
-//                franchiseeUserInfo.setBatteryType(null);
-//                franchiseeUserInfo.setCardId(null);
-//                franchiseeUserInfo.setCardName(null);
-//                franchiseeUserInfo.setCardType(null);
-//                franchiseeUserInfo.setMemberCardExpireTime(null);
-//                franchiseeUserInfo.setRemainingNumber(null);
-//                franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
-
                 UserInfo updateUserInfo = new UserInfo();
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
+
+                userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+                userBatteryService.deleteByUid(userInfo.getUid());
+
 
                 userBatteryDepositService.deleteByUid(userInfo.getUid());
                 return R.ok();
