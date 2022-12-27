@@ -33,8 +33,8 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
+            <if test="serviceFeeGenerateTime != null">
+                service_fee_generate_time = #{serviceFeeGenerateTime},
             </if>
         </set>
         where uid = #{uid} and tenant_id = #{tenantId}

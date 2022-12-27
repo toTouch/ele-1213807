@@ -1457,13 +1457,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
 
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
-                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-                serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
-                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
 
+            if (Objects.nonNull(serviceFeeUserInfo)) {
+                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                    Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+                } else {
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+                }
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }
 
@@ -1620,8 +1626,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         } else {
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
         }
-
-
 
 
         Double carDayTemp = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24.0);
