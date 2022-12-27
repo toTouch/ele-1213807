@@ -35,7 +35,7 @@
         </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -78,7 +78,7 @@
         </if>
         <if test="query.franchiseeIds != null">
             and tel.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -186,31 +186,32 @@
         <if test="todayStartTime != null">
             and create_time &gt;=#{todayStartTime}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
     </select>
 
 
-    <select id="queryBatteryMemberCardTurnOverByCreateTime" resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+    <select id="queryBatteryMemberCardTurnOverByCreateTime"
+            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -233,30 +234,31 @@
         <if test="todayStartTime != null">
             and create_time &gt;=#{todayStartTime}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
     </select>
 
-    <select id="queryCarMemberCardTurnOverByCreateTime" resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+    <select id="queryCarMemberCardTurnOverByCreateTime"
+            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -271,17 +273,17 @@
     </select>
 
     <select id="querySumMemberCardTurnOverByCreateTime" resultType="decimal">
-        select sum(pay_amount)  from t_electricity_member_card_order
+        select sum(pay_amount) from t_electricity_member_card_order
         where status=1 and pay_type=0
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -291,6 +293,10 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
+    </select>
+
+    <select id="queryCreateTimeMaxMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select order_id,status,coupon_id from t_electricity_member_card_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
 
 

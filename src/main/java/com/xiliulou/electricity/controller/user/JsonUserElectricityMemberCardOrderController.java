@@ -139,5 +139,14 @@ public class JsonUserElectricityMemberCardOrderController {
         return electricityMemberCardOrderService.queryUserExistMemberCard();
     }
 
+    /**
+     * 取消购买套餐
+     * @return
+     */
+    @PutMapping("user/memberCard/cancelPayMemberCard")
+    public R cancelPayMemberCard(){
+        return electricityMemberCardOrderService.cancelPayMemberCard();
+    }
+
 
 }

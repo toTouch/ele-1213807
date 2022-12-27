@@ -366,6 +366,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
         baseMapper.insert(electricityMemberCardOrder);
 
         //修改优惠券状态为正在核销中
@@ -2747,6 +2748,38 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
 
         return Triple.of(true, null, electricityMemberCardOrder);
+    }
+
+    @Override
+    public R cancelPayMemberCard() {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.ok();
+        }
+
+        //校验用户
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ENABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            return R.ok();
+        }
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = baseMapper.queryCreateTimeMaxMemberCardOrder(userInfo.getUid(), userInfo.getTenantId());
+        if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getStatus(), ElectricityMemberCardOrder.STATUS_INIT) || Objects.isNull(electricityMemberCardOrder.getCouponId())) {
+            return R.ok();
+        }
+
+
+
+        return null;
+    }
+
+    @Override
+    public ElectricityMemberCardOrder queryCreateTimeMaxMemberCardOrder(Long uid, Integer tenantId) {
+        return null;
     }
 }
 

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.ibatis.annotations.Param;
 import org.apache.poi.ss.formula.functions.T;
 
 import javax.servlet.http.HttpServletRequest;
@@ -97,5 +98,10 @@ public interface ElectricityMemberCardOrderService {
     R queryUserExistMemberCard();
 
     Triple<Boolean, String, Object> handleRentBatteryMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo);
+
+    R cancelPayMemberCard();
+
+
+    ElectricityMemberCardOrder queryCreateTimeMaxMemberCardOrder(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 
 }
