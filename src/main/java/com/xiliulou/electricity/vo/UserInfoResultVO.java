@@ -11,8 +11,7 @@ import lombok.Data;
 public class UserInfoResultVO {
     //用户状态
     private String userStatus;
-    //是否有电池
-    private String isBattery;
+
 
 
     //未实名认证

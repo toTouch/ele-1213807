@@ -337,7 +337,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
         carMemberCardOrder.setValidDays(rentCarOrderQuery.getRentTime());
-        carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
+        carMemberCardOrder.setPayType(CarMemberCardOrder.OFFLINE_PAYTYPE);
         carMemberCardOrder.setStoreId(rentCarOrderQuery.getStoreId());
         carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         carMemberCardOrder.setTenantId(userInfo.getTenantId());
@@ -363,7 +363,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         carDepositOrder.setUpdateTime(System.currentTimeMillis());
         carDepositOrder.setFranchiseeId(store.getFranchiseeId());
         carDepositOrder.setStoreId(rentCarOrderQuery.getStoreId());
-        carDepositOrder.setPayType(CarDepositOrder.ONLINE_PAYTYPE);
+        carDepositOrder.setPayType(CarDepositOrder.OFFLINE_PAYTYPE);
         carDepositOrder.setCarModelId(rentCarOrderQuery.getCarModelId());
 
         return carDepositOrder;
