@@ -18,7 +18,7 @@
 
     <select id="queryListForAdmin" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
         SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type, te.status,
-        te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
+        te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,te.source,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
         WHERE te.uid =#{uid} and te.tenant_id=#{tenantId}
@@ -66,7 +66,7 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -105,7 +105,7 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -133,12 +133,12 @@
         <if test="todayStartTime != null">
             and create_time &gt;=#{todayStartTime}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -151,12 +151,12 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -176,12 +176,12 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id =#{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id =#{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
