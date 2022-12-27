@@ -2772,9 +2772,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.ok();
         }
 
+        UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
+        if (Objects.isNull(userCoupon) || !Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)) {
+            return R.ok();
+        }
 
-
-        return null;
+        userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
+        userCoupon.setOrderId(null);
+        userCoupon.setUpdateTime(System.currentTimeMillis());
+        userCouponService.updateStatus(userCoupon);
+        return R.ok();
     }
 
     @Override
