@@ -602,6 +602,7 @@ public class ElectricityTradeOrderServiceImpl extends
             if (Objects.nonNull(serviceFeeUserInfo)) {
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
                 if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                     serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
                     Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
