@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.RentCarOrder;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.query.RentCarOrderQuery;
+import com.xiliulou.electricity.query.UserRentCarOrderQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,7 +66,9 @@ public interface RentCarOrderService {
      */
     Boolean deleteById(Long id);
 
-    Triple<Boolean,String,Object> rentCarOrder(RentCarOrderQuery query);
+    Triple<Boolean,String,Object> rentCarOrder(UserRentCarOrderQuery query);
 
     Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request);
+
+    Triple<Boolean, String, Object> save(RentCarOrderQuery rentCarOrderQuery);
 }

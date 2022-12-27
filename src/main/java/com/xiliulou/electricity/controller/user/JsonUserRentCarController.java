@@ -3,7 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
-import com.xiliulou.electricity.query.RentCarOrderQuery;
+import com.xiliulou.electricity.query.UserRentCarOrderQuery;
 import com.xiliulou.electricity.service.RentCarOrderService;
 import com.xiliulou.electricity.service.UserCarService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class JsonUserRentCarController extends BaseController {
      * 扫码租车
      */
     @PostMapping("/user/rentCar/scanQR")
-    public R rentCarOrder(@RequestBody @Validated RentCarOrderQuery query){
+    public R rentCarOrder(@RequestBody @Validated UserRentCarOrderQuery query){
         return R.ok(rentCarOrderService.rentCarOrder(query));
     }
 
