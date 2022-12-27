@@ -2785,11 +2785,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public ElectricityMemberCardOrder queryCreateTimeMaxMemberCardOrder(Long uid, Integer tenantId) {
-        return null;
-    }
-
-    @Override
     public boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserCarMemberCard userCarMemberCard) {
         //是否停卡产生电池服务费
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());

@@ -101,7 +101,5 @@ public interface ElectricityMemberCardOrderService {
 
     R cancelPayMemberCard();
 
-    ElectricityMemberCardOrder queryCreateTimeMaxMemberCardOrder(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
-
     boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserCarMemberCard userCarMemberCard);
 }
