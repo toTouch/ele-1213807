@@ -354,7 +354,7 @@ public class UnionTradeOrderServiceImpl extends
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
-        // TODO: 2022/12/21 幂等 支付后置处理器已经加过了
+
         UnionTradeOrder unionTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(unionTradeOrder)) {
             log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", tradeOrderNo);
@@ -410,12 +410,14 @@ public class UnionTradeOrderServiceImpl extends
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
+                log.error("============================租车押金:{}",JsonUtil.toJson(orderIdLIst.get(i)));
                 //租车押金
                 Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarDepositOrderResult.getLeft()) {
                     return rentCarDepositOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
+                log.error("============================租车套餐:{}",JsonUtil.toJson(orderIdLIst.get(i)));
                 //租车套餐
                 Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarMemberCardOrderResult.getLeft()) {
