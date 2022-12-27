@@ -631,6 +631,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                     Region franchiseeRegion = regionService.selectByIdFromCache(item.getRegionId());
                     if (Objects.isNull(franchiseeRegion)) {
                         log.error("ELE ERROR!not found franchiseeRegion regionId={},uid={}", item.getRegionId(), SecurityUtils.getUid());
+                        return;
                     }
                     regionList.add(franchiseeRegion);
                 });
