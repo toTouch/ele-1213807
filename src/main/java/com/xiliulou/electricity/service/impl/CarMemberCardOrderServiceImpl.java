@@ -352,8 +352,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setUserName(userInfo.getName());
         carMemberCardOrder.setValidDays(query.getRentTime());
         carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
-        carMemberCardOrder.setTenantId(userInfo.getTenantId());
+        carMemberCardOrder.setStoreId(query.getStoreId());
         carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        carMemberCardOrder.setTenantId(userInfo.getTenantId());
 
         return Triple.of(true, "", carMemberCardOrder);
 
