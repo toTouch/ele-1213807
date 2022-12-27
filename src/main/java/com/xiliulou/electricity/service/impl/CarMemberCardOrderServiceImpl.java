@@ -25,6 +25,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -345,6 +346,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(userInfo.getUid());
+        carMemberCardOrder.setCardName(getCardName(query));
         carMemberCardOrder.setMemberCardType(query.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
@@ -355,5 +357,17 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         return Triple.of(true, "", carMemberCardOrder);
 
+    }
+
+
+    private String getCardName(RentCarHybridOrderQuery query) {
+
+        if (ElectricityCarModel.RENT_TYPE_WEEK.equals(query.getRentType())) {
+            return "周租";
+        } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(query.getRentType())) {
+            return "月租";
+        }
+
+        return "其它";
     }
 }
