@@ -2756,14 +2756,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("cancel MEMBER CARD ERROR! not found user ");
             return R.ok();
         }
 
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ENABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
+            log.error("cancel MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
             return R.ok();
         }
 
@@ -2772,9 +2772,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.ok();
         }
 
+        UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
+        if (Objects.isNull(userCoupon) || !Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)) {
+            return R.ok();
+        }
 
-
-        return null;
+        userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
+        userCoupon.setOrderId(null);
+        userCoupon.setUpdateTime(System.currentTimeMillis());
+        userCouponService.updateStatus(userCoupon);
+        return R.ok();
     }
 
     @Override

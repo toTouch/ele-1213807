@@ -588,7 +588,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderHistory.setRefundOrderNo(generateOrderId(uid));
             eleRefundOrderHistory.setRefundAmount(refundAmount);
             eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
-            eleRefundOrderHistory.setTenantId(userBatteryMemberCard.getTenantId());
+            eleRefundOrderHistory.setTenantId(userInfo.getTenantId());
             eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
         } else {
             refundAmount = userBatteryDeposit.getBatteryDeposit();
