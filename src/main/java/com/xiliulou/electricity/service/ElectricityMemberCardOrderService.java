@@ -101,4 +101,5 @@ public interface ElectricityMemberCardOrderService {
 
     R cancelPayMemberCard();
 
+    boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserCarMemberCard userCarMemberCard);
 }

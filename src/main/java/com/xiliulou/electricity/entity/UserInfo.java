@@ -68,7 +68,7 @@ public class UserInfo {
     private Integer batteryRentStatus;
 
     /**
-     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中,3--押金退款失败
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中
      */
     private Integer batteryDepositStatus;
 

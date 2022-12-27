@@ -1102,43 +1102,62 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public Triple<Boolean, String, Object> selectUserInfoDetailV2() {
-        UserInfoDetailVO userInfoDetailVO = new UserInfoDetailVO();
+        UserInfoResultVO userInfoResult = new UserInfoResultVO();
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user ");
-            return Triple.of(false,"100001",userInfoDetailVO);
+            return Triple.of(false,"100001",userInfoResult);
         }
 
         UserInfo userInfo = this.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
-            return Triple.of(false,"100001",userInfoDetailVO);
+            return Triple.of(false,"100001",userInfoResult);
         }
-        BeanUtils.copyProperties(userInfo,userInfoDetailVO);
 
-        //套餐状态
+        //未实名认证
+        if(Objects.equals( UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus())){
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_AUTH);
+            return Triple.of(true,"",userInfoResult);
+        }
+
+        //待审核
+        if(Objects.equals( UserInfo.AUTH_STATUS_PENDING_REVIEW, userInfo.getAuthStatus())){
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_AUDIT);
+            return Triple.of(true,"",userInfoResult);
+        }
+
+        //未购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE))) {
-            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.NOT_EXIST_MEMBER_CARD);
-        } else {
-            userInfoDetailVO.setIsExistMemberCard(UserInfoDetailVO.EXIST_MEMBER_CARD);
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BUY_MEMBERCARD);
+            return Triple.of(true,"",userInfoResult);
+        }
+
+        //扫码租电
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if(Objects.isNull(electricityBattery)){
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BIND_BATTERY);
+            return Triple.of(true,"",userInfoResult);
+        }
+
+        //扫码租车
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.nonNull(userCarMemberCard)&& Objects.nonNull(userCarMemberCard.getCardId())){
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BIND_CAR);
+            return Triple.of(true,"",userInfoResult);
         }
 
         //电池服务费
-        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = serviceFeeUserInfoService.queryUserBatteryServiceFee(user.getUid());
-        userInfoDetailVO.setBatteryServiceFee(eleBatteryServiceFeeVO);
+        boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userCarMemberCard);
+        if(isHaveBatteryServiceFee){
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_SERVICE_FEE);
+            return Triple.of(true,"",userInfoResult);
+        }
 
-        //用户状态(离线换电)
-        UserFrontDetectionVO userFrontDetection = offLineElectricityCabinetService.getUserFrontDetection(userInfo, userBatteryMemberCard);
-        userInfoDetailVO.setUserFrontDetection(userFrontDetection);
-
-        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.queryByUidAndTenantId(user.getUid(), user.getTenantId());
-        userInfoDetailVO.setInsuranceUserInfoVo(insuranceUserInfoVo);
-
-
-        return Triple.of(true,"",userInfoDetailVO);
+        return Triple.of(true,"",userInfoResult);
     }
 
     @Deprecated
