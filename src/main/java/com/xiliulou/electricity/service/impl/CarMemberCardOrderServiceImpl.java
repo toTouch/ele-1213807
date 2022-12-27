@@ -338,6 +338,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
+        carMemberCardOrder.setUid(userInfo.getUid());
         carMemberCardOrder.setOrderId(orderId);
         carMemberCardOrder.setCreateTime(System.currentTimeMillis());
         carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
