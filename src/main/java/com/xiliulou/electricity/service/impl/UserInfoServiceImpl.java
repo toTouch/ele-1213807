@@ -1172,19 +1172,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(true, "", userInfoResult);
         }
 
-        //获取电池信息
-        if (!Objects.isNull(electricityBattery)) {
+
+        boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userCarMemberCard);
+        //有电池  没有电池服务费,获取电池信息
+        if (!Objects.isNull(electricityBattery) && !isHaveBatteryServiceFee) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_HAVE_BATTERY);
-            userInfoResult.setIsBattery(UserInfoResultVO.YES);
             return Triple.of(true, "", userInfoResult);
         }
 
 
-        //电池服务费
-        boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userCarMemberCard);
-        if (isHaveBatteryServiceFee) {
+        //有电池  有电池服务费
+        if (!Objects.isNull(electricityBattery) && isHaveBatteryServiceFee) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_SERVICE_FEE);
-            userInfoResult.setIsBattery(UserInfoResultVO.YES);
             return Triple.of(true, "", userInfoResult);
         }
 
