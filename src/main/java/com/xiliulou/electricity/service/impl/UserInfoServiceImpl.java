@@ -12,6 +12,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -1108,56 +1109,86 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user ");
-            return Triple.of(false,"100001",userInfoResult);
+            return Triple.of(false, "100001", userInfoResult);
         }
 
         UserInfo userInfo = this.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
-            return Triple.of(false,"100001",userInfoResult);
+            return Triple.of(false, "100001", userInfoResult);
         }
 
         //未实名认证
-        if(Objects.equals( UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus())){
+        if (Objects.equals(UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus())) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_AUTH);
-            return Triple.of(true,"",userInfoResult);
+            return Triple.of(true, "", userInfoResult);
         }
 
         //待审核
-        if(Objects.equals( UserInfo.AUTH_STATUS_PENDING_REVIEW, userInfo.getAuthStatus())){
+        if (Objects.equals(UserInfo.AUTH_STATUS_PENDING_REVIEW, userInfo.getAuthStatus())) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_AUDIT);
-            return Triple.of(true,"",userInfoResult);
+            return Triple.of(true, "", userInfoResult);
         }
 
         //未购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE))) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BUY_MEMBERCARD);
-            return Triple.of(true,"",userInfoResult);
-        }
-
-        //扫码租电
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        if(Objects.isNull(electricityBattery)){
-            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BIND_BATTERY);
-            return Triple.of(true,"",userInfoResult);
+            return Triple.of(true, "", userInfoResult);
         }
 
         //扫码租车
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.nonNull(userCarMemberCard)&& Objects.nonNull(userCarMemberCard.getCardId())){
+        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BIND_CAR);
-            return Triple.of(true,"",userInfoResult);
+            return Triple.of(true, "", userInfoResult);
         }
+
+        //扫码租电
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BIND_BATTERY);
+            return Triple.of(true, "", userInfoResult);
+        }
+
+
+        //已绑定车辆且租车套餐过期
+        if (Objects.equals(UserInfo.CAR_RENT_STATUS_YES, userInfo.getCarRentStatus())
+                && Objects.nonNull(userCarMemberCard)
+                && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime())
+                && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()
+                && !Objects.equals(userCarMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO)) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_CAR_MEMBERCARD_EXPIRE);
+            return Triple.of(true, "", userInfoResult);
+        }
+
+        //已租电池且电池套餐过期
+        if (Objects.equals(UserInfo.BATTERY_RENT_STATUS_YES, userInfo.getBatteryRentStatus())
+                && Objects.nonNull(userBatteryMemberCard)
+                && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
+                && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()
+                && !Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO)) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_MEMBERCARD_EXPIRE);
+            return Triple.of(true, "", userInfoResult);
+        }
+
+        //获取电池信息
+        if (!Objects.isNull(electricityBattery)) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_HAVE_BATTERY);
+            userInfoResult.setIsBattery(UserInfoResultVO.YES);
+            return Triple.of(true, "", userInfoResult);
+        }
+
 
         //电池服务费
         boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userCarMemberCard);
-        if(isHaveBatteryServiceFee){
+        if (isHaveBatteryServiceFee) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_SERVICE_FEE);
-            return Triple.of(true,"",userInfoResult);
+            userInfoResult.setIsBattery(UserInfoResultVO.YES);
+            return Triple.of(true, "", userInfoResult);
         }
 
-        return Triple.of(true,"",userInfoResult);
+        return Triple.of(true, "", userInfoResult);
     }
 
     @Deprecated

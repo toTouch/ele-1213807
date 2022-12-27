@@ -11,9 +11,8 @@ import lombok.Data;
 public class UserInfoResultVO {
     //用户状态
     private String userStatus;
-    //电池名称
-    private String batteryName;
-    private Double batteryPower;
+    //是否有电池
+    private String isBattery;
 
 
     //未实名认证
@@ -26,13 +25,16 @@ public class UserInfoResultVO {
     public static final String STATUS_BIND_BATTERY = "bind_battery";
     //有车辆套餐未绑定车辆
     public static final String STATUS_BIND_CAR = "bind_car";
-    /**
-     * 用户名下有车辆套餐有电池套餐，但是无车无电池
-     * 先出现检测到您未绑定车辆     扫码租车
-     * 后出现检测到您未租电        扫码租电
-     */
-    public static final String STATUS_RENT_BATTERY = "rent_battery";
-    public static final String STATUS_RENT_CAR = "rent_car";
+    //租车套餐过期
+    public static final String STATUS_CAR_MEMBERCARD_EXPIRE = "car_membercard_expire";
+    //租电池套餐过期
+    public static final String STATUS_BATTERY_MEMBERCARD_EXPIRE = "battery_membercard_expire";
+    //已绑定电池
+    public static final String STATUS_HAVE_BATTERY = "have_battery";
     //有电池服务费
     public static final String STATUS_BATTERY_SERVICE_FEE = "battery_service_fee";
+
+
+    public static final String YES = "YES";
+    public static final String NO = "NO";
 }
