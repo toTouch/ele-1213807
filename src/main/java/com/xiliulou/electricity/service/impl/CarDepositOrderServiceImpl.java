@@ -381,6 +381,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         carDepositOrder.setPhone(userInfo.getPhone());
         carDepositOrder.setName(userInfo.getName());
         carDepositOrder.setPayAmount(payAmount);
+        carDepositOrder.setDelFlag(CarDepositOrder.DEL_NORMAL);
         carDepositOrder.setStatus(CarDepositOrder.STATUS_INIT);
         carDepositOrder.setTenantId(TenantContextHolder.getTenantId());
         carDepositOrder.setCreateTime(System.currentTimeMillis());
