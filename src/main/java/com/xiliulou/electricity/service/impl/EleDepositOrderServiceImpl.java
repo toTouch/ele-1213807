@@ -539,42 +539,47 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             map.put("batteryType", null);
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
+                && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(userBatteryDeposit.getOrderId()))) {
 
-        if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
-            map.put("refundStatus", null);
-            map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
-            map.put("time", String.valueOf(System.currentTimeMillis()));
-            map.put("franchiseeName", Objects.nonNull(franchisee) ? franchisee.getName() : "");
-        } else {
-            //是否退款
-            Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
-            if (Objects.nonNull(refundStatus)) {
-                map.put("refundStatus", refundStatus.toString());
-            } else {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+
+            if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
                 map.put("refundStatus", null);
-            }
-
-            EleDepositOrder eleDepositOrder = queryByOrderId(userBatteryDeposit.getOrderId());
-            if (Objects.isNull(eleDepositOrder)) {
-                map.put("store", null);
+                map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
+                map.put("time", String.valueOf(System.currentTimeMillis()));
+                map.put("franchiseeName", Objects.nonNull(franchisee) ? franchisee.getName() : "");
             } else {
-                Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
-                if (Objects.nonNull(store)) {
-                    map.put("store", store.getName());
+                //是否退款
+                Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
+                if (Objects.nonNull(refundStatus)) {
+                    map.put("refundStatus", refundStatus.toString());
                 } else {
-                    map.put("store", null);
+                    map.put("refundStatus", null);
                 }
+
+                EleDepositOrder eleDepositOrder = queryByOrderId(userBatteryDeposit.getOrderId());
+                if (Objects.isNull(eleDepositOrder)) {
+                    map.put("store", null);
+                } else {
+                    Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+                    if (Objects.nonNull(store)) {
+                        map.put("store", store.getName());
+                    } else {
+                        map.put("store", null);
+                    }
+                }
+
+                map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
+                //最后一次缴纳押金时间
+                map.put("time", this.queryByOrderId(userBatteryDeposit.getOrderId()).getUpdateTime().toString());
+
+                map.put("franchiseeName", franchisee.getName());
             }
 
-            map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
-            //最后一次缴纳押金时间
-            map.put("time", this.queryByOrderId(userBatteryDeposit.getOrderId()).getUpdateTime().toString());
-
-            map.put("franchiseeName", franchisee.getName());
+            return R.ok(map);
         }
-
-        return R.ok(map);
+        return R.ok(null);
     }
 
     @Override
