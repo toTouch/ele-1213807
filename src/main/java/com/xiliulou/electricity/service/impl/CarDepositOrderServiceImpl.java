@@ -376,6 +376,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         BigDecimal payAmount = electricityCarModel.getCarDeposit();
 
         CarDepositOrder carDepositOrder = new CarDepositOrder();
+        carDepositOrder.setUid(userInfo.getUid());
         carDepositOrder.setOrderId(orderId);
         carDepositOrder.setPhone(userInfo.getPhone());
         carDepositOrder.setName(userInfo.getName());
