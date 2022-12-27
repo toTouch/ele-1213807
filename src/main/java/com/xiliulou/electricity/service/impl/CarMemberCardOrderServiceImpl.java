@@ -346,7 +346,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(userInfo.getUid());
-        carMemberCardOrder.setCardName(getCardName(query));
+        carMemberCardOrder.setCardName(getCardName(query.getRentType()));
         carMemberCardOrder.setMemberCardType(query.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
@@ -360,12 +360,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
     }
 
+    @Override
+    public String getCardName(String rentType) {
 
-    private String getCardName(RentCarHybridOrderQuery query) {
-
-        if (ElectricityCarModel.RENT_TYPE_WEEK.equals(query.getRentType())) {
+        if (ElectricityCarModel.RENT_TYPE_WEEK.equals(rentType)) {
             return "周租";
-        } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(query.getRentType())) {
+        } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(rentType)) {
             return "月租";
         }
 

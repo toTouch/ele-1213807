@@ -246,6 +246,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
+    public Integer update(ElectricityCar updateElectricityCar) {
+        return electricityCarMapper.updateById(updateElectricityCar);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
 

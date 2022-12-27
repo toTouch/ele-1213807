@@ -1,9 +1,15 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.RentCarOrderQuery;
+import com.xiliulou.electricity.query.UserRentCarOrderQuery;
 import com.xiliulou.electricity.service.RentCarOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -19,6 +25,13 @@ public class JsonAdminRentCarOrderController extends BaseController {
     @Autowired
     private RentCarOrderService rentCarOrderService;
 
+    /**
+     * 后台新增租车记录
+     */
+    @PostMapping("/admin/rentCarOrder/save")
+    public R save(@RequestBody @Validated RentCarOrderQuery rentCarOrderQuery){
+        return returnTripleResult(rentCarOrderService.save(rentCarOrderQuery));
+    }
 
 
 

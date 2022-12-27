@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -21,7 +22,7 @@ public class RentCarHybridOrderQuery {
     @NotNull(message = "车辆租赁时间不能为空!")
     private Integer rentTime;
 
-    @NotNull(message = "车辆租赁方式不能为空!")
+    @NotBlank(message = "车辆租赁方式不能为空!")
     private String rentType;
 
     private Integer insuranceId;
