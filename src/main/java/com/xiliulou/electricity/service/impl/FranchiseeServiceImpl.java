@@ -623,7 +623,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             //1.2当前城市有加盟商
 
             //检查是否有没设置区域的加盟商
-            List<Franchisee> cityFranchiseeList = franchiseeListByCity.parallelStream().filter(item -> Objects.equals(NumberConstant.ZERO, item.getRegionId())).collect(Collectors.toList());
+            List<Franchisee> cityFranchiseeList = franchiseeListByCity.parallelStream().filter(item -> Objects.isNull(item.getRegionId()) || Objects.equals(NumberConstant.ZERO, item.getRegionId())).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(cityFranchiseeList)) {
                 //1.2.1若城市多个加盟商都设置了区域，获取区域编码
                 Set<Region> regionList = new HashSet<>();
