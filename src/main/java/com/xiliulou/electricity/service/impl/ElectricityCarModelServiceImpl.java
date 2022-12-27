@@ -239,8 +239,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (CollectionUtils.isEmpty(rentCarTypeDTOS)) {
             return rentTypeMap;
         }
-
-        return rentCarTypeDTOS.stream().collect(Collectors.toMap(RentCarTypeDTO::getRentType, RentCarTypeDTO::getPrice));
+log.error("rentCarTypeDTOS:{}",JsonUtil.toJson(rentCarTypeDTOS));
+        return rentCarTypeDTOS.stream().collect(Collectors.toMap(RentCarTypeDTO::getRentType, RentCarTypeDTO::getPrice,(item1,item2)->item1));
     }
 
     /**
