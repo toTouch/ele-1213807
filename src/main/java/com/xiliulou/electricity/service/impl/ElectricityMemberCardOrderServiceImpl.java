@@ -2292,6 +2292,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Deprecated
     public void carMemberCardExpireReminder() {
         if (!redisService.setNx(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LOCK, "ok", 120000L, false)) {
             log.warn("carMemberCardExpireReminder in execution...");

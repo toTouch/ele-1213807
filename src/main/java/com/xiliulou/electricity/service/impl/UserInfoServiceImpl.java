@@ -1216,7 +1216,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public Triple<Boolean, String, Object> updateRentStatus(Long uid, Integer rentStatus) {
+    public Triple<Boolean, String, Object> updateRentBatteryStatus(Long uid, Integer rentStatus) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
@@ -1232,6 +1232,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setBatteryRentStatus(rentStatus);
+        updateUserInfo.setTenantId(TenantContextHolder.getTenantId());
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        this.updateByUid(updateUserInfo);
+        return Triple.of(true, "", null);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> updateRentCarStatus(Long uid, Integer carRentStatus) {
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(carRentStatus, UserInfo.CAR_RENT_STATUS_YES)) {
+            UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+            if (!Objects.isNull(userCar)) {
+                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定车辆【%s】, 请先解绑！", userCar.getSn()));
+            }
+        }
+
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setCarRentStatus(carRentStatus);
         updateUserInfo.setTenantId(TenantContextHolder.getTenantId());
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
