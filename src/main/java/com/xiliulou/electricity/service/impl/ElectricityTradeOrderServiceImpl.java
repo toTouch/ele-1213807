@@ -292,7 +292,6 @@ public class ElectricityTradeOrderServiceImpl extends
                     //修改劵可用状态
                     userCoupon.setStatus(UserCoupon.STATUS_USED);
                     userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
                     userCouponService.update(userCoupon);
                 }
             }
@@ -354,6 +353,17 @@ public class ElectricityTradeOrderServiceImpl extends
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
 
+        } else {
+            if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
+                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
+                if (Objects.nonNull(userCoupon)) {
+                    //修改劵可用状态
+                    userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
+                    userCoupon.setUpdateTime(System.currentTimeMillis());
+                    userCoupon.setOrderId(null);
+                    userCouponService.update(userCoupon);
+                }
+            }
         }
 
         //交易订单
@@ -752,7 +762,7 @@ public class ElectricityTradeOrderServiceImpl extends
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
             updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
-            updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),carMemberCardOrder.getValidDays(), userCarMemberCard));
+            updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.updateByUid(updateUserCarMemberCard);

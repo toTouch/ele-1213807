@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -23,7 +24,7 @@ import javax.validation.constraints.NotNull;
 @TableName("t_user_coupon")
 public class UserCoupon {
 
-    @TableId(value = "id",type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
      * 优惠券来源 0--后台发放，1--邀请好友活动
@@ -42,48 +43,48 @@ public class UserCoupon {
      */
     private Integer couponId;
     /**
-    * 优惠券名称，也就是t_coupon的名称
-    */
+     * 优惠券名称，也就是t_coupon的名称
+     */
     private String name;
     /**
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
     private Integer discountType;
     /**
-    * 用户uid
-    */
+     * 用户uid
+     */
     private Long uid;
     /**
-    * 用户手机号
-    */
+     * 用户手机号
+     */
     private String phone;
     /**
-    * 优惠券截止time
-    */
+     * 优惠券截止time
+     */
     private Long deadline;
     /**
-    * 优惠券使用的订单id
-    */
+     * 优惠券使用的订单id
+     */
     private String orderId;
     /**
      * 加盟商id
      */
     private Integer franchiseeId;
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
     /**
-    * 修改时间
-    */
+     * 修改时间
+     */
     private Long updateTime;
     /**
-    * 优惠券状态1--未使用， 2--已使用 ，3--已过期
-    */
+     * 优惠券状态1--未使用， 2--已使用 ，3--已过期
+     */
     private Integer status;
     /**
-    * 0--正常 1--删除
-    */
+     * 0--正常 1--删除
+     */
     private Integer delFlag;
 
     /**
@@ -108,14 +109,16 @@ public class UserCoupon {
     public static final Integer STATUS_EXPIRED = 3;
     //已过期
     public static final Integer STATUS_DESTRUCTION = 4;
+    //正在核销中
+    public static final Integer STATUS_IS_BEING_VERIFICATION = 5;
 
     //减免劵
-    public static final Integer FULL_REDUCTION=1;
+    public static final Integer FULL_REDUCTION = 1;
 
     //打折劵
-    public static final Integer DISCOUNT=2;
+    public static final Integer DISCOUNT = 2;
 
     //体验劵
-    public static final Integer DAYS =3;
+    public static final Integer DAYS = 3;
 
 }

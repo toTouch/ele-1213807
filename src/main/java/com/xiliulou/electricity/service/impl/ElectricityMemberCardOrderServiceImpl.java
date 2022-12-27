@@ -368,6 +368,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         baseMapper.insert(electricityMemberCardOrder);
 
+        //修改优惠券状态为正在核销中
+        if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
+            //修改劵可用状态
+            userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
+            userCoupon.setUpdateTime(System.currentTimeMillis());
+            userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+            userCouponService.update(userCoupon);
+        }
+
         //支付零元
         if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
 
@@ -411,14 +420,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             baseMapper.updateById(electricityMemberCardOrderUpdate);
-
-            if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
-                //修改劵可用状态
-                userCoupon.setStatus(UserCoupon.STATUS_USED);
-                userCoupon.setUpdateTime(System.currentTimeMillis());
-                userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                userCouponService.update(userCoupon);
-            }
 
             //被邀请新买月卡用户
             //是否是新用户

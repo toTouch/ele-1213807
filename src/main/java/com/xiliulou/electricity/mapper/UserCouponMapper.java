@@ -31,4 +31,6 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     Integer queryCount(@Param("query") UserCouponQuery userCouponQuery);
 
     int update(UserCoupon userCoupon);
+
+    int updateStatus(UserCoupon userCoupon);
 }
