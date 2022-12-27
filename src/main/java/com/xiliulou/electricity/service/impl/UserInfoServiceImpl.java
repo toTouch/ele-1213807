@@ -817,13 +817,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 //        Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(oldUserInfo.getUid());
         updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.updateByUid(updateUserInfo);
 
         UserBattery updateUserBattery = new UserBattery();
-        updateUserBattery.setUid(user.getUid());
+        updateUserBattery.setUid(oldUserInfo.getUid());
         updateUserBattery.setInitBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         updateUserBattery.setUpdateTime(System.currentTimeMillis());
         userBatteryService.updateByUid(updateUserBattery);
