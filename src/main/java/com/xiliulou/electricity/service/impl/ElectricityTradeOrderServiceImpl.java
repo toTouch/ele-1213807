@@ -589,6 +589,8 @@ public class ElectricityTradeOrderServiceImpl extends
                     enableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
                     enableMemberCardRecordService.update(enableMemberCardRecordUpdate);
                 }
+
+
             }
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
@@ -596,13 +598,17 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
 
-            if (Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
-                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-                serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
-                Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+            if (Objects.nonNull(serviceFeeUserInfo)) {
                 serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
                 serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                    Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+                }else {
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+                }
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
             }
         }
