@@ -320,7 +320,10 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         // TODO: 2022/12/21 tenantId
-        String batteryType = BatteryConstant.acquireBatteryShort(model);
+        String batteryType = null;
+        if (Objects.nonNull(model)) {
+            batteryType = BatteryConstant.acquireBatteryShort(model);
+        }
         return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType, tenantId));
 
     }
@@ -338,7 +341,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
     @Override
     public Triple<Boolean, String, Object> handleRentBatteryInsurance(RentCarHybridOrderQuery query, UserInfo userInfo) {
-        if(Objects.isNull(query.getInsuranceId())){
+        if (Objects.isNull(query.getInsuranceId())) {
             return Triple.of(true, "", null);
         }
 
