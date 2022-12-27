@@ -756,6 +756,7 @@ public class UnionTradeOrderServiceImpl extends
 
             UserCarDeposit userCarDeposit = new UserCarDeposit();
             userCarDeposit.setUid(userInfo.getUid());
+            userCarDeposit.setDid(carDepositOrder.getId());
             userCarDeposit.setOrderId(carDepositOrder.getOrderId());
             userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
             userCarDeposit.setTenantId(userInfo.getTenantId());
@@ -767,6 +768,7 @@ public class UnionTradeOrderServiceImpl extends
             UserCar userCar = new UserCar();
             userCar.setUid(userInfo.getUid());
             userCar.setCarModel(carDepositOrder.getCarModelId());
+            userCar.setDelFlag(UserCar.DEL_NORMAL);
             userCar.setTenantId(userInfo.getTenantId());
             userCar.setCreateTime(System.currentTimeMillis());
             userCar.setUpdateTime(System.currentTimeMillis());
@@ -812,6 +814,8 @@ public class UnionTradeOrderServiceImpl extends
             updateUserCarMemberCard.setUid(userInfo.getUid());
             updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
             updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
+            updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
+            updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.updateByUid(updateUserCarMemberCard);
