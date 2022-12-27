@@ -788,12 +788,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("100247", "未找到用户信息");
         }
 
-//        //已绑定电池
-//        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-//            log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
-//            return R.fail("ELECTRICITY.0045", "已绑定电池");
-//        }
-
         //判断电池是否存在，或者已经被绑定
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
@@ -804,17 +798,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEBBIND ERROR ERROR! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("100019", "该电池已经绑定用户");
         }
-
-        //更新用户绑定电池状态
-//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-//        if (Objects.isNull(oldFranchiseeUserInfo.getInitElectricityBatterySn())) {
-//            franchiseeUserInfo.setInitElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-//        }
-////        franchiseeUserInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
-//        Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);
 
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(oldUserInfo.getUid());

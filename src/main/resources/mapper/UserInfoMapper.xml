@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
         tui.id as id, tui.uid as uid, tui.name as name,
-        tui.phone as phone, tui.id_number as idNumber,tui.battery_rent_status,tui.battery_deposit_status
+        tui.phone as phone, tui.id_number as idNumber,tui.battery_rent_status,tui.battery_deposit_status,
         tui.auth_status as authStatus,tui.usable_status as usableStatus, tui.del_flag as delFlag,
         tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
         from t_user_info as tui
