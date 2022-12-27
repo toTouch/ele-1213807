@@ -57,7 +57,7 @@ public class JsonUserElectricityCabinetMemberCardController {
     @GetMapping(value = "/user/firstPayMemberCard/list")
     public R queryFirstPayMemberCard(@RequestParam("size") Long size,
                                      @RequestParam("offset") Long offset,
-                                     @RequestParam(value = "model") Integer model,
+                                     @RequestParam(value = "model", required = false) Integer model,
                                      @RequestParam(value = "franchiseeId") Long franchiseeId,
                                      @RequestParam(value = "productKey", required = false) String productKey,
                                      @RequestParam(value = "deviceName", required = false) String deviceName) {
