@@ -11,6 +11,8 @@ import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
 import com.xiliulou.electricity.mapper.UserCarMemberCardMapper;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,10 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     private UserCarMemberCardMapper userCarMemberCardMapper;
     @Autowired
     private RedisService redisService;
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    TemplateConfigService templateConfigService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -139,58 +145,69 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         return delete;
     }
 
+    /**
+     * 抄的
+     *
+     * @See ElectricityMemberCardOrderServiceImpl#carMemberCardExpireReminder()
+     */
     @Override
     public void carMemberCardExpireReminder() {
-//        if (!redisService.setNx(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LOCK, "ok", 120000L, false)) {
-//            log.warn("carMemberCardExpireReminder in execution...");
-//            return;
-//        }
-//
-//        int offset = 0;
-//        int size = 300;
-//        Date date = new Date();
-//        long firstTime = System.currentTimeMillis();
-//        long lastTime = System.currentTimeMillis() + 3 * 3600000 * 24;
-//        SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//
-//        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME);
-//        if (StrUtil.isNotBlank(firstTimeStr)) {
-//            firstTime = Long.parseLong(firstTimeStr);
-//        }
-//
-//        redisService.set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
-//
-//        while (true) {
-//            List<CarMemberCardExpiringSoonQuery> franchiseeUserInfos = userBatteryMemberCardService.carMemberCardExpire(offset, size, firstTime, lastTime);
-//            if (!DataUtil.collectionIsUsable(franchiseeUserInfos)) {
-//                return;
-//            }
-//
-//            franchiseeUserInfos.parallelStream().forEach(item -> {
-//                ElectricityPayParams ele = electricityPayParamsService.queryFromCache(item.getTenantId());
-//                if (Objects.isNull(ele)) {
-//                    log.error("CAR MEMBER CARD EXPIRING SOON ERROR! ElectricityPayParams is null error! tenantId={}",
-//                            item.getTenantId());
-//                    return;
-//                }
-//
-//                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(item.getTenantId());
-//                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
-//                    log.error("CAR MEMBER CARD EXPIRING SOON ERROR! templateConfigEntity is null error! tenantId={}",
-//                            item.getTenantId());
-//                    return;
-//                }
-//
-//                date.setTime(item.getRentCarMemberCardExpireTime());
-//
-//                item.setMerchantMinProAppId(ele.getMerchantMinProAppId());
-//                item.setMerchantMinProAppSecert(ele.getMerchantMinProAppSecert());
-//                item.setMemberCardExpiringTemplate(templateConfigEntity.getCarMemberCardExpiringTemplate());
-//                item.setRentCarMemberCardExpireTimeStr(simp.format(date));
-//                sendCarMemberCardExpiringTemplate(item);
-//            });
-//            offset += size;
-//        }
+        if (!redisService.setNx(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LOCK, "ok", 120000L, false)) {
+            log.warn("carMemberCardExpireReminder in execution...");
+            return;
+        }
+
+        int offset = 0;
+        int size = 300;
+        Date date = new Date();
+        long firstTime = System.currentTimeMillis();
+        long lastTime = System.currentTimeMillis() + 3 * 3600000 * 24;
+        SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME);
+        if (StrUtil.isNotBlank(firstTimeStr)) {
+            firstTime = Long.parseLong(firstTimeStr);
+        }
+
+        redisService.set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
+
+        while (true) {
+
+            List<CarMemberCardExpiringSoonQuery> carMemberCardExpiringList = this.carMemberCardExpire(offset, size, firstTime, lastTime);
+            if (!DataUtil.collectionIsUsable(carMemberCardExpiringList)) {
+                return;
+            }
+
+            carMemberCardExpiringList.parallelStream().forEach(item -> {
+                ElectricityPayParams ele = electricityPayParamsService.queryFromCache(item.getTenantId());
+                if (Objects.isNull(ele)) {
+                    log.error("CAR MEMBER CARD EXPIRING SOON ERROR! ElectricityPayParams is null error! tenantId={}",
+                            item.getTenantId());
+                    return;
+                }
+
+                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(item.getTenantId());
+                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
+                    log.error("CAR MEMBER CARD EXPIRING SOON ERROR! templateConfigEntity is null error! tenantId={}",
+                            item.getTenantId());
+                    return;
+                }
+
+                date.setTime(item.getRentCarMemberCardExpireTime());
+
+                item.setMerchantMinProAppId(ele.getMerchantMinProAppId());
+                item.setMerchantMinProAppSecert(ele.getMerchantMinProAppSecert());
+                item.setMemberCardExpiringTemplate(templateConfigEntity.getCarMemberCardExpiringTemplate());
+                item.setRentCarMemberCardExpireTimeStr(simp.format(date));
+                item.setCardName("租车套餐");
+                sendCarMemberCardExpiringTemplate(item);
+            });
+            offset += size;
+        }
+    }
+
+    private List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
+        return this.userCarMemberCardMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
     private void sendCarMemberCardExpiringTemplate(CarMemberCardExpiringSoonQuery carMemberCardExpiringSoonQuery) {
