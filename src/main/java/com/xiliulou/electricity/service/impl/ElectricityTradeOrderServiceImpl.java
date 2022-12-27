@@ -286,6 +286,23 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
+            ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoInsertOrUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+            serviceFeeUserInfoInsertOrUpdate.setUid(userBatteryMemberCardUpdate.getUid());
+            serviceFeeUserInfoInsertOrUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoInsertOrUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoInsertOrUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
+            if (Objects.isNull(serviceFeeUserInfo)) {
+                serviceFeeUserInfoInsertOrUpdate.setCreateTime(System.currentTimeMillis());
+                serviceFeeUserInfoInsertOrUpdate.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
+                serviceFeeUserInfoInsertOrUpdate.setDisableMemberCardNo("");
+                serviceFeeUserInfoInsertOrUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                serviceFeeUserInfoService.insert(serviceFeeUserInfoInsertOrUpdate);
+            } else {
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
+            }
+
             if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
                 UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
                 if (Objects.nonNull(userCoupon)) {

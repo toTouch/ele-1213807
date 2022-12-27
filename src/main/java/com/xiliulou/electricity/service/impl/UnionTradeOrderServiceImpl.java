@@ -410,14 +410,14 @@ public class UnionTradeOrderServiceImpl extends
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
-                log.error("============================租车押金:{}",JsonUtil.toJson(orderIdLIst.get(i)));
+                log.error("============================租车押金:{}", JsonUtil.toJson(orderIdLIst.get(i)));
                 //租车押金
                 Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarDepositOrderResult.getLeft()) {
                     return rentCarDepositOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
-                log.error("============================租车套餐:{}",JsonUtil.toJson(orderIdLIst.get(i)));
+                log.error("============================租车套餐:{}", JsonUtil.toJson(orderIdLIst.get(i)));
                 //租车套餐
                 Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarMemberCardOrderResult.getLeft()) {
@@ -592,6 +592,24 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+
+
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
+            ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoInsertOrUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+            serviceFeeUserInfoInsertOrUpdate.setUid(userBatteryMemberCardUpdate.getUid());
+            serviceFeeUserInfoInsertOrUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoInsertOrUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoInsertOrUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
+            if (Objects.isNull(serviceFeeUserInfo)) {
+                serviceFeeUserInfoInsertOrUpdate.setCreateTime(System.currentTimeMillis());
+                serviceFeeUserInfoInsertOrUpdate.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
+                serviceFeeUserInfoInsertOrUpdate.setDisableMemberCardNo("");
+                serviceFeeUserInfoInsertOrUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+                serviceFeeUserInfoService.insert(serviceFeeUserInfoInsertOrUpdate);
+            } else {
+                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
+            }
 
 
             if (Objects.nonNull(electricityMemberCardOrder.getCouponId())) {
