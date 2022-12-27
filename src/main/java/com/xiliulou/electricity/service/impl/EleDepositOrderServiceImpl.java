@@ -1414,6 +1414,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateUserInfo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             userInfoService.updateByUid(updateUserInfo);
 
             UserBatteryDeposit updateUserBatteryDeposit = new UserBatteryDeposit();

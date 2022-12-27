@@ -308,6 +308,9 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
             <if test="batteryDepositStatus != null">
                 battery_deposit_status = #{batteryDepositStatus},
             </if>
@@ -347,6 +350,9 @@
             </if>-->
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
