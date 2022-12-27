@@ -400,7 +400,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Override
     public int updateStatus(UserCoupon userCoupon) {
-        return 0;
+        return userCouponMapper.updateStatus(userCoupon);
     }
 
     @Override

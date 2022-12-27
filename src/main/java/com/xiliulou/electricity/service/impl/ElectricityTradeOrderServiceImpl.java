@@ -361,7 +361,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
                     userCoupon.setUpdateTime(System.currentTimeMillis());
                     userCoupon.setOrderId(null);
-                    userCouponService.update(userCoupon);
+                    userCouponService.updateStatus(userCoupon);
                 }
             }
         }
