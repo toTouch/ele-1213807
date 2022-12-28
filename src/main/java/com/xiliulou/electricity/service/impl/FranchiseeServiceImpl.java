@@ -540,6 +540,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      */
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByArea(String regionCode) {
+        FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
 
         Region region = regionService.selectByCodeFromCache(regionCode);
         if (Objects.isNull(region)) {
@@ -585,12 +586,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 }
                 regionSet.add(franchiseeRegion);
             });
-
-            return Triple.of(true, "", regionSet);
+            franchiseeAreaVO.setRegionList(regionSet);
+            return Triple.of(true, "", franchiseeAreaVO);
         }
 
         //当前区域内有一个或多个加盟商
-        return Triple.of(true, "", totalFranchiseeList);
+        franchiseeAreaVO.setFranchiseeList(totalFranchiseeList);
+        return Triple.of(true, "", franchiseeAreaVO);
     }
 
     /**
