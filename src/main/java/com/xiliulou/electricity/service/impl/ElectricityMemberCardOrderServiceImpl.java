@@ -1456,23 +1456,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
 
-            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-            if (Objects.nonNull(serviceFeeUserInfo)) {
-                ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
-                serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
-                serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-                serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
-                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                    serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
-                    Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
-                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-                } else {
-                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
-                }
-                serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
-            }
-
             Long now = System.currentTimeMillis();
             //判断用户是否产生电池服务费
             Long cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
@@ -1504,6 +1487,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
+
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+        serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+            Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+        } else {
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+        }
+        serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
 
         //生成后台操作记录
