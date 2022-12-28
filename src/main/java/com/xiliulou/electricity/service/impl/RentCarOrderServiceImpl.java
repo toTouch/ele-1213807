@@ -160,9 +160,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(RentCarOrderQuery rentCarOrderQuery) {
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(rentCarOrderQuery.getUid());
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
-            log.error("ELE RENT CAR ERROR! not found user,uid={}", rentCarOrderQuery.getUid());
+        UserInfo userInfo = userInfoService.queryUserInfoByPhone(rentCarOrderQuery.getPhone(), TenantContextHolder.getTenantId());
+        if (Objects.isNull(userInfo) || !rentCarOrderQuery.getUsername().equals(userInfo.getName())) {
+            log.error("ELE RENT CAR ERROR! not found user,phone={}", rentCarOrderQuery.getPhone());
             return Triple.of(false, "100001", "用户不存在");
         }
 

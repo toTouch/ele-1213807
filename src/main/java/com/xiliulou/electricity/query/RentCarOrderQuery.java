@@ -29,7 +29,10 @@ public class RentCarOrderQuery {
     @NotBlank(message = "车辆租赁方式不能为空!")
     private String rentType;
 
-    @NotNull(message = "用户id不能为空!")
-    private Long uid;
+    @NotBlank(message = "用户名称不能为空!")
+    private String username;
+
+    @NotBlank(message = "用户手机号不能为空!")
+    private String phone;
 
 }
