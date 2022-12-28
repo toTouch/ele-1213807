@@ -591,6 +591,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
 

@@ -40,11 +40,6 @@ public class MemberCardFailureRecord {
     private String batteryType;
 
     /**
-     * 套餐订单Id
-     */
-    private String orderId;
-
-    /**
      * 失效套餐类型 1:换电套餐,2:租车套餐
      */
     private Integer type;
