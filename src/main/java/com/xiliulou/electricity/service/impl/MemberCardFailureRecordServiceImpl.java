@@ -74,7 +74,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
                 MemberCardFailureRecord memberCardFailureRecord = MemberCardFailureRecord.builder()
                         .uid(item.getUid())
-                        .memberCardExpireTime(item.getExpireMemberCardTime())
+                        .memberCardExpireTime(item.getMemberCardExpireTime())
                         .createTime(nowTime)
                         .updateTime(nowTime)
                         .tenantId(item.getTenantId())

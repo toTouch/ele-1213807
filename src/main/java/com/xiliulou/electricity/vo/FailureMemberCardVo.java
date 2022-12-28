@@ -42,7 +42,7 @@ public class FailureMemberCardVo {
     /**
      * 套餐过期时间
      */
-    private Long expireMemberCardTime;
+    private Long memberCardExpireTime;
 
 
 }
