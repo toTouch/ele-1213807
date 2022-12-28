@@ -74,4 +74,8 @@ public interface CarDepositOrderService {
     CarDepositOrder selectByOrderId(String orderNo);
 
     Triple<Boolean, String, Object> handleRentCarDeposit(RentCarHybridOrderQuery query, UserInfo userInfo);
+
+    Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, String errMsg, Integer status, Double refundAmount, Long uid, HttpServletRequest request);
+
+    Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, String errMsg, Integer status, Double refundAmount, Long uid, HttpServletRequest request);
 }

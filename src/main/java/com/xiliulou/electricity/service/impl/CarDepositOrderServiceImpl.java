@@ -65,6 +65,10 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     EleDepositOrderService eleDepositOrderService;
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    EleRefundOrderHistoryService eleRefundOrderHistoryService;
+    @Autowired
+    UserCarService userCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -392,5 +396,213 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         carDepositOrder.setCarModelId(query.getCarModelId());
 
         return Triple.of(true, "", carDepositOrder);
+    }
+
+    /**
+     * 线上退租车押金
+     * @param request
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, String errMsg, Integer status, Double refundAmount, Long uid, HttpServletRequest request) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", uid);
+            return Triple.of(false,"ELECTRICITY.0019", "未找到用户");
+        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELE DEPOSIT ERROR! user is disable! uid={}", uid);
+            return Triple.of(false,"ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR REFUND ERROR! user is not rent deposit,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //是否归还车辆
+        if(!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)){
+            log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", uid);
+            return Triple.of(false, "100250", "用户未归还车辆");
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("ELE CAR REFUND ERROR! not found userCarDeposit! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+        }
+
+        //查找缴纳押金订单
+        CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
+        if (Objects.isNull(carDepositOrder)) {
+            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid,userCarDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+
+        if (BigDecimal.valueOf(refundAmount).compareTo(carDepositOrder.getPayAmount()) > 0) {
+            log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            return Triple.of(false,"","退款金额不能大于支付金额!");
+        }
+
+        BigDecimal deposit = userCarDeposit.getCarDeposit();
+        if (carDepositOrder.getPayAmount().compareTo(deposit)!=0) {
+            log.error("ELE CAR REFUND ERROR! illegal deposit! userId={}", uid);
+            return Triple.of(false, "ELECTRICITY.0044", "退款金额不符");
+        }
+
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
+        if (refundCount > 0) {
+            log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", uid);
+            return Triple.of(false,"ELECTRICITY.0047", "请勿重复退款");
+        }
+
+        String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid);
+
+        //生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
+                .orderId(carDepositOrder.getOrderId())
+                .refundOrderNo(refundOrderId)
+                .payAmount(carDepositOrder.getPayAmount())
+                .refundAmount(carDepositOrder.getPayAmount())
+                .status(EleRefundOrder.STATUS_REFUND)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(carDepositOrder.getTenantId())
+                .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                .build();
+        eleRefundOrderService.insert(eleRefundOrder);
+
+        //插入修改记录
+        EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+        eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+        eleRefundOrderHistory.setRefundAmount(carDepositOrder.getPayAmount());
+        eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+        eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+        eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+
+        EleRefundOrder updateRefundOrder = new EleRefundOrder();
+        updateRefundOrder.setId(eleRefundOrder.getId());
+        updateRefundOrder.setUpdateTime(System.currentTimeMillis());
+
+        //调起退款
+        try {
+
+            RefundOrder refundOrder = RefundOrder.builder()
+                    .orderId(eleRefundOrder.getOrderId())
+                    .refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                    .payAmount(eleRefundOrder.getPayAmount())
+                    .refundAmount(eleRefundOrder.getPayAmount()).build();
+
+
+            eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+
+            return Triple.of(true,"", "操作成功");
+        } catch (WechatPayException e) {
+            log.error("handleRefund ERROR! wechat v3 refund  error! ", e);
+        }
+
+        return Triple.of(false,"ELECTRICITY.00100", "退款失败");
+    }
+
+    /**
+     * 线下退租车押金
+     * @param request
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, String errMsg, Integer status, Double refundAmount, Long uid, HttpServletRequest request) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELE DEPOSIT ERROR! user is disable! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR REFUND ERROR! user is not rent deposit,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //是否归还车辆
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
+            log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", uid);
+            return Triple.of(false, "100250", "用户未归还车辆");
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("ELE CAR REFUND ERROR! not found userCarDeposit! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+        }
+
+        //查找缴纳押金订单
+        CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
+        if (Objects.isNull(carDepositOrder)) {
+            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+
+        if (BigDecimal.valueOf(refundAmount).compareTo(carDepositOrder.getPayAmount()) > 0) {
+            log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            return Triple.of(false,"","退款金额不能大于支付金额!");
+        }
+
+        BigDecimal deposit = userCarDeposit.getCarDeposit();
+        if (carDepositOrder.getPayAmount().compareTo(deposit) != 0) {
+            log.error("ELE CAR REFUND ERROR! illegal deposit! userId={}", uid);
+            return Triple.of(false, "ELECTRICITY.0044", "退款金额不符");
+        }
+
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
+        if (refundCount > 0) {
+            log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
+        }
+
+        String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid);
+
+        //生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
+                .orderId(carDepositOrder.getOrderId())
+                .refundOrderNo(refundOrderId)
+                .payAmount(carDepositOrder.getPayAmount())
+                .refundAmount(carDepositOrder.getPayAmount())
+                .status(EleRefundOrder.STATUS_SUCCESS)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(carDepositOrder.getTenantId())
+                .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                .build();
+        eleRefundOrderService.insert(eleRefundOrder);
+
+        //插入修改记录
+        EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+        eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+        eleRefundOrderHistory.setRefundAmount(carDepositOrder.getPayAmount());
+        eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+        eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+        eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+
+
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(uid);
+        updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(updateUserInfo);
+
+        userCarService.deleteByUid(uid);
+
+        return Triple.of(true, "", "操作成功");
     }
 }
