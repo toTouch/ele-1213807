@@ -27,7 +27,7 @@ public class OwnMemberCardInfoVo {
     /**
      * 套餐id
      */
-    private Integer /**/cardId;
+    private Integer cardId;
 
     private Integer memberCardDisableStatus;
 
@@ -38,4 +38,6 @@ public class OwnMemberCardInfoVo {
 
     private String carName;
 
+    //最大使用次数
+    private Long maxUseCount;
 }

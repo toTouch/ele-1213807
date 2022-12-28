@@ -18,7 +18,6 @@ public class InsuranceOrderAdd {
 	private Integer insuranceId;
 
 	//保险
-	@NotNull(message = "保险不能为空!", groups = {CreateGroup.class})
 	private Integer franchiseeId;
 
 

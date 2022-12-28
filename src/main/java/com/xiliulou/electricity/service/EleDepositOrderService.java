@@ -32,6 +32,8 @@ public interface EleDepositOrderService {
 
     R queryListToUser(EleDepositOrderQuery eleDepositOrderQuery);
 
+    R payDepositOrderList(EleDepositOrderQuery eleDepositOrderQuery);
+
     void update(EleDepositOrder eleDepositOrderUpdate);
 
     R queryUserDeposit();

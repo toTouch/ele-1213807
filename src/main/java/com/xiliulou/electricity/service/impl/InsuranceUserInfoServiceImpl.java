@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -68,6 +69,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R updateInsuranceStatus(Long uid, Integer insuranceStatus) {
 
         //租户
@@ -78,11 +80,27 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
+        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
+            return R.ok();
+        }
+
+        InsuranceUserInfo insuranceUserInfo = queryByUidFromCache(uid);
+        if (Objects.isNull(insuranceUserInfo)) {
+            return R.fail("100309", "用户不存在保险");
+        }
+
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setIsUse(insuranceStatus);
         updateInsuranceUserInfo.setUid(uid);
         updateInsuranceUserInfo.setTenantId(tenantId);
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
+        insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        insuranceOrderUpdate.setOrderId(insuranceUserInfo.getInsuranceOrderId());
+        insuranceOrderUpdate.setIsUse(InsuranceUserInfo.IS_USE);
+        insuranceOrderUpdate.setTenantId(tenantId);
+        insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
 
         return R.ok(insuranceUserInfoMapper.update(updateInsuranceUserInfo));
     }
@@ -191,7 +209,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
                 return R.ok();
             }
-            return R.ok(insuranceUserInfoVo);
+            List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
+            InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
+            BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
+            insuranceOrderList.add(insuranceOrderVO);
+            return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
             InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
                     .offset(offset)

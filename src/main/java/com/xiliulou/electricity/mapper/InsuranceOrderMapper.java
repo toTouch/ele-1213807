@@ -20,4 +20,6 @@ public interface InsuranceOrderMapper extends BaseMapper<InsuranceOrder> {
     List<InsuranceOrderVO> queryList(@Param("query") InsuranceOrderQuery insuranceOrderQuery);
 
     Integer queryCount(@Param("query") InsuranceOrderQuery insuranceOrderQuery);
+
+    int updateIsUseByOrderId(InsuranceOrder insuranceOrder);
 }

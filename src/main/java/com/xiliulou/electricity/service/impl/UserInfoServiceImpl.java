@@ -431,6 +431,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber().longValue());
         ownMemberCardInfoVo.setType(electricityMemberCard.getType());
         ownMemberCardInfoVo.setName(electricityMemberCard.getName());
+        ownMemberCardInfoVo.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         ownMemberCardInfoVo.setCardId(userBatteryMemberCard.getMemberCardId().intValue());
         ownMemberCardInfoVo.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());

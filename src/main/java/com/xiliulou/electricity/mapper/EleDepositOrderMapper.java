@@ -11,6 +11,7 @@ import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.PayDepositOrderVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -32,6 +33,8 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
     Integer queryCount(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
     List<EleDepositOrderVO> queryListForUser(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
+
+    List<PayDepositOrderVO> payDepositOrderList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
 

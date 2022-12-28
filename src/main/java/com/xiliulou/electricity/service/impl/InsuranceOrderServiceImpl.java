@@ -132,15 +132,15 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         //判断是否缴纳押金
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(insuranceOrderAdd.getFranchiseeId().longValue());
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", insuranceOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -157,7 +157,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", insuranceOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", userInfo.getFranchiseeId());
             return R.fail("100305", "未找到保险");
         }
 
@@ -242,6 +242,11 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Override
     public Integer updateOrderStatusById(InsuranceOrder insuranceOrder) {
         return insuranceOrderMapper.updateById(insuranceOrder);
+    }
+
+    @Override
+    public int updateIsUseByOrderId(InsuranceOrder insuranceOrder) {
+        return insuranceOrderMapper.updateIsUseByOrderId(insuranceOrder);
     }
 
     @Override

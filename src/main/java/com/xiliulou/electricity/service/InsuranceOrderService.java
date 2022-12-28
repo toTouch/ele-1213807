@@ -33,6 +33,8 @@ public interface InsuranceOrderService {
 
     Integer updateOrderStatusById(InsuranceOrder insuranceOrder);
 
+    int updateIsUseByOrderId(InsuranceOrder insuranceOrder);
+
     R queryInsurance();
 
     R homeOneQueryInsurance(Integer model,Long franchiseeId);
