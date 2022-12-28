@@ -1131,15 +1131,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(true, "", userInfoResult);
         }
 
-//        //是否缴纳押金
-//        if(!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())){
-//            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_DEPOSIT);
-//            return Triple.of(true, "", userInfoResult);
-//        }
-
         //未购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE))) {
+        if (Objects.isNull(userBatteryMemberCard)
+                || ((userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()
+                && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)))) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BUY_MEMBERCARD);
+            return Triple.of(true, "", userInfoResult);
+        }
+
+        boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userBatteryMemberCard);
+        //有电池服务费
+        if (isHaveBatteryServiceFee) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_SERVICE_FEE);
+            return Triple.of(true, "", userInfoResult);
+        }
+
+        //有套餐  但套餐过期  没有电池服务费
+        if (!Objects.isNull(userBatteryMemberCard) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BUY_MEMBERCARD);
             return Triple.of(true, "", userInfoResult);
         }
@@ -1180,7 +1189,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
 
-        boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userCarMemberCard);
         //有电池  没有电池服务费,获取电池信息
         if (!Objects.isNull(electricityBattery) && !isHaveBatteryServiceFee) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_HAVE_BATTERY);
