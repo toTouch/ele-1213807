@@ -18,6 +18,8 @@ public class UserInfoResultVO {
     public static final String STATUS_NOT_AUTH = "not_auth";
     //待审核
     public static final String STATUS_AUDIT = "audit";
+    //未缴纳押金
+    public static final String STATUS_NOT_DEPOSIT = "not_deposit";
     //未购买套餐
     public static final String STATUS_BUY_MEMBERCARD = "buy_membercard";
     //未绑定电池

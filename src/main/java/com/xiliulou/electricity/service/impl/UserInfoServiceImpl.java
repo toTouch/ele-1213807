@@ -1130,6 +1130,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(true, "", userInfoResult);
         }
 
+        //是否缴纳押金
+        if(!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())){
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_DEPOSIT);
+            return Triple.of(true, "", userInfoResult);
+        }
+
         //未购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE))) {
