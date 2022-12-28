@@ -1270,7 +1270,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
-        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_YES)) {
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)) {
             ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
             if (!Objects.isNull(battery)) {
                 return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));

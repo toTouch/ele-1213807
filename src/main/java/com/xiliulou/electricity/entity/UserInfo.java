@@ -164,4 +164,8 @@ public class UserInfo {
     @Deprecated
     public static final Integer CAR_DEPOSIT_STATUS_REFUND_FAIL = 3;
 
+
+    public static final Integer RENT_BATTERY_TYPE = 0;
+    public static final Integer BATTERY_DEPOSIT_TYPE = 1;
+
 }
