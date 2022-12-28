@@ -1357,11 +1357,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
 
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit! uid={}", userInfo.getUid());
-            return R.fail("100247", "未找到用户信息");
-        }
+//        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+//        if (Objects.isNull(userBatteryDeposit)) {
+//            log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit! uid={}", userInfo.getUid());
+//            return R.fail("100247", "未找到用户信息");
+//        }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryDepositAdd.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -1417,7 +1417,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .operateUid(user.getUid())
                     .uid(batteryDepositAdd.getUid())
                     .name(user.getUsername())
-                    .oldBatteryDeposit(userBatteryDeposit.getBatteryDeposit())
+                    .oldBatteryDeposit(null)
                     .newBatteryDeposit(batteryDepositAdd.getPayAmount())
                     .tenantId(TenantContextHolder.getTenantId())
                     .createTime(System.currentTimeMillis())

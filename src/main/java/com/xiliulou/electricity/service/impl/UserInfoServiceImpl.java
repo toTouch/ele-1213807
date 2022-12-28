@@ -198,8 +198,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardName(null);
                 }
 
-                if (Objects.nonNull(item.getServiceStatus()) && !Objects
-                        .equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+                if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects
+                        .equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService
                             .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), null);
                     if (Objects.nonNull(eleDepositOrder)) {
@@ -218,20 +218,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setOrderId(userBatteryDeposit.getOrderId());
                 }
 
-                //if (Objects.nonNull(item.getModel())) {
-                //    item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
-                //}
-                //
-                //if (StringUtils.isNotBlank(item.getOrderId())) {
-                //    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
-                //    if (Objects.nonNull(eleDepositOrder)) {
-                //        item.setStoreId(eleDepositOrder.getStoreId());
-                //    }
-                //}
-
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
                 ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-                if (Objects.nonNull(userBatteryMemberCard) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
+                if (StringUtils.isNotBlank(electricityMemberCard.getName())) {
                     item.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());
                     item.setCardName(electricityMemberCard.getName());
                 }
@@ -1269,7 +1258,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
-        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_YES)) {
+        if (Objects.equals(rentStatus, UserInfo.BATTERY_RENT_STATUS_NO)) {
             ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
             if (!Objects.isNull(battery)) {
                 return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));

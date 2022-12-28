@@ -19,6 +19,7 @@ import com.xiliulou.security.bean.TokenUser;
 
 import java.util.Objects;
 import javax.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -49,14 +50,14 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "batteryId",required = false) Long batteryId,
+                       @RequestParam(value = "batteryId", required = false) Long batteryId,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "uid", required = false) Long uid,
-                       @RequestParam(value = "memberCardId",required = false) Long memberCardId,
-                       @RequestParam(value = "cardName",required = false) String cardName,
-                       @RequestParam(value = "sortType",required = false) Integer sortType,
+                       @RequestParam(value = "memberCardId", required = false) Long memberCardId,
+                       @RequestParam(value = "cardName", required = false) String cardName,
+                       @RequestParam(value = "sortType", required = false) Integer sortType,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
@@ -87,10 +88,11 @@ public class JsonAdminUserInfoController extends BaseController {
 
         return userInfoService.queryList(userInfoQuery);
     }
-    
-    
+
+
     /**
      * 会员列表导出
+     *
      * @param name
      * @param phone
      * @param nowElectricityBatterySn
@@ -106,41 +108,41 @@ public class JsonAdminUserInfoController extends BaseController {
      */
     @GetMapping("/admin/userInfo/exportExcel")
     public void exportExcel(@RequestParam(value = "name", required = false) String name,
-        @RequestParam(value = "phone", required = false) String phone,
-        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
-        @RequestParam(value = "authStatus", required = false) Integer authStatus,
-        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
-        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-        @RequestParam(value = "uid", required = false) Long uid,
-        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
-        @RequestParam(value = "cardName",required = false) String cardName,
-        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-        @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
+                            @RequestParam(value = "phone", required = false) String phone,
+                            @RequestParam(value = "nowElectricityBatterySn", required = false) String nowElectricityBatterySn,
+                            @RequestParam(value = "authStatus", required = false) Integer authStatus,
+                            @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
+                            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                            @RequestParam(value = "uid", required = false) Long uid,
+                            @RequestParam(value = "memberCardId", required = false) Long memberCardId,
+                            @RequestParam(value = "cardName", required = false) String cardName,
+                            @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                            @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             throw new CustomBusinessException("查不到订单");
         }
-    
+
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_NORMAL_ADMIN)) {
             log.info("USER TYPE ERROR! not found operate service! userType={}", user.getType());
             throw new CustomBusinessException("用户权限不足");
         }
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-            .name(name)
-            .phone(phone)
-            .nowElectricityBatterySn(nowElectricityBatterySn)
-            .franchiseeId(franchiseeId)
-            .authStatus(authStatus)
-            .serviceStatus(serviceStatus)
-            .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
-            .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
-            .uid(uid)
-            .memberCardId(memberCardId)
-            .cardName(cardName)
-            .tenantId(TenantContextHolder.getTenantId()).build();
+                .name(name)
+                .phone(phone)
+                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .franchiseeId(franchiseeId)
+                .authStatus(authStatus)
+                .serviceStatus(serviceStatus)
+                .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .uid(uid)
+                .memberCardId(memberCardId)
+                .cardName(cardName)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         userInfoService.exportExcel(userInfoQuery, response);
     }
@@ -151,7 +153,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-                        @RequestParam(value = "batteryId",required = false) Long batteryId,
+                        @RequestParam(value = "batteryId", required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "cardName", required = false) String cardName,
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
@@ -213,23 +215,24 @@ public class JsonAdminUserInfoController extends BaseController {
 //    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
 //        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
 //    }
-    
+
     /**
      * 修改用户电池租赁状态
+     *
      * @param uid
      * @param batteryRentStatus
      * @return
      */
     @PutMapping(value = "/admin/userInfo/batteryRentStatus")
     @Log(title = "修改用户电池租赁状态")
-    public R updateRentBatteryStatus(@RequestParam("uid") Long uid,@RequestParam("batteryRentStatus") Integer batteryRentStatus){
-        return returnTripleResult(userInfoService.updateRentBatteryStatus(uid,batteryRentStatus));
+    public R updateRentBatteryStatus(@RequestParam("uid") Long uid, @RequestParam("batteryRentStatus") Integer batteryRentStatus) {
+        return returnTripleResult(userInfoService.updateRentBatteryStatus(uid, batteryRentStatus));
     }
 
     @PutMapping(value = "/admin/userInfo/carRentStatus")
     @Log(title = "修改用户车辆租赁状态")
-    public R updateRentCarStatus(@RequestParam("uid") Long uid,@RequestParam("carRentStatus") Integer carRentStatus){
-        return returnTripleResult(userInfoService.updateRentCarStatus(uid,carRentStatus));
+    public R updateRentCarStatus(@RequestParam("uid") Long uid, @RequestParam("carRentStatus") Integer carRentStatus) {
+        return returnTripleResult(userInfoService.updateRentCarStatus(uid, carRentStatus));
     }
 
     //列表查询
@@ -314,7 +317,7 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryUserBelongFranchisee(@PathVariable("id") Long id) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return userInfoService.queryUserBelongFranchisee(id,tenantId);
+        return userInfoService.queryUserBelongFranchisee(id, tenantId);
     }
 
     /**
