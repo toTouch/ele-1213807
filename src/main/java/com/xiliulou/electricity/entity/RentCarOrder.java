@@ -94,7 +94,7 @@ public class RentCarOrder {
     public static final Integer TYPE_RENT = 0;
     public static final Integer TYPE_RETURN = 1;
 
-    public static final Integer TYPE_transaction_online = 0;
-    public static final Integer TYPE_transaction_offline = 1;
+    public static final Integer TYPE_TRANSACTION_ONLINE = 0;
+    public static final Integer TYPE_TRANSACTION_OFFLINE = 1;
 
 }

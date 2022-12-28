@@ -1104,7 +1104,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public Triple<Boolean, String, Object> selectUserInfoDetailV2() {
+    public Triple<Boolean, String, Object> selectUserInfoStatus() {
         UserInfoResultVO userInfoResult = new UserInfoResultVO();
 
         //用户
@@ -1134,22 +1134,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //未购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard)
-                || ((userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()
-                && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)))) {
+        if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())){
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BUY_MEMBERCARD);
             return Triple.of(true, "", userInfoResult);
         }
 
+        //是否有电池服务费
         boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userBatteryMemberCard);
-        //有电池服务费
         if (isHaveBatteryServiceFee) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_SERVICE_FEE);
             return Triple.of(true, "", userInfoResult);
         }
 
-        //有套餐  但套餐过期  没有电池服务费
-        if (!Objects.isNull(userBatteryMemberCard) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        //已购买套餐  但套餐过期
+        if ((userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()
+                && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE))) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BUY_MEMBERCARD);
             return Triple.of(true, "", userInfoResult);
         }

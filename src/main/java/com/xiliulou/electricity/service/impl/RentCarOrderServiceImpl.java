@@ -312,6 +312,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         rentCarOrder.setUid(userInfo.getUid());
         rentCarOrder.setName(userInfo.getName());
         rentCarOrder.setPhone(userInfo.getPhone());
+        rentCarOrder.setTransactionType(RentCarOrder.TYPE_TRANSACTION_OFFLINE);
         rentCarOrder.setStoreId(electricityCarModel.getStoreId());
         rentCarOrder.setFranchiseeId(electricityCarModel.getFranchiseeId());
         rentCarOrder.setTenantId(TenantContextHolder.getTenantId());
@@ -479,6 +480,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         rentCarOrder.setUid(user.getUid());
         rentCarOrder.setName(userInfo.getName());
         rentCarOrder.setPhone(userInfo.getPhone());
+        rentCarOrder.setTransactionType(RentCarOrder.TYPE_TRANSACTION_ONLINE);
         rentCarOrder.setStoreId(electricityCarModel.getStoreId());
         rentCarOrder.setFranchiseeId(electricityCarModel.getFranchiseeId());
         rentCarOrder.setTenantId(TenantContextHolder.getTenantId());

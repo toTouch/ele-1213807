@@ -831,7 +831,7 @@ public class UnionTradeOrderServiceImpl extends
 
             UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
             updateUserCarMemberCard.setUid(userInfo.getUid());
-            updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
+            updateUserCarMemberCard.setCardId(carMemberCardOrder.getId());
             updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
             updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
             updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());

@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.UserInfoService;
-import okhttp3.internal.platform.Platform;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,9 +39,9 @@ public class JsonUserUserInfoController extends BaseController {
     /**
      * 小程序首页(新)
      */
-    @GetMapping(value = "/user/userInfoDetailV2")
+    @GetMapping(value = "/user/userInfoStatus")
     public R userInfoDetailV2() {
-        return returnTripleResult(userInfoService.selectUserInfoDetailV2());
+        return returnTripleResult(userInfoService.selectUserInfoStatus());
     }
 
 
