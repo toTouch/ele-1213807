@@ -162,7 +162,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     /**
      * 租车后台线上退押金
      */
-    @PostMapping("/admin/refundDepositCarByOnline")
+    @PostMapping("/admin/refundCarDepositByOnline")
     @Log(title = "租车后台线上退押金")
     public R refundDepositCarByOnline(@RequestParam("orderId") String orderId,
                                       @RequestParam("status") Integer status,
@@ -176,7 +176,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     /**
      * 租车后台线下退押金
      */
-    @PostMapping("/admin/refundDepositCarByOffline")
+    @PostMapping("/admin/refundCarDepositByOffline")
     @Log(title = "租车后台线下退押金")
     public R refundDepositCarByOffline(@RequestParam("orderId") String orderId,
                                        @RequestParam("status") Integer status,
