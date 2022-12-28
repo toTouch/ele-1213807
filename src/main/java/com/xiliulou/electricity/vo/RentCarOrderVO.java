@@ -1,26 +1,20 @@
-package com.xiliulou.electricity.entity;
-
+package com.xiliulou.electricity.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
-
 
 /**
- * 租车订单表(RentCarOrder)表实体类
- *
  * @author zzlong
- * @since 2022-12-21 09:47:57
+ * @email zhaozhilong@xiliulou.com
+ * @date 2022-12-28-16:30
  */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_rent_car_order")
-public class RentCarOrder {
+public class RentCarOrderVO {
 
     private Long id;
     /**
@@ -48,7 +42,7 @@ public class RentCarOrder {
     /**
      * 车辆型号
      */
-    private Long carModelId;
+    private String carModelName;
     /**
      * 订单类型(1--租车,2--还车)
      */
@@ -82,19 +76,17 @@ public class RentCarOrder {
      */
     private Long franchiseeId;
 
+
     private Integer tenantId;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
+    /**
+     * 是否租电池
+     */
+    private Integer rentBattery;
+    /**
+     * 租赁方式
+     */
+    private String rentType;
 
-    public static final Integer STATUS_SUCCESS = 0;
-    public static final Integer STATUS_FAIL = 1;
-
-    //0:租车  1：还车
-    public static final Integer TYPE_RENT = 0;
-    public static final Integer TYPE_RETURN = 1;
-
-    public static final Integer TYPE_transaction_online = 0;
-    public static final Integer TYPE_transaction_offline = 1;
 
 }
