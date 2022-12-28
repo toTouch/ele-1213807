@@ -68,6 +68,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R updateInsuranceStatus(Long uid, Integer insuranceStatus) {
 
         //租户
@@ -78,11 +79,27 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
+        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
+            return R.ok();
+        }
+
+        InsuranceUserInfo insuranceUserInfo = queryByUidFromCache(uid);
+        if (Objects.isNull(insuranceUserInfo)) {
+            return R.fail("100309", "用户不存在保险");
+        }
+
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
         updateInsuranceUserInfo.setIsUse(insuranceStatus);
         updateInsuranceUserInfo.setUid(uid);
         updateInsuranceUserInfo.setTenantId(tenantId);
         updateInsuranceUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
+        insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        insuranceOrderUpdate.setOrderId(insuranceUserInfo.getInsuranceOrderId());
+        insuranceOrderUpdate.setIsUse(InsuranceUserInfo.IS_USE);
+        insuranceOrderUpdate.setTenantId(tenantId);
+        insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
 
         return R.ok(insuranceUserInfoMapper.update(updateInsuranceUserInfo));
     }

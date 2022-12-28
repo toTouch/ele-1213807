@@ -245,6 +245,11 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     }
 
     @Override
+    public int updateIsUseByOrderId(InsuranceOrder insuranceOrder) {
+        return insuranceOrderMapper.updateIsUseByOrderId(insuranceOrder);
+    }
+
+    @Override
     public R queryInsurance() {
 
         //用户区分
