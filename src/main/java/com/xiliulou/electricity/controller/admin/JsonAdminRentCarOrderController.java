@@ -111,7 +111,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
     }
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarOrder/count")
+    @GetMapping(value = "/admin/rentCarOrder/queryCount")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,

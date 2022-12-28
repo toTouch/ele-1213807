@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -12,7 +11,6 @@ import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarDepositOrderVO;
@@ -26,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -418,12 +415,15 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     /**
      * 线上退租车押金
      *
+     *
+     * @param remark
+     * @param refundAmount
      * @param request
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE CAR REFUND ERROR! not found userInfo,uid={}", uid);
@@ -460,10 +460,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
-        BigDecimal deposit = userCarDeposit.getCarDeposit();
-        if (carDepositOrder.getPayAmount().compareTo(deposit) != 0) {
-            log.error("ELE CAR REFUND ERROR! illegal deposit! userId={}", uid);
-            return Triple.of(false, "ELECTRICITY.0044", "退款金额不符");
+        if (refundAmount.compareTo(carDepositOrder.getPayAmount()) > 0) {
+            log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            return Triple.of(false, "", "退款金额不能大于支付金额!");
         }
 
         //是否有正在进行中的退款
@@ -482,6 +481,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .payAmount(carDepositOrder.getPayAmount())
                 .refundAmount(carDepositOrder.getPayAmount())
                 .status(EleRefundOrder.STATUS_REFUND)
+                .errMsg(remark)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId())
