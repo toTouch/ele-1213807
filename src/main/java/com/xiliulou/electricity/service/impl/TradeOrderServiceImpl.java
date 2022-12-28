@@ -623,7 +623,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
                 .orderId(insuranceOrderId)
                 .cid(franchiseeInsurance.getCid())
-                .franchiseeId(userInfo.getFranchiseeId())
+                .franchiseeId(franchiseeInsurance.getFranchiseeId())
                 .isUse(InsuranceOrder.NOT_USE)
                 .payAmount(franchiseeInsurance.getPremium())
                 .forehead(franchiseeInsurance.getForehead())
