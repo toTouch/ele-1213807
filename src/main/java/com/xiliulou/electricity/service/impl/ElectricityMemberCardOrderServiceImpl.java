@@ -2611,11 +2611,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(query.getMemberCardId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", query.getMemberCardId());
+            log.error("CREATE MEMBER_ORDER ERROR ,not found member_card by id={},uid={}", query.getMemberCardId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", query.getMemberCardId());
+            log.error("CREATE MEMBER_ORDER ERROR ,member_card is un_usable id={},uid={}", query.getMemberCardId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0088", "月卡已禁用!");
         }
 
@@ -2626,25 +2626,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(query.getUserCouponId())) {
             userCoupon = userCouponService.queryByIdFromDB(query.getUserCouponId());
             if (Objects.isNull(userCoupon)) {
-                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId:{} ", query.getUserCouponId());
+                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
 
             //优惠券是否使用
             if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId:{} ", query.getUserCouponId());
+                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0090", "您的优惠券已被使用");
             }
 
             //优惠券是否过期
             if (userCoupon.getDeadline() < System.currentTimeMillis()) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId:{} ", query.getUserCouponId());
+                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
             }
 
             Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
-                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId:{} ", query.getUserCouponId());
+                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
 

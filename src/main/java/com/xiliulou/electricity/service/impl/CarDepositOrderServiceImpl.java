@@ -436,6 +436,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      * 线上退租车押金
      *
      *
+     *
+     * @param orderId
      * @param remark
      * @param refundAmount
      * @param request
@@ -443,7 +445,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleRefundCarDeposit(Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE CAR REFUND ERROR! not found userInfo,uid={}", uid);
@@ -467,21 +469,25 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "100250", "用户未归还车辆");
         }
 
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(userCarDeposit)) {
-            log.error("ELE CAR REFUND ERROR! not found userCarDeposit! uid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
-        }
+//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+//        if (Objects.isNull(userCarDeposit)) {
+//            log.error("ELE CAR REFUND ERROR! not found userCarDeposit! uid={}", uid);
+//            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+//        }
 
         //查找缴纳押金订单
-        CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId(),TenantContextHolder.getTenantId());
+        CarDepositOrder carDepositOrder = this.selectByOrderId(orderId,TenantContextHolder.getTenantId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, orderId);
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
+        //是否已退押金
+
+
+
         if (refundAmount.compareTo(carDepositOrder.getPayAmount()) > 0) {
-            log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, orderId);
             return Triple.of(false, "", "退款金额不能大于支付金额!");
         }
 
@@ -539,12 +545,14 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     /**
      * 线下退租车押金
      *
+     *
+     * @param orderId
      * @param request
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(Long uid, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, Long uid, HttpServletRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", uid);
@@ -575,11 +583,15 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //查找缴纳押金订单
-        CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId(),TenantContextHolder.getTenantId());
+        CarDepositOrder carDepositOrder = this.selectByOrderId(orderId,TenantContextHolder.getTenantId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, orderId);
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
+
+        //是否已退押金
+
+
 
         BigDecimal deposit = userCarDeposit.getCarDeposit();
         if (carDepositOrder.getPayAmount().compareTo(deposit) != 0) {
