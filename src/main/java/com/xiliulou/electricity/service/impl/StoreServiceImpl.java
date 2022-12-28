@@ -154,6 +154,7 @@ public class StoreServiceImpl implements StoreService {
         store.setCreateTime(System.currentTimeMillis());
         store.setUpdateTime(System.currentTimeMillis());
         store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+        store.setPayType(Store.DEL_NORMAL);
         store.setTenantId(tenantId);
         store.setUid(uid);
 

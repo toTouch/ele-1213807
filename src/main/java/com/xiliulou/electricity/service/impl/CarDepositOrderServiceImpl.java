@@ -207,10 +207,6 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
-        if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
-            log.error("ELE CAR DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), user.getUid());
-            return Triple.of(false, "100008", "不支持线上缴纳租车押金");
-        }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carModelId);
         if (Objects.isNull(electricityCarModel)) {
@@ -363,10 +359,6 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         if (Objects.isNull(store)) {
             log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
-        }
-        if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
-            log.error("ELE CAR DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), userInfo.getUid());
-            return Triple.of(false, "100008", "不支持线上缴纳租车押金");
         }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());

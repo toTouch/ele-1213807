@@ -184,10 +184,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             log.error("ELE CAR DEPOSIT ERROR! not found store,storeId={}", rentCarOrderQuery.getStoreId());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
-        if (!Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
-            log.error("ELE CAR DEPOSIT ERROR! not support online pay deposit,storeId={},uid={}", store.getId(), userInfo.getUid());
-            return Triple.of(false, "100008", "不支持线下缴纳租车押金");
-        }
+
 
         //车辆是否可用
 //        ElectricityCar electricityCar = electricityCarService.selectBySn(rentCarOrderQuery.getSn());
