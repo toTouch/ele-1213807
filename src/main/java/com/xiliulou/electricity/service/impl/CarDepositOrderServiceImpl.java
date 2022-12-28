@@ -15,10 +15,12 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CarDepositOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -101,13 +104,28 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      * @return 对象列表
      */
     @Override
-    public List<CarDepositOrder> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
+    public List<CarDepositOrderVO> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         List<CarDepositOrder> carDepositOrders = this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
-        if(CollectionUtils.isEmpty(carDepositOrders)){
+        if (CollectionUtils.isEmpty(carDepositOrders)) {
             return Collections.EMPTY_LIST;
         }
 
-        return carDepositOrders;
+        return carDepositOrders.parallelStream().map(item -> {
+            CarDepositOrderVO carDepositOrderVO = new CarDepositOrderVO();
+            BeanUtils.copyProperties(item, carDepositOrderVO);
+
+            Store store = storeService.queryByIdFromCache(item.getStoreId());
+            if (!Objects.isNull(store)) {
+                carDepositOrderVO.setStoreName(store.getName());
+            }
+
+            ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
+            if (!Objects.isNull(electricityCarModel)) {
+                carDepositOrderVO.setCarModelName(electricityCarModel.getName());
+            }
+
+            return carDepositOrderVO;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -154,7 +172,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     public CarDepositOrder selectByOrderId(String orderNo) {
-        return this.carDepositOrderMapper.selectOne(new LambdaQueryWrapper<CarDepositOrder>().eq(CarDepositOrder::getOrderId,orderNo));
+        return this.carDepositOrderMapper.selectOne(new LambdaQueryWrapper<CarDepositOrder>().eq(CarDepositOrder::getOrderId, orderNo));
     }
 
     @Override
@@ -296,7 +314,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否归还车辆
-        if(!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)){
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
             log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", user.getUid());
             return Triple.of(false, "100250", "用户未归还车辆");
         }
@@ -310,12 +328,12 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),userCarDeposit.getOrderId());
+            log.error("ELE CAR REFUND ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(), userCarDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
         BigDecimal deposit = userCarDeposit.getCarDeposit();
-        if (eleDepositOrder.getPayAmount().compareTo(deposit)==0) {
+        if (eleDepositOrder.getPayAmount().compareTo(deposit) == 0) {
             log.error("ELE CAR REFUND ERROR! deposit not equals! uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0044", "退款金额不符");
         }
@@ -327,10 +345,10 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
         if (refundCount > 0) {
             log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
-            return Triple.of(false,"ELECTRICITY.0047", "请勿重复退款");
+            return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
 
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND,user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -351,7 +369,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     public Triple<Boolean, String, Object> handleRentCarDeposit(RentCarHybridOrderQuery query, UserInfo userInfo) {
-        if(Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())){
+        if (Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())) {
             return Triple.of(true, "", null);
         }
 
@@ -392,6 +410,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     /**
      * 线上退租车押金
+     *
      * @param request
      * @return
      */
@@ -401,13 +420,13 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", uid);
-            return Triple.of(false,"ELECTRICITY.0019", "未找到用户");
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("ELE DEPOSIT ERROR! user is disable! uid={}", uid);
-            return Triple.of(false,"ELECTRICITY.0024", "用户已被禁用");
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
@@ -416,7 +435,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否归还车辆
-        if(!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)){
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
             log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", uid);
             return Triple.of(false, "100250", "用户未归还车辆");
         }
@@ -430,17 +449,17 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         //查找缴纳押金订单
         CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid,userCarDeposit.getOrderId());
+            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
         if (BigDecimal.valueOf(refundAmount).compareTo(carDepositOrder.getPayAmount()) > 0) {
             log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, userCarDeposit.getOrderId());
-            return Triple.of(false,"","退款金额不能大于支付金额!");
+            return Triple.of(false, "", "退款金额不能大于支付金额!");
         }
 
         BigDecimal deposit = userCarDeposit.getCarDeposit();
-        if (carDepositOrder.getPayAmount().compareTo(deposit)!=0) {
+        if (carDepositOrder.getPayAmount().compareTo(deposit) != 0) {
             log.error("ELE CAR REFUND ERROR! illegal deposit! userId={}", uid);
             return Triple.of(false, "ELECTRICITY.0044", "退款金额不符");
         }
@@ -449,7 +468,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
         if (refundCount > 0) {
             log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", uid);
-            return Triple.of(false,"ELECTRICITY.0047", "请勿重复退款");
+            return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
 
         String refundOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid);
@@ -492,16 +511,17 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
             eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
 
-            return Triple.of(true,"", "操作成功");
+            return Triple.of(true, "", "操作成功");
         } catch (WechatPayException e) {
             log.error("handleRefund ERROR! wechat v3 refund  error! ", e);
         }
 
-        return Triple.of(false,"ELECTRICITY.00100", "退款失败");
+        return Triple.of(false, "ELECTRICITY.00100", "退款失败");
     }
 
     /**
      * 线下退租车押金
+     *
      * @param request
      * @return
      */
@@ -546,7 +566,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         if (BigDecimal.valueOf(refundAmount).compareTo(carDepositOrder.getPayAmount()) > 0) {
             log.error("ELE CAR REFUND ERROR! refundAmount > payAmount,uid={},orderId={}", uid, userCarDeposit.getOrderId());
-            return Triple.of(false,"","退款金额不能大于支付金额!");
+            return Triple.of(false, "", "退款金额不能大于支付金额!");
         }
 
         BigDecimal deposit = userCarDeposit.getCarDeposit();

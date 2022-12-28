@@ -299,6 +299,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 //获取城市名称
                 City city = cityService.queryByIdFromDB(e.getCid());
                 if (Objects.nonNull(city)) {
+                    e.setProvinceId(city.getPid());
                     e.setCityName(city.getName());
                 }
 
@@ -596,7 +597,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     /**
-     * 用户切换城市
+     * 根据城市获取加盟商列表
      *
      * @param cityCode
      * @return

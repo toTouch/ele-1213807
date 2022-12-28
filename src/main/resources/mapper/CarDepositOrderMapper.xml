@@ -34,12 +34,76 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="CarDepositOrderMap">
         <include refid="selectCarDepositOrder"/>
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="payType != null">
+                and pay_type = #{payType}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null ">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
         order by create_time desc
         limit #{offset}, #{size}
     </select>
 
-    <select id="selectPageCount" resultMap="CarDepositOrderMap">
+    <select id="selectPageCount" resultType="int">
        select count(1) from t_car_deposit_order
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="payType != null">
+                and pay_type = #{payType}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null ">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
     </select>
 
 

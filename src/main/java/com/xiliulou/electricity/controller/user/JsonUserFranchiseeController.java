@@ -72,7 +72,7 @@ public class JsonUserFranchiseeController extends BaseController {
     }
 
     /**
-     * 用户切换城市 获取加盟商列表
+     * 根据城市获取加盟商列表
      * @param cityCode
      * @return
      */

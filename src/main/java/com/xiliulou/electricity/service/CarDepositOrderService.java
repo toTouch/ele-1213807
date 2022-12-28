@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
+import com.xiliulou.electricity.vo.CarDepositOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +39,7 @@ public interface CarDepositOrderService {
      * 查询多条数据
      * @return 对象列表
      */
-    List<CarDepositOrder> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery);
+    List<CarDepositOrderVO> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery);
 
     Integer selectPageCount(RentCarDepositOrderQuery rentCarDepositOrderQuery);
     /**
