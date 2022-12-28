@@ -547,8 +547,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
 
-        log.debug("用户押金绑定表===================================" + userBatteryDeposit);
-
         if (Objects.isNull(userBatteryDeposit)) {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
             return R.fail("ELECTRICITY.0015", "未找到订单");
@@ -556,8 +554,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
-
-        log.debug("用户押金订单====================================" + eleDepositOrder);
 
         if (Objects.isNull(eleDepositOrder)) {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
