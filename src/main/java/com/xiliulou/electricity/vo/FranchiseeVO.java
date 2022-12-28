@@ -34,6 +34,10 @@ public class FranchiseeVO {
      */
     private String name;
     /**
+     * 省Id
+     */
+    private Integer provinceId;
+    /**
      * 城市Id
      */
     private Integer cid;
