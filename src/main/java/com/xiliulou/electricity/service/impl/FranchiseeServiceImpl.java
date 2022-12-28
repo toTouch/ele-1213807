@@ -603,6 +603,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
      */
     @Override
     public Triple<Boolean, String, Object> selectFranchiseeByCity(String cityCode) {
+        FranchiseeAreaVO franchiseeAreaVO = new FranchiseeAreaVO();
 
         City city = cityService.queryByCodeFromCache(cityCode);
         if (Objects.isNull(city)) {
@@ -610,7 +611,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "100249", "城市不存在");
         }
 
-        return Triple.of(true, "", this.selectFranchiseeRegionList(city.getId()));
+        FranchiseeQuery franchiseeRegionQuery = new FranchiseeQuery();
+        franchiseeRegionQuery.setCid(city.getId());
+        franchiseeRegionQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        //根据城市id获取加盟商列表
+        List<Franchisee> currentCityFranchiseeList = franchiseeMapper.selectListByQuery(franchiseeRegionQuery);
+        franchiseeAreaVO.setFranchiseeList(currentCityFranchiseeList);
+
+        return Triple.of(true, "", franchiseeAreaVO);
     }
 
     @Override
