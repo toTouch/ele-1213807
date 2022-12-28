@@ -90,6 +90,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     UserBatteryService userBatteryService;
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
 
     /**
      * 新增数据
@@ -192,12 +194,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             orderNo = electricityTradeOrder.getOrderNo();
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
-        if (ObjectUtil.isEmpty(eleDepositOrder)) {
-            log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
-            return Pair.of(false, "未找到订单!");
-        }
-
         Integer refundOrderStatus = EleRefundOrder.STATUS_FAIL;
         boolean result = false;
         if (StringUtils.isNotEmpty(refundStatus) && ObjectUtil.equal(refundStatus, "SUCCESS")) {
@@ -207,14 +203,21 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeRefundNo);
         }
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeRefundNo);
-            return Pair.of(false, "未找到用户信息!");
-        }
+        //租电池退押金
+        if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
+            if (ObjectUtil.isEmpty(eleDepositOrder)) {
+                log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
+                return Pair.of(false, "未找到订单!");
+            }
 
-        if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
-            if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeRefundNo);
+                return Pair.of(false, "未找到用户信息!");
+            }
+
+            if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
                 UserInfo updateUserInfo = new UserInfo();
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
@@ -232,23 +235,39 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
                 }
-            } else {
-                //租车押金退款
-                UserInfo updateUserInfo = new UserInfo();
-                updateUserInfo.setUid(userInfo.getUid());
-                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-                updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                userInfoService.updateByUid(updateUserInfo);
-
-                userCarDepositService.deleteByUid(userInfo.getUid());
-
-                userCarService.deleteByUid(userInfo.getUid());
-
-                userCarDepositService.deleteByUid(userInfo.getUid());
-
-                userCarMemberCardService.deleteByUid(userInfo.getUid());
-
             }
+        }
+
+
+        //租车退押金
+        if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)) {
+            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
+            if (Objects.isNull(carDepositOrder)) {
+                log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND CAR DEPOSIT ORDER ORDER_NO={}", orderNo);
+                return Pair.of(false, "未找到订单!");
+            }
+
+            UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", carDepositOrder.getUid(), tradeRefundNo);
+                return Pair.of(false, "未找到用户信息!");
+            }
+
+            //租车押金退款
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+
+            userCarDepositService.deleteByUid(userInfo.getUid());
+
+            userCarService.deleteByUid(userInfo.getUid());
+
+            userCarDepositService.deleteByUid(userInfo.getUid());
+
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();

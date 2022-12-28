@@ -308,6 +308,12 @@
             <if test="batteryRentStatus != null">
                 battery_rent_status = #{batteryRentStatus},
             </if>
+            <if test="carRentStatus != null">
+                car_rent_status = #{carRentStatus},
+            </if>
+            <if test="carDepositStatus != null">
+                car_deposit_status = #{carDepositStatus},
+            </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId}
             </if>
@@ -350,6 +356,12 @@
             </if>
             <if test="batteryRentStatus != null">
                 battery_rent_status = #{batteryRentStatus},
+            </if>
+            <if test="carRentStatus != null">
+                car_rent_status = #{carRentStatus},
+            </if>
+            <if test="carDepositStatus != null">
+                car_deposit_status = #{carDepositStatus},
             </if>
             <if test="franchiseeId != null">
                 franchisee_id = #{franchiseeId},
