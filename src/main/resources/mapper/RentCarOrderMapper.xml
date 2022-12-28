@@ -37,14 +37,8 @@
     <select id="selectByPage" resultMap="RentCarOrderMap">
         <include refid="selectRentCarOrder"/>
         <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
             <if test="orderId != null and orderId != ''">
                 and order_id = #{orderId}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
             </if>
             <if test="name != null and name != ''">
                 and name = #{name}
@@ -90,14 +84,8 @@
     <select id="selectPageCount" resultType="int">
         select count(1) from t_rent_car_order
         <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
             <if test="orderId != null and orderId != ''">
                 and order_id = #{orderId}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
             </if>
             <if test="name != null and name != ''">
                 and name = #{name}
