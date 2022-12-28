@@ -19,6 +19,10 @@ import java.math.BigDecimal;
 public class CarDepositOrderVO {
     private Long id;
     /**
+     * 用户Id
+     */
+    private Long uid;
+    /**
      * 订单Id
      */
     private String orderId;
@@ -66,10 +70,6 @@ public class CarDepositOrderVO {
      * 车辆编号
      */
     private String carSn;
-    /**
-     * 车辆押金状态
-     */
-    private Integer carDepositStatus;
 
     /**
      * 是否租电池

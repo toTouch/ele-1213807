@@ -99,9 +99,6 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
@@ -128,7 +125,6 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             if(Objects.nonNull(userInfo)){
                 carDepositOrderVO.setRentBattery(userInfo.getBatteryRentStatus());
-                carDepositOrderVO.setCarDepositStatus(userInfo.getCarDepositStatus());
             }
 
             UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
