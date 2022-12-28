@@ -94,7 +94,7 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/admin/rentCarMemberCardOrder/queryCount")
+    @GetMapping("/admin/rentCarMemberCardOrder/count")
     public R queryCount(@RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,

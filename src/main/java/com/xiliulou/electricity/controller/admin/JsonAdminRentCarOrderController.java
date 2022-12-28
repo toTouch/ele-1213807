@@ -47,7 +47,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
 
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarOrder/list")
+    @GetMapping(value = "/admin/rentCarOrder/page")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
@@ -111,7 +111,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
     }
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarOrder/queryCount")
+    @GetMapping(value = "/admin/rentCarOrder/count")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,

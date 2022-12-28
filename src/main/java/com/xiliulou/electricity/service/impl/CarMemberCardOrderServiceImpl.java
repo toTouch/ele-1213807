@@ -22,12 +22,14 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
@@ -101,14 +104,24 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
      * @return 对象列表
      */
     @Override
-    public List<CarMemberCardOrder> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
+    public List<CarMemberCardOrderVO> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
 
         List<CarMemberCardOrder> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(carMemberCardOrders)) {
             return Collections.EMPTY_LIST;
         }
 
-        return carMemberCardOrders;
+        return carMemberCardOrders.parallelStream().map(item->{
+            CarMemberCardOrderVO carMemberCardOrderVO = new CarMemberCardOrderVO();
+            BeanUtils.copyProperties(item,carMemberCardOrderVO);
+
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
+            if(Objects.nonNull(userCarMemberCard)){
+                carMemberCardOrderVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+            }
+
+            return carMemberCardOrderVO;
+        }).collect(Collectors.toList());
     }
 
     @Override

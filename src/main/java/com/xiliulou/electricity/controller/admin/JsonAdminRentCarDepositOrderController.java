@@ -41,7 +41,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     UserDataScopeService userDataScopeService;
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarDepositOrder/list")
+    @GetMapping(value = "/admin/rentCarDepositOrder/page")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
@@ -105,7 +105,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     }
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarDepositOrder/queryCount")
+    @GetMapping(value = "/admin/rentCarDepositOrder/count")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,

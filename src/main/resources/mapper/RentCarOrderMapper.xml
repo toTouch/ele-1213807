@@ -124,8 +124,6 @@
                 and create_time &lt;= #{endTime}
             </if>
         </where>
-        order by create_time desc
-        limit #{offset}, #{size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
