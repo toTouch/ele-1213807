@@ -138,9 +138,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(insuranceOrderAdd.getFranchiseeId().longValue());
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", insuranceOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! not found Franchisee ！franchiseeId={}", userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -157,7 +157,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", insuranceOrderAdd.getFranchiseeId());
+            log.error("CREATE INSURANCE_ORDER ERROR! payAmount is null ！franchiseeId={}", userInfo.getFranchiseeId());
             return R.fail("100305", "未找到保险");
         }
 

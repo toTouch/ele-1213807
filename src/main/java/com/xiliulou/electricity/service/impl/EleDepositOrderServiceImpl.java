@@ -489,6 +489,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
+    public R payDepositOrderList(EleDepositOrderQuery eleDepositOrderQuery) {
+        return R.ok(eleDepositOrderMapper.payDepositOrderList(eleDepositOrderQuery));
+    }
+
+    @Override
     public void update(EleDepositOrder eleDepositOrderUpdate) {
         eleDepositOrderMapper.updateById(eleDepositOrderUpdate);
     }

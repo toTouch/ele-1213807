@@ -118,9 +118,18 @@ public class JsonUserEleDepositOrderController {
 
     //列表查询
     @GetMapping(value = "/user/payDepositOrder/list")
-    public R payDepositOrderList() {
+    public R payDepositOrderList(@RequestParam("size") Long size,
+                                 @RequestParam("offset") Long offset) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -132,10 +141,10 @@ public class JsonUserEleDepositOrderController {
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .uid(user.getUid())
                 .tenantId(tenantId)
-                .offset(0L)
-                .size(10L).build();
+                .offset(offset)
+                .size(size).build();
 
-        return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
+        return eleDepositOrderService.payDepositOrderList(eleDepositOrderQuery);
     }
 
     /**
