@@ -26,14 +26,16 @@ public class CarMemberCardOrderVO {
      * 订单Id
      */
     private String orderId;
+
+    private String phone;
     /**
      * 状态（0,未支付,1,支付成功 2,支付失败）
      */
     private Integer status;
     /**
-     * 车辆型号id
+     * 车辆型号
      */
-    private Long carModelId;
+    private String carModelName;
     /**
      * 用户名
      */

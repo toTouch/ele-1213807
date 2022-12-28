@@ -115,6 +115,16 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             CarMemberCardOrderVO carMemberCardOrderVO = new CarMemberCardOrderVO();
             BeanUtils.copyProperties(item,carMemberCardOrderVO);
 
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            if(Objects.nonNull(userInfo)){
+                carMemberCardOrderVO.setPhone(userInfo.getPhone());
+            }
+
+            ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
+            if(Objects.nonNull(electricityCarModel)){
+                carMemberCardOrderVO.setCarModelName(electricityCarModel.getName());
+            }
+
             UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
             if(Objects.nonNull(userCarMemberCard)){
                 carMemberCardOrderVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
