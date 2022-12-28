@@ -1119,7 +1119,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //未实名认证
-        if (Objects.equals(UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus())) {
+        if (Objects.equals(UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus()) || Objects.isNull(userInfo.getAuthStatus())) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_AUTH);
             return Triple.of(true, "", userInfoResult);
         }
