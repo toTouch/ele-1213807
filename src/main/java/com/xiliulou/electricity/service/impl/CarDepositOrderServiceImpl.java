@@ -423,7 +423,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleRefundCarDeposit(Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE CAR REFUND ERROR! not found userInfo,uid={}", uid);
@@ -524,7 +524,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, Long uid, HttpServletRequest request) {
+    public Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(Long uid, HttpServletRequest request) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", uid);

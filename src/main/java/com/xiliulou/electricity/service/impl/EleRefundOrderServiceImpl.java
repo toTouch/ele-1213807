@@ -88,6 +88,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Autowired
     UserBatteryService userBatteryService;
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
 
     /**
      * 新增数据
@@ -202,15 +204,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             refundOrderStatus = EleRefundOrder.STATUS_SUCCESS;
             result = true;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeRefundNo);
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeRefundNo);
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), tradeRefundNo);
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},ORDER_NO={}", eleDepositOrder.getUid(), tradeRefundNo);
             return Pair.of(false, "未找到用户信息!");
         }
-
 
         if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
             if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
@@ -232,6 +233,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
                 }
             } else {
+                //租车押金退款
                 UserInfo updateUserInfo = new UserInfo();
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
@@ -239,6 +241,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 userInfoService.updateByUid(updateUserInfo);
 
                 userCarDepositService.deleteByUid(userInfo.getUid());
+
+                userCarService.deleteByUid(userInfo.getUid());
+
+                userCarDepositService.deleteByUid(userInfo.getUid());
+
+                userCarMemberCardService.deleteByUid(userInfo.getUid());
+
             }
         }
 
