@@ -115,6 +115,29 @@ public class JsonUserEleDepositOrderController {
         return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
     }
 
+
+    //列表查询
+    @GetMapping(value = "/user/payDepositOrder/list")
+    public R payDepositOrderList() {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
+                .uid(user.getUid())
+                .tenantId(tenantId)
+                .offset(0L)
+                .size(10L).build();
+
+        return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
+    }
+
     /**
      * 缴纳电池服务费
      *
