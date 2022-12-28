@@ -35,8 +35,15 @@ public class JsonUserInsuranceUserInfoController {
 
     //用户查询缴纳保险
     @GetMapping(value = "/user/queryUserInsurance")
-    public R queryUserInsurance(@RequestParam("status") Integer status, @RequestParam("size") Long size, @RequestParam("offset") Long offset) {
-        return insuranceUserInfoService.queryUserInsurance(status,offset,size);
+    public R queryUserInsurance() {
+        return insuranceUserInfoService.queryUserInsurance();
+    }
+
+
+    //用户查询缴纳保险
+    @GetMapping(value = "/user/queryInsuranceByStatus")
+    public R queryInsuranceByStatus(@RequestParam("status") Integer status, @RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+        return insuranceUserInfoService.queryInsuranceByStatus(status,offset,size);
     }
 
 
