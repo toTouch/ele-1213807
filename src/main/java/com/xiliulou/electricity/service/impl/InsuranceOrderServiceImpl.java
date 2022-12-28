@@ -333,6 +333,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
         //查询保险
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(query.getInsuranceId());
+
         if (Objects.isNull(franchiseeInsurance)) {
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", query.getInsuranceId(), userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险!");
@@ -347,6 +348,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return Triple.of(false, "100305", "未找到保险");
         }
 
+
         //生成保险独立订单
         String insuranceOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_INSURANCE, userInfo.getUid());
         InsuranceOrder insuranceOrder = InsuranceOrder.builder()
@@ -355,7 +357,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 .insuranceType(InsuranceOrder.BATTERY_INSURANCE_TYPE)
                 .orderId(insuranceOrderId)
                 .cid(franchiseeInsurance.getCid())
-                .franchiseeId(userInfo.getFranchiseeId())
+                .franchiseeId(franchiseeInsurance.getFranchiseeId())
                 .isUse(InsuranceOrder.NOT_USE)
                 .payAmount(franchiseeInsurance.getPremium())
                 .forehead(franchiseeInsurance.getForehead())

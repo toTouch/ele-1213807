@@ -1,24 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.core.web.R;
-import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
-import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
-import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
+import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -27,24 +20,22 @@ import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 租车套餐订单表(CarMemberCardOrder)表服务实现类
@@ -112,24 +103,23 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return Collections.EMPTY_LIST;
         }
 
-        return carMemberCardOrders.parallelStream().map(item->{
+        return carMemberCardOrders.parallelStream().map(item -> {
             CarMemberCardOrderVO carMemberCardOrderVO = new CarMemberCardOrderVO();
-            BeanUtils.copyProperties(item,carMemberCardOrderVO);
+            BeanUtils.copyProperties(item, carMemberCardOrderVO);
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            if(Objects.nonNull(userInfo)){
+            if (Objects.nonNull(userInfo)) {
                 carMemberCardOrderVO.setPhone(userInfo.getPhone());
             }
 
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
-            if(Objects.nonNull(electricityCarModel)){
+            if (Objects.nonNull(electricityCarModel)) {
                 carMemberCardOrderVO.setCarModelName(electricityCarModel.getName());
             }
 
             UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
 
-log.error("UserCarMemberCard:{}", JsonUtil.toJson(userCarMemberCard));
-            if(Objects.nonNull(userCarMemberCard)){
+            if (Objects.nonNull(userCarMemberCard)) {
                 carMemberCardOrderVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
             }
 

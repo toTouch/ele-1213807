@@ -410,14 +410,12 @@ public class UnionTradeOrderServiceImpl extends
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
-                log.error("============================租车押金:{}", JsonUtil.toJson(orderIdLIst.get(i)));
                 //租车押金
                 Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarDepositOrderResult.getLeft()) {
                     return rentCarDepositOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
-                log.error("============================租车套餐:{}", JsonUtil.toJson(orderIdLIst.get(i)));
                 //租车套餐
                 Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
                 if (!rentCarMemberCardOrderResult.getLeft()) {

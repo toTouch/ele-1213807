@@ -62,6 +62,17 @@ public class CarDepositOrderVO {
      * 创建时间
      */
     private Long createTime;
+    /**
+     * 车辆编号
+     */
+    private String carSn;
 
-
+    /**
+     * 是否租电池
+     */
+    private Integer rentBattery;
+    /**
+     * 租赁方式
+     */
+    private String rentType;
 }

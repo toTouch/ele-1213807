@@ -45,5 +45,4 @@ public class JsonUserUserInfoController extends BaseController {
     }
 
 
-
 }

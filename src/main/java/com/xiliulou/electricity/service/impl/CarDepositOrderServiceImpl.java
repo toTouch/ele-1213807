@@ -71,6 +71,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     UserCarService userCarService;
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -121,6 +123,24 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
             if (!Objects.isNull(electricityCarModel)) {
                 carDepositOrderVO.setCarModelName(electricityCarModel.getName());
+            }
+
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            if(Objects.nonNull(userInfo)){
+                carDepositOrderVO.setRentBattery(userInfo.getBatteryRentStatus());
+            }
+
+            UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
+            if(Objects.nonNull(userCar)){
+                carDepositOrderVO.setCarSn(userCar.getSn());
+            }
+
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
+            if(Objects.nonNull(userCarMemberCard)){
+                CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByIdFromDB(userCarMemberCard.getCardId());
+                if(Objects.nonNull(carMemberCardOrder)){
+                    carDepositOrderVO.setRentType(carMemberCardOrder.getCardName());
+                }
             }
 
             return carDepositOrderVO;
