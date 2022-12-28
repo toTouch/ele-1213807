@@ -133,8 +133,37 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
-    public R queryUserInsurance(Integer status, Long offset, Long size) {
+    public R queryUserInsurance() {
 
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户信息
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user! userId={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
+        if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis()) {
+            return R.ok();
+        }
+        return R.ok(insuranceUserInfoVo);
+    }
+
+    @Override
+    public R queryInsuranceByStatus(Integer status, Long offset, Long size) {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户信息
