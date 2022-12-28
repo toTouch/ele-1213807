@@ -2,9 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.MemberCardFailureRecordMapper">
 
-   <select id="queryFailureMemberCard" resultType="com.xiliulou.electricity.entity.MemberCardFailureRecord">
+    <select id="queryFailureMemberCard" resultType="com.xiliulou.electricity.entity.MemberCardFailureRecord">
        select card_name,uid,battery_type,type,deposit,member_card_expire_time from t_member_card_failure_record
        where uid=#{uid} and tenant_id=#{tenantId}
+       limit #{offset},#{size}
    </select>
 
 </mapper>

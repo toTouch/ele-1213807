@@ -17,7 +17,7 @@ import java.util.List;
 public interface MemberCardFailureRecordMapper extends BaseMapper<MemberCardFailureRecord> {
 
 
-    List<MemberCardFailureRecord> queryFailureMemberCard(@Param("uid") Long uid, @Param("tenantId") Integer tenantID);
+    List<MemberCardFailureRecord> queryFailureMemberCard(@Param("uid") Long uid, @Param("tenantId") Integer tenantID, @Param("offset") Integer offset, @Param("size") Integer size);
 
 
 }
