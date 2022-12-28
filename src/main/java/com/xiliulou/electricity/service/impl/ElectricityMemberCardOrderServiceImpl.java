@@ -2768,15 +2768,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserCarMemberCard userCarMemberCard) {
+    public boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard) {
         //是否停卡产生电池服务费
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(serviceFeeUserInfo) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)
+                && Objects.nonNull(serviceFeeUserInfo)
+                && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
             return true;
         }
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("ELE ERROR! not found franchisee,uid={},franchinseeId={}", userInfo.getUid(), userInfo.getFranchiseeId());
+            return false;
+        }
+
+        //是否开启电池服务费
+        if (Objects.equals(franchisee.getIsOpenServiceFee(), Franchisee.CLOSE_SERVICE_FEE)) {
+            return false;
+        }
+
         //套餐是否过期
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.nonNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)
+                && Objects.nonNull(userBatteryMemberCard)
+                && userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
             return true;
         }
 
