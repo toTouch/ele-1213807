@@ -22,7 +22,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @NoArgsConstructor
 @Builder
 @TableName("t_user_battery_member_card")
-public class /**/UserBatteryMemberCard {
+public class UserBatteryMemberCard {
 
     /**
      * 主键
