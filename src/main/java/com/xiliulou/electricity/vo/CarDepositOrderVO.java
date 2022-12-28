@@ -54,7 +54,10 @@ public class CarDepositOrderVO {
      * 交易方式 0--线上 1--线下
      */
     private Integer payType;
-
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
     /**
      * 创建时间
      */

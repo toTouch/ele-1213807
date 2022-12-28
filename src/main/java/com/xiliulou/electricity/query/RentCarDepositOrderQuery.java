@@ -37,6 +37,10 @@ public class RentCarDepositOrderQuery {
     private String franchiseeName;
 
     private Long uid;
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
 
     private Integer depositType;
     private Integer payType;
