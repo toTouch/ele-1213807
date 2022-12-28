@@ -16,22 +16,23 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.RentCarOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 租车订单表(RentCarOrder)表服务实现类
@@ -108,14 +109,46 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
-    public List<RentCarOrder> selectByPage(int offset, int limit) {
-        return this.rentCarOrderMapper.selectByPage(offset, limit);
+    public List<RentCarOrderVO> selectByPage(RentCarOrderQuery rentCarOrderQuery) {
+        List<RentCarOrder> rentCarOrders = this.rentCarOrderMapper.selectByPage(rentCarOrderQuery);
+        if(CollectionUtils.isEmpty(rentCarOrders)){
+            return Collections.EMPTY_LIST;
+        }
+
+        return rentCarOrders.parallelStream().map(item->{
+            RentCarOrderVO rentCarOrderVO = new RentCarOrderVO();
+            BeanUtils.copyProperties(item,rentCarOrderVO);
+
+            ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
+            if(Objects.nonNull(electricityCarModel)){
+                rentCarOrderVO.setCarModelName(electricityCarModel.getName());
+            }
+
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            if(Objects.nonNull(userInfo)){
+                rentCarOrderVO.setRentBattery(userInfo.getBatteryRentStatus());
+            }
+
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
+            if(Objects.nonNull(userCarMemberCard)){
+                CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByIdFromDB(userCarMemberCard.getCardId());
+                if(Objects.nonNull(carMemberCardOrder)){
+                    rentCarOrderVO.setRentType(carMemberCardOrder.getCardName());
+                }
+            }
+
+            return rentCarOrderVO;
+
+        }).collect(Collectors.toList());
+
+    }
+
+    @Override
+    public Integer selectPageCount(RentCarOrderQuery rentCarOrderQuery) {
+        return this.rentCarOrderMapper.selectPageCount(rentCarOrderQuery);
     }
 
     /**

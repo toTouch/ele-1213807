@@ -161,11 +161,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         //退款订单
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, tradeRefundNo));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeRefundNo);
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO={}", tradeRefundNo);
             return Pair.of(false, "未找到退款订单!");
         }
         if (ObjectUtil.notEqual(EleRefundOrder.STATUS_REFUND, eleRefundOrder.getStatus())) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeRefundNo);
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO={}", tradeRefundNo);
             return Pair.of(false, "退款订单已处理");
         }
 
@@ -176,13 +176,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(electricityTradeOrder)) {
             UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(outTradeNo);
             if (Objects.isNull(unionTradeOrder)) {
-                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", outTradeNo);
+                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO={}", outTradeNo);
                 return Pair.of(false, "未找到交易订单!");
             }
             String jsonOrderId = unionTradeOrder.getJsonOrderId();
             List<String> orderIdLIst = JsonUtil.fromJsonArray(jsonOrderId, String.class);
             if (CollectionUtils.isEmpty(orderIdLIst)) {
-                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", outTradeNo);
+                log.error("NOTIFY_INSURANCE_UNION_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO={}", outTradeNo);
                 return Pair.of(false, "未找到交易订单");
             }
             orderNo = orderIdLIst.get(0);

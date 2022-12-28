@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.RentCarOrder;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.query.RentCarOrderQuery;
 import com.xiliulou.electricity.query.UserRentCarOrderQuery;
+import com.xiliulou.electricity.vo.RentCarOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,12 +36,9 @@ public interface RentCarOrderService {
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
-    List<RentCarOrder> selectByPage(int offset, int limit);
+    List<RentCarOrderVO> selectByPage(RentCarOrderQuery rentCarOrderQuery);
 
     /**
      * 新增数据
@@ -71,4 +69,6 @@ public interface RentCarOrderService {
     Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request);
 
     Triple<Boolean, String, Object> save(RentCarOrderQuery rentCarOrderQuery);
+
+    Integer selectPageCount(RentCarOrderQuery rentCarOrderQuery);
 }

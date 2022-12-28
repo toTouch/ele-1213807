@@ -35,12 +35,95 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="CarMemberCardOrderMap">
         <include refid="selectCarMemberCardOrder"/>
+        <where>
+
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and user_name = #{userName}
+            </if>
+            <if test="memberCardType != null and memberCardType != ''">
+                and member_card_type = #{memberCardType}
+            </if>
+            <if test="cardName != null and cardName != ''">
+                and card_name = #{cardName}
+            </if>
+            <if test="payType != null">
+                and pay_type = #{payType}
+            </if>
+            <if test="payAmount != null">
+                and pay_amount = #{payAmount}
+            </if>
+            <if test="validDays != null">
+                and valid_days = #{validDays}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
         order by create_time desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultMap="CarMemberCardOrderMap">
        select count(1) from t_car_member_card_order
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and user_name = #{userName}
+            </if>
+            <if test="memberCardType != null and memberCardType != ''">
+                and member_card_type = #{memberCardType}
+            </if>
+            <if test="cardName != null and cardName != ''">
+                and card_name = #{cardName}
+            </if>
+            <if test="payType != null">
+                and pay_type = #{payType}
+            </if>
+            <if test="payAmount != null">
+                and pay_amount = #{payAmount}
+            </if>
+            <if test="validDays != null">
+                and valid_days = #{validDays}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
     </select>
 
     <!--通过实体作为筛选条件查询-->

@@ -12,6 +12,7 @@
         <result property="carDeposit" column="car_deposit" jdbcType="NUMERIC"/>
         <result property="carModelId" column="car_model_id" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="transactionType" column="transaction_type" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -23,7 +24,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectRentCarOrder">
-       	select   id, order_id, uid, name, phone, car_sn, car_deposit, car_model_id, type, status, remark, create_time, update_time, store_id, franchisee_id, tenant_id        from t_rent_car_order
+       	select   id, order_id, uid, name, phone, car_sn, car_deposit, car_model_id, type,transaction_type, status, remark, create_time, update_time, store_id, franchisee_id, tenant_id        from t_rent_car_order
     </sql>
 
     <!--查询单个-->
@@ -35,7 +36,94 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="RentCarOrderMap">
         <include refid="selectRentCarOrder"/>
-        limit #{offset}, #{limit}
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="carSn != null and carSn != ''">
+                and car_sn = #{carSn}
+            </if>
+            <if test="carDeposit != null">
+                and car_deposit = #{carDeposit}
+            </if>
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null ">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectPageCount" resultType="int">
+        select count(1) from t_rent_car_order
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="carSn != null and carSn != ''">
+                and car_sn = #{carSn}
+            </if>
+            <if test="carDeposit != null">
+                and car_deposit = #{carDeposit}
+            </if>
+            <if test="carModelId != null">
+                and car_model_id = #{carModelId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null ">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
     </select>
 
     <!--通过实体作为筛选条件查询-->
@@ -126,6 +214,9 @@
             </if>
             <if test="type != null">
                 type = #{type},
+            </if>
+            <if test="transactionType != null">
+                transaction_type = #{transactionType},
             </if>
             <if test="status != null">
                 status = #{status},

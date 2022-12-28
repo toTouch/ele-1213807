@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.RentCarOrder;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.RentCarOrderQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -25,12 +26,9 @@ public interface RentCarOrderMapper extends BaseMapper<RentCarOrder> {
 
     /**
      * 查询指定行数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
-    List<RentCarOrder> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<RentCarOrder> selectByPage(RentCarOrderQuery rentCarOrderQuery);
 
 
     /**
@@ -65,4 +63,5 @@ public interface RentCarOrderMapper extends BaseMapper<RentCarOrder> {
      */
     int deleteById(Long id);
 
+    Integer selectPageCount(RentCarOrderQuery rentCarOrderQuery);
 }

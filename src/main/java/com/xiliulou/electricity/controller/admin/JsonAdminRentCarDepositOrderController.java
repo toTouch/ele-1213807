@@ -41,7 +41,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     UserDataScopeService userDataScopeService;
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarDepositOrder/list")
+    @GetMapping(value = "/admin/rentCarDepositOrder/page")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
@@ -105,7 +105,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     }
 
     //列表查询
-    @GetMapping(value = "/admin/rentCarDepositOrder/queryCount")
+    @GetMapping(value = "/admin/rentCarDepositOrder/count")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
@@ -162,29 +162,23 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     /**
      * 租车后台线上退押金
      */
-    @PostMapping("/admin/refundCarDepositByOnline")
-    @Log(title = "租车后台线上退押金")
+    @PostMapping("/admin/carDepositRefundByOnline")
+    @Log(title = "后台退租车线上押金")
     public R refundDepositCarByOnline(@RequestParam("orderId") String orderId,
-                                      @RequestParam("status") Integer status,
-                                      @RequestParam(value = "errMsg", required = false) String errMsg,
-                                      @RequestParam(value = "refundAmount", required = false) Double refundAmount,
                                       @RequestParam("uid") Long uid,
                                       HttpServletRequest request) {
-        return returnTripleResult(carDepositOrderService.handleRefundCarDeposit(orderId, errMsg, status, refundAmount, uid, request));
+        return returnTripleResult(carDepositOrderService.handleRefundCarDeposit(orderId, uid, request));
     }
 
     /**
      * 租车后台线下退押金
      */
-    @PostMapping("/admin/refundCarDepositByOffline")
-    @Log(title = "租车后台线下退押金")
+    @PostMapping("/admin/carDepositRefundByOffline")
+    @Log(title = "后台退租车线下押金")
     public R refundDepositCarByOffline(@RequestParam("orderId") String orderId,
-                                       @RequestParam("status") Integer status,
-                                       @RequestParam(value = "errMsg", required = false) String errMsg,
-                                       @RequestParam(value = "refundAmount", required = false) Double refundAmount,
                                        @RequestParam("uid") Long uid,
                                        HttpServletRequest request) {
-        return returnTripleResult(carDepositOrderService.handleOffLineRefundCarDeposit(orderId, errMsg, status, refundAmount, uid, request));
+        return returnTripleResult(carDepositOrderService.handleOffLineRefundCarDeposit(orderId, uid, request));
     }
 
 }
