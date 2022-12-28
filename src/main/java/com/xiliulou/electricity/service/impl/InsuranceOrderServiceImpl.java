@@ -78,26 +78,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
-
-        List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderMapper.queryList(insuranceOrderQuery);
-        if (ObjectUtil.isEmpty(insuranceOrderVOList)) {
-            return R.ok(new ArrayList<>());
-        }
-
-        insuranceOrderVOList.parallelStream().forEach(e -> {
-
-            //获取城市名称
-            City city = cityService.queryByIdFromDB(e.getCid());
-            if (Objects.nonNull(city)) {
-                e.setCityName(city.getName());
-            }
-
-            Integer validDays = e.getValidDays();
-            Long insuranceExpireTime = validDays * (24 * 60 * 60 * 1000L);
-            e.setInsuranceExpireTime(insuranceExpireTime);
-        });
-
-        return R.ok(insuranceOrderVOList);
+        return R.ok(queryListByStatus(insuranceOrderQuery));
     }
 
     @Override
@@ -384,5 +365,27 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 .updateTime(System.currentTimeMillis()).build();
 
         return Triple.of(true, "", insuranceOrder);
+    }
+
+    @Override
+    public List<InsuranceOrderVO> queryListByStatus(InsuranceOrderQuery insuranceOrderQuery) {
+        List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderMapper.queryList(insuranceOrderQuery);
+        if (ObjectUtil.isEmpty(insuranceOrderVOList)) {
+            return new ArrayList<>();
+        }
+
+        insuranceOrderVOList.parallelStream().forEach(e -> {
+
+            //获取城市名称
+            City city = cityService.queryByIdFromDB(e.getCid());
+            if (Objects.nonNull(city)) {
+                e.setCityName(city.getName());
+            }
+
+            Integer validDays = e.getValidDays();
+            Long insuranceExpireTime = validDays * (24 * 60 * 60 * 1000L);
+            e.setInsuranceExpireTime(insuranceExpireTime);
+        });
+        return insuranceOrderVOList;
     }
 }

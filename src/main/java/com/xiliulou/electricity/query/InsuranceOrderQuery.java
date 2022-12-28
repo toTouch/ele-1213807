@@ -34,4 +34,8 @@ public class InsuranceOrderQuery {
     private Long endTime;
 
     private Integer status;
+
+    private Integer isUse;
+
+    private Long uid;
 }

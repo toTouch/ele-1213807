@@ -19,9 +19,9 @@ public interface InsuranceUserInfoService {
 
     List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId);
 
-    InsuranceUserInfo queryByUid(Long uid,Integer tenantId);
+    InsuranceUserInfo queryByUid(Long uid, Integer tenantId);
 
-    R updateInsuranceStatus(Long uid,Integer insuranceStatus);
+    R updateInsuranceStatus(Long uid, Integer insuranceStatus);
 
     InsuranceUserInfo queryByUidFromCache(Long uid);
 
@@ -31,7 +31,7 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId);
 
-    R queryUserInsurance();
+    R queryUserInsurance(Integer status, Long offset, Long size);
 
     int deleteById(Integer id);
 
