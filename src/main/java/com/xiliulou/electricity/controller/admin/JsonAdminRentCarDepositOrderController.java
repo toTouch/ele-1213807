@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
@@ -14,9 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -68,7 +72,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -76,7 +80,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -123,7 +127,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -131,7 +135,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -155,5 +159,32 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     }
 
 
+    /**
+     * 租车后台线上退押金
+     */
+    @PostMapping("/admin/refundDepositCarByOnline")
+    @Log(title = "租车后台线上退押金")
+    public R refundDepositCarByOnline(@RequestParam("orderId") String orderId,
+                                      @RequestParam("status") Integer status,
+                                      @RequestParam(value = "errMsg", required = false) String errMsg,
+                                      @RequestParam(value = "refundAmount", required = false) Double refundAmount,
+                                      @RequestParam("uid") Long uid,
+                                      HttpServletRequest request) {
+        return returnTripleResult(carDepositOrderService.handleRefundCarDeposit(orderId, errMsg, status, refundAmount, uid, request));
+    }
+
+    /**
+     * 租车后台线下退押金
+     */
+    @PostMapping("/admin/refundDepositCarByOffline")
+    @Log(title = "租车后台线下退押金")
+    public R refundDepositCarByOffline(@RequestParam("orderId") String orderId,
+                                       @RequestParam("status") Integer status,
+                                       @RequestParam(value = "errMsg", required = false) String errMsg,
+                                       @RequestParam(value = "refundAmount", required = false) Double refundAmount,
+                                       @RequestParam("uid") Long uid,
+                                       HttpServletRequest request) {
+        return returnTripleResult(carDepositOrderService.handleOffLineRefundCarDeposit(orderId, errMsg, status, refundAmount, uid, request));
+    }
 
 }
