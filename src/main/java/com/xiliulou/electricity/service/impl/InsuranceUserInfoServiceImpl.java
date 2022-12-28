@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -208,7 +209,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
                 return R.ok();
             }
-            return R.ok(insuranceUserInfoVo);
+            List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
+            InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
+            BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
+            insuranceOrderList.add(insuranceOrderVO);
+            return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
             InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
                     .offset(offset)
