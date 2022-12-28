@@ -18,6 +18,7 @@ import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -191,7 +192,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Transactional
     public R delete(Integer id) {
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         ElectricityCar electricityCar = queryByIdFromCache(id);
@@ -201,6 +201,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         if (!Objects.equals(tenantId, electricityCar.getTenantId())) {
             return R.ok();
+        }
+
+        if(Objects.nonNull(electricityCar.getUid()) || StringUtils.isNotBlank(electricityCar.getUserName())){
+            return R.fail("100231", "车辆已绑定用户！");
         }
 
         //删除数据库
@@ -332,55 +336,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.updateByUid(updateUserCar);
 
-
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("ELE CAR ERROR! not found user! userId:{}", userInfo.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//        }
-
-//        if (Objects.nonNull(franchiseeUserInfo.getBindCarId())) {
-//            log.error("ELE CAR ERROR! not found user! userId:{}", userInfo.getUid());
-//            return R.fail("100012", "已绑定车辆");
-//        }
-
-//        if (Objects.isNull(franchiseeUserInfo.getRentCarDeposit())) {
-//            log.error("ELE CAR ERROR! not found user! userId:{}", userInfo.getUid());
-//            return R.fail("100013", "未缴纳租车押金");
-//        }
-
-//        if (Objects.isNull(franchiseeUserInfo.getRentCarCardId())) {
-//            log.error("ELE CAR ERROR! not found user! userId:{}", userInfo.getUid());
-//            return R.fail("100014", "未购买租车套餐");
-//        }
-//        Long now = System.currentTimeMillis();
-//        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) && Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
-//            log.error("ELE CAR ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
-//            return R.fail("100013", "租车套餐已过期");
-//        }
-//
-//        ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
-//        if (Objects.isNull(electricityCar)) {
-//            return R.fail("100007", "未找到车辆");
-//        }
-//
-//        if (!Objects.equals(electricityCar.getTenantId(),tenantId)){
-//            return R.ok();
-//        }
-//
-//        if (!Objects.equals(electricityCar.getModelId(), franchiseeUserInfo.getBindCarModelId())) {
-//            log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel! userId:{}", userInfo.getUid());
-//            return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
-//        }
-//
-//        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-//        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
-//        updateFranchiseeUserInfo.setBindCarId(electricityCarBindUser.getCarId());
-//        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR);
-//        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
-
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
                 .carId(electricityCar.getId())
@@ -413,19 +368,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到操作用户");
         }
 
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE CAR ERROR! not found user uid={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
             return R.ok();
-        }
-
-        //是否绑定车辆
-        if(!Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES)){
-            log.error("ELE CAR ERROR! user not binding car,uid={}", user.getUid());
-            return R.fail("100015", "用户未绑定车辆");
         }
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
@@ -437,35 +386,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.ok();
         }
 
-
-
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("ELE CAR ERROR! not found user! userId:{}", userInfo.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//        }
-//
-//        if (Objects.isNull(franchiseeUserInfo.getBindCarId())) {
-//            log.error("ELE CAR ERROR! not found user! userId:{}", userInfo.getUid());
-//            return R.fail("100015", "用户未绑定车辆");
-//        }
-//
-//        ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
-//        if (Objects.isNull(electricityCar)) {
-//            return R.fail("100007", "未找到车辆");
-//        }
-//
-//        if (!Objects.equals(electricityCar.getTenantId(),TenantContextHolder.getTenantId())){
-//            return R.ok();
-//        }
-//
-//        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-//        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
-//        updateFranchiseeUserInfo.setBindCarId(null);
-//        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
-//        franchiseeUserInfoService.updateRentCar(updateFranchiseeUserInfo);
+        //用户是否绑定车辆
+        if(!Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(),electricityCarBindUser.getUid())){
+            log.error("ELE CAR ERROR! user not binding car,uid={}", user.getUid());
+            return R.fail("100015", "用户未绑定车辆");
+        }
 
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(user.getUid());
