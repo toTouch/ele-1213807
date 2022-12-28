@@ -64,9 +64,10 @@ public class JsonAdminElectricityCarController {
         return electricityCarService.edit(electricityCarAddAndUpdate);
     }
 
-    //删除换电柜车辆
+    //删除车辆
     @DeleteMapping(value = "/admin/electricityCar/{id}")
-    public R delete(@PathVariable("id") Integer id) {
+    @Log(title = "删除车辆")
+    public R deleteCar(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }

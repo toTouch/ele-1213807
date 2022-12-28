@@ -120,7 +120,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R delete(Integer id) {
 
         //租户
