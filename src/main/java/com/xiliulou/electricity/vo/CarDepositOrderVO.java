@@ -66,6 +66,10 @@ public class CarDepositOrderVO {
      * 车辆编号
      */
     private String carSn;
+    /**
+     * 车辆押金状态
+     */
+    private Integer carDepositStatus;
 
     /**
      * 是否租电池

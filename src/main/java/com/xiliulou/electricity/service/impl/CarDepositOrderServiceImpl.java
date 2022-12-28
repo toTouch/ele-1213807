@@ -128,6 +128,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             if(Objects.nonNull(userInfo)){
                 carDepositOrderVO.setRentBattery(userInfo.getBatteryRentStatus());
+                carDepositOrderVO.setCarDepositStatus(userInfo.getCarDepositStatus());
             }
 
             UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
