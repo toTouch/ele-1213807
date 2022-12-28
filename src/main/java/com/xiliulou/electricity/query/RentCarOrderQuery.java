@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RentCarOrderQuery {
-    @NotBlank(message = "车辆编码不能为空!")
+//    @NotBlank(message = "车辆编码不能为空!")
     private String sn;
 
     @NotNull(message = "门店id不能为空!")

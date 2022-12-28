@@ -190,15 +190,15 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //车辆是否可用
-        ElectricityCar electricityCar = electricityCarService.selectBySn(rentCarOrderQuery.getSn());
-        if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("ORDER ERROR! not found electricityCar,sn={},uid={}", rentCarOrderQuery.getSn(), userInfo.getUid());
-            return Triple.of(false, "100007", "车辆不存在");
-        }
-        if (Objects.equals(electricityCar.getStatus(), ElectricityCar.STATUS_IS_RENT)) {
-            log.error("ORDER ERROR! this car has been bound others,sn={},uid={}", rentCarOrderQuery.getSn(), userInfo.getUid());
-            return Triple.of(false, "100231", "车辆已绑定其它用户");
-        }
+//        ElectricityCar electricityCar = electricityCarService.selectBySn(rentCarOrderQuery.getSn());
+//        if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
+//            log.error("ORDER ERROR! not found electricityCar,sn={},uid={}", rentCarOrderQuery.getSn(), userInfo.getUid());
+//            return Triple.of(false, "100007", "车辆不存在");
+//        }
+//        if (Objects.equals(electricityCar.getStatus(), ElectricityCar.STATUS_IS_RENT)) {
+//            log.error("ORDER ERROR! this car has been bound others,sn={},uid={}", rentCarOrderQuery.getSn(), userInfo.getUid());
+//            return Triple.of(false, "100231", "车辆已绑定其它用户");
+//        }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(rentCarOrderQuery.getCarModelId().intValue());
         if (Objects.isNull(electricityCarModel) || !Objects.equals(electricityCarModel.getTenantId(),TenantContextHolder.getTenantId())) {
@@ -217,22 +217,13 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         CarMemberCardOrder carMemberCardOrder = (CarMemberCardOrder) rentCarMemberCardOrderTriple.getRight();
 
         //生成租车订单
-        RentCarOrder rentCarOrder =  buildRentCarOrder(userInfo, electricityCarModel, rentCarOrderQuery,electricityCar);
+        RentCarOrder rentCarOrder =  buildRentCarOrder(userInfo, electricityCarModel, rentCarOrderQuery);
 
         RentCarOrder insert = this.insert(rentCarOrder);
 
         carMemberCardOrderService.insert(carMemberCardOrder);
 
         carDepositOrderService.insert(carDepositOrder);
-
-
-
-        //更新车辆状态
-        ElectricityCar updateElectricityCar =new ElectricityCar();
-        updateElectricityCar.setId(electricityCar.getId());
-        updateElectricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
-        updateElectricityCar.setUpdateTime(System.currentTimeMillis());
-        electricityCarService.update(updateElectricityCar);
 
         //更新用户租车状态
         UserInfo updateUserInfo = new UserInfo();
@@ -242,41 +233,48 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
-        //更新用户绑定车辆
+        //更新用户押金
+        UserCarDeposit userCarDeposit = new UserCarDeposit();
+        userCarDeposit.setUid(userInfo.getUid());
+        userCarDeposit.setDid(carDepositOrder.getId());
+        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+        userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
+        userCarDeposit.setTenantId(userInfo.getTenantId());
+        userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+        userCarDeposit.setCreateTime(System.currentTimeMillis());
+        userCarDeposit.setUpdateTime(System.currentTimeMillis());
+        userCarDepositService.insertOrUpdate(userCarDeposit);
+
+        //更新用户车辆型号
         UserCar userCar = new UserCar();
         userCar.setUid(userInfo.getUid());
-        userCar.setCarModel(electricityCarModel.getId().longValue());
-        userCar.setSn(electricityCar.getSn());
-        userCar.setCid(electricityCar.getId().longValue());
+        userCar.setCarModel(carDepositOrder.getCarModelId());
         userCar.setDelFlag(UserCar.DEL_NORMAL);
         userCar.setTenantId(userInfo.getTenantId());
         userCar.setCreateTime(System.currentTimeMillis());
         userCar.setUpdateTime(System.currentTimeMillis());
         userCarService.insertOrUpdate(userCar);
 
-        //生成操作记录
-        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
-                .carId(electricityCar.getId())
-                .sn(electricityCar.getSn())
-                .operateUser(userInfo.getName())
-                .model(electricityCar.getModel())
-                .phone(userInfo.getPhone())
-                .status(EleBindCarRecord.BIND_CAR)
-                .userName(userInfo.getName())
-                .tenantId(electricityCar.getTenantId())
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).build();
-        eleBindCarRecordService.insert(eleBindCarRecord);
+        //更新用户车辆套餐
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(carMemberCardOrder.getUid());
+        UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
+        updateUserCarMemberCard.setUid(userInfo.getUid());
+        updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
+        updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
+        updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
+        updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
+        updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
+        userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
 
         return Triple.of(true,"","操作成功!");
     }
 
-    private RentCarOrder buildRentCarOrder(UserInfo userInfo, ElectricityCarModel electricityCarModel, RentCarOrderQuery rentCarOrderQuery,ElectricityCar electricityCar) {
+    private RentCarOrder buildRentCarOrder(UserInfo userInfo, ElectricityCarModel electricityCarModel, RentCarOrderQuery rentCarOrderQuery) {
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, userInfo.getUid());
         RentCarOrder rentCarOrder = new RentCarOrder();
         rentCarOrder.setOrderId(orderId);
-        rentCarOrder.setCarModelId(electricityCar.getModelId().longValue());
+        rentCarOrder.setCarModelId(electricityCarModel.getId().longValue());
         rentCarOrder.setCarDeposit(electricityCarModel.getCarDeposit().doubleValue());
         rentCarOrder.setStatus(RentCarOrder.STATUS_SUCCESS);
         rentCarOrder.setCarSn(rentCarOrderQuery.getSn());
