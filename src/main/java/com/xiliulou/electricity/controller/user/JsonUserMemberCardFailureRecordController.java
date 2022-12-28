@@ -34,13 +34,21 @@ public class JsonUserMemberCardFailureRecordController {
     MemberCardFailureRecordService memberCardFailureRecordService;
 
     @GetMapping("user/queryFailureMemberCard")
-    public R queryFailureMemberCard() {
+    public R queryFailureMemberCard(@RequestParam("size") Integer size,
+                                    @RequestParam("offset") Integer offset) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
 
-        return R.ok(memberCardFailureRecordService.queryFailureMemberCard(uid));
+        if (size <= 0 || size > 50) {
+            size = 10;
+        }
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        return R.ok(memberCardFailureRecordService.queryFailureMemberCard(uid,offset,size));
     }
 
 

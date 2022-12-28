@@ -229,7 +229,7 @@ public class JsonAdminEleRefundOrderController {
 	}
 
     //后台电池线上退款处理
-    @PostMapping("/admin/batteryOnLineRefund")
+    @PostMapping("/wFadmin/batteryOnLineRefund")
     @Log(title = "电池押金后台线上退款")
     public R batteryOnLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
                                   @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,

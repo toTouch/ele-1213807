@@ -90,8 +90,8 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     }
 
     @Override
-    public R queryFailureMemberCard(Long uid) {
+    public R queryFailureMemberCard(Long uid, Integer offset, Integer size) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(memberCardFailureRecordMapper.queryFailureMemberCard(uid, tenantId));
+        return R.ok(memberCardFailureRecordMapper.queryFailureMemberCard(uid, tenantId,offset,size));
     }
 }
