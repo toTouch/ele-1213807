@@ -1119,7 +1119,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //未实名认证
-        if (Objects.equals(UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus())) {
+        if (Objects.equals(UserInfo.AUTH_STATUS_STATUS_INIT, userInfo.getAuthStatus()) || Objects.isNull(userInfo.getAuthStatus())) {
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_AUTH);
             return Triple.of(true, "", userInfoResult);
         }
@@ -1129,6 +1129,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_AUDIT);
             return Triple.of(true, "", userInfoResult);
         }
+
+//        //是否缴纳押金
+//        if(!Objects.equals(UserInfo.BATTERY_DEPOSIT_STATUS_YES, userInfo.getBatteryDepositStatus())){
+//            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_NOT_DEPOSIT);
+//            return Triple.of(true, "", userInfoResult);
+//        }
 
         //未购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
