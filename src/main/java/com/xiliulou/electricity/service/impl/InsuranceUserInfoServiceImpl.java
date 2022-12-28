@@ -8,10 +8,12 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
+import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.InsuranceOrderVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,6 +51,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    InsuranceOrderService insuranceOrderService;
 
     @Override
     public List<InsuranceUserInfo> selectByInsuranceId(Integer id, Integer tenantId) {
@@ -127,7 +133,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
-    public R queryUserInsurance() {
+    public R queryUserInsurance(Integer status, Long offset, Long size) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -150,16 +156,50 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
 
-        InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
-        if (Objects.isNull(insuranceUserInfoVo)) {
-            return R.ok();
-        }
+        if (Objects.equals(status, InsuranceUserInfo.NOT_USE)) {
 
-        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis()) {
-            return R.ok();
-        }
+            InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
+            if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
+                return R.ok();
+            }
+            return R.ok(insuranceUserInfoVo);
+        } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
+            InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
+                    .offset(offset)
+                    .size(size)
+                    .uid(uid)
+                    .isUse(InsuranceUserInfo.IS_USE)
+                    .tenantId(userInfo.getTenantId())
+                    .build();
+            List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderService.queryListByStatus(insuranceOrderQuery);
+            if (Objects.nonNull(insuranceOrderVOList)) {
+                insuranceOrderVOList.parallelStream().forEach(item -> {
+                    item.setInsuranceExpireTime(item.getCreateTime() + (item.getValidDays() * (24 * 60 * 60 * 1000L)));
+                });
+            }
 
-        return R.ok(insuranceUserInfoVo);
+            return R.ok(insuranceOrderVOList);
+        } else {
+            InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
+                    .offset(offset)
+                    .size(size)
+                    .uid(uid)
+                    .isUse(InsuranceUserInfo.NOT_USE)
+                    .tenantId(userInfo.getTenantId())
+                    .build();
+            List<InsuranceOrderVO> insuranceOrderVOList = insuranceOrderService.queryListByStatus(insuranceOrderQuery);
+            List<InsuranceOrderVO> expireInsuranceOrderList = new ArrayList<>();
+            if (Objects.nonNull(insuranceOrderVOList)) {
+                insuranceOrderVOList.parallelStream().forEach(item -> {
+                    if ((item.getCreateTime() + (item.getValidDays() * (24 * 60 * 60 * 1000L))) < System.currentTimeMillis()) {
+                        item.setInsuranceExpireTime(item.getCreateTime() + (item.getValidDays() * (24 * 60 * 60 * 1000L)));
+                        expireInsuranceOrderList.add(item);
+                    }
+
+                });
+            }
+            return R.ok(expireInsuranceOrderList);
+        }
     }
 
     @Override

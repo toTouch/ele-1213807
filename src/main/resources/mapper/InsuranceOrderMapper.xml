@@ -30,6 +30,12 @@
             <if test="query.status != null">
                 and tio.status = #{query.status}
             </if>
+            <if test="query.uid != null">
+                and tio.uid = #{query.uid}
+            </if>
+            <if test="query.isUse != null">
+                and tio.is_use = #{query.isUse}
+            </if>
             <if test="query.tenantId != null">
                 and tio.tenant_id = #{query.tenantId}
             </if>

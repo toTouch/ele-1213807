@@ -9,9 +9,11 @@ import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
+import com.xiliulou.electricity.vo.InsuranceOrderVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 换电柜保险订单(InsuranceOrder)表服务接口
@@ -38,4 +40,6 @@ public interface InsuranceOrderService {
     void insert(InsuranceOrder insuranceOrder);
 
     Triple<Boolean, String, Object> handleRentBatteryInsurance(RentCarHybridOrderQuery query, UserInfo userInfo);
+
+    List<InsuranceOrderVO> queryListByStatus(InsuranceOrderQuery insuranceOrderQuery);
 }
