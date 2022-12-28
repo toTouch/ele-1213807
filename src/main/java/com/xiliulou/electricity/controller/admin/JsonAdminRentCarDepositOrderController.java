@@ -166,8 +166,10 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     @Log(title = "后台退租车线上押金")
     public R refundDepositCarByOnline(@RequestParam("orderId") String orderId,
                                       @RequestParam("uid") Long uid,
+                                      @RequestParam(value = "remark", required = false) String remark,
+                                      @RequestParam(value = "refundAmount", required = true) BigDecimal refundAmount,
                                       HttpServletRequest request) {
-        return returnTripleResult(carDepositOrderService.handleRefundCarDeposit(orderId, uid, request));
+        return returnTripleResult(carDepositOrderService.handleRefundCarDeposit(uid, remark, refundAmount, request));
     }
 
     /**
@@ -177,8 +179,10 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
     @Log(title = "后台退租车线下押金")
     public R refundDepositCarByOffline(@RequestParam("orderId") String orderId,
                                        @RequestParam("uid") Long uid,
+                                       @RequestParam(value = "remark", required = false) String remark,
+                                       @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                                        HttpServletRequest request) {
-        return returnTripleResult(carDepositOrderService.handleOffLineRefundCarDeposit(orderId, uid, request));
+        return returnTripleResult(carDepositOrderService.handleOffLineRefundCarDeposit( uid, request));
     }
 
 }

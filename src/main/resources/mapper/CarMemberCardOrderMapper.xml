@@ -36,7 +36,6 @@
     <select id="selectByPage" resultMap="CarMemberCardOrderMap">
         <include refid="selectCarMemberCardOrder"/>
         <where>
-
             <if test="orderId != null and orderId != ''">
                 and order_id = #{orderId}
             </if>
@@ -76,13 +75,25 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null ">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{size}
     </select>
 
-    <select id="selectByPageCount" resultMap="CarMemberCardOrderMap">
-       select count(1) from t_car_member_card_order
+    <select id="selectByPageCount" resultType="int">
+        select count(1) from t_car_member_card_order
         <where>
             <if test="orderId != null and orderId != ''">
                 and order_id = #{orderId}
@@ -122,6 +133,18 @@
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null ">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>
