@@ -208,13 +208,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(item.getUid());
-                if(Objects.nonNull(userBattery)){
+                if (Objects.nonNull(userBattery)) {
                     item.setModel(userBattery.getBatteryType());
                 }
 
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
-                if(Objects.nonNull(userBatteryDeposit)){
+                if (Objects.nonNull(userBatteryDeposit)) {
                     item.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+                    item.setOrderId(userBatteryDeposit.getOrderId());
                 }
 
                 //if (Objects.nonNull(item.getModel())) {
@@ -784,7 +785,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
-        if(Objects.isNull(userBatteryDeposit)){
+        if (Objects.isNull(userBatteryDeposit)) {
             log.error("WEBBIND ERROR ERROR! not found userBatteryDeposit,uid={} ", userInfoBatteryAddAndUpdate.getUid());
             return R.fail("100247", "未找到用户信息");
         }
@@ -1070,7 +1071,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
             return userInfoDetailVO;
         }
-        BeanUtils.copyProperties(userInfo,userInfoDetailVO);
+        BeanUtils.copyProperties(userInfo, userInfoDetailVO);
 
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
