@@ -299,7 +299,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
-    // TODO: 2022/12/21 事物
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request) {
@@ -357,7 +356,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //处理押金订单
-        // TODO: 2022/12/21 spring的事务的坑
         Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, integratedPaymentAdd.getFranchiseeId(), integratedPaymentAdd.getModel());
         if (!generateDepositOrderResult.getLeft()) {
             return generateDepositOrderResult;
@@ -462,7 +460,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
             }
 
-            // TODO: 2022/12/21 jsonArray  对象
             //型号押金
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
@@ -470,7 +467,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
 
-            // TODO: 2022/12/21 理解一下
             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                 if ((double) (modelBatteryDeposit.getModel()) - model < 1 && (double) (modelBatteryDeposit.getModel()) - model >= 0) {
                     depositPayAmount = modelBatteryDeposit.getBatteryDeposit();
