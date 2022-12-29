@@ -57,18 +57,6 @@ public class PictureServiceImpl implements PictureService {
     }
 
     /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public Picture selectByIdFromCache(Long id) {
-        return null;
-    }
-
-
-    /**
      * 查询多条数据
      *
      * @param offset 查询起始位置
@@ -133,7 +121,6 @@ public class PictureServiceImpl implements PictureService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(Picture picture) {
         return this.pictureMapper.update(picture);
-
     }
 
     /**
@@ -160,10 +147,9 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public Integer savePictureCallBack(CallBackQuery callBackQuery) {
-        if (CollectionUtils.isEmpty(callBackQuery.getFileNameList()) || Objects.isNull(callBackQuery.getOtherId())) {
+        if (Objects.isNull(callBackQuery.getOtherId())) {
             return NumberConstant.ZERO;
         }
-
 
         //删除车辆型号图片
         this.deleteByBusinessId(callBackQuery.getOtherId());
