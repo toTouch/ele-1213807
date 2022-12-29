@@ -338,13 +338,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
         UserCar updateUserCar = new UserCar();
-        updateUserCar.setUid(user.getUid());
+        updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(electricityCar.getId().longValue());
         updateUserCar.setSn(electricityCarBindUser.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
@@ -374,6 +374,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R unBindUser(ElectricityCarBindUser electricityCarBindUser) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -407,13 +408,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
         UserCar updateUserCar = new UserCar();
-        updateUserCar.setUid(user.getUid());
+        updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(null);
         updateUserCar.setSn("");
         userCarService.unBindingCarByUid(updateUserCar);
