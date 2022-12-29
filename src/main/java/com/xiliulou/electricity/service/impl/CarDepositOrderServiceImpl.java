@@ -14,6 +14,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarDepositOrderVO;
+import com.xiliulou.electricity.vo.UserCarDepositVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -301,9 +302,35 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     public Triple<Boolean, String, Object> selectRentCarDeposit() {
+        UserCarDepositVO userCarDepositVO = new UserCarDepositVO();
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found user");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
 
-        return null;
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found userInfo,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found userCarDeposit! uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+        }
+
+        CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
+        if(Objects.isNull(carDepositOrder)){
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found carDepositOrder,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0015", "订单不存在");
+        }
+
+        BeanUtils.copyProperties(carDepositOrder,userCarDepositVO);
+
+        return Triple.of(true, "", userCarDepositVO);
     }
 
     @Override

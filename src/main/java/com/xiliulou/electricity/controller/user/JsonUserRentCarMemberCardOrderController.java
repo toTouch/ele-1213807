@@ -78,4 +78,12 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
         return returnTripleResult(carMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request));
     }
+
+    /**
+     * 查询用户套餐详情
+     */
+    @GetMapping("/user/rentCar/memberCard/info")
+    public R userCarMemberCardInfo(){
+        return returnTripleResult(carMemberCardOrderService.userCarMemberCardInfo());
+    }
 }

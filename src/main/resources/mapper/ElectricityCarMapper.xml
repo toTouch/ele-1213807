@@ -133,4 +133,11 @@
         where id = #{id} and del_flag=0
     </select>
 
+
+    <!--根据车辆SN查询单个-->
+    <select id="selectBySn" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+        <include refid="selectElectricityCar"/>
+        where sn = #{sn} and del_flag=0
+    </select>
+
 </mapper>

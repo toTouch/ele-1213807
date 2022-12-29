@@ -289,6 +289,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(carMemberCardOrder.getUid());
         UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
         updateUserCarMemberCard.setUid(userInfo.getUid());
+        updateUserCarMemberCard.setOrderId(carMemberCardOrder.getOrderId());
         updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
         updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
         updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
