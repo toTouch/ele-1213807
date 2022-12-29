@@ -2173,7 +2173,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard) {
         Long memberCardValidDays = null;
         if (ElectricityCarModel.RENT_TYPE_MONTH.equals(rentType)) {
-            memberCardValidDays = rentTime * 0 * 24 * 60 * 60 * 1000L;
+            memberCardValidDays = rentTime * 30 * 24 * 60 * 60 * 1000L;
         } else if (ElectricityCarModel.RENT_TYPE_WEEK.equals(rentType)) {
             memberCardValidDays = rentTime * 7 * 24 * 60 * 60 * 1000L;
         } else {
