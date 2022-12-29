@@ -498,6 +498,15 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             updateUserCar.setUpdateTime(System.currentTimeMillis());
             userCarService.insertOrUpdate(updateUserCar);
 
+            ElectricityCar updateElectricityCar = new ElectricityCar();
+            updateElectricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
+            updateElectricityCar.setUid(userInfo.getUid());
+            updateElectricityCar.setPhone(userInfo.getPhone());
+            updateElectricityCar.setUserInfoId(userInfo.getId());
+            updateElectricityCar.setUserName(userInfo.getName());
+            updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+            electricityCarService.update(updateElectricityCar);
+
             return null;
         });
 
