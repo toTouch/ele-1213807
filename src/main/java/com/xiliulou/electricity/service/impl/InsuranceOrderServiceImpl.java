@@ -305,7 +305,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.ok();
         }
 
-        // TODO: 2022/12/21 tenantId
         String batteryType = null;
         if (Objects.nonNull(model)) {
             batteryType = BatteryConstant.acquireBatteryShort(model);
