@@ -770,5 +770,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 RandomUtil.randomNumbers(2);
     }
 
+    @Override
+    public boolean checkDepositOrderIsRefund(String orderId) {
+        EleRefundOrder eleRefundOrder = this.eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
+        if(!Objects.isNull(eleRefundOrder)){
+            return Boolean.TRUE;
+        }
 
+        return Boolean.FALSE;
+    }
 }

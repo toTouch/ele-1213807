@@ -273,53 +273,52 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        if (!Objects.equals(userInfo.getTenantId(),tenantId)){
+        if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             return R.ok();
         }
 
         //押金
-        if(!Objects.equals(userInfo.getCarDepositStatus(),UserInfo.CAR_DEPOSIT_STATUS_YES)){
-            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", user.getUid());
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100012", "未缴纳租车押金");
         }
 
         //是否绑定车辆
-        if(Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES)){
-            log.error("ELE CAR ERROR! this user already binding car,uid={}", user.getUid());
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! this user already binding car,uid={}", userInfo.getUid());
             return R.fail("100012", "用户已绑定车辆");
         }
 
         //购买租车套餐
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
-        if(Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getCardId())|| Objects.isNull(userCarMemberCard.getMemberCardExpireTime())){
-            log.error("ELE CAR ERROR! not found userCarMemberCard,uid={}", user.getUid());
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getCardId()) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
+            log.error("ELE CAR ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
             return R.fail("100014", "未购买租车套餐");
         }
 
         //套餐是否过期
-        if(userCarMemberCard.getMemberCardExpireTime()<System.currentTimeMillis()){
-            log.error("ELE CAR ERROR! rent car memberCard is Expire,uid={}", user.getUid());
+        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            log.error("ELE CAR ERROR! rent car memberCard is Expire,uid={}", userInfo.getUid());
             return R.fail("100013", "租车套餐已过期");
         }
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
-            log.error("ELE CAR ERROR! not found electricityCar,uid={}", user.getUid());
+            log.error("ELE CAR ERROR! not found electricityCar,uid={}", userInfo.getUid());
             return R.fail("100007", "未找到车辆");
         }
-        if (!Objects.equals(electricityCar.getTenantId(),tenantId)){
+        if (!Objects.equals(electricityCar.getTenantId(), tenantId)) {
             return R.ok();
         }
 
-        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        if(Objects.isNull(userCar)){
-            log.error("ELE CAR ERROR! not found userCar,uid={}", user.getUid());
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("ELE CAR ERROR! not found userCar,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
 
         if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel())) {
-            log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", user.getUid());
+            log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }
 
@@ -351,7 +350,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         eleBindCarRecordService.insert(eleBindCarRecord);
 
         electricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
-        electricityCar.setUid(electricityCarBindUser.getUid());
+        electricityCar.setUid(userInfo.getUid());
         electricityCar.setPhone(userInfo.getPhone());
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());
@@ -370,7 +369,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE CAR ERROR! not found user uid={}", user.getUid());
+            log.error("ELE CAR ERROR! not found user uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
@@ -379,7 +378,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
-            log.error("ELE CAR ERROR! not found car,uid={},carId={}", user.getUid(),electricityCarBindUser.getCarId());
+            log.error("ELE CAR ERROR! not found car,uid={},carId={}", userInfo.getUid(),electricityCarBindUser.getCarId());
             return R.fail("100007", "未找到车辆");
         }
         if (!Objects.equals(electricityCar.getTenantId(),TenantContextHolder.getTenantId())){
@@ -388,7 +387,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         //用户是否绑定车辆
         if(!Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(),electricityCarBindUser.getUid())){
-            log.error("ELE CAR ERROR! user not binding car,uid={}", user.getUid());
+            log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
 
