@@ -176,16 +176,16 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-//        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
-//            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
-//                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
-//                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
-//                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
-//                    .notIn(FranchiseeInsurance::getId, id));
-//            if (count > 0) {
-//                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
-//            }
-//        }
+        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
+            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
+                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
+                    .notIn(FranchiseeInsurance::getId, id));
+            if (count > 0) {
+                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
+            }
+        }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
         newFranchiseeInsurance.setId(franchiseeInsurance.getId());

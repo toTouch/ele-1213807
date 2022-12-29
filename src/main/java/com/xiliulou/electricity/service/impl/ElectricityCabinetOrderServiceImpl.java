@@ -180,7 +180,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("order  ERROR! not found electricityCabinet,electricityCabinetId={},uid={}",
-                    orderQuery.getElectricityCabinetId(),user.getUid());
+                    orderQuery.getElectricityCabinetId(), user.getUid());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
@@ -219,20 +219,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //查找换电柜门店
             if (Objects.isNull(electricityCabinet.getStoreId())) {
                 eleLockFlag = Boolean.FALSE;
-                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={},uid={}", electricityCabinet.getId(),user.getUid());
+                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={},uid={}", electricityCabinet.getId(), user.getUid());
                 return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
             }
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
             if (Objects.isNull(store)) {
                 eleLockFlag = Boolean.FALSE;
-                log.error("queryByDevice  ERROR! not found store ！storeId={},uid={}", electricityCabinet.getStoreId(),user.getUid());
+                log.error("queryByDevice  ERROR! not found store ！storeId={},uid={}", electricityCabinet.getStoreId(), user.getUid());
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
 
             //查找门店加盟商
             if (Objects.isNull(store.getFranchiseeId())) {
                 eleLockFlag = Boolean.FALSE;
-                log.error("queryByDevice  ERROR! not found Franchisee,storeId={},uid={}", store.getId(),user.getUid());
+                log.error("queryByDevice  ERROR! not found Franchisee,storeId={},uid={}", store.getId(), user.getUid());
                 return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
             }
 
@@ -1427,7 +1427,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             //修改按此套餐的次数
-            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, user);
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+            Triple<Boolean, String, String> modifyResult = checkAndModifyMemberCardCount(userBatteryMemberCard, user, electricityMemberCard);
             if (!modifyResult.getLeft()) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
@@ -1444,6 +1445,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT)
                     .status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource())
+                    .paymentMethod(electricityMemberCard.getType())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .storeId(electricityCabinet.getStoreId())
@@ -1486,9 +1488,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return String.valueOf(uid) + System.currentTimeMillis() / 1000 + RandomUtil.randomNumbers(3);
     }
 
-    private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user) {
+    private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user, ElectricityMemberCard electricityMemberCard) {
         //这里的memberCard不能为空
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+
         if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
             Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard.getId());
             if (row < 1) {
