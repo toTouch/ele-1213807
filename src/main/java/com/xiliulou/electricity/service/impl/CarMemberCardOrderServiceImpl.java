@@ -180,6 +180,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
     /**
      * 查询用户套餐详情
+     *
      * @return
      */
     @Override
@@ -193,7 +194,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE CAR MEMBER CARD ERROR! not found userInfo,uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
@@ -206,7 +207,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         //获取用户当前租车套餐订单
         CarMemberCardOrder carMemberCardOrder = this.selectByOrderId(userCarMemberCard.getOrderId());
-        if(Objects.isNull(carMemberCardOrder)){
+        if (Objects.isNull(carMemberCardOrder)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found carMemberCardOrder,uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0015", "订单不存在");
         }
@@ -220,19 +221,19 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         //车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
-        if(Objects.nonNull(electricityCarModel)){
+        if (Objects.nonNull(electricityCarModel)) {
             userCarMemberCardVO.setCarModelName(electricityCarModel.getName());
         }
 
         //用户车辆SN码
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        if(Objects.nonNull(userCar)){
+        if (Objects.nonNull(userCar)) {
             userCarMemberCardVO.setCarSN(userCar.getSn());
         }
 
         //门店名称
         Store store = storeService.queryByIdFromCache(carMemberCardOrder.getStoreId());
-        if(Objects.nonNull(store)){
+        if (Objects.nonNull(store)) {
             userCarMemberCardVO.setStoreName(store.getName());
         }
 
