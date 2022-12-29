@@ -317,7 +317,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100015", "用户未绑定车辆");
         }
 
-        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel())) {
+        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel().intValue())) {
             log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }
