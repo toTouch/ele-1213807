@@ -835,7 +835,7 @@ public class UnionTradeOrderServiceImpl extends
             updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
-            userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+            userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
         }
 
         CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();
