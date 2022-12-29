@@ -93,17 +93,6 @@ public class JsonAdminUserInfoController extends BaseController {
     /**
      * 会员列表导出
      *
-     * @param name
-     * @param phone
-     * @param nowElectricityBatterySn
-     * @param authStatus
-     * @param serviceStatus
-     * @param franchiseeId
-     * @param uid
-     * @param memberCardId
-     * @param cardName
-     * @param memberCardExpireTimeBegin
-     * @param memberCardExpireTimeEnd
      * @param response
      */
     @GetMapping("/admin/userInfo/exportExcel")
