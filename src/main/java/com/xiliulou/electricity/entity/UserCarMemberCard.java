@@ -37,6 +37,10 @@ public class UserCarMemberCard {
      */
     private Long cardId;
     /**
+     * 车辆套餐订单id
+     */
+    private String orderId;
+    /**
      * 车辆套餐过期时间
      */
     private Long memberCardExpireTime;
