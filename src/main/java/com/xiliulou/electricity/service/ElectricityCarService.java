@@ -56,4 +56,6 @@ public interface ElectricityCarService {
     ElectricityCar selectBySn(String sn);
 
     Integer update(ElectricityCar updateElectricityCar);
+
+    Integer carUnBindUser(ElectricityCar updateElectricityCar);
 }
