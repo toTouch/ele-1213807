@@ -72,4 +72,6 @@ public class EleRefundOrderVO {
      */
     private String phone;
 
+    private String payType;
+
 }

@@ -79,4 +79,8 @@ public class CarDepositOrderVO {
      * 租赁方式
      */
     private String rentType;
+    /**
+     * 是否已退押金
+     */
+    private boolean refundDeposit;
 }
