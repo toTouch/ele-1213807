@@ -1676,12 +1676,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.ok();
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//        if (Objects.isNull(oldFranchiseeUserInfo) || !Objects.equals(oldFranchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-//            log.error("admin editUserMemberCard ERROR! not found user! uid={}", memberCardOrderAddAndUpdate.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//        }
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {

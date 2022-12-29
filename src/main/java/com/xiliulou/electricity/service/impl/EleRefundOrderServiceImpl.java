@@ -623,7 +623,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = new EleRefundOrder();
         eleRefundOrder.setOrderId(userBatteryDeposit.getOrderId());
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
-        eleRefundOrder.setTenantId(userBatteryMemberCard.getTenantId());
+        eleRefundOrder.setTenantId(userInfo.getTenantId());
         eleRefundOrder.setCreateTime(System.currentTimeMillis());
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
