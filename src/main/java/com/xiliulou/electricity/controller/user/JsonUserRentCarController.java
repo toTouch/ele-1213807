@@ -38,7 +38,7 @@ public class JsonUserRentCarController extends BaseController {
      */
     @PostMapping("/user/rentCar/scanQR")
     public R rentCarOrder(@RequestBody @Validated UserRentCarOrderQuery query){
-        return R.ok(rentCarOrderService.rentCarOrder(query));
+        return returnTripleResult(rentCarOrderService.rentCarOrder(query));
     }
 
     /**
