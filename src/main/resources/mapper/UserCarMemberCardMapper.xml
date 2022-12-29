@@ -38,6 +38,9 @@
             <if test="cardId != null">
                 and card_id = #{cardId}
             </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
             <if test="memberCardExpireTime != null">
                 and member_card_expire_time = #{memberCardExpireTime}
             </if>
@@ -85,7 +88,7 @@
         insert into t_user_car_member_card(uid, card_id,order_id, member_card_expire_time, del_flag, create_time, update_time)
         values (#{uid}, #{cardId},#{orderId}, #{memberCardExpireTime}, #{delFlag}, #{createTime}, #{updateTime})
         on duplicate key
-        update card_id=#{cardId},#{orderId}, member_card_expire_time=#{memberCardExpireTime}, del_flag=#{delFlag}, update_time=#{updateTime}
+        update card_id=#{cardId},order_id=#{orderId}, member_card_expire_time=#{memberCardExpireTime}, del_flag=#{delFlag}, update_time=#{updateTime}
     </insert>
 
     <!--通过主键修改数据-->
