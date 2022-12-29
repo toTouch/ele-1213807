@@ -442,6 +442,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             baseMapper.updateById(electricityMemberCardOrderUpdate);
 
+            //修改优惠券状态为正在核销中
+            if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
+                //修改劵可用状态
+                userCoupon.setStatus(UserCoupon.STATUS_USED);
+                userCoupon.setUpdateTime(System.currentTimeMillis());
+                userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+                userCouponService.update(userCoupon);
+            }
+
             //被邀请新买月卡用户
             //是否是新用户
             if (Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
