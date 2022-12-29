@@ -385,7 +385,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE CAR ERROR! not found user uid={}", userInfo.getUid());
+            log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
