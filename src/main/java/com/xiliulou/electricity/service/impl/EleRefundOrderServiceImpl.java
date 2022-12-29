@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -724,6 +725,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public R queryList(EleRefundQuery eleRefundQuery) {
         return R.ok(eleRefundOrderMapper.queryList(eleRefundQuery));
+    }
+
+    @Override
+    public List<EleRefundOrderVO> selectCarRefundPageList(EleRefundQuery eleRefundQuery) {
+        return eleRefundOrderMapper.selectCarRefundPageList(eleRefundQuery);
+    }
+
+    @Override
+    public Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery) {
+        return eleRefundOrderMapper.selectCarRefundPageCount(eleRefundQuery);
     }
 
     @Override

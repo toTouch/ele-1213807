@@ -293,9 +293,6 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-<!--            <if test="serviceStatus != null">
-                service_status = #{serviceStatus},
-            </if>-->
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>

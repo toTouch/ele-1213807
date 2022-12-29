@@ -213,8 +213,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setDelFlag(ElectricityCar.DEL_DEL);
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
-
-            //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
             return null;
         });
@@ -251,7 +249,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Override
     public Integer update(ElectricityCar updateElectricityCar) {
-        return electricityCarMapper.updateById(updateElectricityCar);
+        int update = electricityCarMapper.updateById(updateElectricityCar);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateElectricityCar.getId());
+            return null;
+        });
+        return update;
+    }
+
+    @Override
+    public Integer carUnBindUser(ElectricityCar updateElectricityCar) {
+        int update = electricityCarMapper.updateBindUser(updateElectricityCar);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateElectricityCar.getId());
+            return null;
+        });
+        return update;
     }
 
     @Override
@@ -317,19 +332,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100015", "用户未绑定车辆");
         }
 
-        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel())) {
+        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel().intValue())) {
             log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
         UserCar updateUserCar = new UserCar();
-        updateUserCar.setUid(user.getUid());
+        updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(electricityCar.getId().longValue());
         updateUserCar.setSn(electricityCarBindUser.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
@@ -355,10 +370,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());
         electricityCar.setUpdateTime(System.currentTimeMillis());
-        return R.ok(electricityCarMapper.updateById(electricityCar));
+        return R.ok(this.update(electricityCar));
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R unBindUser(ElectricityCarBindUser electricityCarBindUser) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -392,13 +408,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
         UserCar updateUserCar = new UserCar();
-        updateUserCar.setUid(user.getUid());
+        updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(null);
         updateUserCar.setSn("");
         userCarService.unBindingCarByUid(updateUserCar);
@@ -423,7 +439,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(null);
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
-        return R.ok(electricityCarMapper.updateBindUser(electricityCar));
+        return R.ok(this.carUnBindUser(electricityCar));
     }
 
     @Override
