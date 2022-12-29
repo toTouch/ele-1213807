@@ -47,7 +47,9 @@ public class JsonAdminEleRefundOrderController {
     UserDataScopeService userDataScopeService;
 
 
-    //退款列表
+    /**
+     * 租电池押金退款列表
+     */
     @GetMapping("/admin/eleRefundOrder/queryList")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
@@ -155,6 +157,119 @@ public class JsonAdminEleRefundOrderController {
                 .phone(phone).build();
 
         return eleRefundOrderService.queryCount(eleRefundQuery);
+    }
+
+    /**
+     * 租车押金退款列表
+     */
+    @GetMapping("/admin/carRefundOrder/queryList")
+    public R page(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "payType", required = false) Integer payType,
+                       @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "orderId", required = false) String orderId,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
+                .offset(offset)
+                .size(size)
+                .orderId(orderId)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
+                .phone(phone)
+                .payType(payType)
+                .refundOrderType(refundOrderType)
+                .name(name).build();
+
+        return R.ok(eleRefundOrderService.selectCarRefundPageList(eleRefundQuery));
+    }
+
+    /**
+     * 租车退款分页列表总数
+     */
+    @GetMapping("/admin/carRefundOrder/queryCount")
+    public R pageCount(@RequestParam(value = "orderId", required = false) String orderId,
+                        @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "payType", required = false) Integer payType,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "endTime", required = false) Long endTime) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
+                .orderId(orderId)
+                .status(status)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
+                .payType(payType)
+                .refundOrderType(refundOrderType)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
+                .phone(phone).build();
+
+        return R.ok(eleRefundOrderService.selectCarRefundPageCount(eleRefundQuery));
     }
 
     //后台退款处理
