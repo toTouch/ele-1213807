@@ -111,16 +111,22 @@
     </select>
 
     <select id="queryTurnOverByTime" resultType="decimal">
-        select sum(refund_amount) from t_ele_refund_order
-        where status=4
+        select sum(refund_amount) from t_ele_refund_order tero left join t_ele_deposit_order tedo on tero.order_id=tedo.order_id
+        where tero.status=4
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and tero.tenant_id = #{tenantId}
         </if>
         <if test="todayStartTime != null">
-            and create_time &gt;=#{todayStartTime}
+            and tero.create_time &gt;=#{todayStartTime}
         </if>
         <if test="refundOrderType != null">
-            and refund_order_type = #{refundOrderType}
+            and tero.refund_order_type = #{refundOrderType}
+        </if>
+        <if test="franchiseeIds != null">
+            and tedo.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 

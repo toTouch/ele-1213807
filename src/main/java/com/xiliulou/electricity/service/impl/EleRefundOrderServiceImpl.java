@@ -537,8 +537,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-        
-        if(Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(),franchiseeUserInfo.MEMBER_CARD_DISABLE)){
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), franchiseeUserInfo.MEMBER_CARD_DISABLE)) {
             log.error("BATTERY DEPOSIT REFUND ERROR! user membercard is disable,uid={}", uid);
             return R.fail("100211", "用户套餐已暂停！");
         }
@@ -735,8 +735,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType) {
-        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId, todayStartTime, refundOrderType)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType, List<Long> franchiseeIds) {
+        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId, todayStartTime, refundOrderType,franchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
     public String generateOrderId(Long uid) {

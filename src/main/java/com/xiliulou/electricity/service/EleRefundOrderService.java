@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,5 +75,5 @@ public interface EleRefundOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType);
+    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
 }
