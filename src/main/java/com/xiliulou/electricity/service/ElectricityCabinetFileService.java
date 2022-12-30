@@ -38,5 +38,5 @@ public interface ElectricityCabinetFileService {
 
     void deleteByDeviceInfo(Long otherId, Integer fileType,Integer  isUseOSS);
 
-    List<ElectricityCabinetFile> selectByFileTypeAndEid(Long eid, Integer typeElectricityCabinet);
+    List<ElectricityCabinetFile> selectByFileTypeAndEid(Long eid, Integer tenantId, Integer typeElectricityCabinet);
 }
