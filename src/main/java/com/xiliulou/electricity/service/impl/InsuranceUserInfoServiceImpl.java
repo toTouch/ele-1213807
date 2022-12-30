@@ -209,10 +209,15 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
                 return R.ok();
             }
+
+            log.error("查询出的保险====================" + insuranceUserInfoVo);
+
             List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
             InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
             BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
             insuranceOrderList.add(insuranceOrderVO);
+
+            log.error("查询出的保险组装数据====================" + insuranceOrderList);
             return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
             InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()
