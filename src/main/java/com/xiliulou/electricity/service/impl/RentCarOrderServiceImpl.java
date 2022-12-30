@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -457,12 +458,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //车辆是否可用
         ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn());
         if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("ORDER ERROR! not found electricityCar,sn={},uid={}", query.getSn(), user.getUid());
+            log.error("ELE RENT CAR ERROR! not found electricityCar,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100007", "车辆不存在");
         }
 
         if (Objects.equals(electricityCar.getStatus(), ElectricityCar.STATUS_IS_RENT)) {
-            log.error("ORDER ERROR! this car has been bound others,sn={},uid={}", query.getSn(), user.getUid());
+            log.error("ELE RENT CAR ERROR! this car has been bound others,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100231", "车辆已绑定其它用户");
         }
 
@@ -470,6 +471,17 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE RENT CAR ERROR! electricityCarModel is null,uid={}", user.getUid());
             return Triple.of(false, "100009", "车辆型号不存在");
+        }
+
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCar)){
+            log.error("ELE RENT CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
+            return Triple.of(false, "100247", "未找到用户信息");
+        }
+
+        if(Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
+            log.error("ELE RENT CAR ERROR! this user bind car model not equals this car model,uid={}", userInfo.getUid());
+            return Triple.of(false, "100236", "车辆型号不匹配");
         }
 
 
