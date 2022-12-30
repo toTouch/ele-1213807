@@ -372,15 +372,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         baseMapper.insert(electricityMemberCardOrder);
 
 
-        //修改优惠券状态为正在核销中
-        if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
-            //修改劵可用状态
-            userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-            userCoupon.setUpdateTime(System.currentTimeMillis());
-            userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-            userCouponService.update(userCoupon);
-        }
-
         //支付零元
         if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
 
@@ -442,7 +433,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
             baseMapper.updateById(electricityMemberCardOrderUpdate);
 
-            //修改优惠券状态为正在核销中
+            //修改优惠券状态为已使用
             if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
                 //修改劵可用状态
                 userCoupon.setStatus(UserCoupon.STATUS_USED);
@@ -504,6 +495,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             return R.ok();
+        }
+
+        //修改优惠券状态为正在核销中
+        if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
+            //修改劵可用状态
+            userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
+            userCoupon.setUpdateTime(System.currentTimeMillis());
+            userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+            userCouponService.update(userCoupon);
         }
 
         //调起支付
