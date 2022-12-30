@@ -531,8 +531,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //获取柜机图片
-                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue(),e.getTenantId());
-                if(!CollectionUtils.isEmpty(electricityCabinetPicture)){
+                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue(), TenantContextHolder.getTenantId());
+                if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
                     e.setPictureUrl(electricityCabinetPicture.get(0));
                 }
 
