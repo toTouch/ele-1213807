@@ -202,14 +202,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarMemberCard)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
-            return Triple.of(true, "", userCarMemberCardVO);
+            return Triple.of(true, "", null);
         }
 
         //获取用户当前租车套餐订单
         CarMemberCardOrder carMemberCardOrder = this.selectByOrderId(userCarMemberCard.getOrderId());
         if (Objects.isNull(carMemberCardOrder)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found carMemberCardOrder,uid={}", user.getUid());
-            return Triple.of(true, "", userCarMemberCardVO);
+            return Triple.of(true, "", null);
         }
 
 

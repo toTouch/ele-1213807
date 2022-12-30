@@ -299,15 +299,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         //押金
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
+            return R.fail("100012", "未缴纳租车押金");
+        }
+
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if(Objects.isNull(userCarDeposit)){
             log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100247", "未找到用户信息");
-        }
-
-        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
-            return R.fail("100012", "未缴纳租车押金");
         }
 
         //是否绑定车辆
