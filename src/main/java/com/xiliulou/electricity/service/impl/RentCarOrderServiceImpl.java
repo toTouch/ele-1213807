@@ -479,7 +479,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             return Triple.of(false, "100247", "未找到用户信息");
         }
 
-        if(Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
+        if(!Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
             log.error("ELE RENT CAR ERROR! this user bind car model not equals this car model,uid={}", userInfo.getUid());
             return Triple.of(false, "100236", "车辆型号不匹配");
         }

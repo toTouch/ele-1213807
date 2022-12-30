@@ -74,6 +74,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     UserCarMemberCardService userCarMemberCardService;
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -493,6 +495,12 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         //是否归还车辆
         if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", uid);
+            return Triple.of(false, "100250", "用户未归还车辆");
+        }
+
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if(Objects.nonNull(electricityCar)){
+            log.error("ELE CAR REFUND ERROR! user has bind car,uid={}", uid);
             return Triple.of(false, "100250", "用户未归还车辆");
         }
 
