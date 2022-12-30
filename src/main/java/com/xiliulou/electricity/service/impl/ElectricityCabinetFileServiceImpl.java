@@ -79,9 +79,9 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
-    public List<ElectricityCabinetFile> selectByFileTypeAndEid(Long eid, Integer tenantId, Integer type) {
+    public List<ElectricityCabinetFile> selectByFileTypeAndEid(Long eid, Integer type) {
         return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getOtherId, eid)
-                .eq(ElectricityCabinetFile::getType, type).eq(ElectricityCabinetFile::getTenantId,tenantId));
+                .eq(ElectricityCabinetFile::getType, type));
     }
 
     @Override
