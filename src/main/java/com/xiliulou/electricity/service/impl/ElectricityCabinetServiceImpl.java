@@ -531,7 +531,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //获取柜机图片
-                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
+                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue(),e.getTenantId());
                 if(!CollectionUtils.isEmpty(electricityCabinetPicture)){
                     e.setPictureUrl(electricityCabinetPicture.get(0));
                 }
@@ -3380,8 +3380,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     /**
      * 获取柜机图片
      */
-    private List<String> getElectricityCabinetPicture(Long eid) {
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.selectByFileTypeAndEid(eid, ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET);
+    private List<String> getElectricityCabinetPicture(Long eid, Integer tenantId) {
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.selectByFileTypeAndEid(eid, tenantId, ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET);
         if (CollectionUtils.isEmpty(electricityCabinetFileList)) {
             return Collections.EMPTY_LIST;
         }
