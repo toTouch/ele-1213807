@@ -335,6 +335,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(user.getUid());
+        carMemberCardOrder.setCardName(getCardName(carMemberCardOrderQuery.getRentType()));
         carMemberCardOrder.setMemberCardType(carMemberCardOrderQuery.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
