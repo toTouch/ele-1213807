@@ -502,6 +502,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             userCarService.insertOrUpdate(updateUserCar);
 
             ElectricityCar updateElectricityCar = new ElectricityCar();
+            updateElectricityCar.setId(electricityCar.getId());
             updateElectricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
             updateElectricityCar.setUid(userInfo.getUid());
             updateElectricityCar.setPhone(userInfo.getPhone());

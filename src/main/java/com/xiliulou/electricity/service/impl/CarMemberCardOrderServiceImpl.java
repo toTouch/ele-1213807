@@ -202,14 +202,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarMemberCard)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+            return Triple.of(true, "", userCarMemberCardVO);
         }
 
         //获取用户当前租车套餐订单
         CarMemberCardOrder carMemberCardOrder = this.selectByOrderId(userCarMemberCard.getOrderId());
         if (Objects.isNull(carMemberCardOrder)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found carMemberCardOrder,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0015", "订单不存在");
+            return Triple.of(true, "", userCarMemberCardVO);
         }
 
 
@@ -307,7 +307,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
-                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId())) {
+                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId().longValue())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }

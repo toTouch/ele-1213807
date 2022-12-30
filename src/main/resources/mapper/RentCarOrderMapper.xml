@@ -207,8 +207,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_rent_car_order(order_id, uid, name, phone, car_sn, car_deposit, car_model_id, type, status, remark, create_time, update_time, store_id, franchisee_id, tenant_id)
-        values (#{orderId}, #{uid}, #{name}, #{phone}, #{carSn}, #{carDeposit}, #{carModelId}, #{type}, #{status}, #{remark}, #{createTime}, #{updateTime}, #{storeId}, #{franchiseeId}, #{tenantId})
+        insert into t_rent_car_order(order_id, uid, name, phone, car_sn, car_deposit, car_model_id,transaction_type, type, status, remark, create_time, update_time, store_id, franchisee_id, tenant_id)
+        values (#{orderId}, #{uid}, #{name}, #{phone}, #{carSn}, #{carDeposit}, #{carModelId},#{transactionType}, #{type}, #{status}, #{remark}, #{createTime}, #{updateTime}, #{storeId}, #{franchiseeId}, #{tenantId})
     </insert>
 
     <!--通过主键修改数据-->
