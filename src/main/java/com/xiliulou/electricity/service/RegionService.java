@@ -50,4 +50,6 @@ public interface RegionService {
     List<Region> queryRegionListByPid(Integer pid);
 
     List<Region> selectByRids(List<Integer> rids);
+
+    Integer insert(Region region);
 }
