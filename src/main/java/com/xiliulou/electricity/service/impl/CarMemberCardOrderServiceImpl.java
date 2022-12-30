@@ -212,7 +212,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return Triple.of(true, "", null);
         }
 
-
+        userCarMemberCardVO.setCarModelId(carMemberCardOrder.getCarModelId());
         userCarMemberCardVO.setCardName(carMemberCardOrder.getCardName());
         userCarMemberCardVO.setPayAmount(carMemberCardOrder.getPayAmount());
         userCarMemberCardVO.setValidDays(carMemberCardOrder.getValidDays());
