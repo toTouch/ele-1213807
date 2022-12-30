@@ -8,11 +8,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -52,6 +54,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     UserCarService userCarService;
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    RentCarOrderService rentCarOrderService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
 
 
     /**
@@ -293,6 +299,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         //押金
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCarDeposit)){
+            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
+            return R.fail("100247", "未找到用户信息");
+        }
+
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100012", "未缴纳租车押金");
@@ -349,6 +361,27 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateUserCar.setSn(electricityCarBindUser.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.updateByUid(updateUserCar);
+
+        //生成租车记录
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
+        RentCarOrder rentCarOrder = new RentCarOrder();
+        rentCarOrder.setOrderId(orderId);
+        rentCarOrder.setCarModelId(electricityCar.getModelId().longValue());
+        rentCarOrder.setCarDeposit(userCarDeposit.getCarDeposit().doubleValue());
+        rentCarOrder.setStatus(RentCarOrder.STATUS_SUCCESS);
+        rentCarOrder.setCarSn(electricityCarBindUser.getSn());
+        rentCarOrder.setType(RentCarOrder.TYPE_RENT);
+        rentCarOrder.setUid(user.getUid());
+        rentCarOrder.setName(userInfo.getName());
+        rentCarOrder.setPhone(userInfo.getPhone());
+        rentCarOrder.setTransactionType(RentCarOrder.TYPE_TRANSACTION_ONLINE);
+        rentCarOrder.setStoreId(electricityCar.getStoreId());
+        rentCarOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        rentCarOrder.setTenantId(TenantContextHolder.getTenantId());
+        rentCarOrder.setCreateTime(System.currentTimeMillis());
+        rentCarOrder.setUpdateTime(System.currentTimeMillis());
+
+        rentCarOrderService.insert(rentCarOrder);
 
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
