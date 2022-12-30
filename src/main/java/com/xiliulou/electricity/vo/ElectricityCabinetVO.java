@@ -170,6 +170,11 @@ public class ElectricityCabinetVO {
      */
     private Long franchiseeId;
 
+    /**
+     * 柜机图片
+     */
+    private String pictureUrl;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

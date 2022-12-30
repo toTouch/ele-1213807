@@ -79,6 +79,12 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
+    public List<ElectricityCabinetFile> selectByFileTypeAndEid(Long eid, Integer type) {
+        return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getOtherId, eid)
+                .eq(ElectricityCabinetFile::getType, type).eq(ElectricityCabinetFile::getTenantId, TenantContextHolder.getTenantId()));
+    }
+
+    @Override
     public void getMinioFile(String fileName, HttpServletResponse response) {
         int separator = fileName.lastIndexOf(StrUtil.DASHED);
         try (InputStream inputStream = storageService.getFile(fileName.substring(0, separator),
