@@ -120,7 +120,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
 
-        log.debug("购买保险用户信息-------===================================" + userInfo);
+        log.error("购买保险用户信息-------===================================" + userInfo);
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
