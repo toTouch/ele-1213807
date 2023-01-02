@@ -130,19 +130,6 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 carDepositOrderVO.setRentBattery(userInfo.getBatteryRentStatus());
             }
 
-            UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
-            if(Objects.nonNull(userCar)){
-                carDepositOrderVO.setCarSn(userCar.getSn());
-            }
-
-            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
-            if(Objects.nonNull(userCarMemberCard)){
-                CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByIdFromDB(userCarMemberCard.getCardId());
-                if(Objects.nonNull(carMemberCardOrder)){
-                    carDepositOrderVO.setRentType(carMemberCardOrder.getCardName());
-                }
-            }
-
             //是否已退押金
             carDepositOrderVO.setRefundDeposit(eleRefundOrderService.checkDepositOrderIsRefund(item.getOrderId()));
 

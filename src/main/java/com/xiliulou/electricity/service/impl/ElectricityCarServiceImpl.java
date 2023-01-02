@@ -115,7 +115,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
-        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId, tenantId));
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>()
+                .eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn())
+                .eq(ElectricityCar::getDelFlag,ElectricityCar.DEL_NORMAL)
+                .eq(ElectricityCar::getTenantId, tenantId));
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
         }
