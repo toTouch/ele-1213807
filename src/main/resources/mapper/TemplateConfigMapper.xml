@@ -4,24 +4,24 @@
     
     <!-- 基础字段 -->
 	<sql id="selectTemplateConfig">
-       	select   id, battery_outtime_template, electric_quantity_remind_template, tenant_id, create_time, update_time, member_card_expiring_template        from t_template_config
+       	select   id, battery_outtime_template, electric_quantity_remind_template, tenant_id, create_time, update_time, battery_member_card_expiring_template,car_member_card_expiring_template        from t_template_config
     </sql>
   
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_template_config(battery_outtime_template, electric_quantity_remind_template, tenant_id, create_time, update_time, member_card_expiring_template)
-        values (#{batteryOuttimeTemplate}, #{electricQuantityRemindTemplate}, #{tenantId}, #{createTime}, #{updateTime}, #{memberCardExpiringTemplate})
+        insert into t_template_config(battery_outtime_template, electric_quantity_remind_template, tenant_id, create_time, update_time, battery_member_card_expiring_template,car_member_card_expiring_template)
+        values (#{batteryOuttimeTemplate}, #{electricQuantityRemindTemplate}, #{tenantId}, #{createTime}, #{updateTime}, #{batteryMemberCardExpiringTemplate},#{carMemberCardExpiringTemplate})
     </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
         update t_template_config
         <set>
-            <if test="batteryOuttimeTemplate != null and batteryOuttimeTemplate != ''">
+            <if test="batteryOuttimeTemplate != null ">
                 battery_outtime_template = #{batteryOuttimeTemplate},
             </if>
-            <if test="electricQuantityRemindTemplate != null and electricQuantityRemindTemplate != ''">
+            <if test="electricQuantityRemindTemplate != null ">
                 electric_quantity_remind_template = #{electricQuantityRemindTemplate},
             </if>
             <if test="createTime != null">
@@ -29,6 +29,12 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="batteryMemberCardExpiringTemplate != null">
+                battery_member_card_expiring_template = #{batteryMemberCardExpiringTemplate},
+            </if>
+            <if test="carMemberCardExpiringTemplate != null ">
+                car_member_card_expiring_template = #{carMemberCardExpiringTemplate},
             </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}

@@ -772,8 +772,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType) {
-        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId, todayStartTime, refundOrderType)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType, List<Long> franchiseeIds) {
+        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId, todayStartTime, refundOrderType,franchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
     public String generateOrderId(Long uid) {

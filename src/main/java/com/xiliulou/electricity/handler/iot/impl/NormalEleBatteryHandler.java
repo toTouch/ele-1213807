@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
-    ExecutorService voltageCurrentExecutorService = XllThreadPoolExecutors.newFixedThreadPool("eleSaveVoltageCurrent", 1, "ele_Save_Voltage_Current");
+    ExecutorService voltageCurrentExecutorService = XllThreadPoolExecutors.newFixedThreadPool("eleSaveVoltageCurrent", 3, "ele_Save_Voltage_Current");
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;

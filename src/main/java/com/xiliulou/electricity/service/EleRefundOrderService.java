@@ -81,8 +81,6 @@ public interface EleRefundOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType);
-
     /**
      * 检查押金订单是否退款
      * @param orderId
@@ -90,4 +88,5 @@ public interface EleRefundOrderService {
      */
     boolean checkDepositOrderIsRefund(String orderId);
 
+    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
 }

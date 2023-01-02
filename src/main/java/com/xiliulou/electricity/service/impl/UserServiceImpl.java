@@ -501,7 +501,7 @@ public class UserServiceImpl implements UserService {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("updatePassword  ERROR! not found user ");
-            Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -509,12 +509,12 @@ public class UserServiceImpl implements UserService {
         User oldUser = queryByUserNameAndTenantId(passwordQuery.getName(), tenantId);
         if (Objects.isNull(oldUser)) {
             log.error("updatePassword  ERROR! not found userName{} ", passwordQuery.getName());
-            Triple.of(false, null, "用户名不存在");
+           return Triple.of(false, null, "用户名不存在");
         }
 
-        if (!Objects.equals(user, oldUser)) {
+        if (!Objects.equals(user.getUid(), oldUser.getUid())) {
             log.error("updatePassword  ERROR! not found userId{},oldUserId{} ", user.getUid(), oldUser.getUid());
-            Triple.of(false, null, "不能修改别人的密码");
+            return Triple.of(false, null, "不能修改别人的密码");
         }
 
         User updateUser = new User();

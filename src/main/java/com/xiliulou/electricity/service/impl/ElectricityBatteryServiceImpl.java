@@ -666,14 +666,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Override
     public boolean checkBatteryIsExchange(String batteryName, Double fullyCharged) {
-        boolean result = Boolean.FALSE;
         ElectricityBattery electricityBattery = this.queryBySn(batteryName);
-        if (Objects.isNull(batteryName)) {
-            return result;
+        if (Objects.isNull(electricityBattery)) {
+            return Boolean.FALSE;
         }
     
-        result = electricityBattery.getPower() >= fullyCharged ? Boolean.TRUE : Boolean.FALSE;
-        return result;
+        return electricityBattery.getPower() >= fullyCharged ? Boolean.TRUE : Boolean.FALSE;
     }
     
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {

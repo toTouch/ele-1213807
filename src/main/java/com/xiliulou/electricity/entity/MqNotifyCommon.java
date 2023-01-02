@@ -51,5 +51,7 @@ public class MqNotifyCommon<T> {
      */
     public static final Integer TYPE_AUTHENTICATION_AUDIT=9;
 
+    public static final Integer TYPE_DISABLE_MEMBER_CARD = 10;
+
     public static final String PROJECT_NAME = "换电柜";
 }

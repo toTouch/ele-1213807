@@ -66,6 +66,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -79,7 +80,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+
+
+    private static final String BATTERY_FULL_CONDITION="batteryFullCondition";
 
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
@@ -368,6 +372,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //修改柜机服务时间信息
             electricityCabinetServerService
                     .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
+
+            //云端下发命令修改换电标准
+            if (!Objects.equals(oldElectricityCabinet.getFullyCharged(), electricityCabinet.getFullyCharged())) {
+                this.updateFullyChargedByCloud(electricityCabinet);
+            }
+
             return null;
         });
         return R.ok();
@@ -1953,7 +1963,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
-            log.error("ele battery error! no electricityBattery,sn={}", batteryName);
+            log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
         }
 
@@ -2243,8 +2253,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {
             return Pair.of(false, null);
         }
-        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
+//        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
 
+
+        String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size())).getCellNo();
+        return Pair.of(true, Integer.parseInt(cellNo));
     }
 
     @Override
@@ -2620,8 +2633,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //退电池押金
         CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime, null);
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime, null,finalFranchiseeIds);
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER,finalFranchiseeIds);
             homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
             homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
@@ -2631,7 +2644,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,finalFranchiseeIds);
             homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -3294,6 +3307,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
 
+
+
+    /**
+     * 通过云端下发命令更新换电标准
+     */
+    private void updateFullyChargedByCloud(ElectricityCabinet electricityCabinet) {
+
+        Map<String, Object> params = Maps.newHashMap();
+        params.put(BATTERY_FULL_CONDITION, electricityCabinet.getFullyCharged());
+
+        EleOuterCommandQuery commandQuery = new EleOuterCommandQuery();
+        commandQuery.setProductKey(electricityCabinet.getProductKey());
+        commandQuery.setDeviceName(electricityCabinet.getDeviceName());
+        commandQuery.setCommand(ElectricityIotConstant.ELE_OTHER_SETTING);
+        commandQuery.setData(params);
+
+        try {
+            sendCommandToEleForOuter(commandQuery);
+        } catch (Exception e) {
+            log.error("ELE ERROR！set batteryFullCondition error,electricityCabinetId={}", electricityCabinet.getId(), e);
+        }
+    }
+
+
     /**
      * 满仓提醒
      *
@@ -3305,14 +3342,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return;
         }
 
-        messages.parallelStream().forEach(item -> {
-            log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
+        messages.parallelStream().forEach(item->{
+            log.info("DELY QUEUE LISTENER INFO! full battery message={}",JsonUtil.toJson(item));
 
-            if (StringUtils.isBlank(item.getMsg())) {
+            if(StringUtils.isBlank(item.getMsg())){
                 return;
             }
 
-            Integer electricityCabinetId = Integer.parseInt(item.getMsg());
+            Integer electricityCabinetId=Integer.parseInt(item.getMsg());
 
             ElectricityCabinet electricityCabinet = this.queryByIdFromCache(electricityCabinetId);
             if (Objects.isNull(electricityCabinet)) {
@@ -3375,6 +3412,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             return abnormalMessageNotifyCommon;
         }).collect(Collectors.toList());
+
     }
 
     /**
