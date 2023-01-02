@@ -36,7 +36,7 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and edo.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -54,7 +54,7 @@
             </if>
             <if test="query.storeIds != null">
                 and edo.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -99,7 +99,7 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and edo.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -114,7 +114,7 @@
             </if>
             <if test="query.storeIds != null">
                 and edo.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -160,7 +160,7 @@
             </if>
             <if test="query.franchiseeIds != null">
                 and edo.franchisee_id in
-                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -169,7 +169,7 @@
             </if>
             <if test="query.storeIds != null">
                 and edo.store_id in
-                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
@@ -242,43 +242,41 @@
     </select>
 
     <select id="payDepositOrderList" resultType="com.xiliulou.electricity.vo.PayDepositOrderVO">
-         select
+        select
         edo.pay_amount, edo.create_time as payTime,ero.create_time as refundTime
         from t_ele_deposit_order edo
         left join t_ele_refund_order as ero on ero.order_id= edo.order_id
-        <where>
-
-            <if test="query.orderId != null and query.orderId != ''">
-                and edo.order_id = #{query.orderId}
-            </if>
-            <if test="query.status != null">
-                and edo.status = #{query.status}
-            </if>
-            <if test="query.name != null and query.name != ''">
-                and edo.name = #{query.name}
-            </if>
-            <if test="query.phone != null and query.phone != ''">
-                and edo.phone = #{query.phone}
-            </if>
-            <if test="query.beginTime != null">
-                and edo.create_time &gt;=#{query.beginTime}
-            </if>
-            <if test="query.endTime != null">
-                and edo.create_time &lt;=#{query.endTime}
-            </if>
-            <if test="query.tenantId != null">
-                and edo.tenant_id = #{query.tenantId}
-            </if>
-            <if test="query.franchiseeId != null">
-                and edo.franchisee_id = #{query.franchiseeId}
-            </if>
-            <if test="query.uid != null">
-                and edo.uid = #{query.uid}
-            </if>
-            <if test="query.refundOrderType != null">
-                and ero.refund_order_type = #{query.refundOrderType}
-            </if>
-        </where>
+        where edo.status=1
+        <if test="query.orderId != null and query.orderId != ''">
+            and edo.order_id = #{query.orderId}
+        </if>
+        <if test="query.status != null">
+            and edo.status = #{query.status}
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and edo.name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and edo.phone = #{query.phone}
+        </if>
+        <if test="query.beginTime != null">
+            and edo.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and edo.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.tenantId != null">
+            and edo.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.franchiseeId != null">
+            and edo.franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.uid != null">
+            and edo.uid = #{query.uid}
+        </if>
+        <if test="query.refundOrderType != null">
+            and ero.refund_order_type = #{query.refundOrderType}
+        </if>
         order by edo.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -317,18 +315,19 @@
         <if test="depositType != null">
             and deposit_type = #{depositType}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id = #{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id = #{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
     </select>
 
-    <select id="queryDepositTurnOverAnalysisByDepositType" resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+    <select id="queryDepositTurnOverAnalysisByDepositType"
+            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_ele_deposit_order
         where status=1
@@ -338,12 +337,12 @@
         <if test="depositType != null">
             and deposit_type = #{depositType}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id = #{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id = #{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -358,17 +357,17 @@
     </select>
 
     <select id="querySumDepositTurnOverAnalysis" resultType="decimal">
-        select sum(pay_amount)  from t_ele_deposit_order
+        select sum(pay_amount) from t_ele_deposit_order
         where status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-<!--        <if test="franchiseeId != null">-->
-<!--            and franchisee_id = #{franchiseeId}-->
-<!--        </if>-->
+        <!--        <if test="franchiseeId != null">-->
+        <!--            and franchisee_id = #{franchiseeId}-->
+        <!--        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
