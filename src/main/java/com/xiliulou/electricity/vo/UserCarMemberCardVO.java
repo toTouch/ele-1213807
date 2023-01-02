@@ -30,6 +30,7 @@ public class UserCarMemberCardVO {
      * 车辆型号
      */
     private String carModelName;
+    private Long carModelId;
     /**
      * 套餐类型
      */

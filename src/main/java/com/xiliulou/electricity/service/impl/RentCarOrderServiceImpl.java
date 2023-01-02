@@ -479,7 +479,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             return Triple.of(false, "100247", "未找到用户信息");
         }
 
-        if(Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
+        if(!Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
             log.error("ELE RENT CAR ERROR! this user bind car model not equals this car model,uid={}", userInfo.getUid());
             return Triple.of(false, "100236", "车辆型号不匹配");
         }
@@ -506,12 +506,18 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         int insert = rentCarOrderMapper.insertOne(rentCarOrder);
 
         DbUtils.dbOperateSuccessThen(insert, () -> {
+            //更新用户车辆租赁状态
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
 
             UserCar updateUserCar = new UserCar();
             updateUserCar.setUid(user.getUid());
             updateUserCar.setSn(query.getSn());
             updateUserCar.setUpdateTime(System.currentTimeMillis());
-            userCarService.insertOrUpdate(updateUserCar);
+            userCarService.updateByUid(updateUserCar);
 
             ElectricityCar updateElectricityCar = new ElectricityCar();
             updateElectricityCar.setId(electricityCar.getId());

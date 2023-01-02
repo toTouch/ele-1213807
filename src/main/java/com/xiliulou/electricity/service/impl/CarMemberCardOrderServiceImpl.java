@@ -212,7 +212,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return Triple.of(true, "", null);
         }
 
-
+        userCarMemberCardVO.setCarModelId(carMemberCardOrder.getCarModelId());
         userCarMemberCardVO.setCardName(carMemberCardOrder.getCardName());
         userCarMemberCardVO.setPayAmount(carMemberCardOrder.getPayAmount());
         userCarMemberCardVO.setValidDays(carMemberCardOrder.getValidDays());
@@ -335,12 +335,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(user.getUid());
+        carMemberCardOrder.setCardName(getCardName(carMemberCardOrderQuery.getRentType()));
         carMemberCardOrder.setMemberCardType(carMemberCardOrderQuery.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
         carMemberCardOrder.setValidDays(carMemberCardOrderQuery.getRentTime());
         carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
         carMemberCardOrder.setTenantId(userInfo.getTenantId());
+        carMemberCardOrder.setStoreId(electricityCarModel.getStoreId());
         carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         this.insert(carMemberCardOrder);
 

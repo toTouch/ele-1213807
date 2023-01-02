@@ -3,19 +3,16 @@ package com.xiliulou.electricity.handler.iot.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.ApiOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.service.ApiOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +33,6 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     @Autowired
-    ApiOrderOperHistoryService apiOrderOperHistoryService;
-    @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
 
     @Override
@@ -50,14 +45,6 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
         }
 
         if (receiverMessage.getType().equalsIgnoreCase(ElectricityIotConstant.API_ORDER_OPER_HISTORY)) {
-            ApiOrderOperHistory history = ApiOrderOperHistory.builder()
-                    .createTime(System.currentTimeMillis())
-                    .orderId(eleOrderOperateVO.getOrderId())
-                    .type(eleOrderOperateVO.getOrderType())
-                    .tenantId(electricityCabinet.getTenantId())
-                    .msg(eleOrderOperateVO.getMsg())
-                    .build();
-            apiOrderOperHistoryService.insert(history);
         } else {
             Integer type = eleOrderOperateVO.getOrderType();
             Integer seq = eleOrderOperateVO.getSeq();
