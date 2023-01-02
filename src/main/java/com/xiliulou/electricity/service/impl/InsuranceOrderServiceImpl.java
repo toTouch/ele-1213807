@@ -144,6 +144,12 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.nonNull(insuranceUserInfo) && (Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE) || insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis())) {
+            log.error("CREATE INSURANCE_ORDER ERROR! user have insurance ！uid={}", userInfo.getUid());
+            return R.fail("100310", "已购买保险");
+        }
+
         //查询保险
         FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrderAdd.getInsuranceId());
 
@@ -202,7 +208,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             updateOrAddInsuranceUserInfo.setFranchiseeId(franchisee.getId());
 
 
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.isNull(insuranceUserInfo)) {
                 updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
                 insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
