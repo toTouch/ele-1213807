@@ -228,13 +228,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
 
-//            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//            if (Objects.isNull(franchiseeUserInfo)) {
-//                eleLockFlag = Boolean.FALSE;
-//                log.error("RENTBATTERY ERROR! not found user,userId={}", user.getUid());
-//                return R.fail("ELECTRICITY.0001", "未找到用户");
-//            }
-
             //判断该换电柜加盟商和用户加盟商是否一致
             if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
                 eleLockFlag = Boolean.FALSE;
