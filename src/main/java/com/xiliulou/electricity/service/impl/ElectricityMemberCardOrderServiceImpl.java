@@ -2504,6 +2504,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         }
 
+        if (Objects.isNull(userBattery)){
+            return batteryServiceFee;
+        }
+
         Integer modelType = franchisee.getModelType();
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
