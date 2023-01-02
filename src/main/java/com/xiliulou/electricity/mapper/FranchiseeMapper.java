@@ -29,4 +29,6 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
     Integer update( Franchisee franchisee );
 
     List<Franchisee> selectListByQuery(FranchiseeQuery franchiseeQuery);
+
+    int editFranchisee(Franchisee updateFranchisee);
 }
