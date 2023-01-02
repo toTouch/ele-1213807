@@ -116,6 +116,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     UserCarDepositService userCarDepositService;
 
+    @Autowired
+    InsuranceOrderService insuranceOrderService;
+
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -270,7 +274,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryInsurance = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
-                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(item.getUid(), userInfoQuery.getTenantId());
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(item.getUid());
                     if (Objects.nonNull(insuranceUserInfo)) {
                         item.setIsUse(insuranceUserInfo.getIsUse());
                         item.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime());
