@@ -90,7 +90,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         if (Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)) {
-            return R.fail("100311", "用户不存在保险");
+            return R.fail("100311", "用户保险状态为已出险，无法修改");
         }
 
         InsuranceUserInfo updateInsuranceUserInfo = new InsuranceUserInfo();
