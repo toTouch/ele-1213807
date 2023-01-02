@@ -1132,7 +1132,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfoResult.setUserStatus(UserInfoResultVO.STATUS_BATTERY_SERVICE_FEE);
             return Triple.of(true, "", userInfoResult);
         }
-        //有电池 没有电池服务费
+        //有电池  没有电池服务费,获取电池信息
+        if (Objects.nonNull(electricityBattery) && !isHaveBatteryServiceFee) {
+            userInfoResult.setUserStatus(UserInfoResultVO.STATUS_HAVE_BATTERY);
+            return Triple.of(true, "", userInfoResult);
+        }
 
 
         //4.套餐是否过期
