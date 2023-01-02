@@ -66,6 +66,10 @@ public class CarDepositOrder {
      */
     private Integer payType;
     /**
+     * 是否租电池，0：是，1：否
+     */
+    private Integer rentBattery;
+    /**
      * 0--正常 1--删除
      */
     private Integer delFlag;
@@ -90,4 +94,6 @@ public class CarDepositOrder {
     public static final Integer ONLINE_PAYTYPE = 0;
     public static final Integer OFFLINE_PAYTYPE = 1;
 
+    public static final Integer RENTBATTERY_YES = 0;
+    public static final Integer RENTBATTERY_NO = 1;
 }

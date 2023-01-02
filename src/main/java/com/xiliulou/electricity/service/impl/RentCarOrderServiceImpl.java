@@ -397,6 +397,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         carDepositOrder.setStoreId(rentCarOrderQuery.getStoreId());
         carDepositOrder.setPayType(CarDepositOrder.OFFLINE_PAYTYPE);
         carDepositOrder.setCarModelId(rentCarOrderQuery.getCarModelId());
+        carDepositOrder.setRentBattery(CarDepositOrder.RENTBATTERY_NO);
 
         return carDepositOrder;
     }
