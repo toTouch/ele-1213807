@@ -18,22 +18,21 @@ public class UserInfoResultVO {
     public static final String STATUS_NOT_AUTH = "not_auth";
     //待审核
     public static final String STATUS_AUDIT = "audit";
-    //未缴纳押金
-    public static final String STATUS_NOT_DEPOSIT = "not_deposit";
-    //未购买套餐
-    public static final String STATUS_BUY_MEMBERCARD = "buy_membercard";
-    //未绑定电池
-    public static final String STATUS_BIND_BATTERY = "bind_battery";
-    //有车辆套餐未绑定车辆
-    public static final String STATUS_BIND_CAR = "bind_car";
-    //租车套餐过期
-    public static final String STATUS_CAR_MEMBERCARD_EXPIRE = "car_membercard_expire";
-    //租电池套餐过期
-    public static final String STATUS_BATTERY_MEMBERCARD_EXPIRE = "battery_membercard_expire";
-    //已绑定电池
-    public static final String STATUS_HAVE_BATTERY = "have_battery";
+    //未购买租电池套餐
+    public static final String STATUS_BUY_BATERY_MEMBERCARD = "buy_battery_membercard";
+    //未购买租车套餐
+    public static final String STATUS_BUY_CAR_MEMBERCARD = "buy_car_membercard";
     //有电池服务费
     public static final String STATUS_BATTERY_SERVICE_FEE = "battery_service_fee";
+    //租电池
+    public static final String STATUS_RENT_BATTERY = "rent_battery";
+    //租车
+    public static final String STATUS_RENT_CAR = "rent_car";
+
+
+    //已绑定电池
+    public static final String STATUS_HAVE_BATTERY = "have_battery";
+
 
 
     public static final String YES = "YES";
