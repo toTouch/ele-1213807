@@ -171,4 +171,9 @@ public class UserBatteryInfoVO {
      * 保险过期时间
      */
     private Long insuranceExpireTime;
+
+    /**
+     * 保险购买时间
+     */
+    private Long payInsuranceTime;
 }
