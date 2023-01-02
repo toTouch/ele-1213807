@@ -22,7 +22,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectCarDepositOrder">
-       	select   id, uid, order_id, name, phone, franchisee_id, pay_amount, status, store_id, car_model_id, pay_type, del_flag, tenant_id, create_time, update_time        from t_car_deposit_order
+       	select   id, uid, order_id, name, phone, franchisee_id, pay_amount, status, store_id, car_model_id, pay_type, rent_battery, del_flag, tenant_id, create_time, update_time        from t_car_deposit_order
     </sql>
 
     <!--查询单个-->
@@ -161,8 +161,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_car_deposit_order(uid, order_id, name, phone, franchisee_id, pay_amount, status, store_id, car_model_id, pay_type, del_flag, tenant_id, create_time, update_time)
-        values (#{uid}, #{orderId}, #{name}, #{phone}, #{franchiseeId}, #{payAmount}, #{status}, #{storeId}, #{carModelId}, #{payType}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_car_deposit_order(uid, order_id, name, phone, franchisee_id, pay_amount,rent_battery, status, store_id, car_model_id, pay_type, del_flag, tenant_id, create_time, update_time)
+        values (#{uid}, #{orderId}, #{name}, #{phone}, #{franchiseeId}, #{payAmount},#{rentBattery}, #{status}, #{storeId}, #{carModelId}, #{payType}, #{delFlag}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -198,6 +198,9 @@
             </if>
             <if test="payType != null">
                 pay_type = #{payType},
+            </if>
+            <if test="rentBattery != null">
+                rent_battery = #{rentBattery},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},

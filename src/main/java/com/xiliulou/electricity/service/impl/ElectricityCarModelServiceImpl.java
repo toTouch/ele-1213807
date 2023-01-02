@@ -205,6 +205,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
                 item.setCarModelTag(tags);
             }
 
+            Store store = storeService.queryByIdFromCache(item.getStoreId());
+            if (Objects.nonNull(store)) {
+                item.setStoreName(store.getName());
+            }
 
         }).collect(Collectors.toList());
 

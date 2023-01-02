@@ -67,6 +67,8 @@ public class ElectricityCarModelVO {
      */
     private Long storeId;
 
+    private String storeName;
+
 
     private Integer tenantId;
 
