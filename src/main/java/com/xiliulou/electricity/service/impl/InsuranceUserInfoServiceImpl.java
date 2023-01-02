@@ -109,13 +109,18 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     public InsuranceUserInfo queryByUidFromCache(Long uid) {
 
         InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
+//        if (Objects.nonNull(cache)) {
+//            if (Objects.nonNull(cache.getInsuranceExpireTime()) && cache.getInsuranceExpireTime() < System.currentTimeMillis()) {
+//                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+//            } else {
+//                return cache;
+//            }
+//        }
+
         if (Objects.nonNull(cache)) {
-            if (Objects.nonNull(cache.getInsuranceExpireTime()) && cache.getInsuranceExpireTime() < System.currentTimeMillis()) {
-                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
-            } else {
-                return cache;
-            }
+            return cache;
         }
+
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
         if (Objects.isNull(insuranceUserInfo)) {
@@ -133,7 +138,12 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     public Integer update(InsuranceUserInfo insuranceUserInfo) {
-        return insuranceUserInfoMapper.update(insuranceUserInfo);
+        int result = this.insuranceUserInfoMapper.update(insuranceUserInfo);
+        DbUtils.dbOperateSuccessThen(result, () -> {
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid());
+            return null;
+        });
+        return result;
     }
 
     @Override
