@@ -363,7 +363,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR REFUND ERROR! user is not rent deposit,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            return Triple.of(false, "100238", "未缴纳押金");
         }
 
         //是否归还车辆
@@ -489,7 +489,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR REFUND ERROR! user is not rent deposit,uid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            return Triple.of(false, "100238", "未缴纳押金");
         }
 
         //是否归还车辆
@@ -602,7 +602,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR REFUND ERROR! user is not rent deposit,uid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            return Triple.of(false, "100238", "未缴纳押金");
         }
 
         //是否归还车辆

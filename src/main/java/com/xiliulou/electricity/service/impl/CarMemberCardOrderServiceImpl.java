@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -287,27 +288,33 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳租车押金");
+        }
+
+        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
+        if(Objects.isNull(userCar)){
+            log.error("ELE CAR MEMBER CARD ERROR! not found user ");
+            return Triple.of(false,"ELECTRICITY.0001", "未找到用户");
         }
 
         //获取车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrderQuery.getCarModelId());
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found electricityCarModel id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "未找到车辆型号!");
+            return Triple.of(false, "100009", "未找到车辆型号!");
         }
 
         //获取租车套餐计费规则
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
-                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId().longValue())) {
+                && !Objects.equals(userCar.getCarModel(), electricityCarModel.getId().longValue())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
@@ -315,12 +322,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(carMemberCardOrderQuery.getRentType());
         if (Objects.isNull(calcRentCarPriceInstance)) {
             log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, carMemberCardOrderQuery.getRentTime(), rentCarPriceRule);
         if (!calcSavePrice.getLeft()) {
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
@@ -391,7 +398,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", query.getCarModelId(), userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -405,12 +412,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(query.getRentType());
         if (Objects.isNull(calcRentCarPriceInstance)) {
             log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, query.getRentTime(), rentCarPriceRule);
         if (!calcSavePrice.getLeft()) {
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
