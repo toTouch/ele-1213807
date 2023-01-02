@@ -114,8 +114,6 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         ServiceFeeUserInfo serviceFeeUserInfo = queryByUidFromCache(uid);
 
-        log.debug("用户服务费绑定表缓存=================" + serviceFeeUserInfo);
-
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
         Long now = System.currentTimeMillis();
         long cardDays = 0;
