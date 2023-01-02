@@ -307,17 +307,17 @@ public class EleOperateQueueHandler {
                     log.error("userInfo is null!orderId={}", electricityCabinetOrder.getOrderId());
                     return;
                 }
-    
+
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-                if(Objects.isNull(userBattery)){
+                if (Objects.isNull(userBattery)) {
                     log.error("ELE ERROR!not found userBattery,uid={},sessionId={}", userInfo.getUid(), finalOpenDTO.getSessionId());
-                    return ;
+                    return;
                 }
-    
+
                 Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
-                if(Objects.isNull(franchisee)){
-                    log.error("ELE ERROR!not found franchisee,uid={},franchiseeId={},sessionId={}", userInfo.getUid(), userInfo.getFranchiseeId(),finalOpenDTO.getSessionId());
-                    return ;
+                if (Objects.isNull(franchisee)) {
+                    log.error("ELE ERROR!not found franchisee,uid={},franchiseeId={},sessionId={}", userInfo.getUid(), userInfo.getFranchiseeId(), finalOpenDTO.getSessionId());
+                    return;
                 }
 
                 //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
@@ -570,31 +570,19 @@ public class EleOperateQueueHandler {
             return;
         }
 
-//        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
-//        if (Objects.isNull(oldFranchiseeUserInfo)) {
-//            return;
-//        }
-
-        //更新用户租电池状态
-//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//        franchiseeUserInfo.setUserInfoId(userInfo.getId());
-//        franchiseeUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-////        franchiseeUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-//        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
-//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
-    
         //更新用户租赁状态
         UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
-    
-        UserBattery userBattery=new UserBattery();
+
+        UserBattery userBattery = new UserBattery();
         userBattery.setUid(userInfo.getUid());
         userBattery.setInitBatterySn(rentBatteryOrder.getElectricityBatterySn());
         userBattery.setUpdateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(userBattery);
+        userBattery.setCreateTime(System.currentTimeMillis());
+        userBatteryService.insertOrUpdate(userBattery);
 
 
         //查看用户是否有以前绑定的电池
@@ -654,14 +642,14 @@ public class EleOperateQueueHandler {
 //        franchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
 //        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
 //        franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
-        
-        UserInfo updateUserInfo=new UserInfo();
+
+        UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
-    
-        UserBattery userBattery=new UserBattery();
+
+        UserBattery userBattery = new UserBattery();
         userBattery.setUid(userInfo.getUid());
         userBattery.setNowBatterySn(null);
         userBattery.setUpdateTime(System.currentTimeMillis());
