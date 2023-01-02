@@ -17,19 +17,18 @@ import java.util.*;
 @Slf4j
 public class SignUtils {
     final String ALGORITHM = "HmacSHA256";
-
-
-    public String getSignature(ApiRequestQuery dto, String appSecret) throws Exception {
-        Map<String, Object> map = new HashMap<>();
-        map.put("appId", dto.getAppId());
-        map.put("requestTime", dto.getRequestTime());
-        map.put("command", dto.getCommand());
-        map.put("data", dto.getData());
-
+    
+    
+    public String getSignature(String appId,Long requestTime,String requestId,String version, String appSecret) throws Exception {        Map<String, Object> map = new HashMap<>();
+        map.put("appId", appId);
+        map.put("requestTime", requestTime);
+        map.put("requestId", requestId);
+        map.put("version", version);
+    
         // 先将参数以其参数名的字典序升序进行排序
         Map<String, Object> sortedParams = new TreeMap<>(map);
         Set<Map.Entry<String, Object>> entrySet = sortedParams.entrySet();
-
+    
         // 遍历排序后的字典，将所有参数按"key=value"格式拼接在一起
         StringBuilder stringToSign = new StringBuilder();
         for (Map.Entry<String, Object> param : entrySet) {
