@@ -1373,7 +1373,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, userInfo, null);
             eleDisableMemberCardRecord.setChargeRate(batteryServiceFee);
-            eleDisableMemberCardRecord.setCardDays((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
+            eleDisableMemberCardRecord.setCardDays((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
             eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
             Integer existServiceFee = ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE;
@@ -2424,15 +2424,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
-                    EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
-                    eleDisableMemberCardRecordUpdate.setId(item.getId());
-                    eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
-                    eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
-                }
+                EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
+                eleDisableMemberCardRecordUpdate.setId(item.getId());
+                eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
+                eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
             });
             offset += size;
         }
     }
+
 
     private void sendCarMemberCardExpiringTemplate(CarMemberCardExpiringSoonQuery carMemberCardExpiringSoonQuery) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
@@ -2623,7 +2623,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return authMessageNotifyCommon;
         }).collect(Collectors.toList());
     }
-}
+
 
     @Override
     public int insert(ElectricityMemberCardOrder electricityMemberCardOrder) {
