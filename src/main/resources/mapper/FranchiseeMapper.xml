@@ -146,7 +146,6 @@
         left join t_user_info tu on tu.franchisee_id=f.id where tu.uid=#{uid}
     </select>
 
-
     <!--通过主键修改数据-->
     <update id="update">
         update t_franchisee
@@ -171,6 +170,51 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="percent != null">
+                percent = #{percent},
+            </if>
+            <if test="modelType != null">
+                model_type = #{modelType},
+            </if>
+            <if test="modelBatteryDeposit != null and modelBatteryDeposit != ''">
+                model_battery_deposit = #{modelBatteryDeposit},
+            </if>
+            <if test="batteryServiceFee != null">
+                battery_service_fee = #{batteryServiceFee},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+<!--编辑加盟商-->
+    <update id="editFranchisee">
+        update t_franchisee
+        <set>
+            region_id = #{regionId},
+            <if test="cid != null">
+                cid = #{cid},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="batteryDeposit != null">
+                battery_deposit = #{batteryDeposit},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
             </if>
             <if test="percent != null">
                 percent = #{percent},

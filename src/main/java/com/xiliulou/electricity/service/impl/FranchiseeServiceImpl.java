@@ -205,11 +205,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         }
 
-        Franchisee newFranchisee = new Franchisee();
-        BeanUtil.copyProperties(franchiseeAddAndUpdate, newFranchisee);
-        newFranchisee.setUpdateTime(System.currentTimeMillis());
-        newFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
-        int update = update(newFranchisee);
+        Franchisee updateFranchisee = new Franchisee();
+        BeanUtil.copyProperties(franchiseeAddAndUpdate, updateFranchisee);
+        updateFranchisee.setUpdateTime(System.currentTimeMillis());
+        updateFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
+        int update = this.franchiseeMapper.editFranchisee(updateFranchisee);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE + updateFranchisee.getId());
+            return null;
+        });
 
         if (update > 0) {
             return R.ok();
@@ -381,7 +385,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchisee.setUpdateTime(System.currentTimeMillis());
             franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
 
-            franchiseeMapper.updateById(franchisee);
+            this.update(franchisee);
 
         }
     }
@@ -427,7 +431,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 franchisee.setPercent(franchiseeSetSplitQuery.getPercent());
                 franchisee.setTenantId(TenantContextHolder.getTenantId());
                 franchisee.setUpdateTime(System.currentTimeMillis());
-                franchiseeMapper.update(franchisee);
+                this.update(franchisee);
 
             }
 
