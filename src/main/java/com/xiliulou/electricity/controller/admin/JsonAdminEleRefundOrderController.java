@@ -303,6 +303,7 @@ public class JsonAdminEleRefundOrderController {
      */
     @PostMapping("/admin/refundDepositCarByOnline")
     @Log(title = "租车押金后台线上退款")
+    @Deprecated
     public R refundDepositCarByOnline(@RequestParam("refundOrderNo") String refundOrderNo,
                           @RequestParam("status") Integer status,
                           @RequestParam(value = "errMsg", required = false) String errMsg,

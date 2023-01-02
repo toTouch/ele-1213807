@@ -301,11 +301,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.ok();
         }
 
-        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid={} ", refundOrderNo);
-            return R.fail("100012", "用户绑定车辆");
-        }
-
 
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {

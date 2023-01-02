@@ -362,7 +362,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
         } else {
-            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
+            if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
                     userBatteryMemberCard.getMemberCardExpireTime() > now &&
                     (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
@@ -1636,6 +1636,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardAddAndUpdate.setMemberCardExpireTime(memberCardOrderAddAndUpdate.getMemberCardExpireTime());
         userBatteryMemberCardAddAndUpdate.setRemainingNumber(memberCardOrderAddAndUpdate.getMaxUseCount().intValue());
         userBatteryMemberCardAddAndUpdate.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
+        userBatteryMemberCardAddAndUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardAddAndUpdate.setUpdateTime(System.currentTimeMillis());
         if (Objects.isNull(userBatteryMemberCard)) {
             userBatteryMemberCardAddAndUpdate.setCreateTime(System.currentTimeMillis());
@@ -2502,6 +2503,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.isNull(userBattery)) {
             userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        }
+
+        if (Objects.isNull(userBattery)) {
+            return batteryServiceFee;
         }
 
         Integer modelType = franchisee.getModelType();
