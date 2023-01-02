@@ -138,9 +138,6 @@
             <if test="carDeposit != null">
                 and car_deposit = #{carDeposit}
             </if>
-            <if test="otherproperties != null and otherproperties != ''">
-                and otherProperties = #{otherproperties}
-            </if>
         </where>
     </select>
     

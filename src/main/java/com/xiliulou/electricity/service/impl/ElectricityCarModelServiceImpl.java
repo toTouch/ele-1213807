@@ -302,21 +302,14 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
-        Store store = storeService.queryByIdFromCache(electricityCarModelQuery.getStoreId());
-        if (Objects.isNull(store)) {
+        electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        List<ElectricityCarModel> electricityCarModels = electricityCarModelMapper.selectByQuery(electricityCarModelQuery);
+        if (CollectionUtils.isEmpty(electricityCarModels)) {
             return R.ok(Collections.EMPTY_LIST);
         }
 
-        ElectricityCarModelQuery modelQuery = new ElectricityCarModelQuery();
-        modelQuery.setFranchiseeId(store.getFranchiseeId());
-        modelQuery.setOffset(0L);
-        modelQuery.setSize(Long.MAX_VALUE);
-        List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(modelQuery);
-        if (!CollectionUtils.isEmpty(electricityCarModelVOS)) {
-            return R.ok(electricityCarModelVOS);
-        }
-
-        return R.ok(Collections.EMPTY_LIST);
+        return R.ok(electricityCarModels);
     }
 
     private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
