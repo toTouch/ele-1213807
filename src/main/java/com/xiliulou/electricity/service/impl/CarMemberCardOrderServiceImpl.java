@@ -288,7 +288,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR MEMBER CARD ERROR! not pay deposit,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳租车押金");
         }
 
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
@@ -301,14 +301,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrderQuery.getCarModelId());
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found electricityCarModel id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "未找到车辆型号!");
+            return Triple.of(false, "100009", "未找到车辆型号!");
         }
 
         //获取租车套餐计费规则
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
@@ -322,12 +322,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(carMemberCardOrderQuery.getRentType());
         if (Objects.isNull(calcRentCarPriceInstance)) {
             log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, carMemberCardOrderQuery.getRentTime(), rentCarPriceRule);
         if (!calcSavePrice.getLeft()) {
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
@@ -398,7 +398,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", query.getCarModelId(), userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -412,12 +412,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(query.getRentType());
         if (Objects.isNull(calcRentCarPriceInstance)) {
             log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, query.getRentTime(), rentCarPriceRule);
         if (!calcSavePrice.getLeft()) {
-            return Triple.of(false, "ELECTRICITY.0087", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
         BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
