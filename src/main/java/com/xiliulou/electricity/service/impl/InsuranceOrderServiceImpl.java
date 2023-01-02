@@ -145,7 +145,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.nonNull(insuranceUserInfo) && (Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE) || insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis())) {
+        if (Objects.nonNull(insuranceUserInfo) && Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.NOT_USE) && insuranceUserInfo.getInsuranceExpireTime() > System.currentTimeMillis()) {
             log.error("CREATE INSURANCE_ORDER ERROR! user have insurance ！uid={}", userInfo.getUid());
             return R.fail("100310", "已购买保险");
         }
