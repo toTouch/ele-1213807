@@ -41,7 +41,7 @@ public class InsuranceUserInfoVo {
     /**
      * 保险订单编号
      */
-    private String insuranceOrderId;
+    private String orderId;
 
     /**
      * 保险过期时间
