@@ -361,7 +361,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         UserCar updateUserCar = new UserCar();
         updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(electricityCar.getId().longValue());
-        updateUserCar.setSn(electricityCarBindUser.getSn());
+        updateUserCar.setSn(electricityCar.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.updateByUid(updateUserCar);
 
@@ -372,7 +372,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         rentCarOrder.setCarModelId(electricityCar.getModelId().longValue());
         rentCarOrder.setCarDeposit(userCarDeposit.getCarDeposit().doubleValue());
         rentCarOrder.setStatus(RentCarOrder.STATUS_SUCCESS);
-        rentCarOrder.setCarSn(electricityCarBindUser.getSn());
+        rentCarOrder.setCarSn(electricityCar.getSn());
         rentCarOrder.setType(RentCarOrder.TYPE_RENT);
         rentCarOrder.setUid(user.getUid());
         rentCarOrder.setName(userInfo.getName());

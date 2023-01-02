@@ -57,7 +57,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "depositType", required = false) Integer depositType,
+                       @RequestParam(value = "carSn", required = false) String carSn,
                        @RequestParam(value = "carModel", required = false) String carModel,
                        @RequestParam(value = "payType", required = false) Integer payType,
                        @RequestParam(value = "storeName", required = false) String storeName) {
@@ -104,7 +104,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .carModel(carModel)
                 .franchiseeName(franchiseeName)
-                .depositType(depositType)
+                .carSn(carSn)
                 .payType(payType)
                 .franchiseeIds(franchiseeIds).build();
         return R.ok(rentCarOrderService.selectByPage(rentCarOrderQuery));
@@ -118,7 +118,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
-                        @RequestParam(value = "depositType", required = false) Integer depositType,
+                        @RequestParam(value = "carSn", required = false) String carSn,
                         @RequestParam(value = "carModel", required = false) String carModel,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                         @RequestParam(value = "payType", required = false) Integer payType,
@@ -157,7 +157,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .carModel(carModel)
                 .franchiseeName(franchiseeName)
-                .depositType(depositType)
+                .carSn(carSn)
                 .payType(payType)
                 .franchiseeIds(franchiseeIds).build();
 

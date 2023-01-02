@@ -34,61 +34,81 @@
 
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="CarMemberCardOrderMap">
-        <include refid="selectCarMemberCardOrder"/>
+        select
+        tcco.id,
+        tcco.uid,
+        tcco.order_id,
+        tcco.status,
+        tcco.car_model_id,
+        tcco.user_name,
+        tcco.member_card_type,
+        tcco.card_name,
+        tcco.pay_type,
+        tcco.pay_amount,
+        tcco.valid_days,
+        tcco.create_time,
+        tcco.update_time,
+        tcco.store_id,
+        tcco.franchisee_id,
+        tui.phone
+        from t_car_member_card_order tcco left join t_user_info tui on tcco.uid=tui.uid
         <where>
             <if test="orderId != null and orderId != ''">
-                and order_id = #{orderId}
+                and tcco.order_id = #{orderId}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and tcco.status = #{status}
             </if>
             <if test="carModelId != null">
-                and car_model_id = #{carModelId}
+                and tcco.car_model_id = #{carModelId}
             </if>
             <if test="userName != null and userName != ''">
-                and user_name = #{userName}
+                and tcco.user_name = #{userName}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
             </if>
             <if test="memberCardType != null and memberCardType != ''">
-                and member_card_type = #{memberCardType}
+                and tcco.member_card_type = #{memberCardType}
             </if>
             <if test="cardName != null and cardName != ''">
-                and card_name = #{cardName}
+                and tcco.card_name = #{cardName}
             </if>
             <if test="payType != null">
-                and pay_type = #{payType}
+                and tcco.pay_type = #{payType}
             </if>
             <if test="payAmount != null">
-                and pay_amount = #{payAmount}
+                and tcco.pay_amount = #{payAmount}
             </if>
             <if test="validDays != null">
-                and valid_days = #{validDays}
+                and tcco.valid_days = #{validDays}
             </if>
             <if test="createTime != null">
-                and create_time = #{createTime}
+                and tcco.create_time = #{createTime}
             </if>
             <if test="storeId != null">
-                and store_id = #{storeId}
+                and tcco.store_id = #{storeId}
             </if>
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tcco.franchisee_id = #{franchiseeId}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and tcco.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and tcco.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null ">
-                and store_id in
+                and tcco.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
         </where>
-        order by create_time desc
+        order by tcco.create_time desc
         limit #{offset}, #{size}
     </select>
 

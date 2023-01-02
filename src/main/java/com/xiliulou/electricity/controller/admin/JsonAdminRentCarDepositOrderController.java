@@ -100,6 +100,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
                 .payType(payType)
+                .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds).build();
         return R.ok(carDepositOrderService.selectByPage(rentCarDepositOrderQuery));
     }
@@ -153,6 +154,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
                 .payType(payType)
+                .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds).build();
 
         return R.ok(carDepositOrderService.selectPageCount(rentCarDepositOrderQuery));
