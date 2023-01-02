@@ -19,6 +19,9 @@
             <if test="insuranceId != null">
                 insurance_id = #{insuranceId},
             </if>
+            <if test="insuranceOrderId != null and insuranceOrderId != '' ">
+                insurance_order_id = #{insuranceOrderId},
+            </if>
             <if test="insuranceExpireTime != null">
                 insurance_expire_time = #{insuranceExpireTime},
             </if>

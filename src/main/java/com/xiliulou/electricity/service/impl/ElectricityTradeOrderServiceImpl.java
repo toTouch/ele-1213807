@@ -832,7 +832,7 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY_INSURANCE_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
-        //电池服务费订单
+        //保险订单
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
         if (ObjectUtil.isEmpty(insuranceOrder)) {
             log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", electricityTradeOrder.getOrderNo());
