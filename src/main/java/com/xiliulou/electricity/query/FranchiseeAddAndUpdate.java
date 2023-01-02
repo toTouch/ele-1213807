@@ -56,7 +56,7 @@ public class FranchiseeAddAndUpdate {
     /**
      * 区域id
      */
-    @NotNull(message = "区(县)编号不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+//    @NotNull(message = "区(县)编号不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer regionId;
 
     /**

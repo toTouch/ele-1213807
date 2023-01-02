@@ -728,7 +728,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Override
     public Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
-
+log.error("租车购买套餐回调");
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
