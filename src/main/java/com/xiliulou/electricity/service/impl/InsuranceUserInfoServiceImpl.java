@@ -102,7 +102,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceOrderUpdate.setTenantId(tenantId);
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
 
-        return R.ok(insuranceUserInfoMapper.update(updateInsuranceUserInfo));
+        return R.ok(update(updateInsuranceUserInfo));
     }
 
     @Override
