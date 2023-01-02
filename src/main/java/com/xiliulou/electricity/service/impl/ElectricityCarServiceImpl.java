@@ -363,7 +363,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateUserCar.setCid(electricityCar.getId().longValue());
         updateUserCar.setSn(electricityCarBindUser.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
-        userCarService.insertOrUpdate(updateUserCar);
+        userCarService.updateByUid(updateUserCar);
 
         //生成租车记录
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
