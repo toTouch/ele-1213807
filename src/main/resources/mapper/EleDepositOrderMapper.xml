@@ -279,7 +279,7 @@
                 and ero.refund_order_type = #{query.refundOrderType}
             </if>
         </where>
-        order by ero.update_time desc
+        order by edo.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
