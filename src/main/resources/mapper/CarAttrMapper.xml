@@ -7,7 +7,7 @@
         <where>
             dev_id = #{devId}
             and create_time &gt;= #{beginTime}
-            and create_tme &lt;=#{endTime}
+            and create_time &lt;=#{endTime}
             order by create_time desc
             limit #{offset}, #{size}
         </where>
