@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -290,6 +291,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
 
+        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
+        if(Objects.isNull(userCar)){
+            log.error("ELE CAR MEMBER CARD ERROR! not found user ");
+            return Triple.of(false,"ELECTRICITY.0001", "未找到用户");
+        }
+
         //获取车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrderQuery.getCarModelId());
         if (Objects.isNull(electricityCarModel)) {
@@ -307,7 +314,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
-                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId().longValue())) {
+                && !Objects.equals(userCar.getCarModel(), electricityCarModel.getId().longValue())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
