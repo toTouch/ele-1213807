@@ -82,7 +82,7 @@ public class ThreadPoolMonitorComponent {
         
     }
     
-    public void shutdown() {
+    public void destroy() {
         shutdown = true;
     }
     

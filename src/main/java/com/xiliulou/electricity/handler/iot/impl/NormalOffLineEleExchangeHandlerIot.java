@@ -82,6 +82,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         //查找用户
         User user = userService.queryByUserPhone(offlineEleOrderVo.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
         if (Objects.isNull(user)) {
+            senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE ERROR! not found user! userId:{}", offlineEleOrderVo.getPhone());
             return;
         }
@@ -240,8 +241,13 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         dataMap.put("orderId", offlineEleOrderVo.getOrderId());
         dataMap.put("status", offlineEleOrderVo.getStatus());
 
+        Long uid = -1L;
+        if (Objects.nonNull(user)) {
+            uid = user.getUid();
+        }
+
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + user.getUid() + "_" + offlineEleOrderVo.getOrderId())
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + uid + "_" + offlineEleOrderVo.getOrderId())
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())

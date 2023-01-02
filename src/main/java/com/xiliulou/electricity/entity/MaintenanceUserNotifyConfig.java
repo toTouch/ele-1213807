@@ -58,4 +58,10 @@ public class MaintenanceUserNotifyConfig {
      */
     public static final Integer P_AUTHENTICATION_AUDIT=8;
 
+
+    /**
+     * 暂停套餐审核
+     */
+    public static Integer TYPE_DISABLE_MEMBER_CARD = 16;
+
 }

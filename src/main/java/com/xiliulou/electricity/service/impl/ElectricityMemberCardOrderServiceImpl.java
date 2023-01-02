@@ -7,6 +7,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -19,6 +21,7 @@ import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
@@ -30,13 +33,20 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
+
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.ognl.ObjectElementsAccessor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +60,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -125,6 +136,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
     @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    @Autowired
+    RocketMqService rocketMqService;
+    @Autowired
     UserBatteryService userBatteryService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
@@ -156,6 +171,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
 
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
@@ -1354,6 +1373,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, userInfo, null);
             eleDisableMemberCardRecord.setChargeRate(batteryServiceFee);
+            eleDisableMemberCardRecord.setCardDays((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
             eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
             Integer existServiceFee = ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE;
@@ -2404,12 +2424,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
-                EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
-                eleDisableMemberCardRecordUpdate.setId(item.getId());
-                eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
-                eleDisableMemberCardRecordUpdate.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_NOT_DISABLE);
-                eleDisableMemberCardRecordUpdate.setUpdateTime(System.currentTimeMillis());
-                eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
+                    EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
+                    eleDisableMemberCardRecordUpdate.setId(item.getId());
+                    eleDisableMemberCardRecordUpdate.setRealDays(item.getChooseDays());
+                    eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
+                }
             });
             offset += size;
         }
@@ -2555,6 +2574,56 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return BigDecimal.valueOf(0);
         }
     }
+
+    //停卡审核通知
+    private void sendDisableMemberCardMessage(UserInfo userInfo) {
+        List<MqNotifyCommon<AuthenticationAuditMessageNotify>> messageNotifyList = this.buildDisableMemberCardMessageNotify(userInfo);
+        if (CollectionUtils.isEmpty(messageNotifyList)) {
+            return;
+        }
+
+        messageNotifyList.forEach(i -> {
+            rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+            log.info("ELE INFO! user authentication audit notify,msg={},uid={}", JsonUtil.toJson(i), userInfo.getUid());
+        });
+    }
+
+
+    private List<MqNotifyCommon<AuthenticationAuditMessageNotify>> buildDisableMemberCardMessageNotify(UserInfo userInfo) {
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(userInfo.getTenantId());
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
+            log.error("ELE ERROR! not found maintenanceUserNotifyConfig,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+
+        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD)
+                != MaintenanceUserNotifyConfig.TYPE_DISABLE_MEMBER_CARD) {
+            log.info("ELE ERROR! not maintenance permission,permissions={},uid={}", notifyConfig.getPermissions(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+
+
+        List<String> phones = JsonUtil.fromJsonArray(notifyConfig.getPhones(), String.class);
+        if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
+            log.error("ELE ERROR! phones is empty,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
+            return Collections.EMPTY_LIST;
+        }
+
+        return phones.parallelStream().map(item -> {
+            AuthenticationAuditMessageNotify messageNotify = new AuthenticationAuditMessageNotify();
+            messageNotify.setBusinessCode(StringUtils.isBlank(userInfo.getIdNumber()) ? "/" : userInfo.getIdNumber().substring(userInfo.getIdNumber().length() - 6));
+            messageNotify.setUserName(userInfo.getName());
+            messageNotify.setAuthTime(DateUtil.format(LocalDateTime.now(), DatePattern.NORM_DATETIME_PATTERN));
+
+            MqNotifyCommon<AuthenticationAuditMessageNotify> authMessageNotifyCommon = new MqNotifyCommon<>();
+            authMessageNotifyCommon.setTime(System.currentTimeMillis());
+            authMessageNotifyCommon.setType(MqNotifyCommon.TYPE_DISABLE_MEMBER_CARD);
+            authMessageNotifyCommon.setPhone(item);
+            authMessageNotifyCommon.setData(messageNotify);
+            return authMessageNotifyCommon;
+        }).collect(Collectors.toList());
+    }
+}
 
     @Override
     public int insert(ElectricityMemberCardOrder electricityMemberCardOrder) {
