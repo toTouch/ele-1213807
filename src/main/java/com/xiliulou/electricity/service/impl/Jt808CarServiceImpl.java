@@ -114,7 +114,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         
         carGpsQuery.setDevId(electricityCar.getSn());
         List<CarGpsVo> result = carAttrMapper.getGpsList(carGpsQuery).parallelStream()
-                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude())
+                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude()).setDevId(e.getDevId())
                         .setCreateTime(e.getCreateTime().getTime())).collect(Collectors.toList());
         return Pair.of(true, result);
     }
