@@ -11,6 +11,7 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.Jt808CarService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.web.query.CarControlRequest;
 import com.xiliulou.electricity.web.query.CarGpsQuery;
@@ -21,7 +22,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author : eclair
@@ -95,21 +98,24 @@ public class Jt808CarServiceImpl implements Jt808CarService {
     public Pair<Boolean, Object> getGpsList(CarGpsQuery carGpsQuery) {
         carGpsQuery.setBeginTime(TimeUtils.convertToStandardFormatTime(carGpsQuery.getStartTimeMills()));
         carGpsQuery.setEndTime(TimeUtils.convertToStandardFormatTime(carGpsQuery.getEndTimeMills()));
-    
+        
         ElectricityCar electricityCar = electricityCarService.queryByIdFromCache(carGpsQuery.getCarId());
         if (Objects.isNull(electricityCar)) {
             return Pair.of(false, "未能查询到车辆");
         }
-    
+        
         if (!electricityCar.getTenantId().equals(TenantContextHolder.getTenantId())) {
             return Pair.of(false, "未能查询到车辆");
         }
-    
+        
         if (StrUtil.isEmpty(electricityCar.getSn())) {
             return Pair.of(false, "车辆sn为空");
         }
-    
+        
         carGpsQuery.setDevId(electricityCar.getSn());
-        return Pair.of(true,carAttrMapper.getGpsList(carGpsQuery));
+        List<CarGpsVo> result = carAttrMapper.getGpsList(carGpsQuery).parallelStream()
+                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude()).setDevId(e.getDevId())
+                        .setCreateTime(e.getCreateTime().getTime())).collect(Collectors.toList());
+        return Pair.of(true, result);
     }
 }
