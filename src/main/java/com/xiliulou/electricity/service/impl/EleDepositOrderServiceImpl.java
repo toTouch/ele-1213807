@@ -323,14 +323,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
             if (Objects.nonNull(bindElectricityMemberCard)) {
                 if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
-                    memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber().intValue());
+                    memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber());
                     packageOwe = UserBatteryMemberCard.MEMBER_CARD_OWE;
                 }
             }
         }
 
         //判断是否缴纳押金
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid().longValue());
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");

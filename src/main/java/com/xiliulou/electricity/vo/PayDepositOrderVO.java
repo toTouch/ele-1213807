@@ -26,4 +26,5 @@ public class PayDepositOrderVO {
      * 退款时间
      */
     private Long refundTime;
+
 }

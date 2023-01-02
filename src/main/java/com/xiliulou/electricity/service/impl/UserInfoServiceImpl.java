@@ -803,7 +803,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateUserInfo.setUid(oldUserInfo.getUid());
         updateUserInfo.setBatteryRentStatus(UserInfo.BATTERY_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update = userInfoMapper.updateByUid(updateUserInfo);
+        Integer update = updateByUid(updateUserInfo);
 
         UserBattery updateUserBattery = new UserBattery();
         updateUserBattery.setUid(oldUserInfo.getUid());
