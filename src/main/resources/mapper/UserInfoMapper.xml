@@ -293,9 +293,6 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-<!--            <if test="serviceStatus != null">
-                service_status = #{serviceStatus},
-            </if>-->
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
@@ -313,9 +310,6 @@
             </if>
             <if test="carDepositStatus != null">
                 car_deposit_status = #{carDepositStatus},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},

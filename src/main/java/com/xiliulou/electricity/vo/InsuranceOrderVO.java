@@ -51,4 +51,6 @@ public class InsuranceOrderVO {
     private Integer status;
 
     private BigDecimal forehead;
+
+    private Integer isUse;
 }

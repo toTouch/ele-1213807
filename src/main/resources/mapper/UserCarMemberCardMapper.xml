@@ -6,6 +6,7 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="cardId" column="card_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="memberCardExpireTime" column="member_card_expire_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -15,7 +16,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectUserCarMemberCard">
-       	select   id, uid, card_id, member_card_expire_time, del_flag, create_time, update_time        from t_user_car_member_card
+       	select   id, uid, card_id,order_id, member_card_expire_time, del_flag, create_time, update_time        from t_user_car_member_card
     </sql>
 
     <!--查询单个-->
@@ -36,6 +37,9 @@
             </if>
             <if test="cardId != null">
                 and card_id = #{cardId}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
             </if>
             <if test="memberCardExpireTime != null">
                 and member_card_expire_time = #{memberCardExpireTime}
@@ -76,15 +80,15 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_car_member_card(uid, card_id, member_card_expire_time, del_flag, create_time, update_time)
-        values (#{uid}, #{cardId}, #{memberCardExpireTime}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car_member_card(uid, card_id,order_id, member_card_expire_time, del_flag, create_time, update_time)
+        values (#{uid}, #{cardId},#{orderId}, #{memberCardExpireTime}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_car_member_card(uid, card_id, member_card_expire_time, del_flag, create_time, update_time)
-        values (#{uid}, #{cardId}, #{memberCardExpireTime}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car_member_card(uid, card_id,order_id, member_card_expire_time, del_flag, create_time, update_time)
+        values (#{uid}, #{cardId},#{orderId}, #{memberCardExpireTime}, #{delFlag}, #{createTime}, #{updateTime})
         on duplicate key
-        update card_id=#{cardId}, member_card_expire_time=#{memberCardExpireTime}, del_flag=#{delFlag}, update_time=#{updateTime}
+        update card_id=#{cardId},order_id=#{orderId}, member_card_expire_time=#{memberCardExpireTime}, del_flag=#{delFlag}, update_time=#{updateTime}
     </insert>
 
     <!--通过主键修改数据-->
@@ -96,6 +100,9 @@
             </if>
             <if test="cardId != null">
                 card_id = #{cardId},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
             </if>
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},

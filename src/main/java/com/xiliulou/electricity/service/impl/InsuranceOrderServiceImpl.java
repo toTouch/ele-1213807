@@ -132,7 +132,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         //判断是否缴纳押金
-        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("CREATE INSURANCE_ORDER ERROR! not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
@@ -305,7 +305,6 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
             return R.ok();
         }
 
-        // TODO: 2022/12/21 tenantId
         String batteryType = null;
         if (Objects.nonNull(model)) {
             batteryType = BatteryConstant.acquireBatteryShort(model);

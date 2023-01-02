@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -622,7 +623,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = new EleRefundOrder();
         eleRefundOrder.setOrderId(userBatteryDeposit.getOrderId());
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
-        eleRefundOrder.setTenantId(userBatteryMemberCard.getTenantId());
+        eleRefundOrder.setTenantId(userInfo.getTenantId());
         eleRefundOrder.setCreateTime(System.currentTimeMillis());
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
@@ -727,6 +728,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
+    public List<EleRefundOrderVO> selectCarRefundPageList(EleRefundQuery eleRefundQuery) {
+        return eleRefundOrderMapper.selectCarRefundPageList(eleRefundQuery);
+    }
+
+    @Override
+    public Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery) {
+        return eleRefundOrderMapper.selectCarRefundPageCount(eleRefundQuery);
+    }
+
+    @Override
     public Integer queryCountByOrderId(String orderId) {
         return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_AGREE_REFUND, EleRefundOrder.STATUS_REFUND, EleRefundOrder.STATUS_SUCCESS));
     }
@@ -770,5 +781,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 RandomUtil.randomNumbers(2);
     }
 
+    @Override
+    public boolean checkDepositOrderIsRefund(String orderId) {
+        EleRefundOrder eleRefundOrder = this.eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS));
+        if(!Objects.isNull(eleRefundOrder)){
+            return Boolean.TRUE;
+        }
 
+        return Boolean.FALSE;
+    }
 }

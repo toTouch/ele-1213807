@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.EleRefundOrderMapper">
 
     <!--查询指定行数据-->
-    <select id="queryList" resultType="java.util.Map">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
         select
         tero.id as id, tero.refund_order_no as refundOrderNo, tero.order_id as orderId, tero.pay_amount as payAmount,
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
@@ -54,6 +54,58 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+    <!--租车押金退款分页-->
+    <select id="selectCarRefundPageList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
+        select
+        tero.id as id, tero.refund_order_no as refundOrderNo, tero.order_id as orderId, tero.pay_amount as payAmount,
+        tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
+        tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
+        memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
+        tero.refund_order_type as refundOrderType, tedo.pay_type as payType
+        from t_ele_refund_order as tero
+        left join t_car_deposit_order as tedo on tero.order_id= tedo.order_id
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and tero.order_id = #{orderId}
+            </if>
+            <if test="status != null">
+                and tero.status = #{status}
+            </if>
+            <if test="beginTime != null">
+                and tero.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tero.create_time &lt;=#{endTime}
+            </if>
+            <if test="tenantId != null">
+                and tero.tenant_id = #{tenantId}
+            </if>
+            <if test="payType != null">
+                and tedo.pay_type = #{payType}
+            </if>
+            <if test="refundOrderType != null">
+                and tero.refund_order_type = #{refundOrderType}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tedo.phone = #{phone}
+            </if>
+            <if test="storeIds != null">
+                and tedo.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="franchiseeIds != null">
+                and tedo.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by tero.update_time desc
+        limit #{offset}, #{size}
+    </select>
+
 
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
@@ -92,6 +144,50 @@
             <if test="query.franchiseeIds != null">
                 and tedo.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--租车分页列表总数-->
+    <select id="selectCarRefundPageCount" resultType="java.lang.Integer">
+        select COUNT(1)
+        from t_ele_refund_order tero left join t_car_deposit_order as tedo on tero.order_id= tedo.order_id
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and tero.order_id = #{orderId}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tedo.phone = #{phone}
+            </if>
+            <if test="status != null">
+                and tero.status = #{status}
+            </if>
+            <if test="refundOrderType != null">
+                and tero.refund_order_type = #{refundOrderType}
+            </if>
+            <if test="beginTime != null">
+                and tero.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tero.create_time &lt;=#{endTime}
+            </if>
+            <if test="tenantId != null">
+                and tero.tenant_id = #{tenantId}
+            </if>
+            <if test="payType != null">
+                and tedo.pay_type = #{payType}
+            </if>
+            <if test="storeIds != null">
+                and tedo.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="franchiseeIds != null">
+                and tedo.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
                 </foreach>
             </if>

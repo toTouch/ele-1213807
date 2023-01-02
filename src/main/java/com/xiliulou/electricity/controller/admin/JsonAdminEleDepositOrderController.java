@@ -225,6 +225,7 @@ public class JsonAdminEleDepositOrderController {
     }
 
     //缴纳租车押金
+    @Deprecated
     @PostMapping(value = "/admin/eleDepositOrder/rentCarDeposit")
     @Log(title = "缴纳租车押金")
     public R rentCarDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {

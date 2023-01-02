@@ -530,6 +530,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                 }
 
+                //获取柜机图片
+                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
+                if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
+                    e.setPictureUrl(electricityCabinetPicture.get(0));
+                }
+
+
                 //查满仓空仓数
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
 
@@ -3368,6 +3375,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
             return abnormalMessageNotifyCommon;
         }).collect(Collectors.toList());
-
     }
+
+    /**
+     * 获取柜机图片
+     */
+    private List<String> getElectricityCabinetPicture(Long eid) {
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.selectByFileTypeAndEid(eid, ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET);
+        if (CollectionUtils.isEmpty(electricityCabinetFileList)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
+            item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+        }).collect(Collectors.toList());
+
+        return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());
+    }
+
 }

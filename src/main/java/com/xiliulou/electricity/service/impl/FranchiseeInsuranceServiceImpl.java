@@ -66,11 +66,26 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeInsuranceAddAndUpdate.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getFranchiseeId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商！");
+        }
+
+        if (!Objects.equals(tenantId, franchisee.getTenantId())) {
+            return R.ok();
+        }
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && CollectionUtils.isEmpty(franchiseeInsuranceAddAndUpdate.getBatteryTypeList())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数！");
+        }
+
         Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
         if (count > 0) {
             log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsuranceAddAndUpdate.getName());
             return R.fail("100304", "保险名称已存在！");
         }
+
 
         FranchiseeInsurance franchiseeInsurance = new FranchiseeInsurance();
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, franchiseeInsurance);
@@ -176,16 +191,16 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-//        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
-//            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
-//                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
-//                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
-//                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
-//                    .notIn(FranchiseeInsurance::getId, id));
-//            if (count > 0) {
-//                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
-//            }
-//        }
+        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
+            int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                    .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
+                    .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
+                    .notIn(FranchiseeInsurance::getId, id));
+            if (count > 0) {
+                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
+            }
+        }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
         newFranchiseeInsurance.setId(franchiseeInsurance.getId());
@@ -248,7 +263,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
         if (Objects.nonNull(franchiseeInsuranceVoList)) {
-            for (FranchiseeInsuranceVo franchiseeInsuranceVo:franchiseeInsuranceVoList) {
+            for (FranchiseeInsuranceVo franchiseeInsuranceVo : franchiseeInsuranceVoList) {
                 if (StringUtils.isNotEmpty(franchiseeInsuranceVo.getBatteryType())) {
                     franchiseeInsuranceVo.setBatteryType(BatteryConstant.acquireBattery(franchiseeInsuranceVo.getBatteryType()).toString());
                 }

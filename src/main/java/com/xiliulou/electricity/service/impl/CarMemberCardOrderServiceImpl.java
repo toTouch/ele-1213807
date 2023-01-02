@@ -17,6 +17,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
+import com.xiliulou.electricity.vo.UserCarMemberCardVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -66,6 +67,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     UserCarMemberCardService userCarMemberCardService;
     @Autowired
     CalcRentCarPriceFactory calcRentCarPriceFactory;
+    @Autowired
+    UserCarService userCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -175,11 +178,72 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         return this.carMemberCardOrderMapper.selectOne(new LambdaQueryWrapper<CarMemberCardOrder>().eq(CarMemberCardOrder::getOrderId, orderNo));
     }
 
+    /**
+     * 查询用户套餐详情
+     *
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> userCarMemberCardInfo() {
+        UserCarMemberCardVO userCarMemberCardVO = new UserCarMemberCardVO();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found user");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found userInfo,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
+            return Triple.of(true, "", null);
+        }
+
+        //获取用户当前租车套餐订单
+        CarMemberCardOrder carMemberCardOrder = this.selectByOrderId(userCarMemberCard.getOrderId());
+        if (Objects.isNull(carMemberCardOrder)) {
+            log.error("ELE CAR MEMBER CARD ERROR! not found carMemberCardOrder,uid={}", user.getUid());
+            return Triple.of(true, "", null);
+        }
+
+        userCarMemberCardVO.setCarModelId(carMemberCardOrder.getCarModelId());
+        userCarMemberCardVO.setCardName(carMemberCardOrder.getCardName());
+        userCarMemberCardVO.setPayAmount(carMemberCardOrder.getPayAmount());
+        userCarMemberCardVO.setValidDays(carMemberCardOrder.getValidDays());
+        userCarMemberCardVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+
+
+        //车辆型号
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
+        if (Objects.nonNull(electricityCarModel)) {
+            userCarMemberCardVO.setCarModelName(electricityCarModel.getName());
+        }
+
+        //用户车辆SN码
+        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
+        if (Objects.nonNull(userCar)) {
+            userCarMemberCardVO.setCarSN(userCar.getSn());
+        }
+
+        //门店名称
+        Store store = storeService.queryByIdFromCache(carMemberCardOrder.getStoreId());
+        if (Objects.nonNull(store)) {
+            userCarMemberCardVO.setStoreName(store.getName());
+        }
+
+        return Triple.of(true, "", userCarMemberCardVO);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found user");
@@ -243,7 +307,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
-                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId())) {
+                && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId().longValue())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
@@ -271,12 +335,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(user.getUid());
+        carMemberCardOrder.setCardName(getCardName(carMemberCardOrderQuery.getRentType()));
         carMemberCardOrder.setMemberCardType(carMemberCardOrderQuery.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
         carMemberCardOrder.setValidDays(carMemberCardOrderQuery.getRentTime());
         carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
         carMemberCardOrder.setTenantId(userInfo.getTenantId());
+        carMemberCardOrder.setStoreId(electricityCarModel.getStoreId());
         carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         this.insert(carMemberCardOrder);
 

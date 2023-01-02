@@ -29,16 +29,16 @@ public class JsonUserRentCarController extends BaseController {
      * 租车&租电下单（混合支付）
      */
     @PostMapping("/user/rentCar/hybridOrder")
-    public R rentCarHybridOrder(@RequestBody @Validated RentCarHybridOrderQuery query, HttpServletRequest request){
-        return returnTripleResult(rentCarOrderService.rentCarHybridOrder(query,request));
+    public R rentCarHybridOrder(@RequestBody @Validated RentCarHybridOrderQuery query, HttpServletRequest request) {
+        return returnTripleResult(rentCarOrderService.rentCarHybridOrder(query, request));
     }
 
     /**
      * 扫码租车
      */
     @PostMapping("/user/rentCar/scanQR")
-    public R rentCarOrder(@RequestBody @Validated UserRentCarOrderQuery query){
-        return R.ok(rentCarOrderService.rentCarOrder(query));
+    public R rentCarOrder(@RequestBody @Validated UserRentCarOrderQuery query) {
+        return returnTripleResult(rentCarOrderService.rentCarOrder(query));
     }
 
     /**
@@ -48,7 +48,6 @@ public class JsonUserRentCarController extends BaseController {
     public R userCar(@RequestParam("uid") Long uid) {
         return R.ok(userCarService.selectDetailByUid(uid));
     }
-
 
 
 }

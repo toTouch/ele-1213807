@@ -45,6 +45,11 @@ public class RegionServiceImpl implements RegionService {
         return region;
     }
 
+    @Override
+    public Integer insert(Region region) {
+        return this.regionMapper.insert(region);
+    }
+
     /**
      * 通过ID查询单条数据从DB
      *

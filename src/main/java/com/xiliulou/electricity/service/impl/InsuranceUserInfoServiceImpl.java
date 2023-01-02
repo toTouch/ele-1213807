@@ -213,6 +213,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
             InsuranceOrderVO insuranceOrderVO = new InsuranceOrderVO();
             BeanUtil.copyProperties(insuranceUserInfoVo, insuranceOrderVO);
             insuranceOrderList.add(insuranceOrderVO);
+
             return R.ok(insuranceOrderList);
         } else if (Objects.equals(status, InsuranceUserInfo.IS_USE)) {
             InsuranceOrderQuery insuranceOrderQuery = InsuranceOrderQuery.builder()

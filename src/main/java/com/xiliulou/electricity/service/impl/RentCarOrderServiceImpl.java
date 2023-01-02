@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -109,33 +110,34 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
     /**
      * 查询多条数据
+     *
      * @return 对象列表
      */
     @Override
     public List<RentCarOrderVO> selectByPage(RentCarOrderQuery rentCarOrderQuery) {
         List<RentCarOrder> rentCarOrders = this.rentCarOrderMapper.selectByPage(rentCarOrderQuery);
-        if(CollectionUtils.isEmpty(rentCarOrders)){
+        if (CollectionUtils.isEmpty(rentCarOrders)) {
             return Collections.EMPTY_LIST;
         }
 
-        return rentCarOrders.parallelStream().map(item->{
+        return rentCarOrders.parallelStream().map(item -> {
             RentCarOrderVO rentCarOrderVO = new RentCarOrderVO();
-            BeanUtils.copyProperties(item,rentCarOrderVO);
+            BeanUtils.copyProperties(item, rentCarOrderVO);
 
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
-            if(Objects.nonNull(electricityCarModel)){
+            if (Objects.nonNull(electricityCarModel)) {
                 rentCarOrderVO.setCarModelName(electricityCarModel.getName());
             }
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            if(Objects.nonNull(userInfo)){
+            if (Objects.nonNull(userInfo)) {
                 rentCarOrderVO.setRentBattery(userInfo.getBatteryRentStatus());
             }
 
             UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
-            if(Objects.nonNull(userCarMemberCard)){
+            if (Objects.nonNull(userCarMemberCard)) {
                 CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByIdFromDB(userCarMemberCard.getCardId());
-                if(Objects.nonNull(carMemberCardOrder)){
+                if (Objects.nonNull(carMemberCardOrder)) {
                     rentCarOrderVO.setRentType(carMemberCardOrder.getCardName());
                 }
             }
@@ -213,7 +215,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
         //门店
         Store store = storeService.queryByIdFromCache(rentCarOrderQuery.getStoreId());
-        if (Objects.isNull(store)|| !Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE CAR DEPOSIT ERROR! not found store,storeId={}", rentCarOrderQuery.getStoreId());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
@@ -231,7 +233,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 //        }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(rentCarOrderQuery.getCarModelId().intValue());
-        if (Objects.isNull(electricityCarModel) || !Objects.equals(electricityCarModel.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(electricityCarModel) || !Objects.equals(electricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE RENT CAR ERROR! electricityCarModel is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100009", "车辆型号不存在");
         }
@@ -241,13 +243,13 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
         //生成租车套餐订单
         Triple<Boolean, String, Object> rentCarMemberCardOrderTriple = buildRentCarMemberCardOrder(userInfo, electricityCarModel, rentCarOrderQuery, store);
-        if(!rentCarMemberCardOrderTriple.getLeft()){
+        if (!rentCarMemberCardOrderTriple.getLeft()) {
             return rentCarMemberCardOrderTriple;
         }
         CarMemberCardOrder carMemberCardOrder = (CarMemberCardOrder) rentCarMemberCardOrderTriple.getRight();
 
         //生成租车订单
-        RentCarOrder rentCarOrder =  buildRentCarOrder(userInfo, electricityCarModel, rentCarOrderQuery);
+        RentCarOrder rentCarOrder = buildRentCarOrder(userInfo, electricityCarModel, rentCarOrderQuery);
 
         RentCarOrder insert = this.insert(rentCarOrder);
 
@@ -289,6 +291,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(carMemberCardOrder.getUid());
         UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
         updateUserCarMemberCard.setUid(userInfo.getUid());
+        updateUserCarMemberCard.setOrderId(carMemberCardOrder.getOrderId());
         updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
         updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
         updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
@@ -296,7 +299,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
         userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
 
-        return Triple.of(true,"","操作成功!");
+        return Triple.of(true, "", "操作成功!");
     }
 
     private RentCarOrder buildRentCarOrder(UserInfo userInfo, ElectricityCarModel electricityCarModel, RentCarOrderQuery rentCarOrderQuery) {
@@ -322,7 +325,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         return rentCarOrder;
     }
 
-    private Triple<Boolean,String,Object> buildRentCarMemberCardOrder(UserInfo userInfo, ElectricityCarModel electricityCarModel, RentCarOrderQuery rentCarOrderQuery, Store store) {
+    private Triple<Boolean, String, Object> buildRentCarMemberCardOrder(UserInfo userInfo, ElectricityCarModel electricityCarModel, RentCarOrderQuery rentCarOrderQuery, Store store) {
         //获取租车套餐计费规则
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
@@ -432,10 +435,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             log.error("ELE RENT CAR ERROR! userCarDeposit is null,uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE RENT CAR ERROR! not pay deposit,uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
+
 
         //是否购买套餐
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
@@ -453,12 +458,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //车辆是否可用
         ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn());
         if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("ORDER ERROR! not found electricityCar,sn={},uid={}", query.getSn(), user.getUid());
+            log.error("ELE RENT CAR ERROR! not found electricityCar,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100007", "车辆不存在");
         }
 
         if (Objects.equals(electricityCar.getStatus(), ElectricityCar.STATUS_IS_RENT)) {
-            log.error("ORDER ERROR! this car has been bound others,sn={},uid={}", query.getSn(), user.getUid());
+            log.error("ELE RENT CAR ERROR! this car has been bound others,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100231", "车辆已绑定其它用户");
         }
 
@@ -466,6 +471,17 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE RENT CAR ERROR! electricityCarModel is null,uid={}", user.getUid());
             return Triple.of(false, "100009", "车辆型号不存在");
+        }
+
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCar)){
+            log.error("ELE RENT CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
+            return Triple.of(false, "100247", "未找到用户信息");
+        }
+
+        if(!Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
+            log.error("ELE RENT CAR ERROR! this user bind car model not equals this car model,uid={}", userInfo.getUid());
+            return Triple.of(false, "100236", "车辆型号不匹配");
         }
 
 
@@ -490,12 +506,28 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         int insert = rentCarOrderMapper.insertOne(rentCarOrder);
 
         DbUtils.dbOperateSuccessThen(insert, () -> {
+            //更新用户车辆租赁状态
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
 
             UserCar updateUserCar = new UserCar();
             updateUserCar.setUid(user.getUid());
             updateUserCar.setSn(query.getSn());
             updateUserCar.setUpdateTime(System.currentTimeMillis());
-            userCarService.insertOrUpdate(updateUserCar);
+            userCarService.updateByUid(updateUserCar);
+
+            ElectricityCar updateElectricityCar = new ElectricityCar();
+            updateElectricityCar.setId(electricityCar.getId());
+            updateElectricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
+            updateElectricityCar.setUid(userInfo.getUid());
+            updateElectricityCar.setPhone(userInfo.getPhone());
+            updateElectricityCar.setUserInfoId(userInfo.getId());
+            updateElectricityCar.setUserName(userInfo.getName());
+            updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+            electricityCarService.update(updateElectricityCar);
 
             return null;
         });

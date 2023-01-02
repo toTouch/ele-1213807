@@ -10,14 +10,13 @@ import java.math.BigDecimal;
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2022-12-28-15:11
+ * @date 2022-12-29-17:28
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CarDepositOrderVO {
-    private Long id;
+public class UserCarDepositVO {
     /**
      * 用户Id
      */
@@ -47,40 +46,15 @@ public class CarDepositOrderVO {
      */
     private Integer status;
     /**
-     * 门店
+     * 门店id
      */
-    private String storeName;
+    private Long storeId;
     /**
-     * 车辆型号
+     * 车辆型号Id
      */
-    private String carModelName;
+    private Long carModelId;
     /**
      * 交易方式 0--线上 1--线下
      */
     private Integer payType;
-    /**
-     * 0--正常 1--删除
-     */
-    private Integer delFlag;
-    /**
-     * 创建时间
-     */
-    private Long createTime;
-    /**
-     * 车辆编号
-     */
-    private String carSn;
-
-    /**
-     * 是否租电池
-     */
-    private Integer rentBattery;
-    /**
-     * 租赁方式
-     */
-    private String rentType;
-    /**
-     * 是否已退押金
-     */
-    private boolean refundDeposit;
 }

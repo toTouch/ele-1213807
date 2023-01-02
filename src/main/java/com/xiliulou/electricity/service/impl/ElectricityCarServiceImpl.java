@@ -8,11 +8,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -52,6 +54,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     UserCarService userCarService;
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    @Autowired
+    RentCarOrderService rentCarOrderService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
 
 
     /**
@@ -213,8 +219,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setDelFlag(ElectricityCar.DEL_DEL);
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
-
-            //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
             return null;
         });
@@ -251,7 +255,24 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Override
     public Integer update(ElectricityCar updateElectricityCar) {
-        return electricityCarMapper.updateById(updateElectricityCar);
+        int update = electricityCarMapper.updateById(updateElectricityCar);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateElectricityCar.getId());
+            return null;
+        });
+        return update;
+    }
+
+    @Override
+    public Integer carUnBindUser(ElectricityCar updateElectricityCar) {
+        int update = electricityCarMapper.updateBindUser(updateElectricityCar);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + updateElectricityCar.getId());
+            return null;
+        });
+        return update;
     }
 
     @Override
@@ -273,68 +294,94 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        if (!Objects.equals(userInfo.getTenantId(),tenantId)){
+        if (!Objects.equals(userInfo.getTenantId(), tenantId)) {
             return R.ok();
         }
 
         //押金
-        if(!Objects.equals(userInfo.getCarDepositStatus(),UserInfo.CAR_DEPOSIT_STATUS_YES)){
-            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", user.getUid());
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100012", "未缴纳租车押金");
         }
 
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userCarDeposit)){
+            log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
+            return R.fail("100247", "未找到用户信息");
+        }
+
         //是否绑定车辆
-        if(Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES)){
-            log.error("ELE CAR ERROR! this user already binding car,uid={}", user.getUid());
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! this user already binding car,uid={}", userInfo.getUid());
             return R.fail("100012", "用户已绑定车辆");
         }
 
         //购买租车套餐
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
-        if(Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getCardId())|| Objects.isNull(userCarMemberCard.getMemberCardExpireTime())){
-            log.error("ELE CAR ERROR! not found userCarMemberCard,uid={}", user.getUid());
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getCardId()) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
+            log.error("ELE CAR ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
             return R.fail("100014", "未购买租车套餐");
         }
 
         //套餐是否过期
-        if(userCarMemberCard.getMemberCardExpireTime()<System.currentTimeMillis()){
-            log.error("ELE CAR ERROR! rent car memberCard is Expire,uid={}", user.getUid());
+        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            log.error("ELE CAR ERROR! rent car memberCard is Expire,uid={}", userInfo.getUid());
             return R.fail("100013", "租车套餐已过期");
         }
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
-            log.error("ELE CAR ERROR! not found electricityCar,uid={}", user.getUid());
+            log.error("ELE CAR ERROR! not found electricityCar,uid={}", userInfo.getUid());
             return R.fail("100007", "未找到车辆");
         }
-        if (!Objects.equals(electricityCar.getTenantId(),tenantId)){
+        if (!Objects.equals(electricityCar.getTenantId(), tenantId)) {
             return R.ok();
         }
 
-        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        if(Objects.isNull(userCar)){
-            log.error("ELE CAR ERROR! not found userCar,uid={}", user.getUid());
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("ELE CAR ERROR! not found userCar,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
 
-        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel())) {
-            log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", user.getUid());
+        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel().intValue())) {
+            log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
         UserCar updateUserCar = new UserCar();
-        updateUserCar.setUid(user.getUid());
+        updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(electricityCar.getId().longValue());
         updateUserCar.setSn(electricityCarBindUser.getSn());
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.updateByUid(updateUserCar);
+
+        //生成租车记录
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
+        RentCarOrder rentCarOrder = new RentCarOrder();
+        rentCarOrder.setOrderId(orderId);
+        rentCarOrder.setCarModelId(electricityCar.getModelId().longValue());
+        rentCarOrder.setCarDeposit(userCarDeposit.getCarDeposit().doubleValue());
+        rentCarOrder.setStatus(RentCarOrder.STATUS_SUCCESS);
+        rentCarOrder.setCarSn(electricityCarBindUser.getSn());
+        rentCarOrder.setType(RentCarOrder.TYPE_RENT);
+        rentCarOrder.setUid(user.getUid());
+        rentCarOrder.setName(userInfo.getName());
+        rentCarOrder.setPhone(userInfo.getPhone());
+        rentCarOrder.setTransactionType(RentCarOrder.TYPE_TRANSACTION_ONLINE);
+        rentCarOrder.setStoreId(electricityCar.getStoreId());
+        rentCarOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        rentCarOrder.setTenantId(TenantContextHolder.getTenantId());
+        rentCarOrder.setCreateTime(System.currentTimeMillis());
+        rentCarOrder.setUpdateTime(System.currentTimeMillis());
+
+        rentCarOrderService.insert(rentCarOrder);
 
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
@@ -351,15 +398,16 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         eleBindCarRecordService.insert(eleBindCarRecord);
 
         electricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
-        electricityCar.setUid(electricityCarBindUser.getUid());
+        electricityCar.setUid(userInfo.getUid());
         electricityCar.setPhone(userInfo.getPhone());
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());
         electricityCar.setUpdateTime(System.currentTimeMillis());
-        return R.ok(electricityCarMapper.updateById(electricityCar));
+        return R.ok(this.update(electricityCar));
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R unBindUser(ElectricityCarBindUser electricityCarBindUser) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -370,7 +418,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE CAR ERROR! not found user uid={}", user.getUid());
+            log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
@@ -379,7 +427,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
-            log.error("ELE CAR ERROR! not found car,uid={},carId={}", user.getUid(),electricityCarBindUser.getCarId());
+            log.error("ELE CAR ERROR! not found car,uid={},carId={}", userInfo.getUid(),electricityCarBindUser.getCarId());
             return R.fail("100007", "未找到车辆");
         }
         if (!Objects.equals(electricityCar.getTenantId(),TenantContextHolder.getTenantId())){
@@ -388,18 +436,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         //用户是否绑定车辆
         if(!Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(),electricityCarBindUser.getUid())){
-            log.error("ELE CAR ERROR! user not binding car,uid={}", user.getUid());
+            log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
 
         UserInfo updateUserInfo = new UserInfo();
-        updateUserInfo.setUid(user.getUid());
+        updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
         UserCar updateUserCar = new UserCar();
-        updateUserCar.setUid(user.getUid());
+        updateUserCar.setUid(userInfo.getUid());
         updateUserCar.setCid(null);
         updateUserCar.setSn("");
         userCarService.unBindingCarByUid(updateUserCar);
@@ -424,7 +472,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(null);
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
-        return R.ok(electricityCarMapper.updateBindUser(electricityCar));
+        return R.ok(this.carUnBindUser(electricityCar));
     }
 
     @Override

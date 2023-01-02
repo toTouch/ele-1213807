@@ -14,6 +14,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarDepositOrderVO;
+import com.xiliulou.electricity.vo.UserCarDepositVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -73,6 +74,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     UserCarMemberCardService userCarMemberCardService;
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -139,6 +142,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                     carDepositOrderVO.setRentType(carMemberCardOrder.getCardName());
                 }
             }
+
+            //是否已退押金
+            carDepositOrderVO.setRefundDeposit(eleRefundOrderService.checkDepositOrderIsRefund(item.getOrderId()));
 
             return carDepositOrderVO;
         }).collect(Collectors.toList());
@@ -298,9 +304,35 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     public Triple<Boolean, String, Object> selectRentCarDeposit() {
+        UserCarDepositVO userCarDepositVO = new UserCarDepositVO();
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found user");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
 
-        return null;
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found userInfo,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found userCarDeposit! uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+        }
+
+        CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
+        if(Objects.isNull(carDepositOrder)){
+            log.error("ELE CAR DEPOSIT CARD ERROR! not found carDepositOrder,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0015", "订单不存在");
+        }
+
+        BeanUtils.copyProperties(carDepositOrder,userCarDepositVO);
+
+        return Triple.of(true, "", userCarDepositVO);
     }
 
     @Override
@@ -461,8 +493,14 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否归还车辆
-        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("ELE CAR REFUND ERROR! user is rent car,uid={}", uid);
+            return Triple.of(false, "100250", "用户未归还车辆");
+        }
+
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if(Objects.nonNull(electricityCar)){
+            log.error("ELE CAR REFUND ERROR! user has bind car,uid={}", uid);
             return Triple.of(false, "100250", "用户未归还车辆");
         }
 
