@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.mapper.clickhouse.CarAttrMapper;
@@ -91,6 +92,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
     }
     
     @Override
+    @DS(value = "clickhouse")
     public Pair<Boolean, Object> getGpsList(CarGpsQuery carGpsQuery) {
         carGpsQuery.setBeginTime(TimeUtils.convertToStandardFormatTime(carGpsQuery.getStartTimeMills()));
         carGpsQuery.setEndTime(TimeUtils.convertToStandardFormatTime(carGpsQuery.getEndTimeMills()));
