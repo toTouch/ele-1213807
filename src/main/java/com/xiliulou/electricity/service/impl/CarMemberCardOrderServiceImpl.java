@@ -228,9 +228,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         //用户车辆SN码
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        if (Objects.nonNull(userCar)) {
-            userCarMemberCardVO.setCarSN(userCar.getSn());
-        }
+        userCarMemberCardVO.setCarSN(Objects.nonNull(userCar) ? userCar.getSn() : null);
 
         //门店名称
         Store store = storeService.queryByIdFromCache(carMemberCardOrder.getStoreId());
