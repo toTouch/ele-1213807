@@ -23,6 +23,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -228,7 +229,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         //用户车辆SN码
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        userCarMemberCardVO.setCarSN(Objects.nonNull(userCar) ? userCar.getSn() : null);
+        if (Objects.nonNull(userCar)) {
+            userCarMemberCardVO.setCarSN(StringUtils.isBlank(userCar.getSn()) ? null : userCar.getSn());
+        }
 
         //门店名称
         Store store = storeService.queryByIdFromCache(carMemberCardOrder.getStoreId());

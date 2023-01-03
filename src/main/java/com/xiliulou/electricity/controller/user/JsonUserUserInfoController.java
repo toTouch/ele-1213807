@@ -37,10 +37,10 @@ public class JsonUserUserInfoController extends BaseController {
     }
 
     /**
-     * 小程序首页(新)
+     * 小程序首页 用户状态(新)
      */
     @GetMapping(value = "/user/userInfoStatus")
-    public R userInfoDetailV2() {
+    public R selectUserInfoStatus() {
         return returnTripleResult(userInfoService.selectUserInfoStatus());
     }
 
