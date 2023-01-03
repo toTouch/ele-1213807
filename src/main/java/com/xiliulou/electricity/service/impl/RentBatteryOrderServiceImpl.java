@@ -524,13 +524,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");
             }
 
-//            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//            if (Objects.isNull(franchiseeUserInfo)) {
-//                eleLockFlag = Boolean.FALSE;
-//                log.error("RETURNBATTERY ERROR! not found user,userId={}", user.getUid());
-//                return R.fail("ELECTRICITY.0001", "未找到用户");
-//            }
-
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
             if (Objects.isNull(franchisee)) {
                 eleLockFlag = Boolean.FALSE;
