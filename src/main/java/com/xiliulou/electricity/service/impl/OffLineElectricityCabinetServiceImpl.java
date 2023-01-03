@@ -132,7 +132,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //未租电池
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
