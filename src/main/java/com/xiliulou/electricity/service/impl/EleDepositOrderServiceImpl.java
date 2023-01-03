@@ -559,6 +559,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             map.put("batteryType", null);
         }
 
+        map.put("rentBatteryStatus", userInfo.getBatteryRentStatus().toString());
+
         if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
                 && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(userBatteryDeposit.getOrderId()))) {
 
