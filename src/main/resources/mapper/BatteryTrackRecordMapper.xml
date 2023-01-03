@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.BatteryTrackRecordMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.BatteryTrackRecord" id="BatteryTrackRecordMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="sn" column="sn" jdbcType="VARCHAR"/>
@@ -12,27 +12,38 @@
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryTrackRecordMap">
-        select
-          id, sn, order_id, e_id, e_name, e_no, type, create_time
+        select id,
+               sn,
+               order_id,
+               e_id,
+               e_name,
+               e_no,
+               type,
+               create_time
         from t_battery_track_record
         where id = #{id}
     </select>
-
+    
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="BatteryTrackRecordMap">
-        select
-          id, sn, order_id, e_id, e_name, e_no, type, create_time
-        from t_battery_track_record
-        limit #{offset}, #{limit}
+        select id,
+               sn,
+               order_id,
+               e_id,
+               e_name,
+               e_no,
+               type,
+               create_time
+        from t_battery_track_record limit #{offset}, #{limit}
     </select>
-
+    
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="BatteryTrackRecordMap">
         select
-          id, sn, order_id, e_id, e_name, e_no, type, create_time
+        id, sn, order_id, e_id, e_name, e_no, type, create_time
         from t_battery_track_record
         <where>
             <if test="id != null">
@@ -61,13 +72,13 @@
             </if>
         </where>
     </select>
-
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_battery_track_record(sn, order_id, e_id, e_name, e_no, type, create_time)
         values (#{sn}, #{orderId}, #{eId}, #{eName}, #{eNo}, #{type}, #{createTime})
     </insert>
-
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_battery_track_record
@@ -96,10 +107,28 @@
         </set>
         where id = #{id}
     </update>
-
+    
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_battery_track_record where id = #{id}
+        delete
+        from t_battery_track_record
+        where id = #{id}
     </delete>
+    <select id="queryTrackRecordByCondition" resultMap="BatteryTrackRecordMap">
+        select
+        id, sn, order_id, e_id, e_name, e_no, type, create_time
+        from t_battery_track_record
+        <where>
+            sn = #{sn}
+            <if test="startTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
 
 </mapper>

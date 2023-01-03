@@ -1,14 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.mapper.BatteryTrackRecordMapper;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * (BatteryTrackRecord)表服务实现类
  *
@@ -18,9 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service("batteryTrackRecordService")
 @Slf4j
 public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService {
+    
     @Resource
     private BatteryTrackRecordMapper batteryTrackRecordMapper;
-
+    
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -32,30 +45,30 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
         return this.batteryTrackRecordMapper.queryById(id);
     }
     
-        /**
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
     @Override
-    public  BatteryTrackRecord queryByIdFromCache(Long id) {
+    public BatteryTrackRecord queryByIdFromCache(Long id) {
         return null;
     }
-
-
+    
+    
     /**
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
     public List<BatteryTrackRecord> queryAllByLimit(int offset, int limit) {
         return this.batteryTrackRecordMapper.queryAllByLimit(offset, limit);
     }
-
+    
     /**
      * 新增数据
      *
@@ -68,7 +81,7 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
         this.batteryTrackRecordMapper.insertOne(batteryTrackRecord);
         return batteryTrackRecord;
     }
-
+    
     /**
      * 修改数据
      *
@@ -78,10 +91,10 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryTrackRecord batteryTrackRecord) {
-       return this.batteryTrackRecordMapper.update(batteryTrackRecord);
-         
+        return this.batteryTrackRecordMapper.update(batteryTrackRecord);
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -92,5 +105,18 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.batteryTrackRecordMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public Pair<Boolean, Object> queryTrackRecord(String sn, Integer size, Integer offset, Long startTime,
+            Long endTime) {
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(sn,
+                TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityBattery)) {
+            return Pair.of(true, null);
+        }
+        
+        
+        return Pair.of(true,batteryTrackRecordMapper.queryTrackRecordByCondition(sn,size,offset,startTime,endTime));
     }
 }
