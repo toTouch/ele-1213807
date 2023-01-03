@@ -20,4 +20,5 @@ public interface MemberCardFailureRecordMapper extends BaseMapper<MemberCardFail
     List<MemberCardFailureRecord> queryFailureMemberCard(@Param("uid") Long uid, @Param("tenantId") Integer tenantID, @Param("offset") Integer offset, @Param("size") Integer size);
 
 
+    List<MemberCardFailureRecord> selectRentCarFailureMemberCardList(@Param("uid") Long uid, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("offset") Integer offset, @Param("size") Integer size);
 }

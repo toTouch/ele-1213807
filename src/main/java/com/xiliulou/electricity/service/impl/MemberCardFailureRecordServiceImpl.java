@@ -20,12 +20,14 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import com.xiliulou.electricity.vo.MemberCardFailureRecordVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 失效套餐表(memberCardFailureRecord)表服务实现类
@@ -54,6 +57,16 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    @Autowired
+    UserCarMemberCardService  userCarMemberCardService;
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    @Autowired
+    UserCarService userCarService;
+    @Autowired
+    StoreService storeService;
 
     @Override
     public void failureMemberCardTask() {
@@ -87,25 +100,103 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
                 memberCardFailureRecordMapper.insert(memberCardFailureRecord);
 
             });
+
+
+            //租车套餐
+            List<FailureMemberCardVo> userCarMemberCardList = userCarMemberCardService.queryMemberCardExpireUser(offset, size, nowTime);
+            if (CollectionUtils.isEmpty(userCarMemberCardList)) {
+                return;
+            }
+
+            userCarMemberCardList.parallelStream().forEach(item -> {
+                MemberCardFailureRecord memberCardFailureRecord = buildRentCarMemberCardFailureRecord(item);
+                if (Objects.isNull(memberCardFailureRecord)) {
+                    return;
+                }
+
+                memberCardFailureRecordMapper.insert(memberCardFailureRecord);
+            });
+
             offset += size;
         }
     }
 
+    private MemberCardFailureRecord buildRentCarMemberCardFailureRecord(FailureMemberCardVo item) {
+        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(item.getOrderId());
+        if(Objects.isNull(carMemberCardOrder)){
+            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found carMemberCardOrder,uid={},orderId={}", item.getUid(),item.getOrderId());
+            return  null;
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(item.getUid());
+        if(Objects.isNull(userCarDeposit)){
+            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found userCarDeposit,uid={}", item.getUid());
+            return  null;
+        }
+
+        UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
+        if(Objects.isNull(userCar)){
+            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found userCar,uid={}", item.getUid());
+            return  null;
+        }
+
+        MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
+        memberCardFailureRecord.setUid(item.getUid());
+        memberCardFailureRecord.setCardName(carMemberCardOrder.getCardName());
+        memberCardFailureRecord.setDeposit(userCarDeposit.getCarDeposit());
+        memberCardFailureRecord.setMemberCardExpireTime(item.getMemberCardExpireTime());
+        memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR);
+        memberCardFailureRecord.setCarSn(userCar.getSn());
+        memberCardFailureRecord.setCarMemberCardType(carMemberCardOrder.getMemberCardType());
+        memberCardFailureRecord.setValidDays(carMemberCardOrder.getValidDays());
+        memberCardFailureRecord.setStoreId(carMemberCardOrder.getStoreId());
+        memberCardFailureRecord.setTenantId(carMemberCardOrder.getTenantId());
+        memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
+        memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
+
+        return memberCardFailureRecord;
+    }
+
     @Override
-    public R queryFailureMemberCard(Long uid, Integer offset, Integer size) {
-        Integer tenantId = TenantContextHolder.getTenantId();
+    public R queryFailureMemberCard(Long uid, Integer type, Integer offset, Integer size) {
 
-        List<MemberCardFailureRecord> memberCardFailureRecordList = memberCardFailureRecordMapper.queryFailureMemberCard(uid, tenantId, offset, size);
-        if (CollectionUtils.isEmpty(memberCardFailureRecordList)) {
-            return R.ok();
-        }
-
-        for (MemberCardFailureRecord memberCardFailureRecord : memberCardFailureRecordList) {
-            if (Objects.nonNull(memberCardFailureRecord.getBatteryType())) {
-                Integer batteryType = BatteryConstant.acquireBattery(memberCardFailureRecord.getBatteryType());
-                memberCardFailureRecord.setBatteryType(batteryType.toString());
+        if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, type)) {
+            List<MemberCardFailureRecord> memberCardFailureRecordList = memberCardFailureRecordMapper.queryFailureMemberCard(uid, TenantContextHolder.getTenantId(), offset, size);
+            if (CollectionUtils.isEmpty(memberCardFailureRecordList)) {
+                return R.ok();
             }
+
+            for (MemberCardFailureRecord memberCardFailureRecord : memberCardFailureRecordList) {
+                if (Objects.nonNull(memberCardFailureRecord.getBatteryType())) {
+                    Integer batteryType = BatteryConstant.acquireBattery(memberCardFailureRecord.getBatteryType());
+                    memberCardFailureRecord.setBatteryType(batteryType.toString());
+                }
+            }
+            return R.ok(memberCardFailureRecordList);
+
         }
+
+        if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR, type)) {
+            List<MemberCardFailureRecord> rentCarMemberCardFailureRecordList = memberCardFailureRecordMapper.selectRentCarFailureMemberCardList(uid, type, TenantContextHolder.getTenantId(), offset, size);
+            if (CollectionUtils.isEmpty(rentCarMemberCardFailureRecordList)) {
+                return R.ok();
+            }
+
+            List<MemberCardFailureRecordVO> failureRecords = rentCarMemberCardFailureRecordList.parallelStream().map(item -> {
+                MemberCardFailureRecordVO memberCardFailureRecordVO = new MemberCardFailureRecordVO();
+                BeanUtils.copyProperties(item, memberCardFailureRecordVO);
+
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
+                if (Objects.nonNull(store)) {
+                    memberCardFailureRecordVO.setStoreName(store.getName());
+                }
+
+                return memberCardFailureRecordVO;
+            }).collect(Collectors.toList());
+
+            return R.ok(failureRecords);
+        }
+
         return R.ok();
     }
 }

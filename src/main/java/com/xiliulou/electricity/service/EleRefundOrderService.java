@@ -89,4 +89,6 @@ public interface EleRefundOrderService {
     boolean checkDepositOrderIsRefund(String orderId);
 
     BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
+
+    BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
 }

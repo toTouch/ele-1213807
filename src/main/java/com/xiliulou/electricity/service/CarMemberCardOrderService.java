@@ -7,9 +7,11 @@ import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -77,4 +79,8 @@ public interface CarMemberCardOrderService {
     String getCardName(String rentType);
 
     Triple<Boolean, String, Object> userCarMemberCardInfo();
+
+    BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> finalFranchiseeIds);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
 }

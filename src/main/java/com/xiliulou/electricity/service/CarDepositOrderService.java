@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.vo.CarDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -81,4 +82,8 @@ public interface CarDepositOrderService {
     Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request);
 
     Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, Long uid, HttpServletRequest request);
+
+    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit, List<Long> finalFranchiseeIds);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer rentCarDeposit, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
 }

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.UserCarDepositVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -659,5 +661,15 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         userCarMemberCardService.deleteByUid(uid);
 
         return Triple.of(true, "", "操作成功");
+    }
+
+    @Override
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> finalFranchiseeIds) {
+        return Optional.ofNullable(carDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, finalFranchiseeIds)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
+        return carDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, finalFranchiseeIds, beginTime, endTime);
     }
 }

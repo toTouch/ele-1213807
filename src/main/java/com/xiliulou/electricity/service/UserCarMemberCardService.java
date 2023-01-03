@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserCarMemberCard;
+import com.xiliulou.electricity.vo.FailureMemberCardVo;
 
 import java.util.List;
 
@@ -55,4 +56,6 @@ public interface UserCarMemberCardService {
     Integer deleteByUid(Long uid);
 
     void carMemberCardExpireReminder();
+
+    List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime);
 }
