@@ -775,11 +775,6 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-//        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-//        if (Objects.isNull(userCarMemberCard)) {
-//            log.error("payDeposit ERROR! not found userCarMemberCard,uid={}", userInfo.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
 
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
             UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -803,12 +798,12 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(electricityTradeOrderUpdate);
 
-        //月卡订单
-        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
-        electricityMemberCardOrderUpdate.setId(carMemberCardOrder.getId());
-        electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
-        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
+        //租车套餐订单
+        CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();
+        updateCarMemberCardOrder.setId(carMemberCardOrder.getId());
+        updateCarMemberCardOrder.setStatus(memberOrderStatus);
+        updateCarMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        carMemberCardOrderService.update(updateCarMemberCardOrder);
 
         return Pair.of(result, null);
 
