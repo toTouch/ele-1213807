@@ -245,17 +245,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBatteryVO queryInfoByUid(Long uid) {
-//        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-//        if(Objects.isNull(userInfo)){
-//            log.error("ELE ERROR! not found userInfo,uid={}",uid);
-//        }
-//
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
-//        if(Objects.isNull(franchiseeUserInfo)){
-//            log.error("ELE ERROR! not found franchiseeUserInfo,uid={}",uid);
-//        }
-//
-//        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryDetailInfoBySN(franchiseeUserInfo.getNowElectricityBatterySn());
+
         ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryInfo(uid);
         if (Objects.isNull(electricityBatteryVO)) {
             return electricityBatteryVO;

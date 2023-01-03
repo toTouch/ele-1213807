@@ -138,4 +138,5 @@ public class ElectricityBatteryVO {
      * gps
      */
     private Double sumV;
+
 }

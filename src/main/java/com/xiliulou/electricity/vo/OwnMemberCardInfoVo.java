@@ -50,4 +50,9 @@ public class OwnMemberCardInfoVo {
      * 停卡截止时间
      */
     private Long endTime;
+
+    /**
+     * 电池租赁状态
+     */
+    private Integer rentBatteryStatus;
 }
