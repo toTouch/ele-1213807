@@ -40,4 +40,14 @@ public class OwnMemberCardInfoVo {
 
     //最大使用次数
     private Long maxUseCount;
+
+    /**
+     * 停卡时间
+     */
+    private Long disableMemberCardTime;
+
+    /**
+     * 停卡截止时间
+     */
+    private Long endTime;
 }
