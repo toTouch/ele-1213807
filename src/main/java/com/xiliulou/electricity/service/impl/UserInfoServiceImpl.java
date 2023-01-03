@@ -1127,79 +1127,79 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //是否缴纳租电池押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userBatteryDeposit) || Objects.isNull(userBatteryDeposit.getOrderId())){
+        if (Objects.isNull(userBatteryDeposit) || Objects.isNull(userBatteryDeposit.getOrderId())) {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
-        }else{
+        } else {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
         }
 
         //是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())){
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
-        }else{
+        } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
         }
 
         //套餐是否过期
-        if(userBatteryMemberCard.getMemberCardExpireTime()<System.currentTimeMillis()){
+        if (!Objects.isNull(userBatteryMemberCard) && !Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
-        }else{
+        } else {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
         }
 
         //套餐是否暂停
-        if(Objects.equals(userBatteryMemberCard.getMemberCardStatus(),UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)){
+        if (!Objects.isNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
             userBatteryDetail.setIsBatteryMemberCardDisable(UserInfoResultVO.NO);
-        }else{
+        } else {
             userBatteryDetail.setIsBatteryMemberCardDisable(UserInfoResultVO.YES);
         }
 
         //是否产生电池服务费
         boolean isHaveBatteryServiceFee = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userBatteryMemberCard);
-        if(isHaveBatteryServiceFee){
+        if (isHaveBatteryServiceFee) {
             userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
-        }else{
+        } else {
             userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.NO);
         }
 
         //是否绑定的有电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        if(Objects.nonNull(electricityBattery)){
+        if (Objects.nonNull(electricityBattery)) {
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.YES);
             userBatteryDetail.setBatteryInfo(electricityBattery);
-        }else{
+        } else {
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.NO);
         }
 
         //是否缴纳租车押金
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userCarDeposit) || Objects.isNull(userCarDeposit.getOrderId())){
+        if (Objects.isNull(userCarDeposit) || Objects.isNull(userCarDeposit.getOrderId())) {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.NO);
-        }else{
+        } else {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.YES);
         }
 
         //是否购买租车套餐
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getOrderId())){
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getOrderId())) {
             userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
-        }else{
+        } else {
             userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
         }
 
         //租车套餐是否过期
-        if(userCarMemberCard.getMemberCardExpireTime()<System.currentTimeMillis()){
+        if (!Objects.isNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
-        }else{
+        } else {
             userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
         }
 
         //是否绑定车辆
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userCar) || StringUtils.isBlank(userCar.getSn())){
+        if (Objects.isNull(userCar) || StringUtils.isBlank(userCar.getSn())) {
             userCarDetail.setIsRentCar(UserInfoResultVO.NO);
-        }else{
+        } else {
             userCarDetail.setIsRentCar(UserInfoResultVO.YES);
         }
 
