@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.ibatis.annotations.Param;
 import org.apache.poi.ss.formula.functions.T;
@@ -101,5 +102,5 @@ public interface ElectricityMemberCardOrderService {
 
     R cancelPayMemberCard();
 
-    boolean checkUserHaveBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard);
+    Pair<Boolean, Object> checkUserHaveBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard);
 }
