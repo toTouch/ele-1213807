@@ -77,7 +77,7 @@
         insert into t_user_battery_member_card(uid, member_card_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,tenant_id)
         values (#{uid}, #{memberCardId}, #{memberCardExpireTime}, #{remainingNumber}, #{memberCardStatus}, #{disableMemberCardTime}, #{delFlag}, #{createTime}, #{updateTime},#{tenantId})
         on duplicate key
-        update member_card_id=#{memberCardId}, member_card_expire_time=#{memberCardExpireTime}, remaining_number=#{remainingNumber}, member_card_status=#{memberCardStatus}, disable_member_card_time=#{disableMemberCardTime},  del_flag=#{delFlag}, update_time=#{updateTime},#{tenantId}
+        update member_card_id=#{memberCardId}, member_card_expire_time=#{memberCardExpireTime}, remaining_number=#{remainingNumber}, member_card_status=#{memberCardStatus}, disable_member_card_time=#{disableMemberCardTime},  del_flag=#{delFlag}, update_time=#{updateTime},tenant_id=#{tenantId}
     </insert>
 
     <!--通过主键修改数据-->
