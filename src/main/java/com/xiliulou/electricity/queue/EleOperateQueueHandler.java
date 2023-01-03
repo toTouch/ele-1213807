@@ -577,11 +577,14 @@ public class EleOperateQueueHandler {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
+
         UserBattery userBattery = new UserBattery();
         userBattery.setUid(userInfo.getUid());
         userBattery.setInitBatterySn(rentBatteryOrder.getElectricityBatterySn());
         userBattery.setUpdateTime(System.currentTimeMillis());
         userBattery.setCreateTime(System.currentTimeMillis());
+        userBattery.setBatteryType(electricityBattery);
         userBatteryService.insertOrUpdate(userBattery);
 
 
@@ -604,7 +607,6 @@ public class EleOperateQueueHandler {
         }
 
         //电池改为在用
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
