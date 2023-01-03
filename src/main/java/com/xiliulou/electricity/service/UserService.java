@@ -97,4 +97,6 @@ public interface UserService {
     User queryByUserPhoneFromDB(String purePhoneNumber, Integer typeUserNormalWxPro, Integer tenantId);
 
     String selectServicePhone(Integer tenantId);
+
+    R memberCardDetail();
 }

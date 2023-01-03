@@ -22,6 +22,8 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
+import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
@@ -90,6 +92,18 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserDataScopeService userDataScopeService;
+
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
+
+    @Autowired
+    UserCarService userCarService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -267,8 +281,8 @@ public class UserServiceImpl implements UserService {
 
 
         //保存用户数据范围
-        if(CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())){
-            List<UserDataScope> userDataScopes=buildUserDataScope(insert.getUid(),adminUserQuery.getDataIdList());
+        if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
+            List<UserDataScope> userDataScopes = buildUserDataScope(insert.getUid(), adminUserQuery.getDataIdList());
             userDataScopeService.batchInsert(userDataScopes);
         }
 
@@ -277,7 +291,7 @@ public class UserServiceImpl implements UserService {
 
     private List<UserDataScope> buildUserDataScope(Long uid, List<Long> dataIdList) {
         List<UserDataScope> list = Lists.newArrayList();
-        dataIdList.forEach(item->{
+        dataIdList.forEach(item -> {
             UserDataScope userDataScope = new UserDataScope();
             userDataScope.setUid(uid);
             userDataScope.setDataId(item);
@@ -301,7 +315,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User queryByUserPhone(String phone, Integer type, Integer tenantId) {
-        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":"+ phone + ":" + type, User.class);
+        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + phone + ":" + type, User.class);
         if (Objects.nonNull(cacheUser)) {
             return cacheUser;
         }
@@ -312,26 +326,26 @@ public class UserServiceImpl implements UserService {
         }
 
         redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
-        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":"+ user.getPhone() + ":" + user.getUserType(), user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + user.getPhone() + ":" + user.getUserType(), user);
 
         return user;
     }
-    
+
     @Override
     public User queryByUserPhoneFromDB(String phone, Integer type, Integer tenantId) {
         User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
         if (Objects.isNull(user)) {
             return null;
         }
-        
+
         return user;
     }
-    
+
     @Override
     @DS("slave_1")
     public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
         List<User> userList = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime, tenantId);
-        if(CollectionUtils.isEmpty(userList)){
+        if (CollectionUtils.isEmpty(userList)) {
             return Pair.of(true, Collections.EMPTY_LIST);
         }
 
@@ -420,12 +434,12 @@ public class UserServiceImpl implements UserService {
                 userInfo.setUid(oldUserInfo.getUid());
                 userInfoService.update(userInfo);
             }
-    
-            
+
+
             //更新用户数据范围
             if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
                 userDataScopeService.deleteByUid(user.getUid());
-                
+
                 List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
                 userDataScopeService.batchInsert(userDataScopes);
             }
@@ -489,7 +503,7 @@ public class UserServiceImpl implements UserService {
             if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
                 storeService.deleteByUid(uid);
             }
-            
+
             //删除用户数据可见范围
             userDataScopeService.deleteByUid(user.getUid());
         }
@@ -509,7 +523,7 @@ public class UserServiceImpl implements UserService {
         User oldUser = queryByUserNameAndTenantId(passwordQuery.getName(), tenantId);
         if (Objects.isNull(oldUser)) {
             log.error("updatePassword  ERROR! not found userName{} ", passwordQuery.getName());
-           return Triple.of(false, null, "用户名不存在");
+            return Triple.of(false, null, "用户名不存在");
         }
 
         if (!Objects.equals(user.getUid(), oldUser.getUid())) {
@@ -709,7 +723,7 @@ public class UserServiceImpl implements UserService {
         if (Objects.nonNull(user)) {
             if (deleteById(uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_UID + uid);
-                redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":"+ user.getPhone() + ":" + user.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getTenantId() + ":" + user.getPhone() + ":" + user.getUserType());
             }
         }
     }
@@ -803,6 +817,56 @@ public class UserServiceImpl implements UserService {
 //        }
 
         return cachePhone;
+    }
+
+    @Override
+    public R memberCardDetail() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("USER ERROR! no use!");
+            return R.fail("USER.0001", "查询不到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("member card detail error! no found user uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserBatteryMemberCardDetailVO userBatteryMemberCardDetailVO = null;
+
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+            if (Objects.nonNull(userBatteryMemberCard) && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
+                userBatteryMemberCardDetailVO = new UserBatteryMemberCardDetailVO();
+                userBatteryMemberCardDetailVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+                if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                    userBatteryMemberCardDetailVO.setExistBattery(UserBatteryMemberCardDetailVO.EXIST_BATTERY);
+                }
+            }
+        }
+
+        UserCarMemberCardDetailVO userCarMemberCardDetailVO = null;
+
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(uid);
+            if (Objects.nonNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
+                userCarMemberCardDetailVO = new UserCarMemberCardDetailVO();
+                userCarMemberCardDetailVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+                if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+                    UserCar userCar = userCarService.selectByUidFromCache(uid);
+                    if (Objects.nonNull(userCar)) {
+                        userCarMemberCardDetailVO.setCarSn(userCar.getSn());
+                    }
+                }
+            }
+        }
+
+        Map<String, Object> map = new HashMap();
+        map.put("userBatteryMemberCardDetailVO", userBatteryMemberCardDetailVO);
+        map.put("userCarMemberCardDetailVO", userCarMemberCardDetailVO);
+
+        return R.ok(map);
     }
 
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {

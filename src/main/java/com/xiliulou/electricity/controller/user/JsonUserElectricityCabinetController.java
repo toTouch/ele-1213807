@@ -197,4 +197,13 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	}
 
 
+	/**
+	 * 用户租车和换电套餐详情
+	 * @return
+	 */
+	@GetMapping("/user/memberCard/detail")
+	public R memberCardDetail() {
+		return userService.memberCardDetail();
+	}
+
 }
