@@ -1199,26 +1199,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return electricityCabinet;
     }
-
+    
     @Override
     public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
-        Integer tenantId = TenantContextHolder.getTenantId();
         //先查缓存
-        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName + tenantId, ElectricityCabinet.class);
+        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName, ElectricityCabinet.class);
         if (Objects.nonNull(cacheElectricityCabinet)) {
             return cacheElectricityCabinet;
         }
 
         //缓存没有再查数据库
         ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
-                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL)
-                .eq(ElectricityCabinet::getTenantId, tenantId));
+                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (Objects.isNull(electricityCabinet)) {
             return null;
         }
 
         //放入缓存
-        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName + tenantId, electricityCabinet);
+        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName, electricityCabinet);
         return electricityCabinet;
     }
 
