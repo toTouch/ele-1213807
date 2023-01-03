@@ -561,7 +561,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
                 && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(userBatteryDeposit.getOrderId()))) {
-
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
 
             if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
@@ -595,6 +594,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 map.put("time", this.queryByOrderId(userBatteryDeposit.getOrderId()).getUpdateTime().toString());
 
                 map.put("franchiseeName", franchisee.getName());
+                map.put("rentBatteryStatus", userInfo.getBatteryRentStatus().toString());
             }
 
             return R.ok(map);

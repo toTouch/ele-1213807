@@ -63,11 +63,13 @@
         SELECT
 	    tucmc.id,
 	    tucmc.member_card_expire_time,
+	    cmco.card_name as cardName,
 	    ui.uid,
 	    ui.tenant_id,
 	    uob.third_id
         FROM
 	    t_user_car_member_card tucmc
+	    LEFT JOIN t_car_member_card_order cmco on cmco.order_id = tucmc.order_id
 	    LEFT JOIN t_user_info ui ON tucmc.uid = ui.uid
 	    LEFT JOIN t_user_oauth_bind uob ON uob.uid = ui.uid
         WHERE
@@ -124,5 +126,15 @@
     <delete id="deleteByUid">
         delete from t_user_car_member_card where uid = #{uid}
     </delete>
+
+    <select id="queryMemberCardExpireUser" resultType="com.xiliulou.electricity.vo.FailureMemberCardVo">
+        select
+        member_card_expire_time ,
+        uid,
+        order_id
+         from t_user_car_member_card
+        where member_card_expire_time &lt;= #{nowTime}
+        limit #{offset},#{size}
+    </select>
 
 </mapper>

@@ -50,4 +50,5 @@ public class OwnMemberCardInfoVo {
      * 停卡截止时间
      */
     private Long endTime;
+
 }

@@ -44,5 +44,9 @@ public class FailureMemberCardVo {
      */
     private Long memberCardExpireTime;
 
+    /**
+     * 租车套餐订单id
+     */
+    private String orderId;
 
 }

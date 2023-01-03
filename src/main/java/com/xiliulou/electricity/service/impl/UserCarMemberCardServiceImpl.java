@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
+import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.TemplateConfigEntity;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.TemplateConfigService;
 import com.xiliulou.electricity.service.UserCarMemberCardService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,8 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     ElectricityPayParamsService electricityPayParamsService;
     @Autowired
     TemplateConfigService templateConfigService;
+    @Autowired
+    WeChatAppTemplateService weChatAppTemplateService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -206,26 +210,31 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         }
     }
 
+    @Override
+    public List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime) {
+        return userCarMemberCardMapper.queryMemberCardExpireUser( offset,  size,  nowTime);
+    }
+
     private List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
         return this.userCarMemberCardMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
     private void sendCarMemberCardExpiringTemplate(CarMemberCardExpiringSoonQuery carMemberCardExpiringSoonQuery) {
-//        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-//        appTemplateQuery.setFormId(RandomUtil.randomString(20));
-//        appTemplateQuery.setTouser(carMemberCardExpiringSoonQuery.getThirdId());
-//        appTemplateQuery.setAppId(carMemberCardExpiringSoonQuery.getMerchantMinProAppId());
-//        appTemplateQuery.setSecret(carMemberCardExpiringSoonQuery.getMerchantMinProAppSecert());
-//        appTemplateQuery.setTemplateId(carMemberCardExpiringSoonQuery.getMemberCardExpiringTemplate());
-//        Map<String, Object> data = new HashMap<>(4);
-//        appTemplateQuery.setData(data);
-//
-//        data.put("thing2", carMemberCardExpiringSoonQuery.getCardName());
-//        data.put("date4", carMemberCardExpiringSoonQuery.getRentCarMemberCardExpireTimeStr());
-//        data.put("thing3", "租车套餐即将过期，请及时续费。");
-//
-//        log.info("CAR MEMBER CARD EXPIRING REMINDER: param={}", carMemberCardExpiringSoonQuery);
-//
-//        weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+        appTemplateQuery.setFormId(RandomUtil.randomString(20));
+        appTemplateQuery.setTouser(carMemberCardExpiringSoonQuery.getThirdId());
+        appTemplateQuery.setAppId(carMemberCardExpiringSoonQuery.getMerchantMinProAppId());
+        appTemplateQuery.setSecret(carMemberCardExpiringSoonQuery.getMerchantMinProAppSecert());
+        appTemplateQuery.setTemplateId(carMemberCardExpiringSoonQuery.getMemberCardExpiringTemplate());
+        Map<String, Object> data = new HashMap<>(4);
+        appTemplateQuery.setData(data);
+
+        data.put("thing2", carMemberCardExpiringSoonQuery.getCardName());
+        data.put("date4", carMemberCardExpiringSoonQuery.getRentCarMemberCardExpireTimeStr());
+        data.put("thing3", "租车套餐即将过期，请及时续费!");
+
+        log.info("CAR MEMBER CARD EXPIRING REMINDER: thirdId={}", carMemberCardExpiringSoonQuery.getThirdId());
+
+        weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
     }
 }
