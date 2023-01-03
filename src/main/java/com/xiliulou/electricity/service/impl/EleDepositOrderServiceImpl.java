@@ -824,6 +824,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), userBatteryMemberCard.getTenantId());
 
+            log.error("用户==============" + userInfo + "=======套餐" + userBatteryMemberCard + "===========停卡记录================" + eleDisableMemberCardRecord);
+
             BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, eleDisableMemberCardRecord, serviceFeeUserInfo);
             payAmount = serviceFee;
 
