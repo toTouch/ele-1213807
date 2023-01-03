@@ -2,9 +2,11 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -64,5 +66,9 @@ public interface CarMemberCardOrderMapper extends BaseMapper<CarMemberCardOrder>
      * @return 影响行数
      */
     int deleteById(Long id);
+
+    BigDecimal queryCarMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeIds") List<Long> franchiseeIds);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
 }

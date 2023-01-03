@@ -2,9 +2,11 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.CarDepositOrder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -64,5 +66,9 @@ public interface CarDepositOrderMapper extends BaseMapper<CarDepositOrder> {
      * @return 影响行数
      */
     int deleteById(Long id);
+
+    BigDecimal queryDepositTurnOverByDepositType(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("depositType") Integer depositType, @Param("franchiseeIds") List<Long> franchiseeIds);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(@Param("tenantId") Integer tenantId, @Param("depositType") Integer depositType, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
 }

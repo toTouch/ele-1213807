@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -68,8 +69,11 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     ElectricityCabinetOfflineReportOrderService electricityCabinetOfflineReportOrderService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    @Autowired
+    BatteryTrackRecordService batteryTrackRecordService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
@@ -94,6 +98,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             log.error("OFFLINE EXCHANGE orderId is lock,orderId={}", offlineEleOrderVo.getOrderId());
             return;
         }
+        
         ElectricityCabinetOfflineReportOrder oldElectricityCabinetOfflineReportOrder = electricityCabinetOfflineReportOrderService.queryByOrderId(offlineEleOrderVo.getOrderId());
         if (Objects.nonNull(oldElectricityCabinetOfflineReportOrder)) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
@@ -153,6 +158,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .storeId(electricityCabinet.getStoreId())
                 .tenantId(electricityCabinet.getTenantId()).build();
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
+        
+        //这里处理电池轨迹
+        handleBatteryTrackRecord(electricityCabinetOrder,electricityCabinet);
 
         //操作记录
         List<OperateMsgVo> operateMsgVoList = offlineEleOrderVo.getMsg();
@@ -207,16 +215,16 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getOldElectricityBatterySn());
             return;
         }
-        ElectricityBattery InWarehouseElectricityBattery = new ElectricityBattery();
-        InWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
+        ElectricityBattery inWarehouseElectricityBattery = new ElectricityBattery();
+        inWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
 //        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        InWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
-        InWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
-        InWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-        InWarehouseElectricityBattery.setUid(null);
-        InWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        InWarehouseElectricityBattery.setBorrowExpireTime(null);
-        electricityBatteryService.updateBatteryUser(InWarehouseElectricityBattery);
+        inWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+        inWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+        inWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+        inWarehouseElectricityBattery.setUid(null);
+        inWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        inWarehouseElectricityBattery.setBorrowExpireTime(null);
+        electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
 
         //更新新电池为在用
         ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(offlineEleOrderVo.getNewElectricityBatterySn());
@@ -224,18 +232,32 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getNewElectricityBatterySn());
             return;
         }
-        ElectricityBattery UsingElectricityBattery = new ElectricityBattery();
-        UsingElectricityBattery.setId(newElectricityBattery.getId());
+        ElectricityBattery usingElectricityBattery = new ElectricityBattery();
+        usingElectricityBattery.setId(newElectricityBattery.getId());
 //        UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-        UsingElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
-        UsingElectricityBattery.setElectricityCabinetId(null);
-        UsingElectricityBattery.setElectricityCabinetName(null);
-        UsingElectricityBattery.setUid(user.getUid());
-        UsingElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        UsingElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
-        electricityBatteryService.updateBatteryUser(UsingElectricityBattery);
+        usingElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
+        usingElectricityBattery.setElectricityCabinetId(null);
+        usingElectricityBattery.setElectricityCabinetName(null);
+        usingElectricityBattery.setUid(user.getUid());
+        usingElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        usingElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
+        electricityBatteryService.updateBatteryUser(usingElectricityBattery);
     }
-
+    
+    private void handleBatteryTrackRecord(ElectricityCabinetOrder electricityCabinetOrder,
+            ElectricityCabinet electricityCabinet) {
+    
+        batteryTrackRecordService.insert(new BatteryTrackRecord().setSn(electricityCabinetOrder.getNewElectricityBatterySn())
+                .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
+                .setENo(electricityCabinetOrder.getNewCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
+                .setCreateTime(electricityCabinetOrder.getUpdateTime())).setOrderId(electricityCabinetOrder.getOrderId());
+    
+        batteryTrackRecordService.insert(new BatteryTrackRecord().setSn(electricityCabinetOrder.getOldElectricityBatterySn())
+                .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
+                .setENo(electricityCabinetOrder.getOldCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
+                .setCreateTime(electricityCabinetOrder.getCreateTime())).setOrderId(electricityCabinetOrder.getOrderId());
+    }
+    
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("orderId", offlineEleOrderVo.getOrderId());

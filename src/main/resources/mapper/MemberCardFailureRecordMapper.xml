@@ -8,4 +8,16 @@
        limit #{offset},#{size}
    </select>
 
+    <select id="selectRentCarFailureMemberCardList"
+            resultType="com.xiliulou.electricity.entity.MemberCardFailureRecord">
+      select   id, card_name, uid, battery_type, type, car_sn, store_id, car_member_card_type, valid_days, deposit, member_card_expire_time, create_time, update_time, tenant_id
+      from t_member_card_failure_record
+       where
+       uid=#{uid}
+       and tenant_id=#{tenantId}
+       and type=#{type}
+       order by create_time desc
+       limit #{offset},#{size}
+   </select>
+
 </mapper>

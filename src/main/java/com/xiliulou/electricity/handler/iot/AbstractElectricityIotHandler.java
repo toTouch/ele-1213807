@@ -56,7 +56,7 @@ public abstract class AbstractElectricityIotHandler implements IElectricityHandl
     @Override
     public boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
 
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELE ERROR! not found  electricity ,productKey={},deviceName={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return false;

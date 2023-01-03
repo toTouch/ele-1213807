@@ -4,7 +4,7 @@ public interface CacheConstant {
     //换电柜缓存
     String CACHE_ELECTRICITY_CABINET = "electricity_cabinet:";
     //换电柜缓存
-    String CACHE_ELECTRICITY_CABINET_DEVICE = "electricity_cabinet_device:";
+    String CACHE_ELECTRICITY_CABINET_DEVICE = "electricity_cabinet_sn:";
     //换电柜型号缓存
     String CACHE_ELECTRICITY_CABINET_MODEL = "electricity_cabinet_model:";
 

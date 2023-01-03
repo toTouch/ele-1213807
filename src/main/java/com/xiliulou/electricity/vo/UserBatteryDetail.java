@@ -3,6 +3,8 @@ package com.xiliulou.electricity.vo;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -41,6 +43,7 @@ public class UserBatteryDetail {
     /**
      * 电池服务费
      */
-    private EleBatteryServiceFeeVO  batteryServiceFee;
+//    private EleBatteryServiceFeeVO  batteryServiceFee;
+    private BigDecimal batteryServiceFee;
 
 }

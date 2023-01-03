@@ -1,31 +1,23 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * @program: XILIULOU
- * @description:
- * @author: Mr.YG
- * @create: 2022-12-20 15:10
- **/
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-01-03-17:04
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_member_card_failure_record")
-public class MemberCardFailureRecord {
+public class MemberCardFailureRecordVO {
 
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
      * 套餐名称
@@ -64,6 +56,8 @@ public class MemberCardFailureRecord {
      */
     private Long storeId;
 
+    private String storeName;
+
     /**
      * 租车套餐类型
      */
@@ -80,9 +74,4 @@ public class MemberCardFailureRecord {
 
     //租户id
     private Integer tenantId;
-
-    public static final Integer FAILURE_TYPE_FOR_BATTERY = 1;
-    public static final Integer FAILURE_TYPE_FOR_RENT_CAR = 2;
-
-
 }

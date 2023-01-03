@@ -170,6 +170,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     UserBatteryService userBatteryService;
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -1195,26 +1199,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return electricityCabinet;
     }
-
+    
     @Override
     public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
-        Integer tenantId = TenantContextHolder.getTenantId();
         //先查缓存
-        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName + tenantId, ElectricityCabinet.class);
+        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName, ElectricityCabinet.class);
         if (Objects.nonNull(cacheElectricityCabinet)) {
             return cacheElectricityCabinet;
         }
 
         //缓存没有再查数据库
         ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
-                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL)
-                .eq(ElectricityCabinet::getTenantId, tenantId));
+                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (Objects.isNull(electricityCabinet)) {
             return null;
         }
 
         //放入缓存
-        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName + tenantId, electricityCabinet);
+        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName, electricityCabinet);
         return electricityCabinet;
     }
 
@@ -2490,20 +2492,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
-
-
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
@@ -2515,7 +2503,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.ok(homePageTurnOverVo);
             }
         }
-
 
         long todayStartTime = DateUtils.getTodayStartTime();
         //购买换电月卡
@@ -2530,7 +2517,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //购买租车月卡
+/*        //购买租车月卡
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, null, finalFranchiseeIds);
             BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeIds);
@@ -2538,6 +2525,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });*/
+        //租车套餐
+        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
+            BigDecimal carMemberCardTurnover = carMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, null, finalFranchiseeIds);
+            BigDecimal todayCarMemberCardTurnover = carMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeIds);
+            homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
+            homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query CAR TenantTurnOver error!", e);
             return null;
         });
 
@@ -2574,18 +2571,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -2605,7 +2590,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
 
-
         long todayStartTime = DateUtils.getTodayStartTime();
 
         //缴纳电池押金
@@ -2620,12 +2604,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //缴纳租车押金
+//        //缴纳租车押金
+//        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
+//            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+//            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+//            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
+//            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
+//        }, executorService).exceptionally(e -> {
+//            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+//            return null;
+//        });
+        //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
-            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
+            BigDecimal carDepositTurnover = carDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+            BigDecimal todayCarDeposit = carDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+            homePageDepositVo.setCarDeposit(carDepositTurnover);
+            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -2642,9 +2636,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //退租车押金
+/*        //退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
             BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,finalFranchiseeIds);
+            homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });*/
+
+        //退租车押金
+        CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal historyRefundDeposit = refundOrderService.queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,finalFranchiseeIds);
             homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2656,6 +2659,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
+            log.error("getCarDeposit:{}",JsonUtil.toJson(homePageDepositVo.getCarDeposit()));
+            log.error("getHistoryRefundCarDeposit:{}",JsonUtil.toJson(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setCarDeposit(homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setSumDepositTurnover(homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
             homePageDepositVo.setTodayPayDeposit(homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
@@ -2674,19 +2679,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -2773,19 +2765,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
-
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -2803,7 +2782,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
 
-
         //购买换电月卡
         List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
@@ -2814,9 +2792,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //购买租车月卡
+//        //购买租车月卡
+//        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
+//            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
+//            homePageTurnOverAnalysisVo.setCarMemberCardAnalysis(carMemberCardTurnover);
+//        }, executorService).exceptionally(e -> {
+//            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+//            return null;
+//        });
+
+        //购买租车套餐
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
+            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = carMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setCarMemberCardAnalysis(carMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2841,9 +2828,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //租车押金
+/*        //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds, beginTime, endTime);
+            homePageTurnOverAnalysisVo.setCarDepositAnalysis(carDepositTurnOver);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });*/
+        //租车押金
+        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
+            List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = carDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds, beginTime, endTime);
             homePageTurnOverAnalysisVo.setCarDepositAnalysis(carDepositTurnOver);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2895,10 +2890,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
@@ -2956,27 +2947,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            return R.fail("AUTH.0002", "没有权限操作！");
-//        }
-//
-//        List<Integer> eleIdList = null;
-//        Long franchiseeId = null;
-//        Franchisee franchisee = null;
-//        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            franchisee = franchiseeService.queryByUid(user.getUid());
-//        }
-//
-//        if (Objects.nonNull(franchisee)) {
-//            franchiseeId = franchisee.getId();
-//        }
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -3159,7 +3129,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return R.ok(homepageBatteryVo);
-
     }
 
 
