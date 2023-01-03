@@ -215,7 +215,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
         
         //电池名称改变
-        if (StringUtils.isNotEmpty(nowBatteryName) && StringUtils.isNotEmpty(eleBox.getSn()) && nowBatteryName.trim().equals(
+        if (StringUtils.isNotEmpty(nowBatteryName) && StringUtils.isNotEmpty(eleBox.getSn()) && !nowBatteryName.trim().equals(
                 eleBox.getSn().trim())) {
             batteryTrackRecordService.insert(
                     new BatteryTrackRecord().setSn(nowBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
