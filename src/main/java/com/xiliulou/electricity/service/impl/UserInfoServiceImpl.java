@@ -210,19 +210,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                             .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), null);
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
+                        item.setStoreId(eleDepositOrder.getStoreId());
                     }
                 }
 
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(item.getUid());
                 if (Objects.nonNull(userBattery)) {
                     item.setModel(userBattery.getBatteryType());
-                }
-
-                if (StringUtils.isNotBlank(item.getOrderId())) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
-                    if (Objects.nonNull(eleDepositOrder)) {
-                        item.setStoreId(eleDepositOrder.getStoreId());
-                    }
                 }
 
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
