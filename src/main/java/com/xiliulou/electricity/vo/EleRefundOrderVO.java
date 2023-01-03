@@ -70,7 +70,7 @@ public class EleRefundOrderVO {
      */
     private String phone;
 
-    private String payType;
+    private Integer payType;
 
     public Long getId() {
         return id;
@@ -176,11 +176,11 @@ public class EleRefundOrderVO {
         this.phone = phone;
     }
 
-    public String getPayType() {
+    public Integer getPayType() {
         return payType;
     }
 
-    public void setPayType(String payType) {
+    public void setPayType(Integer payType) {
         this.payType = payType;
     }
 }

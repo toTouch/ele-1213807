@@ -27,4 +27,8 @@ public class PayDepositOrderVO {
      */
     private Long refundTime;
 
+    /**
+     * 退款状态
+     */
+    private Integer refundStatus;
 }

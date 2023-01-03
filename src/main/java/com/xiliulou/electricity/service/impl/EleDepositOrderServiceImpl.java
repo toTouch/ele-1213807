@@ -24,6 +24,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.PayDepositOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -33,6 +34,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -492,7 +494,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public R payDepositOrderList(EleDepositOrderQuery eleDepositOrderQuery) {
-        return R.ok(eleDepositOrderMapper.payDepositOrderList(eleDepositOrderQuery));
+        List<PayDepositOrderVO> payDepositOrderVOList = eleDepositOrderMapper.payDepositOrderList(eleDepositOrderQuery);
+        if (CollectionUtils.isEmpty(payDepositOrderVOList)) {
+            return R.ok();
+        }
+        for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
+            if (!Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_SUCCESS)) {
+                payDepositOrderVO.setRefundTime(null);
+            }
+        }
+        return R.ok(payDepositOrderVOList);
     }
 
     @Override
