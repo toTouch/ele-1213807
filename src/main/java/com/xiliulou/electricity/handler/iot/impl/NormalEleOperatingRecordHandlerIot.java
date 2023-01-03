@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.StringTokenizer;
 
 /**
  * @author zgw
@@ -33,18 +34,22 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
             log.warn("CUPBOARD OPERATING RECORD ERROR! parse CupboardOperatingRecordRequest error! sessionId={}, productKey={},deviceName={}",receiverMessage.getSessionId(), receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return;
         }
-
-        ElectricityCabinetPhysicsOperRecord electricityCabinetPhysicsOperRecord = new ElectricityCabinetPhysicsOperRecord();
-        electricityCabinetPhysicsOperRecord.setElectricityCabinetId(electricityCabinet.getId());
-        electricityCabinetPhysicsOperRecord.setCreateTime(System.currentTimeMillis());
-        electricityCabinetPhysicsOperRecord.setCommand(request.getIoTMsgType());
-        electricityCabinetPhysicsOperRecord.setCellNo(String.valueOf(request.getCellNo()));
-        electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult() ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
-        electricityCabinetPhysicsOperRecord.setMsg(request.getOperateMsg());
-        electricityCabinetPhysicsOperRecord.setUid(request.getUid());
-        electricityCabinetPhysicsOperRecord.setUserName(request.getUsername());
-        electricityCabinetPhysicsOperRecord.setOperateType(request.getOperateType());
-        electricityCabinetPhysicsOperRecordService.insert(electricityCabinetPhysicsOperRecord);
+    
+        StringTokenizer stringTokenizer = new StringTokenizer(request.getCellNo(), ",");
+        while (stringTokenizer.hasMoreElements()) {
+            ElectricityCabinetPhysicsOperRecord electricityCabinetPhysicsOperRecord = new ElectricityCabinetPhysicsOperRecord();
+            electricityCabinetPhysicsOperRecord.setElectricityCabinetId(electricityCabinet.getId());
+            electricityCabinetPhysicsOperRecord.setCreateTime(System.currentTimeMillis());
+            electricityCabinetPhysicsOperRecord.setCommand(request.getIoTMsgType());
+            electricityCabinetPhysicsOperRecord.setCellNo(stringTokenizer.nextToken());
+            electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult()
+                    ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
+            electricityCabinetPhysicsOperRecord.setMsg(request.getOperateMsg());
+            electricityCabinetPhysicsOperRecord.setUid(request.getUid());
+            electricityCabinetPhysicsOperRecord.setUserName(request.getUsername());
+            electricityCabinetPhysicsOperRecord.setOperateType(request.getOperateType());
+            electricityCabinetPhysicsOperRecordService.insert(electricityCabinetPhysicsOperRecord);
+        }
     }
 
 }
@@ -74,7 +79,8 @@ class CupboardOperatingRecordRequest {
      * 操作结果
      */
     private Boolean result;
-    private Integer cellNo;
+    
+    private String cellNo;
     private Long createTime;
     private Long uid;
     private String username;
