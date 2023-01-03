@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -35,21 +36,30 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
             return;
         }
     
-        StringTokenizer stringTokenizer = new StringTokenizer(request.getCellNo(), ",");
-        while (stringTokenizer.hasMoreElements()) {
-            ElectricityCabinetPhysicsOperRecord electricityCabinetPhysicsOperRecord = new ElectricityCabinetPhysicsOperRecord();
-            electricityCabinetPhysicsOperRecord.setElectricityCabinetId(electricityCabinet.getId());
-            electricityCabinetPhysicsOperRecord.setCreateTime(System.currentTimeMillis());
-            electricityCabinetPhysicsOperRecord.setCommand(request.getIoTMsgType());
-            electricityCabinetPhysicsOperRecord.setCellNo(stringTokenizer.nextToken());
-            electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult()
-                    ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
-            electricityCabinetPhysicsOperRecord.setMsg(request.getOperateMsg());
-            electricityCabinetPhysicsOperRecord.setUid(request.getUid());
-            electricityCabinetPhysicsOperRecord.setUserName(request.getUsername());
-            electricityCabinetPhysicsOperRecord.setOperateType(request.getOperateType());
-            electricityCabinetPhysicsOperRecordService.insert(electricityCabinetPhysicsOperRecord);
+        if(StrUtil.isNotBlank(request.getCellNo())){
+            StringTokenizer stringTokenizer = new StringTokenizer(request.getCellNo(), ",");
+            while (stringTokenizer.hasMoreElements()) {
+                createPhysicsOperRecord(electricityCabinet, request, stringTokenizer.nextToken());
+            }
+            return;
         }
+    
+        createPhysicsOperRecord(electricityCabinet, request, null);
+    }
+    
+    public void createPhysicsOperRecord(ElectricityCabinet electricityCabinet, CupboardOperatingRecordRequest request, String cellNo){
+        ElectricityCabinetPhysicsOperRecord electricityCabinetPhysicsOperRecord = new ElectricityCabinetPhysicsOperRecord();
+        electricityCabinetPhysicsOperRecord.setElectricityCabinetId(electricityCabinet.getId());
+        electricityCabinetPhysicsOperRecord.setCreateTime(System.currentTimeMillis());
+        electricityCabinetPhysicsOperRecord.setCommand(request.getIoTMsgType());
+        electricityCabinetPhysicsOperRecord.setCellNo(cellNo);
+        electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult()
+                ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
+        electricityCabinetPhysicsOperRecord.setMsg(request.getOperateMsg());
+        electricityCabinetPhysicsOperRecord.setUid(request.getUid());
+        electricityCabinetPhysicsOperRecord.setUserName(request.getUsername());
+        electricityCabinetPhysicsOperRecord.setOperateType(request.getOperateType());
+        electricityCabinetPhysicsOperRecordService.insert(electricityCabinetPhysicsOperRecord);
     }
 
 }
