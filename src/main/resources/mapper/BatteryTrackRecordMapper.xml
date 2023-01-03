@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.BatteryTrackRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.BatteryTrackRecord" id="BatteryTrackRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="eId" column="e_id" jdbcType="INTEGER"/>
+        <result property="eName" column="e_name" jdbcType="VARCHAR"/>
+        <result property="eNo" column="e_no" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BatteryTrackRecordMap">
+        select
+          id, sn, order_id, e_id, e_name, e_no, type, create_time
+        from t_battery_track_record
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BatteryTrackRecordMap">
+        select
+          id, sn, order_id, e_id, e_name, e_no, type, create_time
+        from t_battery_track_record
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BatteryTrackRecordMap">
+        select
+          id, sn, order_id, e_id, e_name, e_no, type, create_time
+        from t_battery_track_record
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="eId != null">
+                and e_id = #{eId}
+            </if>
+            <if test="eName != null and eName != ''">
+                and e_name = #{eName}
+            </if>
+            <if test="eNo != null">
+                and e_no = #{eNo}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_battery_track_record(sn, order_id, e_id, e_name, e_no, type, create_time)
+        values (#{sn}, #{orderId}, #{eId}, #{eName}, #{eNo}, #{type}, #{createTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_battery_track_record
+        <set>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="eId != null">
+                e_id = #{eId},
+            </if>
+            <if test="eName != null and eName != ''">
+                e_name = #{eName},
+            </if>
+            <if test="eNo != null">
+                e_no = #{eNo},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_battery_track_record where id = #{id}
+    </delete>
+
+</mapper>
