@@ -256,9 +256,9 @@
         <if test="todayStartTime != null">
             and create_time &gt;=#{todayStartTime}
         </if>
-        <if test="depositType != null">
+       <!-- <if test="depositType != null">
             and deposit_type = #{depositType}
-        </if>
+        </if>-->
         <if test="franchiseeIds != null">
             and franchisee_id in
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">

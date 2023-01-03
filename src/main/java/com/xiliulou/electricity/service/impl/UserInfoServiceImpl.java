@@ -1168,11 +1168,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否绑定的有电池
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
-        if (Objects.nonNull(electricityBattery)) {
+        if(Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.YES);
-            userBatteryDetail.setBatteryInfo(electricityBattery);
-        } else {
+            userBatteryDetail.setBatteryInfo(electricityBatteryService.queryByUid(userInfo.getUid()));
+        }else {
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.NO);
         }
 

@@ -2771,32 +2771,58 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public Pair<Boolean, Object> checkUserHaveBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard) {
+        //用户所产生的电池服务费
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-        long cardDays = 0;
+
+        //获取新用户所绑定的加盟商的电池服务费
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("BATTERY SERVICE FEE ERROR!not found franchisee,uid={}",userInfo.getUid());
+            return Pair.of(false, null);
+        }
+
+        //没有开启电池服务费功能
+        if(Objects.equals(Franchisee.CLOSE_SERVICE_FEE,franchisee.getIsOpenServiceFee())){
+            return Pair.of(false, null);
+        }
+
+        //统一型号，且电池服务费单价为0
+        Integer modelType = franchisee.getModelType();
+        if ((Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), BigDecimal.valueOf(0)))) {
+            return Pair.of(false, null);
+        }
+
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(serviceFeeUserInfo) || Objects.equals(serviceFeeUserInfo,ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)){
+            return Pair.of(false, null);
+        }
 
-        //用户套餐过期服务费
+        long cardDays = 0;
+        //用户产生的套餐过期电池服务费
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
             cardDays = (System.currentTimeMillis() - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = this.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-            userChangeServiceFee = serviceFee;
+            //查询用户是否存在套餐过期电池服务费
+            userChangeServiceFee = this.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
         }
 
-        //判断用户是否产生停卡电池服务费
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
-            //不足一天按一天计算
-            double time = Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1;
+        Integer memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE;
+        //用户产生的停卡电池服务费
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+                cardDays = (System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+                //不足一天按一天计算
+                double time = Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+                if (time < 24) {
+                    cardDays = 1;
+                }
+                userChangeServiceFee = this.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
+                memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_DISABLE;
             }
-            BigDecimal serviceFee = this.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
-            userChangeServiceFee = serviceFee;
         }
 
-        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
+        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) < 0) {
             return Pair.of(true, userChangeServiceFee);
         }
 
