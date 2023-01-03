@@ -218,6 +218,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setModel(userBattery.getBatteryType());
                 }
 
+                if (StringUtils.isNotBlank(item.getOrderId())) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
+                    if (Objects.nonNull(eleDepositOrder)) {
+                        item.setStoreId(eleDepositOrder.getStoreId());
+                    }
+                }
+
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
                 if (Objects.nonNull(userBatteryDeposit)) {
                     item.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
