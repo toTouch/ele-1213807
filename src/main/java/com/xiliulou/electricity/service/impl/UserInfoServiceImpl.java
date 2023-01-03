@@ -1143,14 +1143,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //套餐是否过期
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (!Objects.isNull(userBatteryMemberCard) && !Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
         } else {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
         }
 
         //套餐是否暂停
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
+        if (!Objects.isNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
             userBatteryDetail.setIsBatteryMemberCardDisable(UserInfoResultVO.NO);
         } else {
             userBatteryDetail.setIsBatteryMemberCardDisable(UserInfoResultVO.YES);
@@ -1190,7 +1190,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //租车套餐是否过期
-        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (!Objects.isNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
         } else {
             userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
