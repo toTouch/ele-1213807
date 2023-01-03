@@ -2618,10 +2618,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 //        });
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = carDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-            BigDecimal todayBatteryDeposit = carDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
-            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
+            BigDecimal carDepositTurnover = carDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+            BigDecimal todayCarDeposit = carDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+            homePageDepositVo.setCarDeposit(carDepositTurnover);
+            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -2661,6 +2661,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
+            log.error("getCarDeposit:{}",JsonUtil.toJson(homePageDepositVo.getCarDeposit()));
+            log.error("getHistoryRefundCarDeposit:{}",JsonUtil.toJson(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setCarDeposit(homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setSumDepositTurnover(homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
             homePageDepositVo.setTodayPayDeposit(homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
