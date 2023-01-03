@@ -1150,9 +1150,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //套餐是否过期
         if (!Objects.isNull(userBatteryMemberCard) && !Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-            userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
-        } else {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
+        } else {
+            userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.NO);
         }
 
         //套餐是否暂停
