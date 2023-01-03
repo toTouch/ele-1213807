@@ -228,6 +228,15 @@
             <if test="batteryServiceFee != null">
                 battery_service_fee = #{batteryServiceFee},
             </if>
+            <if test="regionId != null">
+                region_id = #{regionId},
+            </if>
+            <if test="isOpenServiceFee != null">
+                is_open_service_fee = #{isOpenServiceFee},
+            </if>
+            <if test="disableCardTimeType != null">
+                disable_card_time_type = #{disableCardTimeType},
+            </if>
         </set>
         where id = #{id}
     </update>

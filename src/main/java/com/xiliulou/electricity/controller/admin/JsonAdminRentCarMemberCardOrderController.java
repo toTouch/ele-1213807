@@ -41,7 +41,7 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
                                           @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                                           @RequestParam(value = "phone", required = false) String phone,
                                           @RequestParam(value = "orderId", required = false) String orderId,
-                                          @RequestParam(value = "memberCardType", required = false) Integer cardType,
+                                          @RequestParam(value = "memberCardType", required = false) String memberCardType,
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "userName", required = false) String userName,
@@ -62,14 +62,18 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -83,7 +87,9 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
                 .endTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
-                .name(userName)
+                .userName(userName)
+                .memberCardType(memberCardType)
+                .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds).build();
 
         return R.ok(carMemberCardOrderService.selectByPage(memberCardOrderQuery));
@@ -97,7 +103,7 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     @GetMapping("/admin/rentCarMemberCardOrder/queryCount")
     public R queryCount(@RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "orderId", required = false) String orderId,
-                        @RequestParam(value = "memberCardType", required = false) Integer cardType,
+                        @RequestParam(value = "memberCardType", required = false) String memberCardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
@@ -111,14 +117,18 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -130,7 +140,9 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
                 .endTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
-                .name(userName)
+                .userName(userName)
+                .memberCardType(memberCardType)
+                .storeIds(storeIds)
                 .franchiseeIds(franchiseeIds).build();
 
         return R.ok(carMemberCardOrderService.selectByPageCount(memberCardOrderQuery));

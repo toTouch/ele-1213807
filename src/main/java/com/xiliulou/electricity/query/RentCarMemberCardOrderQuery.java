@@ -21,7 +21,6 @@ public class RentCarMemberCardOrderQuery {
 
     private Long size;
     private Long offset;
-    private String name;
     private String phone;
 
     private Long beginTime;
