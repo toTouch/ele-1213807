@@ -577,15 +577,12 @@ public class EleOperateQueueHandler {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
-
         UserBattery userBattery = new UserBattery();
         userBattery.setUid(userInfo.getUid());
         userBattery.setInitBatterySn(rentBatteryOrder.getElectricityBatterySn());
         userBattery.setUpdateTime(System.currentTimeMillis());
         userBattery.setCreateTime(System.currentTimeMillis());
-        userBattery.setBatteryType(electricityBattery);
-        userBatteryService.insertOrUpdate(userBattery);
+        userBatteryService.updateByUid(userBattery);
 
 
         //查看用户是否有以前绑定的电池
@@ -606,6 +603,7 @@ public class EleOperateQueueHandler {
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
 
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
         //电池改为在用
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
