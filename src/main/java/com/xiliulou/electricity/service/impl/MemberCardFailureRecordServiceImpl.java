@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -92,6 +94,18 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     @Override
     public R queryFailureMemberCard(Long uid, Integer offset, Integer size) {
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(memberCardFailureRecordMapper.queryFailureMemberCard(uid, tenantId,offset,size));
+
+        List<MemberCardFailureRecord> memberCardFailureRecordList = memberCardFailureRecordMapper.queryFailureMemberCard(uid, tenantId, offset, size);
+        if (CollectionUtils.isEmpty(memberCardFailureRecordList)) {
+            return R.ok();
+        }
+
+        for (MemberCardFailureRecord memberCardFailureRecord : memberCardFailureRecordList) {
+            if (Objects.nonNull(memberCardFailureRecord.getBatteryType())) {
+                Integer batteryType = BatteryConstant.acquireBattery(memberCardFailureRecord.getBatteryType());
+                memberCardFailureRecord.setBatteryType(batteryType.toString());
+            }
+        }
+        return R.ok();
     }
 }
