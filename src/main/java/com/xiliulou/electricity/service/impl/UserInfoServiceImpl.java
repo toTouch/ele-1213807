@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -1168,10 +1169,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否绑定的有电池
-        if(Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.YES);
             userBatteryDetail.setBatteryInfo(electricityBatteryService.queryByUid(userInfo.getUid()));
-        }else {
+        } else {
             userBatteryDetail.setIsBindBattery(UserInfoResultVO.NO);
         }
 
@@ -1206,7 +1207,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsRentCar(UserInfoResultVO.YES);
             userCarDetail.setCarSN(userCar.getSn());
         }
-
+        log.debug("+++++++userInfoResult++++++++:{}", JsonUtil.toJson(userInfoResult));
         return Triple.of(true, "", userInfoResult);
     }
 

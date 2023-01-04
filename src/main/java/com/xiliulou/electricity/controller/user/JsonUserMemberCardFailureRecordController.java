@@ -48,7 +48,7 @@ public class JsonUserMemberCardFailureRecordController {
             offset = 0;
         }
 
-        return R.ok(memberCardFailureRecordService.queryFailureMemberCard(uid, offset, size));
+        return memberCardFailureRecordService.queryFailureMemberCard(uid, offset, size);
     }
 
 
