@@ -53,6 +53,8 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "batteryId", required = false) Long batteryId,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
+                       @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
+                       @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "memberCardId", required = false) Long memberCardId,
@@ -84,6 +86,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .sortType(sortType)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
+                .batteryRentStatus(batteryRentStatus)
+                .batteryDepositStatus(batteryDepositStatus)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryList(userInfoQuery);
