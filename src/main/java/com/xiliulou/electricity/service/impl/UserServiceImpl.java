@@ -865,6 +865,7 @@ public class UserServiceImpl implements UserService {
         Map<String, Object> map = new HashMap();
         map.put("userBatteryMemberCardDetailVO", userBatteryMemberCardDetailVO);
         map.put("userCarMemberCardDetailVO", userCarMemberCardDetailVO);
+        map.put("franchiseeId", userInfo.getFranchiseeId());
 
         return R.ok(map);
     }
