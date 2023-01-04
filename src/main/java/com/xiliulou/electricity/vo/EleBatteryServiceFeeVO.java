@@ -23,7 +23,7 @@ import java.util.List;
 public class EleBatteryServiceFeeVO {
 
     /**
-     * 电池服务费
+     * 电池服务费单价
      */
     private BigDecimal batteryServiceFee;
 

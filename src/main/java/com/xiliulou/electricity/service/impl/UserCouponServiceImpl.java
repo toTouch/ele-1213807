@@ -210,7 +210,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         for (Long couponId : couponIds) {
             UserCoupon couponBuild = UserCoupon.builder()
                     .id(couponId)
-                    .status(UserCoupon.STATUS_DESTRUCTION)
+                    .status(UserCoupon.STATUS_USED)
                     .updateTime(System.currentTimeMillis())
                     .tenantId(tenantId).build();
 
