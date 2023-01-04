@@ -1204,6 +1204,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsRentCar(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsRentCar(UserInfoResultVO.YES);
+            userCarDetail.setCarSN(userCar.getSn());
         }
 
         return Triple.of(true, "", userInfoResult);

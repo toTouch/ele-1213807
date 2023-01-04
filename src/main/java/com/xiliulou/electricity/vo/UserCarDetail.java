@@ -26,4 +26,6 @@ public class UserCarDetail {
      */
     private Integer  isRentCar;
 
+    private String carSN;
+
 }
