@@ -227,8 +227,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_IN)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
             
+            String batteryName = eleBox.getSn();
+            if (batteryName.contains("UNKNOW")) {
+                batteryName = StrUtil.subAfter(batteryName, "UNKNOW", false);
+            }
+            
             batteryTrackRecordService.insert(
-                    new BatteryTrackRecord().setSn(eleBox.getSn()).setEId(Long.valueOf(electricityCabinet.getId()))
+                    new BatteryTrackRecord().setSn(batteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
         }
