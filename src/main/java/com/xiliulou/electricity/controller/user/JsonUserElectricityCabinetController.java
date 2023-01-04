@@ -48,6 +48,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	//列表查询
 	@GetMapping(value = "/outer/electricityCabinet/showInfoByDistance")
 	public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
+			@RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam("lon") Double lon,
 			@RequestParam("lat") Double lat) {
@@ -63,6 +64,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 				.distance(distance)
 				.lon(lon)
 				.lat(lat)
+				.franchiseeId(franchiseeId)
 				.tenantId(tenantId).build();
 
 		return electricityCabinetService.showInfoByDistance(electricityCabinetQuery);
