@@ -272,9 +272,11 @@ public class JsonAdminEleRefundOrderController {
         return R.ok(eleRefundOrderService.selectCarRefundPageCount(eleRefundQuery));
     }
 
-    //后台退款处理
+    /**
+     * 后台退款审核处理
+     */
     @PostMapping("/admin/handleRefund")
-    @Log(title = "后台退款处理")
+    @Log(title = "后台退款审核处理")
     public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo,
                           @RequestParam("status") Integer status,
                           @RequestParam(value = "errMsg", required = false) String errMsg,

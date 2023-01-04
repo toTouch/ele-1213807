@@ -179,6 +179,7 @@ public class JsonAdminRentCarDepositOrderController extends BaseController {
      */
     @PostMapping("/admin/carDepositRefundByOffline")
     @Log(title = "后台退租车线下押金")
+    @Deprecated
     public R refundDepositCarByOffline(@RequestParam("orderId") String orderId,
                                        @RequestParam("uid") Long uid,
                                        @RequestParam(value = "remark", required = false) String remark,

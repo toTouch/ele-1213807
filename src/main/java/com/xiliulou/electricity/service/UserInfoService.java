@@ -118,4 +118,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Triple<Boolean, String, Object> selectUserInfoStatus();
 
+    void unBindUserFranchiseeId(Long uid);
+
 }
