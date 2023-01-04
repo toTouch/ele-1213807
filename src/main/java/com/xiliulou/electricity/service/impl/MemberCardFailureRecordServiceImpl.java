@@ -37,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -181,45 +182,38 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     }
 
     @Override
-    public R queryFailureMemberCard(Long uid, Integer type, Integer offset, Integer size) {
+    public R queryFailureMemberCard(Long uid, Integer offset, Integer size) {
 
-        if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, type)) {
-            List<MemberCardFailureRecord> memberCardFailureRecordList = memberCardFailureRecordMapper.queryFailureMemberCard(uid, TenantContextHolder.getTenantId(), offset, size);
-            if (CollectionUtils.isEmpty(memberCardFailureRecordList)) {
-                return R.ok();
-            }
-
-            for (MemberCardFailureRecord memberCardFailureRecord : memberCardFailureRecordList) {
-                if (Objects.nonNull(memberCardFailureRecord.getBatteryType())) {
-                    Integer batteryType = BatteryConstant.acquireBattery(memberCardFailureRecord.getBatteryType());
-                    memberCardFailureRecord.setBatteryType(batteryType.toString());
-                }
-            }
-            return R.ok(memberCardFailureRecordList);
-
+        List<MemberCardFailureRecord> memberCardFailureRecordList = memberCardFailureRecordMapper.queryFailureMemberCard(uid, TenantContextHolder.getTenantId(), offset, size);
+        if (CollectionUtils.isEmpty(memberCardFailureRecordList)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
 
-        if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR, type)) {
-            List<MemberCardFailureRecord> rentCarMemberCardFailureRecordList = memberCardFailureRecordMapper.selectRentCarFailureMemberCardList(uid, type, TenantContextHolder.getTenantId(), offset, size);
-            if (CollectionUtils.isEmpty(rentCarMemberCardFailureRecordList)) {
-                return R.ok();
+        List<MemberCardFailureRecordVO> failureRecords = memberCardFailureRecordList.parallelStream().map(item -> {
+            MemberCardFailureRecordVO memberCardFailureRecordVO = new MemberCardFailureRecordVO();
+            BeanUtils.copyProperties(item, memberCardFailureRecordVO);
+
+            //换电失效套餐
+            if(Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())){
+                if (Objects.nonNull(item.getBatteryType())) {
+                    Integer batteryType = BatteryConstant.acquireBattery(item.getBatteryType());
+                    memberCardFailureRecordVO.setBatteryType(batteryType.toString());
+                }
             }
 
-            List<MemberCardFailureRecordVO> failureRecords = rentCarMemberCardFailureRecordList.parallelStream().map(item -> {
-                MemberCardFailureRecordVO memberCardFailureRecordVO = new MemberCardFailureRecordVO();
-                BeanUtils.copyProperties(item, memberCardFailureRecordVO);
 
+
+            //租车失效套餐
+            if(Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR, item.getType())){
                 Store store = storeService.queryByIdFromCache(item.getStoreId());
                 if (Objects.nonNull(store)) {
                     memberCardFailureRecordVO.setStoreName(store.getName());
                 }
+            }
 
-                return memberCardFailureRecordVO;
-            }).collect(Collectors.toList());
+            return memberCardFailureRecordVO;
+        }).collect(Collectors.toList());
 
-            return R.ok(failureRecords);
-        }
-
-        return R.ok();
+        return R.ok(failureRecords);
     }
 }

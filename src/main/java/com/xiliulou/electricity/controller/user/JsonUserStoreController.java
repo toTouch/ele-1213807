@@ -53,6 +53,7 @@ public class JsonUserStoreController {
 	@GetMapping(value = "/user/store/listByDistance")
     public R storeListByDistance(@RequestParam("size") Long size,
                                  @RequestParam("offset") Long offset,
+                                 @RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
                                  @RequestParam(value = "distance", required = false) Double distance,
                                  @RequestParam(value = "name", required = false) String name,
                                  @RequestParam("lon") Double lon,
@@ -68,6 +69,7 @@ public class JsonUserStoreController {
                 .distance(distance)
                 .lon(lon)
                 .lat(lat)
+                .franchiseeId(franchiseeId)
                 .tenantId(TenantContextHolder.getTenantId())
                 .name(name).build();
 

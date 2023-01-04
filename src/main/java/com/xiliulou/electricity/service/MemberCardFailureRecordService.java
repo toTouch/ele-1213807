@@ -9,6 +9,6 @@ public interface MemberCardFailureRecordService {
 
     void failureMemberCardTask();
 
-    R queryFailureMemberCard(Long uid, Integer type,Integer offset, Integer size);
+    R queryFailureMemberCard(Long uid, Integer offset, Integer size);
 
 }

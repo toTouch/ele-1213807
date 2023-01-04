@@ -272,6 +272,9 @@
         longitude * PI() / 180 ) / 2 ), 2 ) ) ) * 1000 ) AS distance
         from t_store
         where del_flag = 0 and usable_status=0
+        <if test="franchiseeId != null">
+            franchisee_id = #{franchiseeId},
+        </if>
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
         </if>
