@@ -703,7 +703,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok(Collections.emptyList());
         }
 
-        List<UserAuthInfoVo> result = userInfos.parallelStream().map(e -> {
+        List<UserAuthInfoVo> result = userInfos.stream().map(e -> {
             UserAuthInfoVo userAuthInfoVo = new UserAuthInfoVo();
             BeanUtils.copyProperties(e, userAuthInfoVo);
 
