@@ -246,7 +246,7 @@
         edo.pay_amount, edo.create_time as payTime,ero.update_time as refundTime,ero.status as refundStatus
         from t_ele_deposit_order edo
         left join t_ele_refund_order as ero on ero.order_id= edo.order_id
-        where edo.status=1
+        where edo.status=1 and IFNULL(ero.status,'')  != 2
         <if test="query.orderId != null and query.orderId != ''">
             and edo.order_id = #{query.orderId}
         </if>
