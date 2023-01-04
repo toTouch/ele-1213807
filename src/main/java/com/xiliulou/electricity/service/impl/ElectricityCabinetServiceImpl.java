@@ -80,10 +80,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
 
-    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
 
 
-    private static final String BATTERY_FULL_CONDITION="batteryFullCondition";
+    private static final String BATTERY_FULL_CONDITION = "batteryFullCondition";
 
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
@@ -1199,7 +1199,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return electricityCabinet;
     }
-    
+
     @Override
     public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
         //先查缓存
@@ -1825,6 +1825,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
+
+        log.error("足电池前置=================门店==========" + store);
+
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
             log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
@@ -1860,6 +1863,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 //
 //        }
         //判断该换电柜加盟商和用户加盟商是否一致
+
+        log.error("足电池前置=================用户==========" + userInfo);
+
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
@@ -2627,8 +2633,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //退电池押金
         CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime, null,finalFranchiseeIds);
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER,finalFranchiseeIds);
+            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime, null, finalFranchiseeIds);
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER, finalFranchiseeIds);
             homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
             homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
@@ -2647,7 +2653,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService.queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,finalFranchiseeIds);
+            BigDecimal historyRefundDeposit = refundOrderService.queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds);
             homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2659,8 +2665,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
-            log.error("getCarDeposit:{}",JsonUtil.toJson(homePageDepositVo.getCarDeposit()));
-            log.error("getHistoryRefundCarDeposit:{}",JsonUtil.toJson(homePageDepositVo.getHistoryRefundCarDeposit()));
+            log.error("getCarDeposit:{}", JsonUtil.toJson(homePageDepositVo.getCarDeposit()));
+            log.error("getHistoryRefundCarDeposit:{}", JsonUtil.toJson(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setCarDeposit(homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setSumDepositTurnover(homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
             homePageDepositVo.setTodayPayDeposit(homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
@@ -3276,8 +3282,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
 
-
-
     /**
      * 通过云端下发命令更新换电标准
      */
@@ -3311,14 +3315,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return;
         }
 
-        messages.parallelStream().forEach(item->{
-            log.info("DELY QUEUE LISTENER INFO! full battery message={}",JsonUtil.toJson(item));
+        messages.parallelStream().forEach(item -> {
+            log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
 
-            if(StringUtils.isBlank(item.getMsg())){
+            if (StringUtils.isBlank(item.getMsg())) {
                 return;
             }
 
-            Integer electricityCabinetId=Integer.parseInt(item.getMsg());
+            Integer electricityCabinetId = Integer.parseInt(item.getMsg());
 
             ElectricityCabinet electricityCabinet = this.queryByIdFromCache(electricityCabinetId);
             if (Objects.isNull(electricityCabinet)) {
