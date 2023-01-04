@@ -176,4 +176,9 @@ public class UserBatteryInfoVO {
      * 保险购买时间
      */
     private Long payInsuranceTime;
+
+    /**
+     * 租车套餐过期时间
+     */
+    private Long rentCarMemberCardExpireTime;
 }

@@ -270,6 +270,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (Objects.nonNull(electricityCar)) {
                         item.setCarSn(electricityCar.getSn());
                     }
+
+                    UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
+                    if(Objects.nonNull(userCarMemberCard)){
+                        item.setRentCarMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+                    }
+
                 }
             });
         }, threadPool).exceptionally(e -> {
