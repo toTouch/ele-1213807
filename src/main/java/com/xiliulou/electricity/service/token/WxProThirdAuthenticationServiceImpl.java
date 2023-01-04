@@ -184,20 +184,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .usableStatus(UserInfo.USER_USABLE_STATUS).tenantId(tenantId).build();
                     UserInfo userInfo = userInfoService.insert(insertUserInfo);
                     
-//                    Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(
-//                            insertUserInfo.getId());
-//                    if (!existFranchiseeUserInfo.getLeft()) {
-//                        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-//                                .userInfoId(userInfo.getId()).updateTime(System.currentTimeMillis())
-//                                .createTime(System.currentTimeMillis()).serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-//                                .delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
-//                        franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-//                    }
-                    
                 }
                 //相同登录
                 return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
-                
             }
             
             //如果openId存在.手机号不存在,替换掉以前的手机号
@@ -325,11 +314,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
     }
     
-//    private Pair<Boolean, FranchiseeUserInfo> checkFranchiseeUserInfoExists(Long uid) {
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(uid);
-//        return Objects.nonNull(franchiseeUserInfo) ? Pair.of(true, franchiseeUserInfo) : Pair.of(false, null);
-//    }
-    
     private SecurityUser createSecurityUser(User user, UserOauthBind oauthBind) {
         ArrayList<String> dbAuthsSet = Lists.newArrayList();
         Collection<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
@@ -363,10 +347,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .tenantId(tenantId).delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
-        
-//        FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder().userInfoId(userInfo.getId())
-//                .updateTime(System.currentTimeMillis()).createTime(System.currentTimeMillis())
-//                .serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT).delFlag(User.DEL_NORMAL).tenantId(tenantId).build();
+
         
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();

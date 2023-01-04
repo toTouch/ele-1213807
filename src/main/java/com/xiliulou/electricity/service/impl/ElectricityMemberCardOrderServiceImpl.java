@@ -2711,6 +2711,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         }
 
+        //支付金额不能为负数
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_PACKAGE, userInfo.getUid()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
