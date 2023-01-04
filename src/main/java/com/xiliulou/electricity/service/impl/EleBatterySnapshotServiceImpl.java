@@ -1,13 +1,21 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleBatterySnapshot;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleBatterySnapshotMapper;
 import com.xiliulou.electricity.service.EleBatterySnapshotService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 /**
  * (EleBatterySnapshot)表服务实现类
@@ -20,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 public class EleBatterySnapshotServiceImpl implements EleBatterySnapshotService {
     @Resource
     private EleBatterySnapshotMapper eleBatterySnapshotMapper;
+    @Autowired
+    private ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -92,5 +102,21 @@ public class EleBatterySnapshotServiceImpl implements EleBatterySnapshotService 
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.eleBatterySnapshotMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public Pair<Boolean, Object> queryBatterySnapshot(Integer eId, Integer size, Integer offset, Long startTime,
+            Long endTime) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(eId);
+        if(Objects.isNull(electricityCabinet)) {
+            return Pair.of(false,"柜机不存在");
+        }
+        
+        if(!TenantContextHolder.getTenantId().equals(electricityCabinet.getTenantId())) {
+            return Pair.of(true,null);
+        }
+        
+        
+        return Pair.of(true,eleBatterySnapshotMapper.queryBatterySnapshot(eId,size,offset,startTime,endTime));
     }
 }
