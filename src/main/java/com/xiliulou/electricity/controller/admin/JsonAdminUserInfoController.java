@@ -232,7 +232,10 @@ public class JsonAdminUserInfoController extends BaseController {
         return returnTripleResult(userInfoService.updateRentCarStatus(uid, carRentStatus));
     }
 
-    //列表查询
+    /**
+     * 实名认证审核列表
+     * @return
+     */
     @GetMapping(value = "/admin/userInfo/list/v2")
     public R queryListV2(@RequestParam(value = "size") Long size,
                          @RequestParam(value = "offset") Long offset,
