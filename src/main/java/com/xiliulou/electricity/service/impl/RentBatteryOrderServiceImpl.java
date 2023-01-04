@@ -264,6 +264,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("100210", "用户未开通套餐");
             }
 
+            log.error("用户套餐================="+userBatteryMemberCard);
+
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
                 return R.fail("100211", "用户套餐已暂停");
