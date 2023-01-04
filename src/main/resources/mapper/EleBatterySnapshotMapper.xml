@@ -1,34 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.EleBatterySnapshotMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.EleBatterySnapshot" id="EleBatterySnapshotMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="eId" column="e_id" jdbcType="INTEGER"/>
         <result property="jsonBatteries" column="json_batteries" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
-
+    
     <!--查询单个-->
     <select id="queryById" resultMap="EleBatterySnapshotMap">
-        select
-          id, e_id, json_batteries, create_time
+        select id,
+               e_id,
+               json_batteries,
+               create_time
         from t_ele_battery_snapshot
         where id = #{id}
     </select>
-
+    
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EleBatterySnapshotMap">
-        select
-          id, e_id, json_batteries, create_time
-        from t_ele_battery_snapshot
-        limit #{offset}, #{limit}
+        select id,
+               e_id,
+               json_batteries,
+               create_time
+        from t_ele_battery_snapshot limit #{offset}, #{limit}
     </select>
-
+    
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="EleBatterySnapshotMap">
         select
-          id, e_id, json_batteries, create_time
+        id, e_id, json_batteries, create_time
         from t_ele_battery_snapshot
         <where>
             <if test="id != null">
@@ -45,13 +48,13 @@
             </if>
         </where>
     </select>
-
+    
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_battery_snapshot(e_id, json_batteries, create_time)
         values (#{eId}, #{jsonBatteries}, #{createTime})
     </insert>
-
+    
     <!--通过主键修改数据-->
     <update id="update">
         update t_ele_battery_snapshot
@@ -68,10 +71,29 @@
         </set>
         where id = #{id}
     </update>
-
+    
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_ele_battery_snapshot where id = #{id}
+        delete
+        from t_ele_battery_snapshot
+        where id = #{id}
     </delete>
+    
+    <select id="queryBatterySnapshot" resultMap="EleBatterySnapshotMap">
+        select
+        json_batteries
+        from t_ele_battery_snapshot
+        <where>
+            e_id = #{eId}
+            <if test="startTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
 
 </mapper>

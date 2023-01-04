@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.EleBatterySnapshot;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 
 /**
@@ -59,5 +61,6 @@ public interface EleBatterySnapshotService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
-
+    
+    Pair<Boolean, Object> queryBatterySnapshot(Integer eId, Integer size, Integer offset, Long startTime, Long endTime);
 }
