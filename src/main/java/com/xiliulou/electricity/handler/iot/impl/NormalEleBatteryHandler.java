@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
@@ -143,8 +144,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             batteryName = null;
         }
         
-       
-        
         //处理电池名字为空
         if (StringUtils.isBlank(batteryName)) {
             this.handleBatteryNameIsBlank(eleBox, electricityCabinet, eleBatteryVO);
@@ -161,13 +160,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     sessionId);
             return;
         }
-    
+        
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("ELE BATTERY REPORT ERROR! tenantId is not equal,tenantId1={},tenantId2={},sessionId={}",
                     electricityCabinet.getTenantId(), electricityBattery.getTenantId(), sessionId);
             return;
         }
-    
+        
         handleBatteryTrackRecord(batteryName, eleBox, electricityCabinet, eleBatteryVO);
         
         //保存电池电压电流&充电器电压电流
@@ -202,8 +201,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             ElectricityCabinet electricityCabinet, EleBatteryVO eleBatteryVO) {
         //电池被取走
         if (StringUtils.isEmpty(nowBatteryName) && StringUtils.isNotEmpty(eleBox.getSn())) {
+            String batteryName = eleBox.getSn();
+            if (batteryName.contains("UNKNOW")) {
+                batteryName = StrUtil.subAfter(batteryName, "UNKNOW", false);
+            }
             batteryTrackRecordService.insert(
-                    new BatteryTrackRecord().setSn(eleBox.getSn()).setEId(Long.valueOf(electricityCabinet.getId()))
+                    new BatteryTrackRecord().setSn(batteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
         }
@@ -217,13 +220,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
         
         //电池名称改变
-        if (StringUtils.isNotEmpty(nowBatteryName) && StringUtils.isNotEmpty(eleBox.getSn()) && !nowBatteryName.trim().equals(
-                eleBox.getSn().trim())) {
+        if (StringUtils.isNotEmpty(nowBatteryName) && StringUtils.isNotEmpty(eleBox.getSn()) && !nowBatteryName.trim()
+                .equals(eleBox.getSn().trim())) {
             batteryTrackRecordService.insert(
                     new BatteryTrackRecord().setSn(nowBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_IN)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
-    
+            
             batteryTrackRecordService.insert(
                     new BatteryTrackRecord().setSn(eleBox.getSn()).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
