@@ -236,6 +236,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
                     redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
                 }
+
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
             }
         }
 
@@ -269,6 +271,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             userCarMemberCardService.deleteByUid(userInfo.getUid());
 
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -362,6 +365,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
                         redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
                     }
+
+                    userInfoService.unBindUserFranchiseeId(uid);
                 } else {
                     UserInfo updateUserInfo = new UserInfo();
                     updateUserInfo.setUid(uid);
@@ -370,6 +375,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     userInfoService.updateByUid(updateUserInfo);
 
                     userCarDepositService.deleteByUid(uid);
+
+                    userInfoService.unBindUserFranchiseeId(uid);
                 }
                 return R.ok();
 
@@ -649,6 +656,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
             }
 
+            userInfoService.unBindUserFranchiseeId(uid);
 
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
@@ -685,6 +693,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 
                 userBatteryDepositService.deleteByUid(userInfo.getUid());
+
+                userInfoService.unBindUserFranchiseeId(uid);
                 return R.ok();
             }
 

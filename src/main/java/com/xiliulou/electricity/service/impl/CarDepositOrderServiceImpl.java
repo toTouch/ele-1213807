@@ -660,6 +660,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         userCarMemberCardService.deleteByUid(uid);
 
+        userInfoService.unBindUserFranchiseeId(uid);
+
         return Triple.of(true, "", "操作成功");
     }
 

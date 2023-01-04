@@ -13,6 +13,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -1325,6 +1326,31 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public int selectCountByFranchiseeId(Long id) {
         return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getFranchiseeId, id));
+    }
+
+    @Override
+    public void unBindUserFranchiseeId(Long uid) {
+        //租车押金
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+        if (Objects.nonNull(userCarDeposit)) {
+            return;
+        }
+
+        //租电池押金
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.nonNull(userBatteryDeposit)) {
+            return;
+        }
+
+        //若租车和租电押金都退了，则解绑用户所属加盟商
+        if (Objects.isNull(userCarDeposit) && Objects.isNull(userCarDeposit)) {
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(uid);
+            updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+
+            this.updateByUid(updateUserInfo);
+        }
     }
 
     @Override
