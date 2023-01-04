@@ -498,13 +498,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (CollectionUtils.isEmpty(payDepositOrderVOList)) {
             return R.ok();
         }
-        for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
-            if (!Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_SUCCESS) && !Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_REFUND)) {
-                payDepositOrderVO.setRefundTime(null);
+
+        Iterator<PayDepositOrderVO> iterator = payDepositOrderVOList.iterator();
+        while (iterator.hasNext()) {
+
+            if (!Objects.equals(iterator.next().getRefundStatus(), EleRefundOrder.STATUS_SUCCESS) && !Objects.equals(iterator.next().getRefundStatus(), EleRefundOrder.STATUS_REFUND)) {
+                iterator.next().setRefundTime(null);
             }
 
-            if (Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
-                payDepositOrderVOList.remove(payDepositOrderVO);
+            if (Objects.equals(iterator.next().getRefundStatus(), EleRefundOrder.STATUS_REFUSE_REFUND)) {
+                payDepositOrderVOList.remove(iterator.next());
             }
         }
         return R.ok(payDepositOrderVOList);
