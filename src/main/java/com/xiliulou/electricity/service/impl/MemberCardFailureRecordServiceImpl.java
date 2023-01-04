@@ -69,6 +69,8 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     UserCarService userCarService;
     @Autowired
     StoreService storeService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
 
     @Override
     public void failureMemberCardTask() {
@@ -146,22 +148,24 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
     private MemberCardFailureRecord buildRentCarMemberCardFailureRecord(FailureMemberCardVo item) {
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(item.getOrderId());
-        if(Objects.isNull(carMemberCardOrder)){
-            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found carMemberCardOrder,uid={},orderId={}", item.getUid(),item.getOrderId());
-            return  null;
+        if (Objects.isNull(carMemberCardOrder)) {
+            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found carMemberCardOrder,uid={},orderId={}", item.getUid(), item.getOrderId());
+            return null;
         }
 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(item.getUid());
-        if(Objects.isNull(userCarDeposit)){
+        if (Objects.isNull(userCarDeposit)) {
             log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found userCarDeposit,uid={}", item.getUid());
-            return  null;
+            return null;
         }
 
         UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
-        if(Objects.isNull(userCar)){
+        if (Objects.isNull(userCar)) {
             log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found userCar,uid={}", item.getUid());
-            return  null;
+            return null;
         }
+
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(userCar.getCarModel().intValue());
 
         MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
         memberCardFailureRecord.setUid(item.getUid());
@@ -171,6 +175,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         memberCardFailureRecord.setMemberCardExpireTime(item.getMemberCardExpireTime());
         memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR);
         memberCardFailureRecord.setCarSn(userCar.getSn());
+        memberCardFailureRecord.setCarModelName(Objects.nonNull(electricityCarModel) ? electricityCarModel.getName() : "");
         memberCardFailureRecord.setCarMemberCardType(carMemberCardOrder.getMemberCardType());
         memberCardFailureRecord.setValidDays(carMemberCardOrder.getValidDays());
         memberCardFailureRecord.setStoreId(carMemberCardOrder.getStoreId());
