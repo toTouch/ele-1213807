@@ -54,12 +54,7 @@ public class Jt808DeviceInfoVo {
     private Integer direction;
     
     /**
-     * 车辆加锁状态
-     */
-    private Integer doorStatus;
-    
-    /**
      * 车辆电路状态
      */
-    private Integer vehicleCircuit;
+    private Integer doorStatus;
 }
