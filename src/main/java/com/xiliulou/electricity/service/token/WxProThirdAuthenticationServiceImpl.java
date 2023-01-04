@@ -314,11 +314,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
     }
     
-//    private Pair<Boolean, FranchiseeUserInfo> checkFranchiseeUserInfoExists(Long uid) {
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(uid);
-//        return Objects.nonNull(franchiseeUserInfo) ? Pair.of(true, franchiseeUserInfo) : Pair.of(false, null);
-//    }
-    
     private SecurityUser createSecurityUser(User user, UserOauthBind oauthBind) {
         ArrayList<String> dbAuthsSet = Lists.newArrayList();
         Collection<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(
@@ -350,7 +345,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         UserInfo insertUserInfo = UserInfo.builder().uid(insert.getUid()).updateTime(System.currentTimeMillis())
                 .createTime(System.currentTimeMillis()).phone(wxMinProPhoneResultDTO.getPurePhoneNumber()).name("")
                 .tenantId(tenantId).delFlag(User.DEL_NORMAL)
-                .authStatus(UserInfo.AUTH_STATUS_STATUS_INIT)
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
