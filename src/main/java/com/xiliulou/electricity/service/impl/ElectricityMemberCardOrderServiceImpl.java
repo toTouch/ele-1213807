@@ -907,12 +907,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(usableStatus, UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
             userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
-            userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         } else {
             sendDisableMemberCardMessage(userInfo);
         }
         userBatteryMemberCardUpdate.setMemberCardStatus(usableStatus);
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+        userBatteryMemberCardUpdate.setUid(userInfo.getUid());
         userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
 
         return R.ok();
@@ -2777,12 +2777,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //获取新用户所绑定的加盟商的电池服务费
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("BATTERY SERVICE FEE ERROR!not found franchisee,uid={}",userInfo.getUid());
+            log.error("BATTERY SERVICE FEE ERROR!not found franchisee,uid={}", userInfo.getUid());
             return Pair.of(false, null);
         }
 
         //没有开启电池服务费功能
-        if(Objects.equals(Franchisee.CLOSE_SERVICE_FEE,franchisee.getIsOpenServiceFee())){
+        if (Objects.equals(Franchisee.CLOSE_SERVICE_FEE, franchisee.getIsOpenServiceFee())) {
             return Pair.of(false, null);
         }
 
@@ -2794,7 +2794,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(serviceFeeUserInfo) || Objects.equals(serviceFeeUserInfo,ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)){
+        if (Objects.isNull(serviceFeeUserInfo) || Objects.equals(serviceFeeUserInfo, ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE)) {
             return Pair.of(false, null);
         }
 
