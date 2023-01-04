@@ -88,14 +88,14 @@
         POW(
         SIN(
         (
-        #{query.lat} * PI() / 180 - latitude * PI() / 180
+        #{query.lat} * PI() / 180 - tec.latitude * PI() / 180
         ) / 2
         ),
         2
-        ) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
+        ) + COS(#{query.lat} * PI() / 180) * COS(tec.latitude * PI() / 180) * POW(
         SIN(
         (
-        #{query.lon} * PI() / 180 - longitude * PI() / 180
+        #{query.lon} * PI() / 180 - tec.longitude * PI() / 180
         ) / 2
         ),
         2
