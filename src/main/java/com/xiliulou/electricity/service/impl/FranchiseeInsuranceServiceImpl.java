@@ -191,14 +191,32 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeInsurance.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("enableOrDisable INSURANCE ERROR! franchisee is null！ franchiseeId={}", franchiseeInsurance.getFranchiseeId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        if (Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)) {
+            if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
+                int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
+                        .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                        .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
+                        .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
+                        .notIn(FranchiseeInsurance::getId, id));
+                if (count > 0) {
+                    return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
+                }
+            }
+        }else {
             int count = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
-                    .eq(FranchiseeInsurance::getTenantId, tenantId).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                    .eq(FranchiseeInsurance::getBatteryType, franchiseeInsurance.getBatteryType()).eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                    .eq(FranchiseeInsurance::getTenantId, tenantId)
                     .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId())
                     .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
                     .notIn(FranchiseeInsurance::getId, id));
             if (count > 0) {
-                return R.fail("100242", "该加盟商已有启用中的保险，请勿重复添加");
+                return R.fail("100251", "该型号已有启用中的保险，请勿重复添加");
             }
         }
 
