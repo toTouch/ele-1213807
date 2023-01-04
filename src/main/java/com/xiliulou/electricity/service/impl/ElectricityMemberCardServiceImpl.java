@@ -418,9 +418,38 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }
 
-        // TODO: 2022/12/21 删除
+        if (ObjectUtil.isEmpty(electricityMemberCardList)) {
+            return R.ok(electricityMemberCardList);
+        }
 
-        return R.ok(electricityMemberCardList);
+        List<ElectricityMemberCardVO> electricityMemberCardVOList = new ArrayList<>();
+        for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
+            ElectricityMemberCardVO electricityMemberCardVO = new ElectricityMemberCardVO();
+            BeanUtils.copyProperties(electricityMemberCard, electricityMemberCardVO);
+
+            if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
+                OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
+                if (Objects.nonNull(oldUserActivity)) {
+
+                    OldUserActivityVO oldUserActivityVO = new OldUserActivityVO();
+                    BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
+
+                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
+
+                        Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
+                        if (Objects.nonNull(coupon)) {
+                            oldUserActivityVO.setCoupon(coupon);
+                        }
+
+                    }
+                    electricityMemberCardVO.setOldUserActivityVO(oldUserActivityVO);
+                }
+            }
+
+            electricityMemberCardVOList.add(electricityMemberCardVO);
+        }
+
+        return R.ok(electricityMemberCardVOList);
     }
 
     @Override
