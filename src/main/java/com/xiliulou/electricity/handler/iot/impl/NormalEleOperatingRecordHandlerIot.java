@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.StringTokenizer;
 
 /**
  * @author zgw
@@ -33,13 +35,26 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
             log.warn("CUPBOARD OPERATING RECORD ERROR! parse CupboardOperatingRecordRequest error! sessionId={}, productKey={},deviceName={}",receiverMessage.getSessionId(), receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return;
         }
-
+    
+        if(StrUtil.isNotBlank(request.getCellNo())){
+            StringTokenizer stringTokenizer = new StringTokenizer(request.getCellNo(), ",");
+            while (stringTokenizer.hasMoreElements()) {
+                createPhysicsOperRecord(electricityCabinet, request, stringTokenizer.nextToken());
+            }
+            return;
+        }
+    
+        createPhysicsOperRecord(electricityCabinet, request, null);
+    }
+    
+    public void createPhysicsOperRecord(ElectricityCabinet electricityCabinet, CupboardOperatingRecordRequest request, String cellNo){
         ElectricityCabinetPhysicsOperRecord electricityCabinetPhysicsOperRecord = new ElectricityCabinetPhysicsOperRecord();
         electricityCabinetPhysicsOperRecord.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetPhysicsOperRecord.setCreateTime(System.currentTimeMillis());
         electricityCabinetPhysicsOperRecord.setCommand(request.getIoTMsgType());
-        electricityCabinetPhysicsOperRecord.setCellNo(String.valueOf(request.getCellNo()));
-        electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult() ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
+        electricityCabinetPhysicsOperRecord.setCellNo(cellNo);
+        electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult()
+                ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
         electricityCabinetPhysicsOperRecord.setMsg(request.getOperateMsg());
         electricityCabinetPhysicsOperRecord.setUid(request.getUid());
         electricityCabinetPhysicsOperRecord.setUserName(request.getUsername());
@@ -74,7 +89,8 @@ class CupboardOperatingRecordRequest {
      * 操作结果
      */
     private Boolean result;
-    private Integer cellNo;
+    
+    private String cellNo;
     private Long createTime;
     private Long uid;
     private String username;
