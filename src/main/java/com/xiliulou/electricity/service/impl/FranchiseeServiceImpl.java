@@ -553,12 +553,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "100248", "区域不存在");
         }
 
-//        City city = cityService.queryByIdFromDB(region.getPid());
-//        if (Objects.isNull(city)) {
-//            log.error("ELE ERROR! not found city,cid={},uid={}", region.getPid(), SecurityUtils.getUid());
-//            return Triple.of(false, "100249", "城市不存在");
-//        }
-
         FranchiseeQuery franchiseeRegionQuery = new FranchiseeQuery();
         franchiseeRegionQuery.setCid(region.getPid());
         franchiseeRegionQuery.setTenantId(TenantContextHolder.getTenantId());

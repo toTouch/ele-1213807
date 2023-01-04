@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
@@ -350,6 +351,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel().intValue())) {
             log.error("ELE CAR ERROR! user bind carModel not equals will bond carModel,uid={}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
+        }
+
+        //若用户已绑定加盟商，判断车辆加盟商与用户加盟商是否一致
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
+        if (Objects.nonNull(electricityCarModel) && Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            if (!Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
+                log.error("ELE CAR ERROR! user bind franchisee not equals car franchisee,uid={}", userInfo.getUid());
+                return R.fail("100239", "用户所属加盟商与车辆加盟商不符");
+            }
         }
 
         UserInfo updateUserInfo = new UserInfo();

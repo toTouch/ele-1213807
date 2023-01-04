@@ -11,6 +11,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
@@ -1371,6 +1372,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
+        }
+
+        //若用户已绑定加盟商，判断选择的加盟商与用户加盟商是否一致
+        if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            if (!Objects.equals(userInfo.getFranchiseeId(), batteryDepositAdd.getFranchiseeId())) {
+                log.error("ELE DEPOSIT ERROR! user bind franchisee not equals params franchisee,uid={}", userInfo.getUid());
+                return R.fail("100252", "用户所属加盟商与选择的加盟商不符");
+            }
         }
 
 //        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
