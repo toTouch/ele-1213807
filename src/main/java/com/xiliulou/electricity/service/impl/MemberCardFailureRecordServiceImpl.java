@@ -109,6 +109,11 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             }
 
             userCarMemberCardList.parallelStream().forEach(item -> {
+                List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(item.getOrderId());
+                if(!CollectionUtils.isEmpty(memberCardFailureRecords)){
+                    return;
+                }
+
                 MemberCardFailureRecord memberCardFailureRecord = buildRentCarMemberCardFailureRecord(item);
                 if (Objects.isNull(memberCardFailureRecord)) {
                     return;
@@ -144,6 +149,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         memberCardFailureRecord.setUid(item.getUid());
         memberCardFailureRecord.setCardName(carMemberCardOrder.getCardName());
         memberCardFailureRecord.setDeposit(userCarDeposit.getCarDeposit());
+        memberCardFailureRecord.setCarMemberCardOrderId(carMemberCardOrder.getOrderId());
         memberCardFailureRecord.setMemberCardExpireTime(item.getMemberCardExpireTime());
         memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR);
         memberCardFailureRecord.setCarSn(userCar.getSn());

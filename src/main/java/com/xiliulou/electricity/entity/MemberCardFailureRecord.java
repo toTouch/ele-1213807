@@ -60,6 +60,11 @@ public class MemberCardFailureRecord {
     private String carSn;
 
     /**
+     * 车辆套餐id
+     */
+    private String carMemberCardOrderId;
+
+    /**
      * 门店Id
      */
     private Long storeId;
