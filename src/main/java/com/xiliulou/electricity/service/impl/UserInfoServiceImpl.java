@@ -1207,7 +1207,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsRentCar(UserInfoResultVO.YES);
             userCarDetail.setCarSN(userCar.getSn());
         }
-        log.debug("+++++++userInfoResult++++++++:{}", JsonUtil.toJson(userInfoResult));
+        log.error("+++++++userInfoResult++++++++:{}", JsonUtil.toJson(userInfoResult));
         return Triple.of(true, "", userInfoResult);
     }
 
