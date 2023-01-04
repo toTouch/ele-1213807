@@ -283,6 +283,7 @@ public class UnionTradeOrderServiceImpl extends
             UserBattery userBattery = new UserBattery();
             userBattery.setUid(userInfo.getUid());
             userBattery.setUpdateTime(System.currentTimeMillis());
+            userBattery.setDelFlag(UserBattery.DEL_NORMAL);
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             }
@@ -589,6 +590,8 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+            userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 

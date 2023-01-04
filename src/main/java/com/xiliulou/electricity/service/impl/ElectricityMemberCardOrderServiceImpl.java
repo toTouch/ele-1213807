@@ -429,6 +429,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
+            userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
@@ -1605,6 +1606,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardAddAndUpdate.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
         userBatteryMemberCardAddAndUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardAddAndUpdate.setUpdateTime(System.currentTimeMillis());
+        userBatteryMemberCardAddAndUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
         if (Objects.isNull(userBatteryMemberCard)) {
             userBatteryMemberCardAddAndUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insert(userBatteryMemberCardAddAndUpdate);

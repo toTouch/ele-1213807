@@ -241,6 +241,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userBatteryDeposit.setCreateTime(System.currentTimeMillis());
                 userBatteryDeposit.setDid(eleDepositOrder.getId());
                 userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+                userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
                 userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
@@ -248,6 +249,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userBattery.setUid(userInfo.getUid());
                 userBattery.setBatteryType(batteryType);
                 userBattery.setUpdateTime(System.currentTimeMillis());
+                userBattery.setDelFlag(UserBattery.DEL_NORMAL);
                 userBatteryService.insertOrUpdate(userBattery);
 
                 return null;
@@ -1455,6 +1457,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserBatteryDeposit.setTenantId(userInfo.getTenantId());
             updateUserBatteryDeposit.setCreateTime(System.currentTimeMillis());
             updateUserBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            updateUserBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositService.insertOrUpdate(updateUserBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();
@@ -1463,6 +1466,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             userBattery.setTenantId(userInfo.getTenantId());
             userBattery.setCreateTime(System.currentTimeMillis());
             userBattery.setUpdateTime(System.currentTimeMillis());
+            userBattery.setDelFlag(UserBattery.DEL_NORMAL);
             userBatteryService.insertOrUpdate(userBattery);
 
             return null;

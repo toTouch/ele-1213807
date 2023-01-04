@@ -466,6 +466,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
@@ -475,6 +476,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userBattery.setTenantId(eleDepositOrder.getTenantId());
             userBattery.setCreateTime(System.currentTimeMillis());
             userBattery.setUpdateTime(System.currentTimeMillis());
+            userBattery.setDelFlag(UserBattery.DEL_NORMAL);
             userBatteryService.insertOrUpdate(userBattery);
 
         }
