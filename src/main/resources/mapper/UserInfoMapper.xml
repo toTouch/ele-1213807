@@ -161,6 +161,12 @@
         <if test="query.batteryId != null">
             and teb.id = #{query.batteryId}
         </if>
+        <if test="query.batteryRentStatus !=null">
+            and tui.battery_rent_status =#{query.batteryRentStatus}
+        </if>
+        <if test="query.batteryDepositStatus !=null">
+            and tui.battery_deposit_status =#{query.batteryDepositStatus}
+        </if>
         <if test="query.memberCardId != null ">
             and ubmc.member_card_id = #{query.memberCardId}
         </if>

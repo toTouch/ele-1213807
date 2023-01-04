@@ -148,6 +148,8 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                         @RequestParam(value = "batteryId", required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
+                        @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
                         @RequestParam(value = "cardName", required = false) String cardName,
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
@@ -164,6 +166,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
+                .batteryRentStatus(batteryRentStatus)
+                .batteryDepositStatus(batteryDepositStatus)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryCount(userInfoQuery);
