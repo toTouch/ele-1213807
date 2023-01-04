@@ -57,4 +57,6 @@ public class ElectricityCabinetQuery {
 
     private List<Integer> eleIdList;
 
+    private Long franchiseeId;
+
 }
