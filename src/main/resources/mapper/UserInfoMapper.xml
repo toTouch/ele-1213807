@@ -58,7 +58,7 @@
         teb.power,
         teb.business_status as businessStatus,
         tui.tenant_id
-        from t_user_info  tui
+        from t_user_info tui
         left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
         left join t_electricity_battery teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
@@ -88,6 +88,12 @@
         </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.batteryRentStatus !=null">
+            and tui.battery_rent_status =#{query.batteryRentStatus}
+        </if>
+        <if test="query.batteryDepositStatus !=null">
+            and tui.battery_deposit_status =#{query.batteryDepositStatus}
         </if>
         <if test="query.memberCardExpireTimeBegin !=null">
             and ubmc.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
@@ -278,7 +284,7 @@
         weekDate
     </select>
 
-    <update id="updateByUid" >
+    <update id="updateByUid">
         update t_user_info
         <set>
             <if test="phone != null and phone != ''">
@@ -339,9 +345,9 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-<!--            <if test="serviceStatus != null">
-                service_status = #{serviceStatus},
-            </if>-->
+            <!--            <if test="serviceStatus != null">
+                            service_status = #{serviceStatus},
+                        </if>-->
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
@@ -372,7 +378,6 @@
         </set>
         where uid = #{uid} and tenant_id=#{tenantId}
     </update>
-
 
 
 </mapper>

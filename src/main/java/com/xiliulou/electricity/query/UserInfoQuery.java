@@ -45,4 +45,8 @@ public class UserInfoQuery {
      * 排序方式
      */
     private Integer sortType;
+
+    private Integer batteryRentStatus;
+
+    private Integer batteryDepositStatus;
 }
