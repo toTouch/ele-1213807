@@ -37,6 +37,7 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -91,6 +92,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     UserBatteryMemberCardService userBatteryMemberCardService;
     @Autowired
     UserBatteryDepositService userBatteryDepositService;
+
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
+
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
 
     /**
@@ -561,6 +568,45 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.error("RETURNBATTERY ERROR! not rent battery,uid={} ", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
             }
+
+
+            Long now = System.currentTimeMillis();
+            BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
+
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+
+            long cardDays = 0;
+            if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+                cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+                //查询用户是否存在套餐过期电池服务费
+                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+                userChangeServiceFee = serviceFee;
+            }
+
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
+
+                //判断用户是否产生电池服务费
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+
+                    cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
+
+                    //不足一天按一天计算
+                    double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
+                    if (time < 24) {
+                        cardDays = 1;
+                    }
+                    BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
+                    userChangeServiceFee = serviceFee;
+                }
+            }
+
+            if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
+                return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
+            }
+
 
             //分配开门格挡
             Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService
