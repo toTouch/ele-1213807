@@ -70,6 +70,9 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
     @Override
     public void failureMemberCardTask() {
+        //处理失效的租车套餐
+        handleUserCarMemberCardExpire();
+
         int offset = 0;
         int size = 300;
         long nowTime = System.currentTimeMillis();
@@ -101,14 +104,31 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             });
 
+            offset += size;
+        }
+    }
 
+    /**
+     * 处理失效的租车套餐
+     */
+    private void handleUserCarMemberCardExpire(){
+
+        int offset = 0;
+        int size = 300;
+
+        while (true) {
             //租车套餐
-            List<FailureMemberCardVo> userCarMemberCardList = userCarMemberCardService.queryMemberCardExpireUser(offset, size, nowTime);
+            List<FailureMemberCardVo> userCarMemberCardList = userCarMemberCardService.queryMemberCardExpireUser(offset, size, System.currentTimeMillis());
             if (CollectionUtils.isEmpty(userCarMemberCardList)) {
                 return;
             }
 
             userCarMemberCardList.parallelStream().forEach(item -> {
+                List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(item.getOrderId());
+                if(!CollectionUtils.isEmpty(memberCardFailureRecords)){
+                    return;
+                }
+
                 MemberCardFailureRecord memberCardFailureRecord = buildRentCarMemberCardFailureRecord(item);
                 if (Objects.isNull(memberCardFailureRecord)) {
                     return;
@@ -144,6 +164,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         memberCardFailureRecord.setUid(item.getUid());
         memberCardFailureRecord.setCardName(carMemberCardOrder.getCardName());
         memberCardFailureRecord.setDeposit(userCarDeposit.getCarDeposit());
+        memberCardFailureRecord.setCarMemberCardOrderId(carMemberCardOrder.getOrderId());
         memberCardFailureRecord.setMemberCardExpireTime(item.getMemberCardExpireTime());
         memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR);
         memberCardFailureRecord.setCarSn(userCar.getSn());

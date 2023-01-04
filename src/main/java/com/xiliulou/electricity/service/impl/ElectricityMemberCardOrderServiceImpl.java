@@ -2798,6 +2798,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Pair.of(false, null);
         }
 
+        //抄的  @See ServiceFeeUserInfoServiceImpl#queryUserBatteryServiceFee()
+
         long cardDays = 0;
         //用户产生的套餐过期电池服务费
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {

@@ -36,7 +36,7 @@ public class NormalBatterySnapshotHandler extends AbstractElectricityIotHandler 
         BatterySnapshotRequest batterySnapshotRequest = JsonUtil.fromJson(receiverMessage.getOriginContent(),
                 BatterySnapshotRequest.class);
         eleBatterySnapshotService.insert(EleBatterySnapshot.builder().createTime(batterySnapshotRequest.getReportTime())
-                .jsonBatteries(batterySnapshotRequest.getBatteryJson()).build());
+                .jsonBatteries(batterySnapshotRequest.getBatteryJson()).eId(electricityCabinet.getId()).build());
     }
     
     

@@ -143,7 +143,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             batteryName = null;
         }
         
-        handleBatteryTrackRecord(batteryName, eleBox, electricityCabinet, eleBatteryVO);
+       
         
         //处理电池名字为空
         if (StringUtils.isBlank(batteryName)) {
@@ -161,12 +161,14 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     sessionId);
             return;
         }
-        
+    
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("ELE BATTERY REPORT ERROR! tenantId is not equal,tenantId1={},tenantId2={},sessionId={}",
                     electricityCabinet.getTenantId(), electricityBattery.getTenantId(), sessionId);
             return;
         }
+    
+        handleBatteryTrackRecord(batteryName, eleBox, electricityCabinet, eleBatteryVO);
         
         //保存电池电压电流&充电器电压电流
         this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
