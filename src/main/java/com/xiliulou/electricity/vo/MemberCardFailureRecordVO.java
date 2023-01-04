@@ -52,6 +52,11 @@ public class MemberCardFailureRecordVO {
     private String carSn;
 
     /**
+     * 车辆型号名称
+     */
+    private String carModelName;
+
+    /**
      * 门店Id
      */
     private Long storeId;
