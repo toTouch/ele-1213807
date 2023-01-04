@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -119,6 +120,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         while (true) {
             //租车套餐
             List<FailureMemberCardVo> userCarMemberCardList = userCarMemberCardService.queryMemberCardExpireUser(offset, size, System.currentTimeMillis());
+            log.error("========================================userCarMemberCardList:{}", JsonUtil.toJson(userCarMemberCardList));
             if (CollectionUtils.isEmpty(userCarMemberCardList)) {
                 return;
             }
