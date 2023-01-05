@@ -269,8 +269,8 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //更新用户租车状态
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setFranchiseeId(electricityCarModel.getFranchiseeId());
         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
-//        updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
 
