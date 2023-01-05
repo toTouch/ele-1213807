@@ -86,7 +86,7 @@
         <where>
             e_id = #{eId}
             <if test="startTime != null">
-                and create_time &gt;= #{beginTime}
+                and create_time &gt;= #{startTime}
             </if>
             <if test="endTime != null">
                 and create_time &lt;= #{endTime}
