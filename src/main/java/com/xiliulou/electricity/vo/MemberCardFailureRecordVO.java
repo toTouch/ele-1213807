@@ -79,4 +79,6 @@ public class MemberCardFailureRecordVO {
 
     //租户id
     private Integer tenantId;
+
+    private String carMemberCardOrderId;
 }
