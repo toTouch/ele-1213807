@@ -425,6 +425,12 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
 
+        //租车押金和电池押金一起购买，校验换电套餐加盟商与车辆型号加盟商是否一致
+        if(Objects.nonNull(query.getFranchiseeId()) && !Objects.equals( query.getFranchiseeId(),electricityCarModel.getFranchiseeId() )){
+            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}",query.getFranchiseeId(),electricityCarModel.getFranchiseeId());
+            return Triple.of(false, "100255", "车辆型号加盟商与电池套餐加盟商不一致！");
+        }
+
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
 
         BigDecimal payAmount = electricityCarModel.getCarDeposit();

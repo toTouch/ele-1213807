@@ -12,10 +12,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreMapper;
-import com.xiliulou.electricity.query.CallBackQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -82,6 +79,8 @@ public class StoreServiceImpl implements StoreService {
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -217,6 +216,18 @@ public class StoreServiceImpl implements StoreService {
             }
         }
 
+        //若修改门店加盟商，需要判断门店是否绑定的有车辆型号
+        if(Objects.nonNull(storeAddAndUpdate.getFranchiseeId()) && !Objects.equals(store.getFranchiseeId().intValue(),storeAddAndUpdate.getFranchiseeId())){
+            ElectricityCarModelQuery carModelQuery = new ElectricityCarModelQuery();
+            carModelQuery.setStoreId(store.getId());
+            carModelQuery.setTenantId(store.getTenantId());
+
+            List<ElectricityCarModel> electricityCarModels = electricityCarModelService.selectByQuery(carModelQuery);
+            if(!CollectionUtils.isEmpty(electricityCarModels)){
+                return R.fail("100254","门店已绑定车辆型号，请先删除车辆型号");
+            }
+        }
+
         store.setTenantId(TenantContextHolder.getTenantId());
         store.setUpdateTime(System.currentTimeMillis());
         int update = storeMapper.updateById(store);
@@ -258,6 +269,15 @@ public class StoreServiceImpl implements StoreService {
 
         if (count > 0) {
             return R.fail("门店已绑定换电柜");
+        }
+
+        //查询门店是否绑定车辆型号
+        ElectricityCarModelQuery carModelQuery = new ElectricityCarModelQuery();
+        carModelQuery.setStoreId(store.getId());
+        carModelQuery.setTenantId(store.getTenantId());
+        List<ElectricityCarModel> electricityCarModels = electricityCarModelService.selectByQuery(carModelQuery);
+        if(!CollectionUtils.isEmpty(electricityCarModels)){
+            return R.fail("100254","门店已绑定车辆型号，请先删除车辆型号");
         }
 
         store.setUpdateTime(System.currentTimeMillis());
