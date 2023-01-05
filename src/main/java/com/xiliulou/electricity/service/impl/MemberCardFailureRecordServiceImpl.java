@@ -300,9 +300,13 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             return R.ok(Collections.EMPTY_LIST);
         }
 
+        log.error("数据-========================" + memberCardFailureRecordList);
+
         List<MemberCardFailureRecordVO> failureRecords = memberCardFailureRecordList.parallelStream().map(item -> {
             MemberCardFailureRecordVO memberCardFailureRecordVO = new MemberCardFailureRecordVO();
             BeanUtils.copyProperties(item, memberCardFailureRecordVO);
+
+            log.error("失效套餐===================" + memberCardFailureRecordVO);
 
             //换电失效套餐
             if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())) {
@@ -323,6 +327,9 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             return memberCardFailureRecordVO;
         }).collect(Collectors.toList());
+
+
+        log.error("============taocan------------------" + failureRecords);
 
         return R.ok(failureRecords);
     }
