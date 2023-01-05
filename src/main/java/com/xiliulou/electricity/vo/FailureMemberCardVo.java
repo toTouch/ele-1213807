@@ -49,4 +49,6 @@ public class FailureMemberCardVo {
      */
     private String orderId;
 
+    private Long franchiseeId;
+
 }

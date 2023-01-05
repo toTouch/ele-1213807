@@ -190,8 +190,9 @@
     </select>
 
     <select id="queryMemberCardExpireUser" resultType="com.xiliulou.electricity.vo.FailureMemberCardVo">
-        select tubmc.member_card_expire_time ,tubmc.uid,tubmc.tenant_id,tub.battery_type,tud.battery_deposit
+        select tubmc.member_card_expire_time ,tubmc.uid,tubmc.tenant_id,tub.battery_type,tud.battery_deposit,tui.franchisee_id
          from t_user_battery_member_card tubmc left join t_user_battery tub on tubmc.uid=tub.uid left join t_user_battery_deposit tud on tubmc.uid=tud.uid
+         left join t_user_info tui on tubmc.uid=tui.uid
         where tubmc.member_card_expire_time &lt;= #{nowTime}
         limit #{offset},#{size}
     </select>

@@ -60,7 +60,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
     @Autowired
-    UserCarMemberCardService  userCarMemberCardService;
+    UserCarMemberCardService userCarMemberCardService;
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
@@ -72,10 +72,26 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     @Autowired
     ElectricityCarModelService electricityCarModelService;
 
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+
     @Override
     public void failureMemberCardTask() {
         //处理失效的租车套餐
         handleUserCarMemberCardExpire();
+
+        //处理失效的换电套餐
+        handleUserBatteryMemberCardExpire();
+    }
+
+
+    /**
+     * 处理失效的换电套餐
+     */
+    private void handleUserBatteryMemberCardExpire() {
 
         int offset = 0;
         int size = 300;
@@ -93,29 +109,34 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             userBatteryMemberCardList.parallelStream().forEach(item -> {
 
+                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
 
-                MemberCardFailureRecord memberCardFailureRecord = MemberCardFailureRecord.builder()
-                        .uid(item.getUid())
-                        .memberCardExpireTime(item.getMemberCardExpireTime())
-                        .createTime(nowTime)
-                        .updateTime(nowTime)
-                        .tenantId(item.getTenantId())
-                        .batteryType(item.getBatteryType())
-                        .type(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY)
-                        .deposit(item.getBatteryDeposit()).build();
+                List<MemberCardFailureRecord> memberCardFailureRecords = null;
+                if (Objects.nonNull(electricityMemberCardOrder)) {
+                    memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
+                }
+                if (!CollectionUtils.isEmpty(memberCardFailureRecords)) {
+                    return;
+                }
+
+
+                MemberCardFailureRecord memberCardFailureRecord = buildBatteryMemberCardFailureRecord(item);
+                if (Objects.isNull(memberCardFailureRecord)) {
+                    return;
+                }
 
                 memberCardFailureRecordMapper.insert(memberCardFailureRecord);
-
             });
 
             offset += size;
         }
+
     }
 
     /**
      * 处理失效的租车套餐
      */
-    private void handleUserCarMemberCardExpire(){
+    private void handleUserCarMemberCardExpire() {
 
         int offset = 0;
         int size = 300;
@@ -130,7 +151,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             userCarMemberCardList.parallelStream().forEach(item -> {
                 List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(item.getOrderId());
-                if(!CollectionUtils.isEmpty(memberCardFailureRecords)){
+                if (!CollectionUtils.isEmpty(memberCardFailureRecords)) {
                     return;
                 }
 
@@ -145,6 +166,30 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             offset += size;
         }
     }
+
+
+    private MemberCardFailureRecord buildBatteryMemberCardFailureRecord(FailureMemberCardVo item) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(item.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.error("ELE FAILURE BATTERY MEMBERCARD ERROR! not found carMemberCardOrder,uid={},orderId={}", item.getUid(), item.getOrderId());
+            return null;
+        }
+
+        MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
+        memberCardFailureRecord.setUid(item.getUid());
+        memberCardFailureRecord.setCardName(electricityMemberCardOrder.getCardName());
+        memberCardFailureRecord.setDeposit(item.getBatteryDeposit());
+        memberCardFailureRecord.setCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
+        memberCardFailureRecord.setMemberCardExpireTime(item.getMemberCardExpireTime());
+        memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY);
+        memberCardFailureRecord.setBatteryType(item.getBatteryType());
+        memberCardFailureRecord.setTenantId(item.getTenantId());
+        memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
+        memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
+
+        return memberCardFailureRecord;
+    }
+
 
     private MemberCardFailureRecord buildRentCarMemberCardFailureRecord(FailureMemberCardVo item) {
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(item.getOrderId());
@@ -204,7 +249,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             BeanUtils.copyProperties(item, memberCardFailureRecordVO);
 
             //换电失效套餐
-            if(Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())){
+            if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())) {
                 if (Objects.nonNull(item.getBatteryType())) {
                     Integer batteryType = BatteryConstant.acquireBattery(item.getBatteryType());
                     memberCardFailureRecordVO.setBatteryType(batteryType.toString());
@@ -212,9 +257,8 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             }
 
 
-
             //租车失效套餐
-            if(Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR, item.getType())){
+            if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR, item.getType())) {
                 Store store = storeService.queryByIdFromCache(item.getStoreId());
                 if (Objects.nonNull(store)) {
                     memberCardFailureRecordVO.setStoreName(store.getName());
