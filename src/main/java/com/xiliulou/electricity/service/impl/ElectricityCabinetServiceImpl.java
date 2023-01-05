@@ -1804,9 +1804,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-
-        log.error("足电池前置=================换电柜==========" + electricityCabinet);
-
         //动态查询在线状态
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
@@ -1838,9 +1835,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
-
-        log.error("足电池前置=================门店==========" + store);
-
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
             log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
@@ -1866,19 +1860,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//
-//        }
         //判断该换电柜加盟商和用户加盟商是否一致
-
-        log.error("足电池前置=================用户==========" + userInfo);
-
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
