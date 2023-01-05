@@ -190,19 +190,19 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     private MemberCardFailureRecord buildRentCarMemberCardFailureRecord(FailureMemberCardVo item) {
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(item.getOrderId());
         if (Objects.isNull(carMemberCardOrder)) {
-            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found carMemberCardOrder,uid={},orderId={}", item.getUid(), item.getOrderId());
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found carMemberCardOrder,uid={},orderId={}", item.getUid(), item.getOrderId());
             return null;
         }
 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(item.getUid());
         if (Objects.isNull(userCarDeposit)) {
-            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found userCarDeposit,uid={}", item.getUid());
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarDeposit,uid={}", item.getUid());
             return null;
         }
 
         UserCar userCar = userCarService.selectByUidFromCache(item.getUid());
         if (Objects.isNull(userCar)) {
-            log.error("ELE FAILURE CAR MEMBERCARD ERROR! not found userCar,uid={}", item.getUid());
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCar,uid={}", item.getUid());
             return null;
         }
 
@@ -225,6 +225,11 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
 
         return memberCardFailureRecord;
+    }
+
+    @Override
+    public Integer insert(MemberCardFailureRecord memberCardFailureRecord) {
+        return memberCardFailureRecordMapper.insert(memberCardFailureRecord);
     }
 
     @Override

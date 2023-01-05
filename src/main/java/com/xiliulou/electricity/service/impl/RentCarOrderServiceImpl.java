@@ -370,7 +370,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         carMemberCardOrder.setOrderId(orderId);
         carMemberCardOrder.setCreateTime(System.currentTimeMillis());
         carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
+        carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_SUCCESS);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(userInfo.getUid());
         carMemberCardOrder.setCardName(carMemberCardOrderService.getCardName(rentCarOrderQuery.getRentType()));

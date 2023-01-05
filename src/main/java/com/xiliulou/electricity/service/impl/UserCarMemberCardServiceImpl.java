@@ -7,14 +7,10 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.TemplateConfigEntity;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCarMemberCardMapper;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.TemplateConfigService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +40,16 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     TemplateConfigService templateConfigService;
     @Autowired
     WeChatAppTemplateService weChatAppTemplateService;
+    @Autowired
+    MemberCardFailureRecordService memberCardFailureRecordService;
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    @Autowired
+    UserCarService userCarService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -139,6 +145,9 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer deleteByUid(Long uid) {
+        //删除用户绑定套餐时  增加失效套餐记录
+        saveMemberCardFailureRecord(uid);
+
         int delete = this.userCarMemberCardMapper.deleteByUid(uid);
 
         DbUtils.dbOperateSuccessThen(delete, () -> {
@@ -147,6 +156,57 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         });
 
         return delete;
+    }
+
+    public void saveMemberCardFailureRecord(Long uid) {
+        UserCarMemberCard userCarMemberCard = this.selectByUidFromCache(uid);
+        if (Objects.isNull(userCarMemberCard)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarMemberCard,uid={}", uid);
+            return;
+        }
+
+        //若套餐已过期  不添加记录
+        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            return;
+        }
+
+        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(userCarMemberCard.getOrderId());
+        if (Objects.isNull(carMemberCardOrder)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found carMemberCardOrder,uid={},orderId={}", uid, userCarMemberCard.getOrderId());
+            return;
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userCarDeposit)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarDeposit,uid={}", uid);
+            return;
+        }
+
+        UserCar userCar = userCarService.selectByUidFromCache(uid);
+        if (Objects.isNull(userCar)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCar,uid={}", uid);
+            return;
+        }
+
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(userCar.getCarModel().intValue());
+
+        MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
+        memberCardFailureRecord.setUid(uid);
+        memberCardFailureRecord.setCardName(carMemberCardOrder.getCardName());
+        memberCardFailureRecord.setDeposit(userCarDeposit.getCarDeposit());
+        memberCardFailureRecord.setCarMemberCardOrderId(carMemberCardOrder.getOrderId());
+        memberCardFailureRecord.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+        memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR);
+        memberCardFailureRecord.setCarSn(userCar.getSn());
+        memberCardFailureRecord.setCarModelName(Objects.nonNull(electricityCarModel) ? electricityCarModel.getName() : "");
+        memberCardFailureRecord.setCarMemberCardType(carMemberCardOrder.getMemberCardType());
+        memberCardFailureRecord.setValidDays(carMemberCardOrder.getValidDays());
+        memberCardFailureRecord.setStoreId(carMemberCardOrder.getStoreId());
+        memberCardFailureRecord.setTenantId(carMemberCardOrder.getTenantId());
+        memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
+        memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
+
+        memberCardFailureRecordService.insert(memberCardFailureRecord);
     }
 
     /**
@@ -212,7 +272,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
 
     @Override
     public List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime) {
-        return userCarMemberCardMapper.queryMemberCardExpireUser( offset,  size,  nowTime);
+        return userCarMemberCardMapper.queryMemberCardExpireUser(offset, size, nowTime);
     }
 
     private List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
