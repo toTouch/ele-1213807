@@ -352,15 +352,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
         //同一个套餐可以续费
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
+        if ((Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && now < userBatteryMemberCard.getMemberCardExpireTime()) {
                 now = userBatteryMemberCard.getMemberCardExpireTime();
             }
             //TODO 使用次数暂时叠加
-            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
             }
-
         } else {
             if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
