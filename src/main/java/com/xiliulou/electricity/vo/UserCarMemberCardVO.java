@@ -55,7 +55,10 @@ public class UserCarMemberCardVO {
      * 门店名称
      */
     private String storeName;
-
+    /**
+     * 车辆押金
+     */
+    private BigDecimal carDeposit;
 
 
 }

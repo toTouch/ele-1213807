@@ -69,6 +69,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     CalcRentCarPriceFactory calcRentCarPriceFactory;
     @Autowired
     UserCarService userCarService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -218,6 +220,11 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         userCarMemberCardVO.setValidDays(carMemberCardOrder.getValidDays());
         userCarMemberCardVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
 
+        //车辆押金
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if(Objects.nonNull(userCarDeposit)){
+            userCarMemberCardVO.setCarDeposit(userCarDeposit.getCarDeposit());
+        }
 
         //车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
