@@ -393,7 +393,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
 
-        if (!Objects.equals(userBatteryMemberCard.getRemainingNumber(),UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
             if (Objects.isNull(electricityMemberCard)) {
                 log.error("HOME ERROR! memberCard  is not exit,uid={},memberCardId={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
