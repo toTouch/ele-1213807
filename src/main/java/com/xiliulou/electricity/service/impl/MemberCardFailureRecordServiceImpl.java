@@ -26,6 +26,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -306,10 +308,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             //换电失效套餐
             if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())) {
 
-                log.error("失效套餐================" + item);
-
-                if (Objects.nonNull(item.getBatteryType())) {
-                    log.error("哈哈哈哈================" + item);
+                if (StringUtils.isNotBlank(item.getBatteryType())) {
                     Integer batteryType = BatteryConstant.acquireBattery(item.getBatteryType());
                     memberCardFailureRecordVO.setBatteryType(batteryType.toString());
                 }
