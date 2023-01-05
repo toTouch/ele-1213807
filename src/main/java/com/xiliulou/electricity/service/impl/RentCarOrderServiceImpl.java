@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
@@ -238,6 +239,14 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             return Triple.of(false, "100009", "车辆型号不存在");
         }
 
+        //若用户已绑定加盟商，判断车辆加盟商与用户加盟商是否一致
+        if (Objects.nonNull(electricityCarModel) && Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            if (!Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
+                log.error("ELE CAR ERROR! user bind franchisee not equals car franchisee,uid={}", userInfo.getUid());
+                return Triple.of(false, "100239", "用户所属加盟商与车辆加盟商不符");
+            }
+        }
+
         //生成租车押金订单
         CarDepositOrder carDepositOrder = buildRentCarDepositOrder(userInfo, electricityCarModel, rentCarOrderQuery, store);
 
@@ -389,7 +398,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         carDepositOrder.setName(userInfo.getName());
         carDepositOrder.setPayAmount(payAmount);
         carDepositOrder.setDelFlag(CarDepositOrder.DEL_NORMAL);
-        carDepositOrder.setStatus(CarDepositOrder.STATUS_INIT);
+        carDepositOrder.setStatus(CarDepositOrder.STATUS_SUCCESS);
         carDepositOrder.setTenantId(TenantContextHolder.getTenantId());
         carDepositOrder.setCreateTime(System.currentTimeMillis());
         carDepositOrder.setUpdateTime(System.currentTimeMillis());

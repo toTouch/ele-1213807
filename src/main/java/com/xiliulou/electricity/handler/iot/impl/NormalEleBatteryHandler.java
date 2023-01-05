@@ -455,6 +455,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             ElectricityCabinetBox updateElectricityCabinetBox, String sessionId) {
         // 查换电柜所属加盟商
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+log.error("===============================================store:{}",JsonUtil.toJson(store));
         if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
             log.error(
                     "ELE BATTERY REPORT ERROR! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}",

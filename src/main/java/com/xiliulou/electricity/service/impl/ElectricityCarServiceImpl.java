@@ -353,15 +353,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }
 
-        //若用户已绑定加盟商，判断车辆加盟商与用户加盟商是否一致
-        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
-        if (Objects.nonNull(electricityCarModel) && Objects.nonNull(userInfo.getFranchiseeId()) && !Objects.equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
-            if (!Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
-                log.error("ELE CAR ERROR! user bind franchisee not equals car franchisee,uid={}", userInfo.getUid());
-                return R.fail("100239", "用户所属加盟商与车辆加盟商不符");
-            }
-        }
-
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
