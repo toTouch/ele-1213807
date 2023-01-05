@@ -144,7 +144,6 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         while (true) {
             //租车套餐
             List<FailureMemberCardVo> userCarMemberCardList = userCarMemberCardService.queryMemberCardExpireUser(offset, size, System.currentTimeMillis());
-            log.error("========================================userCarMemberCardList:{}", JsonUtil.toJson(userCarMemberCardList));
             if (CollectionUtils.isEmpty(userCarMemberCardList)) {
                 return;
             }
@@ -164,6 +163,62 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             });
 
             offset += size;
+        }
+    }
+
+    @Override
+    public void saveRentCarMemberCardFailureRecord(Long uid) {
+        try {
+            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(uid);
+            if (Objects.isNull(userCarMemberCard)) {
+                log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarMemberCard,uid={}", uid);
+                return;
+            }
+
+            //若套餐已过期  不添加记录
+            if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+                return;
+            }
+
+            CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(userCarMemberCard.getOrderId());
+            if (Objects.isNull(carMemberCardOrder)) {
+                log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found carMemberCardOrder,uid={},orderId={}", uid, userCarMemberCard.getOrderId());
+                return;
+            }
+
+            UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+            if (Objects.isNull(userCarDeposit)) {
+                log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarDeposit,uid={}", uid);
+                return;
+            }
+
+            UserCar userCar = userCarService.selectByUidFromCache(uid);
+            if (Objects.isNull(userCar)) {
+                log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCar,uid={}", uid);
+                return;
+            }
+
+            ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(userCar.getCarModel().intValue());
+
+            MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
+            memberCardFailureRecord.setUid(uid);
+            memberCardFailureRecord.setCardName(carMemberCardOrder.getCardName());
+            memberCardFailureRecord.setDeposit(userCarDeposit.getCarDeposit());
+            memberCardFailureRecord.setCarMemberCardOrderId(carMemberCardOrder.getOrderId());
+            memberCardFailureRecord.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+            memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR);
+            memberCardFailureRecord.setCarSn(userCar.getSn());
+            memberCardFailureRecord.setCarModelName(Objects.nonNull(electricityCarModel) ? electricityCarModel.getName() : "");
+            memberCardFailureRecord.setCarMemberCardType(carMemberCardOrder.getMemberCardType());
+            memberCardFailureRecord.setValidDays(carMemberCardOrder.getValidDays());
+            memberCardFailureRecord.setStoreId(carMemberCardOrder.getStoreId());
+            memberCardFailureRecord.setTenantId(carMemberCardOrder.getTenantId());
+            memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
+            memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
+
+            this.insert(memberCardFailureRecord);
+        } catch (Exception e) {
+            log.error("ELE FAILURE CAR MEMBERCARD ERROR!",e);
         }
     }
 

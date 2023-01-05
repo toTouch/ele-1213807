@@ -78,6 +78,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     ElectricityCarService electricityCarService;
+    @Autowired
+    MemberCardFailureRecordService memberCardFailureRecordService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -653,6 +655,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateByUid(updateUserInfo);
+
+        //退押金时保存用户失效套餐记录
+        memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(uid);
 
         userCarService.deleteByUid(uid);
 

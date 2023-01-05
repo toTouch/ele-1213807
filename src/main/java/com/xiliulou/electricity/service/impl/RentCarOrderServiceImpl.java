@@ -466,7 +466,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //车辆是否可用
-        ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn());
+        ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn(), TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE RENT CAR ERROR! not found electricityCar,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100007", "车辆不存在");
@@ -484,12 +484,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userCar)){
+        if (Objects.isNull(userCar)) {
             log.error("ELE RENT CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "100247", "未找到用户信息");
         }
 
-        if(!Objects.equals(userCar.getCarModel(),electricityCar.getModelId().longValue())){
+        if (!Objects.equals(userCar.getCarModel(), electricityCar.getModelId().longValue())) {
             log.error("ELE RENT CAR ERROR! this user bind car model not equals this car model,uid={}", userInfo.getUid());
             return Triple.of(false, "100236", "车辆型号不匹配");
         }
