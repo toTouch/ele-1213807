@@ -1,19 +1,10 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.*;
-import com.xiliulou.electricity.query.api.ApiRequestQuery;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.ElectricityCarVO;
-import org.apache.commons.lang3.tuple.Pair;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -53,7 +44,7 @@ public interface ElectricityCarService {
     Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds);
 
 
-    ElectricityCar selectBySn(String sn);
+    ElectricityCar selectBySn(String sn, Integer tenantId);
 
     Integer update(ElectricityCar updateElectricityCar);
 

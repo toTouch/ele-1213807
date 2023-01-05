@@ -7,7 +7,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
@@ -118,7 +117,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
         ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>()
                 .eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn())
-                .eq(ElectricityCar::getDelFlag,ElectricityCar.DEL_NORMAL)
+                .eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL)
                 .eq(ElectricityCar::getTenantId, tenantId));
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
@@ -213,7 +212,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.ok();
         }
 
-        if(Objects.nonNull(electricityCar.getUid()) || StringUtils.isNotBlank(electricityCar.getUserName())){
+        if (Objects.nonNull(electricityCar.getUid()) || StringUtils.isNotBlank(electricityCar.getUserName())) {
             return R.fail("100231", "车辆已绑定用户！");
         }
 
@@ -309,7 +308,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
-        if(Objects.isNull(userCarDeposit)){
+        if (Objects.isNull(userCarDeposit)) {
             log.error("ELE CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return R.fail("100247", "未找到用户信息");
         }
@@ -425,21 +424,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELE CAR ERROR! not found user uid={}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
-            log.error("ELE CAR ERROR! not found car,uid={},carId={}", userInfo.getUid(),electricityCarBindUser.getCarId());
+            log.error("ELE CAR ERROR! not found car,uid={},carId={}", userInfo.getUid(), electricityCarBindUser.getCarId());
             return R.fail("100007", "未找到车辆");
         }
-        if (!Objects.equals(electricityCar.getTenantId(),TenantContextHolder.getTenantId())){
+        if (!Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
         //用户是否绑定车辆
-        if(!Objects.equals(userInfo.getCarRentStatus(),UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(),electricityCarBindUser.getUid())){
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(), electricityCarBindUser.getUid())) {
             log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
@@ -490,7 +489,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
-    public ElectricityCar selectBySn(String sn) {
-        return electricityCarMapper.selectBySn(sn);
+    public ElectricityCar selectBySn(String sn, Integer tenantId) {
+        return electricityCarMapper.selectBySn(sn, tenantId);
     }
 }

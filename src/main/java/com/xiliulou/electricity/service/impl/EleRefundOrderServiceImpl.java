@@ -93,6 +93,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     UserCarMemberCardService userCarMemberCardService;
     @Autowired
     CarDepositOrderService carDepositOrderService;
+    @Autowired
+    MemberCardFailureRecordService memberCardFailureRecordService;
 
     /**
      * 新增数据
@@ -262,6 +264,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
+
+            //退押金时保存用户失效套餐记录
+            memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(userInfo.getUid());
 
             userCarDepositService.deleteByUid(userInfo.getUid());
 

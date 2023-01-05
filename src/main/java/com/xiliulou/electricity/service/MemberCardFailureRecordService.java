@@ -13,4 +13,6 @@ public interface MemberCardFailureRecordService {
     R queryFailureMemberCard(Long uid, Integer offset, Integer size);
 
     Integer insert(MemberCardFailureRecord memberCardFailureRecord);
+
+    void saveRentCarMemberCardFailureRecord(Long uid);
 }
