@@ -773,6 +773,7 @@ public class UnionTradeOrderServiceImpl extends
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+            updateUserInfo.setFranchiseeId(carDepositOrder.getFranchiseeId());
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
