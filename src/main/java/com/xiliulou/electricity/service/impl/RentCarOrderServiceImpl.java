@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -657,6 +658,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //保存电池押金订单
         if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
+            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
+            }
             eleDepositOrderService.insert(eleDepositOrder);
 
             orderList.add(eleDepositOrder.getOrderId());
