@@ -512,7 +512,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, eleDepositOrder);
     }
 
-    // TODO: 2022/12/21 活动问题
     private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId) {
 
         if (Objects.isNull(memberCardId)) {
