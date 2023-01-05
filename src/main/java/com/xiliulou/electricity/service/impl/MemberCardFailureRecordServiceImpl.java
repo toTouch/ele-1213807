@@ -303,7 +303,6 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         List<MemberCardFailureRecordVO> failureRecords = memberCardFailureRecordList.parallelStream().map(item -> {
             MemberCardFailureRecordVO memberCardFailureRecordVO = new MemberCardFailureRecordVO();
             BeanUtils.copyProperties(item, memberCardFailureRecordVO);
-
             //换电失效套餐
             if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())) {
                 if (Objects.nonNull(item.getBatteryType())) {
@@ -323,7 +322,6 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             return memberCardFailureRecordVO;
         }).collect(Collectors.toList());
-
         return R.ok(failureRecords);
     }
 }
