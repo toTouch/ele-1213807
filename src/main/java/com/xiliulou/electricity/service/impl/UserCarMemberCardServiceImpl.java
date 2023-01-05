@@ -158,10 +158,15 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         return delete;
     }
 
-    public void saveMemberCardFailureRecord(Long uid){
+    public void saveMemberCardFailureRecord(Long uid) {
         UserCarMemberCard userCarMemberCard = this.selectByUidFromCache(uid);
-        if(Objects.isNull(userCarMemberCard)){
+        if (Objects.isNull(userCarMemberCard)) {
             log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarMemberCard,uid={}", uid);
+            return;
+        }
+
+        //若套餐已过期  不添加记录
+        if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             return;
         }
 
@@ -267,7 +272,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
 
     @Override
     public List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime) {
-        return userCarMemberCardMapper.queryMemberCardExpireUser( offset,  size,  nowTime);
+        return userCarMemberCardMapper.queryMemberCardExpireUser(offset, size, nowTime);
     }
 
     private List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
