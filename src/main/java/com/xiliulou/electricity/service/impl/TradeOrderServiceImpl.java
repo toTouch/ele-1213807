@@ -24,13 +24,11 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 混合支付(UnionTradeOrder)表服务接口
@@ -394,13 +392,26 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //保存套餐订单
-        if (generateMemberCardOrderResult.getLeft() && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
+        if (generateMemberCardOrderResult.getLeft() && !CollectionUtils.isEmpty((List) generateMemberCardOrderResult.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) generateMemberCardOrderResult.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
             orderList.add(electricityMemberCardOrder.getOrderId());
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
             allPayAmount.add(electricityMemberCardOrder.getPayAmount());
             integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
+
+            //优惠券处理
+            if (Objects.nonNull(integratedPaymentAdd.getUserCouponId()) && ((List) generateMemberCardOrderResult.getRight()).size() > 1) {
+
+                UserCoupon userCoupon = (UserCoupon) ((List) generateMemberCardOrderResult.getRight()).get(1);
+                //修改劵可用状态
+                if (Objects.nonNull(userCoupon)) {
+                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
+                    userCoupon.setUpdateTime(System.currentTimeMillis());
+                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+                    userCouponService.update(userCoupon);
+                }
+            }
         }
 
         //保存保险订单
@@ -589,7 +600,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             electricityMemberCardOrder.setCouponId(userCouponId.longValue());
         }
 
-        return Triple.of(true, null, electricityMemberCardOrder);
+        List<Object> list = new ArrayList<>();
+        list.add(electricityMemberCardOrder);
+        list.add(userCoupon);
+
+        return Triple.of(true, null, list);
     }
 
     private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId) {
