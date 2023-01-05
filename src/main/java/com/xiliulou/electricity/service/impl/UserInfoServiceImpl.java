@@ -234,7 +234,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
                 if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
                     ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-                    if (StringUtils.isNotBlank(electricityMemberCard.getName())) {
+                    if (Objects.nonNull(electricityMemberCard) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
                         item.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());
                         item.setCardName(electricityMemberCard.getName());
                     }
@@ -273,7 +273,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     }
 
                     UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
-                    if(Objects.nonNull(userCarMemberCard)){
+                    if (Objects.nonNull(userCarMemberCard)) {
                         item.setRentCarMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
                     }
 
