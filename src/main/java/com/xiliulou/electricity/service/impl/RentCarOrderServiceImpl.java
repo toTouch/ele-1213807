@@ -380,7 +380,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         carMemberCardOrder.setValidDays(rentCarOrderQuery.getRentTime());
         carMemberCardOrder.setPayType(CarMemberCardOrder.OFFLINE_PAYTYPE);
         carMemberCardOrder.setStoreId(rentCarOrderQuery.getStoreId());
-        carMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        carMemberCardOrder.setFranchiseeId(electricityCarModel.getFranchiseeId());
         carMemberCardOrder.setTenantId(userInfo.getTenantId());
 
         return Triple.of(true, "", carMemberCardOrder);
