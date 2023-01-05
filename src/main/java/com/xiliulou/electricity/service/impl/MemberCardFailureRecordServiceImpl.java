@@ -72,10 +72,26 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     @Autowired
     ElectricityCarModelService electricityCarModelService;
 
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+
     @Override
     public void failureMemberCardTask() {
         //处理失效的租车套餐
         handleUserCarMemberCardExpire();
+
+        //处理失效的换电套餐
+        handleUserBatteryMemberCardExpire();
+    }
+
+
+    /**
+     * 处理失效的换电套餐
+     */
+    private void handleUserBatteryMemberCardExpire(){
 
         int offset = 0;
         int size = 300;
@@ -94,22 +110,23 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             userBatteryMemberCardList.parallelStream().forEach(item -> {
 
 
-                MemberCardFailureRecord memberCardFailureRecord = MemberCardFailureRecord.builder()
-                        .uid(item.getUid())
-                        .memberCardExpireTime(item.getMemberCardExpireTime())
-                        .createTime(nowTime)
-                        .updateTime(nowTime)
-                        .tenantId(item.getTenantId())
-                        .batteryType(item.getBatteryType())
-                        .type(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY)
-                        .deposit(item.getBatteryDeposit()).build();
+                List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(item.getOrderId());
+                if(!CollectionUtils.isEmpty(memberCardFailureRecords)){
+                    return;
+                }
+
+
+                MemberCardFailureRecord memberCardFailureRecord = buildBatteryMemberCardFailureRecord(item);
+                if (Objects.isNull(memberCardFailureRecord)) {
+                    return;
+                }
 
                 memberCardFailureRecordMapper.insert(memberCardFailureRecord);
-
             });
 
             offset += size;
         }
+
     }
 
     /**
@@ -145,6 +162,30 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             offset += size;
         }
     }
+
+
+    private MemberCardFailureRecord buildBatteryMemberCardFailureRecord(FailureMemberCardVo item) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(item.getOrderId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.error("ELE FAILURE BATTERY MEMBERCARD ERROR! not found carMemberCardOrder,uid={},orderId={}", item.getUid(), item.getOrderId());
+            return null;
+        }
+
+        MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
+        memberCardFailureRecord.setUid(item.getUid());
+        memberCardFailureRecord.setCardName(electricityMemberCardOrder.getCardName());
+        memberCardFailureRecord.setDeposit(item.getBatteryDeposit());
+        memberCardFailureRecord.setCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
+        memberCardFailureRecord.setMemberCardExpireTime(item.getMemberCardExpireTime());
+        memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY);
+        memberCardFailureRecord.setBatteryType(item.getBatteryType());
+        memberCardFailureRecord.setTenantId(item.getTenantId());
+        memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
+        memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
+
+        return memberCardFailureRecord;
+    }
+
 
     private MemberCardFailureRecord buildRentCarMemberCardFailureRecord(FailureMemberCardVo item) {
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(item.getOrderId());
