@@ -866,6 +866,8 @@ public class UserServiceImpl implements UserService {
         map.put("userBatteryMemberCardDetailVO", userBatteryMemberCardDetailVO);
         map.put("userCarMemberCardDetailVO", userCarMemberCardDetailVO);
         map.put("franchiseeId", userInfo.getFranchiseeId());
+        map.put("batteryDepositStatus", userInfo.getBatteryDepositStatus());
+        map.put("carDepositStatus", userInfo.getCarDepositStatus());
 
         return R.ok(map);
     }
