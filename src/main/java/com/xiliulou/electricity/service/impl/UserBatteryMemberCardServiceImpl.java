@@ -203,7 +203,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         memberCardFailureRecord.setCardName(electricityMemberCardOrder.getCardName());
         memberCardFailureRecord.setDeposit(userBatteryDeposit.getBatteryDeposit());
         memberCardFailureRecord.setCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
-        memberCardFailureRecord.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+        memberCardFailureRecord.setMemberCardExpireTime(System.currentTimeMillis());
         memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY);
         memberCardFailureRecord.setBatteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType());
         memberCardFailureRecord.setTenantId(userInfo.getTenantId());
