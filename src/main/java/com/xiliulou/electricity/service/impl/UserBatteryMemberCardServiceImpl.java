@@ -182,7 +182,13 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         }
 
 
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! memberCard is typeCount,uid={}", uid);
+            return;
+        }
+
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
+
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryDeposit)) {
