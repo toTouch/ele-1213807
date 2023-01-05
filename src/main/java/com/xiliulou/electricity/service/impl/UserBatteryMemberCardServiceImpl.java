@@ -208,13 +208,29 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
 
     @Override
-    public Integer minCount(Long id) {
-        return userBatteryMemberCardMapper.minCount(id);
+    public Integer minCount(UserBatteryMemberCard userBatteryMemberCard) {
+
+        Integer update = userBatteryMemberCardMapper.minCount(userBatteryMemberCard.getId());
+
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
+            return null;
+        });
+
+        return update;
+
     }
 
     @Override
-    public Integer minCountForOffLineEle(Long id) {
-        return userBatteryMemberCardMapper.minCountForOffLineEle(id);
+    public Integer minCountForOffLineEle(UserBatteryMemberCard userBatteryMemberCard) {
+        Integer update = userBatteryMemberCardMapper.minCountForOffLineEle(userBatteryMemberCard.getId());
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
+            return null;
+        });
+
+        return update;
     }
 
     @Override

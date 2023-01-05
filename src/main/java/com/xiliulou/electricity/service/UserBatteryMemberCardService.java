@@ -61,17 +61,17 @@ public interface UserBatteryMemberCardService {
 
     /**
      * 用户套餐减次数
-     * @param id
+     * @param
      * @return
      */
-    Integer minCount(Long id);
+    Integer minCount(UserBatteryMemberCard userBatteryMemberCard);
 
     /**
      * 离线换电扣除套餐
-     * @param id
+     * @param
      * @return
      */
-    Integer minCountForOffLineEle(Long id);
+    Integer minCountForOffLineEle(UserBatteryMemberCard userBatteryMemberCard);
 
     Integer plusCount(Long id);
 

@@ -365,7 +365,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             String cellNo = usableEmptyCellNo.getRight().toString();
 
             if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
-                Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard.getId());
+                Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                 if (row < 1) {
                     eleLockFlag = Boolean.FALSE;
                     log.error("order  ERROR! not found memberCard uid={}", user.getUid());
@@ -374,7 +374,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             } else {
                 if (!Objects
                         .equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard.getId());
+                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                     if (row < 1) {
                         eleLockFlag = Boolean.FALSE;
                         log.error("order  ERROR! not found memberCard uid={}", user.getUid());
@@ -1493,7 +1493,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //这里的memberCard不能为空
 
         if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
-            Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard.getId());
+            Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
             if (row < 1) {
                 log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), userBatteryMemberCard.getId());
                 return Triple.of(false, "100213", "套餐剩余次数不足");

@@ -81,12 +81,12 @@
     
     <select id="queryBatterySnapshot" resultMap="EleBatterySnapshotMap">
         select
-        json_batteries
+        json_batteries,create_time
         from t_ele_battery_snapshot
         <where>
             e_id = #{eId}
             <if test="startTime != null">
-                and create_time &gt;= #{beginTime}
+                and create_time &gt;= #{startTime}
             </if>
             <if test="endTime != null">
                 and create_time &lt;= #{endTime}

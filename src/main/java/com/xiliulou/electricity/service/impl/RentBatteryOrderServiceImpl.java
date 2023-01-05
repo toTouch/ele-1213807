@@ -365,7 +365,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
-                Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard.getId());
+                Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                 if (row < 1) {
                     redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
                     log.error("order  ERROR! not found memberCard uid={}", user.getUid());
@@ -373,7 +373,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 }
             } else {
                 if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard.getId());
+                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                     if (row < 1) {
                         redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
                         log.error("order  ERROR! not found memberCard uid={}", user.getUid());

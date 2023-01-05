@@ -227,16 +227,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
 
-                userBatteryDepositService.deleteByUid(userInfo.getUid());
-
                 userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+                userBatteryDepositService.deleteByUid(userInfo.getUid());
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
-                    insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
                 }
 
                 userInfoService.unBindUserFranchiseeId(userInfo.getUid());
@@ -359,16 +358,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateUserInfo.setUpdateTime(System.currentTimeMillis());
                     userInfoService.updateByUid(updateUserInfo);
 
-                    userBatteryDepositService.deleteByUid(uid);
-
                     userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+                    userBatteryDepositService.deleteByUid(uid);
 
                     userBatteryService.deleteByUid(userInfo.getUid());
 
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
                     if (Objects.nonNull(insuranceUserInfo)) {
-                        insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                        redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
                     }
 
                     userInfoService.unBindUserFranchiseeId(uid);
@@ -649,16 +647,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
-            userBatteryDepositService.deleteByUid(userInfo.getUid());
-
             userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+            userBatteryDepositService.deleteByUid(userInfo.getUid());
 
             userBatteryService.deleteByUid(userInfo.getUid());
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
             if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+                insuranceUserInfoService.deleteById(insuranceUserInfo);
             }
 
             userInfoService.unBindUserFranchiseeId(uid);
@@ -695,7 +692,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 userBatteryMemberCardService.deleteByUid(userInfo.getUid());
 
                 userBatteryService.deleteByUid(userInfo.getUid());
-
 
                 userBatteryDepositService.deleteByUid(userInfo.getUid());
 

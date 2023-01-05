@@ -113,6 +113,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
                 List<MemberCardFailureRecord> memberCardFailureRecords = null;
                 if (Objects.nonNull(electricityMemberCardOrder)) {
+                    item.setOrderId(electricityMemberCardOrder.getOrderId());
                     memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
                 }
                 if (!CollectionUtils.isEmpty(memberCardFailureRecords)) {
@@ -218,7 +219,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             this.insert(memberCardFailureRecord);
         } catch (Exception e) {
-            log.error("ELE FAILURE CAR MEMBERCARD ERROR!",e);
+            log.error("ELE FAILURE CAR MEMBERCARD ERROR!", e);
         }
     }
 
