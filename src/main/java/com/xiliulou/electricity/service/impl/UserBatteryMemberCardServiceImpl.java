@@ -1,14 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +31,28 @@ import lombok.extern.slf4j.Slf4j;
 @Service("userBatteryMemberCardService")
 @Slf4j
 public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardService {
-    
+
     @Resource
     private UserBatteryMemberCardMapper userBatteryMemberCardMapper;
-    
+
     @Autowired
     private RedisService redisService;
-    
+
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    UserInfoService userInfoService;
+
+    @Autowired
+    MemberCardFailureRecordService memberCardFailureRecordService;
+
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+
+    @Autowired
+    UserBatteryService userBatteryService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -48,7 +63,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public UserBatteryMemberCard selectByUidFromDB(Long uid) {
         return this.userBatteryMemberCardMapper.selectByUid(uid);
     }
-    
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -61,17 +76,17 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         if (Objects.nonNull(cacheUserBatteryMemberCard)) {
             return cacheUserBatteryMemberCard;
         }
-        
+
         UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromDB(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
             return null;
         }
-        
+
         redisService.saveWithHash(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid, userBatteryMemberCard);
-        
+
         return userBatteryMemberCard;
     }
-    
+
     /**
      * 新增数据
      *
@@ -82,13 +97,13 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Transactional(rollbackFor = Exception.class)
     public UserBatteryMemberCard insert(UserBatteryMemberCard userBatteryMemberCard) {
         int insert = this.userBatteryMemberCardMapper.insertOne(userBatteryMemberCard);
-        
+
         DbUtils.dbOperateSuccessThen(insert, () -> {
             redisService.saveWithHash(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid(),
                     userBatteryMemberCard);
             return null;
         });
-        
+
         return userBatteryMemberCard;
     }
 
@@ -114,15 +129,15 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Transactional(rollbackFor = Exception.class)
     public Integer updateByUid(UserBatteryMemberCard userBatteryMemberCard) {
         int update = this.userBatteryMemberCardMapper.updateByUid(userBatteryMemberCard);
-        
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
             return null;
         });
-        
+
         return update;
     }
-    
+
     /**
      * 通过主键删除数据
      *
@@ -133,13 +148,63 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     @Transactional(rollbackFor = Exception.class)
     public Integer deleteByUid(Long uid) {
         int delete = this.userBatteryMemberCardMapper.deleteByUid(uid);
-        
+
+        saveMemberCardFailureRecord(uid);
+
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
             return null;
         });
-        
+
         return delete;
+    }
+
+
+    //处理失效套餐
+    public void saveMemberCardFailureRecord(Long uid) {
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found user,uid={}", uid);
+            return;
+        }
+
+
+        UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarMemberCard,uid={}", uid);
+            return;
+        }
+
+        //若套餐已过期  不添加记录
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            return;
+        }
+
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarDeposit,uid={}", uid);
+            return;
+        }
+
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
+
+        MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
+        memberCardFailureRecord.setUid(userInfo.getUid());
+        memberCardFailureRecord.setCardName(electricityMemberCardOrder.getCardName());
+        memberCardFailureRecord.setDeposit(userBatteryDeposit.getBatteryDeposit());
+        memberCardFailureRecord.setCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
+        memberCardFailureRecord.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+        memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY);
+        memberCardFailureRecord.setBatteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType());
+        memberCardFailureRecord.setTenantId(userInfo.getTenantId());
+        memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
+        memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
+
+        memberCardFailureRecordService.insert(memberCardFailureRecord);
     }
 
     @Override

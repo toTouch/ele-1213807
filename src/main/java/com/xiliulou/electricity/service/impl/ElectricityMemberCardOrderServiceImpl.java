@@ -352,7 +352,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
         //同一个套餐可以续费
-        if (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount())) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && now < userBatteryMemberCard.getMemberCardExpireTime()) {
                 now = userBatteryMemberCard.getMemberCardExpireTime();
             }
