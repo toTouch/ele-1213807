@@ -278,6 +278,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setTenantId(userInfo.getTenantId());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();
@@ -484,6 +485,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setTenantId(userInfo.getTenantId());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();

@@ -243,6 +243,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userBatteryDeposit.setDid(eleDepositOrder.getId());
                 userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
                 userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+                userBatteryDeposit.setTenantId(tenantId);
                 userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
