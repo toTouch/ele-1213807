@@ -250,14 +250,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             bindElectricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         }
 
-        log.error("用户的套餐========================" + userBatteryMemberCard);
-        log.error("用户绑定的一套餐===========================" + bindElectricityMemberCard);
-
         if (Objects.nonNull(bindElectricityMemberCard) && !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
-            if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-
-                log.error("小南瓜========================9999999999");
-
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 log.error("payDeposit  ERROR! not buy same memberCard uid={}", user.getUid());
                 return R.fail("ELECTRICITY.00119", "套餐剩余次数为负,应购买相同类型套餐抵扣");
             }
