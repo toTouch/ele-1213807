@@ -207,8 +207,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElectricityCabinet electricityCabinet) {
-        return this.electricityCabinetMapper.updateById(electricityCabinet);
+        int update = this.electricityCabinetMapper.updateById(electricityCabinet);
 
+        if(update>0){
+            //更新缓存
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+        }
+        return update;
     }
 
     @Override
@@ -366,6 +373,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //，key变化 先删除老的，以免老的删不掉
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName() + oldElectricityCabinet.getTenantId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
 
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
@@ -407,6 +415,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
 
             //删除格挡
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
@@ -728,6 +737,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //，key变化 先删除老的，以免老的删不掉
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName() + oldElectricityCabinet.getTenantId());
+        redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
         //更新缓存
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId(), electricityCabinet);
         return R.ok();

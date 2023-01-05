@@ -231,7 +231,7 @@ public class StoreServiceImpl implements StoreService {
             storeDetailService.insert(this.buildStoreDetail(store, storeAddAndUpdate));
 
             //更新缓存
-            redisService.saveWithHash(CacheConstant.CACHE_STORE + store.getId(), store);
+            redisService.delete(CacheConstant.CACHE_STORE + store.getId());
             return null;
         });
 
