@@ -1547,7 +1547,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //如果用户不是送的套餐
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-        if (!Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE) && userBatteryMemberCard.getRemainingNumber() < 0) {
                 log.warn("ORDER ERROR! user's count < 0 ,uid={},cardId={}", user.getUid(), electricityMemberCard.getType());
                 return Triple.of(false, "100213", "用户套餐剩余次数不足");

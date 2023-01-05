@@ -264,7 +264,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("100210", "用户未开通套餐");
             }
 
-            log.error("用户套餐================="+userBatteryMemberCard);
+            log.error("用户套餐=================" + userBatteryMemberCard);
 
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
@@ -295,7 +295,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
 
-            if (!Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
+            if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
 
                 if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
                     eleLockFlag = Boolean.FALSE;
