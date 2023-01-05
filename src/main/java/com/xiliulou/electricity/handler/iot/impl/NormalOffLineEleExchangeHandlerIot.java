@@ -91,7 +91,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
-            log.error("OFFLINE EXCHANGE NO sessionId=}", sessionId);
+            log.error("OFFLINE EXCHANGE NO sessionId={}", sessionId);
             return;
         }
         
