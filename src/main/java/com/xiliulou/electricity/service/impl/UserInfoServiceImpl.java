@@ -188,6 +188,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
+
+                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
+
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     Long now = System.currentTimeMillis();
                     long carDays = 0;
@@ -200,9 +203,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     }
                     item.setCardDays(carDays);
 
-                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
-                    if (Objects.nonNull(electricityMemberCardOrder)) {
-                        item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
+                    if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                        if (Objects.nonNull(electricityMemberCardOrder)) {
+                            item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
+                        }
                     }
                 } else {
                     item.setCardDays(null);
@@ -231,8 +236,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setOrderId(userBatteryDeposit.getOrderId());
                 }
 
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
-                if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
+
+                if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId()) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
                     ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
                     if (Objects.nonNull(electricityMemberCard) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
                         item.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());
