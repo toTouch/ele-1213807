@@ -235,8 +235,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
-                    insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                    redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + userInfo.getUid());
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
                 }
 
                 userInfoService.unBindUserFranchiseeId(userInfo.getUid());
@@ -367,8 +366,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                     InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
                     if (Objects.nonNull(insuranceUserInfo)) {
-                        insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                        redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
                     }
 
                     userInfoService.unBindUserFranchiseeId(uid);
@@ -657,8 +655,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
             if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
+                insuranceUserInfoService.deleteById(insuranceUserInfo);
             }
 
             userInfoService.unBindUserFranchiseeId(uid);
