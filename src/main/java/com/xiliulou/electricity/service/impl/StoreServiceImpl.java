@@ -218,11 +218,14 @@ public class StoreServiceImpl implements StoreService {
 
         //若修改门店加盟商，需要判断门店是否绑定的有车辆型号
         if(Objects.nonNull(storeAddAndUpdate.getFranchiseeId()) && !Objects.equals(store.getFranchiseeId().intValue(),storeAddAndUpdate.getFranchiseeId())){
+            log.error("=================111:{}",store.getFranchiseeId().intValue());
+            log.error("=================222:{}",storeAddAndUpdate.getFranchiseeId());
             ElectricityCarModelQuery carModelQuery = new ElectricityCarModelQuery();
             carModelQuery.setStoreId(store.getId());
             carModelQuery.setTenantId(store.getTenantId());
 
             List<ElectricityCarModel> electricityCarModels = electricityCarModelService.selectByQuery(carModelQuery);
+            log.error("=================33:{}",JsonUtil.toJson(electricityCarModels));
             if(!CollectionUtils.isEmpty(electricityCarModels)){
                 return R.fail("100254","门店已绑定车辆型号，请先删除车辆型号");
             }
