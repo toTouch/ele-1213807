@@ -305,7 +305,11 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
             BeanUtils.copyProperties(item, memberCardFailureRecordVO);
             //换电失效套餐
             if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())) {
+
+                log.error("失效套餐================" + item);
+
                 if (Objects.nonNull(item.getBatteryType())) {
+                    log.error("哈哈哈哈================" + item);
                     Integer batteryType = BatteryConstant.acquireBattery(item.getBatteryType());
                     memberCardFailureRecordVO.setBatteryType(batteryType.toString());
                 }
