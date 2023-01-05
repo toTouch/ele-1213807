@@ -1264,6 +1264,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 
+        if(Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)){
+            return R.fail("100253", "已绑定电池");
+        }
 
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
         if (result.getLeft()) {
