@@ -448,8 +448,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
             InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
             if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo.getId());
-                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + user.getUid());
+                insuranceUserInfoService.deleteById(insuranceUserInfo);
             }
             return R.ok();
         }

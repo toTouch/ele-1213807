@@ -270,7 +270,28 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int deleteById(Integer id) {
-        return baseMapper.deleteById(id);
+    public int deleteById(InsuranceUserInfo insuranceUserInfo) {
+        int delete = baseMapper.deleteById(insuranceUserInfo.getId());
+
+        expireInsuranceOrder(insuranceUserInfo);
+
+        DbUtils.dbOperateSuccessThen(delete, () -> {
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid());
+            return null;
+        });
+        return delete;
+    }
+
+    private void expireInsuranceOrder(InsuranceUserInfo insuranceUserInfo) {
+        String insuranceOrderId = insuranceUserInfo.getInsuranceOrderId();
+        InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(insuranceOrderId);
+        if (Objects.nonNull(insuranceOrder)) {
+            Long validDays = Math.abs((System.currentTimeMillis() - insuranceOrder.getCreateTime()) / (24 * 60 * 60 * 1000L));
+            InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
+            insuranceOrderUpdate.setValidDays(validDays.intValue());
+            insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            insuranceOrderUpdate.setId(insuranceOrder.getId());
+            insuranceOrderService.updateOrderStatusById(insuranceOrderUpdate);
+        }
     }
 }
