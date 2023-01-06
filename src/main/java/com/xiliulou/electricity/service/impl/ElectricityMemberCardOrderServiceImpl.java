@@ -355,7 +355,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
             }
         } else {
-            if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
+            if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
                     userBatteryMemberCard.getMemberCardExpireTime() > now &&
                     (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
