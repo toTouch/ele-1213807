@@ -345,8 +345,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
 
-        log.error("用户的套餐==============================="+userBatteryMemberCard);
-        log.error("用户绑定的套餐=============================="+bindElectricityMemberCard);
+        log.error("用户的套餐===============================" + userBatteryMemberCard);
+        log.error("用户绑定的套餐==============================" + bindElectricityMemberCard);
 
         //同一个套餐可以续费
         if ((Objects.nonNull(userBatteryMemberCard) && (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER))) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
@@ -364,10 +364,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             log.error("============else=======================");
 
+            if (userBatteryMemberCard.getMemberCardExpireTime() > now) {
+                log.error("大于当前时间=====================" + now);
+            }
+
             if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
                     userBatteryMemberCard.getMemberCardExpireTime() > now &&
                     (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
+
+                log.error("====不能购买=======================");
+
                 log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO={}", userInfo);
                 return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买相同类型的套餐!");
             }
@@ -785,7 +792,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("DISABLE MEMBER CARD ERROR! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
-log.error("======================================userBatteryMemberCard:{}",JsonUtil.toJson(userBatteryMemberCard));
+        log.error("======================================userBatteryMemberCard:{}", JsonUtil.toJson(userBatteryMemberCard));
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             log.error("DISABLE MEMBER CARD ERROR! not apply disable membercard,uid={} ", user.getUid());
