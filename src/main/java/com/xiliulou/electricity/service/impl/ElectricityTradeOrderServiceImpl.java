@@ -456,6 +456,7 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateUserInfo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             userInfoService.updateByUid(updateUserInfo);
 
             UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
