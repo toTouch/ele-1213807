@@ -284,7 +284,10 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+            userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
+            userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
