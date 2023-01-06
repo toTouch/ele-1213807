@@ -40,6 +40,8 @@ public interface EleDepositOrderService {
 
     void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
 
+    R queryFranchiseeDeposit(String productKey, String deviceName, Long franchiseeId);
+
     R queryDeposit(String productKey, String deviceName, Long franchiseeId);
 
     R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
