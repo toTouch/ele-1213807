@@ -552,6 +552,92 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                 }
 
+
+//                //获取柜机图片(旧版小程序 柜机详情不能返回图片URL，前端解析报错)
+//                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
+//                if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
+//                    e.setPictureUrl(electricityCabinetPicture.get(0));
+//                }
+
+
+                //查满仓空仓数
+                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
+
+                //查满仓空仓数
+                int electricityBatteryTotal = 0;
+                int noElectricityBattery = 0;
+                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+
+                    //空仓
+                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+
+                    //电池总数
+                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+                }
+
+                e.setElectricityBatteryTotal(electricityBatteryTotal);
+                e.setNoElectricityBattery(noElectricityBattery);
+                e.setFullyElectricityBattery(fullyElectricityBattery);
+
+                ElectricityCabinet item = new ElectricityCabinet();
+                item.setUpdateTime(System.currentTimeMillis());
+                item.setId(e.getId());
+
+                //动态查询在线状态
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                if (result) {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
+                    checkCupboardStatusAndUpdateDiff(true, item);
+                } else {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
+                    checkCupboardStatusAndUpdateDiff(false, item);
+                }
+                //电柜不在线也返回，可离线换电
+                if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
+                    electricityCabinets.add(e);
+                }
+            });
+        }
+        return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
+        List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
+        List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+            electricityCabinetList.parallelStream().forEach(e -> {
+                //营业时间
+                if (Objects.nonNull(e.getBusinessTime())) {
+                    String businessTime = e.getBusinessTime();
+                    if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                        e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                    } else {
+                        e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+                        int index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
+                            e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                            Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long beginTime = getTime(totalBeginTime);
+                            Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                            Long endTime = getTime(totalEndTime);
+                            e.setBeginTime(totalBeginTime);
+                            e.setEndTime(totalEndTime);
+                            Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                            long now = System.currentTimeMillis();
+                            if (firstToday + beginTime > now || firstToday + endTime < now) {
+                                e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                            } else {
+                                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                            }
+                        }
+                    }
+                }
+
                 //获取柜机图片
                 List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
                 if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
