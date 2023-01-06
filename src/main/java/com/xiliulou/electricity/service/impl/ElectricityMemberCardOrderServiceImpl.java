@@ -795,7 +795,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.warn("DISABLE MEMBER CARD ERROR! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
-
+log.error("======================================userBatteryMemberCard:{}",JsonUtil.toJson(userBatteryMemberCard));
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             log.error("DISABLE MEMBER CARD ERROR! not apply disable membercard,uid={} ", user.getUid());

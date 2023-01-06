@@ -99,11 +99,10 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 OfflineEleOrderVo.class);
         
         //查找用户
-        User user = userService.queryByUserPhone(offlineEleOrderVo.getPhone(), User.TYPE_USER_NORMAL_WX_PRO,
-                electricityCabinet.getTenantId());
+        User user = userService.queryByUserPhone(offlineEleOrderVo.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
         if (Objects.isNull(user)) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
-            log.error("OFFLINE EXCHANGE ERROR! not found user! userId:{}", offlineEleOrderVo.getPhone());
+            log.error("OFFLINE EXCHANGE ERROR! not found user! userPhone={}", offlineEleOrderVo.getPhone());
             return;
         }
         
