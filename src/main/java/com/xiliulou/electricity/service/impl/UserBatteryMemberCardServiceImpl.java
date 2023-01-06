@@ -182,7 +182,13 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         }
 
 
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            log.warn("ELE FAILURE CAR MEMBERCARD WARN! memberCard is typeCount,uid={}", uid);
+            return;
+        }
+
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
+
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryDeposit)) {
@@ -197,7 +203,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         memberCardFailureRecord.setCardName(electricityMemberCardOrder.getCardName());
         memberCardFailureRecord.setDeposit(userBatteryDeposit.getBatteryDeposit());
         memberCardFailureRecord.setCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
-        memberCardFailureRecord.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+        memberCardFailureRecord.setMemberCardExpireTime(System.currentTimeMillis());
         memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY);
         memberCardFailureRecord.setBatteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType());
         memberCardFailureRecord.setTenantId(userInfo.getTenantId());
