@@ -1108,6 +1108,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //服务状态
 //        userInfoDetailVO.setServiceStatus(getServiceStatus(userInfo, franchiseeUserInfo));
+        //兼容旧版小程序
+        userInfoDetailVO.setServiceStatus(getServiceStatus(userInfo, null));
 
 
         //电池服务费
@@ -1251,7 +1253,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 ////        }
 //
 //        return serviceStatus;
-        return 0;
+
+
+        Integer serviceStatus = null;
+
+        //兼容UserInfo serviceStatus
+        if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            serviceStatus = UserInfo.STATUS_IS_AUTH;
+        } else {
+            serviceStatus = UserInfo.STATUS_INIT;
+        }
+
+        //FranchiseeUserInfo serviceStatus
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            serviceStatus = FranchiseeUserInfo.STATUS_IS_DEPOSIT;
+        } else if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            serviceStatus = FranchiseeUserInfo.STATUS_IS_BATTERY;
+        }
+
+        return serviceStatus;
     }
 
 
