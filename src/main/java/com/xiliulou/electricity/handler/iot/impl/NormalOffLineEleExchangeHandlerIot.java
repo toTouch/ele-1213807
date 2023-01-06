@@ -268,14 +268,14 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         BatteryTrackRecord outBatteryTrackRecord = new BatteryTrackRecord().setSn(
                         electricityCabinetOrder.getNewElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getNewCellNo())
-                .setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT).setCreateTime(electricityCabinetOrder.getUpdateTime())
+                .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_OUT).setCreateTime(electricityCabinetOrder.getUpdateTime())
                 .setOrderId(electricityCabinetOrder.getOrderId());
         batteryTrackRecordService.insert(outBatteryTrackRecord);
         
         BatteryTrackRecord inBatteryTrackRecord = new BatteryTrackRecord().setSn(
                         electricityCabinetOrder.getOldElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getOldCellNo())
-                .setType(BatteryTrackRecord.TYPE_EXCHANGE_IN).setCreateTime(electricityCabinetOrder.getCreateTime())
+                .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_IN).setCreateTime(electricityCabinetOrder.getCreateTime())
                 .setOrderId(electricityCabinetOrder.getOrderId());
         batteryTrackRecordService.insert(inBatteryTrackRecord);
     }
