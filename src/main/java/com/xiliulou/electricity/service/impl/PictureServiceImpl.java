@@ -81,12 +81,18 @@ public class PictureServiceImpl implements PictureService {
 
     @Override
     public List<PictureVO> pictureParseVO(List<Picture> pictures) {
-        return pictures.parallelStream().map(item -> {
-            PictureVO pictureVO = new PictureVO();
-            BeanUtils.copyProperties(item, pictureVO);
-            pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
-            return pictureVO;
-        }).collect(Collectors.toList());
+        try {
+            return pictures.parallelStream().map(item -> {
+                PictureVO pictureVO = new PictureVO();
+                BeanUtils.copyProperties(item, pictureVO);
+                pictureVO.setPictureOSSUrl(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + item.getPictureUrl());
+                return pictureVO;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("ELE ERROR! get store picture error",e);
+        }
+
+        return Collections.EMPTY_LIST;
     }
 
     /**

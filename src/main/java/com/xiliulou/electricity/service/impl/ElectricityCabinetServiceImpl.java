@@ -3389,16 +3389,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * 获取柜机图片
      */
     private List<String> getElectricityCabinetPicture(Long eid) {
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.selectByFileTypeAndEid(eid, ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET);
-        if (CollectionUtils.isEmpty(electricityCabinetFileList)) {
-            return Collections.EMPTY_LIST;
+        try {
+            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.selectByFileTypeAndEid(eid, ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET);
+            if (CollectionUtils.isEmpty(electricityCabinetFileList)) {
+                return Collections.EMPTY_LIST;
+            }
+
+            List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
+                item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            }).collect(Collectors.toList());
+
+            return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("ELE ERROR! get electricityCabinet picture error",e);
         }
-
-        List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
-            item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-        }).collect(Collectors.toList());
-
-        return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());
+        return Collections.EMPTY_LIST;
     }
 
 }
