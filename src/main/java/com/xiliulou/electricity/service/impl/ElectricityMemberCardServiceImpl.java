@@ -552,7 +552,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public ElectricityMemberCard queryByStatus(Integer id) {
+    public ElectricityMemberCard selectUserMemberCardById(Integer id) {
         return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, id)
                 .eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE));
     }

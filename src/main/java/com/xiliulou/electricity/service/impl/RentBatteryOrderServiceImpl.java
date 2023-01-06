@@ -288,14 +288,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             Long now = System.currentTimeMillis();
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-            //月卡是否过期
-            if (Objects.isNull(electricityMemberCard)) {
-                eleLockFlag = Boolean.FALSE;
-                log.error("RENTBATTERY ERROR! memberCard  is not exit,uid={}", user.getUid());
-                return R.fail("ELECTRICITY.00121", "套餐不存在");
-            }
+//            if (Objects.isNull(electricityMemberCard)) {
+//                eleLockFlag = Boolean.FALSE;
+//                log.error("RENTBATTERY ERROR! memberCard  is not exit,uid={}", user.getUid());
+//                return R.fail("ELECTRICITY.00121", "套餐不存在");
+//            }
 
             if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+
+                if (Objects.isNull(electricityMemberCard)) {
+                    eleLockFlag = Boolean.FALSE;
+                    log.error("RENTBATTERY ERROR! memberCard  is not exit,uid={}", user.getUid());
+                    return R.fail("ELECTRICITY.00121", "套餐不存在");
+                }
+
 
                 if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && userBatteryMemberCard.getMemberCardExpireTime() < now) {
                     eleLockFlag = Boolean.FALSE;
@@ -317,6 +323,25 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         return R.fail("ELECTRICITY.0023", "月卡已过期");
                     }
                 }
+
+                if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
+                    Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
+                    if (row < 1) {
+                        redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                        log.error("order  ERROR! not found memberCard uid={}", user.getUid());
+                        return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
+                    }
+                } else {
+                    if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                        Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
+                        if (row < 1) {
+                            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                            log.error("order  ERROR! not found memberCard uid={}", user.getUid());
+                            return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
+                        }
+                    }
+                }
+
             } else {
                 if (userBatteryMemberCard.getMemberCardExpireTime() < now || userBatteryMemberCard.getRemainingNumber() == 0) {
                     eleLockFlag = Boolean.FALSE;
@@ -364,7 +389,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
             }
 
-            if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
+            /*if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
                 Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                 if (row < 1) {
                     redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
@@ -380,7 +405,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
                     }
                 }
-            }
+            }*/
 
             String orderId = generateOrderId(user.getUid(), cellNo);
 

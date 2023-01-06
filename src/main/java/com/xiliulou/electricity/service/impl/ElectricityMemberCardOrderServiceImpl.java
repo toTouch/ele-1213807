@@ -756,7 +756,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR! not found user,uid:{} ", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -773,13 +773,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
+            log.warn("DISABLE MEMBER CARD ERROR! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
+log.error("======================================userBatteryMemberCard:{}",JsonUtil.toJson(userBatteryMemberCard));
+        //判断套餐是否为新用户送的次数卡
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            log.error("DISABLE MEMBER CARD ERROR! not apply disable membercard,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
+        }
+
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("HOME ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            log.error("DISABLE MEMBER CARD ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
@@ -790,15 +797,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("DISABLE MEMBER CARD ERROR! disable review userId:{}", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
 
-        //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
-            log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
-        }
+//        //判断套餐是否为新用户送的次数卡
+//        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
+//            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
+//            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
+//        }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
@@ -965,6 +972,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100210", "用户未开通套餐");
         }
 
+        //TODO 体验卡停卡提示套餐不存在
+        //判断套餐是否为新用户送的次数卡
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
+        }
+
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         if (Objects.isNull(electricityMemberCard)) {
             log.error("DISABLE MEMBER CARD ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
@@ -974,12 +988,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("DISABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
-        }
-
-        //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
-            log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
-            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(userInfo.getFranchiseeId());

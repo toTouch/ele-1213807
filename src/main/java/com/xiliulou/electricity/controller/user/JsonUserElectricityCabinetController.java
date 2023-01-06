@@ -70,6 +70,30 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		return electricityCabinetService.showInfoByDistance(electricityCabinetQuery);
 	}
 
+	@GetMapping(value = "/outer/electricityCabinet/showInfoByDistanceV2")
+	public R showInfoByDistanceV2(@RequestParam(value = "distance", required = false) Double distance,
+								@RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
+								@RequestParam(value = "name", required = false) String name,
+								@RequestParam("lon") Double lon,
+								@RequestParam("lat") Double lat) {
+
+		if (Objects.isNull(lon) || lon <= 0.0 || Objects.isNull(lat) || lat <= 0.0) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+				.name(name)
+				.distance(distance)
+				.lon(lon)
+				.lat(lat)
+				.franchiseeId(franchiseeId)
+				.tenantId(tenantId).build();
+
+		return electricityCabinetService.showInfoByDistanceV2(electricityCabinetQuery);
+	}
+
 	//列表查询
 	@GetMapping(value = "/user/electricityCabinet/showInfoByStoreId/{storeId}")
 	public R showInfoByStoreId(@PathVariable("storeId") Long storeId) {

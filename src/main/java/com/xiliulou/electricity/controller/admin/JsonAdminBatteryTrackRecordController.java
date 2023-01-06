@@ -53,7 +53,7 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         
     }
     
-    @GetMapping("/admin/battery/snapshot")
+    @GetMapping("/admin/battery/snapshot/list")
     public R getBatterySnapshot(@RequestParam("eId") Integer eId, @RequestParam("size") Integer size,
             @RequestParam("offset") Integer offset, @RequestParam("startTime") Long startTime,
             @RequestParam("endTime") Long endTime) {
