@@ -80,8 +80,17 @@ public class JsonUserEleDepositOrderController {
     @GetMapping(value = "/user/queryDeposit")
     public R queryDeposit(@RequestParam(value = "productKey", required = false) String productKey,
                           @RequestParam(value = "deviceName", required = false) String deviceName,
-                          @RequestParam(value = "franchiseeId") Long franchiseeId) {
+                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         return eleDepositOrderService.queryDeposit(productKey, deviceName, franchiseeId);
+    }
+
+
+    //用户查询押金
+    @GetMapping(value = "/user/queryFranchiseeDeposit")
+    public R queryFranchiseeDeposit(@RequestParam(value = "productKey", required = false) String productKey,
+                                    @RequestParam(value = "deviceName", required = false) String deviceName,
+                                    @RequestParam(value = "franchiseeId") Long franchiseeId) {
+        return eleDepositOrderService.queryFranchiseeDeposit(productKey, deviceName, franchiseeId);
     }
 
 
