@@ -79,14 +79,22 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     exchangeOrderRsp.getOrderId());
             return;
         }
-        
-        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+
+        if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
-            log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
+            log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}",
                     receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
             return;
         }
+        
+//        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+//            //确认订单结束
+//            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
+//            log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
+//                    receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
+//            return;
+//        }
         
         //是否开启异常仓门锁仓
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(
@@ -222,8 +230,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
                 .setCreateTime(exchangeOrderRsp.getReportTime())).setOrderId(electricityCabinetOrder.getOrderId());
-        //确认订单结束
-        senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
+
+        //        //确认订单结束
+//        senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
     }
     
     private void handlePlaceBatteryInfo(ExchangeOrderRsp exchangeOrderRsp,
