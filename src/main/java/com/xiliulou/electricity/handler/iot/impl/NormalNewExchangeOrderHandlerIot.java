@@ -71,21 +71,16 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(
-                exchangeOrderRsp.getOrderId());
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(exchangeOrderRsp.getOrderId());
         if (Objects.isNull(electricityCabinetOrder)) {
-            //确认订单结束
-            log.error("EXCHANGE ORDER ERROR! order not found !requestId={},orderId={}", receiverMessage.getSessionId(),
-                    exchangeOrderRsp.getOrderId());
+            log.error("EXCHANGE ORDER ERROR! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
             return;
         }
 
         if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
-            log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}",
-                    receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
-            return;
+            log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
         }
         
 //        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
