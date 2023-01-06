@@ -195,7 +195,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //根据加盟商计算押金
         Pair<Boolean, Object> depositPair = caculDepositByFranchisee(franchisee, model, userInfo);
-        if (Boolean.TRUE.equals(depositPair.getLeft()) || Objects.isNull(depositPair.getRight())) {
+        if (!Boolean.TRUE.equals(depositPair.getLeft()) || Objects.isNull(depositPair.getRight())) {
             log.error("ELE DEPOSIT ERROR! deposit is null,franchiseeId={},uid={}", franchiseeId, user.getUid());
             return R.fail("ELECTRICITY.00110", "未找到押金");
         }
