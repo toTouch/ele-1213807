@@ -1281,20 +1281,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
-            log.error("ELE DEPOSIT ERROR! not found userCar,uid={}", user.getUid());
-            return R.fail("100247", "用户信息不存在");
+            return R.ok();
+//            log.error("ELE DEPOSIT ERROR! not found userCar,uid={}", user.getUid());
+//            return R.fail("100247", "用户信息不存在");
         }
 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarDeposit)) {
-            log.error("ELE DEPOSIT ERROR! not found userCarDeposit,uid={}", user.getUid());
-            return R.fail("100247", "用户信息不存在");
+            return R.ok();
+//            log.error("ELE DEPOSIT ERROR! not found userCarDeposit,uid={}", user.getUid());
+//            return R.fail("100247", "用户信息不存在");
         }
-
-        //if(Objects.isNull(userCarDeposit.getCarDeposit())|| Objects.isNull(userCarDeposit.getOrderId())){
-        //    log.error("ELE DEPOSIT ERROR! not pay deposit,uid={}", user.getUid());
-        //    return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        //}
 
         if (Objects.isNull(userCarDeposit.getCarDeposit())) {
             map.put("store", null);
