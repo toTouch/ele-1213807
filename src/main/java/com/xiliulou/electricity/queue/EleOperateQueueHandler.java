@@ -604,13 +604,15 @@ public class EleOperateQueueHandler {
             checkReturnBatteryDoor(rentBatteryOrder);
         }
         
-        batteryTrackRecordService.insert(new BatteryTrackRecord().setSn(rentBatteryOrder.getElectricityBatterySn())
+        BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(
+                        rentBatteryOrder.getElectricityBatterySn())
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
                                 electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo()).setType(
                         Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)
                                 ? BatteryTrackRecord.TYPE_RETURN_IN : BatteryTrackRecord.TYPE_RENT_OUT)
-                .setCreateTime(rentBatteryOrder.getUpdateTime()).setOrderId(rentBatteryOrder.getOrderId()));
+                .setCreateTime(rentBatteryOrder.getUpdateTime()).setOrderId(finalOpenDTO.getOrderId());
+        batteryTrackRecordService.insert(batteryTrackRecord);
         
     }
     

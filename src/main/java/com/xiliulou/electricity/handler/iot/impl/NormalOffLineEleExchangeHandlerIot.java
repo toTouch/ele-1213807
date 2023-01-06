@@ -266,19 +266,19 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return;
         }
         
-        batteryTrackRecordService.insert(
-                new BatteryTrackRecord().setSn(electricityCabinetOrder.getNewElectricityBatterySn())
-                        .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
-                        .setENo(electricityCabinetOrder.getNewCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
-                        .setCreateTime(electricityCabinetOrder.getUpdateTime())
-                        .setOrderId(electricityCabinetOrder.getOrderId()));
+        BatteryTrackRecord outBatteryTrackRecord = new BatteryTrackRecord().setSn(
+                        electricityCabinetOrder.getNewElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
+                .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getNewCellNo())
+                .setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT).setCreateTime(electricityCabinetOrder.getUpdateTime())
+                .setOrderId(electricityCabinetOrder.getOrderId());
+        batteryTrackRecordService.insert(outBatteryTrackRecord);
         
-        batteryTrackRecordService.insert(
-                new BatteryTrackRecord().setSn(electricityCabinetOrder.getOldElectricityBatterySn())
-                        .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
-                        .setENo(electricityCabinetOrder.getOldCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
-                        .setCreateTime(electricityCabinetOrder.getCreateTime())
-                        .setOrderId(electricityCabinetOrder.getOrderId()));
+        BatteryTrackRecord inBatteryTrackRecord = new BatteryTrackRecord().setSn(
+                        electricityCabinetOrder.getOldElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
+                .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getOldCellNo())
+                .setType(BatteryTrackRecord.TYPE_EXCHANGE_IN).setCreateTime(electricityCabinetOrder.getCreateTime())
+                .setOrderId(electricityCabinetOrder.getOrderId());
+        batteryTrackRecordService.insert(inBatteryTrackRecord);
     }
     
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {

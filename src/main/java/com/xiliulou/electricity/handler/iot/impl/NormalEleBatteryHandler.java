@@ -143,6 +143,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     batteryName, sessionId);
             batteryName = null;
         }
+    
+        handleBatteryTrackRecord(batteryName, eleBox, electricityCabinet, eleBatteryVO);
         
         //处理电池名字为空
         if (StringUtils.isBlank(batteryName)) {
@@ -166,8 +168,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     electricityCabinet.getTenantId(), electricityBattery.getTenantId(), sessionId);
             return;
         }
-        
-        handleBatteryTrackRecord(batteryName, eleBox, electricityCabinet, eleBatteryVO);
+
         
         //保存电池电压电流&充电器电压电流
         this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
