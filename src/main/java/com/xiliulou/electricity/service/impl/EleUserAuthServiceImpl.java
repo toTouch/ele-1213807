@@ -332,7 +332,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         //FranchiseeUserInfo serviceStatus
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             serviceStatus = FranchiseeUserInfo.STATUS_IS_DEPOSIT;
-        } else if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+        }
+
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             serviceStatus = FranchiseeUserInfo.STATUS_IS_BATTERY;
         }
 
