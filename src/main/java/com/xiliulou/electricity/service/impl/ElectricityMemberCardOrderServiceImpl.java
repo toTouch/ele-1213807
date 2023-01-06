@@ -1003,6 +1003,7 @@ log.error("======================================userBatteryMemberCard:{}",JsonU
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
+        //TODO 体验卡停卡提示套餐不存在
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("DISABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
