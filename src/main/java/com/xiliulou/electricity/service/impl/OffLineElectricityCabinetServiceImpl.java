@@ -333,7 +333,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             }
         }
         //未租电池
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.USER_NOT_BIND_BATTERY);
             return userFrontDetectionVO;
         }
