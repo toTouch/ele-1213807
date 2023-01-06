@@ -200,7 +200,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.00110", "未找到押金");
         }
 
-        BigDecimal payAmount = BigDecimal.valueOf((double) depositPair.getRight());
+        BigDecimal payAmount = (BigDecimal) depositPair.getRight();
 
         String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : "";
 
