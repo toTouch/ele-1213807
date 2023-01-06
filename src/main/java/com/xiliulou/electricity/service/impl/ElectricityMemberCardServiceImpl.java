@@ -553,33 +553,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
     @Override
     public ElectricityMemberCard selectUserMemberCardById(Integer id) {
-//        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, id)
-//                .eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE));
-
-        ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
-
-        //兼容旧的小程序  需要将返回的套餐id置为null
-        Long uid = SecurityUtils.getUid();
-        if(Objects.isNull(uid)){
-            log.error("ELE BATTERY MEMBERCARD ERROR! not found user!");
-            return electricityMemberCard;
-        }
-
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        if(Objects.isNull(userBatteryMemberCard)){
-            log.error("ELE BATTERY MEMBERCARD ERROR! not found userBatteryMemberCard,uid={}",uid);
-            return electricityMemberCard;
-        }
-
-        electricityMemberCard = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, id)
+        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, id)
                 .eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE));
-
-        //兼容旧的小程序 如果是体验卡，套餐id置为null
-        if(!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)){
-            electricityMemberCard.setId(null);
-        }
-
-        return electricityMemberCard;
     }
 
     @Override
