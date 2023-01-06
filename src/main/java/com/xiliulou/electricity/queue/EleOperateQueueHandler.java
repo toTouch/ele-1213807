@@ -610,7 +610,7 @@ public class EleOperateQueueHandler {
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo()).setType(
                         Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)
                                 ? BatteryTrackRecord.TYPE_RETURN_IN : BatteryTrackRecord.TYPE_RENT_OUT)
-                .setCreateTime(rentBatteryOrder.getUpdateTime())).setOrderId(rentBatteryOrder.getOrderId());
+                .setCreateTime(rentBatteryOrder.getUpdateTime()).setOrderId(rentBatteryOrder.getOrderId()));
         
     }
     

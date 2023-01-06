@@ -267,18 +267,18 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         batteryTrackRecordService.insert(
-                        new BatteryTrackRecord().setSn(electricityCabinetOrder.getNewElectricityBatterySn())
-                                .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
-                                .setENo(electricityCabinetOrder.getNewCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
-                                .setCreateTime(electricityCabinetOrder.getUpdateTime()))
-                .setOrderId(electricityCabinetOrder.getOrderId());
+                new BatteryTrackRecord().setSn(electricityCabinetOrder.getNewElectricityBatterySn())
+                        .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
+                        .setENo(electricityCabinetOrder.getNewCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
+                        .setCreateTime(electricityCabinetOrder.getUpdateTime())
+                        .setOrderId(electricityCabinetOrder.getOrderId()));
         
         batteryTrackRecordService.insert(
-                        new BatteryTrackRecord().setSn(electricityCabinetOrder.getOldElectricityBatterySn())
-                                .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
-                                .setENo(electricityCabinetOrder.getOldCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
-                                .setCreateTime(electricityCabinetOrder.getCreateTime()))
-                .setOrderId(electricityCabinetOrder.getOrderId());
+                new BatteryTrackRecord().setSn(electricityCabinetOrder.getOldElectricityBatterySn())
+                        .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
+                        .setENo(electricityCabinetOrder.getOldCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
+                        .setCreateTime(electricityCabinetOrder.getCreateTime())
+                        .setOrderId(electricityCabinetOrder.getOrderId()));
     }
     
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {

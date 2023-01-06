@@ -224,7 +224,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         batteryTrackRecordService.insert(new BatteryTrackRecord().setSn(exchangeOrderRsp.getTakeBatteryName())
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
-                .setCreateTime(exchangeOrderRsp.getReportTime())).setOrderId(electricityCabinetOrder.getOrderId());
+                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(electricityCabinetOrder.getOrderId()));
 
         //        //确认订单结束
 //        senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
@@ -276,7 +276,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         batteryTrackRecordService.insert(new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName())
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getPlaceCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
-                .setCreateTime(exchangeOrderRsp.getReportTime())).setOrderId(electricityCabinetOrder.getOrderId());
+                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(electricityCabinetOrder.getOrderId()));
     }
     
     
