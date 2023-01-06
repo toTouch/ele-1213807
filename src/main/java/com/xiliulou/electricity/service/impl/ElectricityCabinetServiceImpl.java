@@ -209,7 +209,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public Integer update(ElectricityCabinet electricityCabinet) {
         int update = this.electricityCabinetMapper.updateById(electricityCabinet);
 
-        if(update>0){
+        if (update > 0) {
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
@@ -1149,7 +1149,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-        if (Objects.isNull(electricityMemberCard)) {
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && Objects.isNull(electricityMemberCard)) {
             log.error("HOME ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
