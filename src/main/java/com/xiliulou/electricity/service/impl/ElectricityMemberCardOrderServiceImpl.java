@@ -991,8 +991,9 @@ log.error("======================================userBatteryMemberCard:{}",JsonU
             return R.fail("100210", "用户未开通套餐");
         }
 
+        //TODO 体验卡停卡提示套餐不存在
         //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), ElectricityMemberCard.TYPE_COUNT)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             log.error("DISABLE MEMBER CARD ERROR! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
@@ -1003,8 +1004,7 @@ log.error("======================================userBatteryMemberCard:{}",JsonU
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
-        //TODO 体验卡停卡提示套餐不存在
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("DISABLE MEMBER CARD ERROR! disable review userId={}", user.getUid());
             return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
