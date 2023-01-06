@@ -77,4 +77,13 @@ public class BatteryTrackRecord {
      *   - 电池退电放入
      */
     public static final Integer TYPE_RETURN_IN = 5;
+    
+    /**
+     * 离线换电取走
+     */
+    public static final Integer TYPE_OFFLINE_EXCHANGE_OUT = 6;
+    /**
+     * 离线换电放入
+     */
+    public static final Integer TYPE_OFFLINE_EXCHANGE_IN = 7;
 }
