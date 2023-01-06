@@ -34,7 +34,7 @@ public interface ElectricityMemberCardService {
 
     R listCountByFranchisee(Integer status, Integer type, Integer tenantId, List<Long> franchiseeId);
 
-    ElectricityMemberCard queryByStatus(Integer id);
+    ElectricityMemberCard selectUserMemberCardById(Integer id);
 
     void unbindActivity(Integer id);
 
