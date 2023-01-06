@@ -1192,7 +1192,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //月卡剩余天数
         homeInfo.put("monthCount", monthCount);
         homeInfo.put("totalCount", totalCount);
-        homeInfo.put("serviceStatus", serviceStatus);
+//        homeInfo.put("serviceStatus", serviceStatus);
         homeInfo.put("cardDay", cardDay.intValue());
         homeInfo.put("battery", battery);
         homeInfo.put("memberCardDisableStatus", memberCardDisableStatus);

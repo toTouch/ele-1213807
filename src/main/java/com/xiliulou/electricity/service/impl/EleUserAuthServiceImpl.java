@@ -9,13 +9,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.MqConstant;
-import com.xiliulou.electricity.entity.AuthenticationAuditMessageNotify;
-import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.entity.EleUserAuth;
-import com.xiliulou.electricity.entity.ElectricityConfig;
-import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
-import com.xiliulou.electricity.entity.MqNotifyCommon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
@@ -270,8 +264,8 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Override
     @Deprecated
     public R getEleUserServiceStatus() {
-/*
-        //用户
+
+/*        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("payDeposit  ERROR! not found user ");
@@ -312,7 +306,37 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 //        }
 
         return R.ok(serviceStatus);*/
-        return R.ok();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("payDeposit  ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+
+        Integer serviceStatus = null;
+        //兼容UserInfo serviceStatus
+        if (Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            serviceStatus = UserInfo.STATUS_IS_AUTH;
+        } else {
+            serviceStatus = UserInfo.STATUS_INIT;
+        }
+
+        //FranchiseeUserInfo serviceStatus
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            serviceStatus = FranchiseeUserInfo.STATUS_IS_DEPOSIT;
+        } else if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            serviceStatus = FranchiseeUserInfo.STATUS_IS_BATTERY;
+        }
+
+        return R.ok(serviceStatus);
     }
 
     @Override
