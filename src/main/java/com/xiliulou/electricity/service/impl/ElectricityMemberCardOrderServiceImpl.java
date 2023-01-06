@@ -345,8 +345,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
 
+        log.error("用户的套餐==============================="+userBatteryMemberCard);
+        log.error("用户绑定的套餐=============================="+bindElectricityMemberCard);
+
         //同一个套餐可以续费
         if ((Objects.nonNull(userBatteryMemberCard) && (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER))) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
+
+            log.error("================if===================");
+
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && now < userBatteryMemberCard.getMemberCardExpireTime()) {
                 now = userBatteryMemberCard.getMemberCardExpireTime();
             }
@@ -355,6 +361,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
             }
         } else {
+
+            log.error("============else=======================");
+
             if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
                     userBatteryMemberCard.getMemberCardExpireTime() > now &&
