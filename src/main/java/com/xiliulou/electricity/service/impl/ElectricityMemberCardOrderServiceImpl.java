@@ -2483,6 +2483,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Integer modelType = franchisee.getModelType();
 
+        log.error("加盟商===================" + franchisee);
+
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
             Integer model = BatteryConstant.acquireBattery(userBattery.getBatteryType());
             List<ModelBatteryDeposit> list = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
