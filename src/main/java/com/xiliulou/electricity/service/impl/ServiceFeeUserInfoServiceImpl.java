@@ -119,18 +119,13 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         long cardDays = 0;
         //用户产生的套餐过期电池服务费
 
-
-        log.error("========服务费用户============" + serviceFeeUserInfo);
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
             cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             //查询用户是否存在套餐过期电池服务费
             userChangeServiceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
         }
 
-        log.error("userChangeServiceFee====================" + userChangeServiceFee);
-
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        log.error("========套餐用户============" + serviceFeeUserInfo);
 
         Integer memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE;
 

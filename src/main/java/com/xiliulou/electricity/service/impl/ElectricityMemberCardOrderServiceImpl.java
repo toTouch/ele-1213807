@@ -230,6 +230,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
             if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
+
+                log.error("用户存在电池服务费================================" + userMemberCardExpireServiceFee);
+
                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
             }
         }
@@ -2474,16 +2477,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         }
 
-
-        log.error("用户电====================" + userBattery);
-
         if (Objects.isNull(userBattery)) {
             return batteryServiceFee;
         }
 
         Integer modelType = franchisee.getModelType();
-
-        log.error("加盟商===================" + franchisee);
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
             Integer model = BatteryConstant.acquireBattery(userBattery.getBatteryType());
@@ -2547,17 +2545,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, userInfo, null);
 
-
-        log.error("服务费单价=======================" + batteryServiceFee);
-
-        log.error("用户==============" + userInfo + "天数===================" + cardDays);
-
         //判断服务费
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //计算服务费
             BigDecimal userMemberCardExpireBatteryServiceFee = batteryServiceFee.multiply(BigDecimal.valueOf(cardDays));
-
-            System.out.println("userMemberCardExpireBatteryServiceFee================" + userMemberCardExpireBatteryServiceFee);
             return userMemberCardExpireBatteryServiceFee;
         } else {
             return BigDecimal.valueOf(0);
