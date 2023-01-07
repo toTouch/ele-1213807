@@ -15,4 +15,6 @@ public interface MemberCardFailureRecordService {
     Integer insert(MemberCardFailureRecord memberCardFailureRecord);
 
     void saveRentCarMemberCardFailureRecord(Long uid);
+
+    List<MemberCardFailureRecord> selectByCarMemberCardOrderId(String orderId);
 }
