@@ -230,9 +230,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
             if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
-
-                log.error("用户存在电池服务费================================" + userMemberCardExpireServiceFee);
-
                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
             }
         }
