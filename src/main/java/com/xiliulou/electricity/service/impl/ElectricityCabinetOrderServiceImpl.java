@@ -1445,11 +1445,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT)
                     .status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource())
-                    .paymentMethod(electricityMemberCard.getType())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .storeId(electricityCabinet.getStoreId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
+            if (Objects.nonNull(electricityMemberCard)) {
+                electricityCabinetOrder.setPaymentMethod(electricityMemberCard.getType());
+            } else {
+                electricityCabinetOrder.setPaymentMethod(ElectricityMemberCard.TYPE_COUNT);
+            }
+
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
 

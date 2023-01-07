@@ -282,7 +282,8 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBattery)) {
             log.error("queryInsurance  ERROR! not pay deposit,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+            //返回成功为了兼容未更新的小程序
+            return R.ok();
         }
 
 

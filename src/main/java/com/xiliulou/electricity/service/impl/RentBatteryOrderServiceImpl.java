@@ -346,6 +346,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     log.error("RENTBATTERY ERROR! memberCard  is Expire,uid={}", user.getUid());
                     return R.fail("ELECTRICITY.0023", "月卡已过期");
                 }
+
+                Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
+                if (row < 1) {
+                    redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                    log.error("order  ERROR! not found memberCard uid={}", user.getUid());
+                    return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
+                }
             }
 
             //分配电池 --只分配满电电池
