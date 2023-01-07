@@ -663,7 +663,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         userInfoService.updateByUid(updateUserInfo);
 
         //退押金时保存用户失效套餐记录
-        memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(uid);
+        //memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(uid);
 
         userCarService.deleteByUid(uid);
 

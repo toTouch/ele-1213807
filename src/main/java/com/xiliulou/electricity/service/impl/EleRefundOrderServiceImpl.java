@@ -275,7 +275,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.updateByUid(updateUserInfo);
 
             //退押金时保存用户失效套餐记录
-            memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(userInfo.getUid());
+            //memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(userInfo.getUid());
 
             userCarDepositService.deleteByUid(userInfo.getUid());
 
