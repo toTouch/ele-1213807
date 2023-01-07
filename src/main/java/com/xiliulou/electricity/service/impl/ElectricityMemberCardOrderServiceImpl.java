@@ -230,6 +230,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
             BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
             if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
+
+                log.error("用户存在电池服务费================================" + userMemberCardExpireServiceFee);
+
                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
             }
         }
@@ -344,40 +347,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
-//        //同一个套餐可以续费
-//        if ((Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
-//            if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && now < userBatteryMemberCard.getMemberCardExpireTime()) {
-//                now = userBatteryMemberCard.getMemberCardExpireTime();
-//            }
-//            //TODO 使用次数暂时叠加
-//            if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-//                remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
-//            }
-//        } else {
-//            if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
-//                    && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
-//                    userBatteryMemberCard.getMemberCardExpireTime() > now &&
-//                    (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
-//                log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO={}", userInfo);
-//                return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买相同类型的套餐!");
-//            }
-//        }
-
-
         //同一个套餐可以续费
         if ((Objects.nonNull(userBatteryMemberCard) && (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER))) || (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount()))) {
             if (Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && now < userBatteryMemberCard.getMemberCardExpireTime()) {
                 now = userBatteryMemberCard.getMemberCardExpireTime();
             }
             //TODO 使用次数暂时叠加
-            if (((Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER))) || !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || !Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
             }
         } else {
-            if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
+            if (Objects.nonNull(bindElectricityMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime())
                     && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) &&
                     userBatteryMemberCard.getMemberCardExpireTime() > now &&
-                    (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) || ((Objects.nonNull(userBatteryMemberCard)) && userBatteryMemberCard.getRemainingNumber() > 0))) {
+                    (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber().longValue()) || userBatteryMemberCard.getRemainingNumber() > 0)) {
                 log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO={}", userInfo);
                 return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买相同类型的套餐!");
             }
@@ -2857,6 +2840,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         return Pair.of(false, null);
     }
+
 }
 
 
