@@ -615,7 +615,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
