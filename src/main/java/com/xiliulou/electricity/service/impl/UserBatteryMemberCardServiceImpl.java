@@ -150,7 +150,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Integer deleteByUid(Long uid) {
         int delete = this.userBatteryMemberCardMapper.deleteByUid(uid);
 
-        saveMemberCardFailureRecord(uid);
+//        saveMemberCardFailureRecord(uid);
 
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
@@ -176,7 +176,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             return;
         }
 
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUidAndSuccess(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             log.warn("ELE FAILURE CAR MEMBERCARD WARN! memberCard is typeCount,uid={}", uid);

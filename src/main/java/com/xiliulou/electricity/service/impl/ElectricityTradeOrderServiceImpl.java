@@ -504,7 +504,6 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Override
     public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource) {
-
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
@@ -558,7 +557,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //电池服务费订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
-        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime());
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (24 * 60 * 60 * 1000L));
         eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
 
         if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
@@ -571,7 +570,12 @@ public class ElectricityTradeOrderServiceImpl extends
 
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getDisableMemberCardTime());
                 if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)) {
-                    eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(userBatteryMemberCard.getDisableMemberCardTime() + (eleDisableMemberCardRecord.getRealDays() * (24 * 60 * 60 * 1000L)));
+
+                    Integer disableDays = eleDisableMemberCardRecord.getChooseDays();
+                    if (Objects.nonNull(eleDisableMemberCardRecord.getRealDays())) {
+                        disableDays = eleDisableMemberCardRecord.getRealDays();
+                    }
+                    eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(userBatteryMemberCard.getDisableMemberCardTime() + (disableDays * (24 * 60 * 60 * 1000L)));
                 }
 
 
@@ -611,8 +615,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-
+            userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
@@ -625,6 +628,7 @@ public class ElectricityTradeOrderServiceImpl extends
             } else {
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
             }
+
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
 

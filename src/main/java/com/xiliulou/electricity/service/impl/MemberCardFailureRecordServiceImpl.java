@@ -111,7 +111,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
 
             userBatteryMemberCardList.parallelStream().forEach(item -> {
 
-                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUidAndSuccess(item.getUid(), item.getFranchiseeId(), item.getTenantId());
 
                 List<MemberCardFailureRecord> memberCardFailureRecords = null;
                 if (Objects.nonNull(electricityMemberCardOrder)) {

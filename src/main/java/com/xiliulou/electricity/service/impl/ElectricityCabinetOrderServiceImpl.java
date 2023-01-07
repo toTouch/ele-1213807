@@ -1445,11 +1445,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT)
                     .status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource())
-                    .paymentMethod(electricityMemberCard.getType())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .storeId(electricityCabinet.getStoreId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
+            if (Objects.nonNull(electricityMemberCard)) {
+                electricityCabinetOrder.setPaymentMethod(electricityMemberCard.getType());
+            } else {
+                electricityCabinetOrder.setPaymentMethod(ElectricityMemberCard.TYPE_COUNT);
+            }
+
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
 
@@ -1492,7 +1497,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user, ElectricityMemberCard electricityMemberCard) {
         //这里的memberCard不能为空
 
-        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
             Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
             if (row < 1) {
                 log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), userBatteryMemberCard.getId());
@@ -1558,7 +1563,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     private Triple<Boolean, String, Object> checkUserBatteryServiceFee(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, TokenUser user, ServiceFeeUserInfo serviceFeeUserInfo, Franchisee franchisee) {
 
-        if (Objects.isNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+        if (Objects.isNull(serviceFeeUserInfo) || Objects.isNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
             return Triple.of(true, null, null);
         }
 

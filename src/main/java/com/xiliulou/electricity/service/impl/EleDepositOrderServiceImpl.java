@@ -202,7 +202,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         BigDecimal payAmount = (BigDecimal) depositPair.getRight();
 
-        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : "";
+        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : null;
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, user.getUid());
 
@@ -1460,7 +1460,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ?
-                BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()) : "";
+                BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()) : null;
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
 

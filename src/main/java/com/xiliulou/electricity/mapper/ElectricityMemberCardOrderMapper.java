@@ -38,6 +38,8 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
+    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUidAndSuccess(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
+
     BigDecimal queryBatteryMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeIds") List<Long> franchiseeIds);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
