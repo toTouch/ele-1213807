@@ -1558,7 +1558,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     private Triple<Boolean, String, Object> checkUserBatteryServiceFee(UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, TokenUser user, ServiceFeeUserInfo serviceFeeUserInfo, Franchisee franchisee) {
 
-        if (Objects.isNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+        if (Objects.isNull(serviceFeeUserInfo) || Objects.isNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
             return Triple.of(true, null, null);
         }
 
