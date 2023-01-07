@@ -1492,7 +1492,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Triple<Boolean, String, String> checkAndModifyMemberCardCount(UserBatteryMemberCard userBatteryMemberCard, TokenUser user, ElectricityMemberCard electricityMemberCard) {
         //这里的memberCard不能为空
 
-        if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
+        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) || Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)) {
             Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
             if (row < 1) {
                 log.error("ORDER ERROR! memberCard's count modify fail, uid={} ,cardId={}", user.getUid(), userBatteryMemberCard.getId());
