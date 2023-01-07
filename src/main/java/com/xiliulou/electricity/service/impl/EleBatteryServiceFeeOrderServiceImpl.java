@@ -58,14 +58,14 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS,user.getTenantId());
+        return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS, user.getTenantId());
     }
 
 
     @Override
-    public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status,Integer tenantId) {
+    public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status, Integer tenantId) {
 
-        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid, offset, size, startTime, endTime, status,tenantId);
+        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid, offset, size, startTime, endTime, status, tenantId);
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
@@ -73,7 +73,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 eleBatteryServiceFeeOrderVo.setModel(model);
             }
 
-            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && new BigDecimal(0).compareTo(eleBatteryServiceFeeOrderVo.getBatteryServiceFee()) != 0) {
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && BigDecimal.valueOf(0).compareTo(eleBatteryServiceFeeOrderVo.getBatteryServiceFee()) != 0) {
                 eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
             }
 
