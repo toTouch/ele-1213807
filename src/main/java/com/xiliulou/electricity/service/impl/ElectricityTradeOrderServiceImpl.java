@@ -614,6 +614,8 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
 
+            log.error("用户套餐================" + userBatteryMemberCard);
+
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
@@ -625,6 +627,9 @@ public class ElectricityTradeOrderServiceImpl extends
             } else {
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
             }
+
+            log.error("更新的服务费绑定表====================" + serviceFeeUserInfoUpdate);
+
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
 
