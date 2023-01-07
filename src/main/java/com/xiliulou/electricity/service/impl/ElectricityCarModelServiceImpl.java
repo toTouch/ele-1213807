@@ -10,6 +10,7 @@ import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.query.UserCarQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -53,6 +54,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     PictureService pictureService;
     @Autowired
     CarModelTagService carModelTagService;
+    @Autowired
+    UserCarService userCarService;
 
 
     /**
@@ -163,13 +166,25 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Transactional
     public R delete(Integer id) {
         ElectricityCarModel electricityCarModel = queryByIdFromCache(id);
-        if (Objects.isNull(electricityCarModel)) {
+        if (Objects.isNull(electricityCarModel) || !Objects.equals(electricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("100005", "未找到车辆型号");
         }
+
         Integer count = electricityCarService.queryByModelId(electricityCarModel.getId());
         if (count > 0) {
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
+
+        //判断是否有用户绑定该车辆型号
+        UserCarQuery userCarQuery = new UserCarQuery();
+        userCarQuery.setCarModel(electricityCarModel.getId().longValue());
+        userCarQuery.setDelFlag(UserCar.DEL_NORMAL);
+        userCarQuery.setTenantId(TenantContextHolder.getTenantId());
+        List<UserCar> userCarList=userCarService.selectByQuery(userCarQuery);
+        if(!CollectionUtils.isEmpty(userCarList)){
+            return R.fail("100256", "车辆型号已绑定用户，不能操作");
+        }
+
         //删除数据库
         electricityCarModel.setId(id);
         electricityCarModel.setUpdateTime(System.currentTimeMillis());

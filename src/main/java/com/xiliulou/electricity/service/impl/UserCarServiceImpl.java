@@ -5,6 +5,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.mapper.UserCarMapper;
+import com.xiliulou.electricity.query.UserCarQuery;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -160,13 +162,18 @@ public class UserCarServiceImpl implements UserCarService {
     public UserCarVO selectDetailByUid(Long uid) {
         UserCarVO userCarVO = new UserCarVO();
 
-        UserCar userCar = this.selectByUidFromCache(uid);
-        if(Objects.isNull(userCar) || Objects.equals(userCar.getTenantId(), TenantContextHolder.getTenantId())){
-            return userCarVO;
-        }
-
-        ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(userCar.getCarModel().intValue());
+//        UserCar userCar = this.selectByUidFromCache(uid);
+//        if(Objects.isNull(userCar) || Objects.equals(userCar.getTenantId(), TenantContextHolder.getTenantId())){
+//            return userCarVO;
+//        }
+//
+//        ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(userCar.getCarModel().intValue());
 
         return userCarVO;
+    }
+
+    @Override
+    public List<UserCar> selectByQuery(UserCarQuery userCarQuery) {
+        return this.userCarMapper.selectByQuery(userCarQuery);
     }
 }
