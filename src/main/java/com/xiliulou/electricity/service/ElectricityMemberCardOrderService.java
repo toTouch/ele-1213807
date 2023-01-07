@@ -65,6 +65,8 @@ public interface ElectricityMemberCardOrderService {
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
 
+    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUidAndSuccess(Long uid, Long franchiseeId, Integer tenantId);
+
     BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId);
 
     BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeId);

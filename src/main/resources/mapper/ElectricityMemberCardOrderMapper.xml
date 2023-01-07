@@ -177,6 +177,18 @@
         ORDER BY id DESC limit 1
     </select>
 
+    <select id="queryLastPayMemberCardTimeByUidAndSuccess"
+            resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select * from t_electricity_member_card_order where uid=#{uid} and status=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY id DESC limit 1
+    </select>
+
     <select id="queryBatteryMemberCardTurnOver" resultType="decimal">
         select sum(pay_amount) from t_electricity_member_card_order
         where status=1 and pay_type=0 and member_card_model=0
