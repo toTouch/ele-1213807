@@ -504,11 +504,6 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Override
     public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource) {
-
-
-
-        log.error("服务费支付回调========================");
-
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
@@ -575,7 +570,12 @@ public class ElectricityTradeOrderServiceImpl extends
 
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getDisableMemberCardTime());
                 if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)) {
-                    eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(userBatteryMemberCard.getDisableMemberCardTime() + (eleDisableMemberCardRecord.getRealDays() * (24 * 60 * 60 * 1000L)));
+
+                    Integer disableDays = eleDisableMemberCardRecord.getChooseDays();
+                    if (Objects.nonNull(eleDisableMemberCardRecord.getRealDays())) {
+                        disableDays = eleDisableMemberCardRecord.getRealDays();
+                    }
+                    eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(userBatteryMemberCard.getDisableMemberCardTime() + (disableDays * (24 * 60 * 60 * 1000L)));
                 }
 
 
@@ -617,9 +617,6 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
 
-
-            log.error("用户套餐================" + userBatteryMemberCard);
-
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
@@ -631,8 +628,6 @@ public class ElectricityTradeOrderServiceImpl extends
             } else {
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
             }
-
-            log.error("更新的服务费绑定表====================" + serviceFeeUserInfoUpdate);
 
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
