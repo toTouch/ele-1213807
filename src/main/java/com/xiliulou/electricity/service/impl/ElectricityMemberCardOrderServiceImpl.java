@@ -2193,7 +2193,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public ElectricityMemberCardOrder queryLastPayMemberCardTimeByUidAndSuccess(Long uid, Long franchiseeId, Integer tenantId) {
-        return baseMapper.queryLastPayMemberCardTimeByUidAndSuccess(Long uid, Long franchiseeId, Integer tenantId);
+        return baseMapper.queryLastPayMemberCardTimeByUidAndSuccess(uid, franchiseeId, tenantId);
     }
 
     @Override
