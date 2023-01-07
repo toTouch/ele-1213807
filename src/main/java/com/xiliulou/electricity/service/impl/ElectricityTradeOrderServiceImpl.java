@@ -505,6 +505,10 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource) {
 
+
+
+        log.error("服务费支付回调========================");
+
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
