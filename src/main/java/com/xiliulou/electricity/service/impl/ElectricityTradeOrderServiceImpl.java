@@ -557,7 +557,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         //电池服务费订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
-        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(serviceFeeUserInfo.getServiceFeeGenerateTime());
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime() - (24 * 60 * 60 * 1000L));
         eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(System.currentTimeMillis());
 
         if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {

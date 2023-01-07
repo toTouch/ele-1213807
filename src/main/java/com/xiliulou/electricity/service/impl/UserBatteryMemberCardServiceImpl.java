@@ -150,7 +150,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Integer deleteByUid(Long uid) {
         int delete = this.userBatteryMemberCardMapper.deleteByUid(uid);
 
-        saveMemberCardFailureRecord(uid);
+//        saveMemberCardFailureRecord(uid);
 
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
