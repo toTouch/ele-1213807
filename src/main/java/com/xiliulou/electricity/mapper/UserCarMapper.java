@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.UserCar;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.UserCarQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -26,10 +27,9 @@ public interface UserCarMapper extends BaseMapper<UserCar> {
     /**
      * 通过实体作为筛选条件查询
      *
-     * @param userCar 实例对象
      * @return 对象列表
      */
-    List<UserCar> selectByQuery(UserCar userCar);
+    List<UserCar> selectByQuery(UserCarQuery userCarQuery);
 
     /**
      * 新增数据
