@@ -159,6 +159,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource) {
         //回调参数
         String tradeRefundNo = callBackResource.getOutRefundNo();
@@ -176,7 +177,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Pair.of(false, "退款订单已处理");
         }
 
-        //交易订单
+/*        //交易订单
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByTradeOrderNo(outTradeNo);
 
         String orderNo = null;
@@ -195,7 +196,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             orderNo = orderIdLIst.get(0);
         } else {
             orderNo = electricityTradeOrder.getOrderNo();
+        }*/
+
+        //获取押金订单号
+        Pair<Boolean, Object> findDepositOrderNOResult = findDepositOrder(outTradeNo, eleRefundOrder);
+        if (!findDepositOrderNOResult.getLeft()) {
+            return findDepositOrderNOResult;
         }
+
+        String orderNo = (String) findDepositOrderNOResult.getRight();
+
 
         Integer refundOrderStatus = EleRefundOrder.STATUS_FAIL;
         boolean result = false;
@@ -801,4 +811,66 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         return Boolean.FALSE;
     }
+
+    /**
+     * 获取押金订单号
+     * @param outTradeNo
+     * @param eleRefundOrder
+     * @return
+     */
+    private Pair<Boolean, Object> findDepositOrder(String outTradeNo, EleRefundOrder eleRefundOrder) {
+        String depositOrderNO = null;
+
+        //单独支付
+        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByTradeOrderNo(outTradeNo);
+        if (Objects.nonNull(electricityTradeOrder)) {
+            depositOrderNO = electricityTradeOrder.getOrderNo();
+        }
+
+        //混合支付
+        if (Objects.isNull(electricityTradeOrder)) {
+            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderByOrderId(outTradeNo);
+            if (Objects.isNull(unionTradeOrder)) {
+                log.error("NOTIFY UNION PAY ORDER ERROR!not found union trade order orderNo={}", outTradeNo);
+                return Pair.of(false, "未找到交易订单!");
+            }
+
+            List<String> orderIdList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderId(), String.class);
+            if (CollectionUtils.isEmpty(orderIdList)) {
+                log.error("NOTIFY UNION PAY ORDER ERROR!orderIdList is empty,orderNo={}", outTradeNo);
+                return Pair.of(false, "交易订单编号不存在!");
+            }
+
+            List<Integer> orderTypeList = JsonUtil.fromJsonArray(unionTradeOrder.getJsonOrderType(), Integer.class);
+            if (CollectionUtils.isEmpty(orderTypeList)) {
+                log.error("NOTIFY UNION PAY ORDER ERROR!orderTypeList is empty,orderNo={}", outTradeNo);
+                return Pair.of(false, "交易订单类型不存!");
+            }
+
+            //租电池押金退款
+            if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+                int index = orderTypeList.indexOf(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+                if (index < 0) {
+                    log.error("NOTIFY UNION PAY ORDER ERROR! not found orderType,orderNo={},orderType={}", outTradeNo, UnionPayOrder.ORDER_TYPE_DEPOSIT);
+                    return Pair.of(false, "租电池押金退款订单类型不存!");
+                }
+
+                depositOrderNO = orderIdList.get(index);
+            }
+
+            //租车押金退款
+            if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)) {
+                int index = orderTypeList.indexOf(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
+                if (index < 0) {
+                    log.error("NOTIFY UNION PAY ORDER ERROR! not found orderType,orderNo={},orderType={}", outTradeNo, UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
+                    return Pair.of(false, "租车押金退款订单类型不存!");
+                }
+
+                depositOrderNO = orderIdList.get(index);
+            }
+        }
+
+        return Pair.of(true, depositOrderNO);
+    }
+
 }
