@@ -2550,10 +2550,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         log.error("服务费单价=======================" + batteryServiceFee);
 
+        log.error("用户==============" + userInfo + "天数===================" + cardDays);
+
         //判断服务费
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && cardDays >= 1) {
             //计算服务费
             BigDecimal userMemberCardExpireBatteryServiceFee = batteryServiceFee.multiply(BigDecimal.valueOf(cardDays));
+
+            System.out.println("userMemberCardExpireBatteryServiceFee================" + userMemberCardExpireBatteryServiceFee);
             return userMemberCardExpireBatteryServiceFee;
         } else {
             return BigDecimal.valueOf(0);
