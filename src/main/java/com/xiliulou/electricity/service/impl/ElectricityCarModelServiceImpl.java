@@ -179,7 +179,6 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         UserCarQuery userCarQuery = new UserCarQuery();
         userCarQuery.setCarModel(electricityCarModel.getId().longValue());
         userCarQuery.setDelFlag(UserCar.DEL_NORMAL);
-        userCarQuery.setTenantId(TenantContextHolder.getTenantId());
         List<UserCar> userCarList=userCarService.selectByQuery(userCarQuery);
         if(!CollectionUtils.isEmpty(userCarList)){
             return R.fail("100256", "车辆型号已绑定用户，不能操作");
