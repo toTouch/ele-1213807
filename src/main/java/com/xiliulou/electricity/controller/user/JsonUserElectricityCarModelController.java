@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -27,6 +28,7 @@ public class JsonUserElectricityCarModelController {
         ElectricityCarModelQuery query = new ElectricityCarModelQuery();
         query.setSize(size);
         query.setOffset(offset);
+        query.setDelFlag(ElectricityCarModel.DEL_NORMAL);
         query.setStoreId(storeId);
         query.setTenantId(TenantContextHolder.getTenantId());
 
