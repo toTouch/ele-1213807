@@ -2474,6 +2474,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         }
 
+
+        log.error("用户电====================" + userBattery);
+
         if (Objects.isNull(userBattery)) {
             return batteryServiceFee;
         }
