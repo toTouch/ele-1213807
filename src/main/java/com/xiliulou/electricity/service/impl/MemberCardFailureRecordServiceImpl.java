@@ -178,8 +178,9 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
                 return;
             }
 
-            //若套餐已过期  不添加记录
-            if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+            List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordMapper.selectByCarMemberCardOrderId(userCarMemberCard.getOrderId());
+            if (!CollectionUtils.isEmpty(memberCardFailureRecords)) {
+                log.warn("ELE FAILURE CAR MEMBERCARD WARN! expire car membercard already save,uid={},orderId={}", uid, userCarMemberCard.getOrderId());
                 return;
             }
 
@@ -328,6 +329,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         return R.ok(failureRecords);
     }
 
+    @Override
     public List<MemberCardFailureRecord> selectByCarMemberCardOrderId(String orderId){
         return memberCardFailureRecordMapper.selectByCarMemberCardOrderId(orderId);
     }
