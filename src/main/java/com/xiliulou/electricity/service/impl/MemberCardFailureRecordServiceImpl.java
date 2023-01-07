@@ -327,4 +327,8 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
         }).collect(Collectors.toList());
         return R.ok(failureRecords);
     }
+
+    public List<MemberCardFailureRecord> selectByCarMemberCardOrderId(String orderId){
+        return memberCardFailureRecordMapper.selectByCarMemberCardOrderId(orderId);
+    }
 }

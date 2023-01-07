@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 /**
  * (UserBatteryMemberCard)表服务实现类
@@ -169,26 +170,24 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
             return;
         }
 
-
         UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryMemberCard)) {
             log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarMemberCard,uid={}", uid);
             return;
         }
 
-        //若套餐已过期  不添加记录
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
-            return;
-        }
-
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             log.warn("ELE FAILURE CAR MEMBERCARD WARN! memberCard is typeCount,uid={}", uid);
             return;
         }
 
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
+        List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordService.selectByCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
 
+        if (!CollectionUtils.isEmpty(memberCardFailureRecords)) {
+            return;
+        }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
         if (Objects.isNull(userBatteryDeposit)) {
