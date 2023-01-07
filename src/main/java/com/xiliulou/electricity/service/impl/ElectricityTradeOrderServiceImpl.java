@@ -570,7 +570,9 @@ public class ElectricityTradeOrderServiceImpl extends
                 EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
 
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getDisableMemberCardTime());
-                eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(eleDisableMemberCardRecord.getDisableDeadline());
+                if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)) {
+                    eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeEndTime(userBatteryMemberCard.getDisableMemberCardTime() + (eleDisableMemberCardRecord.getRealDays() * (24 * 60 * 60 * 1000L)));
+                }
 
 
                 EnableMemberCardRecord enableMemberCardRecord = enableMemberCardRecordService.queryByDisableCardNO(eleDisableMemberCardRecord.getDisableMemberCardNo(), userInfo.getTenantId());
