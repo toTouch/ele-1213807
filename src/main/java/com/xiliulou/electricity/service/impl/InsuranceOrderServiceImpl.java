@@ -279,14 +279,14 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         }
 
         // TODO: 2023/1/6  HPBUG
-//        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-//        if (Objects.isNull(userBattery)) {
-//            log.error("queryInsurance  ERROR! not pay deposit,uid={}", user.getUid());
-//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-//        }
-        
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBattery)) {
+            log.error("queryInsurance  ERROR! not pay deposit,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
 
-        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(),null, tenantId));
+
+        return R.ok(franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(), tenantId));
     }
 
     @Override
