@@ -128,9 +128,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 //            }
             //计算过期时间
             if (ElectricityCarModel.RENT_TYPE_WEEK.equals(item.getMemberCardType())) {
-                carMemberCardOrderVO.setMemberCardExpireTime(item.getCreateTime() + 7 * 24 * 60 * 60 * 1000);
+                carMemberCardOrderVO.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 7 * 24 * 60 * 60 * 1000);
             } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(item.getMemberCardType())) {
-                carMemberCardOrderVO.setMemberCardExpireTime(item.getCreateTime() + 30 * 24 * 60 * 60 * 1000);
+                carMemberCardOrderVO.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 30 * 24 * 60 * 60 * 1000L);
             }
 
             return carMemberCardOrderVO;
