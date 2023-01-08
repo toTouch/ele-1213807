@@ -122,10 +122,15 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 carMemberCardOrderVO.setCarModelName(electricityCarModel.getName());
             }
 
-            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
-
-            if (Objects.nonNull(userCarMemberCard)) {
-                carMemberCardOrderVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+//            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
+//            if (Objects.nonNull(userCarMemberCard)) {
+//                carMemberCardOrderVO.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
+//            }
+            //计算过期时间
+            if (ElectricityCarModel.RENT_TYPE_WEEK.equals(item.getMemberCardType())) {
+                carMemberCardOrderVO.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 7 * 24 * 60 * 60 * 1000);
+            } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(item.getMemberCardType())) {
+                carMemberCardOrderVO.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 30 * 24 * 60 * 60 * 1000L);
             }
 
             return carMemberCardOrderVO;

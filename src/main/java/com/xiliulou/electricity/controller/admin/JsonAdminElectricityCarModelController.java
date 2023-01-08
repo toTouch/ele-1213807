@@ -169,6 +169,7 @@ public class JsonAdminElectricityCarModelController {
     public R queryCount(@RequestParam(value = "storeId", required = false) Long storeId) {
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
+                .delFlag(ElectricityCarModel.DEL_NORMAL)
                 .storeId(storeId)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 

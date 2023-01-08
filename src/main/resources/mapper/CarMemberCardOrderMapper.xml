@@ -56,6 +56,9 @@
             <if test="orderId != null and orderId != ''">
                 and tcco.order_id = #{orderId}
             </if>
+            <if test="uid != null">
+                and tcco.uid = #{uid}
+            </if>
             <if test="status != null">
                 and tcco.status = #{status}
             </if>
