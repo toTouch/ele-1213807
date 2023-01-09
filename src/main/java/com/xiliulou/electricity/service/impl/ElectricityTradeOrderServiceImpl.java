@@ -259,6 +259,11 @@ public class ElectricityTradeOrderServiceImpl extends
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
 
+            Long oldRemainingNumber = 0L;
+            if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() > now) {
+                oldRemainingNumber = userBatteryMemberCard.getRemainingNumber().longValue();
+            }
+
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < now) {
                     memberCardExpireTime = System.currentTimeMillis() +
@@ -274,7 +279,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 } else {
                     memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-                    remainingNumber = remainingNumber + userBatteryMemberCard.getRemainingNumber();
+                    remainingNumber = remainingNumber + oldRemainingNumber;
                 }
             }
 
