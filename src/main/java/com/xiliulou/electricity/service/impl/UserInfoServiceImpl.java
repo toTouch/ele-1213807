@@ -191,6 +191,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
 
+
+                log.error("userBatteryMemberCard==========================================="+userBatteryMemberCard);
+
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     Long now = System.currentTimeMillis();
                     long carDays = 0;
@@ -231,6 +234,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+
+                log.error("userBatteryDeposit=============================================================="+userBatteryDeposit);
+
                 if (Objects.nonNull(userBatteryDeposit)) {
                     item.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
                     item.setOrderId(userBatteryDeposit.getOrderId());
