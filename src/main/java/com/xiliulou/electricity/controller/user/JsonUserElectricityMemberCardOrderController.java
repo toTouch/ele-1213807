@@ -128,7 +128,7 @@ public class JsonUserElectricityMemberCardOrderController {
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
         //旧版小程序不允许操作
         if(Boolean.TRUE){
-            return R.ok();
+            return R.fail("100257","该版本暂不支持租车,请升级小程序");
         }
         return electricityMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request);
     }
