@@ -182,6 +182,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
         List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+
+        log.error("userBatteryInfoVOS=========================================" + userBatteryInfoVOS);
         if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
             return R.ok(userBatteryInfoVOS);
         }
@@ -190,6 +192,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryInfoVOS.stream().forEach(item -> {
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
+
+
+                log.error("userBatteryMemberCard===========================================" + userBatteryMemberCard);
 
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     Long now = System.currentTimeMillis();
@@ -231,6 +236,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
+
+                log.error("userBatteryDeposit==============================================================" + userBatteryDeposit);
+
                 if (Objects.nonNull(userBatteryDeposit)) {
                     item.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
                     item.setOrderId(userBatteryDeposit.getOrderId());

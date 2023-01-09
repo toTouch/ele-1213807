@@ -290,9 +290,9 @@
     </select>
 
     <select id="queryLastPayDepositTimeByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
-        select * from t_ele_deposit_order where uid=#{uid}
+        select * from t_ele_deposit_order
         <where>
-            status=1
+            status=1 and uid=#{uid}
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
