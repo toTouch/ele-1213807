@@ -92,7 +92,7 @@
         SELECT * FROM
         t_electricity_member_card_order
         WHERE uid =#{uid}
-        and status =1
+        and status =1 and member_card_model=0
         <if test="startTime != null">
             and create_time BETWEEN #{startTime} and #{endTime}
         </if>

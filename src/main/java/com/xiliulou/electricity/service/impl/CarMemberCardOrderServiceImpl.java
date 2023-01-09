@@ -414,6 +414,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getCardId())
+                && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime())
                 && userCarMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()
                 && !Objects.equals(userCarMemberCard.getCardId(), electricityCarModel.getId().longValue())) {
             log.error("ELE CAR MEMBER CARD ERROR! member_card is not expired uid={}", userInfo.getUid());
