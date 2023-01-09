@@ -837,7 +837,7 @@ public class UserServiceImpl implements UserService {
 
         if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-            if (Objects.nonNull(userBatteryMemberCard) && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
+            if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(),UserBatteryMemberCard.SEND_REMAINING_NUMBER) && userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
                 userBatteryMemberCardDetailVO = new UserBatteryMemberCardDetailVO();
                 userBatteryMemberCardDetailVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
                 if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
