@@ -2366,12 +2366,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
 
-                ElectricityMemberCard electricityMemberCard=null;
+                ElectricityMemberCard electricityMemberCard = null;
                 if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
                     electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
                 }
 
-                if (Objects.isNull(electricityMemberCard)){
+                if (Objects.isNull(electricityMemberCard)) {
                     return;
                 }
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
