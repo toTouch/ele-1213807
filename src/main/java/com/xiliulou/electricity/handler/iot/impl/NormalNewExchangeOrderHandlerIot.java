@@ -63,6 +63,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
     
+    @Autowired
+    BatteryTrackRecordService batteryTrackRecordService;
     
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -82,9 +84,14 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
         
-        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+        if (Objects.equals(exchangeOrderRsp.getOrderStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
             //确认订单结束
             senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
+            log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
+        }
+        
+        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+            //确认订单结束
             log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
                     receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
             return;
@@ -232,9 +239,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(),
                     exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
         }
+    
+        BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getTakeBatteryName())
+                .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
+                .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
+                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
+        batteryTrackRecordService.insert(batteryTrackRecord);
         
-        //确认订单结束
-        senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
     }
     
     private void handlePlaceBatteryInfo(ExchangeOrderRsp exchangeOrderRsp,
@@ -294,6 +305,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityBattery.setBorrowExpireTime(null);
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
+    
+        BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName())
+                .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
+                .setENo(exchangeOrderRsp.getPlaceCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
+                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
+        batteryTrackRecordService.insert(batteryTrackRecord);
     }
     
     

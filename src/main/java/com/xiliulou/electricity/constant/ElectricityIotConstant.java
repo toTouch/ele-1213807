@@ -54,6 +54,8 @@ public class ElectricityIotConstant {
     
     public static final String NORMAL_OTA_OPERATE_HANDLER = "normalOtaOperateHandler";
     
+    
+    public static final String NORMAL_BATTERY_SNAPSHOT_HANDLER = "normalBatterySnapShotHandler";
     /**
      * 电池充电设置
      */
@@ -377,7 +379,8 @@ public class ElectricityIotConstant {
      */
     public static final String ELE_BATTERY_MULTI_PARAMS_READ = "battery_multi_params_read";
     public static final String ELE_BATTERY_MULTI_PARAMS_READ_RSP = "battery_multi_rsp";
-
+    
+    public static final String ELE_BATTERY_SNAPSHOT = "battery_snap_shot";
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -496,6 +499,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ_RSP, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAM_SETTING, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT,NORMAL_BATTERY_SNAPSHOT_HANDLER);
 
 
     }
