@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.query.RentCarOrderQuery;
@@ -41,6 +42,7 @@ public class JsonAdminRentCarOrderController extends BaseController {
      * 后台新增租车记录
      */
     @PostMapping("/admin/rentCarOrder/save")
+    @Log(title = "线下增加租车记录")
     public R save(@RequestBody @Validated RentCarOrderQuery rentCarOrderQuery){
         return returnTripleResult(rentCarOrderService.save(rentCarOrderQuery));
     }
