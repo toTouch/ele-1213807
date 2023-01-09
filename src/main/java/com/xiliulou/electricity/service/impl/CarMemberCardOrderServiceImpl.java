@@ -102,12 +102,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
      */
     @Override
     public List<CarMemberCardOrderVO> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
-
+log.error("===============================");
         List<CarMemberCardOrder> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(carMemberCardOrders)) {
             return Collections.EMPTY_LIST;
         }
-
+log.error("===============================carMemberCardOrders:{}",JsonUtil.toJson(carMemberCardOrders));
         return carMemberCardOrders.parallelStream().map(item -> {
             CarMemberCardOrderVO carMemberCardOrderVO = new CarMemberCardOrderVO();
             BeanUtils.copyProperties(item, carMemberCardOrderVO);
