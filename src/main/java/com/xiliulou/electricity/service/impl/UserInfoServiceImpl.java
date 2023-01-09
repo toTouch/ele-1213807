@@ -1216,7 +1216,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //租车套餐是否过期
-        if (!Objects.isNull(userCarMemberCard) && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (Objects.nonNull(userCarMemberCard) && Objects.nonNull(userCarMemberCard.getMemberCardExpireTime()) && userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.YES);
         } else {
             userCarDetail.setIsCarMemberCardExpire(UserInfoResultVO.NO);
@@ -1230,7 +1230,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsRentCar(UserInfoResultVO.YES);
             userCarDetail.setCarSN(userCar.getSn());
         }
-        log.error("+++++++userInfoResult++++++++:{}", JsonUtil.toJson(userInfoResult));
+
         return Triple.of(true, "", userInfoResult);
     }
 
