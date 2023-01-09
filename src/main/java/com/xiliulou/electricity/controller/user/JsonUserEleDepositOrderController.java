@@ -168,7 +168,7 @@ public class JsonUserEleDepositOrderController {
 
 
     /**
-     * 缴纳租车押金
+     * 缴纳租车押金(旧小程序)
      *
      * @return
      */
@@ -177,6 +177,10 @@ public class JsonUserEleDepositOrderController {
     public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId,
                                @RequestParam(value = "carModelId") Integer carModelId,
                                HttpServletRequest request) {
+        //旧版小程序不允许操作
+        if(Boolean.TRUE){
+            return R.ok();
+        }
         return eleDepositOrderService.payRentCarDeposit(storeId, carModelId, request);
     }
 

@@ -119,13 +119,17 @@ public class JsonUserElectricityMemberCardOrderController {
     }
 
     /**
-     * 购买租车套餐
+     * 购买租车套餐(旧小程序租车套餐)
      * @param
      * @return
      */
     @PostMapping("user/memberCard/payRentCarMemberCard")
     @Deprecated
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
+        //旧版小程序不允许操作
+        if(Boolean.TRUE){
+            return R.ok();
+        }
         return electricityMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request);
     }
 
