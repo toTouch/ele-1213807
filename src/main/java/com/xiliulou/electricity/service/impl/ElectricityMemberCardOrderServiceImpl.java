@@ -1383,6 +1383,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
 
+            log.error("用户启用套餐存在电池服务费===================================" + userChangeServiceFee);
+
             if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
                 log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee ! uid={}", userInfo.getUid());
                 return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
