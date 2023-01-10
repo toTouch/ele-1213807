@@ -1359,12 +1359,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
 
             long cardDays = 0;
-            if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-                cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-                //查询用户是否存在套餐过期电池服务费
-                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-                userChangeServiceFee = serviceFee;
-            }
+//            if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+//                cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+//                //查询用户是否存在套餐过期电池服务费
+//                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+//                userChangeServiceFee = serviceFee;
+//            }
 
             Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
 
