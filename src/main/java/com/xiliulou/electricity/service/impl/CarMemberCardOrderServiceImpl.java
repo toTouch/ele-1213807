@@ -317,7 +317,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
             log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", carMemberCardOrderQuery.getCarModelId(), user.getUid());
-            return Triple.of(false, "100237", "租车套餐计费规则不存在!");
+            return Triple.of(false, "100237", "租赁方式不存在!");
         }
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
