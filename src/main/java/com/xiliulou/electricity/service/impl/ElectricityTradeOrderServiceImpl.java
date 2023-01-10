@@ -568,10 +568,15 @@ public class ElectricityTradeOrderServiceImpl extends
         if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
+
+            if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(serviceFeeUserInfo) && Objects.equals(eleDisableMemberCardRecord.getDisableMemberCardNo(), serviceFeeUserInfo.getDisableMemberCardNo())) {
+                eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(eleDisableMemberCardRecord.getCreateTime());
+            }
+
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-                EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
 
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(userBatteryMemberCard.getDisableMemberCardTime());
                 if (Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(), EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)) {
