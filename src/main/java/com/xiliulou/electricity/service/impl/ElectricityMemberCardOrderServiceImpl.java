@@ -229,13 +229,46 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //判断用户电池服务费
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+//        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+//            long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+//            BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+//            if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
+//                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
+//            }
+//        }
+
+        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
+
+
+        long cardDays = 0;
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-            if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
-                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
-            }
+            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            //查询用户是否存在套餐过期电池服务费
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+            userChangeServiceFee = serviceFee;
         }
+
+        Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
+
+        //判断用户是否产生电池服务费
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+
+            cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
+
+            //不足一天按一天计算
+            double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1;
+            }
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
+            userChangeServiceFee = serviceFee;
+        }
+
+        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
+            log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee ! uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
+        }
+
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
         if (Objects.isNull(electricityMemberCard)) {
@@ -835,11 +868,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //启用月卡时判断用户是否有电池，收取服务费
-        if (Objects.equals(usableStatus, UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
-            BigDecimal batteryServiceFee = checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, null);
-            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-                return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
-            }
+        BigDecimal userBatteryServiceFee = checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, null);
+        if (BigDecimal.valueOf(0).compareTo(userBatteryServiceFee) != 0) {
+            return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", userBatteryServiceFee);
         }
 
         Long memberCardExpireTime = null;
@@ -986,6 +1017,36 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
+        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+
+        long cardDays = 0;
+
+        Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
+
+        Long now = System.currentTimeMillis();
+
+        //判断用户是否产生电池服务费
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+
+            cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
+
+            //不足一天按一天计算
+            double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1;
+            }
+            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
+            userChangeServiceFee = serviceFee;
+        }
+
+        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
+            log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee ! uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
+        }
+
+
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         if (Objects.isNull(electricityMemberCard)) {
             log.error("DISABLE MEMBER CARD ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
@@ -1035,7 +1096,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
 
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(serviceFeeUserInfo)) {
             serviceFeeUserInfoService.insert(insertOrUpdateServiceFeeUserInfo);
         } else {
@@ -1381,9 +1441,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
                 userChangeServiceFee = serviceFee;
             }
-
-
-            log.error("用户启用套餐存在电池服务费===================================" + userChangeServiceFee);
 
             if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
                 log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee ! uid={}", userInfo.getUid());
@@ -2571,10 +2628,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(uid, userInfo.getTenantId());
         }
-
-
-        log.error("用户绑定套餐======================"+serviceFeeUserInfo);
-        log.error("用户停卡记录======================"+eleDisableMemberCardRecord);
 
         //判断服务费
         if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES) && Objects.equals(serviceFeeUserInfo.getExistBatteryServiceFee(), ServiceFeeUserInfo.EXIST_SERVICE_FEE)) {
