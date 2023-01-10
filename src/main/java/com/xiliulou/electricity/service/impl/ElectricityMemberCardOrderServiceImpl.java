@@ -2402,7 +2402,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-                userBatteryMemberCardUpdate.setUpdateTime(userBatteryMemberCard.getUid());
+                userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
                 userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
                 userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
