@@ -2354,15 +2354,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         while (true) {
             List<EleDisableMemberCardRecord> eleDisableMemberCardRecordList = eleDisableMemberCardRecordService.queryDisableCardExpireRecord(offset, size, nowTime);
 
-            log.info("-----eleDisableMemberCardRecordList>>>>>{}", eleDisableMemberCardRecordList);
+            log.debug("-----eleDisableMemberCardRecordList>>>>>{}", eleDisableMemberCardRecordList);
 
             if (!DataUtil.collectionIsUsable(eleDisableMemberCardRecordList)) {
                 return;
             }
 
             eleDisableMemberCardRecordList.parallelStream().forEach(item -> {
-
-//                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(item.getUid());
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
 
