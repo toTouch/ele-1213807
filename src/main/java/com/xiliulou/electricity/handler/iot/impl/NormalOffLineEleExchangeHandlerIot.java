@@ -255,7 +255,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         UsingElectricityBattery.setUid(user.getUid());
         UsingElectricityBattery.setUpdateTime(System.currentTimeMillis());
         UsingElectricityBattery.setBorrowExpireTime(
-                Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000
+                Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000
                         + System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(UsingElectricityBattery);
     }
