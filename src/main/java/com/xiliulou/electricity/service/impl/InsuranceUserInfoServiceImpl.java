@@ -102,7 +102,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         InsuranceOrder insuranceOrderUpdate = new InsuranceOrder();
         insuranceOrderUpdate.setUpdateTime(System.currentTimeMillis());
         insuranceOrderUpdate.setOrderId(insuranceUserInfo.getInsuranceOrderId());
-        insuranceOrderUpdate.setIsUse(InsuranceUserInfo.IS_USE);
+        insuranceOrderUpdate.setIsUse(insuranceStatus);
         insuranceOrderUpdate.setTenantId(tenantId);
         insuranceOrderService.updateIsUseByOrderId(insuranceOrderUpdate);
 
@@ -220,7 +220,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         if (Objects.equals(status, InsuranceUserInfo.NOT_USE)) {
 
             InsuranceUserInfoVo insuranceUserInfoVo = queryByUidAndTenantId(uid, tenantId);
-            if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.IS_USE)) {
+            if (Objects.isNull(insuranceUserInfoVo) || insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis() || !Objects.equals(insuranceUserInfoVo.getIsUse(), InsuranceUserInfo.NOT_USE)) {
                 return R.ok();
             }
             List<InsuranceOrderVO> insuranceOrderList = new ArrayList<>();
