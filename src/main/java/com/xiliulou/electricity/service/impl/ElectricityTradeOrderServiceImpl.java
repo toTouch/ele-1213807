@@ -570,6 +570,7 @@ public class ElectricityTradeOrderServiceImpl extends
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
 
+            //如果是限时间停卡，服务费的开始产生时间应拿当时停卡记录的停卡时间
             if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(serviceFeeUserInfo) && Objects.equals(eleDisableMemberCardRecord.getDisableMemberCardNo(), serviceFeeUserInfo.getDisableMemberCardNo())) {
                 eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(eleDisableMemberCardRecord.getCreateTime());
             }
