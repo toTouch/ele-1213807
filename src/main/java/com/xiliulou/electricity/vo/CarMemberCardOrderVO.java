@@ -33,6 +33,10 @@ public class CarMemberCardOrderVO {
      */
     private Integer status;
     /**
+     * 车辆型号id
+     */
+    private Long carModelId;
+    /**
      * 车辆型号
      */
     private String carModelName;
@@ -65,6 +69,10 @@ public class CarMemberCardOrderVO {
      */
     private Long createTime;
     /**
+     * 更新时间
+     */
+    private Long updateTime;
+    /**
      * 套餐到期时间
      */
     private Long memberCardExpireTime;
@@ -78,6 +86,7 @@ public class CarMemberCardOrderVO {
     private Long franchiseeId;
 
     private Integer tenantId;
+
 
 
 }

@@ -33,14 +33,13 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="selectByPage" resultMap="CarMemberCardOrderMap">
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.CarMemberCardOrderVO">
         select
         tcco.id,
         tcco.uid,
         tcco.order_id,
         tcco.status,
         tcco.car_model_id,
-        tcco.user_name,
         tcco.member_card_type,
         tcco.card_name,
         tcco.pay_type,
@@ -50,6 +49,7 @@
         tcco.update_time,
         tcco.store_id,
         tcco.franchisee_id,
+        tcco.name as user_name,
         tui.phone
         from t_car_member_card_order tcco left join t_user_info tui on tcco.uid=tui.uid
         <where>

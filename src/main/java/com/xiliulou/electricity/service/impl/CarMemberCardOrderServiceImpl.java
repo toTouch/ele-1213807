@@ -102,24 +102,23 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
      */
     @Override
     public List<CarMemberCardOrderVO> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
-log.error("===============================");
-        List<CarMemberCardOrder> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
+        List<CarMemberCardOrderVO> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(carMemberCardOrders)) {
             return Collections.EMPTY_LIST;
         }
-log.error("===============================carMemberCardOrders:{}",JsonUtil.toJson(carMemberCardOrders));
-        return carMemberCardOrders.parallelStream().map(item -> {
-            CarMemberCardOrderVO carMemberCardOrderVO = new CarMemberCardOrderVO();
-            BeanUtils.copyProperties(item, carMemberCardOrderVO);
 
-            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            if (Objects.nonNull(userInfo)) {
-                carMemberCardOrderVO.setPhone(userInfo.getPhone());
-            }
+        return carMemberCardOrders.parallelStream().peek(item -> {
+//            CarMemberCardOrderVO carMemberCardOrderVO = new CarMemberCardOrderVO();
+//            BeanUtils.copyProperties(item, carMemberCardOrderVO);
+
+//            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+//            if (Objects.nonNull(userInfo)) {
+//                carMemberCardOrderVO.setPhone(userInfo.getPhone());
+//            }
 
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(item.getCarModelId().intValue());
             if (Objects.nonNull(electricityCarModel)) {
-                carMemberCardOrderVO.setCarModelName(electricityCarModel.getName());
+                item.setCarModelName(electricityCarModel.getName());
             }
 
 //            UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(item.getUid());
@@ -128,12 +127,11 @@ log.error("===============================carMemberCardOrders:{}",JsonUtil.toJso
 //            }
             //计算过期时间
             if (ElectricityCarModel.RENT_TYPE_WEEK.equals(item.getMemberCardType())) {
-                carMemberCardOrderVO.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 7 * 24 * 60 * 60 * 1000);
+                item.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 7 * 24 * 60 * 60 * 1000);
             } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(item.getMemberCardType())) {
-                carMemberCardOrderVO.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 30 * 24 * 60 * 60 * 1000L);
+                item.setMemberCardExpireTime(item.getUpdateTime() + item.getValidDays() * 30 * 24 * 60 * 60 * 1000L);
             }
 
-            return carMemberCardOrderVO;
         }).collect(Collectors.toList());
     }
 
