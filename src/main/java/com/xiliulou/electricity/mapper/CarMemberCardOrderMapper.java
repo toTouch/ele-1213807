@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
+import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -31,7 +32,7 @@ public interface CarMemberCardOrderMapper extends BaseMapper<CarMemberCardOrder>
      *
      * @return 对象列表
      */
-    List<CarMemberCardOrder> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery);
+    List<CarMemberCardOrderVO> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery);
 
     Integer selectByPageCount(RentCarMemberCardOrderQuery memberCardOrderQuery);
 

@@ -86,13 +86,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             log.info("EXCHANGE ORDER INFO! send order success msg! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
         }
 
-//        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
-//            //确认订单结束
-//            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
-//            log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
-//                    receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
-//            return;
-//        }
+        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+            //确认订单结束
+            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
+            log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
+                    receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
+            return;
+        }
 
         //是否开启异常仓门锁仓
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(
