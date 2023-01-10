@@ -144,6 +144,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	 * @return
 	 */
 	@GetMapping(value = "/user/rentCarMemberCard/info")
+	@Deprecated
 	public R getRentCarMemberCardInfo(){
 		Long uid = SecurityUtils.getUid();
 		if (Objects.isNull(uid)) {

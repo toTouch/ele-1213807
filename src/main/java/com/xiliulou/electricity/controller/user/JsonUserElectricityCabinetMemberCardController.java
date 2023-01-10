@@ -88,6 +88,7 @@ public class JsonUserElectricityCabinetMemberCardController {
      * @return
      */
     @GetMapping(value = "/user/rentCarMemberCard/list")
+    @Deprecated
     public R queryRentCarMemberCardList(@RequestParam("size") Long size,
                                         @RequestParam("offset") Long offset) {
         if (size < 0 || size > 50) {
