@@ -531,7 +531,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("ELE DEPOSIT ERROR! not found userInfo,uid={}", user.getUid());
+            log.error("ELE DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
