@@ -1378,7 +1378,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (time < 24) {
                     cardDays = 1;
                 }
-                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
+                BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
                 userChangeServiceFee = serviceFee;
             }
 
