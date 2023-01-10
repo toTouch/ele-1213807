@@ -1583,7 +1583,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             userChangeServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, null, serviceFeeUserInfo);
         }
         if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-            return Triple.of(false, "100220", userChangeServiceFee);
+            return Triple.of(false, "100220", "用户存在电池服务费");
         }
         return Triple.of(true, null, null);
 
