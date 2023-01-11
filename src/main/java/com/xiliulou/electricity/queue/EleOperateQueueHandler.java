@@ -92,9 +92,6 @@ public class EleOperateQueueHandler {
     FranchiseeService franchiseeService;
 
     @Autowired
-    BatteryTrackRecordService batteryTrackRecordService;
-
-    @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
     @EventListener({WebServerInitializedEvent.class})
