@@ -898,8 +898,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer offlineEleCount = 0;
                 if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
                     for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
-                        boolean result = deviceIsOnline(electricityCabinet.getProductKey(),
-                                electricityCabinet.getDeviceName());
+                        boolean result = Objects.equals(electricityCabinet.getOnlineStatus(),ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                         if (result) {
                             onlineEleCount++;
                         } else {
