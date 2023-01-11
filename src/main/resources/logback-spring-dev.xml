@@ -101,8 +101,11 @@
 	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_DEBUG"/>
 	</logger>
-
-
+	
+	<logger name="com.xiliulou.electricity.filter.RequestFilter" level="INFO" additivity="false">
+		<appender-ref ref="ASYNC_REQUEST"/>
+	</logger>
+	
 	<logger name="com.xiliulou.electricity.aspectj.LogAspect" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_REQUEST"/>
 	</logger>
