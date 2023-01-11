@@ -82,6 +82,8 @@ public class EleOperateQueueHandler {
 
     @Autowired
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
+    @Autowired
+    BatteryTrackRecordService batteryTrackRecordService;
 
     @Autowired
     UserBatteryService userBatteryService;
@@ -624,6 +626,8 @@ public class EleOperateQueueHandler {
                 .setOrderId(rentBatteryOrder.getOrderId());
         batteryTrackRecordService.insert(batteryTrackRecord);
 
+
+        
         //查找用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
         if (Objects.isNull(userInfo)) {

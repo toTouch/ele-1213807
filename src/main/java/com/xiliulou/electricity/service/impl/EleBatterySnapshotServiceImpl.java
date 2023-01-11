@@ -1,22 +1,21 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleBatterySnapshot;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleBatterySnapshotMapper;
 import com.xiliulou.electricity.service.EleBatterySnapshotService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
-import lombok.extern.slf4j.Slf4j;
 /**
  * (EleBatterySnapshot)表服务实现类
  *

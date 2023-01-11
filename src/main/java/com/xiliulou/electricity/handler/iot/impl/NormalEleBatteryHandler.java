@@ -95,7 +95,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
-
+        
         EleBatteryVO eleBatteryVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVO.class);
         if (Objects.isNull(eleBatteryVO)) {
             log.error("ELE BATTERY REPORT ERROR! eleBatteryVO is null,sessionId={}", sessionId);

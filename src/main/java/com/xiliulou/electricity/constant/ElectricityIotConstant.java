@@ -57,6 +57,7 @@ public class ElectricityIotConstant {
     
     public static final String NORMAL_BATTERY_SNAPSHOT_HANDLER = "normalBatterySnapShotHandler";
     
+    
     /**
      * 电池充电设置
      */

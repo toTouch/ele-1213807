@@ -88,7 +88,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
             //确认订单结束
-            senOrderSuccessMsg(electricityCabinet, electricityCabinetOrder);
             log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}",
                     receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
             return;
