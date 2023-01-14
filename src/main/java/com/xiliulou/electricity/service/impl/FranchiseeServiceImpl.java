@@ -79,6 +79,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     UserDataScopeService userDataScopeService;
 
     @Autowired
+    ElectricityBatteryService electricityBatteryService;
+
+    @Autowired
     UserInfoService userInfoService;
 
     @Autowired
@@ -235,18 +238,42 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         //查询加盟商是否绑定的有套餐
-        List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.selectByFranchiseeId(id, franchisee.getTenantId());
-        if (!CollectionUtils.isEmpty(electricityMemberCardList)) {
+        Integer checkMemberCardResult = electricityMemberCardService.isMemberCardBindFranchinsee(id, TenantContextHolder.getTenantId());
+        if (!Objects.isNull(checkMemberCardResult)) {
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}", id);
             return R.fail(id, "100101", "删除失败，该加盟商已绑定套餐！");
         }
 
         //查询加盟商是否绑定门店
-        List<Store> storeList = storeService.selectByFranchiseeId(id);
-        if (!CollectionUtils.isEmpty(storeList)) {
+        Integer checkStoreResult = storeService.isStoreBindFranchinsee(id, TenantContextHolder.getTenantId());
+        if (!Objects.isNull(checkStoreResult)) {
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding store,franchiseeId={}", id);
             return R.fail(id, "100102", "删除失败，该加盟商已绑定门店！");
         }
+
+        //查询加盟商是否绑定普通用户
+        Integer checkUserInfoResult = userInfoService.isFranchiseeBindUser(id, TenantContextHolder.getTenantId());
+        if (!Objects.isNull(checkUserInfoResult)) {
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding user,franchiseeId={}", id);
+            return R.fail(id, "100103", "删除失败，该加盟商已绑定用户！");
+        }
+
+        //查询加盟商是否绑定的有电池
+        Integer checkBatteryResult = electricityBatteryService.isFranchiseeBindBattery(id, TenantContextHolder.getTenantId());
+        if (!Objects.isNull(checkBatteryResult)) {
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding battery,franchiseeId={}", id);
+            return R.fail(id, "100103", "删除失败，该加盟商已绑定电池！");
+        }
+
+        //查询加盟商是否绑定门店，绑定门店则不能删除
+//        Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
+
+        //查询加盟商是否绑定普通用户
+//        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
+
+//        if (count1 > 0 || count2 > 0) {
+//            return R.fail("加盟商已绑定门店或用户");
+//        }
 
         //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());

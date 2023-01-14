@@ -1,14 +1,12 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BatteryStatisticalVo;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import org.apache.ibatis.annotations.Param;
@@ -75,4 +73,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Integer deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
     
     ElectricityBattery selectById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
+
+    Integer isFranchiseeBindBattery(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 }

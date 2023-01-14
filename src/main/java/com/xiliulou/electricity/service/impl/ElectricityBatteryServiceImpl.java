@@ -663,7 +663,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
         return electricityBattery.getPower() >= fullyCharged ? Boolean.TRUE : Boolean.FALSE;
     }
-    
+
+    /**
+     * 检查是否有电池绑定加盟商
+     * @param id
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public Integer isFranchiseeBindBattery(Long id, Integer tenantId) {
+        return electricitybatterymapper.isFranchiseeBindBattery(id, tenantId);
+    }
+
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
         appTemplateQuery.setAppId(appId);

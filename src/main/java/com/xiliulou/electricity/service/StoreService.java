@@ -77,6 +77,8 @@ public interface StoreService {
     
     List<Store> selectByStoreIds(List<Long> storeIds);
 
+    Integer isStoreBindFranchinsee(Long id, Integer tenantId);
+
     Store queryFromCacheByProductAndDeviceName(String productKey, String deviceName);
 
     List<StoreVO> selectListByDistance(StoreQuery storeQuery);

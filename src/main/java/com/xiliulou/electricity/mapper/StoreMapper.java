@@ -44,6 +44,8 @@ public interface StoreMapper extends BaseMapper<Store> {
 
     List<Store> selectListByQuery(StoreQuery storeQuery);
 
+    Integer isStoreBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
+
     List<StoreVO> selectListByDistance(StoreQuery storeQuery);
 
 }

@@ -581,6 +581,18 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     /**
+     * 检查是否有套餐绑定该加盟商
+     *
+     * @param id
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public Integer isMemberCardBindFranchinsee(Long id, Integer tenantId) {
+        return baseMapper.isMemberCardBindFranchinsee(id, tenantId);
+    }
+
+    /**
      * 获取套餐
      *
      * @param id

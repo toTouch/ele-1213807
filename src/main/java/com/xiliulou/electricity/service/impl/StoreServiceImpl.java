@@ -552,6 +552,18 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getId, storeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
+    /**
+     * 检查是否有门店绑定加盟商
+     * @param id
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public Integer isStoreBindFranchinsee(Long id, Integer tenantId) {
+        return storeMapper.isStoreBindFranchinsee(id, tenantId);
+    }
+
+
     @Override
     public Store queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);

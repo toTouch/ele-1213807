@@ -13,6 +13,10 @@
 		where id = #{id} and tenant_id = #{tenantId}
 	</select>
 
+	<select id="isFranchiseeBindBattery" resultType="Integer">
+		SELECT 1 FROM t_electricity_battery WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
+	</select>
+
 
 	<!--电池分页-->
 <!--	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">

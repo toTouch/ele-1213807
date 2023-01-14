@@ -39,4 +39,6 @@ public interface ElectricityMemberCardService {
     void unbindActivity(Integer id);
 
     R queryDisableMemberCardList(Long offset, Long size);
+
+    Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
 }
