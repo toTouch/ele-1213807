@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.*;
@@ -51,6 +52,10 @@ public class JsonAdminFranchiseeController extends BaseController {
     //新增加盟商
     @PostMapping(value = "/admin/franchisee")
     public R save(@RequestBody @Validated(value = CreateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+//        if (verifyBatteryDeposit(franchiseeAddAndUpdate)) {
+//            return R.fail("ELECTRICITY.0007", "不合法的参数");
+//        }
+
         return franchiseeService.save(franchiseeAddAndUpdate);
     }
 
@@ -58,6 +63,10 @@ public class JsonAdminFranchiseeController extends BaseController {
     @PutMapping(value = "/admin/franchisee")
 	@Log(title = "修改加盟商")
 	public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+//        if (verifyBatteryDeposit(franchiseeAddAndUpdate)) {
+//            return R.fail("ELECTRICITY.0007", "不合法的参数");
+//        }
+
         return franchiseeService.edit(franchiseeAddAndUpdate);
     }
 
@@ -354,6 +363,32 @@ public class JsonAdminFranchiseeController extends BaseController {
         }
 
         return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
+    }
+
+
+    /**
+     * 校验押金是否小于0.01
+     * @param franchiseeAddAndUpdate
+     * @return
+     */
+    private boolean verifyBatteryDeposit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+
+        //不分型号
+        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)
+                && BigDecimal.valueOf(0.01).compareTo(franchiseeAddAndUpdate.getBatteryDeposit()) == NumberConstant.ONE) {
+            return Boolean.TRUE;
+        }
+
+        //分型号
+        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.NEW_MODEL_TYPE) && CollectionUtils.isNotEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
+            for (ModelBatteryDeposit modelBatteryDeposit : franchiseeAddAndUpdate.getModelBatteryDepositList()) {
+                if (BigDecimal.valueOf(0.01).compareTo(modelBatteryDeposit.getBatteryDeposit()) == NumberConstant.ONE) {
+                    return Boolean.TRUE;
+                }
+            }
+        }
+
+        return Boolean.FALSE;
     }
 
 }

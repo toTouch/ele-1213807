@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -17,11 +20,13 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +56,10 @@ public class JsonAdminElectricityCarModelController {
     //新增换电柜车辆型号
     @PostMapping(value = "/admin/electricityCarModel")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
+        if (verifyParams(electricityCarModelQuery)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
         return electricityCarModelService.save(electricityCarModelQuery);
     }
 
@@ -58,6 +67,10 @@ public class JsonAdminElectricityCarModelController {
     @PutMapping(value = "/admin/electricityCarModel")
     @Log(title = "修改换电柜车辆型号")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
+        if (verifyParams(electricityCarModelQuery)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
         return electricityCarModelService.edit(electricityCarModelQuery);
     }
 
@@ -177,4 +190,30 @@ public class JsonAdminElectricityCarModelController {
     }
 
 
+    /**
+     * 校验金额不能为0
+     *
+     * @param electricityCarModelQuery
+     * @return
+     */
+    private boolean verifyParams(ElectricityCarModelQuery electricityCarModelQuery) {
+        //校验押金
+        if (BigDecimal.valueOf(0.01).compareTo(electricityCarModelQuery.getCarDeposit()) == NumberConstant.ONE) {
+            return Boolean.TRUE;
+        }
+
+        //校验套餐
+        if (StringUtils.isNotBlank(electricityCarModelQuery.getRentType())) {
+            List<RentCarTypeDTO> rentCarTypes = JsonUtil.fromJsonArray(electricityCarModelQuery.getRentType(), RentCarTypeDTO.class);
+            if (!CollectionUtils.isEmpty(rentCarTypes)) {
+                for (RentCarTypeDTO rentCarType : rentCarTypes) {
+                    if (BigDecimal.valueOf(0.01).compareTo(BigDecimal.valueOf(rentCarType.getPrice())) == NumberConstant.ONE) {
+                        return Boolean.TRUE;
+                    }
+                }
+            }
+        }
+
+        return Boolean.FALSE;
+    }
 }
