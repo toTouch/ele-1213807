@@ -2101,8 +2101,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long newMaxUseCount = electricityMemberCard.getMaxUseCount();
 
         if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-            oldMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
-            newMaxUseCount = FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER;
+            oldMaxUseCount = UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER;
+            newMaxUseCount = UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER;
         } else {
             newMaxUseCount = oldMaxUseCount + newMaxUseCount;
         }
