@@ -472,7 +472,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 }
             }
 
-            return R.ok();
+            return R.ok("SUCCESS");
         }
 
         eleRefundOrderService.insert(eleRefundOrder);

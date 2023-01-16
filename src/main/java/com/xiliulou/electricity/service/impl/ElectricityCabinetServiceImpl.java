@@ -3572,7 +3572,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         messages.parallelStream().forEach(item -> {
-//            log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
+            log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
 
             if (StringUtils.isBlank(item.getMsg())) {
                 return;

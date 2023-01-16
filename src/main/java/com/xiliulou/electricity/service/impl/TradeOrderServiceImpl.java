@@ -435,7 +435,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return result;
             }
 
-            return Triple.of(true, "", "操作成功");
+            return Triple.of(true, "", "SUCCESS");
         }
 
         //调起支付
