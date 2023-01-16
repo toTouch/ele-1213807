@@ -24,6 +24,12 @@ public interface UnionTradeOrderService {
     //集成支付回调
     Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource);
 
+    Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus);
+
+    Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus);
+
+    Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus);
+
 
     UnionTradeOrder selectTradeOrderByOrderId(String orderId);
 

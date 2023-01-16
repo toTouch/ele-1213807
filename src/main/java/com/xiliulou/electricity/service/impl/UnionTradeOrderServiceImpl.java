@@ -348,6 +348,11 @@ public class UnionTradeOrderServiceImpl extends
         return Pair.of(result, null);
     }
 
+    /**
+     * 混合支付回调
+     * @param callBackResource
+     * @return
+     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource) {
@@ -407,19 +412,19 @@ public class UnionTradeOrderServiceImpl extends
                     return manageInsuranceOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
-                Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
+                Pair<Boolean, Object> manageMemberCardOrderResult = manageMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!manageMemberCardOrderResult.getLeft()) {
                     return manageMemberCardOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)) {
                 //租车押金
-                Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
+                Pair<Boolean, Object> rentCarDepositOrderResult = handleRentCarDepositOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!rentCarDepositOrderResult.getLeft()) {
                     return rentCarDepositOrderResult;
                 }
             } else if (Objects.equals(orderTypeList.get(i), UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD)) {
                 //租车套餐
-                Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus, callBackResource);
+                Pair<Boolean, Object> rentCarMemberCardOrderResult = handleRentCarMemberCardOrder(orderIdLIst.get(i), depositOrderStatus);
                 if (!rentCarMemberCardOrderResult.getLeft()) {
                     return rentCarMemberCardOrderResult;
                 }
@@ -447,7 +452,9 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     //处理押金订单
-    private Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> manageDepositOrder(String orderNo, Integer orderStatus) {
 
         //押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderNo);
@@ -508,7 +515,9 @@ public class UnionTradeOrderServiceImpl extends
 
 
     //处理购卡订单
-    private Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus, WechatJsapiOrderCallBackResource callBackResource) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> manageMemberCardOrder(String orderNo, Integer orderStatus) {
 
         //购卡订单
         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderNo);
@@ -693,7 +702,9 @@ public class UnionTradeOrderServiceImpl extends
 
 
     //处理保险订单
-    private Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus) {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> manageInsuranceOrder(String orderNo, Integer orderStatus) {
 
         //保险订单
         InsuranceOrder insuranceOrder = insuranceOrderService.queryByOrderId(orderNo);
@@ -750,7 +761,7 @@ public class UnionTradeOrderServiceImpl extends
      *
      * @return
      */
-    public Pair<Boolean, Object> handleRentCarDepositOrder(String orderNo, Integer depositOrderStatus, WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> handleRentCarDepositOrder(String orderNo, Integer depositOrderStatus) {
 
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(orderNo);
         if (Objects.isNull(carDepositOrder)) {
@@ -812,7 +823,7 @@ public class UnionTradeOrderServiceImpl extends
      *
      * @return
      */
-    public Pair<Boolean, Object> handleRentCarMemberCardOrder(String orderNo, Integer orderStatus, WechatJsapiOrderCallBackResource callBackResource) {
+    public Pair<Boolean, Object> handleRentCarMemberCardOrder(String orderNo, Integer orderStatus) {
 
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService.selectByOrderId(orderNo);
         if (Objects.isNull(carMemberCardOrder)) {

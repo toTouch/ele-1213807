@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.query.IntegratedPaymentAdd;
@@ -20,6 +21,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -425,6 +427,17 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
 
+        //处理0元问题
+        if (BigDecimal.valueOf(0.01).compareTo(integratedPaAmount) == NumberConstant.ONE) {
+
+            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            if (!result.getLeft()) {
+                return result;
+            }
+
+            return Triple.of(false, "", "操作成功");
+        }
+
         //调起支付
         try {
             UnionPayOrder unionPayOrder = UnionPayOrder.builder()
@@ -444,6 +457,68 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "下单失败");
+    }
+
+    /**
+     * 处理混合支付总金额为0的场景
+     *
+     * @param userInfo
+     * @param orderList
+     * @param orderTypeList
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList) {
+        if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
+            log.error("ELE UNION DEPOSIT ORDER ERROR! orderList is empty,uid={}", userInfo.getUid());
+            return Triple.of(false, "000001", "系统异常");
+        }
+
+        //遍历订单类型
+        for (Integer orderType : orderTypeList) {
+            String depositOrderId = null;
+            String memberCardOrderId = null;
+            String insuranceOrderId = null;
+
+            //电池押金
+            if (Objects.equals(orderType, UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
+                int index = orderTypeList.indexOf(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+                if (index < 0) {
+                    log.error("ELE UNION DEPOSIT ORDER ERROR! not found orderType,uid={}", userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.0099", "租电池押金退款订单类型不存!");
+                }
+
+                depositOrderId = orderList.get(index);
+            }
+
+            //电池套餐
+            if (Objects.equals(orderType, UnionPayOrder.ORDER_TYPE_MEMBER_CARD)) {
+                int index = orderTypeList.indexOf(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
+                if (index < 0) {
+                    log.error("ELE UNION MEMBERCARD ORDER ERROR! not found orderType,uid={}", userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.0099", "租电池押金退款订单类型不存!");
+                }
+
+                memberCardOrderId = orderList.get(index);
+            }
+
+            //电池保险
+            if (Objects.equals(orderType, UnionPayOrder.ORDER_TYPE_INSURANCE)) {
+                int index = orderTypeList.indexOf(UnionPayOrder.ORDER_TYPE_INSURANCE);
+                if (index < 0) {
+                    log.error("ELE UNION INSURANCE ORDER ERROR! not found orderType,uid={}", userInfo.getUid());
+                    return Triple.of(false, "ELECTRICITY.0099", "租电池押金退款订单类型不存!");
+                }
+
+                insuranceOrderId = orderList.get(index);
+            }
+
+            unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS);
+            unionTradeOrderService.manageMemberCardOrder(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
+            unionTradeOrderService.manageInsuranceOrder(insuranceOrderId, InsuranceOrder.STATUS_SUCCESS);
+        }
+
+        return Triple.of(true, "", "");
     }
 
 
