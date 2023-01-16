@@ -422,40 +422,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
 
-
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
-
-        //退款零元
-        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-            int insert = eleDepositOrderMapper.insert(eleDepositOrder);
-
-            DbUtils.dbOperateSuccessThen(insert, () -> {
-                UserInfo updateUserInfo = new UserInfo();
-                updateUserInfo.setUid(userInfo.getUid());
-                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-                updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                userInfoService.updateByUid(updateUserInfo);
-
-                userBatteryMemberCardService.deleteByUid(userInfo.getUid());
-
-                userBatteryDepositService.deleteByUid(userInfo.getUid());
-
-                userBatteryService.deleteByUid(userInfo.getUid());
-
-                //退押金解绑用户所属加盟商
-                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-
-                return null;
-            });
-
-
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-            if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo);
-            }
-            return R.ok();
-        }
 
         //是否有正在进行中的退款
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
@@ -477,6 +444,37 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
                 .memberCardOweNumber(memberCardOweNumber).build();
+
+        //退款零元
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
+
+            if (Objects.nonNull(result)) {
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
+
+                userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+
+                userBatteryDepositService.deleteByUid(userInfo.getUid());
+
+                userBatteryService.deleteByUid(userInfo.getUid());
+
+                //退押金解绑用户所属加盟商
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+            }
+
+            return R.ok();
+        }
+
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款
