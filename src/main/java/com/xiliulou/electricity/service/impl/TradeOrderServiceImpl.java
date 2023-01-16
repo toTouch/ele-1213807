@@ -435,7 +435,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 return result;
             }
 
-            return Triple.of(false, "", "操作成功");
+            return Triple.of(true, "", "操作成功");
         }
 
         //调起支付
@@ -476,9 +476,6 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         //遍历订单类型
         for (Integer orderType : orderTypeList) {
-            String depositOrderId = null;
-            String memberCardOrderId = null;
-            String insuranceOrderId = null;
 
             //电池押金
             if (Objects.equals(orderType, UnionPayOrder.ORDER_TYPE_DEPOSIT)) {
@@ -488,7 +485,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     return Triple.of(false, "ELECTRICITY.0099", "租电池押金退款订单类型不存!");
                 }
 
-                depositOrderId = orderList.get(index);
+                String depositOrderId = orderList.get(index);
+
+                unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS);
             }
 
             //电池套餐
@@ -499,7 +498,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     return Triple.of(false, "ELECTRICITY.0099", "租电池押金退款订单类型不存!");
                 }
 
-                memberCardOrderId = orderList.get(index);
+                String memberCardOrderId = orderList.get(index);
+                unionTradeOrderService.manageMemberCardOrder(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
             }
 
             //电池保险
@@ -510,12 +510,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     return Triple.of(false, "ELECTRICITY.0099", "租电池押金退款订单类型不存!");
                 }
 
-                insuranceOrderId = orderList.get(index);
+                String insuranceOrderId = orderList.get(index);
+                unionTradeOrderService.manageInsuranceOrder(insuranceOrderId, InsuranceOrder.STATUS_SUCCESS);
             }
-
-            unionTradeOrderService.manageDepositOrder(depositOrderId, EleDepositOrder.STATUS_SUCCESS);
-            unionTradeOrderService.manageMemberCardOrder(memberCardOrderId, ElectricityMemberCardOrder.STATUS_SUCCESS);
-            unionTradeOrderService.manageInsuranceOrder(insuranceOrderId, InsuranceOrder.STATUS_SUCCESS);
         }
 
         return Triple.of(true, "", "");
