@@ -3572,7 +3572,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         messages.parallelStream().forEach(item -> {
-            log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
+//            log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
 
             if (StringUtils.isBlank(item.getMsg())) {
                 return;
@@ -3610,7 +3610,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 messageNotifyList.forEach(i -> {
                     rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
-                    log.info("ELE FULL BATTERY INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
+//                    log.info("ELE FULL BATTERY INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
                 });
             }
         });
