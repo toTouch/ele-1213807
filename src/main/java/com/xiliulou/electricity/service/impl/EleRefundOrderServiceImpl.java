@@ -248,6 +248,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                 }
 
+                //退押金解绑用户所属加盟商
                 userInfoService.unBindUserFranchiseeId(userInfo.getUid());
             }
         }
@@ -285,6 +286,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             userCarMemberCardService.deleteByUid(userInfo.getUid());
 
+            //退押金解绑用户所属加盟商
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
         }
 
@@ -379,6 +381,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         insuranceUserInfoService.deleteById(insuranceUserInfo);
                     }
 
+                    //退押金解绑用户所属加盟商
                     userInfoService.unBindUserFranchiseeId(uid);
                 } else {
                     UserInfo updateUserInfo = new UserInfo();

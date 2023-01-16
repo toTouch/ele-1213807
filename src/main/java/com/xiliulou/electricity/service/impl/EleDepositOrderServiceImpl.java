@@ -441,8 +441,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
                 userBatteryDepositService.deleteByUid(userInfo.getUid());
 
-
                 userBatteryService.deleteByUid(userInfo.getUid());
+
+                //退押金解绑用户所属加盟商
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
 
                 return null;
             });
