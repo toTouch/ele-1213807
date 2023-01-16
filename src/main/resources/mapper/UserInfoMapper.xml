@@ -3,6 +3,10 @@
 <mapper namespace="com.xiliulou.electricity.mapper.UserInfoMapper">
 
 
+    <select id="isFranchiseeBindUser" resultType="Integer">
+        SELECT 1 FROM t_user_info WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select

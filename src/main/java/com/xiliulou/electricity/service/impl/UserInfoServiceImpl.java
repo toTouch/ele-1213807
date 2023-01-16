@@ -1369,6 +1369,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getFranchiseeId, id));
     }
 
+    /**
+     * 检查是否有用户绑定该加盟商
+     * @param id
+     * @param tenantId
+     * @return
+     */
+    @Override
+    public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
+        return userInfoMapper.isFranchiseeBindUser(id,tenantId);
+    }
+
     @Override
     public void unBindUserFranchiseeId(Long uid) {
         //租车押金
