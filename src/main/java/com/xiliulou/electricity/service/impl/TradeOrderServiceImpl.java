@@ -362,7 +362,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //处理套餐订单
-        Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd.getMemberCardId(), integratedPaymentAdd.getUserCouponId());
+        Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd.getMemberCardId(), integratedPaymentAdd.getUserCouponId(),integratedPaymentAdd.getFranchiseeId());
         if (!generateMemberCardOrderResult.getLeft()) {
             return generateMemberCardOrderResult;
         }
@@ -584,7 +584,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, eleDepositOrder);
     }
 
-    private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId) {
+    private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId, Long franchiseeId) {
 
         if (Objects.isNull(memberCardId)) {
             return Triple.of(true, "", null);
@@ -664,7 +664,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         if (Objects.nonNull(userCouponId)) {
