@@ -504,10 +504,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
 
-
-        log.error("押金缴纳=============================" + payDepositOrderVOList);
-
-
         for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
             Long refundTime = eleRefundOrderService.queryRefundTime(payDepositOrderVO.getOrderId());
             payDepositOrderVO.setRefundTime(refundTime);
