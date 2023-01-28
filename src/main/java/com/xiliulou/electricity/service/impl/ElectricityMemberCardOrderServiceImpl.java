@@ -422,7 +422,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
-        electricityMemberCardOrder.setPayCount(userBatteryMemberCard.getCardPayCount());
+        electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard) ? 1 : userBatteryMemberCard.getCardPayCount());
         if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
         }
@@ -465,6 +465,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+            userBatteryMemberCardUpdate.setCardPayCount(Objects.isNull(userBatteryMemberCard) ? 1 : userBatteryMemberCard.getCardPayCount() + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
@@ -489,6 +490,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
             electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
             baseMapper.updateById(electricityMemberCardOrderUpdate);
 
             //修改优惠券状态为已使用

@@ -292,6 +292,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setCardPayCount(userBatteryMemberCard.getCardPayCount() + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
@@ -404,6 +405,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCard.getCardPayCount() + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
 
         return Pair.of(result, null);
