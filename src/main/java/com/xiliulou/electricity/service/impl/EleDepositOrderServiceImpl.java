@@ -505,6 +505,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
 
+        log.error("押金缴纳=============================" + payDepositOrderVOList);
+
         for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
             if (!Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_SUCCESS) && !Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_REFUND)) {
                 payDepositOrderVO.setRefundTime(null);
