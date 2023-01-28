@@ -248,10 +248,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userChangeServiceFee = serviceFee;
         }
 
-        Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
 
         //判断用户是否产生电池服务费
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+        if ((Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) || (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime()))) {
+
+            Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
 
             cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
 
