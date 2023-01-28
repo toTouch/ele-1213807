@@ -31,4 +31,9 @@ public class PayDepositOrderVO {
      * 退款状态
      */
     private Integer refundStatus;
+
+    /**
+     * 缴纳押金订单号
+     */
+    private String orderId;
 }

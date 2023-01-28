@@ -245,4 +245,8 @@
             </foreach>
         </if>
     </select>
+
+    <select id="queryRefundTime">
+        select update_time from t_ele_refund_order wehre order_id=#{orderId} and status=4;
+    </select>
 </mapper>

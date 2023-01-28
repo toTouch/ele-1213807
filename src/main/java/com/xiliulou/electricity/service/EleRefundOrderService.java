@@ -91,4 +91,6 @@ public interface EleRefundOrderService {
     BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
 
     BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
+
+    Long queryRefundTime(String orderId);
 }
