@@ -608,7 +608,6 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
-            userBatteryMemberCardUpdate.setCardPayCount(Objects.isNull(userBatteryMemberCard) ? 1 : userBatteryMemberCard.getCardPayCount() + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
 
@@ -629,7 +628,6 @@ public class UnionTradeOrderServiceImpl extends
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
 
-            electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
 
 
             if (Objects.nonNull(electricityMemberCardOrder.getCouponId())) {
