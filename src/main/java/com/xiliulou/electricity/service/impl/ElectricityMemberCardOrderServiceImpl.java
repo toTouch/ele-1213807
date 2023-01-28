@@ -421,6 +421,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setPayCount(userBatteryMemberCard.getCardPayCount());
         if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
         }

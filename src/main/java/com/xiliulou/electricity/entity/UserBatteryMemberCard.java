@@ -72,6 +72,11 @@ public class UserBatteryMemberCard {
 
     private Long updateTime;
 
+    /**
+     * 套餐购买次数
+     */
+    private Integer cardPayCount;
+
     public static final Integer DEL_NORMAL = 0;
 
     public static final Integer DEL_DEL = 1;
