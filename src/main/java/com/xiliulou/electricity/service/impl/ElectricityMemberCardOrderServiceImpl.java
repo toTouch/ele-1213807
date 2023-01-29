@@ -2069,6 +2069,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
+        electricityMemberCardOrder.setPayCount(userBatteryMemberCard.getCardPayCount() + 1);
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
@@ -2091,6 +2092,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
         userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
         userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber.intValue());
+        userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrder.getPayCount());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
