@@ -1680,6 +1680,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -1698,6 +1700,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard) ? 1 : userBatteryMemberCard.getCardPayCount() + 1);
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         //计算套餐剩余天数
         if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
@@ -1707,7 +1710,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         baseMapper.insert(electricityMemberCardOrder);
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+
         UserBatteryMemberCard userBatteryMemberCardAddAndUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardAddAndUpdate.setUid(userInfo.getUid());
         userBatteryMemberCardAddAndUpdate.setTenantId(userInfo.getTenantId());
@@ -1717,6 +1720,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardAddAndUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardAddAndUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardAddAndUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+        userBatteryMemberCardAddAndUpdate.setCardPayCount(electricityMemberCardOrder.getPayCount());
         if (Objects.isNull(userBatteryMemberCard)) {
             userBatteryMemberCardAddAndUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insert(userBatteryMemberCardAddAndUpdate);

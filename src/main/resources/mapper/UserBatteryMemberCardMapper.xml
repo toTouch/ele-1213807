@@ -111,6 +111,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="cardPayCount != null">
+                card_pay_count = #{cardPayCount},
+            </if>
         </set>
         where uid = #{uid}
     </update>
