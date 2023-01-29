@@ -1864,6 +1864,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
 
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+
         if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
             //套餐订单
             ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
@@ -1883,6 +1885,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+            electricityMemberCardOrder.setPayCount(userBatteryMemberCard.getCardPayCount() + 1);
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
 
             //计算套餐剩余天数
@@ -1892,10 +1895,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             baseMapper.insert(electricityMemberCardOrder);
+
+            userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrder.getPayCount());
         }
 
-
-        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
 
         //用户
         Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
