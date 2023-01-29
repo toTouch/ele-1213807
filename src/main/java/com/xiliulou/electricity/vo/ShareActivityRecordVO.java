@@ -36,10 +36,6 @@ public class ShareActivityRecordVO {
      */
     private Integer status;
     /**
-    * 用户uid
-    */
-    private Long uid;
-    /**
      * 用户phone
      */
     private String phone;
@@ -67,6 +63,11 @@ public class ShareActivityRecordVO {
     * 租户id
     */
     private Integer tenantId;
+
+    /**
+     * 邀请人姓名
+     */
+    private String shareUserName;
 
 
     //初始化

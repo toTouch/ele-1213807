@@ -25,10 +25,10 @@ public class JoinShareActivityHistoryVO {
     * 邀请用户uid
     */
     private Long uid;
-    /**
-    * 参与用户uid
-    */
-    private Long joinUid;
+//    /**
+//    * 参与用户uid
+//    */
+//    private Long joinUid;
     /**
      * 参与用户phone
      */
@@ -57,6 +57,11 @@ public class JoinShareActivityHistoryVO {
     * 租户id
     */
     private Integer tenantId;
+
+    /**
+     * 参与人姓名
+     */
+    private String joinUserName;
 
 
     //初始化
