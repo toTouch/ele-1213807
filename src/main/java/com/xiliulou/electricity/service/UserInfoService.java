@@ -121,4 +121,6 @@ public interface UserInfoService extends IService<UserInfo> {
     void unBindUserFranchiseeId(Long uid);
 
     Integer isFranchiseeBindUser(Long id, Integer tenantId);
+    
+    List<UserInfo> queryByIdNumber(String value);
 }

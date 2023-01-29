@@ -23,6 +23,7 @@ import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -32,9 +33,11 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -128,6 +131,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         if (Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             return R.fail("审核通过，无法修改!");
         }
+    
+        Triple<Boolean, String, Object> checkResult = checkIdCard(eleUserAuthList);
+        if (!checkResult.getLeft()) {
+            return R.fail(checkResult.getMiddle());
+        }
+        
         UserInfo userInfo = new UserInfo();
         userInfo.setId(oldUserInfo.getId());
 
@@ -182,6 +191,32 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
     
         return R.ok();
+    }
+    
+    private Triple<Boolean, String, Object> checkIdCard(List<EleUserAuth> eleUserAuthList) {
+        if (CollectionUtils.isEmpty(eleUserAuthList)) {
+            return Triple.of(false, "资料项为空", null);
+        }
+        
+        for (EleUserAuth eleUserAuth : eleUserAuthList) {
+            if (!ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
+                continue;
+            }
+            
+            List<UserInfo> userInfos = userInfoService.queryByIdNumber(eleUserAuth.getValue());
+            if (CollectionUtils.isEmpty(userInfos)) {
+                return Triple.of(true, null, null);
+            }
+            
+            for (UserInfo userInfo : userInfos) {
+                if (Objects.equals(SecurityUtils.getUid(), userInfo.getUid())) {
+                    return Triple.of(false, "身份信息已存在，请核实后重新提交", null);
+                }
+            }
+            return Triple.of(true, null, null);
+        }
+        
+        return Triple.of(true, null, null);
     }
     
     private void sendAuthenticationAuditMessage(UserInfo userInfo) {

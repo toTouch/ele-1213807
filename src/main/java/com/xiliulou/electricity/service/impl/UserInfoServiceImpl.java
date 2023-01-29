@@ -1379,7 +1379,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
         return userInfoMapper.isFranchiseeBindUser(id,tenantId);
     }
-
+    
+    @Override
+    public List<UserInfo> queryByIdNumber(String idNumber) {
+        return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
+    }
+    
     @Override
     public void unBindUserFranchiseeId(Long uid) {
         //租车押金
