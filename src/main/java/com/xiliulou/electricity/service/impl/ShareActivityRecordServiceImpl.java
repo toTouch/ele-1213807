@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -15,17 +18,27 @@ import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ShareActivityRecordExcelVO;
 import com.xiliulou.electricity.vo.ShareActivityRecordVO;
 import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -208,7 +221,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
     @Override
     public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
-
         List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper.queryList(shareActivityRecordQuery);
         return R.ok(shareActivityRecordVOList);
     }
@@ -217,5 +229,52 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     public R queryCount(ShareActivityRecordQuery shareActivityRecordQuery) {
         return R.ok(shareActivityRecordMapper.queryCount(shareActivityRecordQuery));
     }
-
+    
+    @Override
+    public void shareActivityRecordExportExcel(ShareActivityRecordQuery shareActivityRecordQuery,
+            HttpServletResponse response) {
+        if (Objects.isNull(shareActivityRecordQuery.getEndTime()) || Objects
+                .isNull(shareActivityRecordQuery.getStartTime())) {
+            throw new CustomBusinessException("请选择开始日期和结束日期");
+        }
+        
+        //只能导出30天
+        int limitDay = (int) ((shareActivityRecordQuery.getEndTime() - shareActivityRecordQuery.getStartTime()) / (
+                3600000 * 24));
+        if (limitDay > 30 || limitDay < 0) {
+            throw new CustomBusinessException("日期不合法请重新选择");
+        }
+        
+        List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper
+                .queryList(shareActivityRecordQuery);
+        if (CollectionUtils.isEmpty(shareActivityRecordVOList)) {
+            throw new CustomBusinessException("查不到邀请活动记录");
+        }
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        List<ShareActivityRecordExcelVO> voList = new ArrayList<>();
+        shareActivityRecordVOList.parallelStream().forEachOrdered(item -> {
+            ShareActivityRecordExcelVO vo = new ShareActivityRecordExcelVO();
+            BeanUtils.copyProperties(item, vo);
+            
+            date.setTime(item.getCreateTime());
+            vo.setCreateTime(sdf.format(date));
+            voList.add(vo);
+        });
+        
+        String fileName = "邀请活动记录报表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, ShareActivityRecordExcelVO.class).sheet("sheet").doWrite(voList);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+    }
+    
 }

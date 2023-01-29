@@ -21,21 +21,26 @@ public class JoinShareActivityHistoryVO {
      * recordId
      */
     private Long recordId;
-    /**
-    * 邀请用户uid
-    */
-    private Long uid;
-    /**
-    * 参与用户uid
-    */
-    private Long joinUid;
+    //    /**
+    //    * 邀请用户uid
+    //    */
+    //    private Long uid;
+    //    /**
+    //    * 参与用户uid
+    //    */
+    //    private Long joinUid;
     /**
      * 参与用户phone
      */
     private String joinPhone;
     /**
-    * 参与开始时间
-    */
+     * 参与人姓名
+     */
+    private String joinName;
+    
+    /**
+     * 参与开始时间
+     */
     private Long startTime;
     /**
     * 参与过期时间

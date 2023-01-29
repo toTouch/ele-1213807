@@ -21,7 +21,9 @@ public class ShareActivityRecordQuery {
     private String name;
 
     private Integer tenantId;
-
-
+    
+    private Long startTime;
+    
+    private Long endTime;
 
 }

@@ -22,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 参与邀请活动记录(JoinShareActivityHistory)表服务实现类
@@ -94,57 +95,39 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery=new JsonShareActivityHistoryQuery();
 		jsonShareActivityHistoryQuery.setActivityId(activityId);
 		jsonShareActivityHistoryQuery.setUid(user.getUid());
-
-		List<JoinShareActivityHistory>  joinShareActivityHistoryList= joinShareActivityHistoryMapper.queryList(jsonShareActivityHistoryQuery);
-
-		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
-			return R.ok(joinShareActivityHistoryList);
-		}
-
-		List<JoinShareActivityHistoryVO>  joinShareActivityHistoryVOList=new ArrayList<>();
-
-		for (JoinShareActivityHistory joinShareActivityHistory:joinShareActivityHistoryList) {
-
-			JoinShareActivityHistoryVO joinShareActivityHistoryVO=new JoinShareActivityHistoryVO();
-			BeanUtil.copyProperties(joinShareActivityHistory,joinShareActivityHistoryVO);
-
-
-			User joinUser=userService.queryByUidFromCache(joinShareActivityHistory.getJoinUid());
-			if(Objects.nonNull(joinUser)){
-				joinShareActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-			}
-
-			joinShareActivityHistoryVOList.add(joinShareActivityHistoryVO);
-		}
-
-		return R.ok(joinShareActivityHistoryVOList);
+        
+        List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
+                .queryList(jsonShareActivityHistoryQuery);
+        return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
 	}
 
 	@Override
 	public R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
-		List<JoinShareActivityHistory>  joinShareActivityHistoryList= joinShareActivityHistoryMapper.queryList(jsonShareActivityHistoryQuery);
-
-		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
-			return R.ok(joinShareActivityHistoryList);
-		}
-
-		List<JoinShareActivityHistoryVO>  joinShareActivityHistoryVOList=new ArrayList<>();
-
-		for (JoinShareActivityHistory joinShareActivityHistory:joinShareActivityHistoryList) {
-
-			JoinShareActivityHistoryVO joinShareActivityHistoryVO=new JoinShareActivityHistoryVO();
-			BeanUtil.copyProperties(joinShareActivityHistory,joinShareActivityHistoryVO);
-
-
-			User joinUser=userService.queryByUidFromCache(joinShareActivityHistory.getJoinUid());
-			if(Objects.nonNull(joinUser)){
-				joinShareActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-			}
-
-			joinShareActivityHistoryVOList.add(joinShareActivityHistoryVO);
-		}
-
-		return R.ok(joinShareActivityHistoryVOList);
+        List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
+                .queryList(jsonShareActivityHistoryQuery);
+        return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
+        
+        //		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
+        //			return R.ok(joinShareActivityHistoryList);
+        //		}
+        //
+        //		List<JoinShareActivityHistoryVO>  joinShareActivityHistoryVOList=new ArrayList<>();
+        //
+        //		for (JoinShareActivityHistory joinShareActivityHistory:joinShareActivityHistoryList) {
+        //
+        //			JoinShareActivityHistoryVO joinShareActivityHistoryVO=new JoinShareActivityHistoryVO();
+        //			BeanUtil.copyProperties(joinShareActivityHistory,joinShareActivityHistoryVO);
+        //
+        //
+        //			User joinUser=userService.queryByUidFromCache(joinShareActivityHistory.getJoinUid());
+        //			if(Objects.nonNull(joinUser)){
+        //				joinShareActivityHistoryVO.setJoinPhone(joinUser.getPhone());
+        //			}
+        //
+        //			joinShareActivityHistoryVOList.add(joinShareActivityHistoryVO);
+        //		}
+        //
+        //		return R.ok(joinShareActivityHistoryVOList);
 	}
 
 	@Override

@@ -35,8 +35,11 @@ public class JsonAdminJoinShareActivityHistoryController {
 	@GetMapping(value = "/admin/joinShareActivityHistory/list")
 	public R joinActivity(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam( "uid") Long uid,
-			@RequestParam( "activityId") Integer activityId) {
+			@RequestParam( "uid") Long uid, @RequestParam("activityId") Integer activityId,
+            @RequestParam(value = "joinName", required = false) String joinName,
+            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "status", required = false) Integer status) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -53,8 +56,8 @@ public class JsonAdminJoinShareActivityHistoryController {
 				.offset(offset)
 				.size(size)
 				.tenantId(tenantId)
-				.uid(uid)
-				.activityId(activityId).build();
+				.uid(uid).activityId(activityId).joinName(joinName).status(status).startTime(startTime).endTime(endTime)
+                .build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
 

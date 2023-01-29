@@ -6,7 +6,7 @@
 	<!--通过实体作为筛选条件查询-->
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.ShareActivityRecordVO">
 		select
-		tsar.id as id, tsar.activity_id as activityId,  tsar.uid as uid, tsar.count as count,
+        tsar.id as id, tsar.activity_id as activityId, tsar.count as count,
 		tsar.create_time as createTime, tsar.update_time as updateTime,
 		tsar.tenant_id as tenantId,tsar.status as status,tsar.available_count as availableCount,
 		tui.phone as phone,tui.name as name,tsa.name as activityName
@@ -22,7 +22,13 @@
 			</if>
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
-			</if>
+            </if>
+            <if test="startTime != null">
+                and tsar.create_time &gt;= #{startTime}
+            </if>
+            <if test="startTime != null">
+                and tsar.create_time &lt;= #{endTime}
+            </if>
 		</where>
 		order by tsar.update_time desc
 		limit #{offset}, #{size}
@@ -41,7 +47,13 @@
 			</if>
 			<if test="tenantId != null ">
 				and tsar.tenant_id = #{tenantId}
-			</if>
+            </if>
+            <if test="startTime != null">
+                and tsar.create_time &gt;= #{startTime}
+            </if>
+            <if test="startTime != null">
+                and tsar.create_time &lt;= #{endTime}
+            </if>
 		</where>
 	</select>
 
