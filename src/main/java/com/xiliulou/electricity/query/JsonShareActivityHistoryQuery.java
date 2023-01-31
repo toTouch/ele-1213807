@@ -28,4 +28,6 @@ public class JsonShareActivityHistoryQuery {
     private Long endTime;
     
     private Integer status;
+    
+    private Long id;
 }

@@ -10,12 +10,12 @@
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.uid
         <where>
-            <if test="uid != null">
-                and jsah.uid = #{uid}
+            <if test="id != null">
+                and jsah.id = #{id}
             </if>
-            <if test="activityId != null">
-                and jsah.activity_id = #{activityId}
-            </if>
+            <!--            <if test="activityId != null">-->
+            <!--                and jsah.activity_id = #{activityId}-->
+            <!--            </if>-->
             <if test="tenantId != null">
                 and jsah.tenant_id = #{tenantId}
             </if>

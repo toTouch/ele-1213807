@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -38,6 +40,9 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	ShareActivityRecordService shareActivityRecordService;
 
 
 	/**
@@ -103,8 +108,17 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 
 	@Override
 	public R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
-        List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
-                .queryList(jsonShareActivityHistoryQuery);
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService
+				.queryByIdFromDB(jsonShareActivityHistoryQuery.getId());
+		if (Objects.isNull(shareActivityRecord)) {
+			return R.failMsg("未查询到相关邀请记录");
+		}
+		
+		jsonShareActivityHistoryQuery.setActivityId(shareActivityRecord.getActivityId());
+		jsonShareActivityHistoryQuery.setUid(shareActivityRecord.getUid());
+		
+		List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
+				.queryList(jsonShareActivityHistoryQuery);
         return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
         
         //		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
