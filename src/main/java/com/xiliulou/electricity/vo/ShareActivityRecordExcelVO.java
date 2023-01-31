@@ -15,7 +15,7 @@ public class ShareActivityRecordExcelVO {
     private String activityName;
     
     @ExcelProperty("分享状态")
-    private Integer status;
+    private String status;
     
     @ExcelProperty("邀请人手机号")
     private String phone;

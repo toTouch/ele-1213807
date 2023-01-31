@@ -260,6 +260,8 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             
             date.setTime(item.getCreateTime());
             vo.setCreateTime(sdf.format(date));
+            vo.setStatus(getStatusName(item.getStatus()));
+            
             voList.add(vo);
         });
         
@@ -275,6 +277,20 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
         } catch (IOException e) {
             log.error("导出报表失败！", e);
         }
+    }
+    
+    private String getStatusName(Integer status) {
+        //1--初始化，2--已分享，3--分享失败
+        String statusName = "";
+        if (Objects.equals(status, ShareActivityRecord.STATUS_INIT)) {
+            statusName = "初始化";
+        } else if (Objects.equals(status, ShareActivityRecord.STATUS_SUCCESS)) {
+            statusName = "已分享";
+        } else if (Objects.equals(status, ShareActivityRecord.STATUS_FAIL)) {
+            statusName = "分享失败";
+        }
+        
+        return statusName;
     }
     
 }
