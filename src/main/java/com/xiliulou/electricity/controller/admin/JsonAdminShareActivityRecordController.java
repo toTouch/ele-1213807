@@ -30,7 +30,7 @@ public class JsonAdminShareActivityRecordController {
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -46,8 +46,7 @@ public class JsonAdminShareActivityRecordController {
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
 				.offset(offset)
 				.size(size)
-				.phone(phone)
-				.name(name).tenantId(tenantId).startTime(startTime).endTime(endTime).build();
+				.phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
 
 		return shareActivityRecordService.queryList(shareActivityRecordQuery);
 	}
@@ -56,15 +55,14 @@ public class JsonAdminShareActivityRecordController {
 	@GetMapping(value = "/admin/shareActivityRecord/queryCount")
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
-				.phone(phone)
-				.name(name).tenantId(tenantId).startTime(startTime).endTime(endTime).build();
+				.phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
 
 		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
     }
@@ -73,7 +71,7 @@ public class JsonAdminShareActivityRecordController {
     public void shareActivityRecordExportExcel(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -87,7 +85,7 @@ public class JsonAdminShareActivityRecordController {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder().offset(offset).size(size)
-                .phone(phone).name(name).tenantId(tenantId).startTime(startTime).endTime(endTime).build();
+                .phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
         
         shareActivityRecordService.shareActivityRecordExportExcel(shareActivityRecordQuery, response);
     }

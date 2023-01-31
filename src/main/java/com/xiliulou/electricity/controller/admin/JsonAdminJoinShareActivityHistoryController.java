@@ -37,7 +37,7 @@ public class JsonAdminJoinShareActivityHistoryController {
 			@RequestParam("offset") Long offset,
 			@RequestParam( "uid") Long uid, @RequestParam("activityId") Integer activityId,
             @RequestParam(value = "joinName", required = false) String joinName,
-            @RequestParam(value = "startTime", required = false) Long startTime,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
 
@@ -55,8 +55,8 @@ public class JsonAdminJoinShareActivityHistoryController {
 		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
 				.offset(offset)
 				.size(size)
-				.tenantId(tenantId)
-				.uid(uid).activityId(activityId).joinName(joinName).status(status).startTime(startTime).endTime(endTime)
+				.tenantId(tenantId).uid(uid).activityId(activityId).joinName(joinName).status(status)
+                .startTime(beginTime).endTime(endTime)
                 .build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
