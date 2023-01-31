@@ -31,7 +31,9 @@
             </if>
 		</where>
 		order by tsar.update_time desc
-		limit #{offset}, #{size}
+		<if test="offset != null and size != null">
+			limit #{offset}, #{size}
+		</if>
 	</select>
 
 	<select id="queryCount" resultType="java.lang.Integer">

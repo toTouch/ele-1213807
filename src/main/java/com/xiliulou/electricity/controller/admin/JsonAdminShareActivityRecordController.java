@@ -68,23 +68,15 @@ public class JsonAdminShareActivityRecordController {
     }
     
     @GetMapping(value = "/admin/shareActivityRecord/exportExcel")
-    public void shareActivityRecordExportExcel(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+    public void shareActivityRecordExportExcel(
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
-        
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder().offset(offset).size(size)
+	
+	    ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
                 .phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
         
         shareActivityRecordService.shareActivityRecordExportExcel(shareActivityRecordQuery, response);
