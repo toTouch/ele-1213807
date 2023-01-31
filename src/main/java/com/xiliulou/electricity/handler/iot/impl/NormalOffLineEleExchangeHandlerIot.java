@@ -191,7 +191,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         electricityCabinetOfflineReportOrderService.insertOrder(electricityCabinetOfflineReportOrder);
         
         if (offlineEleOrderVo.getIsProcessFail()) {
-            log.error("OFFLINE EXCHANGE ERROR! exchange exception!orderId={}", offlineEleOrderVo.getOrderId());
+            log.warn("OFFLINE EXCHANGE ERROR! exchange exception!orderId={}", offlineEleOrderVo.getOrderId());
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             return;
         }

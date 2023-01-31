@@ -181,7 +181,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
-        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+
+        List<UserBatteryInfoVO> userBatteryInfoVOS ;
+
+        if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
+            userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
+        } else {
+            userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+        }
+
         if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
             return R.ok(userBatteryInfoVOS);
         }
@@ -1293,7 +1301,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            return R.fail("100253", "已绑定电池");
+            return R.fail("100253", "已绑定车辆");
         }
 
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
@@ -1371,13 +1379,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     /**
      * 检查是否有用户绑定该加盟商
+     *
      * @param id
      * @param tenantId
      * @return
      */
     @Override
     public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
-        return userInfoMapper.isFranchiseeBindUser(id,tenantId);
+        return userInfoMapper.isFranchiseeBindUser(id, tenantId);
     }
     
     @Override

@@ -7,14 +7,18 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @program: XILIULOU
@@ -86,7 +90,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
 
         //未找到用户
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis())) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR member card Expire! userId={}", eleDisableMemberCardRecord.getUid());
             return R.fail("100246", "套餐已过期，无法进行停卡审核");
         }

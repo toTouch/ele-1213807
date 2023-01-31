@@ -78,19 +78,38 @@
 		<appender-ref ref="debug"/>
 	</logger>
 	
-	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
+	<appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+		<discardingThreshold>0</discardingThreshold>
+		<queueSize>10000</queueSize>
+		<appender-ref ref="error"/>
+	</appender>
+	
+	
+	<appender name="ASYNC_DEBUG" class="ch.qos.logback.classic.AsyncAppender">
+		<discardingThreshold>0</discardingThreshold>
+		<queueSize>10000</queueSize>
 		<appender-ref ref="debug"/>
+	</appender>
+	
+	<appender name="ASYNC_REQUEST" class="ch.qos.logback.classic.AsyncAppender">
+		<discardingThreshold>0</discardingThreshold>
+		<queueSize>10000</queueSize>
+		<appender-ref ref="request"/>
+	</appender>
+	
+	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
+		<appender-ref ref="ASYNC_DEBUG"/>
 	</logger>
 
 	<logger name="com.xiliulou.electricity.filter.RequestFilter" level="INFO" additivity="false">
-		<appender-ref ref="request"/>
+		<appender-ref ref="ASYNC_REQUEST"/>
 	</logger>
 
 	<logger name="com.xiliulou.electricity.aspectj.LogAspect" level="INFO" additivity="false">
-		<appender-ref ref="request"/>
+		<appender-ref ref="ASYNC_REQUEST"/>
 	</logger>
 	<!-- Level: FATAL 0  ERROR 3  WARN 4  INFO 6  DEBUG 7 -->
 	<root level="INFO">
-		<appender-ref ref="error"/>
+		<appender-ref ref="ASYNC_ERROR"/>
 	</root>
 </configuration>

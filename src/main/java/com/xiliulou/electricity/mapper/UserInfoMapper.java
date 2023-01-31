@@ -29,6 +29,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     List<UserBatteryInfoVO> queryListForBatteryService(@Param("query") UserInfoQuery userInfoQuery);
 
+    List<UserBatteryInfoVO> queryListByMemberCardExpireTime(@Param("query") UserInfoQuery userInfoQuery);
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("tenantId")Integer tenantId);
 

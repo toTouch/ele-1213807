@@ -350,6 +350,7 @@ public class UnionTradeOrderServiceImpl extends
 
     /**
      * 混合支付回调
+     *
      * @param callBackResource
      * @return
      */
@@ -541,6 +542,9 @@ public class UnionTradeOrderServiceImpl extends
         Long memberCardExpireTime;
         Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
 
+        //月卡订单
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+
 
         if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
@@ -625,6 +629,7 @@ public class UnionTradeOrderServiceImpl extends
             }
 
 
+
             if (Objects.nonNull(electricityMemberCardOrder.getCouponId())) {
                 UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
                 if (Objects.nonNull(userCoupon)) {
@@ -691,8 +696,6 @@ public class UnionTradeOrderServiceImpl extends
         }
 
 
-        //月卡订单
-        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(orderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
