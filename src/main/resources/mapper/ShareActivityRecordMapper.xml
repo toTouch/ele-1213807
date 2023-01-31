@@ -26,7 +26,7 @@
             <if test="startTime != null">
                 and tsar.create_time &gt;= #{startTime}
             </if>
-            <if test="startTime != null">
+            <if test="endTime != null">
                 and tsar.create_time &lt;= #{endTime}
             </if>
 		</where>
@@ -51,7 +51,7 @@
             <if test="startTime != null">
                 and tsar.create_time &gt;= #{startTime}
             </if>
-            <if test="startTime != null">
+            <if test="endTime != null">
                 and tsar.create_time &lt;= #{endTime}
             </if>
 		</where>
