@@ -81,6 +81,10 @@ public class ElectricityConfigAddAndUpdateQuery {
      */
     private Integer isOpenInsurance;
 
+    /**
+     * 是否开启人脸核身 （0--是 1--否）
+     */
+    private Integer isFaceid;
 }
 
 

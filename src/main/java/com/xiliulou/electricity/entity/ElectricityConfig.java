@@ -91,6 +91,11 @@ public class ElectricityConfig {
      */
     private Integer isOpenInsurance;
 
+    /**
+     * 是否开启人脸核身 （0--是 1--否）
+     */
+    private Integer isFaceid;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
