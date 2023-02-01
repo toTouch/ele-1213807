@@ -21,44 +21,43 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminJoinShareActivityHistoryController {
-	/**
-	 * 服务对象
-	 */
-	@Resource
-	private JoinShareActivityHistoryService joinShareActivityHistoryService;
+    /**
+     * 服务对象
+     */
+    @Resource
+    private JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 
+    /**
+     * 用户参与记录admin
+     */
+    @GetMapping(value = "/admin/joinShareActivityHistory/list")
+    public R joinActivity(@RequestParam("size") Long size,
+                          @RequestParam("offset") Long offset,
+                          @RequestParam(value = "uid", required = false) Long uid,
+                          @RequestParam("phone") String phone,
+                          @RequestParam("activityId") Integer activityId) {
 
-	/**
-	 * 用户参与记录admin
-	 */
-	@GetMapping(value = "/admin/joinShareActivityHistory/list")
-	public R joinActivity(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam( "uid") Long uid,
-			@RequestParam( "phone") String phone,
-			@RequestParam( "activityId") Integer activityId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
+        if (offset < 0) {
+            offset = 0L;
+        }
 
-		if (offset < 0) {
-			offset = 0L;
-		}
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
-				.offset(offset)
-				.size(size)
-				.tenantId(tenantId)
-				.uid(uid)
-				.phone(phone)
-				.activityId(activityId).build();
-		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
-	}
+        JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
+                .offset(offset)
+                .size(size)
+                .tenantId(tenantId)
+                .uid(uid)
+                .phone(phone)
+                .activityId(activityId).build();
+        return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
+    }
 
 }
 
