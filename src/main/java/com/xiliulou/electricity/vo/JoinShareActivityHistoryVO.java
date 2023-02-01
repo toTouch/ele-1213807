@@ -63,7 +63,6 @@ public class JoinShareActivityHistoryVO {
     */
     private Integer tenantId;
 
-
     //初始化
     public static Integer STATUS_INIT = 1;
     //已参与
