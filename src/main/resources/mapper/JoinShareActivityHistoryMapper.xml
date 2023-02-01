@@ -6,7 +6,7 @@
         select
         jsah.id as id, jsah.start_time as startTime,
          jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
-        jsah.update_time as updateTime, jsah.tenant_id as tenantId, tui.phone as join_phone, tui.name as join_name
+        jsah.update_time as updateTime, jsah.tenant_id as tenantId, tui.phone as join_phone, tui.name as join_user_name
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.uid
         <where>
