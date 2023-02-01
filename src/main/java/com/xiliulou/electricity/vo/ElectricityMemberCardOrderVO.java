@@ -14,7 +14,6 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     private String phone;
     private String franchiseeName;
     private String userName;
-    private Integer payCount;
 
     private OldUserActivityVO  oldUserActivityVO;
 }

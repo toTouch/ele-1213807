@@ -7,10 +7,13 @@
         jsah.id as id, jsah.uid as uid, jsah.join_uid as joinUid, jsah.start_time as startTime,
          jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
          jsah.update_time as updateTime, jsah.tenant_id  as tenantId
-        from t_join_share_activity_history as jsah
+        from t_join_share_activity_history as jsah left join t_user_info tui on jsah.uid=tui.uid
         <where>
             <if test="uid != null">
                 and jsah.uid = #{uid}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
             </if>
             <if test="activityId != null">
                 and jsah.activity_id = #{activityId}
