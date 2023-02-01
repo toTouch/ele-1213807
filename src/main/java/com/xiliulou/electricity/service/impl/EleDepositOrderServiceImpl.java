@@ -504,11 +504,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
 
-
         for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
-            if (!Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_SUCCESS) && !Objects.equals(payDepositOrderVO.getRefundStatus(), EleRefundOrder.STATUS_REFUND)) {
-                payDepositOrderVO.setRefundTime(null);
-            }
+            Long refundTime = eleRefundOrderService.queryRefundTime(payDepositOrderVO.getOrderId());
+            payDepositOrderVO.setRefundTime(refundTime);
         }
 
         return R.ok(payDepositOrderVOList);

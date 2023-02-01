@@ -630,6 +630,7 @@ public class UnionTradeOrderServiceImpl extends
             }
 
 
+
             if (Objects.nonNull(electricityMemberCardOrder.getCouponId())) {
                 UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
                 if (Objects.nonNull(userCoupon)) {
@@ -697,6 +698,7 @@ public class UnionTradeOrderServiceImpl extends
                 }
             }
         }
+
 
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(orderStatus);

@@ -215,6 +215,11 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR DEPOSIT ERROR! user already rent deposit,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0049", "已缴纳押金");
+        }
+
         //门店
         Store store = storeService.queryByIdFromCache(rentCarOrderQuery.getStoreId());
         if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {

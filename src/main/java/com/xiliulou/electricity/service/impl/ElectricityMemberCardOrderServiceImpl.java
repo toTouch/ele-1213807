@@ -248,7 +248,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userChangeServiceFee = serviceFee;
         }
 
-
         //判断用户是否产生电池服务费
         if ((Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) || (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime()))) {
 
@@ -2083,8 +2082,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
 
-        Long remainingNumber = userBatteryMemberCard.getRemainingNumber().longValue();
-        if (!ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber())) {
+        Long remainingNumber = electricityMemberCard.getMaxUseCount();
+        if (!ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userBatteryMemberCard.getRemainingNumber()) && Objects.nonNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() > now) {
             remainingNumber = electricityMemberCard.getMaxUseCount() + userBatteryMemberCard.getRemainingNumber();
         }
 
