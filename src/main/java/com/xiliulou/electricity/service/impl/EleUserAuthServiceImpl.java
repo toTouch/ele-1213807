@@ -209,7 +209,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             }
             
             for (UserInfo userInfo : userInfos) {
-                if (Objects.equals(SecurityUtils.getUid(), userInfo.getUid())) {
+                if (!Objects.equals(SecurityUtils.getUid(), userInfo.getUid())) {
                     return Triple.of(false, "身份信息已存在，请核实后重新提交", null);
                 }
             }
