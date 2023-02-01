@@ -1,0 +1,166 @@
+package com.xiliulou.electricity.service.impl;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.FaceRecognizeData;
+import com.xiliulou.electricity.entity.FaceRecognizeRechargeRecord;
+import com.xiliulou.electricity.mapper.FaceRecognizeDataMapper;
+import com.xiliulou.electricity.query.FaceRecognizeDataQuery;
+import com.xiliulou.electricity.service.FaceRecognizeDataService;
+import com.xiliulou.electricity.service.FaceRecognizeRechargeRecordService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FaceRecognizeDataVO;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * (FaceRecognizeData)表服务实现类
+ *
+ * @author zzlong
+ * @since 2023-01-31 15:38:29
+ */
+@Service("faceRecognizeDataService")
+@Slf4j
+public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
+
+    /**
+     * 人脸核身最大透支次数
+     */
+    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = 20;
+
+    @Autowired
+    private FaceRecognizeDataMapper faceRecognizeDataMapper;
+
+    @Autowired
+    private FaceRecognizeRechargeRecordService rechargeRecordService;
+
+    /**
+     * 通过ID查询单条数据从DB
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public FaceRecognizeData selectByIdFromDB(Long id) {
+        return this.faceRecognizeDataMapper.selectById(id);
+    }
+
+    /**
+     * 通过ID查询单条数据从缓存
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public FaceRecognizeData selectByIdFromCache(Long id) {
+        return null;
+    }
+
+    /**
+     * 查询多条数据
+     *
+     * @return 对象列表
+     */
+    @Override
+    public List<FaceRecognizeDataVO> selectByPage(FaceRecognizeDataQuery query) {
+        List<FaceRecognizeDataVO> faceRecognizeDatas = this.faceRecognizeDataMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(faceRecognizeDatas)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return faceRecognizeDatas;
+    }
+
+    @Override
+    public Integer selectByPageCount(FaceRecognizeDataQuery query) {
+        return this.faceRecognizeDataMapper.selectByPageCount(query);
+    }
+
+    /**
+     * 新增数据
+     *
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public FaceRecognizeData insert(FaceRecognizeDataQuery faceRecognizeDataQuery) {
+        FaceRecognizeData faceRecognizeData = new FaceRecognizeData();
+        BeanUtils.copyProperties(faceRecognizeDataQuery, faceRecognizeData);
+
+        faceRecognizeData.setRechargeTime(System.currentTimeMillis());
+        faceRecognizeData.setDelFlag(FaceRecognizeData.DEL_NORMAL);
+        faceRecognizeData.setCreateTime(System.currentTimeMillis());
+        faceRecognizeData.setUpdateTime(System.currentTimeMillis());
+
+        this.faceRecognizeDataMapper.insertOne(faceRecognizeData);
+
+        //保存充值记录
+        rechargeRecordService.insert(buildFaceRecognizeRechargeRecord(faceRecognizeData, faceRecognizeDataQuery.getFaceRecognizeCapacity()));
+
+        return faceRecognizeData;
+    }
+
+    /**
+     * 修改数据
+     *
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> update(FaceRecognizeDataQuery faceRecognizeDataQuery) {
+        FaceRecognizeData faceRecognizeData = this.selectByIdFromDB(faceRecognizeDataQuery.getId());
+
+        if (faceRecognizeData.getFaceRecognizeCapacity() > 0 && System.currentTimeMillis() - faceRecognizeData.getRechargeTime() < 365 * 24 * 60 * 60 * 1000L) {
+            return Pair.of(false, "计费周期内不允许重复充值");
+        }
+
+        FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
+
+        faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity());
+        faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
+        faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
+
+        this.faceRecognizeDataMapper.update(faceRecognizeDataUpdate);
+
+        //保存充值记录
+        rechargeRecordService.insert(buildFaceRecognizeRechargeRecord(faceRecognizeData, faceRecognizeDataQuery.getFaceRecognizeCapacity()));
+
+        return Pair.of(true, null);
+    }
+
+    /**
+     * 通过主键删除数据
+     *
+     * @param id 主键
+     * @return 是否成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteById(Long id) {
+        return this.faceRecognizeDataMapper.deleteById(id) > 0;
+    }
+
+
+    private FaceRecognizeRechargeRecord buildFaceRecognizeRechargeRecord(FaceRecognizeData faceRecognizeData, Integer capacity) {
+        FaceRecognizeRechargeRecord rechargeRecord = new FaceRecognizeRechargeRecord();
+        rechargeRecord.setOperator(SecurityUtils.getUid());
+        rechargeRecord.setTenantId(faceRecognizeData.getTenantId());
+        rechargeRecord.setFaceRecognizeCapacity(capacity);
+        rechargeRecord.setDelFlag(FaceRecognizeRechargeRecord.DEL_NORMAL);
+        rechargeRecord.setCreateTime(System.currentTimeMillis());
+        rechargeRecord.setUpdateTime(System.currentTimeMillis());
+
+        return rechargeRecord;
+    }
+}
