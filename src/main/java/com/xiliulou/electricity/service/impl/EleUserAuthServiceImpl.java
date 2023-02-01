@@ -134,7 +134,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     
         Triple<Boolean, String, Object> checkResult = checkIdCard(eleUserAuthList);
         if (!checkResult.getLeft()) {
-            return R.fail(checkResult.getMiddle());
+            return R.failMsg(checkResult.getMiddle());
         }
         
         UserInfo userInfo = new UserInfo();
