@@ -64,10 +64,6 @@ public class ShareActivityRecordVO {
     */
     private Integer tenantId;
 
-    /**
-     * 邀请人姓名
-     */
-    private String shareUserName;
 
 
     //初始化

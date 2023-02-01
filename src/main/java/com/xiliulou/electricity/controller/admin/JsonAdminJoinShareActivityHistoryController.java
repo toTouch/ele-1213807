@@ -35,7 +35,6 @@ public class JsonAdminJoinShareActivityHistoryController {
     public R joinActivity(@RequestParam("size") Long size,
                           @RequestParam("offset") Long offset,
                           @RequestParam(value = "uid", required = false) Long uid,
-                          @RequestParam("phone") String phone,
                           @RequestParam("activityId") Integer activityId) {
 
         if (size < 0 || size > 50) {
@@ -54,7 +53,6 @@ public class JsonAdminJoinShareActivityHistoryController {
                 .size(size)
                 .tenantId(tenantId)
                 .uid(uid)
-                .phone(phone)
                 .activityId(activityId).build();
         return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
     }

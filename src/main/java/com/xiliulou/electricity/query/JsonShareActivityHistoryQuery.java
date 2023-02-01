@@ -21,7 +21,6 @@ public class JsonShareActivityHistoryQuery {
     private Integer activityId;
     private Integer tenantId;
 
-    private String phone;
 
 
 
