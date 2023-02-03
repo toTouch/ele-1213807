@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.query.FaceRecognizeDataQuery;
 import com.xiliulou.electricity.vo.FaceRecognizeDataVO;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -23,13 +24,7 @@ public interface FaceRecognizeDataService {
      */
     FaceRecognizeData selectByIdFromDB(Long id);
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    FaceRecognizeData selectByIdFromCache(Long id);
+    FaceRecognizeData selectByTenantId(Integer tenantId);
 
     /**
      * 查询多条数据
@@ -45,7 +40,7 @@ public interface FaceRecognizeDataService {
      *
      * @return 实例对象
      */
-    FaceRecognizeData insert(FaceRecognizeDataQuery faceRecognizeDataQuery);
+    Triple<Boolean,String,Object> insert(FaceRecognizeDataQuery faceRecognizeDataQuery);
 
     /**
      * 修改数据
@@ -53,6 +48,8 @@ public interface FaceRecognizeDataService {
      * @return 实例对象
      */
     Pair<Boolean, Object> update(FaceRecognizeDataQuery faceRecognizeDataQuery);
+
+    Integer updateById(FaceRecognizeData faceRecognizeDataUpdate);
 
     /**
      * 通过主键删除数据

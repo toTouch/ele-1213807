@@ -1,0 +1,226 @@
+package com.xiliulou.electricity.service.impl;
+
+import com.tencentcloudapi.faceid.v20180301.models.EidInfo;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.FaceAuthResultDTO;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.query.FaceidResultQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.faceid.entity.dto.EidUserInfoDTO;
+import com.xiliulou.faceid.entity.rsp.FaceidResultRsp;
+import com.xiliulou.faceid.entity.rsp.FaceidTokenRsp;
+import com.xiliulou.faceid.service.FaceidResultService;
+import com.xiliulou.faceid.service.FaceidTokenService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
+
+/**
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-02-01-16:12
+ */
+@Slf4j
+@Service
+public class FaceidServiceImpl implements FaceidService {
+
+    /**
+     * 人脸核身最大透支次数
+     */
+    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = -20;
+
+    @Autowired
+    private ThirdConfigService thirdConfigService;
+
+    @Autowired
+    private FaceidTokenService faceidTokenService;
+
+    @Autowired
+    private FaceidResultService faceidResultService;
+
+    @Autowired
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private FaceAuthResultDataService faceAuthResultDataService;
+
+    @Autowired
+    private FaceRecognizeDataService faceRecognizeDataService;
+
+    @Autowired
+    private FaceRecognizeUserRecordService faceRecognizeUserRecordService;
+
+    /**
+     * 获取人脸核身token
+     *
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> getEidToken() {
+        //1.校验租户人脸核身资源包
+        FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(faceRecognizeData)) {
+            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
+        }
+        if (faceRecognizeData.getFaceRecognizeCapacity() < FACEID_MAX_OVERDRAFT_CAPACITY) {
+            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
+        }
+
+        //2.获取当前用户所属租户的商户号
+        ThirdConfig thirdConfig = thirdConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(thirdConfig) || StringUtils.isBlank(thirdConfig.getFaceMerchantId())) {
+            log.error("ELE ERROR!thirdConfig is null,uid={},tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            return Triple.of(false, "100332", "人脸核身配置信息不存在");
+        }
+
+        //3.获取人脸核身token
+        try {
+            FaceidTokenRsp faceidTokenRsp = faceidTokenService.acquireEidToken(thirdConfig.getFaceMerchantId());
+
+            return Triple.of(true, "", faceidTokenRsp);
+        } catch (Exception e) {
+            log.error("ELE ERROR!acquire eidToken fail", e);
+            return Triple.of(false, "", "获取人脸核身token失败！");
+        }
+    }
+
+    /**
+     * 获取人脸核身结果
+     *
+     * @return
+     */
+    @Override
+//    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> verifyEidResult(FaceidResultQuery faceidResultQuery) {
+
+        //1.扣减人脸核身次数
+        FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(faceRecognizeData)) {
+            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "100332", "人脸核身配置信息不存在");
+        }
+
+        FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
+        faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity()-1);
+        faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
+        faceRecognizeDataService.updateById(faceRecognizeDataUpdate);
+
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        FaceRecognizeUserRecord faceRecognizeUserRecord = new FaceRecognizeUserRecord();
+        faceRecognizeUserRecord.setStatus(faceidResultQuery.getVerifyDone() ? FaceRecognizeUserRecord.STATUS_SUCCESS : FaceRecognizeUserRecord.STATUS_FAIL);
+        faceRecognizeUserRecord.setUid(userInfo.getUid());
+        faceRecognizeUserRecord.setDelFlag(FaceRecognizeUserRecord.DEL_NORMAL);
+        faceRecognizeUserRecord.setTenantId(TenantContextHolder.getTenantId());
+        faceRecognizeUserRecord.setCreateTime(System.currentTimeMillis());
+        faceRecognizeUserRecord.setUpdateTime(System.currentTimeMillis());
+        //2.保存人脸核身使用记录
+        FaceRecognizeUserRecord recognizeUserRecord = faceRecognizeUserRecordService.insert(faceRecognizeUserRecord);
+
+        if(!faceidResultQuery.getVerifyDone()){
+            //3.若人脸核身失败 更新用户实名认证状态及审核类型
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setId(userInfo.getId());
+            userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
+            userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_FACE_FAIL);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.update(userInfoUpdate);
+        }
+
+        //4.若人脸核身完成,解密用户信息
+        if (faceidResultQuery.getVerifyDone()) {
+            return acquireEidResultAndDecode(faceRecognizeData,recognizeUserRecord, faceidResultQuery, userInfo);
+        }
+
+        return Triple.of(false, "100331", "人脸核身失败");
+    }
+
+    /**
+     * 获取人脸核身结果&解密
+     */
+    private Triple<Boolean, String, Object> acquireEidResultAndDecode(FaceRecognizeData faceRecognizeData,FaceRecognizeUserRecord recognizeUserRecord, FaceidResultQuery faceidResultQuery, UserInfo userInfo) {
+
+        try {
+            FaceidResultRsp faceidResultRsp = faceidResultService.acquireEidResult(faceidResultQuery.getToken());
+            if (Objects.isNull(faceidResultRsp)) {
+                log.error("ELE ERROR! faceidResultRsp is null,uid={}", userInfo.getUid());
+                return Triple.of(false, "100330", "人脸核身结果获取失败");
+            }
+
+            //保存人脸核身结果
+            FaceAuthResultData faceAuthResultData = faceAuthResultDataService.insert(buildFaceAuthResultData(faceidResultRsp));
+
+
+            //更新人脸核身使用记录
+            FaceRecognizeUserRecord recognizeUserRecordUpdate = new FaceRecognizeUserRecord();
+            recognizeUserRecordUpdate.setId(recognizeUserRecord.getId());
+            recognizeUserRecordUpdate.setAuthResultId(faceAuthResultData.getId());
+            recognizeUserRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            faceRecognizeUserRecordService.update(recognizeUserRecordUpdate);
+
+            //获取人脸核身解密私钥
+            String faceidPrivateKey = faceRecognizeData.getFaceidPrivateKey();
+
+            //人脸核身结果解密
+            EidUserInfoDTO eidUserInfo = faceidResultService.decodeEidResult(faceidResultRsp.getEidInfo(), faceidPrivateKey);
+            if (Objects.isNull(eidUserInfo)) {
+                log.error("ELE ERROR! eidUserInfo is null,uid={}", userInfo.getUid());
+                return Triple.of(false, "100330", "人脸核身结果获取失败");
+            }
+
+            //更新用户实名认证状态及审核类型
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setId(userInfo.getId());
+            userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
+            userInfoUpdate.setIdNumber(eidUserInfo.getIdnum());
+            userInfoUpdate.setName(eidUserInfo.getName());
+            userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.update(userInfoUpdate);
+
+            return Triple.of(true, "", null);
+        } catch (Exception e) {
+            log.error("ELE ERROR! face recognize fail,uid={}", userInfo.getUid());
+            return Triple.of(false, "100330", "人脸核身结果获取失败");
+        }
+    }
+
+
+    private FaceAuthResultData buildFaceAuthResultData(FaceidResultRsp faceidResultRsp) {
+
+        FaceAuthResultDTO faceAuthResultDTO = new FaceAuthResultDTO();
+        faceAuthResultDTO.setEidDesKey(Objects.nonNull(faceidResultRsp.getEidInfo()) ? faceidResultRsp.getEidInfo().getDesKey() : "");
+        faceAuthResultDTO.setEidCode(Objects.nonNull(faceidResultRsp.getEidInfo()) ? faceidResultRsp.getEidInfo().getEidCode() : "");
+        faceAuthResultDTO.setEidSign(Objects.nonNull(faceidResultRsp.getEidInfo()) ? faceidResultRsp.getEidInfo().getEidSign() : "");
+        faceAuthResultDTO.setEidUserInfo(Objects.nonNull(faceidResultRsp.getEidInfo()) ? faceidResultRsp.getEidInfo().getUserInfo() : "");
+        faceAuthResultDTO.setOcrAddress(Objects.nonNull(faceidResultRsp.getTextInfo()) ? faceidResultRsp.getTextInfo().getOcrAddress() : "");
+        faceAuthResultDTO.setOcrBirth(Objects.nonNull(faceidResultRsp.getTextInfo()) ? faceidResultRsp.getTextInfo().getOcrBirth() : "");
+        faceAuthResultDTO.setOcrGender(Objects.nonNull(faceidResultRsp.getTextInfo()) ? faceidResultRsp.getTextInfo().getOcrGender() : "");
+        faceAuthResultDTO.setOcrNation(Objects.nonNull(faceidResultRsp.getTextInfo()) ? faceidResultRsp.getTextInfo().getOcrNation() : "");
+
+        FaceAuthResultData faceAuthResultData = new FaceAuthResultData();
+        faceAuthResultData.setAuthResult(JsonUtil.toJson(faceAuthResultDTO));
+        faceAuthResultData.setDelFlag(FaceAuthResultData.DEL_NORMAL);
+        faceAuthResultData.setTenantId(TenantContextHolder.getTenantId());
+        faceAuthResultData.setCreateTime(System.currentTimeMillis());
+        faceAuthResultData.setUpdateTime(System.currentTimeMillis());
+
+        return faceAuthResultData;
+    }
+}

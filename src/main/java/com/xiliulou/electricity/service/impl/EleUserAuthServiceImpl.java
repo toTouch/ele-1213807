@@ -138,6 +138,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             if (Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.AUTO_REVIEW)) {
                 status = EleUserAuth.STATUS_REVIEW_PASSED;
 //                userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+                userInfo.setAuthType(UserInfo.AUTH_TYPE_SYSTEM);
             }
         }
 

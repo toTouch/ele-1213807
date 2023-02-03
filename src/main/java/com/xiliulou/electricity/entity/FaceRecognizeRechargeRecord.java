@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +24,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_face_recognize_recharge_record")
 public class FaceRecognizeRechargeRecord {
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
      * 人脸核身充值次数

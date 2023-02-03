@@ -8,27 +8,33 @@ import lombok.NoArgsConstructor;
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2023-01-31-15:40
+ * @date 2023-02-02-14:30
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FaceRecognizeDataVO {
+public class FaceRecognizeUserRecordVO {
 
     private Long id;
     /**
-     * 人脸核身次数
+     * 使用人
      */
-    private Integer faceRecognizeCapacity;
+    private Long uid;
 
-    private String faceidPrivateKey;
+    private String userName;
     /**
-     * 充值时间
+     * 审核结果
      */
-    private Long rechargeTime;
+    private String authResult;
+    /**
+     * 状态
+     */
+    private Integer status;
 
     private Integer tenantId;
 
-    private String tenantName;
+    private Long createTime;
+
+
 }

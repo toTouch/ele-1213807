@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.FaceRecognizeRechargeRecord;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FaceRecognizeDataVO;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,14 +59,12 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
     }
 
     /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
+     * 通过租户ID查询单条数据
      */
     @Override
-    public FaceRecognizeData selectByIdFromCache(Long id) {
-        return null;
+    public FaceRecognizeData selectByTenantId(Integer tenantId) {
+        return this.faceRecognizeDataMapper.selectOne(new LambdaQueryWrapper<FaceRecognizeData>().eq(FaceRecognizeData::getDelFlag, FaceRecognizeData.DEL_NORMAL)
+                .eq(FaceRecognizeData::getTenantId, tenantId));
     }
 
     /**
@@ -93,7 +94,13 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public FaceRecognizeData insert(FaceRecognizeDataQuery faceRecognizeDataQuery) {
+    public Triple<Boolean, String, Object> insert(FaceRecognizeDataQuery faceRecognizeDataQuery) {
+
+        FaceRecognizeData recognizeData = this.selectByTenantId(faceRecognizeDataQuery.getTenantId());
+        if (Objects.nonNull(recognizeData)) {
+            return Triple.of(false, "100333", "该租户已存在人脸核身配置，请勿重复添加");
+        }
+
         FaceRecognizeData faceRecognizeData = new FaceRecognizeData();
         BeanUtils.copyProperties(faceRecognizeDataQuery, faceRecognizeData);
 
@@ -107,7 +114,7 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
         //保存充值记录
         rechargeRecordService.insert(buildFaceRecognizeRechargeRecord(faceRecognizeData, faceRecognizeDataQuery.getFaceRecognizeCapacity()));
 
-        return faceRecognizeData;
+        return Triple.of(true, "", null);
     }
 
     /**
@@ -124,10 +131,15 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
             return Pair.of(false, "计费周期内不允许重复充值");
         }
 
-        FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
+        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
+        if (faceRecognizeDataQuery.getFaceRecognizeCapacity() <= 0) {
+            faceRecognizeCapacity = faceRecognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
+        }
 
+        FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
         faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
-        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity());
+        faceRecognizeDataUpdate.setFaceidPrivateKey(faceRecognizeDataQuery.getFaceidPrivateKey());
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeCapacity);
         faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
         faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
 
@@ -137,6 +149,11 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
         rechargeRecordService.insert(buildFaceRecognizeRechargeRecord(faceRecognizeData, faceRecognizeDataQuery.getFaceRecognizeCapacity()));
 
         return Pair.of(true, null);
+    }
+
+    @Override
+    public Integer updateById(FaceRecognizeData faceRecognizeDataUpdate) {
+        return this.faceRecognizeDataMapper.update(faceRecognizeDataUpdate);
     }
 
     /**

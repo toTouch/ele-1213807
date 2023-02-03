@@ -428,6 +428,9 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
+            <if test="authType != null">
+                auth_type = #{authType},
+            </if>
             <if test="batteryDepositStatus != null">
                 battery_deposit_status = #{batteryDepositStatus},
             </if>

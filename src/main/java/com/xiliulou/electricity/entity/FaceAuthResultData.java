@@ -11,33 +11,26 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 
 /**
- * (FaceRecognizeData)表实体类
+ * (FaceAuthResultData)表实体类
  *
  * @author zzlong
- * @since 2023-01-31 15:38:29
+ * @since 2023-02-03 11:03:24
  */
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_face_recognize_data")
-public class FaceRecognizeData {
+@TableName("t_face_auth_result_data")
+public class FaceAuthResultData {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
+
     /**
-     * 人脸核身次数
+     * 审核结果
      */
-    private Integer faceRecognizeCapacity;
-    /**
-     * 人脸核身私钥
-     */
-    private String faceidPrivateKey;
-    /**
-     * 充值时间
-     */
-    private Long rechargeTime;
+    private String authResult;
 
     private Integer tenantId;
     /**
