@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ThirdConfigMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ThirdConfig" id="ThirdConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="faceMerchantId" column="face_merchant_id" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectThirdConfig">
+       	select   id, tenant_id, face_merchant_id, del_flag, create_time, update_time        from t_third_config
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="ThirdConfigMap">
+        <include refid="selectThirdConfig"/>
+        where id = #{id}
+    </select>
+
+    <!--根据租户id查询最新记录-->
+    <select id="selectLatestByTenantId" resultMap="ThirdConfigMap">
+        select   id, , face_merchant_id, update_time        from t_third_config
+        where tenant_id = #{tenantId} and del_flag=0 order by create_time desc limit 1
+    </select>
+
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="ThirdConfigMap">
+        <include refid="selectThirdConfig"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="ThirdConfigMap">
+        <include refid="selectThirdConfig"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="faceMerchantId != null and faceMerchantId != ''">
+                and face_merchant_id = #{faceMerchantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_third_config(tenant_id, face_merchant_id, del_flag, create_time, update_time)
+        values (#{tenantId}, #{faceMerchantId}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_third_config
+        <set>
+            <if test="faceMerchantId != null and faceMerchantId != ''">
+                face_merchant_id = #{faceMerchantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_third_config where id = #{id}
+    </delete>
+
+</mapper>

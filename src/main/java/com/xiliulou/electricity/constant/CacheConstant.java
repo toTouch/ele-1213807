@@ -288,6 +288,11 @@ public interface CacheConstant {
     String CACHE_FRANCHISEE = "franchisee:";
 
     /**
+     * 第三方配置缓存
+     */
+    String CACHE_THIRD_CONFIG="thirdConfig:";
+
+    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
