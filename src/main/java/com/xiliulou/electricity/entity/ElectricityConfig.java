@@ -91,6 +91,22 @@ public class ElectricityConfig {
      */
     private Integer isOpenInsurance;
 
+    /**
+     * 是否迁移加盟商 0--关闭 1--开启
+     */
+    private Integer isMoveFranchisee;
+
+    /**
+     * 迁移加盟商
+     */
+    private String franchiseeMoveInfo;
+
+    public static Integer MOVE_FRANCHISEE_CLOSE = 0;
+    public static Integer MOVE_FRANCHISEE_OPEN = 1;
+
+
+
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
