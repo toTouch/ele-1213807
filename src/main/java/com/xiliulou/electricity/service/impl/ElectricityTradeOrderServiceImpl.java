@@ -405,7 +405,8 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCard.getCardPayCount() + 1);
+        electricityMemberCardOrderUpdate.setPayCount(Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+                : userBatteryMemberCard.getCardPayCount() + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
 
         return Pair.of(result, null);

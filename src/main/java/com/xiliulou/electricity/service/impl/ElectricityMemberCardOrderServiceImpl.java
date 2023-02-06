@@ -1884,7 +1884,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
-            electricityMemberCardOrder.setPayCount(userBatteryMemberCard.getCardPayCount() + 1);
+            electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+                    : userBatteryMemberCard.getCardPayCount() + 1);
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
 
             //计算套餐剩余天数
@@ -2068,7 +2069,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
-        electricityMemberCardOrder.setPayCount(userBatteryMemberCard.getCardPayCount() + 1);
+        electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+                : userBatteryMemberCard.getCardPayCount() + 1);
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
