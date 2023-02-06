@@ -18,7 +18,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectUserBatteryMemberCard">
-       	select   id, uid, member_card_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time        from t_user_battery_member_card
+       	select   id, uid, member_card_id, member_card_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,card_pay_count  from t_user_battery_member_card
     </sql>
 
     <!--查询单个-->
