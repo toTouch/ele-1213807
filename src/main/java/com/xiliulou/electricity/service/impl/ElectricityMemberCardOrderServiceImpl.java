@@ -421,8 +421,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
-        electricityMemberCardOrder
-                .setPayCount(Objects.isNull(userBatteryMemberCard) ? 1 : userBatteryMemberCard.getCardPayCount() + 1);
+        electricityMemberCardOrder.setPayCount(
+                Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+                        : userBatteryMemberCard.getCardPayCount() + 1);
         if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
         }
@@ -1700,7 +1701,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
-        electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard) ? 1 : userBatteryMemberCard.getCardPayCount() + 1);
+        electricityMemberCardOrder.setPayCount(
+                Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+                        : userBatteryMemberCard.getCardPayCount() + 1);
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         //计算套餐剩余天数
         if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
@@ -1885,7 +1888,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
-            electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+            electricityMemberCardOrder.setPayCount(
+                    Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
                     : userBatteryMemberCard.getCardPayCount() + 1);
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
 
@@ -2070,7 +2074,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
-        electricityMemberCardOrder.setPayCount(Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
+        electricityMemberCardOrder.setPayCount(
+                Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 1
                 : userBatteryMemberCard.getCardPayCount() + 1);
         baseMapper.insert(electricityMemberCardOrder);
 
