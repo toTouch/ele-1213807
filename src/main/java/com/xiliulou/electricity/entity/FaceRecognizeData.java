@@ -31,10 +31,6 @@ public class FaceRecognizeData {
      */
     private Integer faceRecognizeCapacity;
     /**
-     * 人脸核身私钥
-     */
-    private String faceidPrivateKey;
-    /**
      * 充值时间
      */
     private Long rechargeTime;

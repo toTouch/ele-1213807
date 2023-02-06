@@ -22,7 +22,6 @@ public class FaceRecognizeDataVO {
      */
     private Integer faceRecognizeCapacity;
 
-    private String faceidPrivateKey;
     /**
      * 充值时间
      */

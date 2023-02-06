@@ -43,7 +43,5 @@ public class FaceRecognizeDataQuery {
     @NotNull(message = "租户不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer tenantId;
 
-    @NotNull(message = "人脸核身PrivateKey不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
-    private String faceidPrivateKey;
 
 }

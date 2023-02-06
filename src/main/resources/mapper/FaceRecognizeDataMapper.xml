@@ -10,7 +10,6 @@
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="faceidPrivateKey" column="faceid_private_key " jdbcType="VARCHAR"/>
     </resultMap>
 
     <resultMap type="com.xiliulou.electricity.vo.FaceRecognizeDataVO" id="FaceRecognizeDataVOMap">
@@ -19,12 +18,11 @@
         <result property="rechargeTime" column="recharge_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="tenantName" column="tenant_name" jdbcType="VARCHAR"/>
-        <result property="faceidPrivateKey" column="faceid_private_key " jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 基础字段 -->
     <sql id="selectFaceRecognizeData">
-       	select   id, face_recognize_capacity, recharge_time,faceid_private_key, tenant_id, del_flag, create_time, update_time        from t_face_recognize_data
+       	select   id, face_recognize_capacity, recharge_time, tenant_id, del_flag, create_time, update_time        from t_face_recognize_data
     </sql>
 
     <!--查询单个-->
@@ -38,7 +36,6 @@
         select
         frd.id,
         frd.face_recognize_capacity,
-        frd.faceid_private_key,
         frd.recharge_time,
         frd.tenant_id,
         tt.name as tenant_name
@@ -93,8 +90,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_face_recognize_data(face_recognize_capacity,faceid_private_key, recharge_time, tenant_id, del_flag, create_time, update_time)
-        values (#{faceRecognizeCapacity},#{faceidPrivateKey}, #{rechargeTime}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_face_recognize_data(face_recognize_capacity, recharge_time, tenant_id, del_flag, create_time, update_time)
+        values (#{faceRecognizeCapacity}, #{rechargeTime}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -103,9 +100,6 @@
         <set>
             <if test="faceRecognizeCapacity != null">
                 face_recognize_capacity = #{faceRecognizeCapacity},
-            </if>
-            <if test="faceidPrivateKey != null">
-                faceid_private_key = #{faceidPrivateKey},
             </if>
             <if test="rechargeTime != null">
                 recharge_time = #{rechargeTime},

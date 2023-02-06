@@ -290,7 +290,7 @@ public interface CacheConstant {
     /**
      * 第三方配置缓存
      */
-    String CACHE_THIRD_CONFIG="thirdConfig:";
+    String CACHE_FACEID_CONFIG ="faceidConfig:";
 
     /**
      * 购买套餐下单缓存锁
