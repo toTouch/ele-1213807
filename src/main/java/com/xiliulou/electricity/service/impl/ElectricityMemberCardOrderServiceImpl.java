@@ -1684,7 +1684,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        Integer payCount = this.queryMaxPayCountByUid(user.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this
+                .queryMaxPayCountByUid(memberCardOrderAddAndUpdate.getUid(), electricityMemberCard.getTenantId());
 
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
@@ -1868,7 +1869,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
     
-        Integer payCount = this.queryMaxPayCountByUid(user.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this
+                .queryMaxPayCountByUid(memberCardOrderAddAndUpdate.getUid(), electricityMemberCard.getTenantId());
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
 
         if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
@@ -2055,7 +2057,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
     
-        Integer payCount = this.queryMaxPayCountByUid(user.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this
+                .queryMaxPayCountByUid(memberCardOrderAddAndUpdate.getUid(), electricityMemberCard.getTenantId());
 
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
