@@ -749,7 +749,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setPayAmount(electricityMemberCardOrders.get(i).getPayAmount());
             excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT) ? "线上支付" : "线下支付");
             excelVo.setBeginningTime(DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
-
+            excelVo.setPayCount(electricityMemberCardOrders.get(i).getPayCount());
+            
             electricityMemberCardOrderExcelVOS.add(excelVo);
         }
 
