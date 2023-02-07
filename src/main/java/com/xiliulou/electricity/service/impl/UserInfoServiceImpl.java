@@ -198,6 +198,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryInfoVOS.stream().forEach(item -> {
 
                 UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
+                if (Objects.nonNull(userBatteryMemberCard)) {
+                    item.setCardPayCount(userBatteryMemberCard.getCardPayCount());
+                }
 
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     Long now = System.currentTimeMillis();
