@@ -40,7 +40,7 @@
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -119,7 +119,7 @@
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -191,7 +191,7 @@
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -276,7 +276,7 @@
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -312,7 +312,7 @@
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
-            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
