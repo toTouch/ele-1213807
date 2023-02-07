@@ -2449,19 +2449,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     @Deprecated
     public Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid) {
-        List<ElectricityCabinetBox> usableEmptyCellNo = electricityCabinetBoxService.findUsableEmptyCellNo(eid);
-        if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.findUsableEmptyCellNo(eid);
+        if (!DataUtil.collectionIsUsable(electricityCabinetBoxes)) {
             return Pair.of(false, null);
         }
-        //        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
     
-        //        String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size()))
-        //                .getCellNo();
-        //        return Pair.of(true, Integer.parseInt(cellNo));
-        //        if(usableEmptyCellNo.size() == 1) {
-        //            return Pair.of(true, Integer.valueOf(usableEmptyCellNo.get(0).getCellNo()));
-        //        }
+        //仅剩一个格挡则直接分配
+        if (electricityCabinetBoxes.size() == 1) {
+            return Pair.of(true, Integer.valueOf(electricityCabinetBoxes.get(0).getCellNo()));
+        }
     
+        //如果所有格挡都分配过则随机分配
+        List<Integer> usableEmptyCellNos = electricityCabinetBoxes.parallelStream()
+                .map(ElectricityCabinetBox::getCellNo).map(Integer::valueOf).collect(Collectors.toList());
+        List<Integer> occupyEmptyCellNos = Optional.ofNullable(
+                JsonUtil.fromJsonArray(redisService.get(CacheConstant.CACHE_DISTRIBUTION_CELL + eid), Integer.class))
+                .orElse(new ArrayList<>());
+        if (usableEmptyCellNos.containsAll(occupyEmptyCellNos)) {
+            String cellNo = electricityCabinetBoxes
+                    .get(ThreadLocalRandom.current().nextInt(electricityCabinetBoxes.size())).getCellNo();
+            return Pair.of(true, Integer.parseInt(cellNo));
+        }
+    
+        //如果可分配（可使用-已分配）格挡，仅剩一个 则直接分配
+        List<Integer> distributableEmptyCellNos = new ArrayList<>(usableEmptyCellNos);
+        distributableEmptyCellNos.removeAll(occupyEmptyCellNos);
+        if (distributableEmptyCellNos.size() == 1) {
+            return Pair.of(true, distributableEmptyCellNos.get(0));
+        }
+    
+        //分配上一次取出的格挡
+        //redisService.get()
         return null;
     }
     
