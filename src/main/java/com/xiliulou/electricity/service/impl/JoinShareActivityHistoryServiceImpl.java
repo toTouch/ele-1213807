@@ -44,8 +44,6 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	@Autowired
 	ShareActivityRecordService shareActivityRecordService;
 
-    @Autowired
-    UserInfoService userInfoService;
 
 
 	/**
