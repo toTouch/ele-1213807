@@ -1399,6 +1399,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
                 return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
             }
+    
+            //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
+            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
+                EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+            }
 
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
@@ -1518,6 +1527,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R cleanBatteryServiceFee(Long uid) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1577,6 +1587,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), user.getTenantId());
 
+            //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
+            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
+                
+                
+                EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+            }
+            
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                     .memberCardName(electricityMemberCard.getName())
