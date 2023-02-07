@@ -8,14 +8,13 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
-import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -24,6 +23,7 @@ import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -86,6 +86,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     RegionService regionService;
+
+    @Autowired
+    FranchiseeMoveRecordService franchiseeMoveRecordService;
+
+    @Autowired
+    UserBatteryService userBatteryService;
 
 
     @Override
@@ -658,5 +664,115 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return result;
     }
 
+    /**
+     * 用户迁移加盟商
+     * @param franchiseeMoveQuery
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> moveFranchisee(FranchiseeMoveQuery franchiseeMoveQuery) {
 
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("ELE ERROR! not found user");
+            return Triple.of(false,"ELECTRICITY.0001", "未找到用户");
+        }
+
+        if(Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)){
+            log.error("ELE ERROR! not found userInfo,uid={}", userInfo.getUid());
+            return Triple.of(false,"ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ELE DEPOSIT ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false,"ELECTRICITY.0041", "未实名认证");
+        }
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            log.error("ELE ERROR!not found electricityConfig,uid={}", userInfo.getUid());
+            return Triple.of(false, "000001", "系统异常");
+        }
+
+        if (!Objects.equals(electricityConfig.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
+            log.error("ELE ERROR!not found open move franchisee,uid={}", userInfo.getUid());
+            return Triple.of(false, "100353", "未启用加盟商迁移");
+        }
+
+        FranchiseeMoveInfo franchiseeMoveInfo = JsonUtil.fromJson(electricityConfig.getFranchiseeMoveInfo(), FranchiseeMoveInfo.class);
+        if (Objects.isNull(franchiseeMoveInfo)) {
+            log.error("ELE ERROR!not found franchiseeMoveInfo,uid={}", userInfo.getUid());
+            return Triple.of(false, "100354", "用户加盟商迁移配置信息不存在");
+        }
+
+        //判断用户绑定的加盟商是否与待迁移加盟商一致
+        if(!Objects.equals(userInfo.getFranchiseeId() , franchiseeMoveInfo.getFromFranchiseeId())){
+            log.error("ELE ERROR! user franchisee not equals electricityConfig fromFranchiseeId,uid={}", userInfo.getId());
+            return Triple.of(false,"100356", "加盟商不支持迁移");
+        }
+
+        //查询新加盟商（分型号）
+        Franchisee newFranchisee = this.queryByIdFromCache(franchiseeMoveInfo.getToFranchiseeId());
+        if (Objects.isNull(newFranchisee)) {
+            log.error("ELE ERROR!not found newFranchisee,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0038", "用户加盟商不存在");
+        }
+
+        List<FranchiseeBatteryModelDTO> franchiseeBatteryModels = JsonUtil.fromJsonArray(newFranchisee.getModelBatteryDeposit(), FranchiseeBatteryModelDTO.class);
+        if (CollectionUtils.isEmpty(franchiseeBatteryModels)) {
+            log.error("ELE ERROR!not found franchiseeBatteryModelDTO,uid={}", userInfo.getUid());
+            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
+        }
+
+        Set<Integer> modelSet = franchiseeBatteryModels.stream().map(FranchiseeBatteryModelDTO::getModel).collect(Collectors.toSet());
+        //校验用户电池型号model
+        if (CollectionUtils.isEmpty(modelSet) || modelSet.contains(franchiseeMoveQuery.getBatteryModel())) {
+            log.error("ELE ERROR!new franchisee not have this model,uid={},model={}", userInfo.getUid(), franchiseeMoveQuery.getBatteryModel());
+            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
+        }
+
+        //更新用户所属加盟商
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.update(updateUserInfo);
+
+        String batteryType=BatteryConstant.acquireBatteryShort(franchiseeMoveQuery.getBatteryModel());
+
+
+        //处理电池相关
+        //更新用户绑定的电池型号
+        UserBattery userBatteryUpdate = new UserBattery();
+        userBatteryUpdate.setUid(userInfo.getUid());
+        userBatteryUpdate.setBatteryType(batteryType);
+        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
+        userBatteryService.updateByUid(userBatteryUpdate);
+
+        //处理保险相关
+
+        //处理租车相关
+
+
+        //生成迁移记录
+        franchiseeMoveRecordService.insert(buildFranchiseeMoveRecord(franchiseeMoveInfo,userInfo,batteryType));
+
+        return null;
+    }
+
+    private FranchiseeMoveRecord buildFranchiseeMoveRecord(FranchiseeMoveInfo franchiseeMoveInfo,UserInfo userInfo,String batteryType){
+        FranchiseeMoveRecord franchiseeMoveRecord = new FranchiseeMoveRecord();
+        franchiseeMoveRecord.setUid(userInfo.getUid());
+        franchiseeMoveRecord.setName(userInfo.getName());
+        franchiseeMoveRecord.setPhone(userInfo.getPhone());
+        franchiseeMoveRecord.setOldFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId());
+        franchiseeMoveRecord.setNewFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
+        franchiseeMoveRecord.setBatteryType(batteryType);
+        franchiseeMoveRecord.setCreateTime(System.currentTimeMillis());
+        franchiseeMoveRecord.setUpdateTime(System.currentTimeMillis());
+        franchiseeMoveRecord.setTenantId(TenantContextHolder.getTenantId());
+
+        return franchiseeMoveRecord;
+    }
 }

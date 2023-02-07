@@ -1399,6 +1399,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
     }
 
+    @Override
+    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId) {
+        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId);
+    }
+
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {
         //营业时间
         if (Objects.nonNull(electricityCabinet.getBusinessTime())) {

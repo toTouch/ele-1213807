@@ -1661,6 +1661,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, showVo);
     }
 
+    @Override
+    public ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectLatestByUid(uid, tenantId);
+    }
+
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
         if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen())) {

@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.constant;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BatteryConstant {
 
@@ -232,6 +235,53 @@ public class BatteryConstant {
 
 	public static boolean existsBatteryType(String type) {
 		return BATTERY_V.containsKey(type);
+	}
+
+
+	public static Integer acquireBatteryModel(String type) {
+		 return BATTERY_SHORT.entrySet().stream().collect(Collectors.toMap(entity-> entity.getValue(), entity-> entity.getKey())).get(type);
+	}
+
+	/**
+	 * 根据电池名称解析电池型号：B_60V_IRON_LITHIUM_20
+	 * @param batteryName
+	 * @return
+	 */
+	public static String parseBatteryModelByBatteryName(String batteryName) {
+		try {
+
+			if (StringUtils.isBlank(batteryName) || batteryName.length() < 11) {
+				return null;
+			}
+
+			StringBuilder modelName = new StringBuilder("B_");
+			char[] batteryChars = batteryName.toCharArray();
+
+			//获取电压
+			String chargeV = split(batteryChars, 4, 6);
+			modelName.append(chargeV).append("V").append("_");
+
+			//获取材料体系
+			char material = batteryChars[2];
+			if (material == '1') {
+				modelName.append(BatteryConstant.IRON_LITHIUM).append("_");
+			} else {
+				modelName.append(BatteryConstant.TERNARY_LITHIUM).append("_");
+			}
+
+			modelName.append(split(batteryChars, 9, 11));
+			return modelName.toString();
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
+	private static String split(char[] strArray, int beginIndex, int endIndex) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = beginIndex; i < endIndex; i++) {
+			stringBuilder.append(strArray[i]);
+		}
+		return stringBuilder.toString();
 	}
 }
 

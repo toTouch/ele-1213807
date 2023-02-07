@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FranchiseeMoveRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.FranchiseeMoveRecord" id="FranchiseeMoveRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="oldFranchiseeId" column="old_franchisee_id" jdbcType="INTEGER"/>
+        <result property="newFranchiseeId" column="new_franchisee_id" jdbcType="INTEGER"/>
+        <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+	<sql id="selectFranchiseeMoveRecord">
+       	select   id, uid, name, phone, old_franchisee_id, new_franchisee_id, battery_type, create_time, update_time, tenant_id        from t_franchisee_move_record
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="FranchiseeMoveRecordMap">
+        <include refid="selectFranchiseeMoveRecord"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="FranchiseeMoveRecordMap">
+        <include refid="selectFranchiseeMoveRecord"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="FranchiseeMoveRecordMap">
+        <include refid="selectFranchiseeMoveRecord"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="oldFranchiseeId != null">
+                and old_franchisee_id = #{oldFranchiseeId}
+            </if>
+            <if test="newFranchiseeId != null">
+                and new_franchisee_id = #{newFranchiseeId}
+            </if>
+            <if test="batteryType != null and batteryType != ''">
+                and battery_type = #{batteryType}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_franchisee_move_record(uid, name, phone, old_franchisee_id, new_franchisee_id, battery_type, create_time, update_time, tenant_id)
+        values (#{uid}, #{name}, #{phone}, #{oldFranchiseeId}, #{newFranchiseeId}, #{batteryType}, #{createTime}, #{updateTime}, #{tenantId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_franchisee_move_record
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="oldFranchiseeId != null">
+                old_franchisee_id = #{oldFranchiseeId},
+            </if>
+            <if test="newFranchiseeId != null">
+                new_franchisee_id = #{newFranchiseeId},
+            </if>
+            <if test="batteryType != null and batteryType != ''">
+                battery_type = #{batteryType},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_franchisee_move_record where id = #{id}
+    </delete>
+
+</mapper>
