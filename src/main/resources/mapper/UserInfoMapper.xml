@@ -65,8 +65,10 @@
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
         ubmc.member_card_id as card_id,
+        ubmc.card_pay_count as cardPayCount,
         teb.power,
         teb.business_status as businessStatus,
+        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_info tui
         left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
@@ -111,6 +113,9 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
+        </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -144,8 +149,11 @@
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
         ubmc.member_card_id as card_id,
+        ubmc.member_card_status as member_card_status,
+        ubmc.card_pay_count as cardPayCount,
         teb.power,
         teb.business_status as businessStatus,
+        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_battery_member_card ubmc
         left join t_user_info tui on ubmc.uid=tui.uid
@@ -189,6 +197,9 @@
         </if>
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
@@ -274,6 +285,9 @@
         </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in

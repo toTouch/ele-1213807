@@ -48,6 +48,11 @@ public class UserInfoQuery {
      * 排序方式
      */
     private Integer sortType;
+    
+    /**
+     * 套餐购买次数
+     */
+    private Integer cardPayCount;
 
     private Integer batteryRentStatus;
 
