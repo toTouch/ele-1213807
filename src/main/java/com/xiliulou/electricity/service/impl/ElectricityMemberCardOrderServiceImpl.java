@@ -1871,7 +1871,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
 
-        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
+        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId().longValue(), userBatteryMemberCard.getMemberCardId())) {
             //套餐订单
             ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
             electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
