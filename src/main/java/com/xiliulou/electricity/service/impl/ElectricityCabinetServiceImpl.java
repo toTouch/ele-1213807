@@ -2454,10 +2454,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Pair.of(false, null);
         }
         //        return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
-        
-        String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size()))
-                .getCellNo();
-        return Pair.of(true, Integer.parseInt(cellNo));
+    
+        //        String cellNo = usableEmptyCellNo.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNo.size()))
+        //                .getCellNo();
+        //        return Pair.of(true, Integer.parseInt(cellNo));
+        //        if(usableEmptyCellNo.size() == 1) {
+        //            return Pair.of(true, Integer.valueOf(usableEmptyCellNo.get(0).getCellNo()));
+        //        }
+    
+        return null;
     }
     
     @Override
