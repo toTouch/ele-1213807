@@ -1856,7 +1856,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
 
-        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
+        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId().longValue(), userBatteryMemberCard.getMemberCardId())) {
             //套餐订单
             ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
             electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
