@@ -2503,7 +2503,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             List<Integer> distributableEmptyCellNos) {
         List<ElectricityCabinetBox> freeTimeCells = electricityCabinetBoxes.parallelStream()
                 .filter(item -> Objects.nonNull(item.getEmptyGridStartTime()))
-                .sorted(Comparator.comparing(ElectricityCabinetBox::getEmptyGridStartTime).reversed())
+                .sorted(Comparator.comparing(ElectricityCabinetBox::getEmptyGridStartTime))
                 .collect(Collectors.toList());
         //如果空闲格挡为空或格挡为空
         if (CollectionUtils.isEmpty(freeTimeCells) || StrUtil.isBlank(freeTimeCells.get(0).getCellNo())) {
