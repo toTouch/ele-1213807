@@ -72,7 +72,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                        @RequestParam(value = "cardName", required = false) String cardName,
                        @RequestParam(value = "sortType", required = false) Integer sortType,
-                       @RequestParam(value = "payCount", required = false) Integer payCount,
+                       @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
@@ -114,7 +114,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .uid(uid)
                 .sortType(sortType)
-                .cardPayCount(payCount)
+                .cardPayCount(cardPayCount)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
                 .batteryRentStatus(batteryRentStatus)
@@ -141,6 +141,7 @@ public class JsonAdminUserInfoController extends BaseController {
                             @RequestParam(value = "uid", required = false) Long uid,
                             @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                             @RequestParam(value = "cardName", required = false) String cardName,
+                            @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
 
@@ -167,6 +168,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .uid(uid)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
+                .cardPayCount(cardPayCount)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         userInfoService.exportExcel(userInfoQuery, response);
@@ -184,7 +186,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
                         @RequestParam(value = "cardName", required = false) String cardName,
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
-                        @RequestParam(value = "payCount", required = false) Integer payCount,
+                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
     
@@ -219,7 +221,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .serviceStatus(serviceStatus)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
-                .cardPayCount(payCount)
+                .cardPayCount(cardPayCount)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
