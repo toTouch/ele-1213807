@@ -650,8 +650,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
             payAmount = BigDecimal.valueOf(0);
         }
     
-        Integer payCount = electricityMemberCardOrderService
-                .queryMaxPayCountByUid(userInfo.getUid(), electricityMemberCard.getTenantId());
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                .selectByUidFromCache(userInfo.getUid());
+        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
 
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_PACKAGE, userInfo.getUid()));

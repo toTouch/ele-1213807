@@ -405,7 +405,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     
         //获取用户购买套餐次数，，如果为空为零
-        Integer payCount = this.queryMaxPayCountByUid(user.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
     
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -1684,8 +1684,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        Integer payCount = this
-                .queryMaxPayCountByUid(memberCardOrderAddAndUpdate.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
 
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
@@ -1869,8 +1868,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
     
-        Integer payCount = this
-                .queryMaxPayCountByUid(memberCardOrderAddAndUpdate.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
 
         if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
@@ -2057,8 +2055,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
     
-        Integer payCount = this
-                .queryMaxPayCountByUid(memberCardOrderAddAndUpdate.getUid(), electricityMemberCard.getTenantId());
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
 
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
@@ -2979,8 +2976,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
     
     @Override
-    public Integer queryMaxPayCountByUid(Long uid, Integer tenantId) {
-        return Optional.ofNullable(baseMapper.queryMaxPayCountByUid(uid, tenantId)).orElse(0);
+    public Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard) {
+        return Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 0
+                : userBatteryMemberCard.getCardPayCount();
     }
     
 }

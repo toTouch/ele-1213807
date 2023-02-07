@@ -541,8 +541,7 @@ public class UnionTradeOrderServiceImpl extends
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
         Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
-        Integer payCount = electricityMemberCardOrderService
-                .queryMaxPayCountByUid(electricityMemberCardOrder.getUid(), electricityMemberCardOrder.getTenantId());
+        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
 
         //月卡订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
