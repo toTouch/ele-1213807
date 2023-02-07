@@ -237,7 +237,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
     
-                //userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
                 userBatteryDepositService.deleteByUid(userInfo.getUid());
 
@@ -370,7 +370,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateUserInfo.setUpdateTime(System.currentTimeMillis());
                     userInfoService.updateByUid(updateUserInfo);
     
-                    //userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
                     userBatteryDepositService.deleteByUid(uid);
 
@@ -660,7 +660,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
     
-            //userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
             userBatteryDepositService.deleteByUid(userInfo.getUid());
 
@@ -702,7 +702,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
     
-                //userBatteryMemberCardService.deleteByUid(userInfo.getUid());
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
