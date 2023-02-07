@@ -119,6 +119,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
         }
         electricityCabinetOrderService.update(newElectricityCabinetOrder);
+        redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(),
+                String.valueOf(electricityCabinetOrder.getNewCellNo()));
 
         //处理放入电池的相关信息
         handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
