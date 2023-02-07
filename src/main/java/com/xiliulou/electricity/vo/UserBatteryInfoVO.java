@@ -181,4 +181,9 @@ public class UserBatteryInfoVO {
      * 租车套餐过期时间
      */
     private Long rentCarMemberCardExpireTime;
+    
+    /**
+     * 购买套餐次数
+     */
+    private Integer cardPayCount;
 }

@@ -44,6 +44,9 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	@Autowired
 	ShareActivityRecordService shareActivityRecordService;
 
+    @Autowired
+    UserInfoService userInfoService;
+
 
 	/**
 	 * 通过ID查询单条数据从DB

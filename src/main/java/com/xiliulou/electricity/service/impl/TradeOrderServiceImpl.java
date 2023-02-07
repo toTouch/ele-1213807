@@ -649,6 +649,10 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             payAmount = BigDecimal.valueOf(0);
         }
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                .selectByUidFromCache(userInfo.getUid());
+        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
 
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_PACKAGE, userInfo.getUid()));
@@ -667,6 +671,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setPayCount(payCount);
         if (Objects.nonNull(userCouponId)) {
             electricityMemberCardOrder.setCouponId(userCouponId.longValue());
         }

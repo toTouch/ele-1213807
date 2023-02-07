@@ -21,11 +21,11 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminJoinShareActivityHistoryController {
-	/**
-	 * 服务对象
-	 */
-	@Resource
-	private JoinShareActivityHistoryService joinShareActivityHistoryService;
+    /**
+     * 服务对象
+     */
+    @Resource
+    private JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 
 
