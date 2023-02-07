@@ -2486,9 +2486,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
         //上一次取出的格挡为空或已占用，不用删除可分配格档
         //分配空闲时间最大的格挡
-        //electricityCabinetBoxes.parallelStream().sorted(Comparator.comparing(ElectricityCabinetBox::getEmptyGridStartTime))
-        //Integer freeTimeMaxCell =
+        List<ElectricityCabinetBox> freeTimeCells = electricityCabinetBoxes.parallelStream()
+                .sorted(Comparator.comparing(ElectricityCabinetBox::getEmptyGridStartTime).reversed())
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(freeTimeCells) && StrUtil.isNotBlank(freeTimeCells.get(0).getCellNo())
+                && !occupyEmptyCellNos.contains(Integer.valueOf(freeTimeCells.get(0).getCellNo()))) {
+            return Pair.of(true, Integer.valueOf(freeTimeCells.get(0).getCellNo()));
+        }
     
+        //
         return null;
     }
     
