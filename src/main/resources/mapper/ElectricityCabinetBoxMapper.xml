@@ -7,7 +7,8 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type
+        update_time,
+        del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version,lock_type,empty_grid_start_time
         from t_electricity_cabinet_box
         where del_flag=0
         <if test="query.electricityCabinetId != null">
@@ -24,7 +25,8 @@
         select
         ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,
         ecb.status,ecb.is_lock,ecb.is_fan,ecb.temperature,ecb.is_heat,ecb.is_light, ecb.create_time,
-        ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,
+        ecb.update_time,
+        ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,empty_grid_start_time,
         bop.lock_reason,bop.remark
         from t_electricity_cabinet_box as ecb
         left join t_box_other_properties bop on ecb.electricity_cabinet_id=bop.electricity_cabinet_id and ecb.cell_no=bop.cell_no and ecb.usable_status=1
@@ -72,6 +74,7 @@
     <update id="modifyByCellNo">
         update t_electricity_cabinet_box
         set sn = #{sn},
+        empty_grid_start_time = #{emptyGridStartTime},
         <if test="status!= null ">
             status = #{status},
         </if>
@@ -129,6 +132,9 @@
             </if>
             <if test="version != null">
                 version = #{version},
+            </if>
+            <if test="emptyGridStartTime != null">
+                empty_grid_start_time = #{emptyGridStartTime},
             </if>
         </set>
         where cell_no = #{cellNo}

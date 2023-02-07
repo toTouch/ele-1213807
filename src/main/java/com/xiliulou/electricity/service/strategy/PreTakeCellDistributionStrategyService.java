@@ -7,6 +7,6 @@ import com.xiliulou.electricity.service.EleBoxDistributionStrategyService;
  * @date 2023/2/6 19:29
  * @mood
  */
-public class PreFullChargeCellDistributionStrategyService implements EleBoxDistributionStrategyService {
+public class PreTakeCellDistributionStrategyService implements EleBoxDistributionStrategyService {
     
 }

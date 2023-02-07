@@ -293,7 +293,11 @@ public interface CacheConstant {
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
     
     /**
-     * 分配的格挡缓存
+     * 已分配过的格挡缓存
      */
     String CACHE_DISTRIBUTION_CELL = "cache_distribution_cell:";
+    /**
+     * 上一次取格挡缓存
+     */
+    String CACHE_PRE_TAKE_CELL = "pre_take_cell:";
 }

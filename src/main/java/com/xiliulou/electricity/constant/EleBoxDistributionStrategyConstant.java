@@ -8,15 +8,15 @@ package com.xiliulou.electricity.constant;
 public interface EleBoxDistributionStrategyConstant {
     
     /**
-     * 分配上一个满电的格挡策略
+     * 分配上一个取电池格挡策略
      */
-    String PRE_FULL_CHARGE_CELL_DISTRIBUTION_STRATEGY = "PRE_FULL_CHARGE_CELL_DISTRIBUTION_STRATEGY";
+    String PRE_TAKE_CELL_DISTRIBUTION_STRATEGY = "PRE_TAKE_CELL_DISTRIBUTION_STRATEGY";
     /**
      * 分配空闲时间最大的格挡策略
      */
     String FREE_TIME_MAX_CELL_DISTRIBUTION_STRATEGY = "FREE_TIME_MAX_CELL_DISTRIBUTION_STRATEGY";
     /**
-     * 随机分配格挡策略
+     * 分配随机格挡策略
      */
     String RANDOM_CELL_DISTRIBUTION_STRATEGY = "RANDOM_CELL_DISTRIBUTION_STRATEGY";
 }

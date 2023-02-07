@@ -555,6 +555,9 @@ public class EleOperateQueueHandler {
 
             //删除柜机被锁缓存
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
+            //缓存分配出去的格挡
+            redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinetOrder.getElectricityCabinetId(),
+                    String.valueOf(electricityCabinetOrder.getNewCellNo()));
         }
     }
 
@@ -681,6 +684,8 @@ public class EleOperateQueueHandler {
 
         //删除柜机被锁缓存
         redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
+        redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
+                String.valueOf(rentBatteryOrder.getCellNo()));
     }
 
     //检测还电池
