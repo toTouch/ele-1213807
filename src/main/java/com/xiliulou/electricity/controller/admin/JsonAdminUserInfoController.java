@@ -10,20 +10,30 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
-
-import java.util.Objects;
-import javax.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 用户列表(TUserInfo)表控制层
@@ -43,6 +53,8 @@ public class JsonAdminUserInfoController extends BaseController {
     RedisService redisService;
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -69,7 +81,24 @@ public class JsonAdminUserInfoController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
-
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
@@ -88,6 +117,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .cardName(cardName)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryList(userInfoQuery);
@@ -154,7 +184,25 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
-
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .name(name)
                 .phone(phone)
@@ -168,6 +216,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .serviceStatus(serviceStatus)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryCount(userInfoQuery);
@@ -237,59 +286,81 @@ public class JsonAdminUserInfoController extends BaseController {
      * @return
      */
     @GetMapping(value = "/admin/userInfo/list/v2")
-    public R queryListV2(@RequestParam(value = "size") Long size,
-                         @RequestParam(value = "offset") Long offset,
-                         @RequestParam(value = "name", required = false) String name,
-                         @RequestParam(value = "phone", required = false) String phone,
-                         @RequestParam(value = "beginTime", required = false) Long beginTime,
-                         @RequestParam(value = "endTime", required = false) Long endTime,
-                         @RequestParam(value = "authStatus", required = false) Integer authStatus) {
+    public R queryListV2(@RequestParam(value = "size") Long size, @RequestParam(value = "offset") Long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "authStatus", required = false) Integer authStatus) {
         if (size < 0 || size > 50) {
             size = 50L;
         }
-
+    
         if (offset < 0) {
             offset = 0L;
         }
-
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .authStatus(authStatus)
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone)
+                .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-
+    
         return userInfoService.queryUserAuthInfo(userInfoQuery);
     }
-
+    
     @GetMapping(value = "/admin/authenticationUserInfo/queryCount")
     public R queryAuthenticationCount(@RequestParam(value = "name", required = false) String name,
-                                      @RequestParam(value = "phone", required = false) String phone,
-                                      @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-                                      @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-                                      @RequestParam(value = "nowElectricityBatterySn", required = false) String nowElectricityBatterySn,
-                                      @RequestParam(value = "uid", required = false) Long uid,
-                                      @RequestParam(value = "cardName", required = false) String cardName,
-                                      @RequestParam(value = "memberCardId", required = false) Long memberCardId,
-                                      @RequestParam(value = "authStatus", required = false) Integer authStatus,
-                                      @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
-
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-                .name(name)
-                .phone(phone)
-                .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
-                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
-                .cardName(cardName)
-                .uid(uid)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
-                .memberCardId(memberCardId)
-                .authStatus(authStatus)
-                .serviceStatus(serviceStatus)
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+            @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+            @RequestParam(value = "nowElectricityBatterySn", required = false) String nowElectricityBatterySn,
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "cardName", required = false) String cardName,
+            @RequestParam(value = "memberCardId", required = false) Long memberCardId,
+            @RequestParam(value = "authStatus", required = false) Integer authStatus,
+            @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+        
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().name(name).phone(phone)
+                .memberCardExpireTimeBegin(memberCardExpireTimeBegin).memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .cardName(cardName).uid(uid).nowElectricityBatterySn(nowElectricityBatterySn).memberCardId(memberCardId)
+                .authStatus(authStatus).serviceStatus(serviceStatus).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-
+        
         return userInfoService.queryAuthenticationCount(userInfoQuery);
     }
 

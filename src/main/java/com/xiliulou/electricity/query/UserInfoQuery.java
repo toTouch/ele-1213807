@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -28,6 +30,7 @@ public class UserInfoQuery {
     private String nowElectricityBatterySn;
     private Long batteryId;
     private Long franchiseeId;
+    private List<Long> franchiseeIds;
 
     private Long memberCardExpireTimeBegin;
     private Long memberCardExpireTimeEnd;
