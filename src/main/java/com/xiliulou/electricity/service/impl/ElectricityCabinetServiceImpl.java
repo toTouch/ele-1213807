@@ -2471,7 +2471,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Pair.of(true, Integer.parseInt(cellNo));
         }
     
-        //如果可分配（可使用-已分配）格挡，仅剩一个 则直接分配
+        //如果可分配（可使用 - 已分配）格挡，仅剩一个 则直接分配
         List<Integer> distributableEmptyCellNos = new ArrayList<>(usableEmptyCellNos);
         distributableEmptyCellNos.removeAll(occupyEmptyCellNos);
         if (distributableEmptyCellNos.size() == 1) {
@@ -2479,7 +2479,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
     
         //分配上一次取出的格挡
-        //redisService.get()
+        String preTakeCell = redisService.get(CacheConstant.CACHE_PRE_TAKE_CELL + eid);
+        if (StrUtil.isNotBlank(preTakeCell) && !occupyEmptyCellNos.contains(Integer.valueOf(preTakeCell))) {
+            return Pair.of(true, Integer.valueOf(preTakeCell));
+        }
+    
+        //上一次取出的格挡为空或已占用，不用删除可分配格档
+        //分配空闲时间最大的格挡
+        //electricityCabinetBoxes.parallelStream().sorted(Comparator.comparing(ElectricityCabinetBox::getEmptyGridStartTime))
+        //Integer freeTimeMaxCell =
+    
         return null;
     }
     
