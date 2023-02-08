@@ -1153,14 +1153,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(false, "100001", userInfoResult);
         }
 
-        //审核状态
-        userInfoResult.setAuthStatus(userInfo.getAuthStatus());
-
+        UserCarDetail userCarDetail = new UserCarDetail();
         UserBatteryDetail userBatteryDetail = new UserBatteryDetail();
+        userInfoResult.setUserCarDetail(userCarDetail);
         userInfoResult.setUserBatteryDetail(userBatteryDetail);
 
-        UserCarDetail userCarDetail = new UserCarDetail();
-        userInfoResult.setUserCarDetail(userCarDetail);
+        //审核状态
+        userInfoResult.setAuthStatus(userInfo.getAuthStatus());
 
         //是否缴纳租电池押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -1176,9 +1175,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
         } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
+            userBatteryDetail.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         }
 
-        //套餐是否过期
+        //套餐是否过期(前端要兼容旧代码  不能删除)
         if (!Objects.isNull(userBatteryMemberCard) && !Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
         } else {
