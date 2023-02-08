@@ -183,9 +183,9 @@
 
 
     <select id="batteryMemberCardExpire" resultType="com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery">
-        select  fui.id, temc.card_name, fui.member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id
+        select  fui.id, temc.name, fui.member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id
                 from t_user_battery_member_card fui
-                left join t_user_info ui on fui.user_info_id = ui.id
+                left join t_user_info ui on fui.uid = ui.uid
                 left join t_user_oauth_bind uob on uob.uid = ui.uid
                 left join t_electricity_member_card temc on fui.member_card_id=temc.id
                 where fui.del_flag = 0

@@ -221,7 +221,13 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     public List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime) {
         return userCarMemberCardMapper.queryMemberCardExpireUser(offset, size, nowTime);
     }
-
+    
+    @Override
+    public List<CarMemberCardExpiringSoonQuery> selectCarMemberCardExpire(int offset, int size, long firstTime,
+            long lastTime) {
+        return userCarMemberCardMapper.selectCarMemberCardExpire( offset,  size,  firstTime, lastTime);
+    }
+    
     private List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {
         return this.userCarMemberCardMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }

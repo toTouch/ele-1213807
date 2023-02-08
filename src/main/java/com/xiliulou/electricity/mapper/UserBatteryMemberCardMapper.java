@@ -71,7 +71,7 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
 
     List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(@Param("offset") Integer offset,
                                                                      @Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
-
+    @Deprecated
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(@Param("offset") Integer offset,
                                                              @Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
 

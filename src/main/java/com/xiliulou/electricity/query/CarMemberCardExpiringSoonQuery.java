@@ -18,4 +18,5 @@ import lombok.Data;
     private String merchantMinProAppId;
     private String merchantMinProAppSecert;
     private String memberCardExpiringTemplate;
+    private String rentCarOrderId;
 }

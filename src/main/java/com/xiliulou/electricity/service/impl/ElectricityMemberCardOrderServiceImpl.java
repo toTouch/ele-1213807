@@ -2451,13 +2451,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         redisService.set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
 
         while (true) {
-            List<CarMemberCardExpiringSoonQuery> franchiseeUserInfos =
-                    userBatteryMemberCardService.carMemberCardExpire(offset, size, firstTime, lastTime);
-            if (!DataUtil.collectionIsUsable(franchiseeUserInfos)) {
+            List<CarMemberCardExpiringSoonQuery> carMemberCardExpireList=userCarMemberCardService.selectCarMemberCardExpire(offset, size, firstTime, lastTime);
+            if (!DataUtil.collectionIsUsable(carMemberCardExpireList)) {
                 return;
             }
-
-            franchiseeUserInfos.parallelStream().forEach(item -> {
+    
+            carMemberCardExpireList.parallelStream().forEach(item -> {
                 ElectricityPayParams ele = electricityPayParamsService.queryFromCache(item.getTenantId());
                 if (Objects.isNull(ele)) {
                     log.error("CAR MEMBER CARD EXPIRING SOON ERROR! ElectricityPayParams is null error! tenantId={}",
@@ -2574,7 +2573,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Map<String, Object> data = new HashMap<>(4);
         appTemplateQuery.setData(data);
 
-        data.put("thing2", carMemberCardExpiringSoonQuery.getCardName());
+        data.put("thing2", "租车套餐");
         data.put("date4", carMemberCardExpiringSoonQuery.getRentCarMemberCardExpireTimeStr());
         data.put("thing3", "租车套餐即将过期，请及时续费。");
 
