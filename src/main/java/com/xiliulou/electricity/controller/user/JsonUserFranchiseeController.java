@@ -85,9 +85,8 @@ public class JsonUserFranchiseeController extends BaseController {
      * 更换用户所属加盟商
      */
     @PutMapping(value = "/user/franchisee/moveFranchisee")
-    public R moveFranchisee(@RequestBody @Validated FranchiseeMoveQuery franchiseeMoveQuery) {
-
-        return returnTripleResult(franchiseeService.moveFranchisee(franchiseeMoveQuery));
+    public R moveFranchisee() {
+        return returnTripleResult(franchiseeService.moveFranchisee());
     }
 
 }

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 
 import java.util.List;
 
@@ -41,4 +43,6 @@ public interface ElectricityMemberCardService {
     R queryDisableMemberCardList(Long offset, Long size);
 
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
+
+    void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee);
 }

@@ -34,6 +34,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜保险(FranchiseeInsurance)表服务接口
@@ -313,6 +314,11 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     }
 
     @Override
+    public FranchiseeInsurance selectById(Integer insuranceId) {
+        return this.baseMapper.selectById(insuranceId);
+    }
+
+    @Override
     public R queryCanAddInsuranceBatteryType(Long franchiseeId) {
 
         //租户
@@ -344,5 +350,31 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         }
 
         return R.ok(batteryList);
+    }
+
+    @Override
+    public List<FranchiseeInsurance> selectByFranchiseeId(Long franchiseeId, Integer tenantId) {
+        return this.baseMapper.selectList(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getFranchiseeId, franchiseeId)
+                .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
+                .eq(FranchiseeInsurance::getTenantId, tenantId));
+    }
+
+    @Override
+    public void moveInsurance(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee) {
+        List<FranchiseeInsurance> oldFranchiseeInsurances = this.selectByFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId(), TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(oldFranchiseeInsurances)) {
+            return;
+        }
+
+        List<FranchiseeInsurance> franchiseeInsuranceList = oldFranchiseeInsurances.parallelStream().peek(item -> {
+            item.setId(null);
+            item.setFranchiseeId(newFranchisee.getId());
+            item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
+            item.setCreateTime(System.currentTimeMillis());
+            item.setUpdateTime(System.currentTimeMillis());
+        }).collect(Collectors.toList());
+
+        this.baseMapper.batchInsert(franchiseeInsuranceList);
+
     }
 }

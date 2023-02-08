@@ -69,5 +69,5 @@ public interface FranchiseeService {
 
     int update(Franchisee franchisee);
 
-    Triple<Boolean, String, Object> moveFranchisee(FranchiseeMoveQuery franchiseeMoveQuery);
+    Triple<Boolean, String, Object> moveFranchisee();
 }

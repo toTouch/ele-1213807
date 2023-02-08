@@ -93,6 +93,19 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     UserBatteryService userBatteryService;
 
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
+
+    @Autowired
+    InsuranceInstructionService insuranceInstructionService;
+
+    @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -666,27 +679,27 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     /**
      * 用户迁移加盟商
-     * @param franchiseeMoveQuery
+     *
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> moveFranchisee(FranchiseeMoveQuery franchiseeMoveQuery) {
+    public Triple<Boolean, String, Object> moveFranchisee() {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-        if(Objects.isNull(userInfo)){
+        if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found user");
-            return Triple.of(false,"ELECTRICITY.0001", "未找到用户");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
-        if(Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)){
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("ELE ERROR! not found userInfo,uid={}", userInfo.getUid());
-            return Triple.of(false,"ELECTRICITY.0024", "用户已被禁用");
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("ELE DEPOSIT ERROR! user not auth,uid={}", userInfo.getUid());
-            return Triple.of(false,"ELECTRICITY.0041", "未实名认证");
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -707,9 +720,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         //判断用户绑定的加盟商是否与待迁移加盟商一致
-        if(!Objects.equals(userInfo.getFranchiseeId() , franchiseeMoveInfo.getFromFranchiseeId())){
+        if (!Objects.equals(userInfo.getFranchiseeId(), franchiseeMoveInfo.getFromFranchiseeId())) {
             log.error("ELE ERROR! user franchisee not equals electricityConfig fromFranchiseeId,uid={}", userInfo.getId());
-            return Triple.of(false,"100356", "加盟商不支持迁移");
+            return Triple.of(false, "100356", "加盟商不支持迁移");
         }
 
         //查询新加盟商（分型号）
@@ -725,12 +738,53 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
 
-        Set<Integer> modelSet = franchiseeBatteryModels.stream().map(FranchiseeBatteryModelDTO::getModel).collect(Collectors.toSet());
         //校验用户电池型号model
-        if (CollectionUtils.isEmpty(modelSet) || modelSet.contains(franchiseeMoveQuery.getBatteryModel())) {
-            log.error("ELE ERROR!new franchisee not have this model,uid={},model={}", userInfo.getUid(), franchiseeMoveQuery.getBatteryModel());
+        Set<Integer> modelSet = franchiseeBatteryModels.stream().map(FranchiseeBatteryModelDTO::getModel).collect(Collectors.toSet());
+        if (CollectionUtils.isEmpty(modelSet) || modelSet.contains(franchiseeMoveInfo.getBatteryModel())) {
+            log.error("ELE ERROR!new franchisee not have this model,uid={},model={}", userInfo.getUid(), franchiseeMoveInfo.getBatteryModel());
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
+
+        String batteryType = BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel());
+
+        //获取用户绑定的保险
+        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(userInfo.getUid(), TenantContextHolder.getTenantId());
+        if (Objects.nonNull(insuranceUserInfo)) {
+            //校验新加盟商下保险保险
+            Triple<Boolean, String, Object> verifyUserInsuranceResult = verifyFranchiseeInsurance(franchiseeMoveInfo, userInfo, insuranceUserInfo, batteryType);
+            if (!verifyUserInsuranceResult.getLeft()) {
+                return verifyUserInsuranceResult;
+            }
+
+            FranchiseeInsurance newFranchiseeInsurance = (FranchiseeInsurance) verifyUserInsuranceResult.getRight();
+
+            //更新用户绑定的保险信息
+            InsuranceUserInfo insuranceUserInfoUpdate = new InsuranceUserInfo();
+            insuranceUserInfoUpdate.setId(insuranceUserInfo.getInsuranceId());
+            insuranceUserInfoUpdate.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
+            insuranceUserInfoUpdate.setInsuranceId(newFranchiseeInsurance.getId());
+            insuranceUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            insuranceUserInfoService.update(insuranceUserInfoUpdate);
+        }
+
+        //获取当前用户套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
+            //校验新加盟商下套餐
+            Triple<Boolean, String, Object> verifyFranchiseeMemberCardResult = verifyFranchiseeMemberCard(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType);
+            if (!verifyFranchiseeMemberCardResult.getLeft()) {
+                return verifyFranchiseeMemberCardResult;
+            }
+
+            ElectricityMemberCard newFranchiseeMemberCard = (ElectricityMemberCard) verifyFranchiseeMemberCardResult.getRight();
+            //更新用户套餐信息
+            UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+            userBatteryMemberCardUpdate.setUid(userInfo.getUid());
+            userBatteryMemberCardUpdate.setMemberCardId(newFranchiseeMemberCard.getId().longValue());
+            userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        }
+
 
         //更新用户所属加盟商
         UserInfo updateUserInfo = new UserInfo();
@@ -739,10 +793,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.update(updateUserInfo);
 
-        String batteryType=BatteryConstant.acquireBatteryShort(franchiseeMoveQuery.getBatteryModel());
-
-
-        //处理电池相关
         //更新用户绑定的电池型号
         UserBattery userBatteryUpdate = new UserBattery();
         userBatteryUpdate.setUid(userInfo.getUid());
@@ -750,18 +800,92 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryService.updateByUid(userBatteryUpdate);
 
-        //处理保险相关
-
-        //处理租车相关
-
-
         //生成迁移记录
-        franchiseeMoveRecordService.insert(buildFranchiseeMoveRecord(franchiseeMoveInfo,userInfo,batteryType));
+        franchiseeMoveRecordService.insert(buildFranchiseeMoveRecord(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType));
 
-        return null;
+        return Triple.of(true, "", "迁移成功！");
     }
 
-    private FranchiseeMoveRecord buildFranchiseeMoveRecord(FranchiseeMoveInfo franchiseeMoveInfo,UserInfo userInfo,String batteryType){
+    private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, String batteryType) {
+
+        //获取新加盟商下换电套餐
+        List<ElectricityMemberCard> newFranchiseeMemberCards = electricityMemberCardService.selectByFranchiseeId(userBatteryMemberCard.getMemberCardId(), TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(newFranchiseeMemberCards)) {
+            log.error("ELE ERROR! newFranchiseeMemberCards is empty,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "100360", "新加盟商未配置换电套餐信息");
+        }
+
+        //获取用户绑定的旧套餐
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        if (Objects.isNull(electricityMemberCard)) {
+            log.error("ELE ERROR! nout found electricityMemberCard,id={},uid={}", userBatteryMemberCard.getMemberCardId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "未找到换电套餐");
+        }
+
+        //检查新加盟商下有没有 与用户当前绑定套餐名称相同且金额一致的换电套餐
+        List<ElectricityMemberCard> electricityMemberCardList = newFranchiseeMemberCards.stream().filter(item -> Objects.equals(electricityMemberCard.getName(), item.getName())
+                && Objects.equals(electricityMemberCard.getType(), item.getType())
+                && Objects.equals(electricityMemberCard.getValidDays(), item.getValidDays())
+                && Objects.equals(electricityMemberCard.getMaxUseCount(), item.getMaxUseCount())
+                && Objects.equals(electricityMemberCard.getStatus(), item.getStatus())
+                && Objects.equals(electricityMemberCard.getModelType(), item.getModelType())
+                && Objects.equals(electricityMemberCard.getLimitCount(), item.getLimitCount())
+                && Objects.equals(electricityMemberCard.getBatteryType(), item.getBatteryType())
+                && item.getHolidayPrice().compareTo(electricityMemberCard.getHolidayPrice()) == 0
+        ).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(electricityMemberCardList)) {
+            log.error("ELE ERROR! not found new franchisee memberCard,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "100361", "新加盟商没有符合的换电套餐");
+        }
+
+        if (electricityMemberCardList.size() > 1) {
+            log.error("ELE ERROR! new franchisee memberCard data exception,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "100362", "新加盟商换电套餐数据异常");
+        }
+
+        return Triple.of(true, "", electricityMemberCardList.get(0));
+    }
+
+    private Triple<Boolean, String, Object> verifyFranchiseeInsurance(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, InsuranceUserInfo insuranceUserInfo, String batteryType) {
+
+        //获取新加盟商下保险
+        List<FranchiseeInsurance> newFranchiseeInsurances = franchiseeInsuranceService.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(newFranchiseeInsurances)) {
+            log.error("ELE ERROR! franchiseeInsurances is empty,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "100357", "新加盟商未配置保险信息");
+        }
+
+        //获取用户绑定的旧保险
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.selectById(insuranceUserInfo.getInsuranceId());
+        if (Objects.isNull(franchiseeInsurance)) {
+            log.error("ELE ERROR! nout found franchiseeInsurance,id={},uid={}", insuranceUserInfo.getInsuranceId(), userInfo.getUid());
+            return Triple.of(false, "100305", "保险不存在");
+        }
+
+        //检查新加盟商下有没有 与用户当前绑定保险名称相同且金额一致的保险
+        List<FranchiseeInsurance> franchiseeInsuranceList = newFranchiseeInsurances.stream().filter(item -> Objects.equals(franchiseeInsurance.getName(), item.getName())
+                && Objects.equals(franchiseeInsurance.getCid(), item.getCid())
+                && Objects.equals(franchiseeInsurance.getValidDays(), item.getValidDays())
+                && Objects.equals(franchiseeInsurance.getInsuranceType(), item.getInsuranceType())
+                && Objects.equals(franchiseeInsurance.getIsConstraint(), item.getIsConstraint())
+                && Objects.equals(batteryType, item.getBatteryType())
+                && item.getPremium().compareTo(franchiseeInsurance.getPremium()) == 0
+                && item.getForehead().compareTo(franchiseeInsurance.getForehead()) == 0
+        ).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(franchiseeInsuranceList)) {
+            log.error("ELE ERROR! not found new franchisee insurance,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "100358", "新加盟商没有符合的保险");
+        }
+
+        if (franchiseeInsuranceList.size() > 1) {
+            log.error("ELE ERROR! new franchisee insurance data exception,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
+            return Triple.of(false, "100359", "新加盟商保险数据异常");
+        }
+
+        return Triple.of(true, "", franchiseeInsuranceList.get(0));
+    }
+
+    private FranchiseeMoveRecord buildFranchiseeMoveRecord(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, String batteryType) {
         FranchiseeMoveRecord franchiseeMoveRecord = new FranchiseeMoveRecord();
         franchiseeMoveRecord.setUid(userInfo.getUid());
         franchiseeMoveRecord.setName(userInfo.getName());
@@ -769,10 +893,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchiseeMoveRecord.setOldFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId());
         franchiseeMoveRecord.setNewFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
         franchiseeMoveRecord.setBatteryType(batteryType);
+        franchiseeMoveRecord.setBatteryCardId(userBatteryMemberCard.getMemberCardId());
         franchiseeMoveRecord.setCreateTime(System.currentTimeMillis());
         franchiseeMoveRecord.setUpdateTime(System.currentTimeMillis());
         franchiseeMoveRecord.setTenantId(TenantContextHolder.getTenantId());
 
         return franchiseeMoveRecord;
     }
+
 }

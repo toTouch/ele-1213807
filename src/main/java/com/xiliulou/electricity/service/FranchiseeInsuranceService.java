@@ -34,4 +34,10 @@ public interface FranchiseeInsuranceService {
     FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType,Integer tenantId);
 
     R queryCanAddInsuranceBatteryType(Long franchiseeId);
+
+    FranchiseeInsurance selectById(Integer insuranceId);
+
+    List<FranchiseeInsurance> selectByFranchiseeId(Long toFranchiseeId, Integer tenantId);
+
+    void moveInsurance(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee);
 }

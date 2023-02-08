@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -48,9 +49,14 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     RedisService redisService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -68,7 +74,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         String franchiseeMoveDetail = null;
         //若开启了迁移加盟商
         if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo())) {
+            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
                 return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
             }
 
@@ -95,12 +101,23 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                 return R.fail("100351", "新加盟商不能为单型号");
             }
 
+
             FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
             franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
             franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
+            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
             franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
             franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
             franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
+
+            //将旧加盟商下套餐迁移到新加盟商
+            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo,newFranchisee);
+
+
+            //将旧加盟商下保险迁移到新加盟商
+            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo,newFranchisee);
+
+
         }
 
 

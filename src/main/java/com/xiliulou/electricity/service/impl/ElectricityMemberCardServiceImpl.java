@@ -22,12 +22,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -611,4 +613,27 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return electricityMemberCard;
     }
 
+    /**
+     * 根据加盟商迁移套餐
+     * @param franchiseeMoveInfo
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo,Franchisee newFranchisee) {
+        List<ElectricityMemberCard> oldElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId(),TenantContextHolder.getTenantId());
+        if(CollectionUtils.isEmpty(oldElectricityMemberCards)){
+            return;
+        }
+
+        List<ElectricityMemberCard> newElectricityMemberCards = oldElectricityMemberCards.parallelStream().peek(item -> {
+            item.setId(null);
+            item.setModelType(newFranchisee.getModelType());
+            item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
+            item.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
+            item.setCreateTime(System.currentTimeMillis());
+            item.setUpdateTime(System.currentTimeMillis());
+        }).collect(Collectors.toList());
+
+        this.baseMapper.batchInsert(newElectricityMemberCards);
+    }
 }

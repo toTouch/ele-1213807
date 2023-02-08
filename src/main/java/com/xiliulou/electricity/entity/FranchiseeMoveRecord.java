@@ -50,6 +50,10 @@ public class FranchiseeMoveRecord {
      */
     private String batteryType;
     /**
+     * 迁移前换电套餐
+     */
+    private Long batteryCardId;
+    /**
      * 创建时间
      */
     private Long createTime;

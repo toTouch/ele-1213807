@@ -202,4 +202,15 @@
     </update>
 
 
+    <insert id="batchInsert" >
+        insert into t_electricity_member_card(name, type, holiday_price, price, valid_days, max_use_count, status, create_time,
+        update_time,limit_count,franchisee_id,del_flag,tenant_id,model_type,battery_Type,is_bind_activity,activity_id
+        ) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.name}, #{item.type}, #{item.holidayPrice}, #{item.price}, #{item.validDays}, #{item.maxUseCount}, #{item.status}, #{item.createTime},
+        #{item.updateTime}, #{item.limitCount}, #{item.franchiseeId}, #{item.delFlag}, #{item.tenantId}, #{item.modelType}, #{item.batteryType}, #{item.isBindActivity}, #{item.activityId})
+        </foreach>
+    </insert>
+
+
 </mapper>

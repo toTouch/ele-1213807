@@ -24,4 +24,6 @@ public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMembe
     int update(ElectricityMemberCard electricityMemberCard);
 
     Integer isMemberCardBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
+
+    Integer batchInsert(List<ElectricityMemberCard> newElectricityMemberCards);
 }

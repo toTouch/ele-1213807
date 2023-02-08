@@ -35,4 +35,9 @@ public class FranchiseeMoveInfo {
      */
     private String toFranchiseeName;
 
+    /**
+     * 电池型号
+     */
+    private Integer batteryModel;
+
 }

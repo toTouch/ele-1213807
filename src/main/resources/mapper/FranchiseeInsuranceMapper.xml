@@ -102,4 +102,11 @@
         </if>
     </select>
 
+    <insert id="batchInsert" >
+        insert into t_franchisee_insurance(franchisee_id, cid, name, premium, forehead, valid_days, insurance_type, status,is_constraint,del_flag,create_time,update_time,battery_type,tenant_id) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.franchiseeId}, #{item.cid}, #{item.name}, #{item.premium}, #{item.forehead}, #{item.validDays}, #{item.insuranceType}, #{item.status}, #{item.isConstraint}, #{item.delFlag}, #{item.createTime}, #{item.updateTime}, #{item.batteryType}, #{item.tenantId})
+        </foreach>
+    </insert>
+
 </mapper>
