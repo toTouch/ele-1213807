@@ -221,15 +221,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardName(null);
                 }
 
-//                if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects
-//                        .equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-//                    EleDepositOrder eleDepositOrder = eleDepositOrderService
-//                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
-//                    if (Objects.nonNull(eleDepositOrder)) {
-//                        item.setPayDepositTime(eleDepositOrder.getCreateTime());
-//                        item.setStoreId(eleDepositOrder.getStoreId());
-//                    }
-//                }
+                //不能删除  会员列表详情在用，TODO 详情新增接口
+                if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects.equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+                    if (Objects.nonNull(eleDepositOrder)) {
+                        item.setPayDepositTime(eleDepositOrder.getCreateTime());
+                        item.setStoreId(eleDepositOrder.getStoreId());
+                    }
+                }
 
                 //获取用户电池型号
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(item.getUid());
