@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -104,6 +105,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery=new JsonShareMoneyActivityHistoryQuery();
 		jsonShareMoneyActivityHistoryQuery.setActivityId(activityId);
 		jsonShareMoneyActivityHistoryQuery.setUid(user.getUid());
+        jsonShareMoneyActivityHistoryQuery.setTenantId(TenantContextHolder.getTenantId());
         
         List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper
                 .queryList(jsonShareMoneyActivityHistoryQuery);
