@@ -2454,24 +2454,26 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Pair.of(false, null);
         }
     
+        //本次分配的格挡
         Integer allocationCellNo = null;
-        Set<Integer> occupyEmptyCellNos = null;
+        //上一次被占用的格挡
+        Integer occupyCellNo = null;
     
         //可使用格挡
         List<Integer> usableEmptyCellNos = electricityCabinetBoxes.parallelStream()
                 .map(ElectricityCabinetBox::getCellNo).map(Integer::valueOf).collect(Collectors.toList());
         //已分配格档
-        occupyEmptyCellNos = new HashSet<>(Optional.ofNullable(
-                JsonUtil.fromJsonArray(redisService.get(CacheConstant.CACHE_DISTRIBUTION_CELL + eid), Integer.class))
-                .orElse(new ArrayList<>()));
+        String cacheDistributionCell = redisService.get(CacheConstant.CACHE_DISTRIBUTION_CELL + eid);
+        if (StrUtil.isNotBlank(cacheDistributionCell)) {
+            occupyCellNo = Integer.valueOf(cacheDistributionCell);
+        }
         //可分配（可使用 - 已分配）格挡
         List<Integer> distributableEmptyCellNos = new ArrayList<>(usableEmptyCellNos);
-        distributableEmptyCellNos.removeAll(occupyEmptyCellNos);
+        distributableEmptyCellNos.remove(occupyCellNo);
     
         try {
             //默认分配
-            allocationCellNo = defaultDirectCellAllocation(usableEmptyCellNos, occupyEmptyCellNos,
-                    distributableEmptyCellNos);
+            allocationCellNo = defaultDirectCellAllocation(usableEmptyCellNos, distributableEmptyCellNos);
             if (Objects.nonNull(allocationCellNo)) {
                 return Pair.of(true, allocationCellNo);
             }
@@ -2493,8 +2495,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     .get(ThreadLocalRandom.current().nextInt(electricityCabinetBoxes.size()));
             return Pair.of(true, allocationCellNo);
         } finally {
-            occupyEmptyCellNos.add(allocationCellNo);
-            redisService.set(CacheConstant.CACHE_DISTRIBUTION_CELL + eid, JsonUtil.toJson(occupyEmptyCellNos), 3L,
+            //只记录本次分配过得格挡，
+            //假设这次分配出去的是空闲时间最大格挡，说明被取走的格挡不会被分配，
+            //下次将空闲时间最大格挡在可分配格挡删除，则会走到随机分配
+            redisService.set(CacheConstant.CACHE_DISTRIBUTION_CELL + eid, String.valueOf(occupyCellNo), 3L,
                     TimeUnit.MINUTES);
         }
     }
@@ -2535,7 +2539,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return cellNo;
     }
     
-    private Integer defaultDirectCellAllocation(List<Integer> usableEmptyCellNos, Set<Integer> occupyEmptyCellNos,
+    private Integer defaultDirectCellAllocation(List<Integer> usableEmptyCellNos,
             List<Integer> distributableEmptyCellNos) {
         //仅剩一个格挡则直接分配
         if (usableEmptyCellNos.size() == 1) {
@@ -2545,11 +2549,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //仅剩一个 则直接分配
         if (distributableEmptyCellNos.size() == 1) {
             return distributableEmptyCellNos.get(0);
-        }
-       
-        //所有都分配过了，则所有可用格挡随机分配
-        if (usableEmptyCellNos.containsAll(occupyEmptyCellNos)) {
-            return usableEmptyCellNos.get(ThreadLocalRandom.current().nextInt(usableEmptyCellNos.size()));
         }
         return null;
     }
