@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
+import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -42,6 +44,9 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 
 	@Autowired
 	ShareMoneyActivityService shareMoneyActivityService;
+    
+    @Autowired
+    ShareMoneyActivityRecordService shareMoneyActivityRecordService;
 
 
 	/**
@@ -99,68 +104,85 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery=new JsonShareMoneyActivityHistoryQuery();
 		jsonShareMoneyActivityHistoryQuery.setActivityId(activityId);
 		jsonShareMoneyActivityHistoryQuery.setUid(user.getUid());
-
-		List<JoinShareMoneyActivityHistory>  joinShareMoneyActivityHistoryList= joinShareMoneyActivityHistoryMapper.queryList(jsonShareMoneyActivityHistoryQuery);
-
-		if(ObjectUtil.isEmpty(joinShareMoneyActivityHistoryList)){
-			return R.ok(joinShareMoneyActivityHistoryList);
-		}
-
-		List<JoinShareMoneyActivityHistoryVO>  joinShareMoneyActivityHistoryVOList=new ArrayList<>();
-
-		for (JoinShareMoneyActivityHistory joinShareMoneyActivityHistory:joinShareMoneyActivityHistoryList) {
-
-			JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO=new JoinShareMoneyActivityHistoryVO();
-			BeanUtil.copyProperties(joinShareMoneyActivityHistory,joinShareMoneyActivityHistoryVO);
-
-
-			User joinUser=userService.queryByUidFromCache(joinShareMoneyActivityHistory.getJoinUid());
-			if(Objects.nonNull(joinUser)){
-				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-			}
-
-			ShareMoneyActivity shareMoneyActivity= shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityHistory.getActivityId());
+        
+        List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper
+                .queryList(jsonShareMoneyActivityHistoryQuery);
+        
+        if (ObjectUtil.isEmpty(voList)) {
+            return R.ok(voList);
+        }
+        
+        //		List<JoinShareMoneyActivityHistoryVO>  joinShareMoneyActivityHistoryVOList=new ArrayList<>();
+        
+        for (JoinShareMoneyActivityHistoryVO vo : voList) {
+            
+            //			JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO=new JoinShareMoneyActivityHistoryVO();
+            //			BeanUtil.copyProperties(joinShareMoneyActivityHistory,joinShareMoneyActivityHistoryVO);
+            //
+            //
+            //			User joinUser=userService.queryByUidFromCache(joinShareMoneyActivityHistory.getJoinUid());
+            //			if(Objects.nonNull(joinUser)){
+            //				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
+            //			}
+            
+            ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(vo.getActivityId());
 
 			if(Objects.nonNull(shareMoneyActivity)){
-				joinShareMoneyActivityHistoryVO.setMoney(shareMoneyActivity.getMoney());
+                vo.setMoney(shareMoneyActivity.getMoney());
 			}
-
-			joinShareMoneyActivityHistoryVOList.add(joinShareMoneyActivityHistoryVO);
-		}
-
-		return R.ok(joinShareMoneyActivityHistoryVOList);
+        
+        }
+        
+        return R.ok(voList);
 	}
 
 
 	@Override
 	public R queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
-		List<JoinShareMoneyActivityHistory>  joinShareMoneyActivityHistoryList= joinShareMoneyActivityHistoryMapper.queryList(jsonShareMoneyActivityHistoryQuery);
-
-		if(ObjectUtil.isEmpty(joinShareMoneyActivityHistoryList)){
-			return R.ok(joinShareMoneyActivityHistoryList);
-		}
-
-		List<JoinShareMoneyActivityHistoryVO>  joinShareMoneyActivityHistoryVOList=new ArrayList<>();
-
-		for (JoinShareMoneyActivityHistory joinShareMoneyActivityHistory:joinShareMoneyActivityHistoryList) {
-
-			JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO=new JoinShareMoneyActivityHistoryVO();
-			BeanUtil.copyProperties(joinShareMoneyActivityHistory,joinShareMoneyActivityHistoryVO);
-
-
-			User joinUser=userService.queryByUidFromCache(joinShareMoneyActivityHistory.getJoinUid());
-			if(Objects.nonNull(joinUser)){
-				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-			}
-
-			joinShareMoneyActivityHistoryVOList.add(joinShareMoneyActivityHistoryVO);
-		}
-
-		return R.ok(joinShareMoneyActivityHistoryVOList);
+        ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService
+                .queryByIdFromDB(jsonShareMoneyActivityHistoryQuery.getId());
+        if (Objects.isNull(shareMoneyActivityRecord)) {
+            return R.ok(new ArrayList<>());
+        }
+        
+        jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
+        jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
+        List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper
+                .queryList(jsonShareMoneyActivityHistoryQuery);
+        
+        return R.ok(voList);
+        
+        //		if(ObjectUtil.isEmpty(voList)){
+        //			return R.ok(voList);
+        //		}
+        //		List<JoinShareMoneyActivityHistoryVO>  joinShareMoneyActivityHistoryVOList=new ArrayList<>();
+        //		for (JoinShareMoneyActivityHistoryVO vo :voList) {
+        //
+        //			JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO=new JoinShareMoneyActivityHistoryVO();
+        //			BeanUtil.copyProperties(vo,joinShareMoneyActivityHistoryVO);
+        //
+        //
+        //			User joinUser=userService.queryByUidFromCache(vo.getJoinUid());
+        //			if(Objects.nonNull(joinUser)){
+        //				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
+        //			}
+        //
+        //			joinShareMoneyActivityHistoryVOList.add(joinShareMoneyActivityHistoryVO);
+        //		}
+        //
+        //		return R.ok(joinShareMoneyActivityHistoryVOList);
 	}
 
 	@Override
 	public R queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
+        ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService
+                .queryByIdFromDB(jsonShareMoneyActivityHistoryQuery.getId());
+        if (Objects.isNull(shareMoneyActivityRecord)) {
+            return R.ok(0);
+        }
+        
+        jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
+        jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
 		Integer count=joinShareMoneyActivityHistoryMapper.queryCount(jsonShareMoneyActivityHistoryQuery);
 		return R.ok(count);
 	}
