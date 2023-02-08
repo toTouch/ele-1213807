@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -119,8 +120,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityCabinetOrder.setSwitchEndTime(exchangeOrderRsp.getReportTime());
         }
         electricityCabinetOrderService.update(newElectricityCabinetOrder);
-        redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(),
-                String.valueOf(electricityCabinetOrder.getNewCellNo()));
+    
+        //保存取走电池格挡
+        if (StrUtil.isNotBlank(exchangeOrderRsp.getTakeBatteryName())) {
+            redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(),
+                    String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
+        }
 
         //处理放入电池的相关信息
         handlePlaceBatteryInfo(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
