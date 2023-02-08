@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
-import com.xiliulou.electricity.query.BoxOtherPropertiesQuery;
 import com.xiliulou.electricity.service.BoxOtherPropertiesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class JsonAdminBoxOtherPropertiesController {
     
     @PostMapping(value = "/admin/boxOtherProperties")
     public R save(@RequestBody @Validated BoxOtherProperties query) {
-        return R.ok(boxOtherPropertiesService.insert(query));
+        return R.ok(boxOtherPropertiesService.insertOrUpdate(query));
     }
     
 }

@@ -25,7 +25,7 @@
         ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,
         ecb.status,ecb.is_lock,ecb.is_fan,ecb.temperature,ecb.is_heat,ecb.is_light, ecb.create_time,
         ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,
-        bop.lock_reason,bop.remark
+        bop.lock_reason,bop.remark,bop.lock_status_change_time
         from t_electricity_cabinet_box as ecb
         left join t_box_other_properties bop on ecb.electricity_cabinet_id=bop.electricity_cabinet_id and ecb.cell_no=bop.cell_no and ecb.usable_status=1
         where ecb.del_flag=0

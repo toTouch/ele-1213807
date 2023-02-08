@@ -114,6 +114,11 @@ public class ElectricityCabinetBoxVO {
      */
     private String remark;
 
+    /**
+     * 锁仓/解锁时间
+     */
+    private Long lockStatusChangeTime;
+
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;
 }

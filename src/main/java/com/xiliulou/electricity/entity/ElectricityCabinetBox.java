@@ -111,7 +111,7 @@ public class ElectricityCabinetBox {
     private String version;
 
     /**
-     * 锁仓类型 0--人为锁仓 1--系统锁仓
+     * 锁仓类型 0--人为禁用 1--系统禁用 2--待检中
      */
     private Integer lockType;
 
