@@ -769,7 +769,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         //获取当前用户套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId())) {
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId()) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //校验新加盟商下套餐
             Triple<Boolean, String, Object> verifyFranchiseeMemberCardResult = verifyFranchiseeMemberCard(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType);
             if (!verifyFranchiseeMemberCardResult.getLeft()) {
