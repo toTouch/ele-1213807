@@ -809,7 +809,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, String batteryType) {
 
         //获取新加盟商下换电套餐
-        List<ElectricityMemberCard> newFranchiseeMemberCards = electricityMemberCardService.selectByFranchiseeId(userBatteryMemberCard.getMemberCardId(), TenantContextHolder.getTenantId());
+        List<ElectricityMemberCard> newFranchiseeMemberCards = electricityMemberCardService.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(newFranchiseeMemberCards)) {
             log.error("ELE ERROR! newFranchiseeMemberCards is empty,franchiseeId={},uid={}", franchiseeMoveInfo.getToFranchiseeId(), userInfo.getUid());
             return Triple.of(false, "100360", "新加盟商未配置换电套餐信息");
@@ -830,7 +830,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 && Objects.equals(electricityMemberCard.getStatus(), item.getStatus())
                 && Objects.equals(electricityMemberCard.getModelType(), item.getModelType())
                 && Objects.equals(electricityMemberCard.getLimitCount(), item.getLimitCount())
-                && Objects.equals(electricityMemberCard.getBatteryType(), item.getBatteryType())
+                && Objects.equals(electricityMemberCard.getBatteryType(), batteryType)
                 && item.getHolidayPrice().compareTo(electricityMemberCard.getHolidayPrice()) == 0
         ).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(electricityMemberCardList)) {
