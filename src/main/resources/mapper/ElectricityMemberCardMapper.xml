@@ -7,6 +7,27 @@
         SELECT 1 FROM t_electricity_member_card WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
     </select>
 
+
+    <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+        SELECT id,name,valid_days,model_type,battery_Type,status
+        FROM t_electricity_member_card
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardVO">
         SELECT
         temc.id,temc.name,temc.type,temc.holiday_price,temc.price,temc.valid_days,temc.max_use_count,temc.status,temc.create_time,temc.update_time,

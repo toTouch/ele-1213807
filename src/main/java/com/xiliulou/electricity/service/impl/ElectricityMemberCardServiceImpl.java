@@ -10,6 +10,7 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
+import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -611,6 +612,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             }
         }
         return electricityMemberCard;
+    }
+
+    @Override
+    public List<ElectricityMemberCard> selectByQuery(ElectricityMemberCardQuery cardQuery) {
+        return this.baseMapper.selectByQuery(cardQuery);
     }
 
     /**

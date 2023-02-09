@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -26,4 +27,6 @@ public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMembe
     Integer isMemberCardBindFranchinsee(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
     Integer batchInsert(List<ElectricityMemberCard> newElectricityMemberCards);
+
+    List<ElectricityMemberCard> selectByQuery(ElectricityMemberCardQuery cardQuery);
 }

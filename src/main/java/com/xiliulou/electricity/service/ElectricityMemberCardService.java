@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 
 import java.util.List;
 
@@ -45,4 +46,6 @@ public interface ElectricityMemberCardService {
     Integer isMemberCardBindFranchinsee(Long id, Integer tenantId);
 
     void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee);
+
+    List<ElectricityMemberCard> selectByQuery(ElectricityMemberCardQuery cardQuery);
 }
