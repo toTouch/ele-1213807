@@ -245,6 +245,12 @@ public class FaceidServiceImpl implements FaceidService {
             faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
             faceRecognizeDataService.updateById(faceRecognizeDataUpdate);
 
+            //身份证号唯一性校验
+            Integer idNumberExist = userInfoService.verifyIdNumberExist(eidUserInfo.getIdnum(), TenantContextHolder.getTenantId());
+            if (!Objects.isNull(idNumberExist)) {
+                log.error("ELE ERROR! idNumber already exist,uid={},idNumber={}", userInfo.getUid(), eidUserInfo.getIdnum());
+                return Triple.of(false, "100339", "身份证号已存在");
+            }
 
             //更新用户实名认证状态及审核类型
             UserInfo userInfoUpdate = new UserInfo();

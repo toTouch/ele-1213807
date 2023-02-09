@@ -1389,7 +1389,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public List<UserInfo> queryByIdNumber(String idNumber) {
         return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
     }
-    
+
+    @Override
+    public Integer verifyIdNumberExist(String idNumber, Integer tenantId) {
+        return userInfoMapper.verifyIdNumberExist(idNumber, tenantId);
+    }
+
     @Override
     public void unBindUserFranchiseeId(Long uid) {
         //租车押金

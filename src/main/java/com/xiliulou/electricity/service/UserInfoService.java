@@ -123,4 +123,6 @@ public interface UserInfoService extends IService<UserInfo> {
     Integer isFranchiseeBindUser(Long id, Integer tenantId);
     
     List<UserInfo> queryByIdNumber(String value);
+
+    Integer verifyIdNumberExist(String idNumber, Integer tenantId);
 }
