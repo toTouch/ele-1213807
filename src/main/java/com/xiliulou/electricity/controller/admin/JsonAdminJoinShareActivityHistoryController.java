@@ -21,11 +21,11 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminJoinShareActivityHistoryController {
-	/**
-	 * 服务对象
-	 */
-	@Resource
-	private JoinShareActivityHistoryService joinShareActivityHistoryService;
+    /**
+     * 服务对象
+     */
+    @Resource
+    private JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 
 
@@ -34,9 +34,11 @@ public class JsonAdminJoinShareActivityHistoryController {
 	 */
 	@GetMapping(value = "/admin/joinShareActivityHistory/list")
 	public R joinActivity(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam( "uid") Long uid,
-			@RequestParam( "activityId") Integer activityId) {
+			@RequestParam("offset") Long offset, @RequestParam("id") Long id,
+            @RequestParam(value = "joinName", required = false) String joinName,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "status", required = false) Integer status) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -51,10 +53,9 @@ public class JsonAdminJoinShareActivityHistoryController {
 
 		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
 				.offset(offset)
-				.size(size)
-				.tenantId(tenantId)
-				.uid(uid)
-				.activityId(activityId).build();
+				.size(size).tenantId(tenantId).id(id).joinName(joinName).status(status)
+                .startTime(beginTime).endTime(endTime)
+                .build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
 

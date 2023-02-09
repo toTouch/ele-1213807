@@ -62,4 +62,6 @@ public interface UserCarMemberCardMapper extends BaseMapper<UserCarMemberCard> {
     List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(@Param("offset") Integer offset, @Param("size") Integer size,@Param("firstTime") Long firstTime,@Param("lastTime") Long lastTime);
 
     List<FailureMemberCardVo > queryMemberCardExpireUser(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
+    
+    List<CarMemberCardExpiringSoonQuery> selectCarMemberCardExpire(@Param("offset") Integer offset, @Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
 }

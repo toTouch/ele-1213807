@@ -37,5 +37,7 @@ public class ElectricityMemberCardOrderExcelVO {
 	private String payType;
 	@ExcelProperty("购买时间")
 	private String beginningTime;
+	@ExcelProperty("购买次数")
+	private Integer payCount;
 
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
+import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
      * @param jsonShareActivityHistoryQuery 实例对象
      * @return 对象列表
      */
-    List<JoinShareActivityHistory> queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+    List<JoinShareActivityHistoryVO> queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 
 	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where activity_id=#{activityId} and status=1")
 	void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory);

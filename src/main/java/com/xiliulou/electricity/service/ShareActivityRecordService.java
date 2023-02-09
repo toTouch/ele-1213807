@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -54,4 +55,7 @@ public interface ShareActivityRecordService {
 	R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
 
 	R queryCount(ShareActivityRecordQuery shareActivityRecordQuery);
+    
+    void shareActivityRecordExportExcel(ShareActivityRecordQuery shareActivityRecordQuery,
+            HttpServletResponse response);
 }

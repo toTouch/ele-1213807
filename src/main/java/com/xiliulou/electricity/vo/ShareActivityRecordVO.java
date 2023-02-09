@@ -35,16 +35,16 @@ public class ShareActivityRecordVO {
      * 分享状态 1--初始化，2--已分享，3--分享失败
      */
     private Integer status;
-    /**
-    * 用户uid
-    */
-    private Long uid;
+    //    /**
+    //    * 用户uid
+    //    */
+    //    private Long uid;
     /**
      * 用户phone
      */
     private String phone;
     /**
-     * 活动名称
+     * 用户名称
      */
     private String name;
     /**

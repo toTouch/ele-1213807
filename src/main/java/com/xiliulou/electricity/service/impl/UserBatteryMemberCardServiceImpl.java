@@ -159,8 +159,28 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
 
         return delete;
     }
-
-
+    
+    @Override
+    public Integer unbindMembercardInfoByUid(Long uid) {
+        UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
+        userBatteryMemberCard.setUid(uid);
+        userBatteryMemberCard.setMemberCardId(0L);
+        userBatteryMemberCard.setMemberCardExpireTime(0L);
+        userBatteryMemberCard.setRemainingNumber(0);
+        userBatteryMemberCard.setMemberCardStatus(0);
+        userBatteryMemberCard.setDisableMemberCardTime(null);
+        userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+        userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+    
+        int update = this.userBatteryMemberCardMapper.unbindMembercardInfoByUid(userBatteryMemberCard);
+    
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
+            return null;
+        });
+        return update;
+    }
+    
     //处理失效套餐
     public void saveMemberCardFailureRecord(Long uid) {
 

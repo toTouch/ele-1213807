@@ -136,5 +136,16 @@
         where member_card_expire_time &lt;= #{nowTime}
         limit #{offset},#{size}
     </select>
+    
+    <select id="selectCarMemberCardExpire" resultType="com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery">
+        select ucmc.member_card_expire_time as rentCarMemberCardExpireTime, ucmc.uid, ucmc.order_id as rentCarOrderId,tui.tenant_id
+              from t_user_car_member_card  ucmc
+              left join t_user_info tui on tui.uid = ucmc.uid
+              left join t_user_oauth_bind uob on uob.uid = ucmc.uid
+              where tui.del_flag = 0
+              and ucmc.member_card_expire_time &gt; #{firstTime}
+              and ucmc.member_card_expire_time &lt;= #{lastTime}
+              limit #{offset}, #{size}
+    </select>
 
 </mapper>

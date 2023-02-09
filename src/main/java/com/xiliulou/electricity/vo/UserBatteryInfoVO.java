@@ -65,6 +65,9 @@ public class UserBatteryInfoVO {
      * 类型(0:月卡,1:季卡,2:年卡)
      */
     private Integer cardType;
+    
+    
+    private Integer memberCardStatus;
     /**
      * 月卡过期时间
      */
@@ -181,4 +184,9 @@ public class UserBatteryInfoVO {
      * 租车套餐过期时间
      */
     private Long rentCarMemberCardExpireTime;
+    
+    /**
+     * 购买套餐次数
+     */
+    private Integer cardPayCount;
 }

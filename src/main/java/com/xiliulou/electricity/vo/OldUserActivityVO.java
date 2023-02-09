@@ -96,6 +96,8 @@ public class OldUserActivityVO {
 
     private Coupon coupon;
 
+    private Integer payCount;
+
 
 
 }

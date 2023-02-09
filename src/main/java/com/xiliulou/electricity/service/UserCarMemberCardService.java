@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserCarMemberCard;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 
 import java.util.List;
@@ -58,4 +59,6 @@ public interface UserCarMemberCardService {
     void carMemberCardExpireReminder();
 
     List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime);
+    
+    List<CarMemberCardExpiringSoonQuery> selectCarMemberCardExpire(int offset, int size, long firstTime, long lastTime);
 }

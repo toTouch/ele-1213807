@@ -32,6 +32,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -183,7 +184,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R queryList(UserInfoQuery userInfoQuery) {
 
         List<UserBatteryInfoVO> userBatteryInfoVOS ;
-
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
             userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
         } else {
@@ -191,13 +191,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
-            return R.ok(userBatteryInfoVOS);
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
-
-                UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(item.getUid());
 
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     Long now = System.currentTimeMillis();
@@ -211,7 +209,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     }
                     item.setCardDays(carDays);
 
-                    if (Objects.nonNull(userBatteryMemberCard) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+                    if (!Objects.equals(item.getCardId().longValue(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
                         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                         if (Objects.nonNull(electricityMemberCardOrder)) {
                             item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
@@ -223,42 +221,33 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardName(null);
                 }
 
-                if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects
-                        .equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService
-                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+                //不能删除  会员列表详情在用，TODO 详情新增接口
+                if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects.equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
                         item.setStoreId(eleDepositOrder.getStoreId());
                     }
                 }
 
+                //获取用户电池型号
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(item.getUid());
                 if (Objects.nonNull(userBattery)) {
                     item.setModel(userBattery.getBatteryType());
                 }
 
+                //获取用户电池押金
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(item.getUid());
-
-
                 if (Objects.nonNull(userBatteryDeposit)) {
                     item.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
                     item.setOrderId(userBatteryDeposit.getOrderId());
                 }
 
-
-                if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId()) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-                    ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-                    if (Objects.nonNull(electricityMemberCard) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
-                        item.setMemberCardDisableStatus(userBatteryMemberCard.getMemberCardStatus());
-                        item.setCardName(electricityMemberCard.getName());
-                    }
-                }
-
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-                if (Objects.nonNull(electricityBattery)) {
-                    item.setNowElectricityBatterySn(electricityBattery.getSn());
-                }
+//                //获取用户电池编码
+//                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+//                if (Objects.nonNull(electricityBattery)) {
+//                    item.setNowElectricityBatterySn(electricityBattery.getSn());
+//                }
             });
         }, threadPool).exceptionally(e -> {
             log.error("payDepositTime list ERROR! query memberCard error!", e);
@@ -268,9 +257,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryMemberCard = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getCardId())) {
+                    //获取用户套餐
                     ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
                     if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                         item.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER);
+                    }
+    
+                    //不是送的次数卡
+                    if (Objects.nonNull(electricityMemberCard) && !Objects.equals(item.getCardId().longValue(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
+                            item.setCardName(electricityMemberCard.getName());
                     }
                 }
             });
@@ -1389,7 +1384,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer isFranchiseeBindUser(Long id, Integer tenantId) {
         return userInfoMapper.isFranchiseeBindUser(id, tenantId);
     }
-
+    
+    @Override
+    public List<UserInfo> queryByIdNumber(String idNumber) {
+        return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
+    }
+    
     @Override
     public void unBindUserFranchiseeId(Long uid) {
         //租车押金
