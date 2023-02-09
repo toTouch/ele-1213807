@@ -1148,13 +1148,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(false, "100001", userInfoResult);
         }
 
+        //审核状态
+        userInfoResult.setAuthStatus(userInfo.getAuthStatus());
+        userInfoResult.setFranchiseeId(userInfo.getFranchiseeId());
+
+
         UserCarDetail userCarDetail = new UserCarDetail();
         UserBatteryDetail userBatteryDetail = new UserBatteryDetail();
         userInfoResult.setUserCarDetail(userCarDetail);
         userInfoResult.setUserBatteryDetail(userBatteryDetail);
-
-        //审核状态
-        userInfoResult.setAuthStatus(userInfo.getAuthStatus());
 
         //是否缴纳租电池押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
