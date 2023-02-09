@@ -76,7 +76,11 @@
         insert into t_box_other_properties(electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, lock_status_change_time, create_time, update_time)
         values (#{electricityCabinetId}, #{cellNo}, #{delFlag}, #{remark}, #{lockReason}, #{lockStatusChangeTime}, #{createTime}, #{updateTime})
         on duplicate key
-        update remark=#{remark},lock_reason=#{lockReason},lock_status_change_time=#{lockStatusChangeTime},update_time=#{updateTime}
+        update
+        <if test="remark != null  and remark != '' ">remark,</if>
+        <if test="lockReason != null">lock_reason=#{lockReason},</if>
+        <if test="lockStatusChangeTime != null">lock_status_change_time=#{lockStatusChangeTime},</if>
+        <if test="updateTime != null">update_time=#{updateTime}</if>
     </insert>
     
     <!--通过主键修改数据-->
