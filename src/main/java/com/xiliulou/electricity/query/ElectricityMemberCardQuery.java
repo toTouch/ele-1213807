@@ -20,4 +20,8 @@ public class ElectricityMemberCardQuery {
 
     private Integer tenantId;
 
+    private Integer status;
+
+    private Long franchiseeId;
+
 }
