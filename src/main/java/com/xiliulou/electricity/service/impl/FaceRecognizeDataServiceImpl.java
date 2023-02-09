@@ -36,11 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
 
-    /**
-     * 人脸核身最大透支次数
-     */
-    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = 20;
-
     @Autowired
     private FaceRecognizeDataMapper faceRecognizeDataMapper;
 
@@ -138,7 +133,6 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
 
         FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
         faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
-        faceRecognizeDataUpdate.setFaceidPrivateKey(faceRecognizeDataQuery.getFaceidPrivateKey());
         faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeCapacity);
         faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
         faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());

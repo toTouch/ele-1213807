@@ -165,36 +165,14 @@ public class FaceidServiceImpl implements FaceidService {
             log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100337", "未开启人脸核身！");
         }
-/*  TODO
 
-
-        拿到人脸核身结果了才扣减次数
-
-        多线程更新  加锁
-        lock.lock();
-        try {
-
-        } finally {
-            lock.unlock();
-        }
-
-*/
-
-
-        //1.扣减人脸核身次数
-        FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
-        if (Objects.isNull(faceRecognizeData)) {
-            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+        FaceidConfig faceidConfig = faceidConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(faceidConfig) || StringUtils.isBlank(faceidConfig.getFaceidPrivateKey())) {
+            log.error("ELE ERROR!faceidConfig is null,uid={},tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
             return Triple.of(false, "100332", "人脸核身配置信息不存在");
         }
 
-        FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
-        faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
-        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() - 1);
-        faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
-        faceRecognizeDataService.updateById(faceRecognizeDataUpdate);
-
-
+        //保存人脸核身使用记录
         FaceRecognizeUserRecord faceRecognizeUserRecord = new FaceRecognizeUserRecord();
         faceRecognizeUserRecord.setStatus(faceidResultQuery.getVerifyDone() ? FaceRecognizeUserRecord.STATUS_SUCCESS : FaceRecognizeUserRecord.STATUS_FAIL);
         faceRecognizeUserRecord.setUid(userInfo.getUid());
@@ -202,22 +180,23 @@ public class FaceidServiceImpl implements FaceidService {
         faceRecognizeUserRecord.setTenantId(TenantContextHolder.getTenantId());
         faceRecognizeUserRecord.setCreateTime(System.currentTimeMillis());
         faceRecognizeUserRecord.setUpdateTime(System.currentTimeMillis());
-        //2.保存人脸核身使用记录
         FaceRecognizeUserRecord recognizeUserRecord = faceRecognizeUserRecordService.insert(faceRecognizeUserRecord);
 
-        if (!faceidResultQuery.getVerifyDone()) {
-            //3.若人脸核身失败 更新用户实名认证状态及审核类型
-            UserInfo userInfoUpdate = new UserInfo();
-            userInfoUpdate.setId(userInfo.getId());
-            userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
-            userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_FACE_FAIL);
-            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            userInfoService.update(userInfoUpdate);
-        }
-
-        //4.若人脸核身完成,解密用户信息
-        if (faceidResultQuery.getVerifyDone()) {
-            return acquireEidResultAndDecode(faceRecognizeData, recognizeUserRecord, faceidResultQuery, userInfo);
+        lock.lock();
+        try {
+            if (faceidResultQuery.getVerifyDone()) {
+                return acquireEidResultAndDecode(faceidConfig, recognizeUserRecord, faceidResultQuery, userInfo);
+            } else {
+                //若人脸核身失败 更新用户实名认证状态及审核类型
+                UserInfo userInfoUpdate = new UserInfo();
+                userInfoUpdate.setId(userInfo.getId());
+                userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
+                userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_FACE_FAIL);
+                userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoService.update(userInfoUpdate);
+            }
+        } finally {
+            lock.unlock();
         }
 
         return Triple.of(false, "100331", "人脸核身失败");
@@ -226,7 +205,7 @@ public class FaceidServiceImpl implements FaceidService {
     /**
      * 获取人脸核身结果&解密
      */
-    private Triple<Boolean, String, Object> acquireEidResultAndDecode(FaceRecognizeData faceRecognizeData, FaceRecognizeUserRecord recognizeUserRecord, FaceidResultQuery faceidResultQuery, UserInfo userInfo) {
+    private Triple<Boolean, String, Object> acquireEidResultAndDecode(FaceidConfig faceidConfig, FaceRecognizeUserRecord recognizeUserRecord, FaceidResultQuery faceidResultQuery, UserInfo userInfo) {
 
         try {
             FaceidResultRsp faceidResultRsp = faceidResultService.acquireEidResult(faceidResultQuery.getToken());
@@ -238,7 +217,6 @@ public class FaceidServiceImpl implements FaceidService {
             //保存人脸核身结果
             FaceAuthResultData faceAuthResultData = faceAuthResultDataService.insert(buildFaceAuthResultData(faceidResultRsp));
 
-
             //更新人脸核身使用记录
             FaceRecognizeUserRecord recognizeUserRecordUpdate = new FaceRecognizeUserRecord();
             recognizeUserRecordUpdate.setId(recognizeUserRecord.getId());
@@ -246,15 +224,27 @@ public class FaceidServiceImpl implements FaceidService {
             recognizeUserRecordUpdate.setUpdateTime(System.currentTimeMillis());
             faceRecognizeUserRecordService.update(recognizeUserRecordUpdate);
 
-            //获取人脸核身解密私钥
-            String faceidPrivateKey = faceRecognizeData.getFaceidPrivateKey();
 
             //人脸核身结果解密
-            EidUserInfoDTO eidUserInfo = faceidResultService.decodeEidResult(faceidResultRsp.getEidInfo(), faceidPrivateKey);
+            EidUserInfoDTO eidUserInfo = faceidResultService.decodeEidResult(faceidResultRsp.getEidInfo(), faceidConfig.getFaceidPrivateKey());
             if (Objects.isNull(eidUserInfo)) {
                 log.error("ELE ERROR! eidUserInfo is null,uid={}", userInfo.getUid());
                 return Triple.of(false, "100330", "人脸核身结果获取失败");
             }
+
+            //扣减人脸核身次数
+            FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.isNull(faceRecognizeData)) {
+                log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+                return Triple.of(false, "100332", "人脸核身配置信息不存在");
+            }
+
+            FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
+            faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
+            faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() - 1);
+            faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
+            faceRecognizeDataService.updateById(faceRecognizeDataUpdate);
+
 
             //更新用户实名认证状态及审核类型
             UserInfo userInfoUpdate = new UserInfo();

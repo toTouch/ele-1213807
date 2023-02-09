@@ -53,6 +53,7 @@ public class FaceidConfigServiceImpl implements FaceidConfigService {
         if (Objects.isNull(faceidConfigQuery.getId())) {
             FaceidConfig faceidConfig = new FaceidConfig();
             faceidConfig.setFaceMerchantId(faceidConfigQuery.getFaceMerchantId());
+            faceidConfig.setFaceidPrivateKey(faceidConfigQuery.getFaceidPrivateKey());
             faceidConfig.setDelFlag(FaceidConfig.DEL_NORMAL);
             faceidConfig.setTenantId(TenantContextHolder.getTenantId());
             faceidConfig.setCreateTime(System.currentTimeMillis());
@@ -69,6 +70,7 @@ public class FaceidConfigServiceImpl implements FaceidConfigService {
 
         FaceidConfig faceidConfigUpdate = new FaceidConfig();
         faceidConfigUpdate.setFaceMerchantId(faceidConfigQuery.getFaceMerchantId());
+        faceidConfigUpdate.setFaceidPrivateKey(faceidConfigQuery.getFaceidPrivateKey());
         faceidConfigUpdate.setTenantId(TenantContextHolder.getTenantId());
         faceidConfigUpdate.setUpdateTime(System.currentTimeMillis());
         int update = this.faceidConfigMapper.update(faceidConfigUpdate);
