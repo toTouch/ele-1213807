@@ -444,7 +444,7 @@ public class JsonAdminUserInfoController extends BaseController {
             return;
         }
 
-        if (Objects.isNull(userInfoQuery.getMemberCardExpireTimeBegin())) {
+        if (Objects.isNull(userInfoQuery.getMemberCardExpireTimeBegin()) && Objects.isNull(userInfoQuery.getMemberCardExpireTimeEnd())) {
             Long memberCardExpireTimeEnd = null;
             Long memberCardExpireTimeBegin = null;
 
