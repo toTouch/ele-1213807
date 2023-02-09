@@ -130,12 +130,13 @@ public class JsonAdminUserInfoController extends BaseController {
                 .cardPayCount(cardPayCount)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
+                .memberCardExpireType(memberCardExpireType)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
-        verifyMemberCardExpireTimeEnd(userInfoQuery, memberCardExpireType);
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -238,10 +239,11 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
                 .cardPayCount(cardPayCount)
+                .memberCardExpireType(memberCardExpireType)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
-        verifyMemberCardExpireTimeEnd(userInfoQuery, memberCardExpireType);
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
 
         return userInfoService.queryCount(userInfoQuery);
     }
@@ -435,12 +437,12 @@ public class JsonAdminUserInfoController extends BaseController {
     }
 
 
-    private void verifyMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery, Integer memberCardExpireType) {
-        if (Objects.isNull(memberCardExpireType)) {
+    private void verifyMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery) {
+        if (Objects.isNull(userInfoQuery.getMemberCardExpireType())) {
             return;
         }
 
-        if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_ALL)) {
+        if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_ALL)) {
             return;
         }
 
@@ -448,15 +450,15 @@ public class JsonAdminUserInfoController extends BaseController {
             Long memberCardExpireTimeEnd = null;
             Long memberCardExpireTimeBegin = null;
 
-            if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
+            if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
                 memberCardExpireTimeBegin = System.currentTimeMillis();
-            } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_THREE)) {
+            } else if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_THREE)) {
                 memberCardExpireTimeBegin = System.currentTimeMillis();
                 memberCardExpireTimeEnd = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
-            } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
+            } else if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
                 memberCardExpireTimeBegin = System.currentTimeMillis();
                 memberCardExpireTimeEnd = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
-            } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
+            } else if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
                 memberCardExpireTimeEnd = System.currentTimeMillis();
             }
             userInfoQuery.setMemberCardExpireTimeBegin(memberCardExpireTimeBegin);
