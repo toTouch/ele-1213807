@@ -92,7 +92,7 @@ public class ElectricityConfig {
     private Integer isOpenInsurance;
 
     /**
-     * 是否迁移加盟商 0--关闭 1--开启
+     * 是否迁移加盟商 1--关闭 2--开启
      */
     private Integer isMoveFranchisee;
 
@@ -101,8 +101,8 @@ public class ElectricityConfig {
      */
     private String franchiseeMoveInfo;
 
-    public static Integer MOVE_FRANCHISEE_CLOSE = 0;
-    public static Integer MOVE_FRANCHISEE_OPEN = 1;
+    public static Integer MOVE_FRANCHISEE_CLOSE = 1;
+    public static Integer MOVE_FRANCHISEE_OPEN = 0;
 
 
 
