@@ -30,10 +30,10 @@ public class ShareMoneyActivityRecordVO {
      * 分享状态 1--初始化，2--已分享，3--分享失败
      */
     private Integer status;
-    /**
-    * 用户uid
-    */
-    private Long uid;
+    //    /**
+    //    * 用户uid
+    //    */
+    //    private Long uid;
     /**
      * 用户phone
      */

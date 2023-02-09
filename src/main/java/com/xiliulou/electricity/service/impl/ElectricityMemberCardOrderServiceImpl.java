@@ -403,7 +403,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买相同类型的套餐!");
             }
         }
-
+    
+        //获取用户购买套餐次数，，如果为空为零
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
+    
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
@@ -421,6 +424,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setPayCount(payCount);
         if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
         }
@@ -463,6 +467,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
@@ -487,6 +492,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
             electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
             electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrderUpdate.setPayCount(payCount + 1);
             baseMapper.updateById(electricityMemberCardOrderUpdate);
 
             //修改优惠券状态为已使用
@@ -743,7 +749,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setPayAmount(electricityMemberCardOrders.get(i).getPayAmount());
             excelVo.setPayType(Objects.equals(electricityMemberCardOrders.get(i).getPayType(), ElectricityMemberCardOrder.ONLINE_PAYMENT) ? "线上支付" : "线下支付");
             excelVo.setBeginningTime(DateUtil.format(DateUtil.date(electricityMemberCardOrders.get(i).getCreateTime()), DatePattern.NORM_DATETIME_PATTERN));
-
+            excelVo.setPayCount(electricityMemberCardOrders.get(i).getPayCount());
+            
             electricityMemberCardOrderExcelVOS.add(excelVo);
         }
 
@@ -1399,6 +1406,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
                 return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
             }
+    
+            //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
+            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
+                EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+            }
 
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
@@ -1518,6 +1534,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R cleanBatteryServiceFee(Long uid) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -1577,6 +1594,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), user.getTenantId());
 
+            //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
+            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
+                
+                
+                EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+            }
+            
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
                     .memberCardName(electricityMemberCard.getName())
@@ -1676,6 +1704,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
+
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -1694,6 +1725,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setPayCount(payCount + 1);
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         //计算套餐剩余天数
         if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
@@ -1703,7 +1735,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         baseMapper.insert(electricityMemberCardOrder);
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+
         UserBatteryMemberCard userBatteryMemberCardAddAndUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardAddAndUpdate.setUid(userInfo.getUid());
         userBatteryMemberCardAddAndUpdate.setTenantId(userInfo.getTenantId());
@@ -1713,6 +1745,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardAddAndUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCardAddAndUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardAddAndUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+        userBatteryMemberCardAddAndUpdate.setCardPayCount(electricityMemberCardOrder.getPayCount());
         if (Objects.isNull(userBatteryMemberCard)) {
             userBatteryMemberCardAddAndUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardService.insert(userBatteryMemberCardAddAndUpdate);
@@ -1855,8 +1888,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
+    
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
 
-        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
+        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId().longValue(), userBatteryMemberCard.getMemberCardId())) {
             //套餐订单
             ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
             electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -1875,6 +1911,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+            electricityMemberCardOrder.setPayCount(payCount + 1);
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
 
             //计算套餐剩余天数
@@ -1884,10 +1921,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             baseMapper.insert(electricityMemberCardOrder);
+
+            userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrder.getPayCount());
         }
 
-
-        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
 
         //用户
         Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
@@ -2038,6 +2075,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("100028", "月卡暂停状态，不能修改套餐过期时间!");
         }
+    
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
 
         //套餐订单
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
@@ -2058,6 +2097,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
+        electricityMemberCardOrder.setPayCount(payCount + 1);
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
@@ -2080,6 +2120,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
         userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
         userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber.intValue());
+        userBatteryMemberCardUpdate.setCardPayCount(electricityMemberCardOrder.getPayCount());
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
@@ -2410,13 +2451,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         redisService.set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime));
 
         while (true) {
-            List<CarMemberCardExpiringSoonQuery> franchiseeUserInfos =
-                    userBatteryMemberCardService.carMemberCardExpire(offset, size, firstTime, lastTime);
-            if (!DataUtil.collectionIsUsable(franchiseeUserInfos)) {
+            List<CarMemberCardExpiringSoonQuery> carMemberCardExpireList=userCarMemberCardService.selectCarMemberCardExpire(offset, size, firstTime, lastTime);
+            if (!DataUtil.collectionIsUsable(carMemberCardExpireList)) {
                 return;
             }
-
-            franchiseeUserInfos.parallelStream().forEach(item -> {
+    
+            carMemberCardExpireList.parallelStream().forEach(item -> {
                 ElectricityPayParams ele = electricityPayParamsService.queryFromCache(item.getTenantId());
                 if (Objects.isNull(ele)) {
                     log.error("CAR MEMBER CARD EXPIRING SOON ERROR! ElectricityPayParams is null error! tenantId={}",
@@ -2533,7 +2573,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Map<String, Object> data = new HashMap<>(4);
         appTemplateQuery.setData(data);
 
-        data.put("thing2", carMemberCardExpiringSoonQuery.getCardName());
+        data.put("thing2", "租车套餐");
         data.put("date4", carMemberCardExpiringSoonQuery.getRentCarMemberCardExpireTimeStr());
         data.put("thing3", "租车套餐即将过期，请及时续费。");
 
@@ -2954,7 +2994,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         return Pair.of(false, null);
     }
-
+    
+    @Override
+    public Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard) {
+        return Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 0
+                : userBatteryMemberCard.getCardPayCount();
+    }
+    
 }
 
 

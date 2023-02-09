@@ -68,6 +68,11 @@ public class ElectricityMemberCardOrder {
     //优惠券Id
     private Long couponId;
 
+    /**
+     * 套餐购买次数
+     */
+    private Integer payCount;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 0;

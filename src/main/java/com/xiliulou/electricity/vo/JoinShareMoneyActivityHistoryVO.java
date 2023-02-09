@@ -19,14 +19,18 @@ public class JoinShareMoneyActivityHistoryVO {
      * recordId
      */
     private Long recordId;
+    //    /**
+    //    * 邀请用户uid
+    //    */
+    //    private Long uid;
+    //    /**
+    //    * 参与用户uid
+    //    */
+    //    private Long joinUid;
     /**
-    * 邀请用户uid
-    */
-    private Long uid;
-    /**
-    * 参与用户uid
-    */
-    private Long joinUid;
+     * 参与用户名
+     */
+    private String joinName;
     /**
      * 参与用户phone
      */

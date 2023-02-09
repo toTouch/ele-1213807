@@ -58,6 +58,13 @@ public interface UserBatteryMemberCardService {
      * @return 是否成功
      */
     Integer deleteByUid(Long id);
+    
+    /**
+     * 解绑用户套餐信息
+     * @param uid
+     * @return
+     */
+    Integer unbindMembercardInfoByUid(Long uid);
 
     /**
      * 用户套餐减次数

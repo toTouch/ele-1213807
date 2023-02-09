@@ -49,7 +49,7 @@
 
     <select id="queryCreateTimeMaxEleDisableMemberCardRecord"
             resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
-        select member_card_name, status, user_name,phone, create_time, update_time,tenant_id, err_msg,
+        select id,member_card_name, status, user_name,phone, create_time, update_time,tenant_id, err_msg,
         disable_member_card_no,card_days,choose_days , real_days , pay_status,charge_rate,disable_card_time_type from
         t_ele_disable_member_card_record
         where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1

@@ -388,7 +388,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getProductKey,
                                 electricityCabinet.getProductKey())
                         .eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName())
-                        .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
+                        //.eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
                         .eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             for (ElectricityCabinet existsElectricityCabinet : existsElectricityCabinetList) {

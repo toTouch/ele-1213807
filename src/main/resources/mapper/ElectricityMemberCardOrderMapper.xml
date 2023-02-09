@@ -310,6 +310,9 @@
     <select id="queryCreateTimeMaxMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select order_id,status,coupon_id from t_electricity_member_card_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
-
-
+    
+    <select id="queryMaxPayCountByUid" resultType="integer">
+        select max(pay_count) from t_electricity_member_card_order
+        where tenant_id = #{tenantId} and uid = #{uid}
+    </select>
 </mapper>

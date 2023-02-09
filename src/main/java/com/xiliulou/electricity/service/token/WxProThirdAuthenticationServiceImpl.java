@@ -8,6 +8,7 @@ import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.*;
@@ -355,6 +356,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
                 userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
                 userBatteryMemberCard.setMemberCardId(UserBatteryMemberCard.SEND_REMAINING_NUMBER);
+                userBatteryMemberCard.setCardPayCount(NumberConstant.ZERO);
 
 
                 userBatteryMemberCard.setRemainingNumber(newUserActivity.getCount());
