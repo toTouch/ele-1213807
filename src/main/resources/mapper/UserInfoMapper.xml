@@ -38,6 +38,12 @@
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by tui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -59,8 +65,10 @@
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
         ubmc.member_card_id as card_id,
+        ubmc.card_pay_count as cardPayCount,
         teb.power,
         teb.business_status as businessStatus,
+        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_info tui
         left join t_user_battery_member_card ubmc on ubmc.uid=tui.uid
@@ -105,12 +113,22 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <if test="query.sortType == null or query.sortType == 0">
             order by ubmc.member_card_expire_time desc
         </if>
         <if test="query.sortType == 1">
             order by tui.create_time desc
         </if>
+
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -131,8 +149,11 @@
         ubmc.disable_member_card_time,
         ubmc.remaining_number,
         ubmc.member_card_id as card_id,
+        ubmc.member_card_status as member_card_status,
+        ubmc.card_pay_count as cardPayCount,
         teb.power,
         teb.business_status as businessStatus,
+        teb.sn as nowElectricityBatterySn,
         tui.tenant_id
         from t_user_battery_member_card ubmc
         left join t_user_info tui on ubmc.uid=tui.uid
@@ -176,6 +197,15 @@
         </if>
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
         </if>
         order by ubmc.member_card_expire_time desc
         limit #{query.offset}, #{query.size}
@@ -256,6 +286,15 @@
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
     <select id="queryAuthenticationCount" resultType="java.lang.Integer">
@@ -285,6 +324,12 @@
         </if>
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 
@@ -455,6 +500,13 @@
         </set>
         where uid = #{uid} and tenant_id=#{tenantId}
     </update>
-
-
+    
+    <select id="queryByIdNumber" resultType="com.xiliulou.electricity.entity.UserInfo">
+      select
+          uid, phone, user_name, name, id_number, auth_status, usable_status,
+          service_status, del_flag, create_time, update_time, tenant_id, battery_rent_status,
+          battery_deposit_status,franchisee_id, car_rent_status, car_deposit_status
+      from t_user_info
+      where del_flag = 0 and id_number = #{idNumber} and tenant_id = #{tenantId}
+  </select>
 </mapper>

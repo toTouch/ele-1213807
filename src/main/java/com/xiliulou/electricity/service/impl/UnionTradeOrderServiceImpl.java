@@ -541,6 +541,7 @@ public class UnionTradeOrderServiceImpl extends
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
         Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
+        Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
 
         //月卡订单
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
@@ -608,6 +609,7 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
+            userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
 
@@ -640,6 +642,9 @@ public class UnionTradeOrderServiceImpl extends
                     userCouponService.update(userCoupon);
                 }
             }
+
+            //修改套餐订单购买次数
+            electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
 
             //被邀请新买月卡用户
             //是否是新用户

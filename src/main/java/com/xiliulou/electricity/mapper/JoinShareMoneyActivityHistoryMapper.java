@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
+import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -23,7 +24,8 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
      * @param jsonShareMoneyActivityHistoryQuery 实例对象
      * @return 对象列表
      */
-    List<JoinShareMoneyActivityHistory> queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+    List<JoinShareMoneyActivityHistoryVO> queryList(
+		    JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 
 	Integer queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 

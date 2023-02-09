@@ -21,4 +21,5 @@ public class JsonShareMoneyActivityHistoryQuery {
     private Integer activityId;
     private Integer tenantId;
     
+    private Long id;
 }

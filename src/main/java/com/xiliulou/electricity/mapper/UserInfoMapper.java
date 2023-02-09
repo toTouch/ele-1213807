@@ -54,4 +54,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     Integer update(UserInfo userInfo);
 
     Integer isFranchiseeBindUser(@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
+    
+    List<UserInfo> queryByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 }
