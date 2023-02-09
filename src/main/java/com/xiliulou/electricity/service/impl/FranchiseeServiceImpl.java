@@ -740,7 +740,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         //校验用户电池型号model
         Set<Integer> modelSet = franchiseeBatteryModels.stream().map(FranchiseeBatteryModelDTO::getModel).collect(Collectors.toSet());
-        if (CollectionUtils.isEmpty(modelSet) || modelSet.contains(franchiseeMoveInfo.getBatteryModel())) {
+        if (CollectionUtils.isEmpty(modelSet) || !modelSet.contains(franchiseeMoveInfo.getBatteryModel())) {
             log.error("ELE ERROR!new franchisee not have this model,uid={},model={}", userInfo.getUid(), franchiseeMoveInfo.getBatteryModel());
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
