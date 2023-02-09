@@ -44,6 +44,18 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminUserInfoController extends BaseController {
+    //全部
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_ALL=0;
+    //没过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE=1;
+    //三天过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_THREE=2;
+    //七天过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_SEVEN=3;
+    //已过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_EXPIRE=4;
+
+
     /**
      * 服务对象
      */
@@ -74,6 +86,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "sortType", required = false) Integer sortType,
                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                       @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -121,6 +134,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryDepositStatus(batteryDepositStatus)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeBegin(userInfoQuery, memberCardExpireType);
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -178,6 +193,7 @@ public class JsonAdminUserInfoController extends BaseController {
     @GetMapping(value = "/admin/userInfo/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                         @RequestParam(value = "batteryId", required = false) Long batteryId,
@@ -224,6 +240,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .cardPayCount(cardPayCount)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeBegin(userInfoQuery, memberCardExpireType);
 
         return userInfoService.queryCount(userInfoQuery);
     }
@@ -416,4 +434,32 @@ public class JsonAdminUserInfoController extends BaseController {
         return userInfoService.deleteUserInfo(uid);
     }
 
+
+    private void verifyMemberCardExpireTimeBegin(UserInfoQuery userInfoQuery, Integer memberCardExpireType) {
+        if (Objects.isNull(memberCardExpireType)) {
+            return;
+        }
+
+        if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_ALL)) {
+            return;
+        }
+
+        if (Objects.isNull(userInfoQuery.getMemberCardExpireTimeBegin())) {
+            Long memberCardExpireTimeBegin = null;
+            Long memberCardExpireTimeEnd = null;
+
+            if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis();
+            } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_THREE)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
+            } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
+            } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
+                memberCardExpireTimeEnd = System.currentTimeMillis();
+            }
+
+            userInfoQuery.setMemberCardExpireTimeBegin(memberCardExpireTimeBegin);
+            userInfoQuery.setMemberCardExpireTimeEnd(memberCardExpireTimeEnd);
+        }
+    }
 }
