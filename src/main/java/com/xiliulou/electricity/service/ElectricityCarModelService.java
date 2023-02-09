@@ -48,4 +48,5 @@ public interface ElectricityCarModelService {
 
     ElectricityCarModelVO selectDetailById(Long id);
 
+    Integer updateFranchiseeById(List<ElectricityCarModel> electricityCarModels, Long franchiseeId);
 }

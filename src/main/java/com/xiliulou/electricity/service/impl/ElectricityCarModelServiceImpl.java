@@ -326,6 +326,18 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return R.ok(electricityCarModels);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer updateFranchiseeById(List<ElectricityCarModel> electricityCarModels, Long franchiseeId) {
+        for (ElectricityCarModel electricityCarModel : electricityCarModels) {
+            electricityCarModel.setFranchiseeId(franchiseeId);
+            electricityCarModel.setUpdateTime(System.currentTimeMillis());
+            electricityCarModelMapper.update(electricityCarModel);
+        }
+
+        return null;
+    }
+
     private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
         if (query.getCarDeposit().compareTo(BigDecimal.valueOf(0.01)) < 0) {
             return Pair.of(false, "车辆押金不合法！");
