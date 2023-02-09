@@ -790,6 +790,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
+        updateUserInfo.setTenantId(TenantContextHolder.getTenantId());
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.update(updateUserInfo);
 
