@@ -135,7 +135,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
-        verifyMemberCardExpireTimeBegin(userInfoQuery, memberCardExpireType);
+        verifyMemberCardExpireTimeEnd(userInfoQuery, memberCardExpireType);
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -241,7 +241,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
-        verifyMemberCardExpireTimeBegin(userInfoQuery, memberCardExpireType);
+        verifyMemberCardExpireTimeEnd(userInfoQuery, memberCardExpireType);
 
         return userInfoService.queryCount(userInfoQuery);
     }
@@ -435,7 +435,7 @@ public class JsonAdminUserInfoController extends BaseController {
     }
 
 
-    private void verifyMemberCardExpireTimeBegin(UserInfoQuery userInfoQuery, Integer memberCardExpireType) {
+    private void verifyMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery, Integer memberCardExpireType) {
         if (Objects.isNull(memberCardExpireType)) {
             return;
         }
@@ -445,20 +445,18 @@ public class JsonAdminUserInfoController extends BaseController {
         }
 
         if (Objects.isNull(userInfoQuery.getMemberCardExpireTimeBegin())) {
-            Long memberCardExpireTimeBegin = null;
             Long memberCardExpireTimeEnd = null;
 
             if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
-                memberCardExpireTimeBegin = System.currentTimeMillis();
+                memberCardExpireTimeEnd = System.currentTimeMillis();
             } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_THREE)) {
-                memberCardExpireTimeBegin = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
+                memberCardExpireTimeEnd = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
             } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
-                memberCardExpireTimeBegin = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
+                memberCardExpireTimeEnd = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
             } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
                 memberCardExpireTimeEnd = System.currentTimeMillis();
             }
 
-            userInfoQuery.setMemberCardExpireTimeBegin(memberCardExpireTimeBegin);
             userInfoQuery.setMemberCardExpireTimeEnd(memberCardExpireTimeEnd);
         }
     }
