@@ -446,17 +446,20 @@ public class JsonAdminUserInfoController extends BaseController {
 
         if (Objects.isNull(userInfoQuery.getMemberCardExpireTimeBegin())) {
             Long memberCardExpireTimeEnd = null;
+            Long memberCardExpireTimeBegin = null;
 
             if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
-                memberCardExpireTimeEnd = System.currentTimeMillis();
+                memberCardExpireTimeBegin = System.currentTimeMillis();
             } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_THREE)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis();
                 memberCardExpireTimeEnd = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
             } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis();
                 memberCardExpireTimeEnd = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
             } else if (Objects.equals(memberCardExpireType, MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
                 memberCardExpireTimeEnd = System.currentTimeMillis();
             }
-
+            userInfoQuery.setMemberCardExpireTimeBegin(memberCardExpireTimeBegin);
             userInfoQuery.setMemberCardExpireTimeEnd(memberCardExpireTimeEnd);
         }
     }
