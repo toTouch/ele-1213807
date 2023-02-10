@@ -1220,6 +1220,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
+            userCarDetail.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
         }
 
         //租车套餐是否过期
