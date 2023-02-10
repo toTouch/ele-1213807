@@ -606,6 +606,11 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(
                 rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             checkRentBatteryDoor(rentBatteryOrder);
+    
+            if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
+                redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
+                        String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
+            }
 
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(rentBatteryOrder);
@@ -688,10 +693,6 @@ public class EleOperateQueueHandler {
 
         //删除柜机被锁缓存
         redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
-        if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
-            redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
-                    String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
-        }
     }
 
     //检测还电池

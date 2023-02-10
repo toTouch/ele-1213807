@@ -160,12 +160,10 @@
         </where>
         order by power desc
     </select>
-
-    <select id="queryUsableEmptyCellNo" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+    
+    <select id="queryUsableEmptyCellNo" resultType="com.xiliulou.electricity.query.FreeCellNoQuery">
         select
-        id, electricity_cabinet_id, cell_no, sn, usable_status,
-        status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,power,charge_v, empty_grid_start_time
+        cell_no, empty_grid_start_time
         from t_electricity_cabinet_box
         <where>
             electricity_cabinet_id = #{eid}
