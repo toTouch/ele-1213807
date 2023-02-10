@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityConfigMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityConfig" id="ElectricityConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="orderTime" column="order_time" jdbcType="INTEGER"/>
+        <result property="isManualReview" column="is_manual_review" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="isWithdraw" column="is_withdraw" jdbcType="INTEGER"/>
+        <result property="isOpenDoorLock" column="is_open_door_lock" jdbcType="INTEGER"/>
+        <result property="isBatteryReview" column="is_battery_review" jdbcType="INTEGER"/>
+        <result property="disableMemberCard" column="disable_member_card" jdbcType="INTEGER"/>
+        <result property="isLowBatteryExchange" column="is_low_battery_exchange" jdbcType="INTEGER"/>
+        <result property="lowBatteryExchangeModel" column="low_battery_exchange_model" jdbcType="VARCHAR"/>
+        <result property="isEnableSelfOpen" column="is_enable_self_open" jdbcType="INTEGER"/>
+        <result property="isEnableReturnBoxCheck" column="is_enable_return_box_check" jdbcType="INTEGER"/>
+        <result property="isMoveFranchisee" column="is_move_franchisee" jdbcType="INTEGER"/>
+        <result property="isOpenInsurance" column="is_open_insurance" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!-- 基础字段 -->
+    <sql id="selectElectricityConfig">
+       	select   id, name, create_time, update_time, order_time, is_manual_review, tenant_id, is_withdraw, is_check_battery, is_open_door_lock, is_battery_review, disable_member_card, is_low_battery_exchange, low_battery_exchange_model, is_enable_self_open, is_enable_return_box_check, move_franchisee_detail, is_move_franchisee, is_open_insurance        from t_electricity_config
+    </sql>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_electricity_config
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="orderTime != null">
+                order_time = #{orderTime},
+            </if>
+            <if test="isManualReview != null">
+                is_manual_review = #{isManualReview},
+            </if>
+            <if test="isWithdraw != null">
+                is_withdraw = #{isWithdraw},
+            </if>
+            <if test="isOpenDoorLock != null">
+                is_open_door_lock = #{isOpenDoorLock},
+            </if>
+            <if test="isBatteryReview != null">
+                is_battery_review = #{isBatteryReview},
+            </if>
+            <if test="disableMemberCard != null">
+                disable_member_card = #{disableMemberCard},
+            </if>
+            <if test="isLowBatteryExchange != null">
+                is_low_battery_exchange = #{isLowBatteryExchange},
+            </if>
+            <if test="lowBatteryExchangeModel != null and lowBatteryExchangeModel != ''">
+                low_battery_exchange_model = #{lowBatteryExchangeModel},
+            </if>
+            <if test="isEnableSelfOpen != null">
+                is_enable_self_open = #{isEnableSelfOpen},
+            </if>
+            <if test="isEnableReturnBoxCheck != null">
+                is_enable_return_box_check = #{isEnableReturnBoxCheck},
+            </if>
+            <if test="isOpenInsurance != null">
+                is_open_insurance = #{isOpenInsurance},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="isCheckBattery != null">
+                is_check_battery = #{isCheckBattery},
+            </if>
+            <if test="isMoveFranchisee != null">
+                is_move_franchisee = #{isMoveFranchisee},
+            </if>
+            franchisee_move_info = #{franchiseeMoveInfo}
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+
+</mapper>

@@ -10,4 +10,6 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
  */
 public interface ElectricityConfigMapper extends BaseMapper<ElectricityConfig>{
 
+    Integer update(ElectricityConfig electricityConfig);
+
 }

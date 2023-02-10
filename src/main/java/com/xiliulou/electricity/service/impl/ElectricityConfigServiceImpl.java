@@ -144,6 +144,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return R.ok();
         }
 
+        electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
         electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
         electricityConfig.setIsManualReview(electricityConfigAddAndUpdateQuery.getIsManualReview());
@@ -159,7 +160,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
         electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
         electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
-        int updateResult = electricityConfigMapper.updateById(electricityConfig);
+        int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
