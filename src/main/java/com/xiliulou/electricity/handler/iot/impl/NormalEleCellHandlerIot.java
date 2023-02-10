@@ -102,15 +102,18 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
 
-        BoxOtherProperties boxOtherProperties = new BoxOtherProperties();
-        boxOtherProperties.setElectricityCabinetId(electricityCabinet.getId());
-        boxOtherProperties.setCellNo(eleCellVo.getCell_no());
-        boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
-        boxOtherProperties.setLockReason(eleCellVo.getLockReason());
-        boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
-        boxOtherProperties.setCreateTime(System.currentTimeMillis());
-        boxOtherProperties.setUpdateTime(System.currentTimeMillis());
-        boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+        //格挡禁用  保存禁用原因
+        if (StringUtils.isNotEmpty(isForbidden) && Objects.equals(Integer.valueOf(isForbidden), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+            BoxOtherProperties boxOtherProperties = new BoxOtherProperties();
+            boxOtherProperties.setElectricityCabinetId(electricityCabinet.getId());
+            boxOtherProperties.setCellNo(eleCellVo.getCell_no());
+            boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
+            boxOtherProperties.setLockReason(eleCellVo.getLockReason());
+            boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
+            boxOtherProperties.setCreateTime(System.currentTimeMillis());
+            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
+            boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+        }
     }
 
     @Data
