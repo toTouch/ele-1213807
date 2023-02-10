@@ -73,9 +73,6 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="isCheckBattery != null">
-                is_check_battery = #{isCheckBattery},
-            </if>
             <if test="isMoveFranchisee != null">
                 is_move_franchisee = #{isMoveFranchisee},
             </if>
