@@ -831,7 +831,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 && Objects.equals(electricityMemberCard.getStatus(), item.getStatus())
                 && Objects.equals(newFranchisee.getModelType(), item.getModelType())
                 && Objects.equals(electricityMemberCard.getLimitCount(), item.getLimitCount())
-                && Objects.equals(electricityMemberCard.getBatteryType(), batteryType)
+                && Objects.equals(batteryType, item.getBatteryType())
                 && item.getHolidayPrice().compareTo(electricityMemberCard.getHolidayPrice()) == 0
         ).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(electricityMemberCardList)) {
