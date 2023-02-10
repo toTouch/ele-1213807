@@ -2341,6 +2341,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public ElectricityMemberCardOrder selectLatestByUid(Long uid) {
+        return baseMapper.selectLatestByUid(uid);
+    }
+
+    @Override
     public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long
             todayStartTime, List<Long> franchiseeId) {
         return Optional.ofNullable(baseMapper.queryBatteryMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));

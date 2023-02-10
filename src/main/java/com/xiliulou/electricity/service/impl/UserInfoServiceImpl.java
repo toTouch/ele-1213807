@@ -210,7 +210,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardDays(carDays);
 
                     if (!Objects.equals(item.getCardId().longValue(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+//                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectLatestByUid(item.getUid());
                         if (Objects.nonNull(electricityMemberCardOrder)) {
                             item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
                         }
@@ -223,7 +224,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 //不能删除  会员列表详情在用，TODO 详情新增接口
                 if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects.equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+//                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.selectLatestByUid(item.getUid());
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
                         item.setStoreId(eleDepositOrder.getStoreId());
