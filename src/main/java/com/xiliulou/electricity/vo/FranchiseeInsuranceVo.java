@@ -77,4 +77,8 @@ public class FranchiseeInsuranceVo {
      * 保险说明
      */
     private String instruction;
+
+    private Long createTime;
+
+    private Long updateTime;
 }

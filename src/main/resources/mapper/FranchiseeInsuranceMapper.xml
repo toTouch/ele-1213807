@@ -68,7 +68,7 @@
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.FranchiseeInsuranceVo">
         select tf.id,tf.franchisee_id,tf.cid,tf.name,tf.premium,tf.forehead,tf.valid_days,tf.insurance_type,tf.status,tf.is_constraint,tf.del_flag,tf.create_time,tf.update_time,tf.tenant_id
-        ,ti.instruction,tf.battery_type
+        ,ti.instruction,tf.battery_type,tf.create_time,tf.update_time
         from t_franchisee_insurance tf left join t_insurance_instruction ti on tf.id=ti.insurance_id
         where tf.del_flag=0
         <if test="status != null">
