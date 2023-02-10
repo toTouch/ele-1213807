@@ -771,7 +771,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId()) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //校验新加盟商下套餐
-            Triple<Boolean, String, Object> verifyFranchiseeMemberCardResult = verifyFranchiseeMemberCard(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType);
+            Triple<Boolean, String, Object> verifyFranchiseeMemberCardResult = verifyFranchiseeMemberCard(franchiseeMoveInfo, userInfo, userBatteryMemberCard,newFranchisee, batteryType);
             if (!verifyFranchiseeMemberCardResult.getLeft()) {
                 return verifyFranchiseeMemberCardResult;
             }
@@ -807,7 +807,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return Triple.of(true, "", "迁移成功！");
     }
 
-    private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, String batteryType) {
+    private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard,Franchisee newFranchisee , String batteryType) {
 
         //获取新加盟商下换电套餐
         List<ElectricityMemberCard> newFranchiseeMemberCards = electricityMemberCardService.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
@@ -829,7 +829,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 && Objects.equals(electricityMemberCard.getValidDays(), item.getValidDays())
                 && Objects.equals(electricityMemberCard.getMaxUseCount(), item.getMaxUseCount())
                 && Objects.equals(electricityMemberCard.getStatus(), item.getStatus())
-                && Objects.equals(electricityMemberCard.getModelType(), item.getModelType())
+                && Objects.equals(newFranchisee.getModelType(), item.getModelType())
                 && Objects.equals(electricityMemberCard.getLimitCount(), item.getLimitCount())
                 && Objects.equals(electricityMemberCard.getBatteryType(), batteryType)
                 && item.getHolidayPrice().compareTo(electricityMemberCard.getHolidayPrice()) == 0
