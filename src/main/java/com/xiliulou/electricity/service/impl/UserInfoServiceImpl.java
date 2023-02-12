@@ -1436,12 +1436,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryInfoVO.getUid());
 
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryInfoVO.getCardId());
+
             UserInfoExcelVO excelVo = new UserInfoExcelVO();
             excelVo.setId(index);
             excelVo.setPhone(userBatteryInfoVO.getPhone());
             excelVo.setName(userBatteryInfoVO.getName());
             excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
-            excelVo.setCardName(userBatteryInfoVO.getCardName());
+            excelVo.setCardName(Objects.nonNull(electricityMemberCard) ? electricityMemberCard.getName() : "");
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
             userInfoExcelVOS.add(excelVo);
 

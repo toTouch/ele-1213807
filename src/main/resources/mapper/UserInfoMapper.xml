@@ -66,7 +66,6 @@
         ubmc.remaining_number,
         ubmc.member_card_id as card_id,
         ubmc.card_pay_count as cardPayCount,
-        ubmc.name as card_name,
         teb.power,
         teb.business_status as businessStatus,
         teb.sn as nowElectricityBatterySn,
