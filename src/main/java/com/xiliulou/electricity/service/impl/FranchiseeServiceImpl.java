@@ -23,13 +23,13 @@ import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -686,6 +686,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> moveFranchisee() {
 
+        if (!redisService.setNx(CacheConstant.ORDER_ELE_ID + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found user");
@@ -753,7 +757,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             //校验新加盟商下保险保险
             Triple<Boolean, String, Object> verifyUserInsuranceResult = verifyFranchiseeInsurance(franchiseeMoveInfo, userInfo, insuranceUserInfo, batteryType);
             if (!verifyUserInsuranceResult.getLeft()) {
-                return verifyUserInsuranceResult;
+                throw new CustomBusinessException("新加盟商保险异常");
             }
 
             FranchiseeInsurance newFranchiseeInsurance = (FranchiseeInsurance) verifyUserInsuranceResult.getRight();
@@ -771,9 +775,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getMemberCardId()) && !Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             //校验新加盟商下套餐
-            Triple<Boolean, String, Object> verifyFranchiseeMemberCardResult = verifyFranchiseeMemberCard(franchiseeMoveInfo, userInfo, userBatteryMemberCard,newFranchisee, batteryType);
+            Triple<Boolean, String, Object> verifyFranchiseeMemberCardResult = verifyFranchiseeMemberCard(franchiseeMoveInfo, userInfo, userBatteryMemberCard, newFranchisee, batteryType);
             if (!verifyFranchiseeMemberCardResult.getLeft()) {
-                return verifyFranchiseeMemberCardResult;
+                throw new CustomBusinessException("新加盟商套餐异常");
             }
 
             ElectricityMemberCard newFranchiseeMemberCard = (ElectricityMemberCard) verifyFranchiseeMemberCardResult.getRight();
@@ -807,7 +811,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return Triple.of(true, "", "迁移成功！");
     }
 
-    private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard,Franchisee newFranchisee , String batteryType) {
+    private Triple<Boolean, String, Object> verifyFranchiseeMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, Franchisee newFranchisee, String batteryType) {
 
         //获取新加盟商下换电套餐
         List<ElectricityMemberCard> newFranchiseeMemberCards = electricityMemberCardService.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
