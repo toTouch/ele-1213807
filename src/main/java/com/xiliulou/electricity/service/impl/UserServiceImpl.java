@@ -8,8 +8,8 @@ import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.google.api.client.util.Lists;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -18,6 +18,8 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserMapper;
+import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -46,7 +48,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * (User)表服务实现类
@@ -104,6 +105,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserCarService userCarService;
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -870,6 +874,39 @@ public class UserServiceImpl implements UserService {
         map.put("carDepositStatus", userInfo.getCarDepositStatus());
 
         return R.ok(map);
+    }
+
+    @Override
+    public Integer updateUserByUid(UserSourceUpdateQuery query) {
+        User updateUser = new User();
+        updateUser.setUid(query.getUid());
+        updateUser.setSource(query.getSource());
+        updateUser.setRefId(query.getSourceId());
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+
+        return this.userMapper.updateUserByUid(updateUser);
+    }
+
+    @Override
+    public Integer updateUserSource(User user) {
+        return this.userMapper.updateUserSource(user);
+    }
+
+    @Override
+    public void loginCallBack(UserSourceQuery query) {
+
+        User updateUser = new User();
+        updateUser.setUid(SecurityUtils.getUid());
+        updateUser.setSource(query.getSource());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+
+        if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+            updateUser.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
+        }
+
+        this.updateUserSource(updateUser);
     }
 
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {

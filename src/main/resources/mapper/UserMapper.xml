@@ -5,9 +5,12 @@
 
 
 	<!--通过主键修改数据-->
-	<update id="updateUserById">
+	<update id="updateUserByUid">
 		update t_user
 		<set>
+			<if test="tenantId != null">
+				tenant_id = #{tenantId},
+			</if>
 			<if test="phone != null">
 				phone = #{phone},
 			</if>
@@ -16,6 +19,12 @@
 			</if>
 			<if test="gender != null">
 				gender = #{gender},
+			</if>
+			<if test="source != null">
+				source = #{source},
+			</if>
+			<if test="refId != null">
+				ref_id = #{refId},
 			</if>
 			<if test="delFlag != null">
 				del_flag = #{delFlag},
@@ -99,5 +108,22 @@
 			</if>
 		</where>
 	</select>
+
+	<!--更新用户来源-->
+	<update id="updateUserSource">
+		update t_user
+		<set>
+			<if test="source != null">
+				source = #{source},
+			</if>
+			<if test="refId != null">
+				ref_id = #{refId},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+		</set>
+		where uid = #{uid} and source=0 and del_flag =0
+	</update>
 
 </mapper>

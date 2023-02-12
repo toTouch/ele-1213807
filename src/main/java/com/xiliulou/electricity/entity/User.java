@@ -96,6 +96,11 @@ public class User {
 	 */
 	private Long refId;
 
+	/**
+	 * 用户来源，1：扫码，2：邀请，3：其它
+	 */
+	private Integer source;
+
 	private Integer tenantId;
 
 	public boolean isLock() {
