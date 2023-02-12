@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
@@ -84,7 +85,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 //        }
         //判断用户套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L) || Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
             log.warn("REVIEW_DISABLE_MEMBER_CARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
