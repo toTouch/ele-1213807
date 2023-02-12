@@ -368,11 +368,32 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         List<FranchiseeInsurance> franchiseeInsuranceList = oldFranchiseeInsurances.parallelStream().peek(item -> {
             item.setId(null);
+            item.setName(item.getName()+"(迁)");
             item.setFranchiseeId(newFranchisee.getId());
             item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
             item.setCreateTime(System.currentTimeMillis());
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());
+
+        List<FranchiseeInsurance> newFranchiseeInsurances = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
+        if (!CollectionUtils.isEmpty(newFranchiseeInsurances)) {
+            //判断新加盟商是否已经有了旧加盟商下相同类型的保险
+            for (FranchiseeInsurance oldFranchiseeInsurance : oldFranchiseeInsurances) {
+                for (FranchiseeInsurance newFranchiseeInsurance : newFranchiseeInsurances) {
+                    if (Objects.equals(oldFranchiseeInsurance.getCid(), newFranchiseeInsurance.getCid())
+                            && Objects.equals(oldFranchiseeInsurance.getValidDays(), newFranchiseeInsurance.getValidDays())
+                            && Objects.equals(oldFranchiseeInsurance.getInsuranceType(), newFranchiseeInsurance.getInsuranceType())
+                            && Objects.equals(oldFranchiseeInsurance.getIsConstraint(), newFranchiseeInsurance.getIsConstraint())
+                            && Objects.equals(oldFranchiseeInsurance.getBatteryType(), newFranchiseeInsurance.getBatteryType())
+                            && Objects.equals(oldFranchiseeInsurance.getFranchiseeId(), newFranchiseeInsurance.getFranchiseeId())
+                            && oldFranchiseeInsurance.getPremium().compareTo(newFranchiseeInsurance.getPremium()) == 0
+                            && oldFranchiseeInsurance.getForehead().compareTo(newFranchiseeInsurance.getForehead()) == 0
+                    ) {
+                        oldFranchiseeInsurances.remove(oldFranchiseeInsurance);
+                    }
+                }
+            }
+        }
 
         this.baseMapper.batchInsert(franchiseeInsuranceList);
 

@@ -625,14 +625,16 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo,Franchisee newFranchisee) {
-        List<ElectricityMemberCard> oldElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId(),TenantContextHolder.getTenantId());
-        if(CollectionUtils.isEmpty(oldElectricityMemberCards)){
+    public void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee) {
+        List<ElectricityMemberCard> oldElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId(), TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(oldElectricityMemberCards)) {
             return;
         }
 
-        List<ElectricityMemberCard> newElectricityMemberCards = oldElectricityMemberCards.parallelStream().peek(item -> {
+        //根据新加盟商更新数据
+        List<ElectricityMemberCard> electricityMemberCards = oldElectricityMemberCards.parallelStream().peek(item -> {
             item.setId(null);
+            item.setName(item.getName() + "(迁)");
             item.setModelType(newFranchisee.getModelType());
             item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
             item.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
@@ -640,6 +642,28 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());
 
-        this.baseMapper.batchInsert(newElectricityMemberCards);
+        //新加盟商下套餐
+        List<ElectricityMemberCard> newElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
+        if (!CollectionUtils.isEmpty(newElectricityMemberCards)) {
+            //判断新加盟商是否已经有了旧加盟商下相同类型的套餐
+            for (ElectricityMemberCard oldElectricityMemberCard : oldElectricityMemberCards) {
+                for (ElectricityMemberCard newElectricityMemberCard : newElectricityMemberCards) {
+                    if (Objects.equals(oldElectricityMemberCard.getType(), newElectricityMemberCard.getType())
+                            && Objects.equals(oldElectricityMemberCard.getValidDays(), newElectricityMemberCard.getValidDays())
+                            && Objects.equals(oldElectricityMemberCard.getMaxUseCount(), newElectricityMemberCard.getMaxUseCount())
+                            && Objects.equals(oldElectricityMemberCard.getStatus(), newElectricityMemberCard.getStatus())
+                            && Objects.equals(oldElectricityMemberCard.getLimitCount(), newElectricityMemberCard.getLimitCount())
+                            && Objects.equals(oldElectricityMemberCard.getModelType(), newElectricityMemberCard.getModelType())
+                            && Objects.equals(oldElectricityMemberCard.getBatteryType(), newElectricityMemberCard.getBatteryType())
+                            && Objects.equals(oldElectricityMemberCard.getFranchiseeId(), newElectricityMemberCard.getFranchiseeId())
+                            && oldElectricityMemberCard.getHolidayPrice().compareTo(newElectricityMemberCard.getHolidayPrice()) == 0
+                    ) {
+                        oldElectricityMemberCards.remove(oldElectricityMemberCard);
+                    }
+                }
+            }
+        }
+
+        this.baseMapper.batchInsert(electricityMemberCards);
     }
 }

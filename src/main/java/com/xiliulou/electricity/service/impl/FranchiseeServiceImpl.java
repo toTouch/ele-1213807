@@ -828,8 +828,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         //检查新加盟商下有没有 与用户当前绑定套餐名称相同且金额一致的换电套餐
-        List<ElectricityMemberCard> electricityMemberCardList = newFranchiseeMemberCards.stream().filter(item -> Objects.equals(electricityMemberCard.getName(), item.getName())
-                && Objects.equals(electricityMemberCard.getType(), item.getType())
+        List<ElectricityMemberCard> electricityMemberCardList = newFranchiseeMemberCards.stream().filter(item ->
+//                Objects.equals(electricityMemberCard.getName(), item.getName()) &&
+                Objects.equals(electricityMemberCard.getType(), item.getType())
                 && Objects.equals(electricityMemberCard.getValidDays(), item.getValidDays())
                 && Objects.equals(electricityMemberCard.getMaxUseCount(), item.getMaxUseCount())
                 && Objects.equals(electricityMemberCard.getStatus(), item.getStatus())
@@ -868,8 +869,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         //检查新加盟商下有没有 与用户当前绑定保险名称相同且金额一致的保险
-        List<FranchiseeInsurance> franchiseeInsuranceList = newFranchiseeInsurances.stream().filter(item -> Objects.equals(franchiseeInsurance.getName(), item.getName())
-                && Objects.equals(franchiseeInsurance.getCid(), item.getCid())
+        List<FranchiseeInsurance> franchiseeInsuranceList = newFranchiseeInsurances.stream().filter(item ->
+//                Objects.equals(franchiseeInsurance.getName(), item.getName()) &&
+                Objects.equals(franchiseeInsurance.getCid(), item.getCid())
                 && Objects.equals(franchiseeInsurance.getValidDays(), item.getValidDays())
                 && Objects.equals(franchiseeInsurance.getInsuranceType(), item.getInsuranceType())
                 && Objects.equals(franchiseeInsurance.getIsConstraint(), item.getIsConstraint())
