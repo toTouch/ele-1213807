@@ -57,6 +57,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     FranchiseeInsuranceService franchiseeInsuranceService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
 
 
     @Override
@@ -105,6 +107,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
             //将旧加盟商下保险迁移到新加盟商
             franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo,newFranchisee);
+
+            //将旧加盟商下的车辆型号迁移到新加盟商下
+            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
         }
 
 

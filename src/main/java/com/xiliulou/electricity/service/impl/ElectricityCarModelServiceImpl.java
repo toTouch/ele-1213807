@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     CarModelTagService carModelTagService;
     @Autowired
     UserCarService userCarService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
 
     /**
@@ -88,6 +92,27 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
         if (!verifyResult.getLeft()) {
             return R.failMsg(verifyResult.getRight());
+        }
+
+        //校验当前加盟商是否为待迁移加盟商，若是  不允许新建
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityConfig)) {
+            log.error("ELE ERROR!not found electricityConfig,tenantId={}", TenantContextHolder.getTenantId());
+            return R.fail( "000001", "系统异常");
+        }
+
+        if (Objects.equals(electricityConfig.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
+            FranchiseeMoveInfo franchiseeMoveInfo = JsonUtil.fromJson(electricityConfig.getFranchiseeMoveInfo(), FranchiseeMoveInfo.class);
+            if (Objects.isNull(franchiseeMoveInfo)) {
+                log.error("ELE ERROR!not found franchiseeMoveInfo,tenantId={}", TenantContextHolder.getTenantId());
+                return R.fail( "100354", "用户加盟商迁移配置信息不存在");
+            }
+
+            //判断用户绑定的加盟商是否与待迁移加盟商一致
+            if (Objects.equals(query.getFranchiseeId(), franchiseeMoveInfo.getFromFranchiseeId())) {
+                log.error("ELE ERROR! move franchisee not apply create car model,tenantId={}", TenantContextHolder.getTenantId());
+                return R.fail( "100365", "迁移加盟商不支持新建车辆型号");
+            }
         }
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
@@ -336,6 +361,21 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
         return null;
+    }
+
+    @Override
+    public void moveCarModel(FranchiseeMoveInfo franchiseeMoveInfo) {
+        ElectricityCarModelQuery modelQuery = ElectricityCarModelQuery.builder().delFlag(ElectricityCarModel.DEL_NORMAL).
+                tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeMoveInfo.getFromFranchiseeId()).build();
+
+        List<ElectricityCarModel> electricityCarModels = this.selectByQuery(modelQuery);
+        if (CollectionUtils.isEmpty(electricityCarModels)) {
+            return;
+        }
+
+        //根据新加盟商更新车辆型号绑定的加盟商
+        this.updateFranchiseeById(electricityCarModels,franchiseeMoveInfo.getToFranchiseeId());
     }
 
     private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
