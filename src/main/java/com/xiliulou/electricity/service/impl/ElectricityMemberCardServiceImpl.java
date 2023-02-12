@@ -642,7 +642,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());
 
-        List<ElectricityMemberCard> tempMemberCardList=new ArrayList<>();
+        List<ElectricityMemberCard> tempMemberCardList = new ArrayList<>();
 
         //新加盟商下套餐
         List<ElectricityMemberCard> newElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
@@ -666,8 +666,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             }
         }
 
-        if(!CollectionUtils.isEmpty(tempMemberCardList)){
+        if (!CollectionUtils.isEmpty(tempMemberCardList)) {
             oldElectricityMemberCards.removeAll(tempMemberCardList);
+        }
+
+        if (CollectionUtils.isEmpty(oldElectricityMemberCards)) {
+            return;
         }
 
         this.baseMapper.batchInsert(oldElectricityMemberCards);

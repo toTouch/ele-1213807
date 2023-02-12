@@ -368,14 +368,14 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         oldFranchiseeInsurances.parallelStream().peek(item -> {
             item.setId(null);
-            item.setName(item.getName()+"(迁)");
+            item.setName(item.getName() + "(迁)");
             item.setFranchiseeId(newFranchisee.getId());
             item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
             item.setCreateTime(System.currentTimeMillis());
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());
 
-        List<FranchiseeInsurance> tempFranchiseeInsuranceList=new ArrayList<>();
+        List<FranchiseeInsurance> tempFranchiseeInsuranceList = new ArrayList<>();
 
         List<FranchiseeInsurance> newFranchiseeInsurances = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
         if (!CollectionUtils.isEmpty(newFranchiseeInsurances)) {
@@ -397,8 +397,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             }
         }
 
-        if(!CollectionUtils.isEmpty(tempFranchiseeInsuranceList)){
+        if (!CollectionUtils.isEmpty(tempFranchiseeInsuranceList)) {
             oldFranchiseeInsurances.removeAll(tempFranchiseeInsuranceList);
+        }
+
+        if (CollectionUtils.isEmpty(oldFranchiseeInsurances)) {
+            return;
         }
 
         this.baseMapper.batchInsert(oldFranchiseeInsurances);
