@@ -366,7 +366,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return;
         }
 
-        List<FranchiseeInsurance> franchiseeInsuranceList = oldFranchiseeInsurances.parallelStream().peek(item -> {
+        oldFranchiseeInsurances.parallelStream().peek(item -> {
             item.setId(null);
             item.setName(item.getName()+"(迁)");
             item.setFranchiseeId(newFranchisee.getId());
@@ -374,6 +374,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             item.setCreateTime(System.currentTimeMillis());
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());
+
+        List<FranchiseeInsurance> tempFranchiseeInsuranceList=new ArrayList<>();
 
         List<FranchiseeInsurance> newFranchiseeInsurances = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
         if (!CollectionUtils.isEmpty(newFranchiseeInsurances)) {
@@ -389,13 +391,17 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                             && oldFranchiseeInsurance.getPremium().compareTo(newFranchiseeInsurance.getPremium()) == 0
                             && oldFranchiseeInsurance.getForehead().compareTo(newFranchiseeInsurance.getForehead()) == 0
                     ) {
-                        oldFranchiseeInsurances.remove(oldFranchiseeInsurance);
+                        tempFranchiseeInsuranceList.add(oldFranchiseeInsurance);
                     }
                 }
             }
         }
 
-        this.baseMapper.batchInsert(franchiseeInsuranceList);
+        if(!CollectionUtils.isEmpty(tempFranchiseeInsuranceList)){
+            oldFranchiseeInsurances.removeAll(tempFranchiseeInsuranceList);
+        }
+
+        this.baseMapper.batchInsert(oldFranchiseeInsurances);
 
     }
 }

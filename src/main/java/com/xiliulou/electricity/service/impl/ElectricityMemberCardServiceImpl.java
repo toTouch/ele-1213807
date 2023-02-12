@@ -632,7 +632,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //根据新加盟商更新数据
-        List<ElectricityMemberCard> electricityMemberCards = oldElectricityMemberCards.parallelStream().peek(item -> {
+        oldElectricityMemberCards.parallelStream().peek(item -> {
             item.setId(null);
             item.setName(item.getName() + "(迁)");
             item.setModelType(newFranchisee.getModelType());
@@ -641,6 +641,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             item.setCreateTime(System.currentTimeMillis());
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());
+
+        List<ElectricityMemberCard> tempMemberCardList=new ArrayList<>();
 
         //新加盟商下套餐
         List<ElectricityMemberCard> newElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
@@ -658,12 +660,16 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                             && Objects.equals(oldElectricityMemberCard.getFranchiseeId(), newElectricityMemberCard.getFranchiseeId())
                             && oldElectricityMemberCard.getHolidayPrice().compareTo(newElectricityMemberCard.getHolidayPrice()) == 0
                     ) {
-                        oldElectricityMemberCards.remove(oldElectricityMemberCard);
+                        tempMemberCardList.add(oldElectricityMemberCard);
                     }
                 }
             }
         }
 
-        this.baseMapper.batchInsert(electricityMemberCards);
+        if(!CollectionUtils.isEmpty(tempMemberCardList)){
+            oldElectricityMemberCards.removeAll(tempMemberCardList);
+        }
+
+        this.baseMapper.batchInsert(oldElectricityMemberCards);
     }
 }
