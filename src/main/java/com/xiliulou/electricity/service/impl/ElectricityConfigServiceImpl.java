@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -18,12 +19,15 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -78,29 +82,15 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
                 return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
             }
 
-            //旧加盟商校验
             FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
+
             Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
-            if (Objects.isNull(oldFranchisee)) {
-                log.error("ELE ERROR! not found old franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
-                return R.fail("ELECTRICITY.0038", "旧加盟商不存在");
-            }
-            if (Objects.equals(oldFranchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                log.error("ELE ERROR! old franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
-                return R.fail("100350", "旧加盟商不能为多型号");
-            }
-
-            //新加盟商校验
             Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
-            if (Objects.isNull(newFranchisee)) {
-                log.error("ELE ERROR! not found new franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
-                return R.fail("ELECTRICITY.0038", "新加盟商不存在");
-            }
-            if (Objects.equals(newFranchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-                log.error("ELE ERROR! new franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
-                return R.fail("100351", "新加盟商不能为单型号");
-            }
 
+            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
+            if (!verifyFranchiseeResult.getLeft()) {
+                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
+            }
 
             FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
             franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
@@ -113,11 +103,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             //将旧加盟商下套餐迁移到新加盟商
             electricityMemberCardService.moveMemberCard(franchiseeMoveInfo,newFranchisee);
 
-
             //将旧加盟商下保险迁移到新加盟商
             franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo,newFranchisee);
-
-
         }
 
 
@@ -165,6 +152,54 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
         return R.ok();
+    }
+
+    private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
+        //旧加盟商校验
+        if (Objects.isNull(oldFranchisee)) {
+            log.error("ELE ERROR! not found old franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
+            return Triple.of(false, "ELECTRICITY.0038", "旧加盟商不存在");
+        }
+        if (Objects.equals(oldFranchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            log.error("ELE ERROR! old franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
+            return Triple.of(false, "100350", "旧加盟商不能为多型号");
+        }
+
+        //新加盟商校验
+        if (Objects.isNull(newFranchisee)) {
+            log.error("ELE ERROR! not found new franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
+            return Triple.of(false, "ELECTRICITY.0038", "新加盟商不存在");
+        }
+        if (Objects.equals(newFranchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            log.error("ELE ERROR! new franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
+            return Triple.of(false, "100351", "新加盟商不能为单型号");
+        }
+
+        List<FranchiseeBatteryModelDTO> franchiseeBatteryModels = JsonUtil.fromJsonArray(newFranchisee.getModelBatteryDeposit(), FranchiseeBatteryModelDTO.class);
+        if (CollectionUtils.isEmpty(franchiseeBatteryModels)) {
+            log.error("ELE ERROR!not found newFranchiseeBatteryModelDTO,franchinseeId={}", newFranchisee.getId());
+            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
+        }
+
+        FranchiseeBatteryModelDTO franchiseeBatteryModelDTO = franchiseeBatteryModels.stream().filter(item -> Objects.equals(item.getModel(), franchiseeMoveInfoQuery.getBatteryModel())).findFirst().orElse(null);
+        if (Objects.isNull(franchiseeBatteryModelDTO)) {
+            log.error("ELE ERROR!franchiseeBatteryModelDTO is null,franchinseeId={}", newFranchisee.getId());
+            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
+        }
+
+        //加盟商押金校验
+        if (oldFranchisee.getBatteryDeposit().compareTo(franchiseeBatteryModelDTO.getBatteryDeposit()) != 0) {
+            log.error("ELE ERROR! oldFranchisee batteryDeposit not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
+            return Triple.of(false, "100363", "新加盟商与旧加盟商押金不一致");
+        }
+
+        //加盟商电池服务费校验
+        if (oldFranchisee.getBatteryServiceFee().compareTo(franchiseeBatteryModelDTO.getBatteryServiceFee()) != 0) {
+            log.error("ELE ERROR! oldFranchisee batteryServiceFee not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
+            return Triple.of(false, "100364", "新加盟商与旧加盟商电池服务费不一致");
+        }
+
+        return Triple.of(true, "", null);
     }
 
     @Override

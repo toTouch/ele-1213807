@@ -12,14 +12,15 @@ import java.math.BigDecimal;
  * @email zhaozhilong@xiliulou.com
  * @date 2023-02-06-18:22
  */
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class FranchiseeBatteryModelDTO {
 
     private Integer model;
-    private Integer batteryServiceFee;
+    private BigDecimal batteryServiceFee;
     private BigDecimal batteryDeposit;
 
 }
