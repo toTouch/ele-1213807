@@ -686,7 +686,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> moveFranchisee() {
 
-        if (!redisService.setNx(CacheConstant.ORDER_ELE_ID + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_MOVE_FRANCHISEE_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
 
