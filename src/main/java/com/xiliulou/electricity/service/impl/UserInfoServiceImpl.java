@@ -1428,17 +1428,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             throw new CustomBusinessException("查不到会员用户");
         }
 
-
         List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int index = 0;
         for (UserBatteryInfoVO userBatteryInfoVO : userBatteryInfoVOS) {
             index++;
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryInfoVO.getUid());
+
             UserInfoExcelVO excelVo = new UserInfoExcelVO();
             excelVo.setId(index);
             excelVo.setPhone(userBatteryInfoVO.getPhone());
             excelVo.setName(userBatteryInfoVO.getName());
-            excelVo.setBatteryDeposit(userBatteryInfoVO.getBatteryDeposit());
+            excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
             excelVo.setCardName(userBatteryInfoVO.getCardName());
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
             userInfoExcelVOS.add(excelVo);
