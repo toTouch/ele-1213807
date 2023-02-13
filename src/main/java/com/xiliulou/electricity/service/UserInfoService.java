@@ -124,5 +124,9 @@ public interface UserInfoService extends IService<UserInfo> {
     
     List<UserInfo> queryByIdNumber(String value);
     
-    R queryDetailsUserInfo(Long uid);
+    R queryDetailsBasicInfo(Long uid);
+    
+    R queryDetailsBatteryInfo(Long uid);
+    
+    R queryDetailsCarInfo(Long uid);
 }

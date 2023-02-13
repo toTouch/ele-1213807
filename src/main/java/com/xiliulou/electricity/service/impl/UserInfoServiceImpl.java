@@ -1404,7 +1404,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     @Override
-    public R queryDetailsUserInfo(Long uid) {
+    public R queryDetailsBasicInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -1417,6 +1417,135 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
         BeanUtils.copyProperties(userTurnoverVo, vo);
         return R.ok(vo);
+    }
+    
+    @Override
+    public R queryDetailsBatteryInfo(Long uid) {
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        DetailsBatteryInfoVo vo = new DetailsBatteryInfoVo();
+        vo.setUid(userInfo.getUid());
+        
+        //用户电池押金
+        CompletableFuture<Void> queryUserBatteryDeposit = CompletableFuture.runAsync(() -> {
+            queryUserBatteryDeposit(vo, userInfo);
+        }, threadPool).exceptionally(e -> {
+            log.error("DETAILS BATTERY INFO ERROR! query user battery deposit error!", e);
+            return null;
+        });
+        
+        //用户会员信息
+        CompletableFuture<Void> queryUserBatteryMemberCard = CompletableFuture.runAsync(() -> {
+            queryUserBatteryMemberCard(vo, userInfo);
+        }, threadPool).exceptionally(e -> {
+            log.error("DETAILS BATTERY INFO ERROR! query user battery member card error!", e);
+            return null;
+        });
+        
+        //用户电池信息
+        CompletableFuture<Void> queryUserBattery = CompletableFuture.runAsync(() -> {
+            queryUserBattery(vo, userInfo);
+        }, threadPool).exceptionally(e -> {
+            log.error("DETAILS BATTERY INFO ERROR! query user battery error!", e);
+            return null;
+        });
+        
+        CompletableFuture<Void> resultFuture = CompletableFuture
+                .allOf(queryUserBatteryDeposit, queryUserBatteryMemberCard, queryUserBattery);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+        
+        return R.ok(vo);
+    }
+    
+    @Override
+    public R queryDetailsCarInfo(Long uid) {
+        //        UserInfo userInfo = this.queryByUidFromCache(uid);
+        //        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        //            return R.fail("ELECTRICITY.0001", "未找到用户");
+        //        }
+        
+        return null;
+    }
+    
+    private void queryUserBattery(DetailsBatteryInfoVo vo, UserInfo userInfo) {
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            return;
+        }
+        
+        vo.setBatterySn(electricityBattery.getSn());
+        vo.setBatteryModel(electricityBattery.getModel());
+        vo.setPower(electricityBattery.getPower());
+    }
+    
+    private void queryUserBatteryMemberCard(DetailsBatteryInfoVo vo, UserInfo userInfo) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                .selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return;
+        }
+        
+        vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
+        vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        vo.setMemberCardExpireTime(userBatteryMemberCard.getDisableMemberCardTime());
+        vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
+        vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
+        
+        //开始时间
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
+                    .queryLastPayMemberCardTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(),
+                            userInfo.getTenantId());
+            if (Objects.nonNull(electricityMemberCardOrder)) {
+                vo.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
+            }
+        }
+        
+        //套餐名限制次数
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService
+                .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        if (Objects.nonNull(electricityMemberCard)) {
+            vo.setCardName(electricityMemberCard.getName());
+            vo.setLimitCount(electricityMemberCard.getLimitCount());
+            
+            if (Objects
+                    .equals(ElectricityMemberCard.UN_LIMITED_COUNT.intValue(), electricityMemberCard.getLimitCount())) {
+                vo.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER.intValue());
+            }
+        }
+    }
+    
+    private void queryUserBatteryDeposit(DetailsBatteryInfoVo vo, UserInfo userInfo) {
+        vo.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService
+                .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId(),
+                        EleDepositOrder.ELECTRICITY_DEPOSIT);
+        if (Objects.nonNull(eleDepositOrder)) {
+            vo.setPayDepositTime(eleDepositOrder.getCreateTime());
+            
+            Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+            if (Objects.nonNull(store)) {
+                vo.setStoreName(store.getName());
+            }
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.nonNull(franchisee)) {
+            vo.setFranschiseeName(franchisee.getName());
+        }
+        
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryDeposit)) {
+            vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+        }
     }
     
     @Override
