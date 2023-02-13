@@ -60,4 +60,6 @@ public class UserSourceQuery {
 
     private Long storeId;
 
+    private Long uid;
+
 }
