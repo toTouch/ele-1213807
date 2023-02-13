@@ -676,7 +676,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
-                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
+                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT_CONTENT)
                     .operateUid(user.getUid())
                     .uid(uid)
                     .name(user.getUsername())

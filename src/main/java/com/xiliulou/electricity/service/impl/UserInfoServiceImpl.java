@@ -1055,7 +1055,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         
-
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryMemberCardPayAmount, queryCarMemberCardPayAmount, queryBatteryServiceFeePayAmount);

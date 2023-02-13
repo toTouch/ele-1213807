@@ -1610,7 +1610,112 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         return Triple.of(true, "", eleDepositOrder);
     }
-
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(rentCarDepositAdd.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found user,uid={}", rentCarDepositAdd.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //修改该用户不在当前租户下直接返回
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+        
+        //若用户已绑定加盟商，判断选择的加盟商与用户加盟商是否一致
+        if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects
+                .equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
+            if (!Objects.equals(userInfo.getFranchiseeId(), rentCarDepositAdd.getFranchiseeId())) {
+                log.error("ELE CAR DEPOSIT ERROR! user bind franchisee not equals params franchisee,uid={}",
+                        userInfo.getUid());
+                return R.fail("100252", "用户所属加盟商与选择的加盟商不符");
+            }
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(rentCarDepositAdd.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found Franchisee,franchiseeId={},uid={}",
+                    rentCarDepositAdd.getFranchiseeId(), userInfo.getUid());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+        
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("ELE CAR DEPOSIT ERROR! user is rent deposit,uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0049", "已缴纳押金");
+        }
+        
+        Store store = storeService.queryByIdFromCache(rentCarDepositAdd.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found store!  uid={},sid={}", userInfo.getUid(),
+                    rentCarDepositAdd.getStoreId());
+            return R.fail("100204", "未找到门店");
+        }
+        
+        ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(rentCarDepositAdd.getCarModelId());
+        if (Objects.isNull(carModel)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found carModel!  uid={},carModelId={}", userInfo.getUid(),
+                    rentCarDepositAdd.getCarModelId());
+            return R.fail("100005", "未找到车辆型号");
+        }
+        
+        BigDecimal payAmount = rentCarDepositAdd.getPayAmount();
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+        
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
+        
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(orderId).uid(userInfo.getUid())
+                .phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(payAmount)
+                .status(EleDepositOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).tenantId(rentCarDepositAdd.getTenantId())
+                .depositType(EleDepositOrder.RENT_CAR_DEPOSIT).storeId(rentCarDepositAdd.getStoreId())
+                .carModelId(rentCarDepositAdd.getCarModelId()).franchiseeId(rentCarDepositAdd.getFranchiseeId())
+                .payType(EleDepositOrder.OFFLINE_PAYMENT).build();
+        if (eleDepositOrderMapper.insert(eleDepositOrder) <= 0) {
+            new CustomBusinessException("缴纳租车押金失败");
+        }
+        
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
+                .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid())
+                .uid(userInfo.getUid()).name(user.getUsername()).oldCarDeposit(null).newCarDeposit(payAmount)
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(updateUserInfo);
+        
+        UserCarDeposit userCarDeposit = new UserCarDeposit();
+        userCarDeposit.setUid(userInfo.getUid());
+        userCarDeposit.setOrderId(orderId);
+        userCarDeposit.setCarDeposit(eleDepositOrder.getPayAmount());
+        userCarDeposit.setTenantId(userInfo.getTenantId());
+        userCarDeposit.setCreateTime(System.currentTimeMillis());
+        userCarDeposit.setUpdateTime(System.currentTimeMillis());
+        userCarDepositService.insertOrUpdate(userCarDeposit);
+        
+        UserCar userCar = new UserCar();
+        userCar.setUid(userInfo.getUid());
+        userCar.setCarModel(rentCarDepositAdd.getCarModelId().longValue());
+        userCar.setTenantId(userInfo.getTenantId());
+        userCar.setCreateTime(System.currentTimeMillis());
+        userCar.setUpdateTime(System.currentTimeMillis());
+        userCarService.insertOrUpdate(userCar);
+    }
+    
     /**
      * 根据型号计算押金
      *
