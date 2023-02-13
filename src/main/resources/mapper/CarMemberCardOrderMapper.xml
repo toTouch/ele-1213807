@@ -152,10 +152,10 @@
                 and valid_days = #{validDays}
             </if>
             <if test="beginTime != null">
-                and tcco.create_time &gt;= #{beginTime}
+                and create_time &gt;= #{beginTime}
             </if>
             <if test="endTime != null">
-                and tcco.create_time &lt;= #{endTime}
+                and create_time &lt;= #{endTime}
             </if>
             <if test="storeId != null">
                 and store_id = #{storeId}

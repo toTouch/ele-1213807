@@ -5,10 +5,12 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
@@ -33,7 +35,9 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -377,6 +381,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         List<FranchiseeInsurance> tempFranchiseeInsuranceList = new ArrayList<>();
 
+        //新加盟商下的保险
         List<FranchiseeInsurance> newFranchiseeInsurances = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
         if (!CollectionUtils.isEmpty(newFranchiseeInsurances)) {
             //判断新加盟商是否已经有了旧加盟商下相同类型的保险
@@ -404,7 +409,24 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         if (CollectionUtils.isEmpty(oldFranchiseeInsurances)) {
             return;
         }
-
+        
+        //新加盟商下保险+旧加盟商下可复制到新加盟商下的保险
+        List<FranchiseeInsurance> totalFranchiseeInsurances=new ArrayList<>();
+        totalFranchiseeInsurances.addAll(newFranchiseeInsurances);
+        totalFranchiseeInsurances.addAll(oldFranchiseeInsurances);
+        
+        //校验新加盟商下是否有相同型号启用的保险
+        Map<String, Long> collectMap = totalFranchiseeInsurances.stream()
+                .filter(item -> Objects.equals(item.getStatus(), FranchiseeInsurance.STATUS_USABLE))
+                .collect(Collectors.groupingBy(FranchiseeInsurance::getBatteryType, Collectors.counting()));
+        if(!CollectionUtils.isEmpty(collectMap)){
+            collectMap.forEach((k,v)->{
+                if(v>NumberConstant.ONE_L){
+                    throw new CustomBusinessException("旧加盟商与新加盟商下存在相同型号已启用的保险");
+                }
+            });
+        }
+    
         this.baseMapper.batchInsert(oldFranchiseeInsurances);
 
     }
