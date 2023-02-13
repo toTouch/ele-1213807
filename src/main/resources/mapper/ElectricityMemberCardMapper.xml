@@ -51,12 +51,6 @@
                 #{id}
             </foreach>
         </if>
-        <if test="cardModel != null ">
-            and temc.card_model = #{cardModel}
-        </if>
-        <if test="carModelId != null ">
-            and temc.car_model_id = #{carModelId}
-        </if>
         ORDER BY temc.create_time DESC
         limit #{offset}, #{size}
     </select>
@@ -86,9 +80,6 @@
         </if>
         <if test="type != null">
             AND temc.type = #{type}
-        </if>
-        <if test="cardModel != null ">
-            and temc.card_model = #{cardModel}
         </if>
         <if test="tenantId != null ">
             and temc.tenant_id = #{tenantId}
