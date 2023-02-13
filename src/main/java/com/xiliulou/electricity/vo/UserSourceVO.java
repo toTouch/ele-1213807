@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.query;
+package com.xiliulou.electricity.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,32 +11,18 @@ import java.util.List;
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2023-02-12-14:11
+ * @date 2023-02-12-18:19
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserSourceQuery {
-    /**
-     * 设备名称
-     */
-    private String deviceName;
-    /**
-     * 设备产品
-     */
-    private String productKey;
+public class UserSourceVO {
+
     /**
      * 用户来源 1：扫码，2：邀请，3：其它
      */
-    @NotNull(message = "用户来源不能为空")
     private Integer source;
-
-    private Long size;
-    private Long offset;
-    private Integer tenantId;
-    private Long startTime;
-    private Long endTime;
     /**
      * 用户名字
      */
@@ -45,19 +31,22 @@ public class UserSourceQuery {
      * 手机
      */
     private String phone;
-
     /**
      * 柜机
      */
     private Integer electricityCabinetId;
-    private List<Integer> electricityCabinetIds;
+    private String electricityCabinetName;
 
     /**
      * 所属加盟商
      */
     private Long franchiseeId;
-
+    private String franchiseeName;
 
     private Long storeId;
+    private String storeName;
+
+    private Long createTime;
+
 
 }

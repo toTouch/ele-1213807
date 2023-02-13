@@ -22,6 +22,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
@@ -217,9 +218,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-
         //判断是否缴纳押金
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("100241", "当前套餐暂停中，请先启用套餐");
@@ -294,15 +294,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         Long franchiseeId = userInfo.getFranchiseeId();
+        //购买套餐扫码的柜机
+        Long refId = null;
+        //购买套餐来源
+        Integer source = ElectricityMemberCardOrder.SOURCE_NOT_SCAN;
+        if (StringUtils.isNotBlank(electricityMemberCardOrderQuery.getProductKey()) && StringUtils.isNotBlank(electricityMemberCardOrderQuery.getDeviceName())) {
 
-        if (Objects.nonNull(electricityMemberCardOrderQuery.getProductKey())
-                && Objects.nonNull(electricityMemberCardOrderQuery.getDeviceName())) {
             //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
                 log.error("rentBattery  ERROR! not found electricityCabinet ！productKey={},deviceName={}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
                 return R.fail("ELECTRICITY.0005", "未找到换电柜");
             }
+
+            source = ElectricityMemberCardOrder.SOURCE_SCAN;
+            refId = electricityCabinet.getId().longValue();
 
             //3、查出套餐
             //查找换电柜门店
@@ -425,6 +431,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayCount(payCount);
+        electricityMemberCardOrder.setRefId(refId);
+        electricityMemberCardOrder.setSource(source);
         if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
         }
@@ -2815,6 +2823,21 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, "", null);
         }
 
+        //购买套餐扫码的柜机
+        Long refId = null;
+        //购买套餐来源
+        Integer source = ElectricityMemberCardOrder.SOURCE_NOT_SCAN;
+        if(StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())){
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+            if (Objects.isNull(electricityCabinet)) {
+                log.error("CREATE MEMBER_ORDER ERROR ERROR! not found electricityCabinet,productKey={},deviceName={}", query.getProductKey(), query.getDeviceName());
+                return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+            }
+
+            source = ElectricityMemberCardOrder.SOURCE_SCAN;
+            refId = electricityCabinet.getId().longValue();
+        }
+
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(query.getMemberCardId());
         if (Objects.isNull(electricityMemberCard)) {
             log.error("CREATE MEMBER_ORDER ERROR ,not found member_card by id={},uid={}", query.getMemberCardId(), userInfo.getUid());
@@ -2892,6 +2915,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setSource(source);
+        electricityMemberCardOrder.setRefId(refId);
         if (Objects.nonNull(query.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(query.getUserCouponId().longValue());
         }
@@ -2930,6 +2955,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userCoupon.setOrderId(null);
         userCoupon.setUpdateTime(System.currentTimeMillis());
         userCouponService.updateStatus(userCoupon);
+
+        //取消支付  清除套餐来源
+        ElectricityMemberCardOrder memberCardOrderUpdate=new ElectricityMemberCardOrder();
+        memberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        memberCardOrderUpdate.setSource(NumberConstant.ZERO);
+        memberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
+        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.baseMapper.updateById(memberCardOrderUpdate);
+
         return R.ok();
     }
 

@@ -13,6 +13,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class IntegratedPaymentAdd {
 
+	private String productKey;
+
+	private String deviceName;
 
 	private Integer insuranceId;
 

@@ -21,6 +21,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -362,7 +366,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //处理套餐订单
-        Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd.getMemberCardId(), integratedPaymentAdd.getUserCouponId(),integratedPaymentAdd.getFranchiseeId());
+        Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd);
         if (!generateMemberCardOrderResult.getLeft()) {
             return generateMemberCardOrderResult;
         }
@@ -584,19 +588,34 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         return Triple.of(true, null, eleDepositOrder);
     }
 
-    private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, Integer memberCardId, Integer userCouponId, Long franchiseeId) {
+    private Triple<Boolean, String, Object> generateMemberCardOrder(UserInfo userInfo, IntegratedPaymentAdd integratedPaymentAdd) {
 
-        if (Objects.isNull(memberCardId)) {
+        if (Objects.isNull(integratedPaymentAdd.getMemberCardId())) {
             return Triple.of(true, "", null);
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardId);
+        //购买套餐扫码的柜机
+        Long refId = null;
+        //购买套餐来源
+        Integer source = ElectricityMemberCardOrder.SOURCE_NOT_SCAN;
+        if(StringUtils.isNotBlank(integratedPaymentAdd.getProductKey()) && StringUtils.isNotBlank(integratedPaymentAdd.getDeviceName())){
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(integratedPaymentAdd.getProductKey(), integratedPaymentAdd.getDeviceName());
+            if (Objects.isNull(electricityCabinet)) {
+                log.error("CREATE MEMBER_ORDER ERROR ERROR! not found electricityCabinet ！productKey={},deviceName={}", integratedPaymentAdd.getProductKey(), integratedPaymentAdd.getDeviceName());
+                return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+            }
+
+            source = ElectricityMemberCardOrder.SOURCE_SCAN;
+            refId = electricityCabinet.getId().longValue();
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(integratedPaymentAdd.getMemberCardId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", memberCardId);
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY cardId={},uid={}", integratedPaymentAdd.getMemberCardId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", memberCardId);
+            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE cardId={},uid={}", integratedPaymentAdd.getMemberCardId(), userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0088", "月卡已禁用!");
         }
 
@@ -604,28 +623,28 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         //满减折扣劵
         UserCoupon userCoupon = null;
         BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
-        if (Objects.nonNull(userCouponId)) {
-            userCoupon = userCouponService.queryByIdFromDB(userCouponId);
+        if (Objects.nonNull(integratedPaymentAdd.getUserCouponId())) {
+            userCoupon = userCouponService.queryByIdFromDB(integratedPaymentAdd.getUserCouponId());
             if (Objects.isNull(userCoupon)) {
-                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId:{} ", userCouponId);
+                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId={},uid={}", integratedPaymentAdd.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
 
             //优惠券是否使用
             if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId:{} ", userCouponId);
+                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId={},uid={}", integratedPaymentAdd.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0090", "您的优惠券已被使用");
             }
 
             //优惠券是否过期
             if (userCoupon.getDeadline() < System.currentTimeMillis()) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId:{} ", userCouponId);
+                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId={},uid={}", integratedPaymentAdd.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
             }
 
             Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
-                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId:{} ", userCouponId);
+                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId={},uid={}", integratedPaymentAdd.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
 
@@ -659,7 +678,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(memberCardId);
+        electricityMemberCardOrder.setMemberCardId(integratedPaymentAdd.getMemberCardId());
         electricityMemberCardOrder.setUid(userInfo.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
@@ -668,12 +687,14 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(franchiseeId);
+        electricityMemberCardOrder.setFranchiseeId(integratedPaymentAdd.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayCount(payCount);
-        if (Objects.nonNull(userCouponId)) {
-            electricityMemberCardOrder.setCouponId(userCouponId.longValue());
+        electricityMemberCardOrder.setSource(source);
+        electricityMemberCardOrder.setRefId(refId);
+        if (Objects.nonNull(integratedPaymentAdd.getUserCouponId())) {
+            electricityMemberCardOrder.setCouponId(integratedPaymentAdd.getUserCouponId().longValue());
         }
 
         List<Object> list = new ArrayList<>();

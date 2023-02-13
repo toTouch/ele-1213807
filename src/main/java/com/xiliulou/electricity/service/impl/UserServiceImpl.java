@@ -8,7 +8,6 @@ import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
@@ -26,6 +25,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
+import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
@@ -33,6 +33,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -48,6 +49,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * (User)表服务实现类
@@ -909,6 +911,38 @@ public class UserServiceImpl implements UserService {
         this.updateUserSource(updateUser);
     }
 
+    @Override
+    public List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery) {
+        verifyParams(userSourceQuery);
+
+        List<UserSourceVO> userSourceVOList = this.userMapper.selectUserSourceByPage(userSourceQuery);
+        if (CollectionUtils.isEmpty(userSourceVOList)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return userSourceVOList.parallelStream().peek(item -> {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                item.setFranchiseeName(franchisee.getName());
+            }
+
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+            if (Objects.nonNull(electricityCabinet)) {
+                item.setElectricityCabinetName(electricityCabinet.getName());
+                Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+                if (Objects.nonNull(store)) {
+                    item.setStoreName(store.getName());
+                }
+            }
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery) {
+        verifyParams(userSourceQuery);
+        return this.userMapper.selectUserSourcePageCount(userSourceQuery);
+    }
+
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
         userOauthBinds.parallelStream().forEach(e -> {
             String thirdId = e.getThirdId();
@@ -929,6 +963,15 @@ public class UserServiceImpl implements UserService {
             if (deleteById(uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_UID + uid);
                 redisService.delete(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + user.getPhone() + ":" + user.getUserType());
+            }
+        }
+    }
+
+    private void verifyParams(UserSourceQuery userSourceQuery) {
+        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
+            List<Integer> eidList = electricityCabinetService.selectEidByStoreId(userSourceQuery.getStoreId());
+            if (CollectionUtils.isNotEmpty(eidList)) {
+                userSourceQuery.setElectricityCabinetIds(eidList);
             }
         }
     }

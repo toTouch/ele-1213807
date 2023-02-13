@@ -3536,6 +3536,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryName(null, id));
     }
 
+    @Override
+    public List<Integer> selectEidByStoreId(Long storeId) {
+        return electricityCabinetMapper.selectEidByStoreId(TenantContextHolder.getTenantId(), storeId);
+    }
 
     /**
      * 通过云端下发命令更新换电标准
