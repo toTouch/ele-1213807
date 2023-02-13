@@ -1448,7 +1448,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfoExcelVOS.add(excelVo);
 
 
-            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime())) {
+            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(),NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
             }
 
