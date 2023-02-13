@@ -580,10 +580,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             log.error("BATTERY DEPOSIT REFUND ERROR! user membercard is disable,uid={}", uid);
             return R.fail("100211", "用户套餐已暂停！");
+        }
+    
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("BATTERY DEPOSIT REFUND ERROR! disable member card is reviewing,uid={}", uid);
+            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
         }
 
         //判断是否退电池

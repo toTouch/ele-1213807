@@ -89,11 +89,11 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             return R.fail("100210", "用户未开通套餐");
         }
 
-        //判断用户当前套餐与停卡时的套餐是否一致
-        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && !Objects.equals(eleDisableMemberCardRecord.getBatteryMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
-            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR! user disable battery member card not equals user current battery member card,uid={}", eleDisableMemberCardRecord.getUid());
-            return R.fail("100366", "套餐已失效，无法进行停卡审核");
-        }
+//        //判断用户当前套餐与停卡时的套餐是否一致
+//        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && !Objects.equals(eleDisableMemberCardRecord.getBatteryMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
+//            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR! user disable battery member card not equals user current battery member card,uid={}", eleDisableMemberCardRecord.getUid());
+//            return R.fail("100366", "套餐已失效，无法进行停卡审核");
+//        }
 
         //未找到用户
         if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis())) {
