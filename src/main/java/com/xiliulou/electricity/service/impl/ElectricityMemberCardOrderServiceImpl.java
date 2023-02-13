@@ -894,6 +894,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .status(usableStatus)
                     .tenantId(userInfo.getTenantId())
                     .uid(user.getUid())
+                    .batteryMemberCardId(userBatteryMemberCard.getMemberCardId())
                     .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_NOT_LIMIT_TIME)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
@@ -1080,6 +1081,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .uid(userInfo.getUid())
                 .tenantId(userInfo.getTenantId())
                 .uid(user.getUid())
+                .batteryMemberCardId(userBatteryMemberCard.getMemberCardId())
                 .chooseDays(disableCardDays)
                 .disableDeadline(disableDeadline)
                 .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)
