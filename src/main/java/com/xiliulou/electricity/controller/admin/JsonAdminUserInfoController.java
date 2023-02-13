@@ -415,5 +415,13 @@ public class JsonAdminUserInfoController extends BaseController {
     public R deleteUserInfo(@PathVariable("uid") Long uid) {
         return userInfoService.deleteUserInfo(uid);
     }
+    
+    /**
+     * 会员列表详情信息
+     */
+    @GetMapping(value = "/admin/userInfo/details/userInfo")
+    public R queryDetailsUserInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsUserInfo(uid);
+    }
 
 }

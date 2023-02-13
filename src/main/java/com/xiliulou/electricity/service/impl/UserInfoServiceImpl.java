@@ -1024,9 +1024,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public R queryUserAllConsumption(Long id) {
-
-        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(queryUserConsumptionPay(id));
+    }
     
+    private UserTurnoverVo queryUserConsumptionPay(Long id) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
         UserTurnoverVo userTurnoverVo = new UserTurnoverVo();
         //用户电池总套餐消费额
         CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
@@ -1036,7 +1039,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("MEMBER CARD ORDER ERROR! query turn over error", e);
             return null;
         });
-    
+        
         //用户租车总套餐消费额
         CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
             BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
@@ -1045,7 +1048,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
             return null;
         });
-    
+        
         //用户电池服务费消费额
         CompletableFuture<Void> queryBatteryServiceFeePayAmount = CompletableFuture.runAsync(() -> {
             BigDecimal pay = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
@@ -1063,8 +1066,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-    
-        return R.ok(userTurnoverVo);
+        
+        return userTurnoverVo;
     }
 
     @Override
@@ -1392,6 +1395,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public List<UserInfo> queryByIdNumber(String idNumber) {
         return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
+    }
+    
+    @Override
+    public R queryDetailsUserInfo(Long uid) {
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        DetailsUserInfoVo vo = new DetailsUserInfoVo();
+        BeanUtils.copyProperties(userInfo, vo);
+        vo.setUserCertificationTime(userInfo.getCreateTime());
+        
+        UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
+        BeanUtils.copyProperties(userTurnoverVo, vo);
+        return R.ok(vo);
     }
     
     @Override
