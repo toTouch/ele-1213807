@@ -312,8 +312,14 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
         return carModelVO;
     }
-
-
+    
+    @Override
+    public R queryPull(Long size, Long offset, Long franchiseeId, Long storeId, String name) {
+        return R.ok(electricityCarModelMapper
+                .queryPull(size, offset, franchiseeId, storeId, name, TenantContextHolder.getTenantId()));
+    }
+    
+    
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());

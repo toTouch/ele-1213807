@@ -216,4 +216,18 @@ public class JsonAdminElectricityCarModelController {
 
         return Boolean.FALSE;
     }
+    
+    @GetMapping(value = "/admin/electricityCarModel/pull")
+    public R queryPull(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "franchiseeId") Long franchiseeId, @RequestParam(value = "storeId") Long storeId) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        return electricityCarModelService.queryPull(size, offset, franchiseeId, storeId, name);
+    }
 }

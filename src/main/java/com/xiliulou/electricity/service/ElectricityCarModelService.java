@@ -47,5 +47,6 @@ public interface ElectricityCarModelService {
     List<ElectricityCarModelVO> selectList(ElectricityCarModelQuery query);
 
     ElectricityCarModelVO selectDetailById(Long id);
-
+    
+    R queryPull(Long size, Long offset, Long franchiseeId, Long storeId, String name);
 }
