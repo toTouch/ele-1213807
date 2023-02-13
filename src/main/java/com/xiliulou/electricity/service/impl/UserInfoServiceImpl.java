@@ -1024,7 +1024,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public R queryUserAllConsumption(Long id) {
-        return R.ok(queryUserConsumptionPay(id));
+        UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(id);
+    
+        BigDecimal sum = userTurnoverVo.getBatteryServiceFee();
+        sum = sum.add(userTurnoverVo.getCarMemberCardTurnover());
+        sum = sum.add(userTurnoverVo.getMemberCardTurnover());
+    
+        return R.ok(new UserInfoSumTurnoverVo(sum));
     }
     
     private UserTurnoverVo queryUserConsumptionPay(Long id) {
