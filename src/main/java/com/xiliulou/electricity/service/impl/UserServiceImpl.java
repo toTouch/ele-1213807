@@ -945,7 +945,9 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(electricityMemberCardOrder) && Objects.nonNull(electricityMemberCardOrder.getRefId())) {
                 //获取用户首次购买套餐柜机名称
                 ElectricityCabinet firstBuyMemberCardElectricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrder.getRefId().intValue());
-                item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());
+                if (Objects.nonNull(firstBuyMemberCardElectricityCabinet)) {
+                    item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());
+                }
             }
 
         }).collect(Collectors.toList());
