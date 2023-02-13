@@ -21,6 +21,12 @@
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
         </if>
+        <if test="query.source != null">
+            and tel.source =#{query.source}
+        </if>
+        <if test="query.refId != null">
+            and tel.ref_id =#{query.refId}
+        </if>
         <if test="query.cardModel != null">
             and tel.member_card_model =#{query.cardModel}
         </if>
@@ -60,6 +66,12 @@
         </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}
+        </if>
+        <if test="query.source != null">
+            and tel.source =#{query.source}
+        </if>
+        <if test="query.refId != null">
+            and tel.ref_id =#{query.refId}
         </if>
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}

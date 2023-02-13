@@ -908,7 +908,9 @@ public class UserServiceImpl implements UserService {
 
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
-            updateUser.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
+            if (Objects.nonNull(electricityCabinet)) {
+                updateUser.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
+            }
         }
 
         this.updateUserSource(updateUser);
