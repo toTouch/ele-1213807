@@ -138,7 +138,7 @@
 		tui.name,
 		tui.franchisee_id
 
-		from t_user left tu join t_user_info tui on tu.uid=tui.uid
+		from t_user tu left join t_user_info tui on tu.uid=tui.uid
 		<where>
 			tu.del_flag = 0
 			<if test="uid != null">
@@ -163,7 +163,7 @@
 				and tui.create_time &lt;=#{endTime}
 			</if>
 			<if test="source == 1 and electricityCabinetIds != null and electricityCabinetIds.size > 0">
-				and ref_id in
+				and tu.ref_id in
 				<foreach collection="electricityCabinetIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
@@ -176,7 +176,7 @@
 
 	<select id="selectUserSourcePageCount" resultType="java.lang.Integer">
 		select COUNT(1)
-		from t_user left tu join t_user_info tui on tu.uid=tui.uid
+		from t_user tu  left join t_user_info tui on tu.uid=tui.uid
 		<where>
 			tu.del_flag = 0
 			<if test="uid != null">
@@ -201,7 +201,7 @@
 				and tui.create_time &lt;=#{endTime}
 			</if>
 			<if test="source == 1 and electricityCabinetIds != null and electricityCabinetIds.size > 0">
-				and ref_id in
+				and tu.ref_id in
 				<foreach collection="electricityCabinetIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
