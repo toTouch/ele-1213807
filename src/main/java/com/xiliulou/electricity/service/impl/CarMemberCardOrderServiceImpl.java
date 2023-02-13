@@ -477,4 +477,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     public List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carMemberCardOrderMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
     }
+    
+    @Override
+    public BigDecimal queryTurnOver(Integer tenantId, Long id) {
+        return Optional.ofNullable(carMemberCardOrderMapper.queryTurnOver(tenantId, id)).orElse(BigDecimal.valueOf(0));
+    }
 }

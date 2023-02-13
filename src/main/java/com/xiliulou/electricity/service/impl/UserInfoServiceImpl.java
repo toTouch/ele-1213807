@@ -125,6 +125,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
+    
+    @Autowired
+    CarMemberCardOrderService carMemberCardOrderService;
 
 
     /**
@@ -1023,43 +1026,46 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R queryUserAllConsumption(Long id) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        DataBrowsingVo dataBrowsingVo = new DataBrowsingVo();
-        //用户总套餐消费额
-        CompletableFuture<BigDecimal> queryMemberCardPayAmount = CompletableFuture.supplyAsync(() -> {
-            return electricityMemberCardOrderService.queryTurnOver(tenantId, id);
+    
+        UserTurnoverVo userTurnoverVo = new UserTurnoverVo();
+        //用户电池总套餐消费额
+        CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+            BigDecimal pay = electricityMemberCardOrderService.queryTurnOver(tenantId, id);
+            userTurnoverVo.setMemberCardTurnover(pay);
         }, threadPool).exceptionally(e -> {
-            log.error("The carSn list ERROR! query carSn error!", e);
+            log.error("MEMBER CARD ORDER ERROR! query turn over error", e);
             return null;
         });
-
+    
+        //用户租车总套餐消费额
+        CompletableFuture<Void> queryCarMemberCardPayAmount = CompletableFuture.runAsync(() -> {
+            BigDecimal pay = carMemberCardOrderService.queryTurnOver(tenantId, id);
+            userTurnoverVo.setCarMemberCardTurnover(pay);
+        }, threadPool).exceptionally(e -> {
+            log.error("CAR MEMBER CARD ORDER ERROR! query turn over error", e);
+            return null;
+        });
+    
         //用户电池服务费消费额
-        CompletableFuture<BigDecimal> queryBatteryServiceFeePayAmount = CompletableFuture.supplyAsync(() -> {
-            return eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
+        CompletableFuture<Void> queryBatteryServiceFeePayAmount = CompletableFuture.runAsync(() -> {
+            BigDecimal pay = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
+            userTurnoverVo.setBatteryServiceFee(pay);
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
-
-        //计算总消费额
-        CompletableFuture<Void> payAmountSumFuture = queryMemberCardPayAmount
-                .thenAcceptBoth(queryBatteryServiceFeePayAmount, (memberCardSumAmount, batteryServiceFeeSumAmount) -> {
-                    BigDecimal result = memberCardSumAmount.add(batteryServiceFeeSumAmount);
-                    dataBrowsingVo.setSumTurnover(result);
-                }).exceptionally(e -> {
-                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
-                    return null;
-                });
+        
 
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(payAmountSumFuture);
+        CompletableFuture<Void> resultFuture = CompletableFuture
+                .allOf(queryMemberCardPayAmount, queryCarMemberCardPayAmount, queryBatteryServiceFeePayAmount);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-
-        return R.ok(dataBrowsingVo);
+    
+        return R.ok(userTurnoverVo);
     }
 
     @Override

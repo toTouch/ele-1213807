@@ -83,4 +83,6 @@ public interface CarMemberCardOrderService {
     BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> finalFranchiseeIds);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
+    
+    BigDecimal queryTurnOver(Integer tenantId, Long id);
 }
