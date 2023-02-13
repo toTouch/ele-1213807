@@ -81,7 +81,7 @@ public class JsonAdminUserSourceController extends BaseController {
         return R.ok(userService.selectUserSourceByPage(userSourceQuery));
     }
 
-    @GetMapping(value = "/admin/userInfo/queryCount")
+    @GetMapping(value = "/admin/userSource/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "source", required = false) Integer source,
