@@ -133,6 +133,9 @@
             <if test="userName != null and userName != ''">
                 and user_name = #{userName}
             </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
             <if test="memberCardType != null and memberCardType != ''">
                 and member_card_type = #{memberCardType}
             </if>
@@ -148,8 +151,11 @@
             <if test="validDays != null">
                 and valid_days = #{validDays}
             </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
+            <if test="beginTime != null">
+                and tcco.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tcco.create_time &lt;= #{endTime}
             </if>
             <if test="storeId != null">
                 and store_id = #{storeId}
