@@ -111,6 +111,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -934,6 +937,15 @@ public class UserServiceImpl implements UserService {
                     item.setStoreName(store.getName());
                 }
             }
+
+            //获取用户首次购买套餐记录
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(item.getUid());
+            if (Objects.nonNull(electricityMemberCardOrder) && Objects.nonNull(electricityMemberCardOrder.getRefId())) {
+                //获取用户首次购买套餐柜机名称
+                ElectricityCabinet firstBuyMemberCardElectricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrder.getRefId().intValue());
+                item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());
+            }
+
         }).collect(Collectors.toList());
     }
 

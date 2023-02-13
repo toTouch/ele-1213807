@@ -19,6 +19,8 @@ import java.util.List;
 @Builder
 public class UserSourceVO {
 
+    private Long uid;
+
     /**
      * 用户来源 1：扫码，2：邀请，3：其它
      */
@@ -36,6 +38,11 @@ public class UserSourceVO {
      */
     private Integer electricityCabinetId;
     private String electricityCabinetName;
+
+    /**
+     * 首次购买套餐柜机名称
+     */
+    private String firstBuyMemberCardEleName;
 
     /**
      * 所属加盟商

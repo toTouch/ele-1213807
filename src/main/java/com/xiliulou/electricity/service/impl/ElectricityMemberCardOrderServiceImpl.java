@@ -3034,7 +3034,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 0
                 : userBatteryMemberCard.getCardPayCount();
     }
-    
+
+    @Override
+    public ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid) {
+        return baseMapper.selectFirstMemberCardOrder(uid);
+    }
 }
 
 
