@@ -32,6 +32,8 @@ public class UserSourceQuery {
     @NotNull(message = "用户来源不能为空")
     private Integer source;
 
+    private Long refId;
+
     private Long size;
     private Long offset;
     private Integer tenantId;

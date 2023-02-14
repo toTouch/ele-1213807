@@ -895,7 +895,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Integer updateUserSource(User user) {
-        return this.userMapper.updateUserSource(user);
+        Integer update = this.userMapper.updateUserSource(user);
+        if(update>0){
+            redisService.delete(CacheConstant.CACHE_USER_UID + user.getUid());
+        }
+        return update;
     }
 
     @Override
@@ -904,6 +908,7 @@ public class UserServiceImpl implements UserService {
         User updateUser = new User();
         updateUser.setUid(SecurityUtils.getUid());
         updateUser.setSource(query.getSource());
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
 
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {

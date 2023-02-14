@@ -2,7 +2,9 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.UpdateUserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserService;
@@ -11,9 +13,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
@@ -116,6 +117,20 @@ public class JsonAdminUserSourceController extends BaseController {
 
 
         return R.ok(userService.selectUserSourcePageCount(userSourceQuery));
+    }
+
+    @PutMapping(value = "/admin/userSource")
+    @Log(title = "修改用户来源")
+    public R updateUserSource(@RequestBody @Validated UpdateUserSourceQuery userSourceQuery){
+        User updateUser = new User();
+        updateUser.setUid(userSourceQuery.getUid());
+        updateUser.setRefId(userSourceQuery.getRefId());
+        updateUser.setSource(userSourceQuery.getSource());
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+
+        userService.updateUserSource(updateUser);
+        return R.ok();
     }
 
 }
