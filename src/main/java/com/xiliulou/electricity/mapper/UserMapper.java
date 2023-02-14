@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface UserMapper extends BaseMapper<User> {
 
-
+    User selectById(@Param("uid") Long uid);
 
     List<User> queryListUserByCriteria(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime,@Param("tenantId") Integer tenantId);
 

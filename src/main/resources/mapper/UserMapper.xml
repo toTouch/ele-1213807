@@ -2,7 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserMapper">
 
+	<!-- 基础字段 -->
+	<sql id="selectUser">
+       	select   uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang, city, province, address, cid, ref_id, tenant_id, email, data_type, source        from t_user
+    </sql>
 
+	<!--查询单个-->
+	<select id="selectById" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where uid = #{uid}
+	</select>
 
 	<!--通过主键修改数据-->
 	<update id="updateUserByUid">
