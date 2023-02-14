@@ -162,6 +162,9 @@
 			<if test="franchiseeId != null">
 				and tui.franchisee_id=#{franchiseeId}
 			</if>
+			<if test="electricityCabinetId != null">
+				and tu.ref_id=#{electricityCabinetId}
+			</if>
 			<if test="tenantId != null">
 				and tui.tenant_id = #{tenantId}
 			</if>
@@ -199,6 +202,9 @@
 			</if>
 			<if test="franchiseeId != null">
 				and tui.franchisee_id=#{franchiseeId}
+			</if>
+			<if test="electricityCabinetId != null">
+				and tu.ref_id=#{electricityCabinetId}
 			</if>
 			<if test="tenantId != null">
 				and tui.tenant_id = #{tenantId}
