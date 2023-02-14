@@ -132,7 +132,7 @@
 		tu.uid,
 		tu.phone,
 		tu.source,
-		tu.ref_id,
+		tu.ref_id as electricityCabinetId,
 		tui.create_time,
 		tui.update_time,
 		tui.name,

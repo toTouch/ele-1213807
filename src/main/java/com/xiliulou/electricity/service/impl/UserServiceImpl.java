@@ -914,7 +914,9 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
             if (Objects.nonNull(electricityCabinet)) {
-                updateUser.setRefId(Objects.nonNull(electricityCabinet) ? electricityCabinet.getId().longValue() : null);
+                updateUser.setRefId(electricityCabinet.getId().longValue());
+            } else {
+                log.error("ELE ERROR! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), SecurityUtils.getUid());
             }
         }
 
