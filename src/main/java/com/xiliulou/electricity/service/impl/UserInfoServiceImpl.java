@@ -1633,8 +1633,29 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentCarOrder.setTransactionType(RentCarOrder.TYPE_TRANSACTION_OFFLINE);
             rentCarOrder.setCreateTime(System.currentTimeMillis());
             rentCarOrder.setUpdateTime(System.currentTimeMillis());
-            
             rentCarOrderService.insert(rentCarOrder);
+    
+            //修改车辆
+            ElectricityCar updateElectricityCar = new ElectricityCar();
+            updateElectricityCar.setId(electricityCar.getId());
+            updateElectricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
+            updateElectricityCar.setUid(userInfo.getUid());
+            updateElectricityCar.setPhone(userInfo.getPhone());
+            updateElectricityCar.setUserInfoId(userInfo.getId());
+            updateElectricityCar.setUserName(userInfo.getName());
+            updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+            electricityCarService.update(updateElectricityCar);
+    
+            //生成后台操作记录
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(
+                            Objects.nonNull(userBindElectricityCar) ? EleUserOperateRecord.EDIT_CAR_CONTENT
+                                    : EleUserOperateRecord.BIND_CAR_CONTENT).operateUid(user.getUid())
+                    .uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).name(user.getUsername())
+                    .initElectricityCarSn(Objects.nonNull(userBindElectricityCar) ? userBindElectricityCar.getSn() : "")
+                    .nowElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
             
             return null;
         });

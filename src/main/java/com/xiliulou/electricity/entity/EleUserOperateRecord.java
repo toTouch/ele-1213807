@@ -87,6 +87,16 @@ public class EleUserOperateRecord {
     private BigDecimal oldCarDeposit;
     
     /**
+     * 初始电池编号
+     */
+    private String initElectricityCarSn;
+    
+    /**
+     * 操作后电池编号
+     */
+    private String nowElectricityCarSn;
+    
+    /**
      * 操作后租车押金
      */
     private BigDecimal newCarDeposit;
@@ -118,8 +128,9 @@ public class EleUserOperateRecord {
     public static final Integer MEMBER_CARD_MODEL = 2;
     
     public static final Integer CAR_DEPOSIT_MODEL = 3;
-    
     public static final Integer CAR_MEMBER_CARD_MODEL = 4;
+    
+    public static final Integer CAR_MODEL = 5;
     
     
     public static final Integer MEMBER_CARD_EXPIRE_CONTENT = 0;
@@ -132,8 +143,11 @@ public class EleUserOperateRecord {
     public static final Integer CLEAN_BATTERY_SERVICE_FEE = 7;
     
     public static final Integer CAR_DEPOSIT_EDIT_CONTENT = 8;
-    
     public static final Integer CAR_MEMBER_CARD_EXPIRE_CONTENT = 9;
+    
+    public static final Integer EDIT_CAR_CONTENT = 10;
+    
+    public static final Integer BIND_CAR_CONTENT = 11;
 }
 
 
