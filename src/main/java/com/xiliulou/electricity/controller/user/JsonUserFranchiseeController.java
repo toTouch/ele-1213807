@@ -2,15 +2,14 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.FranchiseeMoveQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -82,5 +81,12 @@ public class JsonUserFranchiseeController extends BaseController {
         return returnTripleResult(franchiseeService.selectFranchiseeByCity(cityCode));
     }
 
+    /**
+     * 更换用户所属加盟商
+     */
+    @PutMapping(value = "/user/franchisee/moveFranchisee")
+    public R moveFranchisee() {
+        return returnTripleResult(franchiseeService.moveFranchisee());
+    }
 
 }

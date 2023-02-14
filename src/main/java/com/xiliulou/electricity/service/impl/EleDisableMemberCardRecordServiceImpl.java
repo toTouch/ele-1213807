@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
@@ -60,7 +61,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         Integer tenantId = TenantContextHolder.getTenantId();
 
         EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo).eq(EleDisableMemberCardRecord::getTenantId, tenantId));
-
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO={}", disableMemberCardNo);
             return R.fail("未找到停卡订单!");
@@ -82,12 +82,18 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 //            log.error("payDeposit  ERROR! not found user! userId={}", eleDisableMemberCardRecord.getUid());
 //            return R.fail("ELECTRICITY.0001", "未找到用户");
 //        }
-        //判断用户套餐
+        //判断用户是否购买套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L) || Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
             log.warn("REVIEW_DISABLE_MEMBER_CARD ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
+
+//        //判断用户当前套餐与停卡时的套餐是否一致
+//        if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && !Objects.equals(eleDisableMemberCardRecord.getBatteryMemberCardId(), userBatteryMemberCard.getMemberCardId())) {
+//            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR! user disable battery member card not equals user current battery member card,uid={}", eleDisableMemberCardRecord.getUid());
+//            return R.fail("100366", "套餐已失效，无法进行停卡审核");
+//        }
 
         //未找到用户
         if (Objects.equals(status, UserBatteryMemberCard.MEMBER_CARD_DISABLE) && (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis())) {

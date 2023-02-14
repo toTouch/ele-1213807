@@ -25,4 +25,6 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     List<RentBatteryOrderVO> queryList(@Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
 
 	Integer queryCount(@Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
+
+    RentBatteryOrder selectLatestByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 }

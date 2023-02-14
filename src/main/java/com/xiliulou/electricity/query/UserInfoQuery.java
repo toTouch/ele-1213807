@@ -26,6 +26,7 @@ public class UserInfoQuery {
     private Integer tenantId;
 
     private Integer serviceStatus;
+    private Integer memberCardExpireType;
 
     private String nowElectricityBatterySn;
     private Long batteryId;

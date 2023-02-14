@@ -7,6 +7,27 @@
         SELECT 1 FROM t_electricity_member_card WHERE del_flag=0 and franchisee_id = #{franchiseeId} AND tenant_id = #{tenantId} LIMIT 1
     </select>
 
+
+    <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+        SELECT id,name,valid_days,model_type,battery_Type,status
+        FROM t_electricity_member_card
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardVO">
         SELECT
         temc.id,temc.name,temc.type,temc.holiday_price,temc.price,temc.valid_days,temc.max_use_count,temc.status,temc.create_time,temc.update_time,
@@ -29,12 +50,6 @@
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
-        </if>
-        <if test="cardModel != null ">
-            and temc.card_model = #{cardModel}
-        </if>
-        <if test="carModelId != null ">
-            and temc.car_model_id = #{carModelId}
         </if>
         ORDER BY temc.create_time DESC
         limit #{offset}, #{size}
@@ -65,9 +80,6 @@
         </if>
         <if test="type != null">
             AND temc.type = #{type}
-        </if>
-        <if test="cardModel != null ">
-            and temc.card_model = #{cardModel}
         </if>
         <if test="tenantId != null ">
             and temc.tenant_id = #{tenantId}
@@ -200,6 +212,17 @@
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>
+
+
+    <insert id="batchInsert" >
+        insert into t_electricity_member_card(name, type, holiday_price, price, valid_days, max_use_count, status, create_time,
+        update_time,limit_count,franchisee_id,del_flag,tenant_id,model_type,battery_Type,is_bind_activity,activity_id
+        ) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.name}, #{item.type}, #{item.holidayPrice}, #{item.price}, #{item.validDays}, #{item.maxUseCount}, #{item.status}, #{item.createTime},
+        #{item.updateTime}, #{item.limitCount}, #{item.franchiseeId}, #{item.delFlag}, #{item.tenantId}, #{item.modelType}, #{item.batteryType}, #{item.isBindActivity}, #{item.activityId})
+        </foreach>
+    </insert>
 
 
 </mapper>

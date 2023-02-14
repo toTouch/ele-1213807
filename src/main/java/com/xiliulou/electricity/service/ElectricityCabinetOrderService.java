@@ -78,4 +78,6 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
 
     Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);
+
+    ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId);
 }

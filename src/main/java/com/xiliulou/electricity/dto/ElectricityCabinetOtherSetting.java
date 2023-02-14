@@ -122,4 +122,10 @@ public class ElectricityCabinetOtherSetting {
     private String bms;
 
     private Integer serverHeartBeat;
+
+    /**
+     * 开启电池BMS异常检测
+     */
+    private Integer enableBatteryBMSExceptionCheck;
+
 }
