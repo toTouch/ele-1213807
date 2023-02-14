@@ -906,7 +906,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public synchronized void loginCallBack(UserSourceQuery query) {
 
-        User user = this.queryByUidFromCache(SecurityUtils.getUid());
+        User user = userMapper.selectById(SecurityUtils.getUid());
 
         User updateUser = new User();
         updateUser.setUid(user.getUid());
