@@ -595,7 +595,6 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             carMemberCardOrder.setStoreId(bindCarModel.getStoreId());
             carMemberCardOrder.setFranchiseeId(bindCarModel.getFranchiseeId());
             carMemberCardOrder.setTenantId(userInfo.getTenantId());
-            
             insert(carMemberCardOrder);
             
             UserCar updateUserCar = new UserCar();
@@ -633,6 +632,138 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
                 .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
                 .uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldCardDay.intValue())
+                .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        return R.ok();
+    }
+    
+    @Override
+    public R renewalUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("admin renewalUserMemberCard ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrderAddAndUpdate.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("admin renewalUserMemberCard ERROR! not found user! uid={}",
+                    carMemberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+        
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("admin renewalUserMemberCard ERROR! not pay deposit,uid={}",
+                    carMemberCardOrderAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
+            log.warn("HOME WARN! user haven't carMemberCard uid={}", userInfo.getUid());
+            return R.fail("100210", "用户未开通套餐");
+        }
+        
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("admin renewalUserMemberCard ERROR! user haven't userCar uid={}", userInfo.getUid());
+            return R.failMsg("未找到用户信息!");
+        }
+        
+        ElectricityCarModel userCarModel = electricityCarModelService
+                .queryByIdFromCache(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
+        if (Objects.isNull(userCarModel) || !Objects
+                .equals(userCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("100258", "未找到车辆型号");
+        }
+        
+        if (Objects.isNull(carMemberCardOrderAddAndUpdate.getValidDays())) {
+            return R.failMsg("请填写租赁周期");
+        }
+        
+        //获取租车套餐计费规则
+        Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(userCarModel);
+        if (ObjectUtil.isEmpty(rentCarPriceRule)) {
+            log.error("ELE CAR MEMBER CARD ERROR! renewalUserMemberCard not found rentCarPriceRule id={},uid={}",
+                    userCarModel.getId(), user.getUid());
+            return R.fail("100237", "车辆租赁方式不存在!");
+        }
+        
+        EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory
+                .getInstance(carMemberCardOrderAddAndUpdate.getRentType());
+        if (Objects.isNull(calcRentCarPriceInstance)) {
+            log.error("ELE CAR MEMBER CARD ERROR! renewalUserMemberCard calcRentCarPriceInstance is null,uid={}",
+                    user.getUid());
+            return R.fail("100237", "车辆租赁方式不存在!");
+        }
+        
+        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance
+                .getRentCarPrice(userInfo, carMemberCardOrderAddAndUpdate.getValidDays(), rentCarPriceRule);
+        if (!calcSavePrice.getLeft()) {
+            return R.fail("100237", "车辆租赁方式不存在!");
+        }
+        
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+        BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
+        
+        CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
+        carMemberCardOrder.setUid(userInfo.getUid());
+        carMemberCardOrder.setOrderId(orderId);
+        carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
+        carMemberCardOrder.setCarModelId(userCarModel.getId().longValue());
+        carMemberCardOrder.setUid(userInfo.getUid());
+        carMemberCardOrder.setUserName(userInfo.getName());
+        carMemberCardOrder.setValidDays(carMemberCardOrderAddAndUpdate.getValidDays());
+        carMemberCardOrder.setPayType(CarMemberCardOrder.OFFLINE_PAYTYPE);
+        carMemberCardOrder.setCardName(getCardName(carMemberCardOrderAddAndUpdate.getRentType()));
+        carMemberCardOrder.setMemberCardType(carMemberCardOrderAddAndUpdate.getRentType());
+        carMemberCardOrder.setPayAmount(rentCarPrice);
+        carMemberCardOrder.setStoreId(userCarModel.getStoreId());
+        carMemberCardOrder.setFranchiseeId(userCarModel.getFranchiseeId());
+        carMemberCardOrder.setTenantId(userInfo.getTenantId());
+        carMemberCardOrder.setCreateTime(System.currentTimeMillis());
+        carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        insert(carMemberCardOrder);
+        
+        UserCar updateUserCar = new UserCar();
+        updateUserCar.setUid(userInfo.getUid());
+        updateUserCar.setCarModel(userCarModel.getId().longValue());
+        updateUserCar.setUpdateTime(System.currentTimeMillis());
+        userCarService.updateByUid(updateUserCar);
+        
+        Long memberCardExpireTime = electricityMemberCardOrderService
+                .calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
+                        carMemberCardOrder.getValidDays(), userCarMemberCard);
+        
+        UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
+        updateUserCarMemberCard.setOrderId(orderId);
+        updateUserCarMemberCard.setUid(userInfo.getUid());
+        updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
+        updateUserCarMemberCard.setCardId(userCarModel.getId().longValue());
+        updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+        userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+        
+        Long now = System.currentTimeMillis();
+        Double oldCardDay = 0.0;
+        
+        Double carDayTemp = 0.0;
+        if (memberCardExpireTime > now) {
+            carDayTemp = Math.ceil((memberCardExpireTime - now) / 3600000 / 24.0);
+        }
+        
+        if (userCarMemberCard.getMemberCardExpireTime() > now) {
+            oldCardDay = Math.ceil((userCarMemberCard.getMemberCardExpireTime() - now) / 3600000 / 24.0);
+        }
+        
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().uid(userInfo.getUid())
+                .name(user.getUsername()).oldValidDays(oldCardDay.intValue())
+                .operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
                 .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);

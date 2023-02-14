@@ -90,4 +90,6 @@ public interface CarMemberCardOrderService {
     CarMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
     
     R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
+    
+    R renewalUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
 }

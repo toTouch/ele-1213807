@@ -155,7 +155,7 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     }
     
     /**
-     * 编辑用户套餐
+     * 编辑用户车辆套餐
      *
      * @return
      */
@@ -164,4 +164,17 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     public R editUserMemberCard(@RequestBody @Validated CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
         return carMemberCardOrderService.editUserMemberCard(carMemberCardOrderAddAndUpdate);
     }
+    
+    /**
+     * 续费用户车辆套餐
+     *
+     * @return
+     */
+    @PutMapping(value = "/admin/rentCarMemberCard/renewalUserMemberCard")
+    @Log(title = "续费用户车辆套餐")
+    public R renewalUserMemberCard(
+            @RequestBody @Validated CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
+        return carMemberCardOrderService.renewalUserMemberCard(carMemberCardOrderAddAndUpdate);
+    }
+    
 }
