@@ -21,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -188,6 +189,13 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     @Log(title = "后台绑定车辆")
     public R webBindCar(@RequestBody UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
         return userInfoService.webBindCar(userInfoCarAddAndUpdate);
+    }
+    
+    //解绑车辆
+    @PutMapping(value = "/admin/userInfo/unBindCar/{uid}")
+    @Log(title = "后台解绑车辆")
+    public R webUnBindCar(@PathVariable("uid") Long uid) {
+        return userInfoService.webUnBindCar(uid);
     }
     
 }

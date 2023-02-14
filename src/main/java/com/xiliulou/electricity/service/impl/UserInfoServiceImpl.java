@@ -1663,6 +1663,63 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Override
+    public R webUnBindCar(Long uid) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        //查找用户
+        UserInfo userInfo = queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found user error uid={}", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        if (!Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
+            return R.ok();
+        }
+        
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("WEB BIND CAR ERROR ERROR! user not auth! uid={} ", userInfo.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
+            log.error("WEBUNBIND ERROR! not  rent battery,uid={}", uid);
+            return R.fail("100261", "用户未绑定车辆");
+        }
+        
+        ElectricityCar userBindElectricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.isNull(userBindElectricityCar)) {
+            log.error("WEBUNBIND ERROR! not  rent battery,uid={}", uid);
+            return R.fail("100261", "用户未绑定车辆");
+        }
+        
+        ElectricityCar updateElectricityCar = new ElectricityCar();
+        updateElectricityCar.setId(userBindElectricityCar.getId());
+        updateElectricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
+        updateElectricityCar.setUid(null);
+        updateElectricityCar.setUserName(null);
+        updateElectricityCar.setUserInfoId(null);
+        updateElectricityCar.setPhone(null);
+        updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+        electricityCarService.carUnBindUser(updateElectricityCar);
+        
+        //生成后台操作记录
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
+                .operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                .initElectricityCarSn(userBindElectricityCar.getSn()).nowElectricityCarSn(null)
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        return R.ok();
+    }
+    
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
         CarMemberCardOrder carMemberCardOrder = this.carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());

@@ -144,10 +144,10 @@ public class EleUserOperateRecord {
     
     public static final Integer CAR_DEPOSIT_EDIT_CONTENT = 8;
     public static final Integer CAR_MEMBER_CARD_EXPIRE_CONTENT = 9;
-    
     public static final Integer EDIT_CAR_CONTENT = 10;
-    
     public static final Integer BIND_CAR_CONTENT = 11;
+    
+    public static final Integer UN_BIND_CAR_CONTENT = 12;
 }
 
 

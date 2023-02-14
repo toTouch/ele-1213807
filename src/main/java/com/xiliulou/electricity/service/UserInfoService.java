@@ -132,4 +132,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R queryDetailsCarInfo(Long uid);
     
     R webBindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
+    
+    R webUnBindCar(Long uid);
 }
