@@ -15,6 +15,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.UserSourceQuery;
@@ -896,27 +897,32 @@ public class UserServiceImpl implements UserService {
     @Override
     public Integer updateUserSource(User user) {
         Integer update = this.userMapper.updateUserSource(user);
-        if(update>0){
+        if (update > 0) {
             redisService.delete(CacheConstant.CACHE_USER_UID + user.getUid());
         }
         return update;
     }
 
     @Override
-    public void loginCallBack(UserSourceQuery query) {
+    public synchronized void loginCallBack(UserSourceQuery query) {
+
+        User user = this.queryByUidFromCache(SecurityUtils.getUid());
 
         User updateUser = new User();
-        updateUser.setUid(SecurityUtils.getUid());
-        updateUser.setSource(query.getSource());
+        updateUser.setUid(user.getUid());
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
 
+        if (Objects.equals(user.getSource(), NumberConstant.ZERO)) {
+            updateUser.setSource(query.getSource());
+        }
+
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
-            if (Objects.nonNull(electricityCabinet)) {
+            if (Objects.nonNull(electricityCabinet) && Objects.isNull(user.getRefId())) {
                 updateUser.setRefId(electricityCabinet.getId().longValue());
             } else {
-                log.error("ELE ERROR! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), SecurityUtils.getUid());
+                log.error("ELE ERROR! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), user.getUid());
             }
         }
 
