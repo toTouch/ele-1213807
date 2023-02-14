@@ -15,12 +15,15 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
@@ -128,6 +131,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    
+    @Autowired
+    RentCarOrderService rentCarOrderService;
 
 
     /**
@@ -1506,6 +1512,134 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
     
         return R.ok(vo);
+    }
+    
+    @Override
+    public R webBindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        //查找用户
+        UserInfo userInfo = queryByUidFromCache(userInfoCarAddAndUpdate.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found user error uid={}", userInfoCarAddAndUpdate.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        if (!Objects.equals(TenantContextHolder.getTenantId(), userInfo.getTenantId())) {
+            return R.ok();
+        }
+        
+        //未实名认证
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("WEB BIND CAR ERROR ERROR! user not auth! uid={} ", userInfo.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("WEB BIND CAR ERROR ERROR! not pay deposit,uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        
+        UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("WEB BIND CAR ERROR ERROR! user haven't userCar uid={}", userInfo.getUid());
+            return R.failMsg("未找到用户信息!");
+        }
+        
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("WEB BIND CAR ERROR ERROR! user haven't userCarDeposit uid={}", userInfo.getUid());
+            return R.failMsg("未找到用户信息!");
+        }
+        
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
+            log.warn("WEB BIND CAR WARN! user haven't carMemberCard uid={}", userInfo.getUid());
+            return R.fail("100210", "用户未开通套餐");
+        }
+        
+        ElectricityCarModel userCarModel = electricityCarModelService
+                .queryByIdFromCache(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
+        if (Objects.isNull(userCarModel) || !Objects
+                .equals(userCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("WEB BIND CAR ERROR ERROR! not found userCarModel! uid={}", userInfo.getUid());
+            return R.fail("100258", "未找到车辆型号");
+        }
+        
+        ElectricityCar electricityCar = electricityCarService
+                .selectBySn(userInfoCarAddAndUpdate.getCarSn(), TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityCar)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found electricityCar! carSn={}",
+                    userInfoCarAddAndUpdate.getCarSn());
+            return R.fail("100259", "未找到车辆");
+        }
+        
+        if (Objects.nonNull(electricityCar.getUid()) && !Objects.equals(electricityCar.getUid(), userInfo.getUid())) {
+            log.error("WEB BIND CAR ERROR ERROR! car is bind user! carSn={} ", userInfoCarAddAndUpdate.getCarSn());
+            return R.fail("100231", "该车辆已经绑定用户");
+        }
+        
+        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel())) {
+            log.error("WEB BIND CAR ERROR ERROR! car is bind user! carSn={} ", userInfoCarAddAndUpdate.getCarSn());
+            return R.fail("100260", "绑定车辆型号与用户车辆型号不一致");
+        }
+        
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        Integer update = updateByUid(updateUserInfo);
+        
+        UserCar updateUserCar = new UserCar();
+        updateUserCar.setUid(userInfo.getUid());
+        updateUserCar.setCid(electricityCar.getId().longValue());
+        updateUserCar.setSn(electricityCar.getSn());
+        updateUserCar.setUpdateTime(System.currentTimeMillis());
+        userCarService.updateByUid(updateUserCar);
+        
+        ElectricityCar userBindElectricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.nonNull(userBindElectricityCar)) {
+            ElectricityCar updateElectricityCar = new ElectricityCar();
+            updateElectricityCar.setId(userBindElectricityCar.getId());
+            updateElectricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
+            updateElectricityCar.setUid(null);
+            updateElectricityCar.setPhone(null);
+            updateElectricityCar.setUserInfoId(null);
+            updateElectricityCar.setUserName(null);
+            updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+            electricityCarService.carUnBindUser(updateElectricityCar);
+        }
+        
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //生成租车记录
+            String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
+            RentCarOrder rentCarOrder = new RentCarOrder();
+            rentCarOrder.setOrderId(orderId);
+            rentCarOrder.setStatus(RentCarOrder.STATUS_SUCCESS);
+            rentCarOrder.setCarModelId(electricityCar.getModelId().longValue());
+            rentCarOrder.setCarSn(electricityCar.getSn());
+            rentCarOrder.setCarDeposit(userCarDeposit.getCarDeposit().doubleValue());
+            rentCarOrder.setType(RentCarOrder.TYPE_RENT);
+            rentCarOrder.setName(userInfo.getName());
+            rentCarOrder.setPhone(userInfo.getPhone());
+            rentCarOrder.setUid(user.getUid());
+            rentCarOrder.setFranchiseeId(userInfo.getFranchiseeId());
+            rentCarOrder.setTenantId(TenantContextHolder.getTenantId());
+            rentCarOrder.setStoreId(electricityCar.getStoreId());
+            rentCarOrder.setTransactionType(RentCarOrder.TYPE_TRANSACTION_OFFLINE);
+            rentCarOrder.setCreateTime(System.currentTimeMillis());
+            rentCarOrder.setUpdateTime(System.currentTimeMillis());
+            
+            rentCarOrderService.insert(rentCarOrder);
+            
+            return null;
+        });
+        
+        return R.ok();
     }
     
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {

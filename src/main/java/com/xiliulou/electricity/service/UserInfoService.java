@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserInfoDetailVO;
@@ -129,4 +130,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R queryDetailsBatteryInfo(Long uid);
     
     R queryDetailsCarInfo(Long uid);
+    
+    R webBindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
 }

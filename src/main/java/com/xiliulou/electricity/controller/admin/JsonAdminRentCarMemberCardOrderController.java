@@ -8,8 +8,11 @@ import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -40,6 +43,9 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    UserInfoService userInfoService;
 
     @GetMapping("/admin/rentCarMemberCardOrder/page")
     public R getElectricityMemberCardPage(@RequestParam("size") Long size,
@@ -175,6 +181,13 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     public R renewalUserMemberCard(
             @RequestBody @Validated CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
         return carMemberCardOrderService.renewalUserMemberCard(carMemberCardOrderAddAndUpdate);
+    }
+    
+    //绑定车辆
+    @PutMapping(value = "/admin/userInfo/bindCar")
+    @Log(title = "后台绑定车辆")
+    public R webBindCar(@RequestBody UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
+        return userInfoService.webBindCar(userInfoCarAddAndUpdate);
     }
     
 }
