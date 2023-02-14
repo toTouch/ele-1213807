@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.query.FreeCellNoQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.security.core.parameters.P;
@@ -37,8 +38,8 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
             @Param("batteryType") String batteryType, @Param("fullCharged") Double fullCharged);
     
     List<ElectricityCabinetBox> queryUsableBatteryCellNo(@Param("eid") Integer id, @Param("type") String batteryType, @Param("fullV") Double fullyCharged);
-
-    List<ElectricityCabinetBox> queryUsableEmptyCellNo(@Param("eid") Integer eid);
+    
+    List<FreeCellNoQuery> queryUsableEmptyCellNo(@Param("eid") Integer eid);
 
     Integer modifyCellUsableStatus(@Param("cellNo") Integer cellNo, @Param("electricityCabinetId") Integer electricityCabinetId);
 
