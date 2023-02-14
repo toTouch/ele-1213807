@@ -482,4 +482,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     public BigDecimal queryTurnOver(Integer tenantId, Long id) {
         return Optional.ofNullable(carMemberCardOrderMapper.queryTurnOver(tenantId, id)).orElse(BigDecimal.valueOf(0));
     }
+    
+    @Override
+    public CarMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
+        return carMemberCardOrderMapper.queryLastPayMemberCardTimeByUid(uid, franchiseeId, tenantId);
+    }
 }

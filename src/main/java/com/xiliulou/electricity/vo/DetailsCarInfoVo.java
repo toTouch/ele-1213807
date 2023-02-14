@@ -6,19 +6,21 @@ import java.math.BigDecimal;
 
 /**
  * @author zgw
- * @date 2023/2/13 16:47
+ * @date 2023/2/13 19:39
  * @mood
  */
 @Data
-public class DetailsBatteryInfoVo {
+public class DetailsCarInfoVo {
     
     private Long uid;
-    ////用户电池押金
+    
+    ////用户车辆押金
     
     /**
      * 加盟商Id
      */
     private Long franschiseeId;
+    
     /**
      * 加盟商名
      */
@@ -28,6 +30,7 @@ public class DetailsBatteryInfoVo {
      * 门店Id
      */
     private Long storeId;
+    
     /**
      * 门店名
      */
@@ -36,24 +39,24 @@ public class DetailsBatteryInfoVo {
     /**
      * 电池押金状态
      */
-    private Integer batteryDepositStatus;
+    private Integer carDepositStatus;
     
     /**
      * 电池押金
      */
-    private BigDecimal batteryDeposit;
+    private BigDecimal carDeposit;
     
     /**
      * 缴纳时间
      */
     private Long payDepositTime;
     
-    ////用户电池套餐
+    ////用户车辆套餐
     
     /**
-     * 套餐 id
+     * 套餐类型
      */
-    private Long memberCardId;
+    private String memberCardType;
     
     /**
      * 套餐名称
@@ -61,17 +64,12 @@ public class DetailsBatteryInfoVo {
     private String cardName;
     
     /**
-     * 换电限制
+     * 租赁周期
      */
-    private Integer limitCount;
+    private Integer validDays;
     
     /**
-     * 套餐次数
-     */
-    private Integer remainingNumber;
-    
-    /**
-     * 套餐时间
+     * 租赁时间
      */
     private Long memberCardCreateTime;
     
@@ -81,34 +79,24 @@ public class DetailsBatteryInfoVo {
     private Long memberCardExpireTime;
     
     /**
-     * 剩余天数
+     * 剩余时间
      */
-    private Long cardDays;
+    private Long carDays;
+    
+    ////用户车辆
     
     /**
-     * 月卡状态
+     * 车辆型号id
      */
-    private Integer memberCardStatus;
+    private Integer carModelId;
     
     /**
-     * 电池服务费
+     * 车辆型号
      */
-    private BigDecimal userBatteryServiceFee;
-    
-    ////用户电池
+    private String carModelName;
     
     /**
-     * 电池编号
+     * 车辆sn码
      */
-    private String batterySn;
-    
-    /**
-     * 电池型号
-     */
-    private String batteryModel;
-    
-    /**
-     * 电量
-     */
-    private Double power;
+    private String carSn;
 }

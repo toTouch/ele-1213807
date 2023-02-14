@@ -344,5 +344,17 @@
             and uid = #{uid}
         </if>
     </select>
-
+    
+    <select id="queryLastPayMemberCardTimeByUid" resultMap="CarMemberCardOrderMap">
+        select member_card_type, card_name, valid_days, create_time, update_time
+        from t_car_member_card_order
+        where uid=#{uid}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY id DESC limit 1
+    </select>
 </mapper>

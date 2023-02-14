@@ -1466,12 +1466,115 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Override
     public R queryDetailsCarInfo(Long uid) {
-        //        UserInfo userInfo = this.queryByUidFromCache(uid);
-        //        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-        //            return R.fail("ELECTRICITY.0001", "未找到用户");
-        //        }
+        UserInfo userInfo = this.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        DetailsCarInfoVo vo = new DetailsCarInfoVo();
+    
+        //用户车辆信息
+        CompletableFuture<Void> queryUserCar = CompletableFuture.runAsync(() -> {
+            queryUserCar(vo, userInfo);
+        }, threadPool).exceptionally(e -> {
+            log.error("DETAILS CAR INFO ERROR! query user car error!", e);
+            return null;
+        });
+    
+        //用户车辆押金信息
+        CompletableFuture<Void> queryUserCarDeposit = CompletableFuture.runAsync(() -> {
+            queryUserCarDeposit(vo, userInfo);
+        }, threadPool).exceptionally(e -> {
+            log.error("DETAILS CAR INFO ERROR! query user car deposit error!", e);
+            return null;
+        });
+    
+        //用户车辆套餐信息
+        CompletableFuture<Void> queryUserCarMemberCard = CompletableFuture.runAsync(() -> {
+            queryUserCarMemberCard(vo, userInfo);
+        }, threadPool).exceptionally(e -> {
+            log.error("DETAILS CAR INFO ERROR! query user car member card error!", e);
+            return null;
+        });
+    
+        CompletableFuture<Void> resultFuture = CompletableFuture
+                .allOf(queryUserCar, queryUserCarDeposit, queryUserCarMemberCard);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+    
+        return R.ok(vo);
+    }
+    
+    private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
+        CarMemberCardOrder carMemberCardOrder = this.carMemberCardOrderService
+                .queryLastPayMemberCardTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());
+        if (Objects.isNull(carMemberCardOrder)) {
+            return;
+        }
         
-        return null;
+        vo.setMemberCardType(carMemberCardOrder.getMemberCardType());
+        vo.setCardName(carMemberCardOrder.getCardName());
+        vo.setValidDays(carMemberCardOrder.getValidDays());
+        vo.setMemberCardCreateTime(carMemberCardOrder.getCreateTime());
+        
+        //计算过期时间
+        if (ElectricityCarModel.RENT_TYPE_WEEK.equals(carMemberCardOrder.getMemberCardType())) {
+            vo.setMemberCardExpireTime(
+                    carMemberCardOrder.getUpdateTime() + carMemberCardOrder.getValidDays() * 7 * 24 * 60 * 60 * 1000L);
+        } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(carMemberCardOrder.getMemberCardType())) {
+            vo.setMemberCardExpireTime(
+                    carMemberCardOrder.getUpdateTime() + carMemberCardOrder.getValidDays() * 30 * 24 * 60 * 60 * 1000L);
+        } else {
+            vo.setMemberCardCreateTime(0L);
+        }
+        
+        //计算剩余天数
+        long carDays = 0;
+        if (vo.getMemberCardExpireTime() > System.currentTimeMillis()) {
+            long limitTime = vo.getMemberCardExpireTime() - System.currentTimeMillis();
+            double carDayTemp = Math.ceil(limitTime / 3600000 / 24.0);
+            carDays = (long) carDayTemp;
+        }
+        vo.setCarDays(carDays);
+    }
+    
+    private void queryUserCarDeposit(DetailsCarInfoVo vo, UserInfo userInfo) {
+        vo.setCarDepositStatus(userInfo.getCarDepositStatus());
+        
+        EleDepositOrder eleDepositOrder = eleDepositOrderService
+                .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId(),
+                        EleDepositOrder.RENT_CAR_DEPOSIT);
+        if (Objects.nonNull(eleDepositOrder)) {
+            vo.setPayDepositTime(eleDepositOrder.getCreateTime());
+            
+            Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+            if (Objects.nonNull(store)) {
+                vo.setStoreId(store.getId());
+                vo.setStoreName(store.getName());
+            }
+        }
+        
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userCarDeposit)) {
+            vo.setCarDeposit(userCarDeposit.getCarDeposit());
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.nonNull(franchisee)) {
+            vo.setFranschiseeId(franchisee.getId());
+            vo.setFranschiseeName(franchisee.getName());
+        }
+        
+    }
+    
+    private void queryUserCar(DetailsCarInfoVo vo, UserInfo userInfo) {
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        vo.setCarModelId(electricityCar.getModelId());
+        vo.setCarModelName(electricityCar.getModel());
+        vo.setCarSn(electricityCar.getSn());
     }
     
     private void queryUserBattery(DetailsBatteryInfoVo vo, UserInfo userInfo) {
@@ -1520,6 +1623,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 vo.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER.intValue());
             }
         }
+    
+        long carDays = 0;
+        if (userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
+            Double carDayTemp = Math
+                    .ceil((userBatteryMemberCard.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60
+                            / 60 / 24.0);
+            carDays = carDayTemp.longValue();
+        }
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            carDays =
+                    (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime())
+                            / (24 * 60 * 60 * 1000L);
+        }
+        vo.setCardDays(carDays);
     }
     
     private void queryUserBatteryDeposit(DetailsBatteryInfoVo vo, UserInfo userInfo) {
@@ -1533,12 +1650,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
             if (Objects.nonNull(store)) {
+                vo.setStoreId(store.getId());
                 vo.setStoreName(store.getName());
             }
         }
         
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.nonNull(franchisee)) {
+            vo.setFranschiseeId(franchisee.getId());
             vo.setFranschiseeName(franchisee.getName());
         }
         

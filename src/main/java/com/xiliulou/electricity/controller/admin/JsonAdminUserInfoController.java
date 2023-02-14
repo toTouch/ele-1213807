@@ -435,8 +435,8 @@ public class JsonAdminUserInfoController extends BaseController {
     /**
      * 会员列表详情信息（车辆信息）
      */
-    //    @GetMapping(value = "/admin/userInfo/details/carInfo")
-    //    public R queryDetailsCarInfo(@RequestParam("uid") Long uid) {
-    //        return userInfoService.queryDetailsCarInfo(uid);
-    //    }
+    @GetMapping(value = "/admin/userInfo/details/carInfo")
+    public R queryDetailsCarInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsCarInfo(uid);
+    }
 }
