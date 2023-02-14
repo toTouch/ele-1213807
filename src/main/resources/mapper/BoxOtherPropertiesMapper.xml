@@ -73,8 +73,27 @@
     
     <!--新增所有列-->
     <insert id="insertBoxOtherProperties" keyProperty="id" useGeneratedKeys="true">
-        insert into t_box_other_properties(electricity_cabinet_id, cell_no, del_flag, remark, lock_reason, lock_status_change_time, create_time, update_time)
-        values (#{electricityCabinetId}, #{cellNo}, #{delFlag}, #{remark}, #{lockReason}, #{lockStatusChangeTime}, #{createTime}, #{updateTime})
+        insert into t_box_other_properties
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+        <if test="electricityCabinetId != null">electricity_cabinet_id,</if>
+        <if test="cellNo != null">cell_no,</if>
+        <if test="delFlag != null">del_flag,</if>
+        <if test="remark != null  and remark != '' ">remark,</if>
+        <if test="lockReason != null">lock_reason,</if>
+        <if test="lockStatusChangeTime != null">lock_status_change_time,</if>
+        <if test="createTime != null">create_time,</if>
+        <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+        <if test="electricityCabinetId != null">#{electricityCabinetId},</if>
+        <if test="cellNo != null">#{cellNo},</if>
+        <if test="delFlag != null">#{delFlag},</if>
+        <if test="remark != null  and remark != '' ">#{remark},</if>
+        <if test="lockReason != null">#{lockReason},</if>
+        <if test="lockStatusChangeTime != null">#{lockStatusChangeTime},</if>
+        <if test="createTime != null">#{createTime},</if>
+        <if test="updateTime != null">#{updateTime},</if>
+        </trim>
         on duplicate key
         update
         <if test="remark != null  and remark != '' ">remark,</if>
