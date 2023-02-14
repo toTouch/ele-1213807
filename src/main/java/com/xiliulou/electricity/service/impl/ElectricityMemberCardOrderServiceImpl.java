@@ -659,6 +659,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 }
             }
 
+            if (Objects.nonNull(electricityMemberCardOrderVO.getRefId())) {
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrderVO.getRefId().intValue());
+                electricityMemberCardOrderVO.setElectricityCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
+            }
+
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
 
