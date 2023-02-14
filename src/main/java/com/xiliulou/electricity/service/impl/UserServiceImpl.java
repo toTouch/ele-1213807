@@ -910,12 +910,9 @@ public class UserServiceImpl implements UserService {
 
         User updateUser = new User();
         updateUser.setUid(user.getUid());
+        updateUser.setSource(Objects.equals(user.getSource(), NumberConstant.ZERO) ? query.getSource() : null);
         updateUser.setTenantId(TenantContextHolder.getTenantId());
         updateUser.setUpdateTime(System.currentTimeMillis());
-
-        if (Objects.equals(user.getSource(), NumberConstant.ZERO)) {
-            updateUser.setSource(query.getSource());
-        }
 
         if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
