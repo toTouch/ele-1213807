@@ -230,8 +230,6 @@ public class JsonAdminEleDepositOrderController {
     public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
         return eleDepositOrderService.adminPayCarDeposit(rentCarDepositAdd);
     }
-
-    
     
     //缴纳租车押金
     @Deprecated

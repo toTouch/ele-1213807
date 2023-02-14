@@ -118,10 +118,12 @@ public class EleUserOperateRecord {
     public static final Integer MEMBER_CARD_MODEL = 2;
     
     public static final Integer CAR_DEPOSIT_MODEL = 3;
-
+    
+    public static final Integer CAR_MEMBER_CARD_MODEL = 4;
+    
+    
     public static final Integer MEMBER_CARD_EXPIRE_CONTENT = 0;
     public static final Integer DEPOSIT_EDIT_CONTENT = 1;
-    
     public static final Integer REFUND_DEPOSIT_CONTENT = 4;
     public static final Integer BIND_BATTERY_CONTENT = 2;
     public static final Integer UN_BIND_BATTERY_CONTENT = 3;
@@ -130,6 +132,8 @@ public class EleUserOperateRecord {
     public static final Integer CLEAN_BATTERY_SERVICE_FEE = 7;
     
     public static final Integer CAR_DEPOSIT_EDIT_CONTENT = 8;
+    
+    public static final Integer CAR_MEMBER_CARD_EXPIRE_CONTENT = 9;
 }
 
 

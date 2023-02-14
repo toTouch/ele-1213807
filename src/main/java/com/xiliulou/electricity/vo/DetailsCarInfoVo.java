@@ -42,7 +42,7 @@ public class DetailsCarInfoVo {
     private Integer carDepositStatus;
     
     /**
-     * 电池押金
+     * 车辆押金
      */
     private BigDecimal carDeposit;
     
