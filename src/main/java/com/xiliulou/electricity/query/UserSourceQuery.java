@@ -29,7 +29,7 @@ public class UserSourceQuery {
     /**
      * 用户来源 1：扫码，2：邀请，3：其它
      */
-    @NotNull(message = "用户来源不能为空")
+//    @NotNull(message = "用户来源不能为空")
     private Integer source;
 
     private Long refId;

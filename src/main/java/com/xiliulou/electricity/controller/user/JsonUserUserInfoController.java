@@ -56,7 +56,7 @@ public class JsonUserUserInfoController extends BaseController {
      * 登录成功回调
      */
     @PutMapping(value = "/user/userSource/callback")
-    public R loginCallBack(@RequestBody @Validated UserSourceQuery query) {
+    public R loginCallBack(@RequestBody UserSourceQuery query) {
         userService.loginCallBack(query);
         return R.ok();
     }
