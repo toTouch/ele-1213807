@@ -22,6 +22,10 @@ public class FaceRecognizeUserRecordQuery {
     private String userName;
 
     private String phone;
+    /**
+     * 状态
+     */
+    private Integer status;
 
     private Long stareTime;
 
