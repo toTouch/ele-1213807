@@ -39,7 +39,7 @@
         frur.status,
         frur.create_time,
         tui.name,
-        tui,phone
+        tui.phone
         from t_face_recognize_user_record frur
         left join t_user_info tui on tui.uid=frur.uid
         where frur.del_flag=0

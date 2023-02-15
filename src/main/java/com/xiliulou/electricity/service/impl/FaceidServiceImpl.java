@@ -105,7 +105,7 @@ public class FaceidServiceImpl implements FaceidService {
             log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000001", "系统异常！");
         }
-        if (Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
+        if (!Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
             log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100337", "未开启人脸核身！");
         }
@@ -177,7 +177,7 @@ public class FaceidServiceImpl implements FaceidService {
             log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000001", "系统异常！");
         }
-        if (Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
+        if (!Objects.equals(ElectricityConfig.FACE_REVIEW, electricityConfig.getIsManualReview())) {
             log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100337", "未开启人脸核身！");
         }
