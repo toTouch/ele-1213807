@@ -145,6 +145,54 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
         return Pair.of(true, null);
     }
 
+    /**
+     * 人脸核身充值
+     * @param faceRecognizeDataQuery
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> recharge(FaceRecognizeDataQuery faceRecognizeDataQuery) {
+        FaceRecognizeData recognizeData = this.selectByTenantId(faceRecognizeDataQuery.getTenantId());
+        if (Objects.isNull(recognizeData)) {
+            FaceRecognizeData faceRecognizeData = new FaceRecognizeData();
+            BeanUtils.copyProperties(faceRecognizeDataQuery, faceRecognizeData);
+
+            faceRecognizeData.setRechargeTime(System.currentTimeMillis());
+            faceRecognizeData.setDelFlag(FaceRecognizeData.DEL_NORMAL);
+            faceRecognizeData.setCreateTime(System.currentTimeMillis());
+            faceRecognizeData.setUpdateTime(System.currentTimeMillis());
+
+            this.faceRecognizeDataMapper.insertOne(faceRecognizeData);
+
+            //保存充值记录
+            rechargeRecordService.insert(buildFaceRecognizeRechargeRecord(faceRecognizeData, faceRecognizeDataQuery.getFaceRecognizeCapacity()));
+
+            return Triple.of(true, "", null);
+        }
+
+        if (recognizeData.getFaceRecognizeCapacity() > 0 && System.currentTimeMillis() - recognizeData.getRechargeTime() < 365 * 24 * 60 * 60 * 1000L) {
+            return Triple.of(false, "100333", "计费周期内不允许重复充值");
+        }
+
+        Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
+        if (faceRecognizeDataQuery.getFaceRecognizeCapacity() <= 0) {
+            faceRecognizeCapacity = recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
+        }
+
+        FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
+        faceRecognizeDataUpdate.setId(recognizeData.getId());
+        faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeCapacity);
+        faceRecognizeDataUpdate.setRechargeTime(System.currentTimeMillis());
+        faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
+
+        this.faceRecognizeDataMapper.update(faceRecognizeDataUpdate);
+
+        //保存充值记录
+        rechargeRecordService.insert(buildFaceRecognizeRechargeRecord(recognizeData, faceRecognizeDataQuery.getFaceRecognizeCapacity()));
+
+        return Triple.of(true, "", null);
+    }
+
     @Override
     public Integer updateById(FaceRecognizeData faceRecognizeDataUpdate) {
         return this.faceRecognizeDataMapper.update(faceRecognizeDataUpdate);

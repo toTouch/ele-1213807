@@ -27,7 +27,7 @@ public class FaceRecognizeDataQuery {
 
     private String tenantName;
 
-    @NotNull(message = "id不能为空!", groups = {UpdateGroup.class})
+//    @NotNull(message = "id不能为空!", groups = {UpdateGroup.class})
     private Long id;
     /**
      * 人脸核身次数

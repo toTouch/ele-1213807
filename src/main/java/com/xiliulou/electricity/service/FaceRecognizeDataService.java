@@ -60,4 +60,5 @@ public interface FaceRecognizeDataService {
     Boolean deleteById(Long id);
 
 
+    Triple<Boolean,String,Object> recharge(FaceRecognizeDataQuery faceRecognizeDataQuery);
 }

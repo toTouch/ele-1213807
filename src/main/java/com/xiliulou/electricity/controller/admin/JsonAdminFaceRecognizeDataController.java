@@ -129,4 +129,24 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
         return R.ok();
     }
 
+    /**
+     * 人脸核身次数充值
+     */
+    @PutMapping("/admin/faceRecognizeData/recharge")
+    public R recharge(@RequestBody @Validated(UpdateGroup.class) FaceRecognizeDataQuery faceRecognizeDataQuery) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("ELE ERROR! update faceRecognizeData no authority!");
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        this.faceRecognizeDataService.recharge(faceRecognizeDataQuery);
+        return R.ok();
+    }
+
 }
