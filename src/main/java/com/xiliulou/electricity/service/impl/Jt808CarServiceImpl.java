@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -89,6 +90,8 @@ public class Jt808CarServiceImpl implements Jt808CarService {
             log.error("Jt808 error! controlDevice error! carId={},result={}", request.getCarId(), result);
             return Pair.of(false, result.getErrMsg());
         }
+    
+        electricityCarService.updateLockTypeByIds(Arrays.asList(electricityCar.getStoreId()), request.getLockType());
         
         return Pair.of(true, null);
     }

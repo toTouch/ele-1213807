@@ -4,7 +4,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectElectricityCar">
-       	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id        from t_electricity_car
+       	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type         from t_electricity_car
     </sql>
 
     <!--查询指定行数据-->
@@ -139,5 +139,13 @@
         <include refid="selectElectricityCar"/>
         where sn = #{sn} and del_flag=0 and tenant_id=#{tenantId}
     </select>
+    
+    <update id="updateLockTypeById">
+        update t_electricity_car set lock_type = #{lockType}
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
 
 </mapper>

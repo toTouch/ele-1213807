@@ -87,19 +87,19 @@ public class EleUserOperateRecord {
     private BigDecimal oldCarDeposit;
     
     /**
-     * 初始电池编号
+     * 操作后租车押金
+     */
+    private BigDecimal newCarDeposit;
+    
+    /**
+     * 初始车辆编号
      */
     private String initElectricityCarSn;
     
     /**
-     * 操作后电池编号
+     * 操作后车辆编号
      */
     private String nowElectricityCarSn;
-    
-    /**
-     * 操作后租车押金
-     */
-    private BigDecimal newCarDeposit;
 
     //租户
     private Integer tenantId;

@@ -22,9 +22,4 @@ public class CarControlRequest {
     
     @NotNull(message = "车辆Id不能为空")
     private Integer carId;
-    
-    public static final Integer TYPE_UN_LOCK = 0;
-    
-    public static final Integer TYPE_LOCK = 1;
-    
 }

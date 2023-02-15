@@ -277,7 +277,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return update;
     }
-
+    
+    @Override
+    public Integer updateLockTypeByIds(List<Long> tempIds, Integer typeLock) {
+        int update = electricityCarMapper.updateLockTypeById(tempIds, typeLock);
+        //更新缓存
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            tempIds.forEach(id -> {
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
+            });
+            return null;
+        });
+        return update;
+    }
+    
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {

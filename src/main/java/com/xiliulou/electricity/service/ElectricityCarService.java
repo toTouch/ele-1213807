@@ -49,4 +49,6 @@ public interface ElectricityCarService {
     Integer update(ElectricityCar updateElectricityCar);
 
     Integer carUnBindUser(ElectricityCar updateElectricityCar);
+    
+    Integer updateLockTypeByIds(List<Long> tempIds, Integer typeLock);
 }

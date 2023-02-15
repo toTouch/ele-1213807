@@ -252,7 +252,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         if (StrUtil.isNotBlank(firstTimeStr)) {
             firstTime = Long.parseLong(firstTimeStr);
         }
-        
+    
         redisService
                 .set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME, String.valueOf(lastTime),
                         CacheConstant.CACHE_EXPIRE_MONTH, TimeUnit.MILLISECONDS);
@@ -265,6 +265,10 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
             }
             
             query.parallelStream().forEach(item -> {
+                if (StrUtil.isEmpty(item.getSn()) || Objects.isNull(item.getCid())) {
+                    return;
+                }
+                
                 carBreakPowerQueueHandler.putQueue(item);
             });
             
