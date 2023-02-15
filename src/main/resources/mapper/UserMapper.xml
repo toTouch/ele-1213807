@@ -153,6 +153,9 @@
 			<if test="uid != null">
 				and tu.uid = #{uid}
 			</if>
+			<if test="source != null">
+				and tu.source = #{source}
+			</if>
 			<if test="name != null and name != '' ">
 				and tui.name like concat('%',#{name},'%')
 			</if>
@@ -193,6 +196,9 @@
 			tu.del_flag = 0
 			<if test="uid != null">
 				and tu.uid = #{uid}
+			</if>
+			<if test="source != null">
+				and tu.source = #{source}
 			</if>
 			<if test="name != null and name != '' ">
 				and tui.name like concat('%',#{name},'%')
