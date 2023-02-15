@@ -50,7 +50,9 @@ public class FaceidConfigServiceImpl implements FaceidConfigService {
     @Override
     public Integer insertOrUpdate(FaceidConfigQuery faceidConfigQuery) {
 
-        if (Objects.isNull(faceidConfigQuery.getId())) {
+        FaceidConfig config = this.selectLatestByTenantId(TenantContextHolder.getTenantId());
+
+        if (Objects.isNull(config)) {
             FaceidConfig faceidConfig = new FaceidConfig();
             faceidConfig.setFaceMerchantId(faceidConfigQuery.getFaceMerchantId());
             faceidConfig.setFaceidPrivateKey(faceidConfigQuery.getFaceidPrivateKey());
@@ -69,6 +71,7 @@ public class FaceidConfigServiceImpl implements FaceidConfigService {
         }
 
         FaceidConfig faceidConfigUpdate = new FaceidConfig();
+        faceidConfigUpdate.setId(config.getId());
         faceidConfigUpdate.setFaceMerchantId(faceidConfigQuery.getFaceMerchantId());
         faceidConfigUpdate.setFaceidPrivateKey(faceidConfigQuery.getFaceidPrivateKey());
         faceidConfigUpdate.setTenantId(TenantContextHolder.getTenantId());

@@ -40,10 +40,6 @@ public class JsonAdminFaceidConfigController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            return R.ok();
-        }
-
         return R.ok(this.faceidConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId()));
     }
 
@@ -57,10 +53,6 @@ public class JsonAdminFaceidConfigController extends BaseController {
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (!SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            return R.ok();
         }
 
         return R.ok(this.faceidConfigService.insertOrUpdate(faceidConfigQuery));

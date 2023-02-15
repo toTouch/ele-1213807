@@ -60,7 +60,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
     /**
      * 分页总数
      */
-    @GetMapping("/admin/faceRecognizeData/count")
+    @GetMapping("/admin/faceRecognizeData/queryCount")
     public R pageCount(@RequestParam(value = "tenantName", required = false) String tenantName) {
 
         FaceRecognizeDataQuery query = FaceRecognizeDataQuery.builder()

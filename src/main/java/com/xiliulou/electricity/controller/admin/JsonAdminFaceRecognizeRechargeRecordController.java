@@ -53,7 +53,7 @@ public class JsonAdminFaceRecognizeRechargeRecordController {
     /**
      * 分页总记录数
      */
-    @GetMapping("/admin/faceRecognizeRechargeRecord/count")
+    @GetMapping("/admin/faceRecognizeRechargeRecord/queryCount")
     public R pageCount(@RequestParam("tenantId") Integer tenantId,
                        @RequestParam(value = "startTime", required = false) Long startTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
