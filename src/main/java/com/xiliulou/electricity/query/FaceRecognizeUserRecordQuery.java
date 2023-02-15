@@ -18,4 +18,12 @@ public class FaceRecognizeUserRecordQuery {
     private Long size;
 
     private Long offset;
+
+    private String userName;
+
+    private String phone;
+
+    private Long stareTime;
+
+    private Long endTime;
 }

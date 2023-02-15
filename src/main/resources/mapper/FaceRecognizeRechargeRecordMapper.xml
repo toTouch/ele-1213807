@@ -40,15 +40,18 @@
         frrr.face_recognize_capacity,
         frrr.operator,
         frrr.tenant_id,
-        tt.name tenantName,
+
         frrr.del_flag,
         frrr.create_time,
         frrr.update_time
         from t_face_recognize_recharge_record frrr
-        left join t_tenant tt on frrr.tenant_id=tt.id
+
         where frrr.del_flag=0 and frrr.tenant_id=#{tenantId}
-        <if test="startTime != null and endTime != null ">
-            and frrr.create_time BETWEEN #{startTime} and #{endTime}
+        <if test="startTime != null">
+            and frrr.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and frrr.create_time &lt;= #{endTime}
         </if>
         order by frrr.create_time desc
         limit #{offset}, #{size}
@@ -61,8 +64,11 @@
         from t_face_recognize_recharge_record frrr
         left join t_tenant tt on frrr.tenant_id=tt.id
         where frrr.del_flag=0 and frrr.tenant_id=#{tenantId}
-        <if test="startTime != null and endTime != null ">
-            and frrr.create_time BETWEEN #{startTime} and #{endTime}
+        <if test="startTime != null">
+            and frrr.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and frrr.create_time &lt;= #{endTime}
         </if>
     </select>
 

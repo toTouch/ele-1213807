@@ -33,23 +33,57 @@
 
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="FaceRecognizeUserRecordMap">
-        select   id, uid, status, create_time        from t_face_recognize_user_record
-        where del_flag=0
-<!--        <if test="create_time != null ">-->
-<!--            and create_time = concat('%',#{tenantName,jdbcType=VARCHAR},'%')-->
-<!--        </if>-->
-        order by create_time desc
+        select
+        frur.id,
+        frur.uid,
+        frur.status,
+        frur.create_time,
+        tui.name,
+        tui,phone
+        from t_face_recognize_user_record frur
+        left join t_user_info tui on tui.uid=frur.uid
+        where frur.del_flag=0
+
+        <if test="status != null">
+            and frur.status = #{status}
+        </if>
+        <if test="phone != null and phone != ''">
+            and tui.status = #{status}
+        </if>
+        <if test="userName != null and userName != '' ">
+            and tui.name = concat('%',#{userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime != null">
+            and frur.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and frur.create_time &lt;= #{endTime}
+        </if>
+        order by frur.create_time desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="int">
         select
         count(1)
-        from t_face_recognize_user_record
-        where del_flag=0
-       <!-- <if test="tenantName != null and tenantName != ''">
-            and tt.name like concat('%',#{tenantName,jdbcType=VARCHAR},'%')
-        </if>-->
+        from t_face_recognize_user_record frur
+        left join t_user_info tui on tui.uid=frur.uid
+        where frur.del_flag=0
+        <if test="status != null">
+            and frur.status = #{status}
+        </if>
+        <if test="phone != null and phone != ''">
+            and tui.status = #{status}
+        </if>
+        <if test="userName != null and userName != '' ">
+            and tui.name = concat('%',#{userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime != null">
+            and frur.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and frur.create_time &lt;= #{endTime}
+        </if>
     </select>
 
     <!--通过实体作为筛选条件查询-->

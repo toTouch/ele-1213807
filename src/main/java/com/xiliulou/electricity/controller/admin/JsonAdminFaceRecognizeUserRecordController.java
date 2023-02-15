@@ -27,7 +27,11 @@ public class JsonAdminFaceRecognizeUserRecordController {
      * 分页列表
      */
     @GetMapping("/admin/faceRecognizeUserRecord/page")
-    public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset) {
+    public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                  @RequestParam(value = "userName", required = false) String userName,
+                  @RequestParam(value = "phone", required = false) String phone,
+                  @RequestParam(value = "startTime", required = false) Long startTime,
+                  @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -37,7 +41,11 @@ public class JsonAdminFaceRecognizeUserRecordController {
         }
 
         FaceRecognizeUserRecordQuery query = FaceRecognizeUserRecordQuery.builder()
+                .userName(userName)
+                .phone(phone)
                 .size(size)
+                .stareTime(startTime)
+                .endTime(endTime)
                 .offset(offset).build();
 
         return R.ok(this.faceRecognizeUserRecordService.selectByPage(query));
@@ -47,9 +55,16 @@ public class JsonAdminFaceRecognizeUserRecordController {
      * 分页总记录数
      */
     @GetMapping("/admin/faceRecognizeUserRecord/count")
-    public R pageCount() {
+    public R pageCount( @RequestParam(value = "userName", required = false) String userName,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "startTime", required = false) Long startTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
         FaceRecognizeUserRecordQuery query = FaceRecognizeUserRecordQuery.builder()
+                .userName(userName)
+                .phone(phone)
+                .stareTime(startTime)
+                .endTime(endTime)
                 .build();
 
         return R.ok(this.faceRecognizeUserRecordService.selectByPageCount(query));

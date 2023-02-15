@@ -22,6 +22,8 @@ public class FaceRecognizeRechargeRecordQuery {
 
     private Integer tenantId;
 
+    private String tenantName;
+
     private Long startTime;
 
     private Long endTime;
