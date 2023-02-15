@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.UserCarMemberCard;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import org.apache.ibatis.annotations.Param;
@@ -64,4 +65,7 @@ public interface UserCarMemberCardMapper extends BaseMapper<UserCarMemberCard> {
     List<FailureMemberCardVo > queryMemberCardExpireUser(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
     
     List<CarMemberCardExpiringSoonQuery> selectCarMemberCardExpire(@Param("offset") Integer offset, @Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
+    
+    List<CarMemberCardExpireBreakPowerQuery> carMemberCardExpireBreakPower(@Param("offset") Integer offset,
+            @Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
 }

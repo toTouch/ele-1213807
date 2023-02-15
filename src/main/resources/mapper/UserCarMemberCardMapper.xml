@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserCarMemberCardMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.UserCarMemberCard" id="UserCarMemberCardMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
@@ -146,6 +146,17 @@
               and ucmc.member_card_expire_time &gt; #{firstTime}
               and ucmc.member_card_expire_time &lt;= #{lastTime}
               limit #{offset}, #{size}
+    </select>
+    
+    <select id="carMemberCardExpireBreakPower"
+        resultType="com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery">
+        select uc.sn
+         from t_user_car_member_card ucmc
+         inner join  t_user_car uc on ucmc.uid = uc.uid
+         where uc.sn is not null
+          and ucmc.member_card_expire_time &gt; #{firstTime}
+          and ucmc.member_card_expire_time &lt;= #{lastTime}
+         limit #{offset}, #{size}
     </select>
 
 </mapper>
