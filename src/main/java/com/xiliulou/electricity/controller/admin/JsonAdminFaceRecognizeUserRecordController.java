@@ -54,7 +54,7 @@ public class JsonAdminFaceRecognizeUserRecordController {
     /**
      * 分页总记录数
      */
-    @GetMapping("/admin/faceRecognizeUserRecord/count")
+    @GetMapping("/admin/faceRecognizeUserRecord/queryCount")
     public R pageCount( @RequestParam(value = "userName", required = false) String userName,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "startTime", required = false) Long startTime,

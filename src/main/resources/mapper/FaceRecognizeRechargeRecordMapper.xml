@@ -34,7 +34,7 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="selectByPage" resultMap="FaceRecognizeRechargeRecordMap">
+    <select id="selectByPage" resultMap="FaceRecognizeRechargeRecordVOMap">
         select
         frrr.id,
         frrr.face_recognize_capacity,
