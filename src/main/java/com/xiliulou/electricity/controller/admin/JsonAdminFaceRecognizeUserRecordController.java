@@ -30,6 +30,7 @@ public class JsonAdminFaceRecognizeUserRecordController {
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
                   @RequestParam(value = "userName", required = false) String userName,
                   @RequestParam(value = "phone", required = false) String phone,
+                  @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "startTime", required = false) Long startTime,
                   @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -44,7 +45,8 @@ public class JsonAdminFaceRecognizeUserRecordController {
                 .userName(userName)
                 .phone(phone)
                 .size(size)
-                .stareTime(startTime)
+                .status(status)
+                .startTime(startTime)
                 .endTime(endTime)
                 .offset(offset).build();
 
@@ -57,13 +59,15 @@ public class JsonAdminFaceRecognizeUserRecordController {
     @GetMapping("/admin/faceRecognizeUserRecord/queryCount")
     public R pageCount( @RequestParam(value = "userName", required = false) String userName,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "startTime", required = false) Long startTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
         FaceRecognizeUserRecordQuery query = FaceRecognizeUserRecordQuery.builder()
                 .userName(userName)
                 .phone(phone)
-                .stareTime(startTime)
+                .status(status)
+                .startTime(startTime)
                 .endTime(endTime)
                 .build();
 

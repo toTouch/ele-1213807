@@ -48,7 +48,7 @@
             and frur.status = #{status}
         </if>
         <if test="phone != null and phone != ''">
-            and tui.status = #{status}
+            and tui.phone = #{phone}
         </if>
         <if test="userName != null and userName != '' ">
             and tui.name = concat('%',#{userName,jdbcType=VARCHAR},'%')
@@ -73,7 +73,7 @@
             and frur.status = #{status}
         </if>
         <if test="phone != null and phone != ''">
-            and tui.status = #{status}
+            and tui.phone = #{phone}
         </if>
         <if test="userName != null and userName != '' ">
             and tui.name = concat('%',#{userName,jdbcType=VARCHAR},'%')

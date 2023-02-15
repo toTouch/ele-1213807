@@ -27,7 +27,7 @@ public class FaceRecognizeUserRecordQuery {
      */
     private Integer status;
 
-    private Long stareTime;
+    private Long startTime;
 
     private Long endTime;
 }

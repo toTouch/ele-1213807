@@ -296,4 +296,14 @@ public interface CacheConstant {
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
+
+    /**
+     * 人脸核身token缓存锁
+     */
+    String ELE_CACHE_FACEID_TOKEN_LOCK_KEY = "faceid_token_lock_key:";
+
+    /**
+     * 人脸核身结果缓存锁
+     */
+    String ELE_CACHE_FACEID_RESULT_LOCK_KEY = "faceid_result_lock_key:";
 }

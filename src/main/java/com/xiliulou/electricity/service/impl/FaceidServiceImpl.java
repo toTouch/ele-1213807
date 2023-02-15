@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.FaceAuthResultDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.FaceidResultQuery;
@@ -62,6 +66,9 @@ public class FaceidServiceImpl implements FaceidService {
     @Autowired
     ElectricityConfigService electricityConfigService;
 
+    @Autowired
+    RedisService redisService;
+
     /**
      * 获取人脸核身token
      *
@@ -69,6 +76,11 @@ public class FaceidServiceImpl implements FaceidService {
      */
     @Override
     public Triple<Boolean, String, Object> getEidToken() {
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_FACEID_TOKEN_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
@@ -136,6 +148,10 @@ public class FaceidServiceImpl implements FaceidService {
     @Override
 //    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> verifyEidResult(FaceidResultQuery faceidResultQuery) {
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_FACEID_RESULT_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {

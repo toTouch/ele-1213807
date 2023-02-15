@@ -145,8 +145,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        this.faceRecognizeDataService.recharge(faceRecognizeDataQuery);
-        return R.ok();
+        return returnTripleResult(this.faceRecognizeDataService.recharge(faceRecognizeDataQuery));
     }
 
 }
