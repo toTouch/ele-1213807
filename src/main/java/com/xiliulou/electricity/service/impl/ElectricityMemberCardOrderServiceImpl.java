@@ -1740,6 +1740,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayCount(payCount + 1);
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
+        electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_ARTIFICIAL);
         //计算套餐剩余天数
         if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
             Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
@@ -1926,6 +1927,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
             electricityMemberCardOrder.setPayCount(payCount + 1);
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
+            electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_ARTIFICIAL);
 
             //计算套餐剩余天数
             if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
@@ -2111,6 +2113,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setPayCount(payCount + 1);
+        electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_ARTIFICIAL);
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
