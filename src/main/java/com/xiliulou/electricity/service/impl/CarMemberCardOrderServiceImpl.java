@@ -78,6 +78,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     EleUserOperateRecordService eleUserOperateRecordService;
+    
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -635,6 +638,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+    
+        //用户是否有绑定了车辆
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)
+                && now < memberCardExpireTime) {
+            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
         return R.ok();
     }
     
@@ -767,6 +777,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+    
+        //用户是否有绑定了车辆
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
         return R.ok();
     }
 }

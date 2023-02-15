@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
@@ -12,11 +13,14 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
+import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -58,6 +62,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     RentCarOrderService rentCarOrderService;
     @Autowired
     UserCarDepositService userCarDepositService;
+    
+    @Autowired
+    Jt808RetrofitService jt808RetrofitService;
 
 
     /**
@@ -505,5 +512,22 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public ElectricityCar selectBySn(String sn, Integer tenantId) {
         return electricityCarMapper.selectBySn(sn, tenantId);
+    }
+    
+    @Override
+    public Boolean carLockCtrl(ElectricityCar electricityCar, Integer lockType) {
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), lockType));
+        if (!result.isSuccess()) {
+            log.error("Jt808 error! controlDevice error! carId={},result={}", electricityCar.getId(), result);
+            return false;
+        }
+        
+        ElectricityCar update = new ElectricityCar();
+        update.setId(electricityCar.getId());
+        update.setLockType(lockType);
+        update.setUpdateTime(System.currentTimeMillis());
+        update(update);
+        return true;
     }
 }

@@ -83,15 +83,15 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         if (StrUtil.isEmpty(electricityCar.getSn())) {
             return Pair.of(false, "车辆sn为空");
         }
-        
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
-                new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), request.getLockType()));
-        if (!result.isSuccess()) {
-            log.error("Jt808 error! controlDevice error! carId={},result={}", request.getCarId(), result);
-            return Pair.of(false, result.getErrMsg());
-        }
     
-        electricityCarService.updateLockTypeByIds(Arrays.asList(electricityCar.getStoreId()), request.getLockType());
+        //        R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
+        //                new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), request.getLockType()));
+        //        if (!result.isSuccess()) {
+        //            log.error("Jt808 error! controlDevice error! carId={},result={}", request.getCarId(), result);
+        //            return Pair.of(false, result.getErrMsg());
+        //        }
+    
+        electricityCarService.carLockCtrl(electricityCar, request.getLockType());
         
         return Pair.of(true, null);
     }
