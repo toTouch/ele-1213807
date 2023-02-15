@@ -25,7 +25,7 @@
 
     <!--根据租户id查询最新记录-->
     <select id="selectLatestByTenantId" resultMap="FaceidConfigMap">
-        select   id, , face_merchant_id, faceid_private_key, update_time        from t_faceid_config
+        select   id, face_merchant_id, faceid_private_key, update_time        from t_faceid_config
         where tenant_id = #{tenantId} and del_flag=0 order by create_time desc limit 1
     </select>
 
