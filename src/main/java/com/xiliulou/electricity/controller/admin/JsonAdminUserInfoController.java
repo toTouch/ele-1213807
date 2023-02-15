@@ -187,6 +187,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "cardName", required = false) String cardName,
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
+                        @RequestParam(value = "authType", required = false) Integer authType,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
     
@@ -218,6 +219,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryId(batteryId)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
+                .authType(authType)
                 .serviceStatus(serviceStatus)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
@@ -295,6 +297,7 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryListV2(@RequestParam(value = "size") Long size, @RequestParam(value = "offset") Long offset,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "authType", required = false) Integer authType,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "authStatus", required = false) Integer authStatus) {
@@ -324,7 +327,7 @@ public class JsonAdminUserInfoController extends BaseController {
             return R.ok(Collections.EMPTY_LIST);
         }
     
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone)
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone).authType(authType)
                 .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
     
