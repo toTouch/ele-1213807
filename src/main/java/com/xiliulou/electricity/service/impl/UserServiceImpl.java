@@ -994,7 +994,8 @@ public class UserServiceImpl implements UserService {
     }
 
     private void verifyParams(UserSourceQuery userSourceQuery) {
-        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
+//        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
+        if (Objects.nonNull(userSourceQuery.getStoreId())) {
             List<Integer> eidList = electricityCabinetService.selectEidByStoreId(userSourceQuery.getStoreId());
             if (CollectionUtils.isNotEmpty(eidList)) {
                 userSourceQuery.setElectricityCabinetIds(eidList);

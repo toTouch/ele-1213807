@@ -174,7 +174,7 @@
 			<if test="endTime != null">
 				and tui.create_time &lt;=#{endTime}
 			</if>
-			<if test="source == 1 and electricityCabinetIds != null and electricityCabinetIds.size > 0">
+			<if test="electricityCabinetIds != null and electricityCabinetIds.size > 0">
 				and tu.ref_id in
 				<foreach collection="electricityCabinetIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
@@ -215,7 +215,7 @@
 			<if test="endTime != null">
 				and tui.create_time &lt;=#{endTime}
 			</if>
-			<if test="source == 1 and electricityCabinetIds != null and electricityCabinetIds.size > 0">
+			<if test="electricityCabinetIds != null and electricityCabinetIds.size > 0">
 				and tu.ref_id in
 				<foreach collection="electricityCabinetIds" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
