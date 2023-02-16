@@ -303,31 +303,32 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             //换电柜
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
-                log.error("rentBattery  ERROR! not found electricityCabinet ！productKey={},deviceName={}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
+                log.error("BATTERY MEMBER ORDER ERROR!not found electricityCabinet ！p={},d={}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
                 return R.fail("ELECTRICITY.0005", "未找到换电柜");
             }
 
-            source = ElectricityMemberCardOrder.SOURCE_SCAN;
-            refId = electricityCabinet.getId().longValue();
+            //查找换电柜门店
+            if (Objects.isNull(electricityCabinet.getStoreId())) {
+                log.error("BATTERY MEMBER ORDER ERROR!not found store,eid={},uid={}", electricityCabinet.getId(), userInfo.getUid());
+                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+            }
+            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            if (Objects.isNull(store)) {
+                log.error("BATTERY MEMBER ORDER ERROR!not found store,storeId={},uid={}", electricityCabinet.getStoreId(), userInfo.getUid());
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
 
-//            //3、查出套餐
-//            //查找换电柜门店
-//            if (Objects.isNull(electricityCabinet.getStoreId())) {
-//                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
-//                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
-//            }
-//            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-//            if (Objects.isNull(store)) {
-//                log.error("queryByDevice  ERROR! not found store ！storeId={}", electricityCabinet.getStoreId());
-//                return R.fail("ELECTRICITY.0018", "未找到门店");
-//            }
-//
-//            //查找门店加盟商
-//            if (Objects.isNull(store.getFranchiseeId())) {
-//                log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
-//                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
-//            }
-//            franchiseeId = store.getFranchiseeId();
+            //查找门店加盟商
+            if (Objects.isNull(store.getFranchiseeId())) {
+                log.error("BATTERY MEMBER ORDER ERROR!not found Franchisee,storeId={},uid={}", store.getId(), userInfo.getUid());
+                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+            }
+
+            //换电柜加盟商和用户加盟商一致  则保存套餐来源
+            if (Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+                source = ElectricityMemberCardOrder.SOURCE_SCAN;
+                refId = electricityCabinet.getId().longValue();
+            }
         }
 
 //        if (Objects.isNull(franchiseeId)) {
@@ -2838,29 +2839,49 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, "", null);
         }
 
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(query.getMemberCardId());
+        if (Objects.isNull(electricityMemberCard)) {
+            log.error("BATTERY MEMBER_ORDER ERROR!not found battery membercard,membercardId={},uid={}", query.getMemberCardId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "未找到月卡套餐!");
+        }
+        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
+            log.error("BATTERY MEMBER_ORDER ERROR!battery membercard is un_usable membercardId={},uid={}", query.getMemberCardId(), userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0088", "月卡已禁用!");
+        }
+
         //购买套餐扫码的柜机
         Long refId = null;
         //购买套餐来源
         Integer source = ElectricityMemberCardOrder.SOURCE_NOT_SCAN;
-        if(StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())){
+        if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
-                log.error("CREATE MEMBER_ORDER ERROR ERROR! not found electricityCabinet,productKey={},deviceName={}", query.getProductKey(), query.getDeviceName());
+                log.error("BATTERY MEMBER_ORDER ERROR! not found electricityCabinet,productKey={},deviceName={}", query.getProductKey(), query.getDeviceName());
                 return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
             }
 
-            source = ElectricityMemberCardOrder.SOURCE_SCAN;
-            refId = electricityCabinet.getId().longValue();
-        }
+            //查找换电柜门店
+            if (Objects.isNull(electricityCabinet.getStoreId())) {
+                log.error("BATTERY MEMBER ORDER ERROR!not found store,eid={},uid={}", electricityCabinet.getId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+            }
+            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+            if (Objects.isNull(store)) {
+                log.error("BATTERY MEMBER ORDER ERROR!not found store,storeId={},uid={}", electricityCabinet.getStoreId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
+            }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(query.getMemberCardId());
-        if (Objects.isNull(electricityMemberCard)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,not found member_card by id={},uid={}", query.getMemberCardId(), userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0087", "未找到月卡套餐!");
-        }
-        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("CREATE MEMBER_ORDER ERROR ,member_card is un_usable id={},uid={}", query.getMemberCardId(), userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0088", "月卡已禁用!");
+            //查找门店加盟商
+            if (Objects.isNull(store.getFranchiseeId())) {
+                log.error("BATTERY MEMBER ORDER ERROR!not found Franchisee,storeId={},uid={}", store.getId(), userInfo.getUid());
+                return Triple.of(false, "ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+            }
+
+            //换电柜加盟商和套餐加盟商一致  则保存套餐来源
+            if (Objects.equals(store.getFranchiseeId(), electricityMemberCard.getFranchiseeId())) {
+                source = ElectricityMemberCardOrder.SOURCE_SCAN;
+                refId = electricityCabinet.getId().longValue();
+            }
         }
 
         //查找计算优惠券
@@ -2927,7 +2948,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        electricityMemberCardOrder.setFranchiseeId(query.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setSource(source);
