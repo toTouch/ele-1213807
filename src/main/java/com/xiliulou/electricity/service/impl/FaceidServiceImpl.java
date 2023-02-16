@@ -215,7 +215,7 @@ public class FaceidServiceImpl implements FaceidService {
             lock.unlock();
         }
 
-        return Triple.of(false, "100331", "人脸核身失败");
+        return Triple.of(true, "", null);
     }
 
     /**
