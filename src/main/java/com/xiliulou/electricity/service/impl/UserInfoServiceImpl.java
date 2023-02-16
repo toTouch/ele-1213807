@@ -134,6 +134,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     RentCarOrderService rentCarOrderService;
+    
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
 
 
     /**
@@ -1478,6 +1481,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
     
         DetailsCarInfoVo vo = new DetailsCarInfoVo();
+        vo.setUid(userInfo.getUid());
     
         //用户车辆信息
         CompletableFuture<Void> queryUserCar = CompletableFuture.runAsync(() -> {
@@ -1755,14 +1759,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     private void queryUserCarDeposit(DetailsCarInfoVo vo, UserInfo userInfo) {
         vo.setCarDepositStatus(userInfo.getCarDepositStatus());
+    
+        CarDepositOrder carDepositOrder = carDepositOrderService
+                .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());
+        if (Objects.nonNull(carDepositOrder)) {
+            vo.setPayDepositTime(carDepositOrder.getCreateTime());
         
-        EleDepositOrder eleDepositOrder = eleDepositOrderService
-                .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId(),
-                        EleDepositOrder.RENT_CAR_DEPOSIT);
-        if (Objects.nonNull(eleDepositOrder)) {
-            vo.setPayDepositTime(eleDepositOrder.getCreateTime());
-            
-            Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+            Store store = storeService.queryByIdFromCache(carDepositOrder.getStoreId());
             if (Objects.nonNull(store)) {
                 vo.setStoreId(store.getId());
                 vo.setStoreName(store.getName());

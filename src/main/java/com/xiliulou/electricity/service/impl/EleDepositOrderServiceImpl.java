@@ -116,6 +116,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -1672,17 +1675,24 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
-        
-        EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(orderId).uid(userInfo.getUid())
-                .phone(userInfo.getPhone()).name(userInfo.getName()).payAmount(payAmount)
-                .status(EleDepositOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis()).tenantId(rentCarDepositAdd.getTenantId())
-                .depositType(EleDepositOrder.RENT_CAR_DEPOSIT).storeId(rentCarDepositAdd.getStoreId())
-                .carModelId(rentCarDepositAdd.getCarModelId()).franchiseeId(rentCarDepositAdd.getFranchiseeId())
-                .payType(EleDepositOrder.OFFLINE_PAYMENT).build();
-        if (eleDepositOrderMapper.insert(eleDepositOrder) <= 0) {
-            new CustomBusinessException("缴纳租车押金失败");
-        }
+    
+        CarDepositOrder carDepositOrder = new CarDepositOrder();
+        carDepositOrder.setUid(userInfo.getUid());
+        carDepositOrder.setOrderId(orderId);
+        carDepositOrder.setPhone(userInfo.getPhone());
+        carDepositOrder.setName(userInfo.getName());
+        carDepositOrder.setPayAmount(payAmount);
+        carDepositOrder.setDelFlag(CarDepositOrder.DEL_NORMAL);
+        carDepositOrder.setStatus(CarDepositOrder.STATUS_SUCCESS);
+        carDepositOrder.setTenantId(TenantContextHolder.getTenantId());
+        carDepositOrder.setCreateTime(System.currentTimeMillis());
+        carDepositOrder.setUpdateTime(System.currentTimeMillis());
+        carDepositOrder.setFranchiseeId(store.getFranchiseeId());
+        carDepositOrder.setStoreId(rentCarDepositAdd.getStoreId());
+        carDepositOrder.setPayType(CarDepositOrder.OFFLINE_PAYTYPE);
+        carDepositOrder.setCarModelId(carModel.getId().longValue());
+        carDepositOrder.setRentBattery(CarDepositOrder.RENTBATTERY_NO);
+        carDepositOrderService.insert(carDepositOrder);
         
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
@@ -1701,7 +1711,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         UserCarDeposit userCarDeposit = new UserCarDeposit();
         userCarDeposit.setUid(userInfo.getUid());
         userCarDeposit.setOrderId(orderId);
-        userCarDeposit.setCarDeposit(eleDepositOrder.getPayAmount());
+        userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
         userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setCreateTime(System.currentTimeMillis());
         userCarDeposit.setUpdateTime(System.currentTimeMillis());

@@ -178,7 +178,7 @@
     
     
     <select id="queryPull" resultType="com.xiliulou.electricity.vo.CarModelPullVo">
-        select id, name, rent_type
+        select id, name, rent_type from t_electricity_car_model
         <where>
             franchisee_id = #{franchiseeId}
             and tenant_id = #{tenantId}
