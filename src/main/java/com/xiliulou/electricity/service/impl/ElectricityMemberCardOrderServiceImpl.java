@@ -310,29 +310,29 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             source = ElectricityMemberCardOrder.SOURCE_SCAN;
             refId = electricityCabinet.getId().longValue();
 
-            //3、查出套餐
-            //查找换电柜门店
-            if (Objects.isNull(electricityCabinet.getStoreId())) {
-                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
-                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
-            }
-            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-            if (Objects.isNull(store)) {
-                log.error("queryByDevice  ERROR! not found store ！storeId={}", electricityCabinet.getStoreId());
-                return R.fail("ELECTRICITY.0018", "未找到门店");
-            }
-
-            //查找门店加盟商
-            if (Objects.isNull(store.getFranchiseeId())) {
-                log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
-                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
-            }
-            franchiseeId = store.getFranchiseeId();
+//            //3、查出套餐
+//            //查找换电柜门店
+//            if (Objects.isNull(electricityCabinet.getStoreId())) {
+//                log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
+//                return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+//            }
+//            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+//            if (Objects.isNull(store)) {
+//                log.error("queryByDevice  ERROR! not found store ！storeId={}", electricityCabinet.getStoreId());
+//                return R.fail("ELECTRICITY.0018", "未找到门店");
+//            }
+//
+//            //查找门店加盟商
+//            if (Objects.isNull(store.getFranchiseeId())) {
+//                log.error("queryByDevice  ERROR! not found Franchisee ！storeId={}", store.getId());
+//                return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+//            }
+//            franchiseeId = store.getFranchiseeId();
         }
 
-        if (Objects.isNull(franchiseeId)) {
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
-        }
+//        if (Objects.isNull(franchiseeId)) {
+//            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+//        }
 
         //查找计算优惠券
         //满减折扣劵

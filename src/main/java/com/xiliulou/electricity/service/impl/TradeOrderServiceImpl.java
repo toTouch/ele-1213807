@@ -687,7 +687,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(integratedPaymentAdd.getFranchiseeId());
+        electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayCount(payCount);
