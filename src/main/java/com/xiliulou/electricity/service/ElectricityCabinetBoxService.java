@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.query.FreeCellNoQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -50,8 +51,8 @@ public interface ElectricityCabinetBoxService {
     void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
 
     List<ElectricityCabinetBox> queryUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
-
-    List<ElectricityCabinetBox> findUsableEmptyCellNo(Integer eid);
+    
+    List<FreeCellNoQuery> findUsableEmptyCellNo(Integer eid);
     
     int selectUsableEmptyCellNumber(Integer eid, Integer tenantId);
 

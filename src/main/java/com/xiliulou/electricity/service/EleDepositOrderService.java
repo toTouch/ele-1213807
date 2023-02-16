@@ -65,6 +65,8 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType);
 
+    EleDepositOrder selectLatestByUid(Long uid);
+
     R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
 
     BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> franchiseeIds);

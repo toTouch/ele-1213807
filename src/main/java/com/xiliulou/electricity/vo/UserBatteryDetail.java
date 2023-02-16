@@ -46,4 +46,9 @@ public class UserBatteryDetail {
 //    private EleBatteryServiceFeeVO  batteryServiceFee;
     private BigDecimal batteryServiceFee;
 
+    /**
+     * 套餐过期时间
+     */
+    private Long memberCardExpireTime;
+
 }

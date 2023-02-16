@@ -81,6 +81,8 @@ public class StoreServiceImpl implements StoreService {
     StorageService storageService;
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -199,20 +201,20 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R edit(StoreAddAndUpdate storeAddAndUpdate) {
+    public Triple<Boolean, String, Object> edit(StoreAddAndUpdate storeAddAndUpdate) {
 
         Store store = new Store();
         BeanUtil.copyProperties(storeAddAndUpdate, store);
         Store oldStore = queryByIdFromCache(store.getId());
         if (Objects.isNull(oldStore)) {
-            return R.fail("ELECTRICITY.0018", "未找到门店");
+            return Triple.of(false,"ELECTRICITY.0018", "未找到门店");
         }
         if (!Objects.equals(oldStore.getTenantId(), TenantContextHolder.getTenantId())) {
-            return R.ok();
+            return Triple.of(true,"",null);
         }
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
             if (checkParam(storeAddAndUpdate, store)) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
+                return Triple.of(false,"ELECTRICITY.0007", "不合法的参数");
             }
         }
 
@@ -226,9 +228,21 @@ public class StoreServiceImpl implements StoreService {
 
             List<ElectricityCarModel> electricityCarModels = electricityCarModelService.selectByQuery(carModelQuery);
             if(!CollectionUtils.isEmpty(electricityCarModels)){
-                return R.fail("100254","门店已绑定车辆型号，请先删除车辆型号");
+                return Triple.of(false,"100254","门店已绑定车辆型号，请先删除车辆型号");
             }
         }
+
+//        //校验加盟商
+//        Triple<Boolean, String, Object> verifyCarModelFranchisee = verifyCarModelFranchisee(storeAddAndUpdate, oldStore);
+//        List<ElectricityCarModel> electricityCarModels = null;
+//        if (!verifyCarModelFranchisee.getLeft()) {
+//            return verifyCarModelFranchisee;
+//        } else {
+//            electricityCarModels = (List<ElectricityCarModel>) verifyCarModelFranchisee.getRight();
+//            if (!CollectionUtils.isEmpty(electricityCarModels)) {
+//                electricityCarModelService.updateFranchiseeById(electricityCarModels, storeAddAndUpdate.getFranchiseeId().longValue());
+//            }
+//        }
 
         store.setTenantId(TenantContextHolder.getTenantId());
         store.setUpdateTime(System.currentTimeMillis());
@@ -249,10 +263,48 @@ public class StoreServiceImpl implements StoreService {
         });
 
         if (update > 0) {
-            return R.ok();
+            return Triple.of(true,"",null);
         }
-        return R.fail("ELECTRICITY.0086", "操作失败");
+        return Triple.of(false,"ELECTRICITY.0086", "操作失败");
     }
+
+//    private Triple<Boolean, String, Object> verifyCarModelFranchisee(StoreAddAndUpdate storeAddAndUpdate, Store oldStore) {
+//        //若修改门店加盟商，需要判断门店是否绑定的有车辆型号
+//        if (Objects.nonNull(storeAddAndUpdate.getFranchiseeId()) && !Objects.equals(oldStore.getFranchiseeId().intValue(), storeAddAndUpdate.getFranchiseeId())) {
+//            ElectricityCarModelQuery carModelQuery = new ElectricityCarModelQuery();
+//            carModelQuery.setStoreId(oldStore.getId());
+//            carModelQuery.setDelFlag(ElectricityCarModel.DEL_NORMAL);
+//            carModelQuery.setTenantId(oldStore.getTenantId());
+//
+//            //获取门店下车辆型号
+//            List<ElectricityCarModel> electricityCarModels = electricityCarModelService.selectByQuery(carModelQuery);
+//            if (CollectionUtils.isEmpty(electricityCarModels)) {
+//                return Triple.of(true, "", null);
+//            }
+//
+//            //若开启了加盟商迁移，且门店新绑定的加盟商与迁移的新加盟商一致，则允许修改
+//            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+//            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
+//
+//                FranchiseeMoveInfo franchiseeMoveInfo = JsonUtil.fromJson(electricityConfig.getFranchiseeMoveInfo(), FranchiseeMoveInfo.class);
+//                if (Objects.isNull(franchiseeMoveInfo)) {
+//                    log.error("ELE ERROR!not found franchiseeMoveInfo,tenantId={}", TenantContextHolder.getTenantId());
+//                    return Triple.of(false, "100354", "用户加盟商迁移配置信息不存在");
+//                }
+//
+//                if (Objects.equals(franchiseeMoveInfo.getToFranchiseeId().intValue(), storeAddAndUpdate.getFranchiseeId())) {
+//                    //门店新绑定的加盟商与迁移的新加盟商一致，则允许修改
+//                    return Triple.of(true, "", electricityCarModels);
+//                } else {
+//                    return Triple.of(false, "100254", "门店已绑定车辆型号，请先删除车辆型号");
+//                }
+//            } else {
+//                return Triple.of(false, "100254", "门店已绑定车辆型号，请先删除车辆型号");
+//            }
+//        }
+//
+//        return Triple.of(true, "", null);
+//    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

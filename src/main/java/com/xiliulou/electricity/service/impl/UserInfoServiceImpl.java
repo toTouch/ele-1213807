@@ -222,7 +222,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardDays(carDays);
 
                     if (!Objects.equals(item.getCardId().longValue(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+//                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectLatestByUid(item.getUid());
                         if (Objects.nonNull(electricityMemberCardOrder)) {
                             item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
                         }
@@ -235,7 +236,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 //不能删除  会员列表详情在用，TODO 详情新增接口
                 if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects.equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+//                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.selectLatestByUid(item.getUid());
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
                         item.setStoreId(eleDepositOrder.getStoreId());
@@ -1173,12 +1175,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //审核状态
         userInfoResult.setAuthStatus(userInfo.getAuthStatus());
+        userInfoResult.setFranchiseeId(userInfo.getFranchiseeId());
 
-        UserBatteryDetail userBatteryDetail = new UserBatteryDetail();
-        userInfoResult.setUserBatteryDetail(userBatteryDetail);
 
         UserCarDetail userCarDetail = new UserCarDetail();
+        UserBatteryDetail userBatteryDetail = new UserBatteryDetail();
         userInfoResult.setUserCarDetail(userCarDetail);
+        userInfoResult.setUserBatteryDetail(userBatteryDetail);
 
         //是否缴纳租电池押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -1190,13 +1193,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
         } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
+            userBatteryDetail.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         }
 
-        //套餐是否过期
+        //套餐是否过期(前端要兼容旧代码  不能删除)
         if (!Objects.isNull(userBatteryMemberCard) && !Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) && userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             userBatteryDetail.setIsBatteryMemberCardExpire(UserInfoResultVO.YES);
         } else {
@@ -1241,6 +1245,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userCarDetail.setIsCarMemberCard(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsCarMemberCard(UserInfoResultVO.YES);
+            userCarDetail.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
         }
 
         //租车套餐是否过期
@@ -1920,23 +1925,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             throw new CustomBusinessException("查不到会员用户");
         }
 
-
         List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int index = 0;
         for (UserBatteryInfoVO userBatteryInfoVO : userBatteryInfoVOS) {
             index++;
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userBatteryInfoVO.getUid());
+
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryInfoVO.getCardId());
+
             UserInfoExcelVO excelVo = new UserInfoExcelVO();
             excelVo.setId(index);
             excelVo.setPhone(userBatteryInfoVO.getPhone());
             excelVo.setName(userBatteryInfoVO.getName());
-            excelVo.setBatteryDeposit(userBatteryInfoVO.getBatteryDeposit());
-            excelVo.setCardName(userBatteryInfoVO.getCardName());
+            excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
+            excelVo.setCardName(Objects.nonNull(electricityMemberCard) ? electricityMemberCard.getName() : "");
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
             userInfoExcelVOS.add(excelVo);
 
 
-            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime())) {
+            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(),NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
             }
 

@@ -63,5 +63,15 @@ public class TenantConfigVO {
      */
     private String servicePhone;
 
+    /**
+     * 是否迁移加盟商 1--关闭 2--开启
+     */
+    private Integer isMoveFranchisee;
+
+    /**
+     * 迁移加盟商
+     */
+    private String franchiseeMoveInfo;
+
 
 }

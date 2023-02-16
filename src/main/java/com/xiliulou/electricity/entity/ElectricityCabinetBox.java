@@ -114,8 +114,13 @@ public class ElectricityCabinetBox {
      * 锁仓类型 0--人为锁仓 1--系统锁仓
      */
     private Integer lockType;
-
-
+    
+    /**
+     * 空闲开始时间
+     */
+    private Long emptyGridStartTime;
+    
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     //可用

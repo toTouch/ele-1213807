@@ -1379,15 +1379,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100206", "用户未审核");
             }
 
+            //校验加盟商是否一致(加盟商迁移)
+            if (!Objects.equals(userInfo.getFranchiseeId(), store.getFranchiseeId())) {
+                log.error("ORDER ERROR! user franchiseeId not equals store franchiseeId,uid={},storeId={}", user.getUid(), store.getId());
+                return Triple.of(false, "ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致");
+            }
+
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
             if (Objects.isNull(franchisee)) {
-                log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
+                log.error("ORDER ERROR! not found franchisee,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
             }
 
             UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBattery)) {
-                log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
+                log.error("ORDER ERROR! not found userBattery,uid={}", user.getUid());
                 return Triple.of(false, "ELECTRICITY.0033", "用户未绑定电池型号");
             }
 
@@ -1659,6 +1665,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             showVo.setStatus(redisService.get(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId));
         }
         return Triple.of(true, null, showVo);
+    }
+
+    @Override
+    public ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectLatestByUid(uid, tenantId);
     }
 
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {

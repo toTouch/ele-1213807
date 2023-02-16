@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.query.FreeCellNoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
@@ -205,7 +206,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
 
     @Override
-    public List<ElectricityCabinetBox> findUsableEmptyCellNo(Integer eid) {
+    public List<FreeCellNoQuery> findUsableEmptyCellNo(Integer eid) {
         return electricityCabinetBoxMapper.queryUsableEmptyCellNo(eid);
     }
 
