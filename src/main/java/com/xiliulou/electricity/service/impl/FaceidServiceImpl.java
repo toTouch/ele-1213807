@@ -230,6 +230,19 @@ public class FaceidServiceImpl implements FaceidService {
                 return Triple.of(false, "100330", "人脸核身结果获取失败");
             }
 
+            //扣减人脸核身次数
+            FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.isNull(faceRecognizeData)) {
+                log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+                return Triple.of(false, "100332", "人脸核身配置信息不存在");
+            }
+
+            FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
+            faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
+            faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() - 1);
+            faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
+            faceRecognizeDataService.updateById(faceRecognizeDataUpdate);
+
             //保存人脸核身结果
             FaceAuthResultData faceAuthResultData = faceAuthResultDataService.insert(buildFaceAuthResultData(faceidResultRsp));
 
@@ -248,18 +261,6 @@ public class FaceidServiceImpl implements FaceidService {
                 return Triple.of(false, "100330", "人脸核身结果获取失败");
             }
 
-            //扣减人脸核身次数
-            FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
-            if (Objects.isNull(faceRecognizeData)) {
-                log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
-                return Triple.of(false, "100332", "人脸核身配置信息不存在");
-            }
-
-            FaceRecognizeData faceRecognizeDataUpdate = new FaceRecognizeData();
-            faceRecognizeDataUpdate.setId(faceRecognizeData.getId());
-            faceRecognizeDataUpdate.setFaceRecognizeCapacity(faceRecognizeData.getFaceRecognizeCapacity() - 1);
-            faceRecognizeDataUpdate.setUpdateTime(System.currentTimeMillis());
-            faceRecognizeDataService.updateById(faceRecognizeDataUpdate);
 
             //身份证号唯一性校验
             Integer idNumberExist = userInfoService.verifyIdNumberExist(eidUserInfo.getIdnum(), TenantContextHolder.getTenantId());
