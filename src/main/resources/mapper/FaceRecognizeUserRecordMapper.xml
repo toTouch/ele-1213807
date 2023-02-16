@@ -130,7 +130,7 @@
             <if test="uid != null">
                 uid = #{uid},
             </if>
-            <if test="authResult != null">
+            <if test="authResultId != null">
                 auth_result_id = #{authResultId},
             </if>
             <if test="status != null">
