@@ -2,9 +2,11 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -12,6 +14,8 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -529,5 +533,42 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         update.setUpdateTime(System.currentTimeMillis());
         update(update);
         return true;
+    }
+    
+    @Override
+    public R positionReport(CarPositionReportQuery query) {
+        if (Objects.isNull(query)) {
+            log.error("CAR POSITION REPORT WARN! query is null! ");
+            return R.failMsg("参数错误");
+        }
+        
+        final String requestId = query.getRequestId();
+        
+        if (StrUtil.isBlank(query.getDevId()) || Objects.isNull(query.getLatitude()) || Objects
+                .isNull(query.getLongitude()) || StrUtil.isBlank(query.getRequestId())) {
+            log.warn("CAR POSITION REPORT WARN! args error! requestId={}, query={}", requestId, query);
+            return R.failMsg("参数错误");
+        }
+        
+        ElectricityCar electricityCar = selectBySn(query.getDevId(), null);
+        if (Objects.isNull(electricityCar)) {
+            log.warn("CAR POSITION REPORT WARN! no electricityCar Sn! requestId={}, sn={}", requestId,
+                    query.getDevId());
+            return R.failMsg("未查询到车辆");
+        }
+        
+        if (Objects.equals(electricityCar.getLatitude(), query.getLatitude()) && Objects
+                .equals(electricityCar.getLongitude(), query.getLongitude())) {
+            return R.ok();
+        }
+        
+        ElectricityCar update = new ElectricityCar();
+        update.setId(electricityCar.getId());
+        update.setLongitude(query.getLongitude());
+        update.setLatitude(query.getLatitude());
+        update.setUpdateTime(System.currentTimeMillis());
+        update(update);
+        
+        return R.ok();
     }
 }

@@ -314,9 +314,9 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     }
     
     @Override
-    public R queryPull(Long size, Long offset, Long franchiseeId, Long storeId, String name) {
+    public R queryPull(Long size, Long offset, Long franchiseeId, String name) {
         return R.ok(electricityCarModelMapper
-                .queryPull(size, offset, franchiseeId, storeId, name, TenantContextHolder.getTenantId()));
+                .queryPull(size, offset, franchiseeId, name, TenantContextHolder.getTenantId()));
     }
     
     

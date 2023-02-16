@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 
 import java.util.List;
 
@@ -53,4 +55,6 @@ public interface ElectricityCarService {
     Integer updateLockTypeByIds(List<Long> tempIds, Integer typeLock);
     
     Boolean carLockCtrl(ElectricityCar electricityCar, Integer lockType);
+    
+    R positionReport(CarPositionReportQuery carPositionReportQuery);
 }

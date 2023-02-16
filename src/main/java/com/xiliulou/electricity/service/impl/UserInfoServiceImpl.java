@@ -1784,6 +1784,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     private void queryUserCar(DetailsCarInfoVo vo, UserInfo userInfo) {
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.isNull(electricityCar)) {
+            return;
+        }
+        
         vo.setCarModelId(electricityCar.getModelId());
         vo.setCarModelName(electricityCar.getModel());
         vo.setCarSn(electricityCar.getSn());
