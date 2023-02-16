@@ -278,6 +278,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         electricityCabinetBox.setSn(electricityBattery.getSn());
         electricityCabinetBox.setBId(electricityBattery.getId());
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        electricityCabinetBox.setEmptyGridStartTime(null);
         
         if (Objects.nonNull(power)) {
             electricityCabinetBox.setPower(power * 100);
@@ -307,6 +308,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         updateElectricityCabinetBox.setSn(null);
         updateElectricityCabinetBox.setPower(null);
         updateElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+    
+        //获取格挡的空闲时间
+        Long emptyGridStartTime = eleBox.getEmptyGridStartTime();
+        if (Objects.isNull(emptyGridStartTime)) {
+            emptyGridStartTime = System.currentTimeMillis();
+        }
+        updateElectricityCabinetBox.setEmptyGridStartTime(emptyGridStartTime);
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
         
         if (StringUtils.isBlank(eleBox.getSn())) {

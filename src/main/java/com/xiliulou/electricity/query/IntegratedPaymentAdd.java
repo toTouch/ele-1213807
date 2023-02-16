@@ -17,14 +17,30 @@ public class IntegratedPaymentAdd {
 
 	private String deviceName;
 
+
+    /**
+     * 保险id
+     */
 	private Integer insuranceId;
 
+    /**
+     * 加盟商id
+	 */
 	private Long franchiseeId;
 
+    /**
+     * 电池类型
+	 */
 	private Integer model;
 
+    /**
+     * 月卡id
+	 */
 	private Integer memberCardId;
 
+    /**
+     * 优惠券id
+	 */
 	private Integer userCouponId;
 
 

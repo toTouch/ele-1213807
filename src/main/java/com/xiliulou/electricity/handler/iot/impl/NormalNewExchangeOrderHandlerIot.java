@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -220,6 +221,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000
                             + System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            //保存取走电池格挡
+            redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(),
+                    String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
+            
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(),
                     exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());

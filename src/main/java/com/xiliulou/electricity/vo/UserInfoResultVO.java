@@ -13,6 +13,11 @@ public class UserInfoResultVO {
     //实名认证审核状态 -1:初始化，0：等待审核中,1：审核被拒绝,2：审核通过
     private Integer authStatus;
 
+    /**
+     * 加盟商
+     */
+    private Long franchiseeId;
+
     private UserBatteryDetail userBatteryDetail;
 
     private UserCarDetail UserCarDetail;

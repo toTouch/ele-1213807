@@ -5,10 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Region;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
-import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
+import com.xiliulou.electricity.query.*;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -72,4 +69,5 @@ public interface FranchiseeService {
 
     int update(Franchisee franchisee);
 
+    Triple<Boolean, String, Object> moveFranchisee();
 }

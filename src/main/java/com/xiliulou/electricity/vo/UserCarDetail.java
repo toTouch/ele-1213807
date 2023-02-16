@@ -28,4 +28,9 @@ public class UserCarDetail {
 
     private String carSN;
 
+    /**
+     * 套餐过期时间
+     */
+    private Long memberCardExpireTime;
+
 }

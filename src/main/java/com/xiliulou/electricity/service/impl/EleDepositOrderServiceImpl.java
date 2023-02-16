@@ -1391,6 +1391,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId, depositType);
     }
 
+    @Override
+    public EleDepositOrder selectLatestByUid(Long uid) {
+        return eleDepositOrderMapper.selectLatestByUid(uid);
+    }
 
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {

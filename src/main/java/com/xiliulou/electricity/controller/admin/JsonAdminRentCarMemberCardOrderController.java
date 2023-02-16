@@ -45,8 +45,8 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "userName", required = false) String userName,
-                                          @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+                                          @RequestParam(value = "beginTime", required = false) Long queryStartTime,
+                                          @RequestParam(value = "endTime", required = false) Long queryEndTime) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -106,8 +106,8 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
                         @RequestParam(value = "memberCardType", required = false) String memberCardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                        @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+                        @RequestParam(value = "beginTime", required = false) Long queryStartTime,
+                        @RequestParam(value = "endTime", required = false) Long queryEndTime,
                         @RequestParam(value = "userName", required = false) String userName,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 

@@ -109,4 +109,6 @@ public interface ElectricityMemberCardOrderService {
     Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard);
 
     ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid);
+
+    ElectricityMemberCardOrder selectLatestByUid(Long uid);
 }

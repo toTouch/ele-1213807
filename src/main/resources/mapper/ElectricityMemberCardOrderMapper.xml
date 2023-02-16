@@ -189,6 +189,12 @@
         ORDER BY id DESC limit 1
     </select>
 
+
+    <select id="selectLatestByUid"   resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select id,pay_amount,valid_days,uid,order_id,status,member_card_id,max_use_count,card_name,pay_type,create_time,update_time
+        from t_electricity_member_card_order where uid=#{uid} and status=1  ORDER BY id DESC limit 1
+    </select>
+
     <select id="queryLastPayMemberCardTimeByUidAndSuccess"
             resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select * from t_electricity_member_card_order where uid=#{uid} and status=1

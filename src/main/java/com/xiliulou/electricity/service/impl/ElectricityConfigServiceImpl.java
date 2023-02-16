@@ -3,26 +3,31 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.TemplateConfigService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantConfigVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,9 +51,18 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     UserService userService;
     @Autowired
     RedisService redisService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -63,19 +77,43 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+        String franchiseeMoveDetail = null;
+        //若开启了迁移加盟商
+        if (Objects.equals(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
+            if (Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo()) || Objects.isNull(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel())) {
+                return R.fail("ELECTRICITY.0007", "加盟商迁移信息不能为空");
+            }
 
-//        if (ObjectUtil.isEmpty(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList())) {
-//            return R.fail("ELECTRICITY.0007", "不合法的参数");
-//        }
+            FranchiseeMoveInfo franchiseeMoveInfoQuery = electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo();
 
-//        //封装型号押金
-//        String lowBatteryExchangeModel = JsonUtil.toJson(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList());
-//        electricityConfigAddAndUpdateQuery.setLowBatteryExchangeModel(lowBatteryExchangeModel);
+            Franchisee oldFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getFromFranchiseeId());
+            Franchisee newFranchisee = franchiseeService.queryByIdFromCache(franchiseeMoveInfoQuery.getToFranchiseeId());
+
+            Triple<Boolean, String, Object> verifyFranchiseeResult = verifyFranchisee(oldFranchisee, newFranchisee, franchiseeMoveInfoQuery);
+            if (!verifyFranchiseeResult.getLeft()) {
+                return R.fail(verifyFranchiseeResult.getMiddle(), (String) verifyFranchiseeResult.getRight());
+            }
+
+            FranchiseeMoveInfo franchiseeMoveInfo = new FranchiseeMoveInfo();
+            franchiseeMoveInfo.setFromFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getFromFranchiseeId());
+            franchiseeMoveInfo.setToFranchiseeId(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getToFranchiseeId());
+            franchiseeMoveInfo.setBatteryModel(electricityConfigAddAndUpdateQuery.getFranchiseeMoveInfo().getBatteryModel());
+            franchiseeMoveInfo.setFromFranchiseeName(oldFranchisee.getName());
+            franchiseeMoveInfo.setToFranchiseeName(newFranchisee.getName());
+            franchiseeMoveDetail = JsonUtil.toJson(franchiseeMoveInfo);
+
+            //将旧加盟商下套餐迁移到新加盟商
+            electricityMemberCardService.moveMemberCard(franchiseeMoveInfo,newFranchisee);
+
+            //将旧加盟商下保险迁移到新加盟商
+            franchiseeInsuranceService.moveInsurance(franchiseeMoveInfo,newFranchisee);
+
+            //将旧加盟商下的车辆型号迁移到新加盟商下
+            electricityCarModelService.moveCarModel(franchiseeMoveInfo);
+        }
 
 
-        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, tenantId));
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
             electricityConfig = new ElectricityConfig();
             electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
@@ -84,7 +122,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsWithdraw(electricityConfigAddAndUpdateQuery.getIsWithdraw());
             electricityConfig.setCreateTime(System.currentTimeMillis());
             electricityConfig.setUpdateTime(System.currentTimeMillis());
-            electricityConfig.setTenantId(tenantId);
+            electricityConfig.setTenantId(TenantContextHolder.getTenantId());
             electricityConfig.setIsOpenDoorLock(electricityConfigAddAndUpdateQuery.getIsOpenDoorLock());
             electricityConfig.setIsBatteryReview(electricityConfigAddAndUpdateQuery.getIsBatteryReview());
             electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
@@ -92,10 +130,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
             electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
+            electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
+            electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
 
+        electricityConfig.setTenantId(TenantContextHolder.getTenantId());
         electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
         electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
         electricityConfig.setIsManualReview(electricityConfigAddAndUpdateQuery.getIsManualReview());
@@ -109,11 +150,61 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
         electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
-        int updateResult = electricityConfigMapper.updateById(electricityConfig);
+        electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
+        electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
+        int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
-            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId);
+            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
         return R.ok();
+    }
+
+    private Triple<Boolean, String, Object> verifyFranchisee(Franchisee oldFranchisee, Franchisee newFranchisee, FranchiseeMoveInfo franchiseeMoveInfoQuery) {
+        //旧加盟商校验
+        if (Objects.isNull(oldFranchisee)) {
+            log.error("ELE ERROR! not found old franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
+            return Triple.of(false, "ELECTRICITY.0038", "旧加盟商不存在");
+        }
+        if (Objects.equals(oldFranchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            log.error("ELE ERROR! old franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getFromFranchiseeId());
+            return Triple.of(false, "100350", "旧加盟商不能为多型号");
+        }
+
+        //新加盟商校验
+        if (Objects.isNull(newFranchisee)) {
+            log.error("ELE ERROR! not found new franchisee,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
+            return Triple.of(false, "ELECTRICITY.0038", "新加盟商不存在");
+        }
+        if (Objects.equals(newFranchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            log.error("ELE ERROR! new franchisee not allow new MODEL TYPE,franchiseeId={}", franchiseeMoveInfoQuery.getToFranchiseeId());
+            return Triple.of(false, "100351", "新加盟商不能为单型号");
+        }
+
+        List<FranchiseeBatteryModelDTO> franchiseeBatteryModels = JsonUtil.fromJsonArray(newFranchisee.getModelBatteryDeposit(), FranchiseeBatteryModelDTO.class);
+        if (CollectionUtils.isEmpty(franchiseeBatteryModels)) {
+            log.error("ELE ERROR!not found newFranchiseeBatteryModelDTO,franchinseeId={}", newFranchisee.getId());
+            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
+        }
+
+        FranchiseeBatteryModelDTO franchiseeBatteryModelDTO = franchiseeBatteryModels.stream().filter(item -> Objects.equals(item.getModel(), franchiseeMoveInfoQuery.getBatteryModel())).findFirst().orElse(null);
+        if (Objects.isNull(franchiseeBatteryModelDTO)) {
+            log.error("ELE ERROR!franchiseeBatteryModelDTO is null,franchinseeId={}", newFranchisee.getId());
+            return Triple.of(false, "100355", "加盟商电池型号信息不存在");
+        }
+
+        //加盟商押金校验
+        if (oldFranchisee.getBatteryDeposit().compareTo(franchiseeBatteryModelDTO.getBatteryDeposit()) != 0) {
+            log.error("ELE ERROR! oldFranchisee batteryDeposit not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
+            return Triple.of(false, "100363", "新加盟商与旧加盟商押金不一致");
+        }
+
+        //加盟商电池服务费校验
+        if (oldFranchisee.getBatteryServiceFee().compareTo(franchiseeBatteryModelDTO.getBatteryServiceFee()) != 0) {
+            log.error("ELE ERROR! oldFranchisee batteryServiceFee not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
+            return Triple.of(false, "100364", "新加盟商与旧加盟商电池服务费不一致");
+        }
+
+        return Triple.of(true, "", null);
     }
 
     @Override
