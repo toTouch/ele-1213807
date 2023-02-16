@@ -280,7 +280,7 @@ public class FaceidServiceImpl implements FaceidService {
 
             return Triple.of(true, "", null);
         } catch (Exception e) {
-            log.error("ELE ERROR! face recognize fail,uid={}", userInfo.getUid());
+            log.error("ELE ERROR! face recognize fail,uid={}", userInfo.getUid(), e);
             return Triple.of(false, "100330", "人脸核身结果获取失败");
         }
     }
