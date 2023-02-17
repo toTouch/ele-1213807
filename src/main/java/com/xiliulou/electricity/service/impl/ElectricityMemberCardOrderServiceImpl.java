@@ -2978,7 +2978,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         ElectricityMemberCardOrder electricityMemberCardOrder = baseMapper.queryCreateTimeMaxMemberCardOrder(userInfo.getUid(), userInfo.getTenantId());
-        if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getStatus(), ElectricityMemberCardOrder.STATUS_INIT) || Objects.isNull(electricityMemberCardOrder.getCouponId())) {
+        if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getStatus(), ElectricityMemberCardOrder.STATUS_INIT)) {
+            return R.ok();
+        }
+
+        //取消支付  清除套餐来源
+        ElectricityMemberCardOrder memberCardOrderUpdate=new ElectricityMemberCardOrder();
+        memberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        memberCardOrderUpdate.setSource(NumberConstant.ZERO);
+        memberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
+        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.baseMapper.updateById(memberCardOrderUpdate);
+
+        if(Objects.isNull(electricityMemberCardOrder.getCouponId())){
             return R.ok();
         }
 
@@ -2991,14 +3003,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userCoupon.setOrderId(null);
         userCoupon.setUpdateTime(System.currentTimeMillis());
         userCouponService.updateStatus(userCoupon);
-
-        //取消支付  清除套餐来源
-        ElectricityMemberCardOrder memberCardOrderUpdate=new ElectricityMemberCardOrder();
-        memberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
-        memberCardOrderUpdate.setSource(NumberConstant.ZERO);
-        memberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
-        memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        this.baseMapper.updateById(memberCardOrderUpdate);
 
         return R.ok();
     }
