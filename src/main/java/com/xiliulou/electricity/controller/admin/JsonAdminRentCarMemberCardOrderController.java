@@ -184,15 +184,25 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
         return carMemberCardOrderService.renewalUserMemberCard(carMemberCardOrderAddAndUpdate);
     }
     
-    //绑定车辆
-    @PutMapping(value = "/admin/userInfo/bindCar")
+    /**
+     * 绑定车辆
+     *
+     * @param userInfoCarAddAndUpdate
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/bindElectricityCar")
     @Log(title = "后台绑定车辆")
     public R webBindCar(@RequestBody UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
         return userInfoService.webBindCar(userInfoCarAddAndUpdate);
     }
     
-    //解绑车辆
-    @PutMapping(value = "/admin/userInfo/unBindCar/{uid}")
+    /**
+     * 解绑车辆
+     *
+     * @param uid
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/unBindElectricityCar/{uid}")
     @Log(title = "后台解绑车辆")
     public R webUnBindCar(@PathVariable("uid") Long uid) {
         return userInfoService.webUnBindCar(uid);
