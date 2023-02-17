@@ -166,7 +166,7 @@
     </select>
     
     <select id="queryElectricityCarOverview" resultType="com.xiliulou.electricity.vo.ElectricityCarOverviewVo">
-        select sn, id, longitude, latitude
+        select sn, id, longitude, latitude from t_electricity_car
         <where>
             tenant_id = #{tenantId}
             <if test="carIds != null and carIds.size() > 0">
@@ -180,5 +180,22 @@
             </if>
         </where>
     </select>
+    
+    <select id="batteryStatistical" resultType="long">
+        select count(*) from t_electricity_car
+        <where>
+            tenant_id = #{tenantId}
+            <if test="carIds != null and carIds.size() > 0">
+                and id in
+                <foreach collection="carIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+        </where>
+    </select>
+</select>
 
 </mapper>

@@ -585,4 +585,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 .queryElectricityCarOverview(carIds, sn, TenantContextHolder.getTenantId());
         return R.ok(electricityCars);
     }
+    
+    @Override
+    public R batteryStatistical(List<Integer> carIdList) {
+        return R.ok(electricityCarMapper.batteryStatistical(carIdList));
+    }
 }

@@ -61,4 +61,6 @@ public interface ElectricityCarService {
     List<ElectricityCar> queryByStoreIds(List<Long> storeIds);
     
     R queryElectricityCarOverview(String sn, List<Integer> franchiseeIds);
+    
+    R batteryStatistical(List<Integer> carIdList);
 }
