@@ -60,5 +60,5 @@ public interface ElectricityCarService {
     
     List<ElectricityCar> queryByStoreIds(List<Long> storeIds);
     
-    R queryElectricityCarOverview(String sn, List<Long> franchiseeIds);
+    R queryElectricityCarOverview(String sn, List<Integer> franchiseeIds);
 }

@@ -165,14 +165,18 @@
         </where>
     </select>
     
-    <select id="queryElectricityCarOverview" resultType="com.xiliulou.electricity.entity.ElectricityCar">
-        <include refid="selectElectricityCar"/>
+    <select id="queryElectricityCarOverview" resultType="com.xiliulou.electricity.vo.ElectricityCarOverviewVo">
+        select sn, id, longitude, latitude
         <where>
-            <if test="franchiseeIds != null and franchiseeIds.size() > 0">
-                
-                <foreach collection="franchiseeIds" item="fid" open="(" close=")" separator=",">
-                
+            tenant_id = #{tenantId}
+            <if test="carIds != null and carIds.size() > 0">
+                and id in
+                <foreach collection="carIds" item="id" open="(" close=")" separator=",">
+                    #{id}
                 </foreach>
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
             </if>
         </where>
     </select>

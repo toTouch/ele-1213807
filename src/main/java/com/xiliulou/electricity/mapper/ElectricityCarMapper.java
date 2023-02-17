@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
+import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -31,6 +32,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     
     List<ElectricityCar> queryByStoreIds(@Param("storeIds") List<Long> storeIds, @Param("tenantId") Integer tenantId);
     
-    List<ElectricityCar> queryElectricityCarOverview(@Param("sidList") List<Long> sidList, @Param("sn") String sn,
+    List<ElectricityCarOverviewVo> queryElectricityCarOverview(@Param("carIds") List<Integer> sidList,
+            @Param("sn") String sn,
             @Param("tenantId") Integer tenantId);
 }

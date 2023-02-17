@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
@@ -13,6 +14,8 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -51,6 +54,9 @@ public class JsonAdminElectricityCarController {
     FranchiseeService franchiseeService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    UserTypeFactory userTypeFactory;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -208,7 +214,7 @@ public class JsonAdminElectricityCarController {
     }
     
     /**
-     * 电池总览
+     * 车辆总览
      *
      * @param
      * @param sn
@@ -222,19 +228,18 @@ public class JsonAdminElectricityCarController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        List<Long> storeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)) {
-                return R.ok(Collections.EMPTY_LIST);
+    
+        List<Integer> carIdList = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects
+                .equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-        }
         
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+            carIdList = userTypeService.getCarIdListByyDataType(user);
+            if (ObjectUtil.isEmpty(carIdList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -242,8 +247,8 @@ public class JsonAdminElectricityCarController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
-        return electricityCarService.queryElectricityCarOverview(sn, franchiseeIds);
+    
+        return electricityCarService.queryElectricityCarOverview(sn, carIdList);
     }
     
     

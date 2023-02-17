@@ -22,6 +22,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
@@ -579,7 +580,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public R queryElectricityCarOverview(String sn, List<Long> franchiseeIds) {
-        return null;
+    public R queryElectricityCarOverview(String sn, List<Integer> carIds) {
+        List<ElectricityCarOverviewVo> electricityCars = electricityCarMapper
+                .queryElectricityCarOverview(carIds, sn, TenantContextHolder.getTenantId());
+        return R.ok(electricityCars);
     }
 }
