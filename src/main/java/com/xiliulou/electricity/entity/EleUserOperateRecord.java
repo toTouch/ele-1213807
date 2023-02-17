@@ -99,7 +99,7 @@ public class EleUserOperateRecord {
     /**
      * 操作后车辆编号
      */
-    private String nowElectricityCarSn;
+    private String newElectricityCarSn;
 
     //租户
     private Integer tenantId;

@@ -1662,7 +1662,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                                     : EleUserOperateRecord.BIND_CAR_CONTENT).operateUid(user.getUid())
                     .uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).name(user.getUsername())
                     .initElectricityCarSn(Objects.nonNull(userBindElectricityCar) ? userBindElectricityCar.getSn() : "")
-                    .nowElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
+                    .newElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);
             
@@ -1722,7 +1722,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
                 .operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
-                .initElectricityCarSn(userBindElectricityCar.getSn()).nowElectricityCarSn(null)
+                .initElectricityCarSn(userBindElectricityCar.getSn()).newElectricityCarSn(null)
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
