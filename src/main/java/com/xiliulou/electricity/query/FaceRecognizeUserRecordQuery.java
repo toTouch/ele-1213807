@@ -19,6 +19,8 @@ public class FaceRecognizeUserRecordQuery {
 
     private Long offset;
 
+    private Integer tenantId;
+
     private String userName;
 
     private String phone;

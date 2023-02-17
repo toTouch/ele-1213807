@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FaceRecognizeUserRecord;
 import com.xiliulou.electricity.query.FaceRecognizeUserRecordQuery;
 import com.xiliulou.electricity.service.FaceRecognizeUserRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class JsonAdminFaceRecognizeUserRecordController {
                 .status(status)
                 .startTime(startTime)
                 .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
                 .offset(offset).build();
 
         return R.ok(this.faceRecognizeUserRecordService.selectByPage(query));
@@ -69,6 +71,7 @@ public class JsonAdminFaceRecognizeUserRecordController {
                 .status(status)
                 .startTime(startTime)
                 .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
                 .build();
 
         return R.ok(this.faceRecognizeUserRecordService.selectByPageCount(query));

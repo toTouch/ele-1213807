@@ -65,24 +65,12 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
      */
     @Override
     public List<FaceRecognizeUserRecordVO> selectByPage(FaceRecognizeUserRecordQuery query) {
-        List<FaceRecognizeUserRecord> faceRecognizeUserRecords = this.faceRecognizeUserRecordMapper.selectByPage(query);
+        List<FaceRecognizeUserRecordVO> faceRecognizeUserRecords = this.faceRecognizeUserRecordMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(faceRecognizeUserRecords)) {
             return Collections.EMPTY_LIST;
         }
 
-        return faceRecognizeUserRecords.stream().map(item -> {
-            FaceRecognizeUserRecordVO faceRecognizeUserRecordVO = new FaceRecognizeUserRecordVO();
-            BeanUtils.copyProperties(item, faceRecognizeUserRecordVO);
-
-            if (Objects.nonNull(item.getUid())) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-                if (Objects.nonNull(userInfo)) {
-                    faceRecognizeUserRecordVO.setUserName(userInfo.getName());
-                }
-            }
-            return faceRecognizeUserRecordVO;
-
-        }).collect(Collectors.toList());
+        return faceRecognizeUserRecords;
     }
 
     @Override

@@ -32,7 +32,7 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="selectByPage" resultMap="FaceRecognizeUserRecordMap">
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.FaceRecognizeUserRecordVO">
         select
         frur.id,
         frur.uid,
@@ -44,6 +44,9 @@
         left join t_user_info tui on tui.uid=frur.uid
         where frur.del_flag=0
 
+        <if test="tenantId != null">
+            and frur.tenant_id = #{tenantId}
+        </if>
         <if test="status != null">
             and frur.status = #{status}
         </if>
@@ -69,6 +72,9 @@
         from t_face_recognize_user_record frur
         left join t_user_info tui on tui.uid=frur.uid
         where frur.del_flag=0
+        <if test="tenantId != null">
+            and frur.tenant_id = #{tenantId}
+        </if>
         <if test="status != null">
             and frur.status = #{status}
         </if>

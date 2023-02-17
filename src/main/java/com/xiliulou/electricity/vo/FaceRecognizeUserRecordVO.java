@@ -22,7 +22,10 @@ public class FaceRecognizeUserRecordVO {
      */
     private Long uid;
 
-    private String userName;
+    private String name;
+
+
+    private String phone;
     /**
      * 审核结果
      */

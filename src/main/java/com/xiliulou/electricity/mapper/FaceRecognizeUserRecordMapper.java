@@ -30,7 +30,7 @@ public interface FaceRecognizeUserRecordMapper extends BaseMapper<FaceRecognizeU
      *
      * @return 对象列表
      */
-    List<FaceRecognizeUserRecord> selectByPage(FaceRecognizeUserRecordQuery query);
+    List<FaceRecognizeUserRecordVO> selectByPage(FaceRecognizeUserRecordQuery query);
 
     Integer selectByPageCount(FaceRecognizeUserRecordQuery query);
 
