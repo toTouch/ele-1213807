@@ -28,4 +28,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     ElectricityCar selectBySn(@Param("sn") String sn, @Param("tenantId") Integer tenantId);
     
     Integer updateLockTypeById(@Param("ids") List<Long> tempIds, @Param("typeLock") Integer typeLock);
+    
+    List<ElectricityCar> queryByStoreIds(@Param("storeIds") List<Long> storeIds, @Param("tenantId") Integer tenantId);
 }

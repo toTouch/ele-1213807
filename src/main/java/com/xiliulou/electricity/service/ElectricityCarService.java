@@ -57,4 +57,6 @@ public interface ElectricityCarService {
     Boolean carLockCtrl(ElectricityCar electricityCar, Integer lockType);
     
     R positionReport(CarPositionReportQuery carPositionReportQuery);
+    
+    List<ElectricityCar> queryByStoreIds(List<Long> storeIds);
 }

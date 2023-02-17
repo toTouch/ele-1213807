@@ -152,5 +152,17 @@
             #{id}
         </foreach>
     </update>
+    
+    <select id="queryByStoreIds" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+        <include refid="selectElectricityCar"/>
+        <where>
+            del_flag = 0
+            and tenant_id = #{tenantId}
+            and store_id in
+            <foreach collection="storeIds" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
 
 </mapper>

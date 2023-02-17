@@ -572,4 +572,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         return R.ok();
     }
+    
+    @Override
+    public List<ElectricityCar> queryByStoreIds(List<Long> storeIds) {
+        return electricityCarMapper.queryByStoreIds(storeIds, TenantContextHolder.getTenantId());
+    }
 }
