@@ -1591,8 +1591,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEB BIND CAR ERROR ERROR! car is bind user! carSn={} ", userInfoCarAddAndUpdate.getCarSn());
             return R.fail("100231", "该车辆已经绑定用户");
         }
-        
-        if (!Objects.equals(electricityCar.getModelId(), userCar.getCarModel())) {
+    
+        if (!Objects.equals(electricityCar.getModelId().longValue(), userCar.getCarModel())) {
             log.error("WEB BIND CAR ERROR ERROR! car is bind user! carSn={} ", userInfoCarAddAndUpdate.getCarSn());
             return R.fail("100260", "绑定车辆型号与用户车辆型号不一致");
         }
