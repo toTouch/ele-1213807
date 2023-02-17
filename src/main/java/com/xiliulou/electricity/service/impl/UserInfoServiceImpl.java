@@ -1742,20 +1742,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setMemberCardCreateTime(carMemberCardOrder.getCreateTime());
         
         //计算过期时间
-        if (ElectricityCarModel.RENT_TYPE_WEEK.equals(carMemberCardOrder.getMemberCardType())) {
-            vo.setMemberCardExpireTime(
-                    carMemberCardOrder.getUpdateTime() + carMemberCardOrder.getValidDays() * 7 * 24 * 60 * 60 * 1000L);
-        } else if (ElectricityCarModel.RENT_TYPE_MONTH.equals(carMemberCardOrder.getMemberCardType())) {
-            vo.setMemberCardExpireTime(
-                    carMemberCardOrder.getUpdateTime() + carMemberCardOrder.getValidDays() * 30 * 24 * 60 * 60 * 1000L);
-        } else {
-            vo.setMemberCardCreateTime(0L);
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
+            return;
         }
+    
+        vo.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
         
         //计算剩余天数
         long carDays = 0;
-        if (vo.getMemberCardExpireTime() > System.currentTimeMillis()) {
-            long limitTime = vo.getMemberCardExpireTime() - System.currentTimeMillis();
+        long memberCardExpireTime = Objects.isNull(vo.getMemberCardExpireTime()) ? 0L : vo.getMemberCardExpireTime();
+        if (memberCardExpireTime > System.currentTimeMillis()) {
+            long limitTime = memberCardExpireTime - System.currentTimeMillis();
             double carDayTemp = Math.ceil(limitTime / 3600000 / 24.0);
             carDays = (long) carDayTemp;
         }
