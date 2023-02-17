@@ -29,4 +29,9 @@ public class CarPositionReportQuery {
      * 请求id
      */
     private String requestId;
+    
+    /**
+     * 车辆锁
+     */
+    private Integer doorStatus;
 }

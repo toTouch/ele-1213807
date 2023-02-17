@@ -102,7 +102,6 @@ public class ElectricityCar {
     public static final Integer DEL_DEL = 1;
     
     public static final Integer TYPE_UN_LOCK = 0;
-    
     public static final Integer TYPE_LOCK = 1;
     
 }
