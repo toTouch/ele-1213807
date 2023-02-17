@@ -30,4 +30,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     Integer updateLockTypeById(@Param("ids") List<Long> tempIds, @Param("typeLock") Integer typeLock);
     
     List<ElectricityCar> queryByStoreIds(@Param("storeIds") List<Long> storeIds, @Param("tenantId") Integer tenantId);
+    
+    List<ElectricityCar> queryElectricityCarOverview(@Param("sidList") List<Long> sidList, @Param("sn") String sn,
+            @Param("tenantId") Integer tenantId);
 }

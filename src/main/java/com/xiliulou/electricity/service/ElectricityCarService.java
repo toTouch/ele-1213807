@@ -59,4 +59,6 @@ public interface ElectricityCarService {
     R positionReport(CarPositionReportQuery carPositionReportQuery);
     
     List<ElectricityCar> queryByStoreIds(List<Long> storeIds);
+    
+    R queryElectricityCarOverview(String sn, List<Long> franchiseeIds);
 }

@@ -164,5 +164,17 @@
             </foreach>
         </where>
     </select>
+    
+    <select id="queryElectricityCarOverview" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+        <include refid="selectElectricityCar"/>
+        <where>
+            <if test="franchiseeIds != null and franchiseeIds.size() > 0">
+                
+                <foreach collection="franchiseeIds" item="fid" open="(" close=")" separator=",">
+                
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 </mapper>

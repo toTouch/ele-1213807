@@ -577,4 +577,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public List<ElectricityCar> queryByStoreIds(List<Long> storeIds) {
         return electricityCarMapper.queryByStoreIds(storeIds, TenantContextHolder.getTenantId());
     }
+    
+    @Override
+    public R queryElectricityCarOverview(String sn, List<Long> franchiseeIds) {
+        return null;
+    }
 }

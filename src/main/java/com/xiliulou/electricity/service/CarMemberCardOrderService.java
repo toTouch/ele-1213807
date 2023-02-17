@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
@@ -91,5 +92,5 @@ public interface CarMemberCardOrderService {
     
     R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
     
-    R renewalUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
+    R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardOrderAddAndUpdate);
 }

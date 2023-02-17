@@ -12,6 +12,7 @@ import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
 import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
@@ -649,17 +650,17 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     }
     
     @Override
-    public R renewalUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
+    public R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardRenewalAddAndUpdate) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("admin renewalUserMemberCard ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardOrderAddAndUpdate.getUid());
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carMemberCardRenewalAddAndUpdate.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("admin renewalUserMemberCard ERROR! not found user! uid={}",
-                    carMemberCardOrderAddAndUpdate.getUid());
+                    carMemberCardRenewalAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
@@ -669,7 +670,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("admin renewalUserMemberCard ERROR! not pay deposit,uid={}",
-                    carMemberCardOrderAddAndUpdate.getUid());
+                    carMemberCardRenewalAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
@@ -691,8 +692,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .equals(userCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("100258", "未找到车辆型号");
         }
-        
-        if (Objects.isNull(carMemberCardOrderAddAndUpdate.getValidDays())) {
+    
+        if (Objects.isNull(carMemberCardRenewalAddAndUpdate.getValidDays())) {
             return R.failMsg("请填写租赁周期");
         }
         
@@ -705,7 +706,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
         
         EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory
-                .getInstance(carMemberCardOrderAddAndUpdate.getRentType());
+                .getInstance(carMemberCardRenewalAddAndUpdate.getRentType());
         if (Objects.isNull(calcRentCarPriceInstance)) {
             log.error("ELE CAR MEMBER CARD ERROR! renewalUserMemberCard calcRentCarPriceInstance is null,uid={}",
                     user.getUid());
@@ -713,7 +714,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
         
         Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance
-                .getRentCarPrice(userInfo, carMemberCardOrderAddAndUpdate.getValidDays(), rentCarPriceRule);
+                .getRentCarPrice(userInfo, carMemberCardRenewalAddAndUpdate.getValidDays(), rentCarPriceRule);
         if (!calcSavePrice.getLeft()) {
             return R.fail("100237", "车辆租赁方式不存在!");
         }
@@ -728,10 +729,10 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setCarModelId(userCarModel.getId().longValue());
         carMemberCardOrder.setUid(userInfo.getUid());
         carMemberCardOrder.setUserName(userInfo.getName());
-        carMemberCardOrder.setValidDays(carMemberCardOrderAddAndUpdate.getValidDays());
+        carMemberCardOrder.setValidDays(carMemberCardRenewalAddAndUpdate.getValidDays());
         carMemberCardOrder.setPayType(CarMemberCardOrder.OFFLINE_PAYTYPE);
-        carMemberCardOrder.setCardName(getCardName(carMemberCardOrderAddAndUpdate.getRentType()));
-        carMemberCardOrder.setMemberCardType(carMemberCardOrderAddAndUpdate.getRentType());
+        carMemberCardOrder.setCardName(getCardName(carMemberCardRenewalAddAndUpdate.getRentType()));
+        carMemberCardOrder.setMemberCardType(carMemberCardRenewalAddAndUpdate.getRentType());
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setStoreId(userCarModel.getStoreId());
         carMemberCardOrder.setFranchiseeId(userCarModel.getFranchiseeId());

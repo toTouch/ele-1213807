@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
+import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
@@ -180,8 +181,8 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     @PutMapping(value = "/admin/rentCarMemberCard/renewalUserMemberCard")
     @Log(title = "续费用户车辆套餐")
     public R renewalUserMemberCard(
-            @RequestBody @Validated CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
-        return carMemberCardOrderService.renewalUserMemberCard(carMemberCardOrderAddAndUpdate);
+            @RequestBody @Validated CarMemberCardRenewalAddAndUpdate carMemberCardRenewalAddAndUpdate) {
+        return carMemberCardOrderService.renewalUserMemberCard(carMemberCardRenewalAddAndUpdate);
     }
     
     /**
