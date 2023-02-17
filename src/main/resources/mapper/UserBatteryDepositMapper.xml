@@ -22,7 +22,7 @@
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserDepositMap">
         <include refid="selectUserDeposit"/>
-        where uid = #{uid}
+        where uid = #{uid} and del_flag = 0
     </select>
 
     <!--通过实体作为筛选条件查询-->

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FreeDepositOrderMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.FreeDepositOrder" id="FreeDepositOrderMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="authNo" column="auth_no" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="idCard" column="id_card" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="transAmt" column="trans_amt" jdbcType="NUMERIC"/>
+        <result property="payTransAmt" column="pay_trans_amt" jdbcType="NUMERIC"/>
+        <result property="authStatus" column="auth_status" jdbcType="INTEGER"/>
+        <result property="payStatus" column="pay_status" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="FreeDepositOrderMap">
+        select
+          id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, create_time, update_time
+        from t_free_deposit_order
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="FreeDepositOrderMap">
+        select
+          id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, create_time, update_time
+        from t_free_deposit_order
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="FreeDepositOrderMap">
+        select
+          id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, create_time, update_time
+        from t_free_deposit_order
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="authNo != null and authNo != ''">
+                and auth_no = #{authNo}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="idCard != null and idCard != ''">
+                and id_card = #{idCard}
+            </if>
+            <if test="realName != null and realName != ''">
+                and real_name = #{realName}
+            </if>
+            <if test="transAmt != null">
+                and trans_amt = #{transAmt}
+            </if>
+            <if test="payTransAmt != null">
+                and pay_trans_amt = #{payTransAmt}
+            </if>
+            <if test="authStatus != null">
+                and auth_status = #{authStatus}
+            </if>
+            <if test="payStatus != null">
+                and pay_status = #{payStatus}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_free_deposit_order(uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, create_time, update_time)
+        values (#{uid}, #{orderId}, #{authNo}, #{phone}, #{idCard}, #{realName}, #{transAmt}, #{payTransAmt}, #{authStatus}, #{payStatus}, #{tenantId}, #{type}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_free_deposit_order
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="authNo != null and authNo != ''">
+                auth_no = #{authNo},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="idCard != null and idCard != ''">
+                id_card = #{idCard},
+            </if>
+            <if test="realName != null and realName != ''">
+                real_name = #{realName},
+            </if>
+            <if test="transAmt != null">
+                trans_amt = #{transAmt},
+            </if>
+            <if test="payTransAmt != null">
+                pay_trans_amt = #{payTransAmt},
+            </if>
+            <if test="authStatus != null">
+                auth_status = #{authStatus},
+            </if>
+            <if test="payStatus != null">
+                pay_status = #{payStatus},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_free_deposit_order where id = #{id}
+    </delete>
+
+</mapper>
