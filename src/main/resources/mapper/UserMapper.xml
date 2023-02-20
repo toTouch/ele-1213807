@@ -4,7 +4,7 @@
 
 	<!-- 基础字段 -->
 	<sql id="selectUser">
-       	select   uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang, city, province, address, cid, ref_id, tenant_id, email, data_type, source        from t_user
+       	select   uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang, city, province, address, cid, ref_id, tenant_id, data_type, source        from t_user
     </sql>
 
 	<!--查询单个-->
