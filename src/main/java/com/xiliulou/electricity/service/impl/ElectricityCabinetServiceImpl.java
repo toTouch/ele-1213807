@@ -21,6 +21,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
@@ -3593,6 +3594,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
+        if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
+            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！eid={},operateType={}", eid, operateType);
+            return R.fail("100302", "ota操作类型不合法");
+        }
+    
         ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -3603,12 +3609,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }
-    
-        if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
-            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}",
-                    electricityCabinet, operateType);
-            return R.fail("100302", "ota操作类型不合法");
         }
     
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
@@ -3659,9 +3659,95 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
+    public R newOtaCommand(Integer eid, Integer operateType, List<Integer> cellNos) {
+        final Integer TYPE_DOWNLOAD = 1;
+        final Integer TYPE_SYNC = 2;
+        final Integer TYPE_UPGRADE = 3;
+        
+        Long uid = SecurityUtils.getUid();
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
+            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！eid={},operateType={}", eid, operateType);
+            return R.fail("100302", "ota操作类型不合法");
+        }
+        
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+        
+        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+        
+        Map<String, Object> data = Maps.newHashMap();
+        Map<String, Object> content = new HashMap<>();
+        data.put("operateType", operateType);
+        data.put("userid", user.getUid());
+        data.put("username", user.getName());
+        
+        if (TYPE_DOWNLOAD.equals(operateType)) {
+            //ota文件是否存在
+            OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_NEW_CORE_BOARD);
+            OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_NEW_SUB_BOARD);
+            
+            if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
+                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
+                        coreBoardOtaFileConfig, subBoardOtaFileConfig);
+                return R.fail("100301", "ota升级文件不完整，请联系客服处理");
+            }
+            
+            content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
+            content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
+            content.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
+            content.put("subFileSha256Hex", subBoardOtaFileConfig.getSha256Value());
+        } else if (TYPE_UPGRADE.equals(operateType)) {
+            if (!DataUtil.collectionIsUsable(cellNos)) {
+                return R.fail("100303", "升级内容为空，请选择您要升级的板子");
+            }
+            
+            //eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
+            content.put("cellNos", cellNos);
+        }
+        
+        data.put("content", JsonUtil.toJson(content));
+        
+        HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(data)
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
+                .command(ElectricityIotConstant.OTA_OPERATE).build();
+        
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        
+        return R.ok(sessionId);
+    }
+    
+    @Override
+    public R checkNewOtaSession(String sessionId) {
+        String s = redisService.get(CacheConstant.NEW_OTA_OPERATE_CACHE + sessionId);
+        if (StrUtil.isBlank(s)) {
+            return R.ok();
+        }
+        return R.ok(s);
+    }
+    
+    
+    @Override
     public R checkOtaSession(String sessionId) {
         String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + sessionId);
-        if (StrUtil.isEmpty(s)) {
+        if (StrUtil.isBlank(s)) {
             return R.ok();
         }
         return R.ok(s);
