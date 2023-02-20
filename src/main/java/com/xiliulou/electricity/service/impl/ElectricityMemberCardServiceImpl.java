@@ -526,7 +526,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
-                .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL).eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE)
+                .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL)
+//                .eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE)
                 .eq(ElectricityMemberCard::getTenantId, tenantId)
                 .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
