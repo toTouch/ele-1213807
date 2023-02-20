@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace=".mapper.EleNewOtaUpgradeHistoryMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.EleNewOtaUpgradeHistoryMapper">
     
-    <resultMap type=".entity.EleNewOtaUpgradeHistory" id="EleNewOtaUpgradeHistoryMap">
+    <resultMap type="com.xiliulou.electricity.entity.EleNewOtaUpgradeHistory" id="EleNewOtaUpgradeHistoryMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="cellNo" column="cell_no" jdbcType="VARCHAR"/>
