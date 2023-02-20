@@ -149,8 +149,9 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        if (!Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD) && !Objects
-                .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
+        if (!Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD) && !Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD)
+                && !Objects.equals(type, OtaFileConfig.TYPE_NEW_CORE_BOARD) && !Objects
+                .equals(type, OtaFileConfig.TYPE_NEW_SUB_BOARD)) {
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
     
@@ -221,14 +222,6 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         if (Objects.isNull(otaFileConfig)) {
             log.error("OTA_FILE_CONFIG_DELETE ERROR! otaFileConfig is null! id={}", id);
             return R.fail("oat文件不存在");
-        }
-        try {
-            String ossPath = eleIotOtaPathConfig + otaFileConfig.getName();
-            //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
-            this.deleteById(id);
-        } catch (Exception e) {
-            log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
-            return R.fail("ota文件删除失败！");
         }
         return R.ok();
     }
