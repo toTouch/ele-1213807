@@ -852,6 +852,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserBattery updateUserBattery = new UserBattery();
         updateUserBattery.setUid(oldUserInfo.getUid());
         updateUserBattery.setInitBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+        updateUserBattery.setBatteryType(oldElectricityBattery.getModel());
         updateUserBattery.setUpdateTime(System.currentTimeMillis());
         userBatteryService.updateByUid(updateUserBattery);
 

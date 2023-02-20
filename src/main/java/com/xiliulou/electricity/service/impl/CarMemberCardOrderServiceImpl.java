@@ -587,7 +587,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             carMemberCardOrder.setOrderId(orderId);
             carMemberCardOrder.setCreateTime(System.currentTimeMillis());
             carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-            carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
+            carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_SUCCESS);
             carMemberCardOrder.setCarModelId(bindCarModel.getId().longValue());
             carMemberCardOrder.setUid(userInfo.getUid());
             carMemberCardOrder.setCardName(getCardName(carMemberCardOrderAddAndUpdate.getRentType()));
@@ -725,7 +725,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
         carMemberCardOrder.setUid(userInfo.getUid());
         carMemberCardOrder.setOrderId(orderId);
-        carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
+        carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_SUCCESS);
         carMemberCardOrder.setCarModelId(userCarModel.getId().longValue());
         carMemberCardOrder.setUid(userInfo.getUid());
         carMemberCardOrder.setUserName(userInfo.getName());
