@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -33,6 +34,7 @@ public class FaceRecognizeDataQuery {
      * 人脸核身次数
      */
     @Min(0)
+    @Max(Integer.MAX_VALUE)
     @NotNull(message = "人脸核身次数不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer faceRecognizeCapacity;
     /**
