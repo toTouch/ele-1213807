@@ -54,6 +54,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                                           @RequestParam(value = "memberCardType", required = false) Integer cardType,
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "source", required = false) Integer source,
+                                          @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
@@ -94,6 +96,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .size(size)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .source(source)
+                .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeName(franchiseeName)
 		        .userName(userName)
@@ -113,6 +117,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "source", required = false) Integer source,
+                        @RequestParam(value = "refId", required = false) Long refId,
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
 		                @RequestParam(value = "userName", required = false) String userName,
@@ -144,6 +150,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .queryEndTime(queryEndTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
+                .source(source)
+                .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeName(franchiseeName)
 		        .userName(userName)

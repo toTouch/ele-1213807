@@ -34,4 +34,8 @@ public class RentCarHybridOrderQuery {
     private Integer memberCardId;
 
     private Integer userCouponId;
+
+    private String productKey;
+
+    private String deviceName;
 }

@@ -9,21 +9,24 @@ import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.api.client.util.Lists;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserMapper;
+import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.query.UserSourceUpdateQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserBatteryMemberCardDetailVO;
 import com.xiliulou.electricity.vo.UserCarMemberCardDetailVO;
+import com.xiliulou.electricity.vo.UserSourceVO;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
@@ -31,6 +34,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -104,6 +108,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserCarService userCarService;
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -872,6 +882,93 @@ public class UserServiceImpl implements UserService {
         return R.ok(map);
     }
 
+    @Override
+    public Integer updateUserByUid(UserSourceUpdateQuery query) {
+        User updateUser = new User();
+        updateUser.setUid(query.getUid());
+        updateUser.setSource(query.getSource());
+        updateUser.setRefId(query.getSourceId());
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+
+        return this.userMapper.updateUserByUid(updateUser);
+    }
+
+    @Override
+    public Integer updateUserSource(User user) {
+        Integer update = this.userMapper.updateUserSource(user);
+        if (update > 0) {
+            redisService.delete(CacheConstant.CACHE_USER_UID + user.getUid());
+        }
+        return update;
+    }
+
+    @Override
+    public synchronized void loginCallBack(UserSourceQuery query) {
+
+        User user = userMapper.selectById(SecurityUtils.getUid());
+
+        User updateUser = new User();
+        updateUser.setUid(user.getUid());
+        updateUser.setSource(Objects.nonNull(user.getSource()) && Objects.equals(user.getSource(), NumberConstant.ZERO) ? query.getSource() : null);
+        updateUser.setTenantId(TenantContextHolder.getTenantId());
+        updateUser.setUpdateTime(System.currentTimeMillis());
+
+        if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+            if (Objects.nonNull(electricityCabinet) && Objects.isNull(user.getRefId())) {
+                updateUser.setRefId(electricityCabinet.getId().longValue());
+            } else {
+                log.error("ELE ERROR! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), user.getUid());
+            }
+        }
+
+        this.updateUserSource(updateUser);
+    }
+
+    @Override
+    public List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery) {
+        verifyParams(userSourceQuery);
+
+        List<UserSourceVO> userSourceVOList = this.userMapper.selectUserSourceByPage(userSourceQuery);
+        if (CollectionUtils.isEmpty(userSourceVOList)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return userSourceVOList.parallelStream().peek(item -> {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(franchisee)) {
+                item.setFranchiseeName(franchisee.getName());
+            }
+
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+            if (Objects.nonNull(electricityCabinet)) {
+                item.setElectricityCabinetName(electricityCabinet.getName());
+                Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+                if (Objects.nonNull(store)) {
+                    item.setStoreName(store.getName());
+                }
+            }
+
+            //获取用户首次购买套餐记录
+            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectFirstMemberCardOrder(item.getUid());
+            if (Objects.nonNull(electricityMemberCardOrder) && Objects.nonNull(electricityMemberCardOrder.getRefId())) {
+                //获取用户首次购买套餐柜机名称
+                ElectricityCabinet firstBuyMemberCardElectricityCabinet = electricityCabinetService.queryByIdFromCache(electricityMemberCardOrder.getRefId().intValue());
+                if (Objects.nonNull(firstBuyMemberCardElectricityCabinet)) {
+                    item.setFirstBuyMemberCardEleName(firstBuyMemberCardElectricityCabinet.getName());
+                }
+            }
+
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery) {
+        verifyParams(userSourceQuery);
+        return this.userMapper.selectUserSourcePageCount(userSourceQuery);
+    }
+
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
         userOauthBinds.parallelStream().forEach(e -> {
             String thirdId = e.getThirdId();
@@ -892,6 +989,16 @@ public class UserServiceImpl implements UserService {
             if (deleteById(uid)) {
                 redisService.delete(CacheConstant.CACHE_USER_UID + uid);
                 redisService.delete(CacheConstant.CACHE_USER_PHONE + tenantId + ":" + user.getPhone() + ":" + user.getUserType());
+            }
+        }
+    }
+
+    private void verifyParams(UserSourceQuery userSourceQuery) {
+//        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
+        if (Objects.nonNull(userSourceQuery.getStoreId())) {
+            List<Integer> eidList = electricityCabinetService.selectEidByStoreId(userSourceQuery.getStoreId());
+            if (CollectionUtils.isNotEmpty(eidList)) {
+                userSourceQuery.setElectricityCabinetIds(eidList);
             }
         }
     }

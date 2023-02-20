@@ -58,4 +58,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query);
     
     List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
+
+    List<Integer> selectEidByStoreId(@Param("tenantId") Integer tenantId, @Param("storeId") Long storeId);
 }

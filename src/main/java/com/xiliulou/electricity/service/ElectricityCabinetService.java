@@ -169,4 +169,6 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
     
     void sendFullBatteryMessage(List<Message>  messageList);
+
+    List<Integer> selectEidByStoreId(Long storeId);
 }
