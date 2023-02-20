@@ -166,17 +166,20 @@
     </select>
     
     <select id="queryElectricityCarOverview" resultType="com.xiliulou.electricity.vo.ElectricityCarOverviewVo">
-        select sn, id, longitude, latitude from t_electricity_car
+        select ec.sn, ec.id, ec.longitude, ec.latitude, ec.model as car_model_name,
+        s.name as store_name, ec.lock_type, ec.user_name, ec.phone
+        from t_electricity_car ec
+        left join t_store s on ec.store_id = s.id
         <where>
-            tenant_id = #{tenantId}
+            ec.tenant_id = #{tenantId}
             <if test="carIds != null and carIds.size() > 0">
-                and id in
+                and ec.id in
                 <foreach collection="carIds" item="id" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="sn != null and sn != ''">
-                and sn = #{sn}
+                and ec.sn = #{sn}
             </if>
         </where>
     </select>

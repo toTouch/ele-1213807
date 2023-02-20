@@ -28,4 +28,30 @@ public class ElectricityCarOverviewVo {
      * 地址纬度
      */
     private Double latitude;
+    
+    /**
+     * 车辆型号
+     */
+    private String carModelName;
+    
+    /**
+     * 门店
+     */
+    private String storeName;
+    
+    /**
+     * 使用状态
+     */
+    private Integer lockType;
+    
+    /**
+     * 用户名
+     */
+    private String userName;
+    
+    /**
+     * 手机号
+     */
+    private String phone;
+    
 }
