@@ -206,9 +206,11 @@ public class FaceidServiceImpl implements FaceidService {
                 //若人脸核身失败 更新用户实名认证状态及审核类型
                 UserInfo userInfoUpdate = new UserInfo();
                 userInfoUpdate.setId(userInfo.getId());
+                userInfoUpdate.setUid(userInfo.getUid());
                 userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
                 userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_FACE_FAIL);
                 userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoUpdate.setTenantId(TenantContextHolder.getTenantId());
                 userInfoService.update(userInfoUpdate);
             }
         } finally {
@@ -272,11 +274,13 @@ public class FaceidServiceImpl implements FaceidService {
             //更新用户实名认证状态及审核类型
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setId(userInfo.getId());
+            userInfoUpdate.setUid(userInfo.getUid());
             userInfoUpdate.setAuthType(UserInfo.AUTH_TYPE_FACE);
             userInfoUpdate.setIdNumber(eidUserInfo.getIdnum());
             userInfoUpdate.setName(eidUserInfo.getName());
             userInfoUpdate.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoUpdate.setTenantId(TenantContextHolder.getTenantId());
             userInfoService.update(userInfoUpdate);
 
             return Triple.of(true, "", null);

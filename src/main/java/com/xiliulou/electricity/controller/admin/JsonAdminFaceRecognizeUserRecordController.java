@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FaceRecognizeUserRecord;
 import com.xiliulou.electricity.query.FaceRecognizeUserRecordQuery;
 import com.xiliulou.electricity.service.FaceRecognizeUserRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class JsonAdminFaceRecognizeUserRecordController {
      */
     @GetMapping("/admin/faceRecognizeUserRecord/page")
     public R page(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-                  @RequestParam(value = "userName", required = false) String userName,
+                  @RequestParam(value = "name", required = false) String name,
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "startTime", required = false) Long startTime,
@@ -42,12 +43,13 @@ public class JsonAdminFaceRecognizeUserRecordController {
         }
 
         FaceRecognizeUserRecordQuery query = FaceRecognizeUserRecordQuery.builder()
-                .userName(userName)
+                .userName(name)
                 .phone(phone)
                 .size(size)
                 .status(status)
                 .startTime(startTime)
                 .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
                 .offset(offset).build();
 
         return R.ok(this.faceRecognizeUserRecordService.selectByPage(query));
@@ -57,18 +59,19 @@ public class JsonAdminFaceRecognizeUserRecordController {
      * 分页总记录数
      */
     @GetMapping("/admin/faceRecognizeUserRecord/queryCount")
-    public R pageCount( @RequestParam(value = "userName", required = false) String userName,
+    public R pageCount( @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "startTime", required = false) Long startTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
         FaceRecognizeUserRecordQuery query = FaceRecognizeUserRecordQuery.builder()
-                .userName(userName)
+                .userName(name)
                 .phone(phone)
                 .status(status)
                 .startTime(startTime)
                 .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
                 .build();
 
         return R.ok(this.faceRecognizeUserRecordService.selectByPageCount(query));
