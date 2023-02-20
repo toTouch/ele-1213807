@@ -233,6 +233,21 @@ public class JsonAdminElectricityMemberCardController {
     }
 
     /**
+     * 根据加盟商id获取所有套餐
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/selectByFranchiseeId/{id}")
+    public R selectByFranchiseeId(@PathVariable("id") Long id) {
+
+        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(id).build();
+
+        return R.ok(electricityMemberCardService.selectByQuery(query));
+    }
+
+    /**
      * 用户停卡记录
      *
      * @param offset
