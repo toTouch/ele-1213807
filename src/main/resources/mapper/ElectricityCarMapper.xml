@@ -194,9 +194,6 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="sn != null and sn != ''">
-                and sn = #{sn}
-            </if>
         </where>
     </select>
 

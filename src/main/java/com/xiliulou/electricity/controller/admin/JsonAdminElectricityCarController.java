@@ -221,7 +221,7 @@ public class JsonAdminElectricityCarController {
      * @param sn
      * @return
      */
-    @GetMapping("/admin/electricityCar/overview")
+    @GetMapping("/admin/car/electricityCar/overview")
     public R queryBatteryOverview(@RequestParam(value = "sn", required = false) String sn) {
         
         TokenUser user = SecurityUtils.getUserInfo();
