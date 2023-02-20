@@ -169,8 +169,4 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
     
     void sendFullBatteryMessage(List<Message>  messageList);
-    
-    R newOtaCommand(Integer eid, Integer operateType, List<Integer> cellNos);
-    
-    R checkNewOtaSession(String sessionId);
 }

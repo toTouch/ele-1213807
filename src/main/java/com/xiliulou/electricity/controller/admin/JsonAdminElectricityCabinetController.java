@@ -725,7 +725,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     }
     
     /**
-     * ota操作  1--下载  2-- 同步  3--升级
+     * ota操作： 0 --下载旧 1--下载新  2-- 同步  3--升级
      */
     @PostMapping("/admin/electricityCabinet/ota/command")
     public R otaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType,
@@ -742,26 +742,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return electricityCabinetService.checkOtaSession(sessionId);
-    }
-    
-    /**
-     * 新ota操作  1--下载  2-- 同步  3--升级
-     */
-    @PostMapping("/admin/electricityCabinet/new/ota/command")
-    public R newOtaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType,
-            @RequestParam(value = "cellNos", required = false) List<Integer> cellNos) {
-        return electricityCabinetService.newOtaCommand(eid, operateType, cellNos);
-    }
-    
-    /**
-     * ota操作检查
-     */
-    @GetMapping("/admin/electricityCabinet/new/ota/check")
-    public R checkNewOtaSession(@RequestParam("sessionId") String sessionId) {
-        if (StrUtil.isEmpty(sessionId)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return electricityCabinetService.checkNewOtaSession(sessionId);
     }
 
     @GetMapping("/admin/electricityCabinet/onlineLogList")
