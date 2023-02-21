@@ -71,7 +71,7 @@ public class UserBatteryDeposit {
     /**
      * 缴纳押金的时间
      */
-    private Long depositTime;
+    private Long applyDepositTime;
     
     public static final Integer DEL_NORMAL = 0;
     

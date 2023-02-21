@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.mapper.UserBatteryDepositMapper;
 import com.xiliulou.electricity.service.UserBatteryDepositService;
@@ -125,5 +126,21 @@ public class UserBatteryDepositServiceImpl implements UserBatteryDepositService 
             return null;
         });
         return delete;
+    }
+
+    @Override
+    public Integer logicDeleteByUid(Long uid) {
+
+        UserBatteryDeposit userBatteryDepositUpdate = new UserBatteryDeposit();
+        userBatteryDepositUpdate.setUid(uid);
+        userBatteryDepositUpdate.setDelFlag(UserBatteryDeposit.DEL_DEL);
+        userBatteryDepositUpdate.setUpdateTime(System.currentTimeMillis());
+
+        int update = this.userBatteryDepositMapper.updateByUid(userBatteryDepositUpdate);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_DEPOSIT + uid);
+            return null;
+        });
+        return update;
     }
 }

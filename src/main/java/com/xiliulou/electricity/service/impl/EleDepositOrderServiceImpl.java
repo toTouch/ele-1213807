@@ -459,7 +459,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
-                userBatteryDepositService.deleteByUid(userInfo.getUid());
+//                userBatteryDepositService.deleteByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
