@@ -29,7 +29,7 @@ public class UserNotify {
     /**
      * 通知开始时间
      */
-    private Long startTime;
+    private Long beginTime;
     
     /**
      * 通知结束时间

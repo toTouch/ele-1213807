@@ -6,7 +6,7 @@
     <resultMap type="com.xiliulou.electricity.entity.UserNotify" id="UserNotifyMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="startTime" column="start_time" jdbcType="INTEGER"/>
+        <result property="beginTime" column="begin_time" jdbcType="INTEGER"/>
         <result property="endTime" column="end_time" jdbcType="INTEGER"/>
         <result property="title" column="title" jdbcType="VARCHAR"/>
         <result property="content" column="content" jdbcType="VARCHAR"/>
@@ -18,7 +18,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="UserNotifyMap">
         select
-          id, status, start_time, end_time, title, content, create_time, update_time, tenant_id
+          id, status, begin_time, end_time, title, content, create_time, update_time, tenant_id
         from t_user_notify
         where id = #{id}
     </select>
@@ -26,7 +26,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="UserNotifyMap">
         select
-          id, status, start_time, end_time, title, content, create_time, update_time, tenant_id
+          id, status, begin_time, end_time, title, content, create_time, update_time, tenant_id
         from t_user_notify
         limit #{offset}, #{limit}
     </select>
@@ -34,7 +34,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="UserNotifyMap">
         select
-        id, status, start_time, end_time, title, content, create_time, update_time, tenant_id
+        id, status, begin_time, end_time, title, content, create_time, update_time, tenant_id
         from t_user_notify
         <where>
             <if test="id != null">
@@ -44,7 +44,7 @@
                 and status = #{status}
             </if>
             <if test="startTime != null">
-                and start_time = #{startTime}
+                and begin_time = #{beginTime}
             </if>
             <if test="endTime != null">
                 and end_time = #{endTime}
@@ -66,8 +66,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_notify(status, start_time, end_time, title, content, create_time, update_time, tenant_id)
-        values (#{status}, #{startTime}, #{endTime}, #{title}, #{content}, #{createTime}, #{updateTime}, #{tenantId})
+        insert into t_user_notify(status, begin_time, end_time, title, content, create_time, update_time, tenant_id)
+        values (#{status}, #{beginTime}, #{endTime}, #{title}, #{content}, #{createTime}, #{updateTime}, #{tenantId})
     </insert>
     
     <!--通过主键修改数据-->
@@ -77,8 +77,8 @@
             <if test="status != null">
                 status = #{status},
             </if>
-            <if test="startTime != null">
-                start_time = #{startTime},
+            <if test="beginTime  != null">
+                begin_time = #{beginTime},
             </if>
             <if test="endTime != null">
                 end_time = #{endTime},
@@ -109,7 +109,7 @@
     
     <select id="queryByTenantId" resultMap="UserNotifyMap">
     select
-    id, status, start_time, end_time, title, content, create_time, update_time, tenant_id
+    id, status, begin_time, end_time, title, content, create_time, update_time, tenant_id
     from t_user_notify where tenant_id = #{tenantId}
   </select>
 </mapper>

@@ -119,8 +119,8 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         if (StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(userNotifyQuery.getContent())) {
             return R.fail("100368", "用户通知标题和内容不能为空");
         }
-        
-        if (Objects.isNull(userNotifyQuery.getStartTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
+    
+        if (Objects.isNull(userNotifyQuery.getBeginTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
             return R.fail("100369", "用户通知时间间隔不能为空");
         }
     
@@ -132,7 +132,7 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         UserNotify updateAndInsert = new UserNotify();
         updateAndInsert.setContent(userNotifyQuery.getContent());
         updateAndInsert.setTitle(userNotifyQuery.getTitle());
-        updateAndInsert.setStartTime(System.currentTimeMillis());
+        updateAndInsert.setBeginTime(System.currentTimeMillis());
         updateAndInsert.setEndTime(System.currentTimeMillis());
         updateAndInsert.setStatus(userNotifyQuery.getStatus());
         updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
