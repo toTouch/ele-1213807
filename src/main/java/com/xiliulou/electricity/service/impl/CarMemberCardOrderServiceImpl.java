@@ -608,9 +608,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             userCarService.updateByUid(updateUserCar);
             
             oldOrderId = orderId;
-            memberCardExpireTime = electricityMemberCardOrderService
-                    .calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
-                            carMemberCardOrder.getValidDays(), userCarMemberCard);
+    
+            if (ElectricityCarModel.RENT_TYPE_MONTH.equals(carMemberCardOrder.getMemberCardType())) {
+                memberCardExpireTime = carMemberCardOrder.getValidDays() * 30 * 24 * 60 * 60 * 1000L;
+            } else if (ElectricityCarModel.RENT_TYPE_WEEK.equals(carMemberCardOrder.getMemberCardType())) {
+                memberCardExpireTime = carMemberCardOrder.getValidDays() * 7 * 24 * 60 * 60 * 1000L;
+            } else {
+                memberCardExpireTime = 0L;
+            }
         }
         
         UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
