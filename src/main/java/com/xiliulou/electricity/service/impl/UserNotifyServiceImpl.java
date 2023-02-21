@@ -118,16 +118,18 @@ public class UserNotifyServiceImpl implements UserNotifyService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R editOne(UserNotifyQuery userNotifyQuery) {
-        if (StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(userNotifyQuery.getContent())) {
-            return R.fail("100368", "用户通知标题和内容不能为空");
-        }
-    
-        if (Objects.isNull(userNotifyQuery.getBeginTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
-            return R.fail("100369", "用户通知时间间隔不能为空");
-        }
-    
         if (Objects.isNull(userNotifyQuery.getStatus())) {
             userNotifyQuery.setStatus(UserNotify.STATUS_OFF);
+        }
+    
+        if (Objects.equals(userNotifyQuery.getStatus(), UserNotify.STATUS_ON)) {
+            if (StringUtils.isBlank(userNotifyQuery.getTitle()) || StringUtils.isBlank(userNotifyQuery.getContent())) {
+                return R.fail("100368", "用户通知标题和内容不能为空");
+            }
+        
+            if (Objects.isNull(userNotifyQuery.getBeginTime()) || Objects.isNull(userNotifyQuery.getEndTime())) {
+                return R.fail("100369", "用户通知时间间隔不能为空");
+            }
         }
         
         UserNotify userNotify = queryByTenantId();
