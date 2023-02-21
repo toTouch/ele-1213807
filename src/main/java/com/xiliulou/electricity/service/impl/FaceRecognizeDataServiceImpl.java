@@ -175,7 +175,7 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
         }
 
         Integer faceRecognizeCapacity = faceRecognizeDataQuery.getFaceRecognizeCapacity();
-        if (faceRecognizeDataQuery.getFaceRecognizeCapacity() <= 0) {
+        if (recognizeData.getFaceRecognizeCapacity() <= 0) {
             faceRecognizeCapacity = recognizeData.getFaceRecognizeCapacity() + faceRecognizeDataQuery.getFaceRecognizeCapacity();
         }
 
