@@ -587,7 +587,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public R batteryStatistical(List<Integer> carIdList) {
-        return R.ok(electricityCarMapper.batteryStatistical(carIdList));
+    public R batteryStatistical(List<Integer> carIdList, Integer tenantId) {
+        return R.ok(electricityCarMapper.batteryStatistical(carIdList, tenantId));
     }
 }

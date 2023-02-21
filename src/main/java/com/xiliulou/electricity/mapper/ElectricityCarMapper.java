@@ -37,5 +37,5 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
             @Param("sn") String sn,
             @Param("tenantId") Integer tenantId);
     
-    Long batteryStatistical(@Param("carIds") List<Integer> carIdList);
+    Long batteryStatistical(@Param("carIds") List<Integer> carIdList, @Param("tenantId") Integer tenantId);
 }

@@ -62,5 +62,5 @@ public interface ElectricityCarService {
     
     R queryElectricityCarOverview(String sn, List<Integer> franchiseeIds);
     
-    R batteryStatistical(List<Integer> carIdList);
+    R batteryStatistical(List<Integer> carIdList, Integer tenantId);
 }

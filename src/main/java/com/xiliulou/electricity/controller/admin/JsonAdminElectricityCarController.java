@@ -284,8 +284,8 @@ public class JsonAdminElectricityCarController {
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
-        return electricityCarService.batteryStatistical(carIdList);
+    
+        return electricityCarService.batteryStatistical(carIdList, TenantContextHolder.getTenantId());
     }
     
     
