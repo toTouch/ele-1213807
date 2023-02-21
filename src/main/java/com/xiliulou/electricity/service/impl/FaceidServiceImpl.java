@@ -204,29 +204,30 @@ public class FaceidServiceImpl implements FaceidService {
             return Triple.of(false, "100332", "人脸核身配置信息不存在");
         }
     
-        //校验租户人脸核身资源包
-        FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
-        if (Objects.isNull(faceRecognizeData)) {
-            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
-        }
-        if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
-            log.error("ELE ERROR! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
-        }
-        
-        //保存人脸核身使用记录
-        FaceRecognizeUserRecord faceRecognizeUserRecord = new FaceRecognizeUserRecord();
-        faceRecognizeUserRecord.setStatus(FaceRecognizeUserRecord.STATUS_FAIL);
-        faceRecognizeUserRecord.setUid(userInfo.getUid());
-        faceRecognizeUserRecord.setDelFlag(FaceRecognizeUserRecord.DEL_NORMAL);
-        faceRecognizeUserRecord.setTenantId(TenantContextHolder.getTenantId());
-        faceRecognizeUserRecord.setCreateTime(System.currentTimeMillis());
-        faceRecognizeUserRecord.setUpdateTime(System.currentTimeMillis());
-        FaceRecognizeUserRecord recognizeUserRecord = faceRecognizeUserRecordService.insert(faceRecognizeUserRecord);
-        
         lock.lock();
         try {
+        
+            //校验租户人脸核身资源包
+            FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.isNull(faceRecognizeData)) {
+                log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+                return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
+            }
+            if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
+                log.error("ELE ERROR! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
+                return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
+            }
+        
+            //保存人脸核身使用记录
+            FaceRecognizeUserRecord faceRecognizeUserRecord = new FaceRecognizeUserRecord();
+            faceRecognizeUserRecord.setStatus(FaceRecognizeUserRecord.STATUS_FAIL);
+            faceRecognizeUserRecord.setUid(userInfo.getUid());
+            faceRecognizeUserRecord.setDelFlag(FaceRecognizeUserRecord.DEL_NORMAL);
+            faceRecognizeUserRecord.setTenantId(TenantContextHolder.getTenantId());
+            faceRecognizeUserRecord.setCreateTime(System.currentTimeMillis());
+            faceRecognizeUserRecord.setUpdateTime(System.currentTimeMillis());
+            FaceRecognizeUserRecord recognizeUserRecord = faceRecognizeUserRecordService.insert(faceRecognizeUserRecord);
+        
             if (faceidResultQuery.getVerifyDone()) {
                 return acquireEidResultAndDecode(faceidConfig, recognizeUserRecord, faceidResultQuery, userInfo);
             } else {
@@ -243,7 +244,7 @@ public class FaceidServiceImpl implements FaceidService {
         } finally {
             lock.unlock();
         }
-        
+    
         return Triple.of(true, "", null);
     }
     
