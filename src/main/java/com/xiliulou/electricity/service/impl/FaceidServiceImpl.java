@@ -50,7 +50,7 @@ public class FaceidServiceImpl implements FaceidService {
     /**
      * 人脸核身最大透支次数
      */
-    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = -20;
+    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = -2;
     
     private Lock lock = new ReentrantLock();
     
@@ -204,6 +204,17 @@ public class FaceidServiceImpl implements FaceidService {
             log.error("ELE ERROR!faceidConfig is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "100332", "人脸核身配置信息不存在");
+        }
+    
+        //校验租户人脸核身资源包
+        FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(faceRecognizeData)) {
+            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
+        }
+        if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
+            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
         }
         
         //保存人脸核身使用记录
