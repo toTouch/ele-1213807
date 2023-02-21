@@ -31,4 +31,12 @@ public class FaceAuthResultDTO {
     private String OcrGender;
 
     private String OcrNation;
+    
+    private Long ErrCode;
+    
+    private String ErrMsg;
+    
+    private Long LiveStatus;
+    
+    private String LiveMsg;
 }
