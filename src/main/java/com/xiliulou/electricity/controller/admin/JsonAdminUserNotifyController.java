@@ -25,7 +25,7 @@ public class JsonAdminUserNotifyController {
     
     @GetMapping("/admin/userNotify")
     public R queryOne() {
-        return R.ok(this.userNotifyService.queryOne());
+        return this.userNotifyService.queryOne();
     }
     
     @DeleteMapping("/admin/userNotify/{id}")

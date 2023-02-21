@@ -21,6 +21,6 @@ public class JsonUserUserNotifyController {
     //查看用户状态
     @GetMapping(value = "/user/userNotify/queryInfo")
     public R queryUserInfo() {
-        return R.ok(userNotifyService.queryOne());
+        return userNotifyService.queryOne();
     }
 }

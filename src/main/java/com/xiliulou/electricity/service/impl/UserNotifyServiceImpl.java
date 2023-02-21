@@ -134,8 +134,8 @@ public class UserNotifyServiceImpl implements UserNotifyService {
         UserNotify updateAndInsert = new UserNotify();
         updateAndInsert.setContent(userNotifyQuery.getContent());
         updateAndInsert.setTitle(userNotifyQuery.getTitle());
-        updateAndInsert.setBeginTime(System.currentTimeMillis());
-        updateAndInsert.setEndTime(System.currentTimeMillis());
+        updateAndInsert.setBeginTime(userNotifyQuery.getBeginTime());
+        updateAndInsert.setEndTime(userNotifyQuery.getEndTime());
         updateAndInsert.setStatus(userNotifyQuery.getStatus());
         updateAndInsert.setTenantId(TenantContextHolder.getTenantId());
         updateAndInsert.setUpdateTime(System.currentTimeMillis());

@@ -69,5 +69,5 @@ public interface UserNotifyService {
     
     R editOne(UserNotifyQuery userNotifyQuery);
     
-    Object queryOne();
+    R queryOne();
 }
