@@ -68,4 +68,6 @@ public interface UserNotifyService {
     R deleteOne(Long id);
     
     R editOne(UserNotifyQuery userNotifyQuery);
+    
+    Object queryOne();
 }

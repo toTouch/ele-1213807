@@ -7,6 +7,8 @@ import com.xiliulou.electricity.mapper.UserNotifyMapper;
 import com.xiliulou.electricity.query.UserNotifyQuery;
 import com.xiliulou.electricity.service.UserNotifyService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.UserNotifyVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -146,5 +148,17 @@ public class UserNotifyServiceImpl implements UserNotifyService {
             update(updateAndInsert);
         }
         return R.ok();
+    }
+    
+    @Override
+    public R queryOne() {
+        UserNotify userNotify = this.queryByTenantId();
+        if (Objects.isNull(userNotify)) {
+            return R.ok();
+        }
+        
+        UserNotifyVo vo = new UserNotifyVo();
+        BeanUtils.copyProperties(userNotify, vo);
+        return R.ok(vo);
     }
 }
