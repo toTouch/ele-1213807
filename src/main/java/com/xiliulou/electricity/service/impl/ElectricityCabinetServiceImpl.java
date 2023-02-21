@@ -3584,8 +3584,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos) {
-        final Integer TYPE_NEW_DOWNLOAD = 0;
-        final Integer TYPE_OLD_DOWNLOAD = 1;
+        final Integer TYPE_DOWNLOAD = 1;
         final Integer TYPE_SYNC = 2;
         final Integer TYPE_UPGRADE = 3;
 
@@ -3595,8 +3594,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
-        if (!TYPE_OLD_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE
-                .equals(operateType) && !TYPE_NEW_DOWNLOAD.equals(operateType)) {
+        if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！eid={},operateType={}", eid, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
@@ -3621,21 +3619,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         data.put("userid", user.getUid());
         data.put("username", user.getName());
     
-        if (TYPE_OLD_DOWNLOAD.equals(operateType) || TYPE_NEW_DOWNLOAD.equals(operateType)) {
+        if (TYPE_DOWNLOAD.equals(operateType)) {
             //ota文件是否存在
-            OtaFileConfig coreBoardOtaFileConfig = null;
-            OtaFileConfig subBoardOtaFileConfig = null;
-        
-            if (TYPE_OLD_DOWNLOAD.equals(operateType)) {
-                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
-                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
-            }
-        
-            if (TYPE_NEW_DOWNLOAD.equals(operateType)) {
-                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_NEW_CORE_BOARD);
-                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_NEW_SUB_BOARD);
-            }
-        
+            OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
+            OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+            
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
                         coreBoardOtaFileConfig, subBoardOtaFileConfig);

@@ -30,7 +30,7 @@ public class OtaFileConfig {
     private String sha256Value;
     
     /**
-     * 文件类型 1--核心板 2--子板 3--新核心板 4--新子板
+     * 文件类型 1--核心板 2--子板
      */
     private Integer type;
     
@@ -44,7 +44,4 @@ public class OtaFileConfig {
     public static final Integer TYPE_CORE_BOARD = 1;
     public static final Integer TYPE_SUB_BOARD = 2;
     
-    public static final Integer TYPE_NEW_CORE_BOARD = 3;
-    
-    public static final Integer TYPE_NEW_SUB_BOARD = 4;
 }
