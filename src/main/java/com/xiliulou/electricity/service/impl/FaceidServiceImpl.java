@@ -113,8 +113,7 @@ public class FaceidServiceImpl implements FaceidService {
         }
         
         //是否开启人脸核身
-        ElectricityConfig electricityConfig = electricityConfigService
-                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
             log.error("ELE ERROR! electricityConfig is null,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "000001", "系统异常！");
@@ -123,16 +122,15 @@ public class FaceidServiceImpl implements FaceidService {
             log.error("ELE ERROR! not open face recognize,tenantId={}", TenantContextHolder.getTenantId());
             return Triple.of(false, "100337", "未开启人脸核身！");
         }
-        
-        //1.校验租户人脸核身资源包
-        FaceRecognizeData faceRecognizeData = faceRecognizeDataService
-                .selectByTenantId(TenantContextHolder.getTenantId());
+    
+        //校验租户人脸核身资源包
+        FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(faceRecognizeData)) {
             log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
         }
-        if (faceRecognizeData.getFaceRecognizeCapacity() < FACEID_MAX_OVERDRAFT_CAPACITY) {
-            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+        if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
+            log.error("ELE ERROR! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
         }
         
@@ -213,7 +211,7 @@ public class FaceidServiceImpl implements FaceidService {
             return Triple.of(false, "100334", "未购买人脸核身资源包，请联系管理员");
         }
         if (faceRecognizeData.getFaceRecognizeCapacity() <= FACEID_MAX_OVERDRAFT_CAPACITY) {
-            log.error("ELE ERROR! faceRecognizeData is null,uid={}", SecurityUtils.getUid());
+            log.error("ELE ERROR! faceRecognizeCapacity disable,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100335", "人脸核身资源包余额不足，请联系管理员");
         }
         
