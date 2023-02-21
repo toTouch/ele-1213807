@@ -246,7 +246,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     private Triple<Boolean, String, Object> checkUserCanFreeDeposit(Long uid, UserInfo userInfo) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(
                 TenantContextHolder.getTenantId());
-        if (electricityConfig.getDepositType().equals(ElectricityConfig.DEPOSIT_TYPE_DEFAULT)) {
+        if (electricityConfig.getFreeDepositType().equals(ElectricityConfig.FREE_DEPOSIT_TYPE_DEFAULT)) {
             return Triple.of(false, null, "押金免押功能未开启,请联系客服处理");
         }
         

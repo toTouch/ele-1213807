@@ -98,9 +98,9 @@ public class ElectricityConfig {
     private Integer isOpenInsurance;
     
     /**
-     * 押金缴纳类型 (0--默认 1--支付宝免押)
+     * 押金缴纳类型 (0：缴纳押金，1：电池免押金，2：租车免押金，3：车辆电池免押金)
      */
-    private Integer depositType;
+    private Integer freeDepositType;
     
     /**
      * 是否迁移加盟商 1--关闭 2--开启
@@ -169,11 +169,12 @@ public class ElectricityConfig {
     public static Integer DISABLE_INSURANCE = 1;
     
     /**
-     * 押金缴纳开关 0--默认 1--支付宝芝麻分
+     * 免押押金类型，0：缴纳押金，1：电池免押金，2：租车免押金，3：车辆电池免押金
      */
-    public static Integer DEPOSIT_TYPE_DEFAULT = 0;
-    
-    public static Integer DEPOSIT_TYPE_PAIXIAOZU = 1;
-    
+    public static Integer FREE_DEPOSIT_TYPE_DEFAULT = 0;
+    public static Integer FREE_DEPOSIT_TYPE_BATTERY = 1;
+    public static Integer FREE_DEPOSIT_TYPE_CAR = 2;
+    public static Integer FREE_DEPOSIT_TYPE_ALL = 3;
+
     
 }

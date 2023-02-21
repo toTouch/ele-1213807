@@ -130,6 +130,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
             electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
+            electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
             electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
             electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
             electricityConfigMapper.insert(electricityConfig);
@@ -150,6 +151,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
         electricityConfig.setIsEnableReturnBoxCheck(electricityConfigAddAndUpdateQuery.getIsEnableReturnBoxCheck());
         electricityConfig.setIsOpenInsurance(electricityConfigAddAndUpdateQuery.getIsOpenInsurance());
+        electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
         electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
         electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
         int updateResult = electricityConfigMapper.update(electricityConfig);
