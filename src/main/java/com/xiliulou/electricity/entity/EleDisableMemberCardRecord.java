@@ -111,6 +111,11 @@ public class EleDisableMemberCardRecord {
      */
     private Long disableDeadline;
 
+    /**
+     * 停卡时用户绑定的套餐
+     */
+    private Long batteryMemberCardId;
+
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;

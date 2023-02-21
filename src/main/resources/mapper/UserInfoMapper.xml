@@ -116,6 +116,9 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+        </if>
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
@@ -201,6 +204,9 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+        </if>
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
@@ -285,6 +291,9 @@
         </if>
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
         </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}

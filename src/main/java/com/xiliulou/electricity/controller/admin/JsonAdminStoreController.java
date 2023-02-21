@@ -66,7 +66,7 @@ public class JsonAdminStoreController extends BaseController {
     @PutMapping(value = "/admin/store")
     @Log(title = "修改门店")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) StoreAddAndUpdate storeAddAndUpdate) {
-        return storeService.edit(storeAddAndUpdate);
+        return returnTripleResult(storeService.edit(storeAddAndUpdate));
     }
 
     //删除门店

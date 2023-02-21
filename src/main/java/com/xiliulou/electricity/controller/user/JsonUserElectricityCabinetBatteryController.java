@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.clickhouse.service.ClickHouseService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryAttr;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -28,7 +29,7 @@ import java.util.Objects;
  **/
 @RestController
 @Slf4j
-public class JsonUserElectricityCabinetBatteryController {
+public class JsonUserElectricityCabinetBatteryController extends BaseController {
 
 
     @Autowired
@@ -47,6 +48,16 @@ public class JsonUserElectricityCabinetBatteryController {
 
         return R.ok(electricityBatteryService.queryInfoByUid(uid));
     }
+
+    /**
+     * 迁移用户所属加盟商  获取用户电池型号
+     * @return
+     */
+    @GetMapping("user/battery/batteryType")
+    public R batteryType() {
+        return returnTripleResult(electricityBatteryService.selectUserLatestBatteryType());
+    }
+
 
     @GetMapping(value = "/user/battery/attr/list")
     public R attrList(@RequestParam("beginTime") Long beginTime,

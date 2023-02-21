@@ -10,6 +10,7 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
+import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -22,12 +23,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -523,7 +526,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
-                .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL).eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE)
+                .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL)
+//                .eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE)
                 .eq(ElectricityMemberCard::getTenantId, tenantId)
                 .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
@@ -611,4 +615,66 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return electricityMemberCard;
     }
 
+    @Override
+    public List<ElectricityMemberCard> selectByQuery(ElectricityMemberCardQuery cardQuery) {
+        return this.baseMapper.selectByQuery(cardQuery);
+    }
+
+    /**
+     * 根据加盟商迁移套餐
+     * @param franchiseeMoveInfo
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void moveMemberCard(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee) {
+        List<ElectricityMemberCard> oldElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getFromFranchiseeId(), TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(oldElectricityMemberCards)) {
+            return;
+        }
+
+        //根据新加盟商更新数据
+        oldElectricityMemberCards.parallelStream().peek(item -> {
+            item.setId(null);
+            item.setName(item.getName() + "(迁)");
+            item.setModelType(newFranchisee.getModelType());
+            item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
+            item.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
+            item.setCreateTime(System.currentTimeMillis());
+            item.setUpdateTime(System.currentTimeMillis());
+        }).collect(Collectors.toList());
+
+        List<ElectricityMemberCard> tempMemberCardList = new ArrayList<>();
+
+        //新加盟商下套餐
+        List<ElectricityMemberCard> newElectricityMemberCards = this.selectByFranchiseeId(franchiseeMoveInfo.getToFranchiseeId(), TenantContextHolder.getTenantId());
+        if (!CollectionUtils.isEmpty(newElectricityMemberCards)) {
+            //判断新加盟商是否已经有了旧加盟商下相同类型的套餐
+            for (ElectricityMemberCard oldElectricityMemberCard : oldElectricityMemberCards) {
+                for (ElectricityMemberCard newElectricityMemberCard : newElectricityMemberCards) {
+                    if (Objects.equals(oldElectricityMemberCard.getType(), newElectricityMemberCard.getType())
+                            && Objects.equals(oldElectricityMemberCard.getValidDays(), newElectricityMemberCard.getValidDays())
+                            && Objects.equals(oldElectricityMemberCard.getMaxUseCount(), newElectricityMemberCard.getMaxUseCount())
+                            && Objects.equals(oldElectricityMemberCard.getStatus(), newElectricityMemberCard.getStatus())
+                            && Objects.equals(oldElectricityMemberCard.getLimitCount(), newElectricityMemberCard.getLimitCount())
+                            && Objects.equals(oldElectricityMemberCard.getModelType(), newElectricityMemberCard.getModelType())
+                            && Objects.equals(oldElectricityMemberCard.getBatteryType(), newElectricityMemberCard.getBatteryType())
+                            && Objects.equals(oldElectricityMemberCard.getFranchiseeId(), newElectricityMemberCard.getFranchiseeId())
+                            && oldElectricityMemberCard.getHolidayPrice().compareTo(newElectricityMemberCard.getHolidayPrice()) == 0
+                    ) {
+                        tempMemberCardList.add(oldElectricityMemberCard);
+                    }
+                }
+            }
+        }
+
+        if (!CollectionUtils.isEmpty(tempMemberCardList)) {
+            oldElectricityMemberCards.removeAll(tempMemberCardList);
+        }
+
+        if (CollectionUtils.isEmpty(oldElectricityMemberCards)) {
+            return;
+        }
+
+        this.baseMapper.batchInsert(oldElectricityMemberCards);
+    }
 }

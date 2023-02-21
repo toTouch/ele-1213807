@@ -21,6 +21,12 @@
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
         </if>
+        <if test="query.source != null">
+            and tel.source =#{query.source}
+        </if>
+        <if test="query.refId != null">
+            and tel.ref_id =#{query.refId}
+        </if>
         <if test="query.cardModel != null">
             and tel.member_card_model =#{query.cardModel}
         </if>
@@ -60,6 +66,12 @@
         </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}
+        </if>
+        <if test="query.source != null">
+            and tel.source =#{query.source}
+        </if>
+        <if test="query.refId != null">
+            and tel.ref_id =#{query.refId}
         </if>
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
@@ -175,6 +187,12 @@
             and franchisee_id = #{franchiseeId}
         </if>
         ORDER BY id DESC limit 1
+    </select>
+
+
+    <select id="selectLatestByUid"   resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select id,pay_amount,valid_days,uid,order_id,status,member_card_id,max_use_count,card_name,pay_type,create_time,update_time
+        from t_electricity_member_card_order where uid=#{uid} and status=1  ORDER BY id DESC limit 1
     </select>
 
     <select id="queryLastPayMemberCardTimeByUidAndSuccess"
@@ -308,11 +326,15 @@
     </select>
 
     <select id="queryCreateTimeMaxMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-        select order_id,status,coupon_id from t_electricity_member_card_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
+        select id,order_id,status,coupon_id from t_electricity_member_card_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
     
     <select id="queryMaxPayCountByUid" resultType="integer">
         select max(pay_count) from t_electricity_member_card_order
         where tenant_id = #{tenantId} and uid = #{uid}
+    </select>
+
+    <select id="selectFirstMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        select id,ref_id from t_electricity_member_card_order where uid=#{uid} and status=1 and pay_count=1 order by create_time desc limit 1
     </select>
 </mapper>

@@ -107,4 +107,8 @@ public interface ElectricityMemberCardOrderService {
     Pair<Boolean, Object> checkUserHaveBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard);
     
     Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard);
+
+    ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid);
+
+    ElectricityMemberCardOrder selectLatestByUid(Long uid);
 }

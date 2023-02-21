@@ -3,8 +3,8 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
@@ -19,7 +19,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -205,6 +204,19 @@ public class JsonAdminElectricityMemberCardController {
         return electricityMemberCardService.listCountByFranchisee(status, type, tenantId, franchiseeIds);
     }
 
+    /**
+     * 根据名称模糊搜索套餐
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/selectByQuery")
+    public R selectByQuery(@RequestParam("name") String name) {
+        ElectricityMemberCardQuery cardQuery = ElectricityMemberCardQuery.builder()
+                .name(name)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+        return R.ok(electricityMemberCardService.selectByQuery(cardQuery));
+    }
+
 
     //查询换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
@@ -218,6 +230,21 @@ public class JsonAdminElectricityMemberCardController {
     public R getElectricityUsableBatteryList(@PathVariable("id") Long id) {
         Integer tenantId = TenantContextHolder.getTenantId();
         return R.ok(electricityMemberCardService.getElectricityUsableBatteryList(id,tenantId));
+    }
+
+    /**
+     * 根据加盟商id获取所有套餐
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/selectByFranchiseeId/{id}")
+    public R selectByFranchiseeId(@PathVariable("id") Long id) {
+
+        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(id).build();
+
+        return R.ok(electricityMemberCardService.selectByQuery(query));
     }
 
     /**

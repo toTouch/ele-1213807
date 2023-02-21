@@ -365,7 +365,6 @@ public class JsonAdminFranchiseeController extends BaseController {
         return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
     }
 
-
     /**
      * 校验押金是否小于0.01
      * @param franchiseeAddAndUpdate

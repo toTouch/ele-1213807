@@ -29,7 +29,7 @@ public interface StoreService {
 
     R save(StoreAddAndUpdate storeAddAndUpdate);
 
-    R edit(StoreAddAndUpdate storeAddAndUpdate);
+    Triple<Boolean, String, Object> edit(StoreAddAndUpdate storeAddAndUpdate);
 
     R delete(Long id);
 

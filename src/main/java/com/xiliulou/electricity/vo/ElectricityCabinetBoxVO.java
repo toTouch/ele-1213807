@@ -113,7 +113,12 @@ public class ElectricityCabinetBoxVO {
      * 备注
      */
     private String remark;
-
+    
+    /**
+     * 空闲开始时间
+     */
+    private Long emptyGridStartTime;
+    
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;
 }

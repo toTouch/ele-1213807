@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
@@ -80,6 +81,16 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否开启保险 （0--是 1--否）
      */
     private Integer isOpenInsurance;
+
+    /**
+     * 是否迁移加盟商 0--关闭 1--开启
+     */
+    private Integer isMoveFranchisee;
+
+    /**
+     * 迁移加盟商
+     */
+    private FranchiseeMoveInfo franchiseeMoveInfo;
 
 }
 
