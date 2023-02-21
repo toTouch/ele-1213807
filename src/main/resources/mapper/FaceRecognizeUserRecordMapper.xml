@@ -54,7 +54,7 @@
             and tui.phone = #{phone}
         </if>
         <if test="userName != null and userName != '' ">
-            and tui.name = concat('%',#{userName,jdbcType=VARCHAR},'%')
+            and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
         </if>
         <if test="startTime != null">
             and frur.create_time &gt;= #{startTime}
@@ -82,7 +82,7 @@
             and tui.phone = #{phone}
         </if>
         <if test="userName != null and userName != '' ">
-            and tui.name = concat('%',#{userName,jdbcType=VARCHAR},'%')
+            and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
         </if>
         <if test="startTime != null">
             and frur.create_time &gt;= #{startTime}
