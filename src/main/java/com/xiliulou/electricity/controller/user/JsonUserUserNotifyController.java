@@ -19,7 +19,7 @@ public class JsonUserUserNotifyController {
     UserNotifyService userNotifyService;
     
     //查看用户状态
-    @GetMapping(value = "/user/userNotify/queryInfo")
+    @GetMapping(value = "/user/userNotify")
     public R queryUserInfo() {
         return userNotifyService.queryOne();
     }
