@@ -286,6 +286,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         userCarDeposit.setDid(carDepositOrder.getId());
         userCarDeposit.setOrderId(carDepositOrder.getOrderId());
         userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
+        userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+        userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+        userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
         userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
         userCarDeposit.setCreateTime(System.currentTimeMillis());

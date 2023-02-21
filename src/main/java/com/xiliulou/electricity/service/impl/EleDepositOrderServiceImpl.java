@@ -240,10 +240,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userBatteryDeposit.setUid(userInfo.getUid());
                 userBatteryDeposit.setOrderId(orderId);
                 userBatteryDeposit.setBatteryDeposit(payAmount);
-                userBatteryDeposit.setCreateTime(System.currentTimeMillis());
                 userBatteryDeposit.setDid(eleDepositOrder.getId());
-                userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
                 userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+                userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+                userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
+                userBatteryDeposit.setCreateTime(System.currentTimeMillis());
+                userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
                 userBatteryDeposit.setTenantId(tenantId);
                 userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
@@ -985,6 +987,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             userCarDeposit.setUid(userInfo.getUid());
             userCarDeposit.setOrderId(orderId);
             userCarDeposit.setCarDeposit(eleDepositOrder.getPayAmount());
+            userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+            userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userCarDeposit.setTenantId(userInfo.getTenantId());
             userCarDeposit.setCreateTime(System.currentTimeMillis());
             userCarDeposit.setUpdateTime(System.currentTimeMillis());
@@ -1105,6 +1110,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userCarDeposit.setUid(userInfo.getUid());
                 userCarDeposit.setOrderId(orderId);
                 userCarDeposit.setCarDeposit(eleDepositOrder.getPayAmount());
+                userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+                userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+                userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
                 userCarDeposit.setTenantId(userInfo.getTenantId());
                 userCarDeposit.setCreateTime(System.currentTimeMillis());
                 userCarDeposit.setUpdateTime(System.currentTimeMillis());
@@ -1219,7 +1227,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
                 userInfoService.updateByUid(updateUserInfo);
 
-                userCarDepositService.deleteByUid(userInfo.getId());
+                userCarDepositService.logicDeleteByUid(userInfo.getId());
 
                 userCarService.deleteByUid(userInfo.getUid());
 
@@ -1513,10 +1521,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserBatteryDeposit.setOrderId(orderId);
             updateUserBatteryDeposit.setDid(eleDepositOrder.getId());
             updateUserBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            updateUserBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            updateUserBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            updateUserBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             updateUserBatteryDeposit.setTenantId(userInfo.getTenantId());
             updateUserBatteryDeposit.setCreateTime(System.currentTimeMillis());
             updateUserBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-            updateUserBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositService.insertOrUpdate(updateUserBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();

@@ -283,7 +283,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             userCarService.deleteByUid(userInfo.getUid());
 
-            userCarDepositService.deleteByUid(userInfo.getUid());
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
 
             userCarMemberCardService.deleteByUid(userInfo.getUid());
 
@@ -392,7 +392,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     updateUserInfo.setUpdateTime(System.currentTimeMillis());
                     userInfoService.updateByUid(updateUserInfo);
 
-                    userCarDepositService.deleteByUid(uid);
+                    userCarDepositService.logicDeleteByUid(uid);
 
                     userInfoService.unBindUserFranchiseeId(uid);
                 }

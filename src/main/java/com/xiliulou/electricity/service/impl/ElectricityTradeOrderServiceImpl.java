@@ -472,12 +472,14 @@ public class ElectricityTradeOrderServiceImpl extends
             UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDeposit.setTenantId(eleDepositOrder.getTenantId());
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
-            userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
@@ -721,6 +723,9 @@ public class ElectricityTradeOrderServiceImpl extends
             UserCarDeposit userCarDeposit = new UserCarDeposit();
             userCarDeposit.setUid(userInfo.getUid());
             userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+            userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+            userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userCarDeposit.setTenantId(carDepositOrder.getTenantId());
             userCarDeposit.setCreateTime(System.currentTimeMillis());
             userCarDeposit.setUpdateTime(System.currentTimeMillis());

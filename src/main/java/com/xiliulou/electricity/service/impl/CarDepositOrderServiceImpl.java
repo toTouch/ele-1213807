@@ -667,7 +667,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         userCarService.deleteByUid(uid);
 
-        userCarDepositService.deleteByUid(uid);
+        userCarDepositService.logicDeleteByUid(uid);
 
         userCarMemberCardService.deleteByUid(uid);
 

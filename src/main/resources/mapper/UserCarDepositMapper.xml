@@ -12,17 +12,19 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="applyDepositTime" column="apply_deposit_time" jdbcType="INTEGER"/>
+        <result property="depositType" column="deposit_type" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 基础字段 -->
     <sql id="selectUserCarDeposit">
-       	select   id, uid, did, order_id, car_deposit, del_flag, create_time, update_time        from t_user_car_deposit
+       	select   id, uid, did, order_id, car_deposit, del_flag, create_time, update_time , apply_deposit_time , deposit_type       from t_user_car_deposit
     </sql>
 
     <!--查询单个-->
     <select id="selectByUid" resultMap="UserCarDepositMap">
         <include refid="selectUserCarDeposit"/>
-        where uid = #{uid}
+        where uid = #{uid} and del_flag=0;
     </select>
 
     <!--通过实体作为筛选条件查询-->
@@ -58,15 +60,15 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_car_deposit(uid, did, order_id, car_deposit, del_flag, create_time, update_time)
-        values (#{uid}, #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car_deposit(uid, did, order_id, car_deposit, del_flag, create_time, update_time, apply_deposit_time, deposit_type)
+        values (#{uid}, #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{createTime}, #{updateTime},#{applyDepositTime},#{depositType})
     </insert>
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_car_deposit(uid, did, order_id, car_deposit, del_flag, create_time, update_time)
-        values (#{uid}, #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_user_car_deposit(uid, did, order_id, car_deposit, del_flag, create_time, update_time, apply_deposit_time, deposit_type )
+        values (#{uid}, #{did}, #{orderId}, #{carDeposit}, #{delFlag}, #{createTime}, #{updateTime},#{applyDepositTime},#{depositType})
         on duplicate key
-        update did=#{did}, order_id=#{orderId}, car_deposit=#{carDeposit}, del_flag=#{delFlag}, update_time=#{updateTime}
+        update did=#{did}, order_id=#{orderId}, car_deposit=#{carDeposit}, del_flag=#{delFlag}, update_time=#{updateTime}, apply_deposit_time=#{applyDepositTime}, deposit_type=#{depositType}
     </insert>
 
     <!--通过主键修改数据-->
@@ -87,6 +89,12 @@
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
+            </if>
+            <if test="applyDepositTime != null">
+                apply_deposit_time = #{applyDepositTime},
+            </if>
+            <if test="depositType != null">
+                deposit_type = #{depositType},
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
