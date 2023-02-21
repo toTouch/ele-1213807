@@ -1718,6 +1718,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateElectricityCar.setPhone(null);
         updateElectricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCarService.carUnBindUser(updateElectricityCar);
+    
+        UserCar updateUserCar = new UserCar();
+        updateUserCar.setUid(userInfo.getUid());
+        updateUserCar.setCid(null);
+        updateUserCar.setSn("");
+        updateUserCar.setUpdateTime(System.currentTimeMillis());
+        userCarService.unBindingCarByUid(updateUserCar);
         
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
