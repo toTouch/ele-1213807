@@ -608,14 +608,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             userCarService.updateByUid(updateUserCar);
             
             oldOrderId = orderId;
-    
-            if (ElectricityCarModel.RENT_TYPE_MONTH.equals(carMemberCardOrder.getMemberCardType())) {
-                memberCardExpireTime = carMemberCardOrder.getValidDays() * 30 * 24 * 60 * 60 * 1000L;
-            } else if (ElectricityCarModel.RENT_TYPE_WEEK.equals(carMemberCardOrder.getMemberCardType())) {
-                memberCardExpireTime = carMemberCardOrder.getValidDays() * 7 * 24 * 60 * 60 * 1000L;
-            } else {
-                memberCardExpireTime = 0L;
-            }
+            memberCardExpireTime = calculationOrderMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
+                    carMemberCardOrder.getValidDays());
         }
         
         UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
@@ -652,6 +646,18 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
         }
         return R.ok();
+    }
+    
+    private Long calculationOrderMemberCardExpireTime(String memberCardType, Integer validDays) {
+        long memberCardExpireTime = 0L;
+        if (ElectricityCarModel.RENT_TYPE_MONTH.equals(memberCardType)) {
+            memberCardExpireTime = System.currentTimeMillis() + validDays * 30 * 24 * 60 * 60 * 1000L;
+        }
+        
+        if (ElectricityCarModel.RENT_TYPE_WEEK.equals(memberCardType)) {
+            memberCardExpireTime = System.currentTimeMillis() + validDays * 7 * 24 * 60 * 60 * 1000L;
+        }
+        return memberCardExpireTime;
     }
     
     @Override
