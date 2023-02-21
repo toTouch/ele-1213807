@@ -1698,19 +1698,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         
-        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
-            log.error("WEBUNBIND ERROR! not  rent battery,uid={}", uid);
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
+            log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
             return R.fail("100261", "用户未绑定车辆");
         }
         
-        ElectricityCar userBindElectricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-        if (Objects.isNull(userBindElectricityCar)) {
-            log.error("WEBUNBIND ERROR! not  rent battery,uid={}", uid);
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.isNull(electricityCar)) {
+            log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
             return R.fail("100261", "用户未绑定车辆");
         }
         
         ElectricityCar updateElectricityCar = new ElectricityCar();
-        updateElectricityCar.setId(userBindElectricityCar.getId());
+        updateElectricityCar.setId(electricityCar.getId());
         updateElectricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
         updateElectricityCar.setUid(null);
         updateElectricityCar.setUserName(null);
@@ -1723,7 +1723,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
                 .operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
-                .initElectricityCarSn(userBindElectricityCar.getSn()).newElectricityCarSn(null)
+                .initElectricityCarSn(electricityCar.getSn()).newElectricityCarSn(null)
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
