@@ -22,7 +22,7 @@ public class UserNotify {
     private Long id;
     
     /**
-     * 通知状态 0--关闭 1--开启
+     * 通知状态 1--关闭 0--开启
      */
     private Integer status;
     
@@ -55,7 +55,7 @@ public class UserNotify {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     
-    public static final Integer STATUS_OFF = 0;
+    public static final Integer STATUS_OFF = 1;
     
-    public static final Integer STATUS_ON = 1;
+    public static final Integer STATUS_ON = 0;
 }

@@ -11,7 +11,7 @@ import lombok.Data;
 public class UserNotifyQuery {
     
     /**
-     * 通知状态 0--关闭 1--开启
+     * 通知状态 1--关闭 0--开启
      */
     private Integer status;
     
