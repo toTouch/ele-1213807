@@ -91,7 +91,9 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         //            return Pair.of(false, result.getErrMsg());
         //        }
     
-        electricityCarService.carLockCtrl(electricityCar, request.getLockType());
+        if (!electricityCarService.carLockCtrl(electricityCar, request.getLockType())) {
+            return Pair.of(false, "请求失败");
+        }
         
         return Pair.of(true, null);
     }

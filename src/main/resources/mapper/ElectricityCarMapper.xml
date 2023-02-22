@@ -187,7 +187,7 @@
     <select id="batteryStatistical" resultType="long">
         select count(*) from t_electricity_car
         <where>
-            tenant_id = #{tenantId}
+            tenant_id = #{tenantId} and del_flag = 0
             <if test="carIds != null and carIds.size() > 0">
                 and id in
                 <foreach collection="carIds" item="id" open="(" close=")" separator=",">
