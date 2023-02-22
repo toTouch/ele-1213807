@@ -169,10 +169,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     EleIotOtaPathConfig eleIotOtaPathConfig;
-    
+
     @Autowired
     OtaFileConfigService otaFileConfigService;
-    
+
     @Autowired
     EleOtaUpgradeService eleOtaUpgradeService;
     
@@ -197,19 +197,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     UserDataScopeService userDataScopeService;
-    
+
     @Autowired
     UserBatteryService userBatteryService;
-    
+
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
-    
+
     @Autowired
     CarDepositOrderService carDepositOrderService;
-    
+
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
-    
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -244,7 +244,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElectricityCabinet electricityCabinet) {
         int update = this.electricityCabinetMapper.updateById(electricityCabinet);
-    
+
         if (update > 0) {
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
@@ -431,7 +431,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     + oldElectricityCabinet.getDeviceName() + oldElectricityCabinet.getTenantId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                     + oldElectricityCabinet.getDeviceName());
-            
+
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
@@ -476,7 +476,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
                     + electricityCabinet.getDeviceName());
-            
+
             //删除格挡
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             return null;
@@ -569,7 +569,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     isLock = 1;
                 }
                 e.setIsLock(isLock);
-    
+
                 ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService
                         .queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
                 if (Objects.nonNull(electricityCabinetServer)) {
@@ -618,40 +618,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         }
                     }
                 }
-    
+
                 //                //获取柜机图片(旧版小程序 柜机详情不能返回图片URL，前端解析报错)
                 //                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
                 //                if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
                 //                    e.setPictureUrl(electricityCabinetPicture.get(0));
                 //                }
-                
+
                 //查满仓空仓数
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
-    
+
                 //查满仓空仓数
                 int electricityBatteryTotal = 0;
                 int noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
                         .queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-    
+
                     //空仓
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery)
                             .count();
-                    
+
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream()
                             .filter(this::isElectricityBattery).count();
                 }
-    
+
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
-    
+
                 ElectricityCabinet item = new ElectricityCabinet();
                 item.setUpdateTime(System.currentTimeMillis());
                 item.setId(e.getId());
-    
+
                 //动态查询在线状态
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
@@ -672,7 +672,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance))
                 .collect(Collectors.toList()));
     }
-    
+
     @Override
     public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
@@ -707,13 +707,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         }
                     }
                 }
-    
+
                 //获取柜机图片
                 List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
                 if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
                     e.setPictureUrl(electricityCabinetPicture.get(0));
                 }
-    
+
                 //查满仓空仓数
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
                 
@@ -1114,7 +1114,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("QUERY home store ERROR! uid={}", user.getUid(), e);
             return null;
         });
-    
+
         CompletableFuture<Void> resultComplete = CompletableFuture
                 .allOf(successUserFuture, successOrderFuture, successCardFuture, successStoreFuture);
         
@@ -1322,11 +1322,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("HOME  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-    
+
         //判断用户套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
                 .selectByUidFromCache(userInfo.getUid());
-        
+
         ElectricityMemberCard electricityMemberCard = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
             electricityMemberCard = electricityMemberCardService
@@ -1346,7 +1346,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             now = userBatteryMemberCard.getDisableMemberCardTime();
         }
-    
+
         if (Objects.nonNull(userBatteryMemberCard) && !Objects
                 .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && Objects
                 .nonNull(electricityMemberCard)) {
@@ -1372,7 +1372,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 cardDay = Math.ceil((userBatteryMemberCard.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
             }
         }
-    
+
         //我的电池
         Double battery = null;
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
@@ -1381,7 +1381,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         //套餐到期时间
-    
+
         String memberCardExpireTime = null;
         Integer memberCardDisableStatus = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
@@ -1398,7 +1398,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeInfo.put("cardDay", cardDay.intValue());
         homeInfo.put("battery", battery);
         homeInfo.put("memberCardDisableStatus", memberCardDisableStatus);
-    
+
         return R.ok(homeInfo);
     }
     
@@ -1513,11 +1513,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             dataMap.put("cell_list", cellList);
             
         }
-    
+
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(eleOuterCommandQuery.getSessionId())
                 .data(eleOuterCommandQuery.getData()).productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName()).command(eleOuterCommandQuery.getCommand()).build();
-        
+
         Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //发送命令失败
         if (!result.getLeft()) {
@@ -1525,8 +1525,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok(sessionId);
     }
-    
-    
+
+
     @Override
     public R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery) {
         //不合法的参数
@@ -1534,29 +1534,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 || Objects.isNull(eleOuterCommandQuery.getProductKey())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        
+
         String sessionId = UUID.randomUUID().toString().replace("-", "");
         eleOuterCommandQuery.setSessionId(sessionId);
-        
+
         ElectricityCabinet electricityCabinet = queryByProductAndDeviceName(eleOuterCommandQuery.getProductKey(),
                 eleOuterCommandQuery.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        
+
         //换电柜是否在线
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
-        
+
         //不合法的命令
         //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
         if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
-        
+
         if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_ALL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
             List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
                     .queryBoxByElectricityCabinetId(electricityCabinet.getId());
@@ -1769,7 +1769,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtils.copyProperties(electricityCabinet, electricityCabinetVO);
-    
+
         Franchisee franchisee = (Franchisee) franchiseeService
                 .queryByCabinetId(electricityCabinet.getId(), electricityCabinet.getTenantId()).getData();
         if (Objects.nonNull(franchisee)) {
@@ -1879,14 +1879,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //是否缴纳押金，是否绑定电池
         //        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-    
+
         //        //未找到用户
         //        if (Objects.isNull(franchiseeUserInfo)) {
         //            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
         //            return R.fail("ELECTRICITY.0001", "未找到用户");
         //
         //        }
-        
+
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}",
@@ -1899,7 +1899,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("queryByDevice  ERROR! user not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-    
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
                 .selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
@@ -1907,13 +1907,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
-    
+
         Long now = System.currentTimeMillis();
         if (userBatteryMemberCard.getMemberCardExpireTime() < now || userBatteryMemberCard.getRemainingNumber() == 0) {
             log.error("queryByDevice ERROR!  memberCard is  Expire !  uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
-    
+
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService
                 .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         if (Objects.isNull(electricityMemberCard)) {
@@ -1921,25 +1921,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
-    
+
         //未租电池
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             log.error("queryByDevice ERROR! user not rent battery,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
-    
+
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
-    
+
         UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBattery)) {
             log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
         }
-    
+
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
         
@@ -2090,7 +2090,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("queryByRentBattery  ERROR! USER not auth,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-    
+
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
             log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}",
@@ -2103,7 +2103,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("queryByDevice  ERROR! user not pay deposit,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-    
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
                 .selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
@@ -2111,7 +2111,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
             return R.fail("100210", "用户未开通套餐");
         }
-    
+
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
             Long now = System.currentTimeMillis();
             if (userBatteryMemberCard.getMemberCardExpireTime() < now
@@ -2120,13 +2120,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.fail("ELECTRICITY.0023", "月卡已过期");
             }
         }
-    
+
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
-    
+
         //组装数据
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -2153,7 +2153,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
             }
-    
+
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), userBattery.getBatteryType(),
                     userInfo.getFranchiseeId());
         } else {
@@ -2207,7 +2207,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
         }
-    
+
         TenantContextHolder.setTenantId(electricityBattery.getTenantId());
         //电池电量上报变化在百分之50以上，不更新电池电量
         Double power = batteryReportQuery.getPower();
@@ -2352,11 +2352,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-    
+
         if (!Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-    
+
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
         //营业时间
@@ -2463,7 +2463,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return Triple.of(false, "100223", "换电柜没有标准型号电池");
             }
         }
-    
+
         List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId)
                 .collect(Collectors.toList());
         //        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteries = franchiseeBindElectricityBatteryService.queryByBatteryIds(batteryIds);
@@ -2478,7 +2478,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //        //把加盟商绑定的电池过滤出来
         //        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
         //        return Triple.of(true, null, usableBatteryCellNos.get(0));
-        
+
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
         if (CollectionUtils.isEmpty(electricityBatteries)) {
             return Triple.of(false, "100225", "电池不存在");
@@ -2511,17 +2511,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!DataUtil.collectionIsUsable(electricityCabinetBoxes)) {
             return Pair.of(false, null);
         }
-    
+
         //本次分配的格挡
         Integer allocationCellNo = null;
-    
+
         try {
             //可用格挡只有一个默认直接分配
             if (electricityCabinetBoxes.size() == 1) {
                 allocationCellNo = Integer.valueOf(electricityCabinetBoxes.get(0).getCellNo());
                 return Pair.of(true, allocationCellNo);
             }
-        
+
             //可使用格挡
             List<Integer> usableEmptyCellNos = electricityCabinetBoxes.parallelStream().map(FreeCellNoQuery::getCellNo)
                     .map(Integer::valueOf).collect(Collectors.toList());
@@ -2540,19 +2540,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 allocationCellNo = distributableEmptyCellNos.get(0);
                 return Pair.of(true, allocationCellNo);
             }
-        
+
             //分配上一次取出的格挡
             allocationCellNo = preTakeCellAllocation(distributableEmptyCellNos, eid);
             if (Objects.nonNull(allocationCellNo)) {
                 return Pair.of(true, allocationCellNo);
             }
-        
+
             //分配空闲时间最大的格挡
             allocationCellNo = freeTimeMaxCellAllocation(electricityCabinetBoxes, distributableEmptyCellNos);
             if (Objects.nonNull(allocationCellNo)) {
                 return Pair.of(true, allocationCellNo);
             }
-    
+
             //随机分配格挡,
             allocationCellNo = distributableEmptyCellNos
                     .get(ThreadLocalRandom.current().nextInt(electricityCabinetBoxes.size()));
@@ -2560,7 +2560,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(allocationCellNo)) {
                 return Pair.of(true, allocationCellNo);
             }
-    
+
             return Pair.of(false, null);
         } finally {
             //只记录本次分配过得格挡，
@@ -2572,7 +2572,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
     }
-    
+
     private Integer freeTimeMaxCellAllocation(List<FreeCellNoQuery> electricityCabinetBoxes,
             List<Integer> distributableEmptyCellNos) {
         List<FreeCellNoQuery> freeTimeCells = electricityCabinetBoxes.parallelStream()
@@ -2584,29 +2584,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (CollectionUtils.isEmpty(freeTimeCells) || StrUtil.isBlank(freeTimeCells.get(0).getCellNo())) {
             return null;
         }
-        
+
         Integer cellNo = Integer.valueOf(freeTimeCells.get(0).getCellNo());
-        
+
         //可分配格挡中不存在
         if (!distributableEmptyCellNos.contains(cellNo)) {
             return null;
         }
         return cellNo;
     }
-    
+
     private Integer preTakeCellAllocation(List<Integer> distributableEmptyCellNos, Integer eid) {
         String preTakeCell = redisService.get(CacheConstant.CACHE_PRE_TAKE_CELL + eid);
         //上一次取出格挡不存在
         if (StrUtil.isBlank(preTakeCell)) {
             return null;
         }
-    
+
         //可分配格挡中不存在
         Integer cellNo = Integer.valueOf(preTakeCell);
         if (!distributableEmptyCellNos.contains(cellNo)) {
             return null;
         }
-        
+
         return cellNo;
     }
     
@@ -2671,7 +2671,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         JSONObject jsonObject = JSON.parseObject(apiRequestQuery.getData());
         String productKey = String.valueOf(jsonObject.get("productKey"));
         String deviceName = String.valueOf(jsonObject.get("deviceName"));
-    
+
         if (org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils
                 .isBlank(deviceName)) {
             return R.fail("SYSTEM.0003", "参数不合法");
@@ -2734,7 +2734,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         
         Double fullyCharged = electricityCabinet.getFullyCharged();
-    
+
         if (Objects.isNull(fullyCharged) || Objects.isNull(electricityConfig) || Objects
                 .equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
             return fullyCharged;
@@ -2859,7 +2859,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R homepageTurnover() {
         Integer tenantId = TenantContextHolder.getTenantId();
-    
+
         HomePageTurnOverVo homePageTurnOverVo = new HomePageTurnOverVo();
         
         //用户区分
@@ -2868,11 +2868,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -2880,7 +2880,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.ok(homePageTurnOverVo);
             }
         }
-    
+
         long todayStartTime = DateUtils.getTodayStartTime();
         //购买换电月卡
         List<Long> finalFranchiseeIds = franchiseeIds;
@@ -2961,16 +2961,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         HomePageDepositVo homePageDepositVo = new HomePageDepositVo();
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -2978,7 +2978,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.ok(homePageDepositVo);
             }
         }
-    
+
         long todayStartTime = DateUtils.getTodayStartTime();
         
         //缴纳电池押金
@@ -2996,7 +2996,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
-    
+
         //        //缴纳租车押金
         //        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
         //            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
@@ -3045,7 +3045,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });*/
-    
+
         //退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
             BigDecimal historyRefundDeposit = refundOrderService
@@ -3087,16 +3087,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         HomepageOverviewDetailVo homepageOverviewDetailVo = new HomepageOverviewDetailVo();
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -3121,7 +3121,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!CollectionUtils.isEmpty(stores)) {
             stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
         }
-    
+
         CompletableFuture<Void> store = CompletableFuture.runAsync(() -> {
             StoreQuery storeQuery = StoreQuery.builder().franchiseeIds(finalFranchiseeIds).tenantId(tenantId).build();
             Integer storeCount = storeService.queryCountForHomePage(storeQuery);
@@ -3149,7 +3149,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
-    
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(authenticationUser, store, electricityCabinet, car);
         try {
@@ -3170,16 +3170,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         HomePageTurnOverAnalysisVo homePageTurnOverAnalysisVo = new HomePageTurnOverAnalysisVo();
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -3187,7 +3187,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.ok(homePageTurnOverAnalysisVo);
             }
         }
-    
+
         //购买换电月卡
         List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
@@ -3198,7 +3198,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
-    
+
         //        //购买租车月卡
         //        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
         //            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
@@ -3207,7 +3207,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
         //            return null;
         //        });
-        
+
         //购买租车套餐
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = carMemberCardOrderService
@@ -3307,7 +3307,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
@@ -3366,16 +3366,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         HomePageElectricityOrderVo homePageElectricityOrderVo = new HomePageElectricityOrderVo();
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
         }
-    
+
         List<Integer> eleIdList = null;
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -3388,13 +3388,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (CollectionUtils.isEmpty(eleIdList)) {
                 return R.ok(homePageElectricityOrderVo);
             }
-    
+
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(homePageElectricityOrderVo);
             }
         }
-    
+
         //换电成功订单数量统计
         List<Integer> finalEleIdList = eleIdList;
         List<Long> finalFranchiseeIds = franchiseeIds;
@@ -3403,7 +3403,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!CollectionUtils.isEmpty(finalFranchiseeIds)) {
             stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
         }
-    
+
         CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
             ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                     .tenantId(tenantId).eleIdList(finalEleIdList)
@@ -3564,8 +3564,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(homepageBatteryVo);
     }
-    
-    
+
+
     @Override
     public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
         List<ElectricityCabinetFile> electricityCabinetFiles = electricityCabinetFileService
@@ -3586,50 +3586,50 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         final Integer TYPE_DOWNLOAD = 1;
         final Integer TYPE_SYNC = 2;
         final Integer TYPE_UPGRADE = 3;
-    
+
         Long uid = SecurityUtils.getUid();
         User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-    
+
         //换电柜是否在线
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
-    
+
         if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
             log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}",
                     electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
-    
+
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
-    
+
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
         data.put("operateType", operateType);
         data.put("userid", user.getUid());
         data.put("username", user.getName());
-    
+
         if (TYPE_DOWNLOAD.equals(operateType)) {
             //ota文件是否存在
             OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
             OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
-        
+
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
                         coreBoardOtaFileConfig, subBoardOtaFileConfig);
                 return R.fail("100301", "ota升级文件不完整，请联系客服处理");
             }
-        
+
             content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
             content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
             content.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
@@ -3638,11 +3638,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!DataUtil.collectionIsUsable(cellNos)) {
                 return R.fail("100303", "升级内容为空，请选择您要升级的板子");
             }
-        
+
             eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
             content.put("cellNos", cellNos);
         }
-    
+
         data.put("content", JsonUtil.toJson(content));
         
         HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(sessionId).data(data)
@@ -3654,10 +3654,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
-    
+
         return R.ok(sessionId);
     }
-    
+
     @Override
     public R checkOtaSession(String sessionId) {
         String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + sessionId);
@@ -3666,7 +3666,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok(s);
     }
-    
+
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
         List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper
@@ -3677,17 +3677,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(electricityCabinets);
     }
-    
+
     @Override
     public List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query) {
         List<ElectricityCabinet> list = electricityCabinetMapper.superAdminSelectByQuery(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.EMPTY_LIST;
         }
-        
+
         return list;
     }
-    
+
     @Override
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
@@ -3697,18 +3697,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R queryName(Integer tenantId, Integer id) {
         return R.ok(electricityCabinetMapper.queryName(tenantId, id));
     }
-    
+
     @Override
     public R selectByQuery(ElectricityCabinetQuery query) {
         return R.ok(electricityCabinetMapper.selectByQuery(query));
     }
-    
+
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));
     }
-    
-    
+
+    @Override
+    public List<Integer> selectEidByStoreId(Long storeId) {
+        return electricityCabinetMapper.selectEidByStoreId(TenantContextHolder.getTenantId(), storeId);
+    }
+
     /**
      * 通过云端下发命令更新换电标准
      */
@@ -3742,16 +3746,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (CollectionUtils.isEmpty(messages)) {
             return;
         }
-    
+
         messages.parallelStream().forEach(item -> {
             log.info("DELY QUEUE LISTENER INFO! full battery message={}", JsonUtil.toJson(item));
-        
+
             if (StringUtils.isBlank(item.getMsg())) {
                 return;
             }
-        
+
             Integer electricityCabinetId = Integer.parseInt(item.getMsg());
-        
+
             ElectricityCabinet electricityCabinet = this.queryByIdFromCache(electricityCabinetId);
             if (Objects.isNull(electricityCabinet)) {
                 return;
@@ -3770,7 +3774,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (org.apache.commons.collections.CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
                 return;
             }
-        
+
             Boolean cacheFlag = redisService
                     .setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinetId, "1", 1800 * 1000L, false);
             if (cacheFlag) {
@@ -3821,7 +3825,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }).collect(Collectors.toList());
         
     }
-    
+
     /**
      * 获取柜机图片
      */
@@ -3832,17 +3836,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (CollectionUtils.isEmpty(electricityCabinetFileList)) {
                 return Collections.EMPTY_LIST;
             }
-    
+
             List<ElectricityCabinetFile> cabinetFiles = electricityCabinetFileList.parallelStream().peek(item -> {
                 item.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), item.getName(),
                         System.currentTimeMillis() + 10 * 60 * 1000L));
             }).collect(Collectors.toList());
-    
+
             return cabinetFiles.parallelStream().map(ElectricityCabinetFile::getUrl).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("ELE ERROR! get electricityCabinet picture error", e);
         }
         return Collections.EMPTY_LIST;
     }
-    
+
 }

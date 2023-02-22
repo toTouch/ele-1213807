@@ -200,8 +200,16 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             return Triple.of(false, "100363", "新加盟商与旧加盟商押金不一致");
         }
 
+        //加盟商电池服务费开关校验
+        if (!Objects.equals(oldFranchisee.getIsOpenServiceFee(), newFranchisee.getIsOpenServiceFee())) {
+            log.error("ELE ERROR! IsOpenServiceFee new franchisee not equals old franchisee,newfranchiseeId={},oldfranchiseeId={}", newFranchisee.getId(), oldFranchisee.getId());
+            return Triple.of(false, "100367", "新加盟商与旧加盟商电池服务费开关不一致");
+        }
+
         //加盟商电池服务费校验
-        if (oldFranchisee.getBatteryServiceFee().compareTo(franchiseeBatteryModelDTO.getBatteryServiceFee()) != 0) {
+        if (Objects.equals(oldFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)
+                && Objects.equals(newFranchisee.getIsOpenServiceFee(), Franchisee.OPEN_SERVICE_FEE)
+                && oldFranchisee.getBatteryServiceFee().compareTo(franchiseeBatteryModelDTO.getBatteryServiceFee()) != 0) {
             log.error("ELE ERROR! oldFranchisee batteryServiceFee not equals newFranchisee,oldFranchinseeId={},newFranchinseeId={}", newFranchisee.getId(), oldFranchisee.getId());
             return Triple.of(false, "100364", "新加盟商与旧加盟商电池服务费不一致");
         }

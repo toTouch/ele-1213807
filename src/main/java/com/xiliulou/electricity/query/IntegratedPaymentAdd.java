@@ -12,29 +12,34 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class IntegratedPaymentAdd {
-    
+
+	private String productKey;
+
+	private String deviceName;
+
+
     /**
      * 保险id
      */
 	private Integer insuranceId;
-    
+
     /**
      * 加盟商id
 	 */
 	@NotNull(message = "加盟商Id不能为空!")
 	private Long franchiseeId;
-    
+
     /**
      * 电池类型
 	 */
 	private Integer model;
-    
+
     /**
      * 月卡id
 	 */
 	@NotNull(message = "套餐Id不能为空!")
 	private Integer memberCardId;
-    
+
     /**
      * 优惠券id
 	 */

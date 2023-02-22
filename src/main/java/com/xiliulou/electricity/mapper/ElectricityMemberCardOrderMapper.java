@@ -57,4 +57,5 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     
     Integer queryMaxPayCountByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 
+    ElectricityMemberCardOrder selectFirstMemberCardOrder(@Param("uid") Long uid );
 }

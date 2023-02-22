@@ -96,6 +96,11 @@ public class User {
 	 */
 	private Long refId;
 
+	/**
+	 * 用户来源，1：扫码，2：邀请，3：其它
+	 */
+	private Integer source;
+
 	private Integer tenantId;
 
 	public boolean isLock() {
@@ -136,6 +141,12 @@ public class User {
 	public static final Integer DATA_TYPE_OPERATE = 1;
 	public static final Integer DATA_TYPE_FRANCHISEE =2;
 	public static final Integer DATA_TYPE_STORE=3;
+
+
+	//用户来源，1：扫码，2：邀请，3：其它
+	public static final Integer SOURCE_TYPE_SCAN=1;
+	public static final Integer SOURCE_TYPE_INVITE=2;
+	public static final Integer SOURCE_TYPE_ONLINE=3;
 
 
 	//默认语言

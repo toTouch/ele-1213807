@@ -2,12 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserMapper">
 
+	<!-- 基础字段 -->
+	<sql id="selectUser">
+       	select   uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang, city, province, address, cid, ref_id, tenant_id, data_type, source        from t_user
+    </sql>
 
+	<!--查询单个-->
+	<select id="selectById" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where uid = #{uid}
+	</select>
 
 	<!--通过主键修改数据-->
-	<update id="updateUserById">
+	<update id="updateUserByUid">
 		update t_user
 		<set>
+			<if test="tenantId != null">
+				tenant_id = #{tenantId},
+			</if>
 			<if test="phone != null">
 				phone = #{phone},
 			</if>
@@ -16,6 +28,12 @@
 			</if>
 			<if test="gender != null">
 				gender = #{gender},
+			</if>
+			<if test="source != null">
+				source = #{source},
+			</if>
+			<if test="refId != null">
+				ref_id = #{refId},
 			</if>
 			<if test="delFlag != null">
 				del_flag = #{delFlag},
@@ -96,6 +114,118 @@
 			</if>
 			<if test="tenantId != null">
 				and tenant_id = #{tenantId}
+			</if>
+		</where>
+	</select>
+
+	<!--更新用户来源-->
+	<update id="updateUserSource">
+		update t_user
+		<set>
+			<if test="source != null">
+				source = #{source},
+			</if>
+			<if test="refId != null">
+				ref_id = #{refId},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+		</set>
+		where uid = #{uid} and del_flag =0 and tenant_id = #{tenantId}
+	</update>
+
+
+	<select id="selectUserSourceByPage" resultType="com.xiliulou.electricity.vo.UserSourceVO">
+		select
+		tu.uid,
+		tu.phone,
+		tu.source,
+		tu.ref_id as electricityCabinetId,
+		tui.create_time,
+		tui.update_time,
+		tui.name,
+		tui.franchisee_id
+
+		from t_user tu left join t_user_info tui on tu.uid=tui.uid
+		<where>
+			tu.del_flag = 0
+			<if test="uid != null">
+				and tu.uid = #{uid}
+			</if>
+			<if test="source != null">
+				and tu.source = #{source}
+			</if>
+			<if test="name != null and name != '' ">
+				and tui.name like concat('%',#{name},'%')
+			</if>
+			<if test="phone != null and phone != ''">
+				and tu.phone=#{phone}
+			</if>
+			<if test="franchiseeId != null">
+				and tui.franchisee_id=#{franchiseeId}
+			</if>
+			<if test="electricityCabinetId != null">
+				and tu.ref_id=#{electricityCabinetId}
+			</if>
+			<if test="tenantId != null">
+				and tui.tenant_id = #{tenantId}
+			</if>
+			<if test="startTime != null">
+				and tui.create_time &gt;=#{startTime}
+			</if>
+			<if test="endTime != null">
+				and tui.create_time &lt;=#{endTime}
+			</if>
+			<if test="electricityCabinetIds != null and electricityCabinetIds.size > 0">
+				and tu.ref_id in
+				<foreach collection="electricityCabinetIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+		order by tui.create_time desc
+		limit #{offset}, #{size}
+	</select>
+
+
+	<select id="selectUserSourcePageCount" resultType="java.lang.Integer">
+		select COUNT(1)
+		from t_user tu  left join t_user_info tui on tu.uid=tui.uid
+		<where>
+			tu.del_flag = 0
+			<if test="uid != null">
+				and tu.uid = #{uid}
+			</if>
+			<if test="source != null">
+				and tu.source = #{source}
+			</if>
+			<if test="name != null and name != '' ">
+				and tui.name like concat('%',#{name},'%')
+			</if>
+			<if test="phone != null and phone != ''">
+				and tu.phone=#{phone}
+			</if>
+			<if test="franchiseeId != null">
+				and tui.franchisee_id=#{franchiseeId}
+			</if>
+			<if test="electricityCabinetId != null">
+				and tu.ref_id=#{electricityCabinetId}
+			</if>
+			<if test="tenantId != null">
+				and tui.tenant_id = #{tenantId}
+			</if>
+			<if test="startTime != null">
+				and tui.create_time &gt;=#{startTime}
+			</if>
+			<if test="endTime != null">
+				and tui.create_time &lt;=#{endTime}
+			</if>
+			<if test="electricityCabinetIds != null and electricityCabinetIds.size > 0">
+				and tu.ref_id in
+				<foreach collection="electricityCabinetIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 	</select>

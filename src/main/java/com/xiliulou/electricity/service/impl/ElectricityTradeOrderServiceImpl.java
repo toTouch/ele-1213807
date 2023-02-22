@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
@@ -226,7 +227,9 @@ public class ElectricityTradeOrderServiceImpl extends
         Long remainingNumber = electricityMemberCardOrder.getMaxUseCount();
         Integer payCount = electricityMemberCardOrderService.queryMaxPayCount(userBatteryMemberCard);
 
-        //用户月卡
+        //月卡订单
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
             //查看月卡是否绑定活动
@@ -390,6 +393,10 @@ public class ElectricityTradeOrderServiceImpl extends
                     userCouponService.updateStatus(userCoupon);
                 }
             }
+
+            //支付失败 清除套餐来源
+            electricityMemberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
+            electricityMemberCardOrderUpdate.setSource(NumberConstant.ZERO);
         }
 
         //交易订单
@@ -400,8 +407,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(electricityTradeOrderUpdate);
     
-        //月卡订单
-        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
         electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
