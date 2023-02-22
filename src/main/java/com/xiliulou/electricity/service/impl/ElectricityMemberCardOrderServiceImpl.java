@@ -1278,6 +1278,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         return R.ok();
     }
+    
+    @Override
+    public R disableMemberCardForRollback() {
+        
+        return null;
+    }
 
     @Override
     public R enableOrDisableMemberCardIsLimitTime() {
@@ -2363,7 +2369,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder selectLatestByUid(Long uid) {
         return baseMapper.selectLatestByUid(uid);
     }
-
+    
     @Override
     public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long
             todayStartTime, List<Long> franchiseeId) {

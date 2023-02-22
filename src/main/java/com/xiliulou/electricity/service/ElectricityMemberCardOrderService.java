@@ -111,4 +111,6 @@ public interface ElectricityMemberCardOrderService {
     ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid);
 
     ElectricityMemberCardOrder selectLatestByUid(Long uid);
+    
+    R disableMemberCardForRollback();
 }

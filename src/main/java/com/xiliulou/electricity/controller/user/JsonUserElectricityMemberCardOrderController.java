@@ -84,6 +84,14 @@ public class JsonUserElectricityMemberCardOrderController {
     public R enableMemberCardForLimitTime() {
         return electricityMemberCardOrderService.enableMemberCardForLimitTime();
     }
+    
+    /***
+     * 停卡撤销
+     */
+    @PutMapping("user/memberCard/disableMemberCardForRollback")
+    public R disableMemberCardForRollback() {
+        return electricityMemberCardOrderService.disableMemberCardForRollback();
+    }
 
     /**
      * 用户获取停卡是否限制时间
