@@ -209,6 +209,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    
+    @Autowired
+    EleCabinetCoreDataService eleCabinetCoreDataService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -3620,9 +3623,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         data.put("username", user.getName());
 
         if (TYPE_DOWNLOAD.equals(operateType)) {
+            OtaFileConfig coreBoardOtaFileConfig = null;
+            OtaFileConfig subBoardOtaFileConfig = null;
             //ota文件是否存在
-            OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
-            OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+            if (isOldBoard(eid)) {
+                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
+                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
+            } else {
+                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
+                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+            }
+            
 
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
@@ -3656,6 +3667,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return R.ok(sessionId);
+    }
+    
+    
+    private boolean isOldBoard(Integer eid) {
+        final double MIN_OLD_BOARD_VERSION = 50.0;
+        
+        EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
+        if (Objects.nonNull(eleCabinetCoreData) && StrUtil.isNotBlank(eleCabinetCoreData.getCoreVersion())) {
+            return Double.parseDouble(eleCabinetCoreData.getCoreVersion()) < MIN_OLD_BOARD_VERSION ? false : true;
+        }
+        
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService
+                .queryAllBoxByElectricityCabinetId(eid);
+        if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+            return true;
+        }
+        
+        List<ElectricityCabinetBox> collect = electricityCabinetBoxes.parallelStream()
+                .filter(item -> StrUtil.isNotBlank(item.getVersion())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(collect)) {
+            return true;
+        }
+        
+        return Double.parseDouble(collect.get(0).getVersion()) < MIN_OLD_BOARD_VERSION ? false : true;
     }
 
     @Override
