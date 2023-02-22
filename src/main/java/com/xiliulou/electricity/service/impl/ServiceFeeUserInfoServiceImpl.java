@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CityMapper;
@@ -129,6 +130,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
             if (Objects.nonNull(userBattery)) {
                 eleBatteryServiceFeeVO.setBatteryType(userBattery.getBatteryType());
+                eleBatteryServiceFeeVO.setModel(BatteryConstant.acquireBattery(userBattery.getBatteryType()));
             }
         }
 
