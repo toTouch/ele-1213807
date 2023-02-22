@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
  * @date : 2023/2/15 11:46
  */
 @Data
-public class FreeDepositQuery {
+public class FreeBatteryDepositQuery {
     
     @NotNull(message = "加盟商id不能为空")
     private Long franchiseeId;

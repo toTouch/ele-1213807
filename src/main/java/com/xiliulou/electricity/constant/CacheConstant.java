@@ -306,4 +306,14 @@ public interface CacheConstant {
      */
     String CACHE_PRE_TAKE_CELL = "pre_take_cell:";
     String CACHE_PXZ_CONFIG = "cache_pxz_config:";
+
+    /**
+     * 免押订单查询缓存锁
+     */
+    String ELE_CACHE_FREE_DEPOSIT_LOCK_KEY = "free_deposit_lock_key:";
+
+    /**
+     * 免押电池套餐押金支付缓存锁
+     */
+    String ELE_CACHE_FREE_DEPOSIT_MEMBERCARD_LOCK_KEY = "free_deposit_membercard_lock_key:";
 }
