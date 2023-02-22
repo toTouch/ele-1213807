@@ -55,7 +55,10 @@ public class JsonUserElectricityMemberCardOrderController {
         }
         return electricityMemberCardOrderService.getMemberCardOrderCount(uid, queryStartTime, queryEndTime);
     }
-
+    
+    /**
+     * 不限制时间停启卡
+     */
     @PutMapping("user/memberCard/openOrDisableMemberCard")
     public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus) {
         return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
