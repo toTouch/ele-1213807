@@ -1512,12 +1512,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         if (Objects.equals(usableStatus, UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE)) {
             userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime()));
+            userBatteryMemberCardUpdate.setDisableMemberCardTime(null);
         } else {
             userBatteryMemberCardUpdate.setDisableMemberCardTime(System.currentTimeMillis());
         }
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setMemberCardStatus(usableStatus);
-        userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+        userBatteryMemberCardService.updateByUidForDisableCard(userBatteryMemberCardUpdate);
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
