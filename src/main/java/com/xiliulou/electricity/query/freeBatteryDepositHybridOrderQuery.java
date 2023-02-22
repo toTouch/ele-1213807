@@ -11,6 +11,9 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class freeBatteryDepositHybridOrderQuery {
+    private String productKey;
+
+    private String deviceName;
 
     /**
      * 套餐id

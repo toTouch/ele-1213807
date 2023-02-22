@@ -2834,18 +2834,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentBatteryMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo) {
-        if (Objects.isNull(query.getMemberCardId())) {
+    public Triple<Boolean, String, Object> handleRentBatteryMemberCard(String productKey, String deviceName, Integer userCouponId, Integer memberCardId, Long franchiseeId, UserInfo userInfo) {
+        if (Objects.isNull(memberCardId)) {
             return Triple.of(true, "", null);
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(query.getMemberCardId());
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardId);
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("BATTERY MEMBER_ORDER ERROR!not found battery membercard,membercardId={},uid={}", query.getMemberCardId(), userInfo.getUid());
+            log.error("BATTERY MEMBER ORDER ERROR!not found battery membercard,membercardId={},uid={}", memberCardId, userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("BATTERY MEMBER_ORDER ERROR!battery membercard is un_usable membercardId={},uid={}", query.getMemberCardId(), userInfo.getUid());
+            log.error("BATTERY MEMBER ORDER ERROR!battery membercard is un_usable membercardId={},uid={}", memberCardId, userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0088", "月卡已禁用!");
         }
 
@@ -2853,10 +2853,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long refId = null;
         //购买套餐来源
         Integer source = ElectricityMemberCardOrder.SOURCE_NOT_SCAN;
-        if (StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+        if (StringUtils.isNotBlank(productKey) && StringUtils.isNotBlank(deviceName)) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
             if (Objects.isNull(electricityCabinet)) {
-                log.error("BATTERY MEMBER_ORDER ERROR! not found electricityCabinet,productKey={},deviceName={}", query.getProductKey(), query.getDeviceName());
+                log.error("BATTERY MEMBER ORDER ERROR! not found electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
                 return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
             }
 
@@ -2888,28 +2888,28 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //满减折扣劵
         UserCoupon userCoupon = null;
         BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
-        if (Objects.nonNull(query.getUserCouponId())) {
-            userCoupon = userCouponService.queryByIdFromDB(query.getUserCouponId());
+        if (Objects.nonNull(userCouponId)) {
+            userCoupon = userCouponService.queryByIdFromDB(userCouponId);
             if (Objects.isNull(userCoupon)) {
-                log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
+                log.error("BATTERY MEMBER ORDER ERROR! not found userCoupon! userCouponId={},uid={} ", userCouponId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
 
             //优惠券是否使用
             if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
+                log.error("BATTERY MEMBER ORDER ERROR! userCoupon is used! userCouponId={},uid={} ", userCouponId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0090", "您的优惠券已被使用");
             }
 
             //优惠券是否过期
             if (userCoupon.getDeadline() < System.currentTimeMillis()) {
-                log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
+                log.error("BATTERY MEMBER ORDER ERROR! userCoupon is deadline!userCouponId={},uid={} ", userCouponId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0091", "您的优惠券已过期");
             }
 
             Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
             if (Objects.isNull(coupon)) {
-                log.error("ELECTRICITY  ERROR! not found coupon! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
+                log.error("BATTERY MEMBER ORDER ERROR! not found coupon! userCouponId={},uid={} ", userCouponId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
 
@@ -2926,7 +2926,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 //计算折扣
                 payAmount = payAmount.multiply(coupon.getDiscount().divide(BigDecimal.valueOf(100)));
             }
-
         }
 
         //支付金额不能为负数
@@ -2939,7 +2938,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(query.getMemberCardId());
+        electricityMemberCardOrder.setMemberCardId(memberCardId);
         electricityMemberCardOrder.setUid(userInfo.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
@@ -2948,13 +2947,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-        electricityMemberCardOrder.setFranchiseeId(query.getFranchiseeId());
+        electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setSource(source);
         electricityMemberCardOrder.setRefId(refId);
-        if (Objects.nonNull(query.getUserCouponId())) {
-            electricityMemberCardOrder.setCouponId(query.getUserCouponId().longValue());
+        if (Objects.nonNull(userCouponId)) {
+            electricityMemberCardOrder.setCouponId(userCouponId.longValue());
         }
 
         return Triple.of(true, null, electricityMemberCardOrder);
