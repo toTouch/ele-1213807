@@ -1725,6 +1725,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateUserCar.setSn("");
         updateUserCar.setUpdateTime(System.currentTimeMillis());
         userCarService.unBindingCarByUid(updateUserCar);
+    
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(userInfo.getUid());
+        updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateByUid(updateUserInfo);
         
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
