@@ -47,6 +47,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Autowired
     UserInfoService userInfoService;
+    
+    @Autowired
+    UserBatteryService userBatteryService;
 
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
@@ -121,6 +124,13 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
     
         eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
+    
+        if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
+            UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
+            if (Objects.nonNull(userBattery)) {
+                eleBatteryServiceFeeVO.setBatteryType(userBattery.getBatteryType());
+            }
+        }
 
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
         Long now = System.currentTimeMillis();
