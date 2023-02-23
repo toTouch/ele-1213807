@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -109,6 +110,19 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             boxOtherProperties.setCellNo(eleCellVo.getCell_no());
             boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
             boxOtherProperties.setLockReason(eleCellVo.getLockReason());
+            boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
+            boxOtherProperties.setCreateTime(System.currentTimeMillis());
+            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
+            boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+        }
+        
+        //启用格挡 移除格挡禁用原因
+        if (StringUtils.isNotEmpty(isForbidden) && Objects.equals(Integer.valueOf(isForbidden), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE)) {
+            BoxOtherProperties boxOtherProperties = new BoxOtherProperties();
+            boxOtherProperties.setElectricityCabinetId(electricityCabinet.getId());
+            boxOtherProperties.setCellNo(eleCellVo.getCell_no());
+            boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
+            boxOtherProperties.setLockReason(NumberConstant.ZERO);
             boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
             boxOtherProperties.setCreateTime(System.currentTimeMillis());
             boxOtherProperties.setUpdateTime(System.currentTimeMillis());
