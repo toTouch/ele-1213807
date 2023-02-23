@@ -235,11 +235,11 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
         if(Objects.nonNull(userCarDeposit)){
             userCarMemberCardVO.setCarDeposit(userCarDeposit.getCarDeposit());
-        }
-    
-        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
-        if (Objects.nonNull(carDepositOrder)) {
-            userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
+            //押金时间
+            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+            if (Objects.nonNull(carDepositOrder)) {
+                userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
+            }
         }
     
         //车辆型号
