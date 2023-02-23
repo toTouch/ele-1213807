@@ -24,7 +24,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R saveElectricityBattery(ElectricityBattery electricityBattery);
 
-    R update(ElectricityBattery electricityBattery);
+    Integer update(ElectricityBattery electricityBattery);
+    
+    R updateForAdmin(ElectricityBattery electricityBattery);
 
     R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
