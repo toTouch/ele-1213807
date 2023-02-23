@@ -408,7 +408,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentCarDeposit(Long carModelId, Long storeId, UserInfo userInfo) {
+    public Triple<Boolean, String, Object> handleRentCarDeposit(Long carModelId, Long storeId, Integer memberCardId, UserInfo userInfo) {
         if (Objects.isNull(carModelId) || Objects.isNull(storeId)) {
             return Triple.of(true, "", null);
         }

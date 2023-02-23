@@ -23,4 +23,6 @@ public class FreeCarDepositHybridOrderQuery {
 
     @NotBlank(message = "车辆租赁方式不能为空!")
     private String rentType;
+
+    private Integer memberCardId;
 }

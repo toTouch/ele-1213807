@@ -602,7 +602,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //处理租车押金
-        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), userInfo);
+        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
         if (!rentCarDepositTriple.getLeft()) {
             return rentCarDepositTriple;
         }

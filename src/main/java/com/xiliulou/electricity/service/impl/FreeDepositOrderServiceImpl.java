@@ -808,7 +808,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //若免押订单不存在或免押失败，生成租车押金订单
         Triple<Boolean, String, Object> rentCarDepositTriple = null;
         if (!freeCarDepositResult) {
-            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), userInfo);
+            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
 
             if (!rentCarDepositTriple.getLeft()) {
                 return rentCarDepositTriple;
@@ -923,7 +923,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //若免押订单不存在或免押失败，生成租车押金订单
         Triple<Boolean, String, Object> rentCarDepositTriple = null;
         if (!freeCarDepositResult) {
-            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), userInfo);
+            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
 
             if (!rentCarDepositTriple.getLeft()) {
                 return rentCarDepositTriple;
