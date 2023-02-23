@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.CarDepositOrderMapper">
-
+    
     <resultMap type="com.xiliulou.electricity.entity.CarDepositOrder" id="CarDepositOrderMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
@@ -288,5 +288,17 @@
         </if>
         GROUP BY
         weekDate
+    </select>
+    
+    <select id="payDepositOrderList" resultType="com.xiliulou.electricity.vo.UserCarDepositOrderVo">
+        select cdo.pay_amount, cdo.create_time, ero.update_time as refund_time, ecm.name as car_model_name
+        from t_car_deposit_order cdo
+        left join t_ele_refund_order ero on cdo.order_id = ero.order_id
+        left join t_electricity_car_model ecm on ecm.id = cdo.car_model_id
+        where cdo.uid = #{uid}
+        and cdo.tenant_id = #{tenantId}
+        and ero.refund_order_type = 1
+        and ero.status = 4
+        limit #{offset}, #{size}
     </select>
 </mapper>
