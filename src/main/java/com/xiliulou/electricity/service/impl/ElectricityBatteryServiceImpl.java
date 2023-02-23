@@ -133,6 +133,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         return R.ok();
     }
+    
+    
+    
 
     /**
      * 修改电池
@@ -141,7 +144,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    public R update(ElectricityBattery electricityBattery) {
+    public Integer update(ElectricityBattery electricityBattery) {
+        return electricitybatterymapper.update(electricityBattery);
+    }
+    
+    @Override
+    public R updateForAdmin(ElectricityBattery electricityBattery) {
         ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectOne(
                 new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, electricityBattery.getId())
                         .eq(ElectricityBattery::getTenantId, TenantContextHolder.getTenantId())
@@ -150,7 +158,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             log.error("ELE ERROR, not found electricity battery id={}", electricityBattery.getId());
             return R.fail("ELECTRICITY.0020", "电池不存在!");
         }
-        
+    
         Integer count = electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, electricityBattery.getSn())
                 .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL).ne(ElectricityBattery::getId, electricityBattery.getId()));
         if (count > 0) {
@@ -165,7 +173,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("修改失败!");
         }
     }
-
+    
     /**
      * 电池分页
      *
