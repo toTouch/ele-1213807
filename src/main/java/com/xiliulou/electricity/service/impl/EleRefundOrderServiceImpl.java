@@ -585,7 +585,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("100211", "用户套餐已暂停！");
         }
     
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
+                UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("BATTERY DEPOSIT REFUND ERROR! disable member card is reviewing,uid={}", uid);
             return R.fail("ELECTRICITY.100003", "停卡正在审核中");
         }
