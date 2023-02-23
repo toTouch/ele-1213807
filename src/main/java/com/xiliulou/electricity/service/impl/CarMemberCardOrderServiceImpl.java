@@ -578,6 +578,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             if (!calcSavePrice.getLeft()) {
                 return R.fail("100237", "车辆租赁方式不存在!");
             }
+    
+            if (Objects.nonNull(userCar.getCid()) || StringUtils.isNotBlank(userCar.getSn()) || Objects
+                    .equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+                return R.fail("100253", "用户已绑定车辆，请先解绑");
+            }
+            
             
             BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
             String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
