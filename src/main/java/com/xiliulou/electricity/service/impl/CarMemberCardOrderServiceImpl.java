@@ -71,6 +71,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     UserCarService userCarService;
     @Autowired
     UserCarDepositService userCarDepositService;
+    
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -246,7 +249,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(store)) {
             userCarMemberCardVO.setStoreName(store.getName());
         }
-
+    
+        //车辆经纬度
+        ElectricityCar electricityCar = electricityCarService
+                .selectBySn(userCar.getSn(), TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityCar)) {
+            userCarMemberCardVO.setLongitude(electricityCar.getLongitude());
+            userCarMemberCardVO.setLatitude(electricityCar.getLatitude());
+        }
         return Triple.of(true, "", userCarMemberCardVO);
     }
 
