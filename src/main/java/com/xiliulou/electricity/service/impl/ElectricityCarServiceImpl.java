@@ -10,6 +10,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -45,6 +46,9 @@ import java.util.stream.Collectors;
 public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Resource
     private ElectricityCarMapper electricityCarMapper;
+    
+    @Resource
+    CarAttrMapper carAttrMapper;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -315,6 +319,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //给加的搜索，没什么意义
         String sql = "select dev_id devId,longitude,latitude ,create_time createTime from t_car_attr where dev_id=? and createTime>=? AND createTime<=? order by  createTime desc";
         return R.ok(clickHouseService.query(CarGpsVo.class, sql, userCar.getSn().trim(), begin, end));
+    }
+    
+    @Override
+    @DS(value = "clickhouse")
+    public CarGpsVo queryLastReportPointBySn(String sn) {
+        return carAttrMapper.queryLastReportPointBySn(sn);
     }
     
     @Override

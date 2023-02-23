@@ -17,6 +17,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.UserCarMemberCardVO;
@@ -251,11 +252,11 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
     
         //车辆经纬度
-        ElectricityCar electricityCar = electricityCarService
-                .selectBySn(userCar.getSn(), TenantContextHolder.getTenantId());
-        if (Objects.nonNull(electricityCar)) {
-            userCarMemberCardVO.setLongitude(electricityCar.getLongitude());
-            userCarMemberCardVO.setLatitude(electricityCar.getLatitude());
+        CarGpsVo carGpsVo = electricityCarService.queryLastReportPointBySn(userCar.getSn());
+        if (Objects.nonNull(carGpsVo)) {
+            userCarMemberCardVO.setLongitude(carGpsVo.getLongitude());
+            userCarMemberCardVO.setLatitude(carGpsVo.getLatitude());
+            userCarMemberCardVO.setPointUpdateTime(carGpsVo.getCreateTime());
         }
         return Triple.of(true, "", userCarMemberCardVO);
     }

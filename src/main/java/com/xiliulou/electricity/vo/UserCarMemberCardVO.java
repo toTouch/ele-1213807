@@ -70,5 +70,10 @@ public class UserCarMemberCardVO {
      * 地址纬度
      */
     private Double latitude;
+    
+    /**
+     * 地址更新时间
+     */
+    private Long pointUpdateTime;
 
 }
