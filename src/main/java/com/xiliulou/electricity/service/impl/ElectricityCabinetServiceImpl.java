@@ -3404,29 +3404,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
         }
 
-        CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
-            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-                    .tenantId(tenantId).eleIdList(finalEleIdList)
-                    .status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
-            Integer orderSuccessCount = electricityCabinetOrderService
-                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-            homePageElectricityOrderVo.setOrderSuccessCount(orderSuccessCount);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-            return null;
-        });
-        
-        //换电总订单统计
-        CompletableFuture<Void> electricitySunOrderCount = CompletableFuture.runAsync(() -> {
-            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-                    .tenantId(tenantId).eleIdList(finalEleIdList).build();
-            Integer orderSumCount = electricityCabinetOrderService
-                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-            homePageElectricityOrderVo.setSumOrderCount(orderSumCount);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-            return null;
-        });
+//        CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
+//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+//                    .tenantId(tenantId).eleIdList(finalEleIdList)
+//                    .status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
+//            Integer orderSuccessCount = electricityCabinetOrderService
+//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
+//            homePageElectricityOrderVo.setOrderSuccessCount(orderSuccessCount);
+//        }, executorService).exceptionally(e -> {
+//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+//            return null;
+//        });
+//
+//        //换电总订单统计
+//        CompletableFuture<Void> electricitySunOrderCount = CompletableFuture.runAsync(() -> {
+//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+//                    .tenantId(tenantId).eleIdList(finalEleIdList).build();
+//            Integer orderSumCount = electricityCabinetOrderService
+//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
+//            homePageElectricityOrderVo.setSumOrderCount(orderSumCount);
+//        }, executorService).exceptionally(e -> {
+//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+//            return null;
+//        });
         
         //换电柜在线总数统计
         List<Long> finalStores = stores;
@@ -3450,9 +3450,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         //等待所有线程停止
+//        CompletableFuture<Void> resultFuture = CompletableFuture
+//                .allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount,
+//                        electricityOfflineCabinetCount);
         CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount,
-                        electricityOfflineCabinetCount);
+                .allOf(electricityOnlineCabinetCount, electricityOfflineCabinetCount);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
