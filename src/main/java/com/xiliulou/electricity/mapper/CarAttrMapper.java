@@ -19,5 +19,5 @@ public interface CarAttrMapper extends BaseMapper<CarAttr> {
     
     List<CarAttr> getGpsList(CarGpsQuery carGpsQuery);
     
-    CarGpsVo queryLastReportPointBySn(@Param("sn") String sn);
+    CarAttr queryLastReportPointBySn(@Param("sn") String sn);
 }

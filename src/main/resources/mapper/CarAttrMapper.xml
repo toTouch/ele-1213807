@@ -13,7 +13,7 @@
         </where>
     </select>
     
-    <select id="queryLastReportPointBySn" resultType="com.xiliulou.electricity.vo.CarGpsVo">
+    <select id="queryLastReportPointBySn" resultType="com.xiliulou.electricity.entity.clickhouse.CarAttr">
         select dev_id devId,longitude,latitude ,create_time createTime from t_car_attr
         <where>
             dev_id = #{sn}

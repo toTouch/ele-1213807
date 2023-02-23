@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.CarGpsVo;
 
@@ -53,5 +54,5 @@ public interface ElectricityCarService {
     
     R attrList(Long beginTime, Long endTime);
     
-    CarGpsVo queryLastReportPointBySn(String sn);
+    CarAttr queryLastReportPointBySn(String sn);
 }

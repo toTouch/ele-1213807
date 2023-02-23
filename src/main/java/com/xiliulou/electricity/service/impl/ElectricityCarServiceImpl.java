@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
@@ -323,7 +324,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Override
     @DS(value = "clickhouse")
-    public CarGpsVo queryLastReportPointBySn(String sn) {
+    public CarAttr queryLastReportPointBySn(String sn) {
         return carAttrMapper.queryLastReportPointBySn(sn);
     }
     

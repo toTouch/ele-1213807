@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
@@ -261,11 +262,11 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
     
         //车辆经纬度
-        CarGpsVo carGpsVo = electricityCarService.queryLastReportPointBySn(userCar.getSn());
-        if (Objects.nonNull(carGpsVo)) {
-            userCarMemberCardVO.setLongitude(carGpsVo.getLongitude());
-            userCarMemberCardVO.setLatitude(carGpsVo.getLatitude());
-            userCarMemberCardVO.setPointUpdateTime(carGpsVo.getCreateTime());
+        CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
+        if (Objects.nonNull(carAttr)) {
+            userCarMemberCardVO.setLongitude(carAttr.getLongitude());
+            userCarMemberCardVO.setLatitude(carAttr.getLatitude());
+            userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
         }
         return Triple.of(true, "", userCarMemberCardVO);
     }
