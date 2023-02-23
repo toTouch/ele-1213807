@@ -119,10 +119,9 @@ public class EleDisableMemberCardRecord {
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
-    public static final Integer MEMBER_CARD_DISABLE_ROLLBACK = 3;
 
     public static final Integer DISABLE_CARD_NOT_LIMIT_TIME = 0;
     public static final Integer DISABLE_CARD_LIMIT_TIME = 1;
-
-
+    
+    public static final Integer STATUS_MEMBER_CARD_DISABLE_ROLLBACK = 4;
 }

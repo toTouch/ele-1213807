@@ -1336,7 +1336,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
         EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
         updateEleDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-        updateEleDisableMemberCardRecord.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_ROLLBACK);
+        updateEleDisableMemberCardRecord.setStatus(EleDisableMemberCardRecord.STATUS_MEMBER_CARD_DISABLE_ROLLBACK);
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
         eleDisableMemberCardRecordService.updateBYId(updateEleDisableMemberCardRecord);
     
