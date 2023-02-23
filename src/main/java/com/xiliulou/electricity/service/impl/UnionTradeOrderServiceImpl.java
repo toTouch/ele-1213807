@@ -351,7 +351,7 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     /**
-     * 混合支付回调
+     * 混合支付回调 （新）
      *
      * @param callBackResource
      * @return

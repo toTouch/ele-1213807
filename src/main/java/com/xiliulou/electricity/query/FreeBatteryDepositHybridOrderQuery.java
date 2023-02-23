@@ -10,11 +10,12 @@ import javax.validation.constraints.NotNull;
  * @date 2023-02-22-17:21
  */
 @Data
-public class freeBatteryDepositHybridOrderQuery {
+public class FreeBatteryDepositHybridOrderQuery {
     private String productKey;
 
     private String deviceName;
 
+    private Long franchiseeId;
     /**
      * 套餐id
      */
@@ -30,5 +31,10 @@ public class freeBatteryDepositHybridOrderQuery {
      * 优惠券id
      */
     private Integer userCouponId;
+
+    /**
+     * 车辆型号
+     */
+    private Integer model;
 
 }

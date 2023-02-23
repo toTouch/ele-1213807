@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.query.FreeBatteryDepositQuery;
-import com.xiliulou.electricity.query.freeBatteryDepositHybridOrderQuery;
+import com.xiliulou.electricity.query.*;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -59,5 +58,13 @@ public interface FreeDepositOrderService {
 
     Triple<Boolean, String, Object> selectFreeBatteryDepositOrderStatus();
 
-    Triple<Boolean, String, Object> freeDepositHybridOrder(freeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
+    Triple<Boolean, String, Object> freeBatteryDepositHybridOrder(FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request);
+
+    Triple<Boolean, String, Object> freeCarDepositOrder(FreeCarDepositQuery freeCarDepositQuery);
+
+    Triple<Boolean, String, Object> selectFreeCarDepositOrderStatus();
+
+    Triple<Boolean, String, Object> freeCarDepositHybridOrder(FreeCarDepositHybridOrderQuery query, HttpServletRequest request);
+
+    Triple<Boolean, String, Object> freeCarBatteryDepositHybridOrder(FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request);
 }

@@ -36,4 +36,19 @@ public class FreeDepositUserInfoVo {
      * 电池押金冻结状态
      */
     private Integer batteryDepositAuthStatus;
+
+    /**
+     * 车辆型号
+     */
+    private Long carModel;
+
+    /**
+     * 缴纳车辆押金的时间
+     */
+    private Long applyCarDepositTime;
+
+    /**
+     * 车辆押金冻结状态
+     */
+    private Integer carDepositAuthStatus;
 }

@@ -602,19 +602,19 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //处理租车押金
-        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query, userInfo);
+        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), userInfo);
         if (!rentCarDepositTriple.getLeft()) {
             return rentCarDepositTriple;
         }
 
         //处理租车套餐订单
-        Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query, userInfo);
+        Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
         if (!rentCarMemberCardTriple.getLeft()) {
             return rentCarMemberCardTriple;
         }
 
         //处理电池押金相关
-        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query, userInfo);
+        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getModel(), userInfo);
         if (!rentBatteryDepositTriple.getLeft()) {
             return rentBatteryDepositTriple;
         }
@@ -634,7 +634,6 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
-
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
 
 
@@ -666,9 +665,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //保存电池押金订单
         if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
-            }
+//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+//                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
+//            }
             eleDepositOrderService.insert(eleDepositOrder);
 
             orderList.add(eleDepositOrder.getOrderId());

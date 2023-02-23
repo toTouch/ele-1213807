@@ -1560,15 +1560,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentBatteryDeposit(RentCarHybridOrderQuery query, UserInfo userInfo) {
+    public Triple<Boolean, String, Object> handleRentBatteryDeposit(Long franchiseeId, Integer model, UserInfo userInfo) {
         EleDepositOrder eleDepositOrder = null;
-        if (Objects.isNull(query.getFranchiseeId()) && Objects.isNull(query.getModel())) {
+        if (Objects.isNull(franchiseeId) && Objects.isNull(model)) {
             return Triple.of(true, "", null);
         }
 
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
         if (Objects.isNull(franchisee)) {
-            log.error("BATTERY DEPOSIT ERROR! not found Franchisee ！franchiseeId={},uid={}", query.getFranchiseeId(), userInfo.getUid());
+            log.error("BATTERY DEPOSIT ERROR! not found Franchisee ！franchiseeId={},uid={}", franchiseeId, userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0038", "未找到加盟商");
         }
 
@@ -1580,7 +1580,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //型号押金计算
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            if (Objects.isNull(query.getModel())) {
+            if (Objects.isNull(model)) {
                 return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
             }
 
@@ -1588,13 +1588,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //型号押金
             List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-                log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", query.getFranchiseeId(), userInfo.getUid());
+                log.error("BATTERY DEPOSIT ERROR! not found modelBatteryDepositList ！franchiseeId={},uid={}", franchiseeId, userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
             }
 
             // TODO: 2022/12/21 理解一下
             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-                if ((double) (modelBatteryDeposit.getModel()) - query.getModel() < 1 && (double) (modelBatteryDeposit.getModel()) - query.getModel() >= 0) {
+                if ((double) (modelBatteryDeposit.getModel()) - model < 1 && (double) (modelBatteryDeposit.getModel()) - model >= 0) {
                     depositPayAmount = modelBatteryDeposit.getBatteryDeposit();
                     break;
                 }
@@ -1602,7 +1602,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if (Objects.isNull(depositPayAmount)) {
-            log.error("payDeposit  ERROR! payAmount is null ！franchiseeId={},uid={}", query.getFranchiseeId(), userInfo.getUid());
+            log.error("BATTERY DEPOSIT ERROR! payAmount is null ！franchiseeId={},uid={}", franchiseeId, userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00110", "未找到押金");
         }
 
@@ -1620,6 +1620,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .tenantId(userInfo.getTenantId())
                 .franchiseeId(franchisee.getId())
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
+                .batteryType(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : null)
                 .storeId(null)
                 .modelType(franchisee.getModelType()).build();
 

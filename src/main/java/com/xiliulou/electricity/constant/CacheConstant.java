@@ -310,7 +310,8 @@ public interface CacheConstant {
     /**
      * 免押订单查询缓存锁
      */
-    String ELE_CACHE_FREE_DEPOSIT_LOCK_KEY = "free_deposit_lock_key:";
+    String ELE_CACHE_FREE_BATTERY_DEPOSIT_LOCK_KEY = "free_battery_deposit_lock_key:";
+    String ELE_CACHE_FREE_CAR_DEPOSIT_LOCK_KEY = "free_car_deposit_lock_key:";
 
     /**
      * 免押电池套餐押金支付缓存锁

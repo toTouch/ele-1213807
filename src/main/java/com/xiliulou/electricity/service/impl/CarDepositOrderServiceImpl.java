@@ -408,26 +408,26 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentCarDeposit(RentCarHybridOrderQuery query, UserInfo userInfo) {
-        if (Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())) {
+    public Triple<Boolean, String, Object> handleRentCarDeposit(Long carModelId, Long storeId, UserInfo userInfo) {
+        if (Objects.isNull(carModelId) || Objects.isNull(storeId)) {
             return Triple.of(true, "", null);
         }
 
-        Store store = storeService.queryByIdFromCache(query.getStoreId());
+        Store store = storeService.queryByIdFromCache(storeId);
         if (Objects.isNull(store)) {
             log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
 
-        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carModelId.intValue());
         if (Objects.isNull(electricityCarModel)) {
-            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", carModelId, userInfo.getUid());
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
 
         //租车押金和电池押金一起购买，校验换电套餐加盟商与车辆型号加盟商是否一致
-        if(Objects.nonNull(query.getFranchiseeId()) && !Objects.equals( query.getFranchiseeId(),electricityCarModel.getFranchiseeId() )){
-            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}",query.getFranchiseeId(),electricityCarModel.getFranchiseeId());
+        if (!Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
+            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId());
             return Triple.of(false, "100255", "车辆型号加盟商与电池套餐加盟商不一致！");
         }
 
@@ -447,10 +447,10 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         carDepositOrder.setCreateTime(System.currentTimeMillis());
         carDepositOrder.setUpdateTime(System.currentTimeMillis());
         carDepositOrder.setFranchiseeId(store.getFranchiseeId());
-        carDepositOrder.setStoreId(query.getStoreId());
+        carDepositOrder.setStoreId(storeId);
         carDepositOrder.setPayType(CarDepositOrder.ONLINE_PAYTYPE);
-        carDepositOrder.setCarModelId(query.getCarModelId());
-        carDepositOrder.setRentBattery(Objects.isNull(query.getMemberCardId()) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
+        carDepositOrder.setCarModelId(carModelId);
+        carDepositOrder.setRentBattery(Objects.isNull(carModelId) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
 
         return Triple.of(true, "", carDepositOrder);
     }

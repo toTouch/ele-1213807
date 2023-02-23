@@ -384,29 +384,29 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentCarMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo) {
+    public Triple<Boolean, String, Object> handleRentCarMemberCard(Long storeId, Long carModelId, Integer rentTime, String rentType, UserInfo userInfo) {
 
-        if (Objects.isNull(query.getCarModelId()) || Objects.isNull(query.getStoreId())) {
+        if (Objects.isNull(carModelId) || Objects.isNull(storeId)) {
             return Triple.of(true, "", null);
         }
 
-        Store store = storeService.queryByIdFromCache(query.getStoreId());
+        Store store = storeService.queryByIdFromCache(storeId);
         if (Objects.isNull(store)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! not found store,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
 
 
-        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carModelId.intValue());
         if (Objects.isNull(electricityCarModel)) {
-            log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! not find carMode, carModelId={},uid={}", carModelId, userInfo.getUid());
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
 
         //获取租车套餐计费规则
         Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(electricityCarModel);
         if (ObjectUtil.isEmpty(rentCarPriceRule)) {
-            log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", query.getCarModelId(), userInfo.getUid());
+            log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", carModelId, userInfo.getUid());
             return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
@@ -419,14 +419,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return Triple.of(false, "ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
 
-        EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(query.getRentType());
+        EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory.getInstance(rentType);
         if (Objects.isNull(calcRentCarPriceInstance)) {
             log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
-        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, query.getRentTime(), rentCarPriceRule);
-        if (!calcSavePrice.getLeft()) {
+        Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance.getRentCarPrice(userInfo, rentTime, rentCarPriceRule);
+        if (Boolean.FALSE.equals(calcSavePrice.getLeft())) {
             return Triple.of(false, "100237", "租车套餐计费规则不存在!");
         }
 
@@ -442,18 +442,17 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_INIT);
         carMemberCardOrder.setCarModelId(electricityCarModel.getId().longValue());
         carMemberCardOrder.setUid(userInfo.getUid());
-        carMemberCardOrder.setCardName(getCardName(query.getRentType()));
-        carMemberCardOrder.setMemberCardType(query.getRentType());
+        carMemberCardOrder.setCardName(getCardName(rentType));
+        carMemberCardOrder.setMemberCardType(rentType);
         carMemberCardOrder.setPayAmount(rentCarPrice);
         carMemberCardOrder.setUserName(userInfo.getName());
-        carMemberCardOrder.setValidDays(query.getRentTime());
+        carMemberCardOrder.setValidDays(rentTime);
         carMemberCardOrder.setPayType(CarMemberCardOrder.ONLINE_PAYTYPE);
-        carMemberCardOrder.setStoreId(query.getStoreId());
+        carMemberCardOrder.setStoreId(storeId);
         carMemberCardOrder.setFranchiseeId(electricityCarModel.getFranchiseeId());
         carMemberCardOrder.setTenantId(userInfo.getTenantId());
 
         return Triple.of(true, "", carMemberCardOrder);
-
     }
 
     @Override

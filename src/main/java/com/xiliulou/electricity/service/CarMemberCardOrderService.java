@@ -74,7 +74,7 @@ public interface CarMemberCardOrderService {
 
     CarMemberCardOrder selectByOrderId(String orderNo);
 
-    Triple<Boolean, String, Object> handleRentCarMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo);
+    Triple<Boolean, String, Object> handleRentCarMemberCard(Long storeId, Long carModelId, Integer rentTime, String rentType, UserInfo userInfo);
 
     String getCardName(String rentType);
 
