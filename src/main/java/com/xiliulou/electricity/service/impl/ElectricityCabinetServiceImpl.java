@@ -2227,6 +2227,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setTenantId(electricityBattery.getTenantId());
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
         
         //电池上报是否有其他信息
