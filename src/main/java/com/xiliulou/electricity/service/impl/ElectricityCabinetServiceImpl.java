@@ -3672,10 +3672,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private boolean isOldBoard(Integer eid) {
         final double MIN_OLD_BOARD_VERSION = 50.0;
+        double versionPrefix = 50.0;
         
         EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
         if (Objects.nonNull(eleCabinetCoreData) && StrUtil.isNotBlank(eleCabinetCoreData.getCoreVersion())) {
-            return Double.parseDouble(eleCabinetCoreData.getCoreVersion()) < MIN_OLD_BOARD_VERSION ? false : true;
+            String version = eleCabinetCoreData.getCoreVersion();
+            versionPrefix = Double.parseDouble(version.substring(0, version.indexOf(".")));
+            return versionPrefix < MIN_OLD_BOARD_VERSION ? false : true;
         }
         
         List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService
@@ -3689,8 +3692,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (CollectionUtils.isEmpty(collect)) {
             return true;
         }
-        
-        return Double.parseDouble(collect.get(0).getVersion()) < MIN_OLD_BOARD_VERSION ? false : true;
+    
+        String version = collect.get(0).getVersion();
+        versionPrefix = Double.parseDouble(version.substring(0, version.indexOf(".")));
+        return versionPrefix < MIN_OLD_BOARD_VERSION ? false : true;
     }
 
     @Override
