@@ -1744,6 +1744,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+            return;
+        }
+    
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
+            return;
+        }
+    
         CarMemberCardOrder carMemberCardOrder = this.carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());
         if (Objects.isNull(carMemberCardOrder)) {
@@ -1755,11 +1764,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setValidDays(carMemberCardOrder.getValidDays());
         vo.setMemberCardCreateTime(carMemberCardOrder.getCreateTime());
         
-        //计算过期时间
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarMemberCard)) {
-            return;
-        }
     
         vo.setMemberCardExpireTime(userCarMemberCard.getMemberCardExpireTime());
         
@@ -1776,6 +1780,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     private void queryUserCarDeposit(DetailsCarInfoVo vo, UserInfo userInfo) {
         vo.setCarDepositStatus(userInfo.getCarDepositStatus());
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+            return;
+        }
     
         CarDepositOrder carDepositOrder = carDepositOrderService
                 .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId());
@@ -1803,14 +1810,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
     
     private void queryUserCar(DetailsCarInfoVo vo, UserInfo userInfo) {
-        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-        if (Objects.nonNull(electricityCar)) {
-            vo.setCarSn(electricityCar.getSn());
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+            return;
         }
     
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
             return;
+        }
+        
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityCar)) {
+            vo.setCarSn(electricityCar.getSn());
         }
     
         vo.setCarModelId(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
