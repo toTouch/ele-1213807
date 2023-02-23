@@ -65,6 +65,6 @@
         select id,member_card_name,status,user_name,phone,create_time,update_time,tenant_id,err_msg,disable_member_card_no,uid
         card_days,choose_days,real_days,pay_status,charge_rate,disable_card_time_type,disable_deadline,battery_member_card_id
         from t_ele_disable_member_card_record
-        where disable_member_card_no = #{} and tenant_id = #{tenantId}
+        where disable_member_card_no = #{disableMemberCardNo} and tenant_id = #{tenantId}
     </select>
 </mapper>
