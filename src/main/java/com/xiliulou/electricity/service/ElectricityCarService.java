@@ -49,4 +49,6 @@ public interface ElectricityCarService {
     Integer update(ElectricityCar updateElectricityCar);
 
     Integer carUnBindUser(ElectricityCar updateElectricityCar);
+    
+    R attrList(Long beginTime, Long endTime);
 }

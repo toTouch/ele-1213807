@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +63,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     RentCarOrderService rentCarOrderService;
     @Autowired
     UserCarDepositService userCarDepositService;
+    
+    @Autowired
+    ClickHouseService clickHouseService;
 
 
     /**
@@ -277,7 +285,38 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return update;
     }
-
+    
+    @Override
+    public R attrList(Long beginTime, Long endTime) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("rentBattery  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("query  ERROR! not found car! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+        
+        if (StringUtils.isEmpty(userCar.getSn())) {
+            log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
+        
+        //给加的搜索，没什么意义
+        String sql = "select dev_id devId,longitude,latitude ,create_time createTime from t_car_attr where dev_id=? and createTime>=? AND createTime<=? order by  createTime desc";
+        return R.ok(clickHouseService.query(CarGpsVo.class, sql, userCar.getSn().trim(), begin, end));
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
