@@ -1281,6 +1281,44 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Override
     public R disableMemberCardForRollback() {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(tokenUser.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService
+                .queryByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo(),
+                        TenantContextHolder.getTenantId());
+        if (Objects.isNull(eleDisableMemberCardRecord)) {
+            return null;
+        }
+    
+        EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
+        updateEleDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+        updateEleDisableMemberCardRecord.setStatus(EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_ROLLBACK);
+        updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+        eleDisableMemberCardRecordService.updateBYId(updateEleDisableMemberCardRecord);
+    
+        ServiceFeeUserInfo updateServiceFeeUserInfo = new ServiceFeeUserInfo();
+        updateServiceFeeUserInfo.setUid(userInfo.getUid());
+        updateServiceFeeUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateServiceFeeUserInfo.setDisableMemberCardNo("");
+        updateServiceFeeUserInfo.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+        serviceFeeUserInfoService.updateByUid(updateServiceFeeUserInfo);
+
         
         return null;
     }
