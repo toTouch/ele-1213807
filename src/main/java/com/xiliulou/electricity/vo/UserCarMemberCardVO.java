@@ -62,6 +62,10 @@ public class UserCarMemberCardVO {
     private BigDecimal carDeposit;
     
     /**
+     * 车辆押金缴纳时间
+     */
+    private Long payDepositTime;
+    /**
      * 地址经度
      */
     private Double longitude;

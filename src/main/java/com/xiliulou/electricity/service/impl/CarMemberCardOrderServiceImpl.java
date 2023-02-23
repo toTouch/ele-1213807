@@ -75,6 +75,10 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     ElectricityCarService electricityCarService;
+    
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
+    
 
     /**
      * 通过ID查询单条数据从DB
@@ -232,7 +236,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if(Objects.nonNull(userCarDeposit)){
             userCarMemberCardVO.setCarDeposit(userCarDeposit.getCarDeposit());
         }
-
+    
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+        if (Objects.nonNull(carDepositOrder)) {
+            userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
+        }
+    
         //车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
         if (Objects.nonNull(electricityCarModel)) {
