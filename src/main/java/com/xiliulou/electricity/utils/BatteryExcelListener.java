@@ -83,7 +83,7 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 				//租户
 				Integer tenantId = TenantContextHolder.getTenantId();
 
-				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryExcelQuery.getSn());
+				ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batteryExcelQuery.getSn());
 				if (Objects.nonNull(electricityBattery)) {
 					continue;
 				}

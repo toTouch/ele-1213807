@@ -62,7 +62,7 @@
     <select id="carMemberCardExpire" resultType="com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery">
         SELECT
 	    tucmc.id,
-	    tucmc.member_card_expire_time,
+	    tucmc.member_card_expire_time as rentCarMemberCardExpireTime,
 	    cmco.card_name as cardName,
 	    ui.uid,
 	    ui.tenant_id,

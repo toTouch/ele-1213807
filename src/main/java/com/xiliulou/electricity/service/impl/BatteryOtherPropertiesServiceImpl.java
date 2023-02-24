@@ -60,7 +60,7 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 		
 		BatteryOtherPropertiesQuery batteryOtherPropertiesQuery=new BatteryOtherPropertiesQuery();
 		
-		ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(sn);
+		ElectricityBattery electricityBattery=electricityBatteryService.queryBySnFromDb(sn);
 		if(Objects.isNull(electricityBattery) || !Objects.equals(electricityBattery.getTenantId(), TenantContextHolder.getTenantId())){
 			return R.ok(batteryOtherPropertiesQuery);
 		}

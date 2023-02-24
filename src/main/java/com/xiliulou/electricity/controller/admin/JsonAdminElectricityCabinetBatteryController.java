@@ -70,7 +70,7 @@ public class JsonAdminElectricityCabinetBatteryController {
             return R.fail("请求参数错误!");
         }
 
-        return electricityBatteryService.update(electricityBattery);
+        return electricityBatteryService.updateForAdmin(electricityBattery);
     }
 
     /**

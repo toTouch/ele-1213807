@@ -73,6 +73,16 @@ public class ElectricityMemberCardOrder {
      */
     private Integer payCount;
 
+    /**
+     * 套餐订单来源，1：扫码，2：线上，3：后台
+     */
+    private Integer source;
+
+    /**
+     * 扫码的柜机
+     */
+    private Long refId;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 0;
@@ -85,4 +95,9 @@ public class ElectricityMemberCardOrder {
 
     public static final Integer ONLINE_PAYMENT = 0;
     public static final Integer OFFLINE_PAYMENT = 1;
+
+    //套餐订单来源，1：扫码，2：线上，3：后台
+    public static final Integer SOURCE_SCAN = 1;
+    public static final Integer SOURCE_NOT_SCAN = 2;
+    public static final Integer SOURCE_ARTIFICIAL = 3;
 }
