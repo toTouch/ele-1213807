@@ -108,7 +108,7 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     @Override
     public Pair<Boolean, Object> queryTrackRecord(String sn, Integer size, Integer offset, Long startTime,
             Long endTime) {
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(sn,
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(sn,
                 TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityBattery)) {
             return Pair.of(true, null);

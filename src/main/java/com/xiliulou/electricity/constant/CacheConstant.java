@@ -306,4 +306,5 @@ public interface CacheConstant {
      * 上一次取格挡缓存
      */
     String CACHE_PRE_TAKE_CELL = "pre_take_cell:";
+    String CACHE_BT_ATTR = "bt_attr:";
 }

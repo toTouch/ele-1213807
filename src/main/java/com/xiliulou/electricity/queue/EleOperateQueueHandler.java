@@ -366,7 +366,7 @@ public class EleOperateQueueHandler {
                 }
 
                 //放入电池改为在仓
-                ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+                ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                         newElectricityCabinetOrder.getOldElectricityBatterySn());
                 if (Objects.nonNull(oldElectricityBattery)) {
                     ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
@@ -432,7 +432,7 @@ public class EleOperateQueueHandler {
                             electricityCabinetOrder.getElectricityCabinetId(), cellNo);
                     return;
                 }
-                ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(
+                ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(
                         electricityCabinetBox.getSn());
                 if (Objects.isNull(newElectricityBattery)) {
                     log.error("check Old Battery not find electricityBattery! sn:{}", electricityCabinetBox.getSn());
@@ -540,7 +540,7 @@ public class EleOperateQueueHandler {
             }
 
             //电池改为在用
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(
                     electricityCabinetOrder.getNewElectricityBatterySn());
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
@@ -675,7 +675,7 @@ public class EleOperateQueueHandler {
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
 
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(
                 rentBatteryOrder.getElectricityBatterySn());
         //电池改为在用
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -755,7 +755,7 @@ public class EleOperateQueueHandler {
         }
 
         //放入电池改为在仓
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 rentBatteryOrder.getElectricityBatterySn());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
