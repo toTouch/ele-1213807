@@ -34,9 +34,6 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
-import com.xiliulou.electricity.vo.api.ApiRentOrderVo;
-import com.xiliulou.iot.entity.AliIotRsp;
-import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
@@ -2202,7 +2199,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("batteryName is null");
             return R.ok();
         }
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromCache(batteryName);
         if (Objects.isNull(electricityBattery)) {
             log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
@@ -2311,7 +2308,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         //电池
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batterySn);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batterySn);
         if (Objects.isNull(electricityBattery)) {
             log.error("checkBattery error! no electricityBattery,sn={}", batterySn);
             return R.failMsg("未找到电池");
@@ -2828,7 +2825,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                 BeanUtils.copyProperties(item, electricityCabinetBoxVO);
                 
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(item.getSn());
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(item.getSn());
                 if (!Objects.isNull(electricityBattery)) {
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());

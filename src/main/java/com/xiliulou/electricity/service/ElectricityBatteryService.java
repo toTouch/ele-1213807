@@ -38,9 +38,12 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByUid(Long uid);
 
-    ElectricityBattery queryBySn(String oldElectricityBatterySn);
-
-    ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId);
+    ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn);
+    
+    ElectricityBattery queryPartAttrBySnFromCache(String sn);
+    
+    
+    ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
