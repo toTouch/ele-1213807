@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -178,7 +177,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
 
                 //更新放入电池的状态
-                ElectricityBattery placeBattery = electricityBatteryService.queryBySn(
+                ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(
                         exchangeOrderRsp.getPlaceBatteryName());
                 if (Objects.nonNull(placeBattery)) {
                     ElectricityBattery updateBattery = new ElectricityBattery();
@@ -206,7 +205,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         //电池改为在用
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(
                 exchangeOrderRsp.getTakeBatteryName());
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -266,7 +265,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         //放入电池改为在仓
         //获取放入电池
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 exchangeOrderRsp.getPlaceBatteryName());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
