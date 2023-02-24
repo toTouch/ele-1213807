@@ -26,11 +26,9 @@ public interface FreeDepositOrderService {
     /**
      * 查询多条数据
      *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
-    List<FreeDepositOrder> queryAllByLimit(int offset, int limit);
+    List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query);
 
     /**
      * 新增数据
@@ -49,9 +47,9 @@ public interface FreeDepositOrderService {
     Integer update(FreeDepositOrder freeDepositOrder);
 
     FreeDepositOrder selectByOrderId(String orderId);
-    
+
     Triple<Boolean, String, Object> freeBatteryDepositOrder(FreeBatteryDepositQuery freeBatteryDepositQuery);
-    
+
     Triple<Boolean, String, Object> freeBatteryDepositPreCheck();
 
     Triple<Boolean, String, Object> freeCarDepositPreCheck();
@@ -67,4 +65,6 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> freeCarDepositHybridOrder(FreeCarDepositHybridOrderQuery query, HttpServletRequest request);
 
     Triple<Boolean, String, Object> freeCarBatteryDepositHybridOrder(FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request);
+
+    Integer selectByPageCount(FreeDepositOrderQuery query);
 }

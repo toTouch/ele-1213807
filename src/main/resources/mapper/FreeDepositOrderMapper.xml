@@ -30,17 +30,76 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="FreeDepositOrderMap">
+    <select id="selectByPage" resultMap="FreeDepositOrderMap">
         select
-          id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, deposit_type, create_time, update_time
+        id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status,
+        tenant_id, type, deposit_type, create_time, update_time
         from t_free_deposit_order
-        limit #{offset}, #{limit}
+        where tenant_id=#{tenantId}
+        <if test="authStatus != null">
+            and auth_status = #{authStatus}
+        </if>
+        <if test="payStatus != null">
+            and pay_status = #{payStatus}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and order_id = #{orderId}
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+        <if test="realName != null and realName != '' ">
+            and real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime != null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;= #{endTime}
+        </if>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultMap="FreeDepositOrderMap">
+        select
+        count(1)
+        from t_free_deposit_order
+        where tenant_id=#{tenantId}
+        <if test="authStatus != null">
+            and auth_status = #{authStatus}
+        </if>
+        <if test="payStatus != null">
+            and pay_status = #{payStatus}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="orderId != null and orderId != ''">
+            and order_id = #{orderId}
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+        <if test="realName != null and realName != '' ">
+            and real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime != null">
+            and create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;= #{endTime}
+        </if>
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="FreeDepositOrderMap">
         select
-          id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status, tenant_id, type, deposit_type, create_time, update_time
+        id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status,
+        tenant_id, type, deposit_type, create_time, update_time
         from t_free_deposit_order
         <where>
             <if test="id != null">

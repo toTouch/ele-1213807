@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
@@ -25,6 +26,7 @@ import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -114,6 +117,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
 
+    @Autowired
+    FreeDepositDataService freeDepositDataService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -133,13 +139,21 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     /**
      * 查询多条数据
      *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
-    public List<FreeDepositOrder> queryAllByLimit(int offset, int limit) {
-        return this.freeDepositOrderMapper.queryAllByLimit(offset, limit);
+    public List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query) {
+        List<FreeDepositOrder> freeDepositOrders = this.freeDepositOrderMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(freeDepositOrders)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return freeDepositOrders;
+    }
+
+    @Override
+    public Integer selectByPageCount(FreeDepositOrderQuery query) {
+        return this.freeDepositOrderMapper.selectByPageCount(query);
     }
 
     /**
@@ -184,6 +198,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(userInfo)) {
             log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+
+        //获取租户免押次数
+        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(freeDepositData)) {
+            log.error("FREE DEPOSIT ERROR! freeDepositData is null,uid={}", uid);
+            return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
+        }
+
+        if (freeDepositData.getFreeDepositCapacity() >= NumberConstant.ZERO) {
+            log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
+            return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -283,6 +309,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(userInfo)) {
             log.error("FREE DEPOSIT ERROR! not found user info! uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+
+        //获取租户免押次数
+        FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(freeDepositData)) {
+            log.error("FREE DEPOSIT ERROR! freeDepositData is null,uid={}", uid);
+            return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
+        }
+
+        if (freeDepositData.getFreeDepositCapacity() >= NumberConstant.ZERO) {
+            log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
+            return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -454,6 +492,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         //冻结成功
         if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+
+            //扣减免押次数
+            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 5 * 60 * 1000L, false)) {
+                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+                freeDepositDataUpdate.setId(freeDepositData.getId());
+                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
+                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositDataService.update(freeDepositDataUpdate);
+            }
+
             //更新押金订单状态
             EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
             eleDepositOrderUpdate.setId(eleDepositOrder.getId());
@@ -578,6 +627,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         //冻结成功
         if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+
+            //扣减免押次数
+            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 5 * 60 * 1000L, false)) {
+                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+                freeDepositDataUpdate.setId(freeDepositData.getId());
+                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
+                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositDataService.update(freeDepositDataUpdate);
+            }
+
             //更新押金订单状态
             CarDepositOrder carDepositOrderUpdate = new CarDepositOrder();
             carDepositOrderUpdate.setId(carDepositOrder.getId());
@@ -669,7 +729,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
 
         //获取免押结果
-        boolean freeBatteryDepositResult = checkFreeBatteryDepositResult(userInfo);
+        boolean freeBatteryDepositResult = acquireFreeBatteryDepositResult(userInfo);
 
         //若免押订单不存在或免押失败，生成租电池押金订单
         Triple<Boolean, String, Object> rentBatteryDepositTriple = null;
@@ -937,7 +997,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //获取电池免押结果
-        boolean freeBatteryDepositResult = checkFreeBatteryDepositResult(userInfo);
+        boolean freeBatteryDepositResult = acquireFreeBatteryDepositResult(userInfo);
 
         //若免押订单不存在或免押失败，生成租电池押金订单
         Triple<Boolean, String, Object> rentBatteryDepositTriple = null;
@@ -1255,7 +1315,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return Boolean.FALSE;
     }
 
-    private boolean checkFreeBatteryDepositResult(UserInfo userInfo) {
+    private boolean acquireFreeBatteryDepositResult(UserInfo userInfo) {
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {

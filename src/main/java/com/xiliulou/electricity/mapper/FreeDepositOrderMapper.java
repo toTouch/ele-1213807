@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.FreeDepositOrder;
+
 import java.util.List;
+
+import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -11,7 +14,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2023-02-15 11:39:27
  */
-public interface FreeDepositOrderMapper  extends BaseMapper<FreeDepositOrder>{
+public interface FreeDepositOrderMapper extends BaseMapper<FreeDepositOrder> {
 
     /**
      * 通过ID查询单条数据
@@ -24,11 +27,9 @@ public interface FreeDepositOrderMapper  extends BaseMapper<FreeDepositOrder>{
     /**
      * 查询指定行数据
      *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
-    List<FreeDepositOrder> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
+    List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query);
 
 
     /**
@@ -63,4 +64,5 @@ public interface FreeDepositOrderMapper  extends BaseMapper<FreeDepositOrder>{
      */
     int deleteById(Long id);
 
+    Integer selectByPageCount(FreeDepositOrderQuery query);
 }
