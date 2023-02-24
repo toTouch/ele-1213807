@@ -870,7 +870,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (!freeCarDepositResult) {
             rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
 
-            if (!rentCarDepositTriple.getLeft()) {
+            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
                 return rentCarDepositTriple;
             }
         }
@@ -985,7 +985,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (!freeCarDepositResult) {
             rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
 
-            if (!rentCarDepositTriple.getLeft()) {
+            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
                 return rentCarDepositTriple;
             }
         }
