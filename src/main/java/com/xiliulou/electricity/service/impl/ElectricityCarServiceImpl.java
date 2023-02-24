@@ -319,7 +319,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         
         //给加的搜索，没什么意义
         String sql = "select dev_id devId,longitude,latitude ,create_time createTime from t_car_attr where dev_id=? and createTime>=? AND createTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.query(CarGpsVo.class, sql, userCar.getSn().trim(), begin, end));
+        List<CarGpsVo> query = clickHouseService.query(CarGpsVo.class, sql, userCar.getSn().trim(), begin, end);
+        if (CollectionUtils.isEmpty(query)) {
+            query = new ArrayList<>();
+        }
+    
+        return R.ok(query);
     }
     
     @Override
