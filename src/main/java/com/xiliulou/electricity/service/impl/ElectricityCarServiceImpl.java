@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -303,28 +304,34 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCar)) {
             log.error("query  ERROR! not found car! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
+            return R.fail("100007", "未找到车辆");
         }
-        
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
-        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
-        String begin = formatter.format(beginLocalDateTime);
-        String end = formatter.format(endLocalDateTime);
-        
+    
+        //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        //        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        //        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        //        String begin = formatter.format(beginLocalDateTime);
+        //        String end = formatter.format(endLocalDateTime);
+    
         if (StringUtils.isEmpty(userCar.getSn())) {
             log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
+            return R.fail("100007", "未找到车辆");
         }
+    
+        String begin = TimeUtils.convertToStandardFormatTime(beginTime);
+        String end = TimeUtils.convertToStandardFormatTime(endTime);
         
-        //给加的搜索，没什么意义
         String sql = "select dev_id devId,longitude,latitude ,create_time createTime from t_car_attr where dev_id=? and createTime>=? AND createTime<=? order by  createTime desc";
-        List<CarGpsVo> query = clickHouseService.query(CarGpsVo.class, sql, userCar.getSn().trim(), begin, end);
+        List<CarAttr> query = clickHouseService.query(CarAttr.class, sql, userCar.getSn().trim(), begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }
     
-        return R.ok(query);
+        List<CarGpsVo> result = query.parallelStream()
+                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude())
+                        .setDevId(e.getDevId()).setCreateTime(e.getCreateTime().getTime()))
+                .collect(Collectors.toList());
+        return R.ok(result);
     }
     
     @Override
