@@ -119,7 +119,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         if (Objects.isNull(freeDepositData)) {
             FreeDepositData freeDepositDataInsert = new FreeDepositData();
             freeDepositDataInsert.setFreeDepositCapacity(freeDepositDataQuery.getFreeDepositCapacity());
-            freeDepositDataInsert.setTenantId(TenantContextHolder.getTenantId());
+            freeDepositDataInsert.setTenantId(freeDepositDataQuery.getTenantId());
             freeDepositDataInsert.setDelFlag(FreeDepositData.DEL_NORMAL);
             freeDepositDataInsert.setRechargeTime(System.currentTimeMillis());
             freeDepositDataInsert.setCreateTime(System.currentTimeMillis());
@@ -135,6 +135,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
         freeDepositDataUpdate.setId(freeDepositData.getId());
         freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() + freeDepositDataQuery.getFreeDepositCapacity());
         freeDepositDataUpdate.setRechargeTime(System.currentTimeMillis());
+        freeDepositDataUpdate.setTenantId(freeDepositDataQuery.getTenantId());
         freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
         this.freeDepositDataMapper.update(freeDepositDataUpdate);
 
