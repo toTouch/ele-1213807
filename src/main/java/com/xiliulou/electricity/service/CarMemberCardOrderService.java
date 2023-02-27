@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
@@ -83,4 +85,12 @@ public interface CarMemberCardOrderService {
     BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> finalFranchiseeIds);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
+    
+    BigDecimal queryTurnOver(Integer tenantId, Long id);
+    
+    CarMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
+    
+    R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
+    
+    R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardOrderAddAndUpdate);
 }

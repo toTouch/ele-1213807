@@ -204,6 +204,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "cardName", required = false) String cardName,
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
+                        @RequestParam(value = "authType", required = false) Integer authType,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
     
@@ -235,6 +236,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryId(batteryId)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
+                .authType(authType)
                 .serviceStatus(serviceStatus)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
@@ -315,6 +317,7 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryListV2(@RequestParam(value = "size") Long size, @RequestParam(value = "offset") Long offset,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "authType", required = false) Integer authType,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "authStatus", required = false) Integer authStatus) {
@@ -344,7 +347,7 @@ public class JsonAdminUserInfoController extends BaseController {
             return R.ok(Collections.EMPTY_LIST);
         }
     
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone)
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone).authType(authType)
                 .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
     
@@ -361,6 +364,7 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "cardName", required = false) String cardName,
             @RequestParam(value = "memberCardId", required = false) Long memberCardId,
             @RequestParam(value = "authStatus", required = false) Integer authStatus,
+            @RequestParam(value = "authType", required = false) Integer authType,
             @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -384,7 +388,7 @@ public class JsonAdminUserInfoController extends BaseController {
         UserInfoQuery userInfoQuery = UserInfoQuery.builder().name(name).phone(phone)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin).memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .cardName(cardName).uid(uid).nowElectricityBatterySn(nowElectricityBatterySn).memberCardId(memberCardId)
-                .authStatus(authStatus).serviceStatus(serviceStatus).franchiseeIds(franchiseeIds)
+                .authStatus(authStatus).serviceStatus(serviceStatus).franchiseeIds(franchiseeIds).authType(authType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return userInfoService.queryAuthenticationCount(userInfoQuery);
@@ -434,6 +438,30 @@ public class JsonAdminUserInfoController extends BaseController {
     @Log(title = "会员列表删除")
     public R deleteUserInfo(@PathVariable("uid") Long uid) {
         return userInfoService.deleteUserInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（基本信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/basicInfo")
+    public R queryDetailsBasicInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsBasicInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（电池信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/batteryInfo")
+    public R queryDetailsBatteryInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsBatteryInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（车辆信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/carInfo")
+    public R queryDetailsCarInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsCarInfo(uid);
     }
 
 

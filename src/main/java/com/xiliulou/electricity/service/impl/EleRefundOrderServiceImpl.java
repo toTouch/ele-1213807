@@ -950,7 +950,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("100211", "用户套餐已暂停！");
         }
     
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
+                UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("BATTERY DEPOSIT REFUND ERROR! disable member card is reviewing,uid={}", uid);
             return R.fail("ELECTRICITY.100003", "停卡正在审核中");
         }
@@ -1046,7 +1047,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
-                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
+                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT_CONTENT)
                     .operateUid(user.getUid())
                     .uid(uid)
                     .name(user.getUsername())

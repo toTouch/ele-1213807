@@ -1,15 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
+import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -126,6 +131,12 @@ public class UnionTradeOrderServiceImpl extends
     UserCarService userCarService;
     @Autowired
     RedisService redisService;
+    
+    @Autowired
+    ElectricityCarService electricityCarService;
+    
+    @Autowired
+    Jt808RetrofitService jt808RetrofitService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -868,6 +879,13 @@ public class UnionTradeOrderServiceImpl extends
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+    
+            //用户是否有绑定了车辆
+            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+            if (Objects.nonNull(electricityCar) && Objects
+                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            }
         }
 
         CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();
@@ -878,7 +896,8 @@ public class UnionTradeOrderServiceImpl extends
 
         return Pair.of(true, null);
     }
-
+    
+    
     @Override
     public UnionTradeOrder selectTradeOrderByOrderId(String orderId) {
         return baseMapper.selectTradeOrderByOrderId(orderId);

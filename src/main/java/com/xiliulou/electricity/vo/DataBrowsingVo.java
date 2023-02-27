@@ -18,7 +18,7 @@ public class DataBrowsingVo {
     private BigDecimal sumTurnover;
 
     /**
-     * 月卡营业额
+     * 电池月卡营业额
      */
     private BigDecimal MemberCardTurnover;
 

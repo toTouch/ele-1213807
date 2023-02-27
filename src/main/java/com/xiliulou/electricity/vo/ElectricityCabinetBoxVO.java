@@ -113,6 +113,12 @@ public class ElectricityCabinetBoxVO {
      * 备注
      */
     private String remark;
+
+    /**
+     * 锁仓/解锁时间
+     */
+    private Long lockStatusChangeTime;
+
     
     /**
      * 空闲开始时间

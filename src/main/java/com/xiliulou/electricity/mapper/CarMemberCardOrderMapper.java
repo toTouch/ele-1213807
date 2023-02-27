@@ -71,5 +71,9 @@ public interface CarMemberCardOrderMapper extends BaseMapper<CarMemberCardOrder>
     BigDecimal queryCarMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeIds") List<Long> franchiseeIds);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
-
+    
+    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    
+    CarMemberCardOrder queryLastPayMemberCardTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId,
+            @Param("tenantId") Integer tenantId);
 }

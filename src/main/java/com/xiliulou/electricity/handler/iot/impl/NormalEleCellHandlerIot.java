@@ -2,9 +2,12 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.BoxOtherProperties;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.service.BoxOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -32,6 +35,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
+    @Autowired
+    BoxOtherPropertiesService boxOtherPropertiesService;
 
 
     @Override
@@ -98,7 +103,31 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
 
-
+        //格挡禁用  保存禁用原因
+        if (StringUtils.isNotEmpty(isForbidden) && Objects.equals(Integer.valueOf(isForbidden), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+            BoxOtherProperties boxOtherProperties = new BoxOtherProperties();
+            boxOtherProperties.setElectricityCabinetId(electricityCabinet.getId());
+            boxOtherProperties.setCellNo(eleCellVo.getCell_no());
+            boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
+            boxOtherProperties.setLockReason(eleCellVo.getLockReason());
+            boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
+            boxOtherProperties.setCreateTime(System.currentTimeMillis());
+            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
+            boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+        }
+        
+        //启用格挡 移除格挡禁用原因
+        if (StringUtils.isNotEmpty(isForbidden) && Objects.equals(Integer.valueOf(isForbidden), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE)) {
+            BoxOtherProperties boxOtherProperties = new BoxOtherProperties();
+            boxOtherProperties.setElectricityCabinetId(electricityCabinet.getId());
+            boxOtherProperties.setCellNo(eleCellVo.getCell_no());
+            boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
+            boxOtherProperties.setLockReason(NumberConstant.ZERO);
+            boxOtherProperties.setLockStatusChangeTime(eleCellVo.getLockStatusChangeTime());
+            boxOtherProperties.setCreateTime(System.currentTimeMillis());
+            boxOtherProperties.setUpdateTime(System.currentTimeMillis());
+            boxOtherPropertiesService.insertOrUpdate(boxOtherProperties);
+        }
     }
 
     @Data
@@ -117,8 +146,16 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         private String is_light;
         //可用禁用
         private String is_forbidden;
-        //锁仓类型
+        //锁仓类型 0--人为禁用 1--系统禁用 2--待检中
         private Integer lockType;
+        /**
+         * 锁仓原因
+         */
+        private Integer lockReason;
+        /**
+         * 锁仓/解锁时间
+         */
+        private Long lockStatusChangeTime;
 
         //子板版本号
         private String version;
