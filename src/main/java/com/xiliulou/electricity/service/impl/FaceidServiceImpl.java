@@ -50,7 +50,7 @@ public class FaceidServiceImpl implements FaceidService {
     /**
      * 人脸核身最大透支次数
      */
-    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = -2;
+    private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = -20;
     
     private Lock lock = new ReentrantLock();
     
