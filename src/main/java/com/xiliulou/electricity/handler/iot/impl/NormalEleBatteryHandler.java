@@ -2,7 +2,6 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
@@ -155,7 +154,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //检查本次上报的电池与格挡原来的电池是否一致
         this.checkBatteryNameIsEqual(eleBox, eleBatteryVO, sessionId);
         
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName,
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batteryName,
                 electricityCabinet.getTenantId());
         if (Objects.isNull(electricityBattery)) {
             log.error("ELE BATTERY REPORT ERROR! not found battery,batteryName={},sessionId={}", batteryName,
@@ -278,6 +277,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         electricityCabinetBox.setSn(electricityBattery.getSn());
         electricityCabinetBox.setBId(electricityBattery.getId());
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        electricityCabinetBox.setEmptyGridStartTime(null);
         
         if (Objects.nonNull(power)) {
             electricityCabinetBox.setPower(power * 100);
@@ -307,6 +307,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         updateElectricityCabinetBox.setSn(null);
         updateElectricityCabinetBox.setPower(null);
         updateElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+    
+        //获取格挡的空闲时间
+        Long emptyGridStartTime = eleBox.getEmptyGridStartTime();
+        if (Objects.isNull(emptyGridStartTime)) {
+            emptyGridStartTime = System.currentTimeMillis();
+        }
+        updateElectricityCabinetBox.setEmptyGridStartTime(emptyGridStartTime);
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
         
         if (StringUtils.isBlank(eleBox.getSn())) {
@@ -319,7 +326,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
         
         //更新原仓门中的电池
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(eleBox.getSn());
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
@@ -348,7 +355,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
         
         //更新原仓门中的电池状态为异常取走
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(eleBox.getSn());
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());

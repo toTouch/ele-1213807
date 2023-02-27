@@ -44,6 +44,18 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminUserInfoController extends BaseController {
+    //全部
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_ALL=0;
+    //没过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE=1;
+    //三天过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_THREE=2;
+    //七天过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_SEVEN=3;
+    //已过期
+    private static final Integer MEMBERCARD_EXPIRE_TYPE_EXPIRE=4;
+
+
     /**
      * 服务对象
      */
@@ -74,6 +86,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "sortType", required = false) Integer sortType,
                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                       @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -117,10 +130,13 @@ public class JsonAdminUserInfoController extends BaseController {
                 .cardPayCount(cardPayCount)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
+                .memberCardExpireType(memberCardExpireType)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -178,6 +194,7 @@ public class JsonAdminUserInfoController extends BaseController {
     @GetMapping(value = "/admin/userInfo/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                         @RequestParam(value = "batteryId", required = false) Long batteryId,
@@ -187,6 +204,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "cardName", required = false) String cardName,
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
+                        @RequestParam(value = "authType", required = false) Integer authType,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
     
@@ -218,12 +236,16 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryId(batteryId)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
+                .authType(authType)
                 .serviceStatus(serviceStatus)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
                 .cardPayCount(cardPayCount)
+                .memberCardExpireType(memberCardExpireType)
                 .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
 
         return userInfoService.queryCount(userInfoQuery);
     }
@@ -295,6 +317,7 @@ public class JsonAdminUserInfoController extends BaseController {
     public R queryListV2(@RequestParam(value = "size") Long size, @RequestParam(value = "offset") Long offset,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "authType", required = false) Integer authType,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "authStatus", required = false) Integer authStatus) {
@@ -324,7 +347,7 @@ public class JsonAdminUserInfoController extends BaseController {
             return R.ok(Collections.EMPTY_LIST);
         }
     
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone)
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone).authType(authType)
                 .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
     
@@ -415,5 +438,58 @@ public class JsonAdminUserInfoController extends BaseController {
     public R deleteUserInfo(@PathVariable("uid") Long uid) {
         return userInfoService.deleteUserInfo(uid);
     }
+    
+    /**
+     * 会员列表详情信息（基本信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/basicInfo")
+    public R queryDetailsBasicInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsBasicInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（电池信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/batteryInfo")
+    public R queryDetailsBatteryInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsBatteryInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（车辆信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/carInfo")
+    public R queryDetailsCarInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsCarInfo(uid);
+    }
 
+
+    private void verifyMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery) {
+        if (Objects.isNull(userInfoQuery.getMemberCardExpireType())) {
+            return;
+        }
+
+        if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_ALL)) {
+            return;
+        }
+
+        if (Objects.isNull(userInfoQuery.getMemberCardExpireTimeBegin()) && Objects.isNull(userInfoQuery.getMemberCardExpireTimeEnd())) {
+            Long memberCardExpireTimeEnd = null;
+            Long memberCardExpireTimeBegin = null;
+
+            if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis();
+            } else if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_THREE)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis();
+                memberCardExpireTimeEnd = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
+            } else if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
+                memberCardExpireTimeBegin = System.currentTimeMillis();
+                memberCardExpireTimeEnd = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
+            } else if (Objects.equals(userInfoQuery.getMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
+                memberCardExpireTimeEnd = System.currentTimeMillis();
+            }
+            userInfoQuery.setMemberCardExpireTimeBegin(memberCardExpireTimeBegin);
+            userInfoQuery.setMemberCardExpireTimeEnd(memberCardExpireTimeEnd);
+        }
+    }
 }

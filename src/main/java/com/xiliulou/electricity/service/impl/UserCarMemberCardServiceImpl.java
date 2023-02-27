@@ -9,7 +9,9 @@ import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCarMemberCardMapper;
+import com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.queue.CarBreakPowerQueueHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
@@ -17,9 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * (UserCarMemberCard)表服务实现类
@@ -50,6 +54,9 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     UserCarService userCarService;
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+    
+    @Autowired
+    CarBreakPowerQueueHandler carBreakPowerQueueHandler;
 
     /**
      * 通过ID查询单条数据从DB
@@ -226,6 +233,47 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     public List<CarMemberCardExpiringSoonQuery> selectCarMemberCardExpire(int offset, int size, long firstTime,
             long lastTime) {
         return userCarMemberCardMapper.selectCarMemberCardExpire( offset,  size,  firstTime, lastTime);
+    }
+    
+    @Override
+    public void expireBreakPowerHandel() {
+        if (!redisService
+                .setNx(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LOCK, "ok", 120000L, false)) {
+            log.warn("expireBreakPowerHandel in execution...");
+            return;
+        }
+        
+        int offset = 0;
+        int size = 300;
+        long firstTime = 0;
+        long lastTime = System.currentTimeMillis();
+        
+        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME);
+        if (StrUtil.isNotBlank(firstTimeStr)) {
+            firstTime = Long.parseLong(firstTimeStr);
+        }
+    
+        redisService
+                .set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME, String.valueOf(lastTime),
+                        CacheConstant.CACHE_EXPIRE_MONTH, TimeUnit.MILLISECONDS);
+        
+        while (true) {
+            List<CarMemberCardExpireBreakPowerQuery> query = this.userCarMemberCardMapper
+                    .carMemberCardExpireBreakPower(offset, size, firstTime, lastTime);
+            if (CollectionUtils.isEmpty(query)) {
+                break;
+            }
+            
+            query.parallelStream().forEach(item -> {
+                if (StrUtil.isEmpty(item.getSn()) || Objects.isNull(item.getCid())) {
+                    return;
+                }
+                
+                carBreakPowerQueueHandler.putQueue(item);
+            });
+            
+            offset += size;
+        }
     }
     
     private List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime, Long lastTime) {

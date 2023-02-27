@@ -119,55 +119,65 @@
     </select>
 
     <select id="selectByPageCount" resultType="int">
-        select count(1) from t_car_member_card_order
+        select count(1)
+        from t_car_member_card_order tcco left join t_user_info tui on tcco.uid=tui.uid
         <where>
             <if test="orderId != null and orderId != ''">
-                and order_id = #{orderId}
+                and tcco.order_id = #{orderId}
+            </if>
+            <if test="uid != null">
+                and tcco.uid = #{uid}
             </if>
             <if test="status != null">
-                and status = #{status}
+                and tcco.status = #{status}
             </if>
             <if test="carModelId != null">
-                and car_model_id = #{carModelId}
+                and tcco.car_model_id = #{carModelId}
             </if>
             <if test="userName != null and userName != ''">
-                and user_name = #{userName}
+                and tcco.user_name = #{userName}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
             </if>
             <if test="memberCardType != null and memberCardType != ''">
-                and member_card_type = #{memberCardType}
+                and tcco.member_card_type = #{memberCardType}
             </if>
             <if test="cardName != null and cardName != ''">
-                and card_name = #{cardName}
+                and tcco.card_name = #{cardName}
             </if>
             <if test="payType != null">
-                and pay_type = #{payType}
+                and tcco.pay_type = #{payType}
             </if>
             <if test="payAmount != null">
-                and pay_amount = #{payAmount}
+                and tcco.pay_amount = #{payAmount}
             </if>
             <if test="validDays != null">
-                and valid_days = #{validDays}
+                and tcco.valid_days = #{validDays}
             </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
+            <if test="beginTime != null">
+                and tcco.create_time &gt;= #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tcco.create_time &lt;= #{endTime}
             </if>
             <if test="storeId != null">
-                and store_id = #{storeId}
+                and tcco.store_id = #{storeId}
             </if>
             <if test="franchiseeId != null">
-                and franchisee_id = #{franchiseeId}
+                and tcco.franchisee_id = #{franchiseeId}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and tcco.tenant_id = #{tenantId}
             </if>
             <if test="franchiseeIds != null">
-                and franchisee_id in
+                and tcco.franchisee_id in
                 <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="storeIds != null ">
-                and store_id in
+                and tcco.store_id in
                 <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
@@ -333,5 +343,28 @@
         GROUP BY
         weekDate
     </select>
-
+    
+    <select id="queryTurnOver" resultType="decimal">
+        select sum(pay_amount) from t_car_member_card_order
+        where status=1 and pay_type=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
+    </select>
+    
+    <select id="queryLastPayMemberCardTimeByUid" resultMap="CarMemberCardOrderMap">
+        select member_card_type, card_name, valid_days, create_time, update_time
+        from t_car_member_card_order
+        where uid=#{uid}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY id DESC limit 1
+    </select>
 </mapper>

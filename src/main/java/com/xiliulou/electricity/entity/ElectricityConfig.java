@@ -32,7 +32,7 @@ public class ElectricityConfig {
      */
     private Integer orderTime;
     /**
-     * 是否人工审核（0--是，1--否）
+     * 实名审核方式审核（0:人工审核 ,1:自动审核,2:人脸核身）
      */
     private Integer isManualReview;
 
@@ -91,10 +91,27 @@ public class ElectricityConfig {
      */
     private Integer isOpenInsurance;
 
+    /**
+     * 是否迁移加盟商 1--关闭 2--开启
+     */
+    private Integer isMoveFranchisee;
+
+    /**
+     * 迁移加盟商
+     */
+    private String franchiseeMoveInfo;
+
+    public static Integer MOVE_FRANCHISEE_CLOSE = 1;
+    public static Integer MOVE_FRANCHISEE_OPEN = 0;
+
+
+
+
     //人工审核
+    //实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
     public static Integer MANUAL_REVIEW = 0;
-    //自动审核
     public static Integer AUTO_REVIEW = 1;
+    public static Integer FACE_REVIEW = 2;
 
 
     //线上提现

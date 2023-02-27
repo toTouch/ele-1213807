@@ -65,6 +65,8 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType);
 
+    EleDepositOrder selectLatestByUid(Long uid);
+
     R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
 
     BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> franchiseeIds);
@@ -74,4 +76,6 @@ public interface EleDepositOrderService {
     BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime);
 
     Triple<Boolean, String, Object> handleRentBatteryDeposit(RentCarHybridOrderQuery query, UserInfo userInfo);
+    
+    R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 }

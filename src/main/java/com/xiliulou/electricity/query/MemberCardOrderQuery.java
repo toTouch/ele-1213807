@@ -33,4 +33,14 @@ public class MemberCardOrderQuery {
     private List<Long> franchiseeIds;
     private String franchiseeName;
     private String userName;
+
+    /**
+     * 套餐订单来源，1：扫码，2：线上，3：后台
+     */
+    private Integer source;
+
+    /**
+     * 扫码的柜机
+     */
+    private Long refId;
 }

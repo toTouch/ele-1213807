@@ -119,6 +119,12 @@ public class ElectricityCabinetBoxVO {
      */
     private Long lockStatusChangeTime;
 
+    
+    /**
+     * 空闲开始时间
+     */
+    private Long emptyGridStartTime;
+    
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;
 }

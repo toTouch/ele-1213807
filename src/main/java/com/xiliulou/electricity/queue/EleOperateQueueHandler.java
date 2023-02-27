@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.queue;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: lxc
@@ -364,7 +366,7 @@ public class EleOperateQueueHandler {
                 }
 
                 //放入电池改为在仓
-                ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+                ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                         newElectricityCabinetOrder.getOldElectricityBatterySn());
                 if (Objects.nonNull(oldElectricityBattery)) {
                     ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
@@ -430,7 +432,7 @@ public class EleOperateQueueHandler {
                             electricityCabinetOrder.getElectricityCabinetId(), cellNo);
                     return;
                 }
-                ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(
+                ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(
                         electricityCabinetBox.getSn());
                 if (Objects.isNull(newElectricityBattery)) {
                     log.error("check Old Battery not find electricityBattery! sn:{}", electricityCabinetBox.getSn());
@@ -538,7 +540,7 @@ public class EleOperateQueueHandler {
             }
 
             //电池改为在用
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(
                     electricityCabinetOrder.getNewElectricityBatterySn());
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
@@ -555,6 +557,11 @@ public class EleOperateQueueHandler {
 
             //删除柜机被锁缓存
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
+            //缓存分配出去的格挡
+            if (StrUtil.isNotBlank(electricityCabinetOrder.getNewElectricityBatterySn())) {
+                redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinetOrder.getElectricityCabinetId(),
+                        String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
+            }
         }
     }
 
@@ -599,6 +606,11 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(
                 rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             checkRentBatteryDoor(rentBatteryOrder);
+    
+            if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
+                redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
+                        String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
+            }
 
             //处理用户套餐如果扣成0次，将套餐改为失效套餐，即过期时间改为当前时间
             handleExpireMemberCard(rentBatteryOrder);
@@ -663,7 +675,7 @@ public class EleOperateQueueHandler {
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
 
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(
                 rentBatteryOrder.getElectricityBatterySn());
         //电池改为在用
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -743,7 +755,7 @@ public class EleOperateQueueHandler {
         }
 
         //放入电池改为在仓
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 rentBatteryOrder.getElectricityBatterySn());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(

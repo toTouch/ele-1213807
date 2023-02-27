@@ -277,8 +277,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             //退押金时保存用户失效套餐记录
             //memberCardFailureRecordService.saveRentCarMemberCardFailureRecord(userInfo.getUid());
-
-            userCarDepositService.deleteByUid(userInfo.getUid());
+    
+            //userCarDepositService.deleteByUid(userInfo.getUid());
 
             userCarService.deleteByUid(userInfo.getUid());
 
@@ -580,10 +580,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             log.error("BATTERY DEPOSIT REFUND ERROR! user membercard is disable,uid={}", uid);
             return R.fail("100211", "用户套餐已暂停！");
+        }
+    
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
+                UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("BATTERY DEPOSIT REFUND ERROR! disable member card is reviewing,uid={}", uid);
+            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
         }
 
         //判断是否退电池
@@ -676,7 +681,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
-                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
+                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT_CONTENT)
                     .operateUid(user.getUid())
                     .uid(uid)
                     .name(user.getUsername())

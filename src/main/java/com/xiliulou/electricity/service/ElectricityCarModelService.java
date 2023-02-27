@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
@@ -48,4 +50,9 @@ public interface ElectricityCarModelService {
 
     ElectricityCarModelVO selectDetailById(Long id);
 
+    Integer updateFranchiseeById(List<ElectricityCarModel> electricityCarModels, Long franchiseeId);
+
+    void moveCarModel(FranchiseeMoveInfo franchiseeMoveInfo);
+    
+    R queryPull(Long size, Long offset, Long franchiseeId, String name);
 }

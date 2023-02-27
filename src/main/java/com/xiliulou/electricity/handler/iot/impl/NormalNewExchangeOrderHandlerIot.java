@@ -177,7 +177,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
 
                 //更新放入电池的状态
-                ElectricityBattery placeBattery = electricityBatteryService.queryBySn(
+                ElectricityBattery placeBattery = electricityBatteryService.queryBySnFromDb(
                         exchangeOrderRsp.getPlaceBatteryName());
                 if (Objects.nonNull(placeBattery)) {
                     ElectricityBattery updateBattery = new ElectricityBattery();
@@ -205,7 +205,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         //电池改为在用
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(
                 exchangeOrderRsp.getTakeBatteryName());
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -220,6 +220,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000
                             + System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            //保存取走电池格挡
+            redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(),
+                    String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
+            
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(),
                     exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
@@ -261,7 +265,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         //放入电池改为在仓
         //获取放入电池
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 exchangeOrderRsp.getPlaceBatteryName());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();

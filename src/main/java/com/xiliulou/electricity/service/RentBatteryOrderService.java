@@ -55,5 +55,5 @@ public interface RentBatteryOrderService {
 
     R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
-
+    RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId);
 }

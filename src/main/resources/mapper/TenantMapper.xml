@@ -4,27 +4,36 @@
 
 
 	<!--通过实体作为筛选条件查询-->
-	<select id="queryAll" resultType="com.xiliulou.electricity.entity.Tenant">
+	<select id="queryAll" resultType="com.xiliulou.electricity.vo.TenantVO">
 		select
-		id, name, code, status, del_flag, create_time, update_time, expire_time
-		from t_tenant
-		where del_flag=0
+		tt.id,
+		tt.name,
+		tt.code,
+		tt.status,
+		tt.del_flag,
+		tt.create_time,
+		tt.update_time,
+		tt.expire_time,
+		tfrd.face_recognize_capacity
+		from t_tenant tt
+		left join t_face_recognize_data tfrd on tt.id=tfrd.tenant_id
+		where tt.del_flag=0
 		<if test="name != null and name != ''">
-			and name like concat('%',#{name},'%')
+			and tt.name like concat('%',#{name},'%')
 		</if>
 		<if test="code != null and code != ''">
-			and code = #{code}
+			and tt.code = #{code}
 		</if>
 		<if test="status != null">
-			and status = #{status}
+			and tt.status = #{status}
 		</if>
 		<if test="beginTime != null">
-			and create_time &gt;=#{beginTime}
+			and tt.create_time &gt;=#{beginTime}
 		</if>
 		<if test="endTime != null">
-			and create_time &lt;=#{endTime}
+			and tt.create_time &lt;=#{endTime}
 		</if>
-		order by create_time desc
+		order by tt.create_time desc
 		limit #{offset}, #{size}
 	</select>
 	<select id="queryCount" resultType="java.lang.Integer">

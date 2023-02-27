@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -23,7 +24,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R saveElectricityBattery(ElectricityBattery electricityBattery);
 
-    R update(ElectricityBattery electricityBattery);
+    Integer update(ElectricityBattery electricityBattery);
+    
+    R updateForAdmin(ElectricityBattery electricityBattery);
 
     R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
@@ -35,9 +38,12 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByUid(Long uid);
 
-    ElectricityBattery queryBySn(String oldElectricityBatterySn);
-
-    ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId);
+    ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn);
+    
+    ElectricityBattery queryPartAttrBySnFromCache(String sn);
+    
+    
+    ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
@@ -85,4 +91,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     boolean checkBatteryIsExchange(String batteryName, Double fullyCharged);
 
     Integer isFranchiseeBindBattery(Long id,Integer tenantId);
+
+    Triple<Boolean, String, Object> selectUserLatestBatteryType();
 }

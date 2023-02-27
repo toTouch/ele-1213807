@@ -10,7 +10,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
-        tui.id as id, tui.uid as uid, tui.name as name,
+        tui.id as id, tui.uid as uid, tui.name as name,tui.auth_type,
         tui.phone as phone, tui.id_number as idNumber,tui.battery_rent_status,tui.battery_deposit_status,
         tui.auth_status as authStatus,tui.usable_status as usableStatus, tui.del_flag as delFlag,
         tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
@@ -34,6 +34,9 @@
         </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.authType !=null">
+            and tui.auth_type =#{query.authType}
         </if>
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
@@ -112,6 +115,9 @@
         </if>
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
         </if>
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
@@ -198,6 +204,9 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+        </if>
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
@@ -283,8 +292,14 @@
         <if test="query.memberCardExpireTimeEnd !=null">
             and ubmc.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
         </if>
+        <if test="query.memberCardExpireType == 4">
+            and ubmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+        </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.authType !=null">
+            and tui.auth_type =#{query.authType}
         </if>
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
@@ -473,6 +488,9 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
+            <if test="authType != null">
+                auth_type = #{authType},
+            </if>
             <if test="batteryDepositStatus != null">
                 battery_deposit_status = #{batteryDepositStatus},
             </if>
@@ -509,4 +527,11 @@
       from t_user_info
       where del_flag = 0 and id_number = #{idNumber} and tenant_id = #{tenantId}
   </select>
+
+
+    <select id="verifyIdNumberExist" resultType="Integer">
+      SELECT 1  FROM t_user_info WHERE del_flag = 0 AND id_number = #{idNumber} AND tenant_id = #{tenantId} LIMIT 1
+    </select>
+
+
 </mapper>

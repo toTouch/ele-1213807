@@ -387,7 +387,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //根据换电柜id和仓门查出电池
             ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(rentBatteryQuery.getElectricityCabinetId(), cellNo);
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(electricityCabinetBox.getSn());
             if (Objects.isNull(electricityBattery)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! not found battery,batteryName={}", electricityCabinetBox.getSn());
@@ -1153,7 +1153,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
             //是否满电
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(electricityCabinetBox.getSn());
             if (Objects.nonNull(electricityBattery) && Objects.nonNull(electricityBattery.getFranchiseeId())) {
 
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
@@ -1397,6 +1397,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         } finally {
             redisService.delete(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderSelfOpenCellQuery.getElectricityCabinetId() + "_" + electricityExceptionOrderStatusRecord.getCellNo());
         }
+    }
+
+    @Override
+    public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId) {
+        return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId);
     }
 
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {

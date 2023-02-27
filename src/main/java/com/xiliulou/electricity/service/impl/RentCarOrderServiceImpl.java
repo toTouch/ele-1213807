@@ -313,6 +313,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
         updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
         userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+    
+        //用户是否有绑定了车辆
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
 
         return Triple.of(true, "", "操作成功!");
     }
