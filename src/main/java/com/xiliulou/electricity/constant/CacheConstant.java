@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.constant;
 
 public interface CacheConstant {
+    
+    Long CACHE_EXPIRE_MONTH = 30 * 24 * 3600000L;
     //换电柜缓存
     String CACHE_ELECTRICITY_CABINET = "electricity_cabinet:";
     //换电柜缓存
@@ -204,6 +206,8 @@ public interface CacheConstant {
     String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_car_member_card_expired_last_time:";
     String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK = "cache_ele_battery_member_card_expired_lock:";
     String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LOCK = "cache_ele_car_member_card_expired_lock:";
+    String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LOCK = "cache_ele_car_member_card_expired_break_power_lock:";
+    String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME = "cache_ele_car_member_card_expired_break_power_last_time:";
 
     String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
     String OTA_PROCESS_CACHE = "ota_process_cache";
@@ -288,6 +292,11 @@ public interface CacheConstant {
     String CACHE_FRANCHISEE = "franchisee:";
 
     /**
+     * 第三方配置缓存
+     */
+    String CACHE_FACEID_CONFIG ="faceidConfig:";
+
+    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";
@@ -310,4 +319,14 @@ public interface CacheConstant {
      */
     String CACHE_PRE_TAKE_CELL = "pre_take_cell:";
     String CACHE_BT_ATTR = "bt_attr:";
+
+    /**
+     * 人脸核身token缓存锁
+     */
+    String ELE_CACHE_FACEID_TOKEN_LOCK_KEY = "faceid_token_lock_key:";
+
+    /**
+     * 人脸核身结果缓存锁
+     */
+    String ELE_CACHE_FACEID_RESULT_LOCK_KEY = "faceid_result_lock_key:";
 }

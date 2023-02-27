@@ -2,18 +2,29 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
+import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
+import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +45,9 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    UserInfoService userInfoService;
 
     @GetMapping("/admin/rentCarMemberCardOrder/page")
     public R getElectricityMemberCardPage(@RequestParam("size") Long size,
@@ -147,4 +161,52 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
 
         return R.ok(carMemberCardOrderService.selectByPageCount(memberCardOrderQuery));
     }
+    
+    /**
+     * 编辑用户车辆套餐
+     *
+     * @return
+     */
+    @PutMapping(value = "/admin/rentCarMemberCard/editUserMemberCard")
+    @Log(title = "编辑用户车辆套餐")
+    public R editUserMemberCard(@RequestBody @Validated CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
+        return carMemberCardOrderService.editUserMemberCard(carMemberCardOrderAddAndUpdate);
+    }
+    
+    /**
+     * 续费用户车辆套餐
+     *
+     * @return
+     */
+    @PutMapping(value = "/admin/rentCarMemberCard/renewalUserMemberCard")
+    @Log(title = "续费用户车辆套餐")
+    public R renewalUserMemberCard(
+            @RequestBody @Validated CarMemberCardRenewalAddAndUpdate carMemberCardRenewalAddAndUpdate) {
+        return carMemberCardOrderService.renewalUserMemberCard(carMemberCardRenewalAddAndUpdate);
+    }
+    
+    /**
+     * 绑定车辆
+     *
+     * @param userInfoCarAddAndUpdate
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/bindElectricityCar")
+    @Log(title = "后台绑定车辆")
+    public R webBindCar(@RequestBody UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
+        return userInfoService.webBindCar(userInfoCarAddAndUpdate);
+    }
+    
+    /**
+     * 解绑车辆
+     *
+     * @param uid
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/unBindElectricityCar/{uid}")
+    @Log(title = "后台解绑车辆")
+    public R webUnBindCar(@PathVariable("uid") Long uid) {
+        return userInfoService.webUnBindCar(uid);
+    }
+    
 }

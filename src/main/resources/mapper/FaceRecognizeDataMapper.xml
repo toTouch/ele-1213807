@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FaceRecognizeDataMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.FaceRecognizeData" id="FaceRecognizeDataMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="faceRecognizeCapacity" column="face_recognize_capacity" jdbcType="INTEGER"/>
+        <result property="rechargeTime" column="recharge_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap type="com.xiliulou.electricity.vo.FaceRecognizeDataVO" id="FaceRecognizeDataVOMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="faceRecognizeCapacity" column="face_recognize_capacity" jdbcType="INTEGER"/>
+        <result property="rechargeTime" column="recharge_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="tenantName" column="tenant_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectFaceRecognizeData">
+       	select   id, face_recognize_capacity, recharge_time, tenant_id, del_flag, create_time, update_time        from t_face_recognize_data
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="FaceRecognizeDataMap">
+        <include refid="selectFaceRecognizeData"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="FaceRecognizeDataVOMap">
+        select
+        frd.id,
+        frd.face_recognize_capacity,
+        frd.recharge_time,
+        frd.tenant_id,
+        tt.name as tenant_name
+        from t_face_recognize_data frd
+        left join t_tenant tt on frd.tenant_id=tt.id
+        where frd.del_flag=0
+        <if test="tenantName != null and tenantName != ''">
+            and tt.name like concat('%',#{tenantName,jdbcType=VARCHAR},'%')
+        </if>
+        order by frd.recharge_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(1)
+        from t_face_recognize_data frd
+        left join t_tenant tt on frd.tenant_id=tt.id
+        where frd.del_flag=0
+        <if test="tenantName != null and tenantName != ''">
+            and tt.name like concat('%',#{tenantName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="FaceRecognizeDataMap">
+        <include refid="selectFaceRecognizeData"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="faceRecognizeCapacity != null">
+                and face_recognize_capacity = #{faceRecognizeCapacity}
+            </if>
+            <if test="rechargeTime != null">
+                and recharge_time = #{rechargeTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_face_recognize_data(face_recognize_capacity, recharge_time, tenant_id, del_flag, create_time, update_time)
+        values (#{faceRecognizeCapacity}, #{rechargeTime}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_face_recognize_data
+        <set>
+            <if test="faceRecognizeCapacity != null">
+                face_recognize_capacity = #{faceRecognizeCapacity},
+            </if>
+            <if test="rechargeTime != null">
+                recharge_time = #{rechargeTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_face_recognize_data where id = #{id}
+    </delete>
+
+</mapper>

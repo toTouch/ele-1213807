@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.service.*;
@@ -25,6 +26,9 @@ public class TypeUserFranchiseeServiceImpl implements UserTypeService {
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     @Override
     public List<Integer> getEleIdListByUserType(TokenUser user) {
@@ -92,5 +96,35 @@ public class TypeUserFranchiseeServiceImpl implements UserTypeService {
         }
 
         return eleIds;
+    }
+    
+    @Override
+    public List<Integer> getCarIdListByyDataType(TokenUser user) {
+        List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        if (CollectionUtils.isEmpty(franchiseeIds)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+        if (CollectionUtils.isEmpty(storeList)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<Long> storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(storeIds)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<ElectricityCar> electricityCarList = electricityCarService.queryByStoreIds(storeIds);
+        if (CollectionUtils.isEmpty(electricityCarList)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<Integer> carIds = electricityCarList.stream().map(ElectricityCar::getId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(carIds)) {
+            return Collections.EMPTY_LIST;
+        }
+        
+        return carIds;
     }
 }

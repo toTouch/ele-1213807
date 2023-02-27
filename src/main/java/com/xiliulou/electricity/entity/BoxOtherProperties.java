@@ -55,7 +55,12 @@ public class BoxOtherProperties {
      * 锁仓原因
      */
     private Integer lockReason;
-    
+
+    /**
+     * 锁仓/解锁时间
+     */
+    private Long lockStatusChangeTime;
+
     /**
      * 创建时间
      */

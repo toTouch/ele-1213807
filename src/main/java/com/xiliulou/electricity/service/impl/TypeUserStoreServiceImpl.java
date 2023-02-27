@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserTypeService;
@@ -26,7 +28,11 @@ public class TypeUserStoreServiceImpl implements UserTypeService {
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
 	UserDataScopeService userDataScopeService;
-
+	
+	@Autowired
+	ElectricityCarService electricityCarService;
+	
+	
 	@Override
 	public List<Integer> getEleIdListByUserType(TokenUser user) {
 		//2、再找门店绑定的门店
@@ -67,5 +73,25 @@ public class TypeUserStoreServiceImpl implements UserTypeService {
 		}
 
 		return eleIds;
+	}
+	
+	@Override
+	public List<Integer> getCarIdListByyDataType(TokenUser user) {
+		List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+		if (CollectionUtils.isEmpty(storeIds)) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		List<ElectricityCar> electricityCarList = electricityCarService.queryByStoreIds(storeIds);
+		if (CollectionUtils.isEmpty(electricityCarList)) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		List<Integer> carIds = electricityCarList.stream().map(ElectricityCar::getId).collect(Collectors.toList());
+		if (CollectionUtils.isEmpty(carIds)) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		return carIds;
 	}
 }

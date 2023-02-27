@@ -35,18 +35,25 @@ public class RentCarDepositAdd {
     /**
      * 用户名
      */
+    @Deprecated
     private String name;
 
     /**
      * 手机号
      */
-    @NotEmpty(message = "手机号不能为空!", groups = {CreateGroup.class})
+    //@NotEmpty(message = "手机号不能为空!", groups = {CreateGroup.class})
+    @Deprecated
     private String phone;
+    
+    /**
+     * uid
+     */
+    private Long uid;
 
     /**
      * 缴纳金额
      */
-    @NotNull(message = "缴纳金额不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "押金不能为空!", groups = {CreateGroup.class})
     private BigDecimal payAmount;
 
     /**
