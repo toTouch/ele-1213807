@@ -134,7 +134,7 @@ public class PxzConfigServiceImpl implements PxzConfigService {
     @Override
     public Pair<Boolean, Object> save(PxzConfigQuery pxzConfigQuery) {
         PxzConfig pxzConfig = queryByTenantIdFromDB(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig)) {
+        if (!Objects.isNull(pxzConfig)) {
             return Pair.of(true, null);
         }
         
