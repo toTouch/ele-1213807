@@ -129,7 +129,6 @@ public class EleUserOperateRecord {
     
     public static final Integer CAR_DEPOSIT_MODEL = 3;
     public static final Integer CAR_MEMBER_CARD_MODEL = 4;
-    
     public static final Integer CAR_MODEL = 5;
     
     
