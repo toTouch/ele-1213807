@@ -3616,6 +3616,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+        String fileType = "";
 
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
@@ -3628,13 +3629,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             OtaFileConfig subBoardOtaFileConfig = null;
             //ota文件是否存在
             if (isOldBoard(eid)) {
+                fileType = "OLD";
                 coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
             } else {
+                fileType = "NEW";
                 coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
             }
-            
+    
+            sessionId = fileType + sessionId;
 
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
