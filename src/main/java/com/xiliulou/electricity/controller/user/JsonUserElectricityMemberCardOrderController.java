@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
@@ -27,7 +28,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonUserElectricityMemberCardOrderController {
+public class JsonUserElectricityMemberCardOrderController extends BaseController {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
@@ -202,6 +203,22 @@ public class JsonUserElectricityMemberCardOrderController {
     public R cancelPayMemberCard(){
         return electricityMemberCardOrderService.cancelPayMemberCard();
     }
+    
+    /**
+     * 结束订单
+     */
+    @PutMapping("user/memberCard/endOrder/{orderNo}")
+    public R endOrder(@PathVariable("orderNo") String orderNo) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+    
+        return returnTripleResult(electricityMemberCardOrderService.endOrder(orderNo, uid));
+    }
+    
+    
+    
 
 
 }
