@@ -454,7 +454,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                     .payAmount(integratedPaAmount)
                     .tenantId(tenantId)
                     .attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                    .description("集成支付收费")
+                    .description("租电押金")
                     .uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO =
                     unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
