@@ -16,6 +16,7 @@ import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -24,10 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +60,8 @@ public class TenantServiceImpl implements TenantService {
     ElectricityConfigService electricityConfigService;
     @Autowired
     private PermissionTemplateService permissionTemplateService;
+    @Autowired
+    private FreeDepositDataService freeDepositDataService;
 
 
     /**
@@ -302,7 +302,20 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public R queryListTenant(TenantQuery tenantQuery) {
-        return R.ok(tenantMapper.queryAll(tenantQuery));
+        List<TenantVO> tenantVOS = tenantMapper.queryAll(tenantQuery);
+        if(org.apache.commons.collections4.CollectionUtils.isEmpty(tenantVOS)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        tenantVOS.parallelStream().peek(item->{
+            FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(item.getId());
+            if(Objects.nonNull(freeDepositData)){
+                item.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity());
+            }
+        }).collect(Collectors.toList());
+
+
+        return R.ok(tenantVOS);
     }
 
     @Override

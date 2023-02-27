@@ -133,7 +133,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
 
         FreeDepositData freeDepositDataUpdate = new FreeDepositData();
         freeDepositDataUpdate.setId(freeDepositData.getId());
-        freeDepositDataUpdate.setFreeDepositCapacity(freeDepositDataQuery.getFreeDepositCapacity());
+        freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() + freeDepositDataQuery.getFreeDepositCapacity());
         freeDepositDataUpdate.setRechargeTime(System.currentTimeMillis());
         freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
         this.freeDepositDataMapper.update(freeDepositDataUpdate);
