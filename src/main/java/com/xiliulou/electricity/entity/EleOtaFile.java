@@ -42,7 +42,7 @@ public class EleOtaFile {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     
-    public static final Integer TYPE_NEW_FILE = 1;
+    public static final Integer TYPE_NEW_FILE = 2;
     
-    public static final Integer TYPE_OLD_FILE = 2;
+    public static final Integer TYPE_OLD_FILE = 1;
 }
