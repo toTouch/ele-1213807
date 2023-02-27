@@ -160,8 +160,8 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
     
         OtaFileConfig oldSubBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
         if (Objects.nonNull(oldSubBoardOtaFileConfig)) {
-            otaFileCheckSumVo.setOldCoreSha256HexCloud(oldSubBoardOtaFileConfig.getSha256Value());
-            otaFileCheckSumVo.setOldCoreVersionCloud(oldSubBoardOtaFileConfig.getVersion());
+            otaFileCheckSumVo.setOldSubSha256HexCloud(oldSubBoardOtaFileConfig.getSha256Value());
+            otaFileCheckSumVo.setOldSubVersionCloud(oldSubBoardOtaFileConfig.getVersion());
         }
     
         return R.ok(otaFileCheckSumVo);
