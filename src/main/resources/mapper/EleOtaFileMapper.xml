@@ -12,12 +12,13 @@
         <result property="subName" column="sub_name" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="fileType" column="file_type" jdbcType="INTEGER"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="queryById" resultMap="EleOtaFileMap">
         select
-          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time
+          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time, file_type
         from t_ele_ota_file
         where id = #{id}
     </select>
@@ -25,7 +26,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EleOtaFileMap">
         select
-          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name,create_time, update_time
+          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name,create_time, update_time, file_type
         from t_ele_ota_file
         limit #{offset}, #{limit}
     </select>
@@ -33,7 +34,8 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="EleOtaFileMap">
         select
-        id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time
+        id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time,
+        file_type
         from t_ele_ota_file
         <where>
             <if test="id != null">
@@ -65,8 +67,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_ota_file(electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time)
-        values (#{electricityCabinetId}, #{coreSha256Value}, #{subSha256Value}, #{coreName}, #{subName}, #{createTime}, #{updateTime})
+        insert into t_ele_ota_file(electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time, file_type)
+        values (#{electricityCabinetId}, #{coreSha256Value}, #{subSha256Value}, #{coreName}, #{subName}, #{createTime}, #{updateTime}, #{fileType})
     </insert>
     
     <!--通过主键修改数据-->
@@ -94,6 +96,9 @@
             <if test="subName != null and subName != ''">
                 sub_name = #{subName},
             </if>
+            <if test="">
+                file_type = #{fileType},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -106,7 +111,7 @@
     
     <select id="queryByEid" resultMap="EleOtaFileMap">
         select
-          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time
+          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, core_name, sub_name, create_time, update_time, file_type
         from t_ele_ota_file
         where electricity_cabinet_id = #{eid}
     </select>
