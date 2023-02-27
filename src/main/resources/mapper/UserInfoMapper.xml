@@ -337,6 +337,9 @@
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>
+        <if test="query.authType !=null">
+            and tui.auth_type =#{query.authType}
+        </if>
         <if test="query.authStatus ==null or query.authStatus==''">
             and tui.auth_status in (0,1,2)
         </if>

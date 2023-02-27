@@ -364,6 +364,7 @@ public class JsonAdminUserInfoController extends BaseController {
             @RequestParam(value = "cardName", required = false) String cardName,
             @RequestParam(value = "memberCardId", required = false) Long memberCardId,
             @RequestParam(value = "authStatus", required = false) Integer authStatus,
+            @RequestParam(value = "authType", required = false) Integer authType,
             @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
         
         TokenUser user = SecurityUtils.getUserInfo();
@@ -387,7 +388,7 @@ public class JsonAdminUserInfoController extends BaseController {
         UserInfoQuery userInfoQuery = UserInfoQuery.builder().name(name).phone(phone)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin).memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .cardName(cardName).uid(uid).nowElectricityBatterySn(nowElectricityBatterySn).memberCardId(memberCardId)
-                .authStatus(authStatus).serviceStatus(serviceStatus).franchiseeIds(franchiseeIds)
+                .authStatus(authStatus).serviceStatus(serviceStatus).franchiseeIds(franchiseeIds).authType(authType)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         
         return userInfoService.queryAuthenticationCount(userInfoQuery);
