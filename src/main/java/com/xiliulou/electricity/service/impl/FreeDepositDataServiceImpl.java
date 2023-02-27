@@ -128,6 +128,7 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
 
             //保存充值记录
             freeDepositRechargeRecordService.insert(buildFreeDepositRechargeRecord(freeDepositDataInsert));
+            return Triple.of(true, "", null);
         }
 
         FreeDepositData freeDepositDataUpdate = new FreeDepositData();
