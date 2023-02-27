@@ -372,7 +372,7 @@ public class JsonAdminEleRefundOrderController extends BaseController {
     /**
      * 租车免押退押金
      */
-    @PostMapping("/admin/battery/freeDeposit/refund")
+    @PostMapping("/admin/car/freeDeposit/refund")
     @Log(title = "租车免押后台退押金")
     public R carFreeDepositRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
                                       @RequestParam("uid") Long uid) {
