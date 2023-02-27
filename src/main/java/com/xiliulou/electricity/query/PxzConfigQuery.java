@@ -15,4 +15,10 @@ public class PxzConfigQuery {
     
     @NotEmpty(message = "商户code不可以为空")
     private String merchantCode;
+
+    private Integer tenantId;
+
+    private Long createTime;
+
+    private Long updateTime;
 }
