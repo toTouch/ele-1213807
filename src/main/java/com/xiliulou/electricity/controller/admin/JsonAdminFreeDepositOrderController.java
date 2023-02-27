@@ -6,15 +6,19 @@ import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.query.FreeDepositRechargeRecordQuery;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
  * @date 2023-02-24-9:53
  */
+@RestController
+@Slf4j
 public class JsonAdminFreeDepositOrderController extends BaseController {
 
     @Autowired
