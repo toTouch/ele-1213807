@@ -152,9 +152,9 @@ public class UserInfo {
     public static final Integer BATTERY_DEPOSIT_STATUS_REFUNDING = 2;
     @Deprecated
     public static final Integer BATTERY_DEPOSIT_STATUS_REFUND_FAIL = 3;
-
-
-    //车辆赁状态 0--未租电池，1--已租电池
+    
+    
+    //车辆赁状态 0--未租，1--已租
     public static final Integer CAR_RENT_STATUS_NO = 0;
     public static final Integer CAR_RENT_STATUS_YES = 1;
 

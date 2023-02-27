@@ -18,7 +18,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -219,7 +218,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         //更新旧电池为在仓
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 offlineEleOrderVo.getOldElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}",
@@ -238,7 +237,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
         
         //更新新电池为在用
-        ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(
+        ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 offlineEleOrderVo.getNewElectricityBatterySn());
         if (Objects.isNull(newElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}",

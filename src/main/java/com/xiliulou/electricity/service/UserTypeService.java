@@ -10,4 +10,6 @@ import java.util.List;
 public interface UserTypeService {
 	List<Integer>  getEleIdListByUserType(TokenUser user);
 	List<Integer>  getEleIdListByDataType(TokenUser user);
+	
+	List<Integer> getCarIdListByyDataType(TokenUser user);
 }

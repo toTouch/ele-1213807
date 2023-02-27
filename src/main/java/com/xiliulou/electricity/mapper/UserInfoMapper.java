@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserBatteryInfoVO;
@@ -58,4 +59,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     List<UserInfo> queryByIdNumber(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
 
     Integer verifyIdNumberExist(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
+    
+    UserInfo queryDetailsUserInfo(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 }

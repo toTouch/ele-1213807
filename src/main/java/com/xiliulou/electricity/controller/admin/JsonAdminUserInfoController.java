@@ -438,6 +438,30 @@ public class JsonAdminUserInfoController extends BaseController {
     public R deleteUserInfo(@PathVariable("uid") Long uid) {
         return userInfoService.deleteUserInfo(uid);
     }
+    
+    /**
+     * 会员列表详情信息（基本信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/basicInfo")
+    public R queryDetailsBasicInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsBasicInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（电池信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/batteryInfo")
+    public R queryDetailsBatteryInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsBatteryInfo(uid);
+    }
+    
+    /**
+     * 会员列表详情信息（车辆信息）
+     */
+    @GetMapping(value = "/admin/userInfo/details/carInfo")
+    public R queryDetailsCarInfo(@RequestParam("uid") Long uid) {
+        return userInfoService.queryDetailsCarInfo(uid);
+    }
 
 
     private void verifyMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery) {

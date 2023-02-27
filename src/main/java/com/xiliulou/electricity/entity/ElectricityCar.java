@@ -75,6 +75,11 @@ public class ElectricityCar {
      * 绑定电池Sn码
      */
     private String batterySn;
+    
+    /**
+     * 车辆是否锁定
+     */
+    private Integer lockType;
 
     /**
      * 创建时间
@@ -95,6 +100,8 @@ public class ElectricityCar {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
-
-
+    
+    public static final Integer TYPE_UN_LOCK = 0;
+    public static final Integer TYPE_LOCK = 1;
+    
 }

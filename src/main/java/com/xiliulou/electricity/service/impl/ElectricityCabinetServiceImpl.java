@@ -34,9 +34,6 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
-import com.xiliulou.electricity.vo.api.ApiRentOrderVo;
-import com.xiliulou.iot.entity.AliIotRsp;
-import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
@@ -2202,7 +2199,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("batteryName is null");
             return R.ok();
         }
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromCache(batteryName);
         if (Objects.isNull(electricityBattery)) {
             log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
@@ -2226,6 +2223,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             newElectricityBattery.setLongitude(longitude);
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
+        newElectricityBattery.setTenantId(electricityBattery.getTenantId());
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
         
         //电池上报是否有其他信息
@@ -2309,7 +2308,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         //电池
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batterySn);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batterySn);
         if (Objects.isNull(electricityBattery)) {
             log.error("checkBattery error! no electricityBattery,sn={}", batterySn);
             return R.failMsg("未找到电池");
@@ -2826,7 +2825,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                 BeanUtils.copyProperties(item, electricityCabinetBoxVO);
                 
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(item.getSn());
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(item.getSn());
                 if (!Objects.isNull(electricityBattery)) {
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
@@ -3404,29 +3403,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
         }
 
-        CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
-            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-                    .tenantId(tenantId).eleIdList(finalEleIdList)
-                    .status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
-            Integer orderSuccessCount = electricityCabinetOrderService
-                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-            homePageElectricityOrderVo.setOrderSuccessCount(orderSuccessCount);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-            return null;
-        });
-        
-        //换电总订单统计
-        CompletableFuture<Void> electricitySunOrderCount = CompletableFuture.runAsync(() -> {
-            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-                    .tenantId(tenantId).eleIdList(finalEleIdList).build();
-            Integer orderSumCount = electricityCabinetOrderService
-                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-            homePageElectricityOrderVo.setSumOrderCount(orderSumCount);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-            return null;
-        });
+//        CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
+//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+//                    .tenantId(tenantId).eleIdList(finalEleIdList)
+//                    .status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
+//            Integer orderSuccessCount = electricityCabinetOrderService
+//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
+//            homePageElectricityOrderVo.setOrderSuccessCount(orderSuccessCount);
+//        }, executorService).exceptionally(e -> {
+//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+//            return null;
+//        });
+//
+//        //换电总订单统计
+//        CompletableFuture<Void> electricitySunOrderCount = CompletableFuture.runAsync(() -> {
+//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+//                    .tenantId(tenantId).eleIdList(finalEleIdList).build();
+//            Integer orderSumCount = electricityCabinetOrderService
+//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
+//            homePageElectricityOrderVo.setSumOrderCount(orderSumCount);
+//        }, executorService).exceptionally(e -> {
+//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+//            return null;
+//        });
         
         //换电柜在线总数统计
         List<Long> finalStores = stores;
@@ -3450,9 +3449,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         
         //等待所有线程停止
+//        CompletableFuture<Void> resultFuture = CompletableFuture
+//                .allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount,
+//                        electricityOfflineCabinetCount);
         CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount,
-                        electricityOfflineCabinetCount);
+                .allOf(electricityOnlineCabinetCount, electricityOfflineCabinetCount);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

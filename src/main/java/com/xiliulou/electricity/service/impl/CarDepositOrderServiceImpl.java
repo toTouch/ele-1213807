@@ -685,4 +685,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, finalFranchiseeIds, beginTime, endTime);
     }
+    
+    @Override
+    public CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
+        return carDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
+    }
 }

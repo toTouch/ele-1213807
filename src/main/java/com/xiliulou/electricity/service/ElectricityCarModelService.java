@@ -53,4 +53,6 @@ public interface ElectricityCarModelService {
     Integer updateFranchiseeById(List<ElectricityCarModel> electricityCarModels, Long franchiseeId);
 
     void moveCarModel(FranchiseeMoveInfo franchiseeMoveInfo);
+    
+    R queryPull(Long size, Long offset, Long franchiseeId, String name);
 }
