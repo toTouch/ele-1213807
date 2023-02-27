@@ -4,7 +4,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectElectricityCar">
-       	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id        from t_electricity_car
+       	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type         from t_electricity_car
     </sql>
 
     <!--查询指定行数据-->
@@ -137,7 +137,64 @@
     <!--根据车辆SN查询单个-->
     <select id="selectBySn" resultType="com.xiliulou.electricity.entity.ElectricityCar">
         <include refid="selectElectricityCar"/>
-        where sn = #{sn} and del_flag=0 and tenant_id=#{tenantId}
+        where
+        sn = #{sn}
+        and del_flag=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+    
+    <update id="updateLockTypeById">
+        update t_electricity_car set lock_type = #{lockType}
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+    
+    <select id="queryByStoreIds" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+        <include refid="selectElectricityCar"/>
+        <where>
+            del_flag = 0
+            and tenant_id = #{tenantId}
+            and store_id in
+            <foreach collection="storeIds" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+    
+    <select id="queryElectricityCarOverview" resultType="com.xiliulou.electricity.vo.ElectricityCarOverviewVo">
+        select ec.sn, ec.id, ec.longitude, ec.latitude, ec.model as car_model_name,
+        s.name as store_name, ec.lock_type, ec.user_name, ec.phone
+        from t_electricity_car ec
+        left join t_store s on ec.store_id = s.id
+        <where>
+            ec.tenant_id = #{tenantId}
+            <if test="carIds != null and carIds.size() > 0">
+                and ec.id in
+                <foreach collection="carIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="sn != null and sn != ''">
+                and ec.sn = #{sn}
+            </if>
+        </where>
+    </select>
+    
+    <select id="batteryStatistical" resultType="long">
+        select count(*) from t_electricity_car
+        <where>
+            tenant_id = #{tenantId} and del_flag = 0
+            <if test="carIds != null and carIds.size() > 0">
+                and id in
+                <foreach collection="carIds" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

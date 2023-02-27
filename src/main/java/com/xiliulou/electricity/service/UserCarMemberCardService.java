@@ -61,4 +61,6 @@ public interface UserCarMemberCardService {
     List<FailureMemberCardVo> queryMemberCardExpireUser(int offset, int size, long nowTime);
     
     List<CarMemberCardExpiringSoonQuery> selectCarMemberCardExpire(int offset, int size, long firstTime, long lastTime);
+    
+    void expireBreakPowerHandel();
 }

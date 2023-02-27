@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -82,12 +83,16 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         if (StrUtil.isEmpty(electricityCar.getSn())) {
             return Pair.of(false, "车辆sn为空");
         }
-        
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
-                new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), request.getLockType()));
-        if (!result.isSuccess()) {
-            log.error("Jt808 error! controlDevice error! carId={},result={}", request.getCarId(), result);
-            return Pair.of(false, result.getErrMsg());
+    
+        //        R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
+        //                new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), request.getLockType()));
+        //        if (!result.isSuccess()) {
+        //            log.error("Jt808 error! controlDevice error! carId={},result={}", request.getCarId(), result);
+        //            return Pair.of(false, result.getErrMsg());
+        //        }
+    
+        if (!electricityCarService.carLockCtrl(electricityCar, request.getLockType())) {
+            return Pair.of(false, "请求失败");
         }
         
         return Pair.of(true, null);

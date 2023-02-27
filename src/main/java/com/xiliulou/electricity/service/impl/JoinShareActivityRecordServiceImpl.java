@@ -103,7 +103,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
         //已购买月卡,则直接返回首页
         if (result) {
-            return R.fail("ELECTRICITY.00107", "您已购买过月卡");
+//            return R.fail("ELECTRICITY.00107", "您已购买过月卡");
+            return R.ok();
         }
 
         //未购买月卡则添加用户参与记录

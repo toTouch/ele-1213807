@@ -928,7 +928,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserSourceVO> selectUserSourceByPage(UserSourceQuery userSourceQuery) {
-        verifyParams(userSourceQuery);
+        if(!verifyParams(userSourceQuery)){
+            return Collections.EMPTY_LIST;
+        }
 
         List<UserSourceVO> userSourceVOList = this.userMapper.selectUserSourceByPage(userSourceQuery);
         if (CollectionUtils.isEmpty(userSourceVOList)) {
@@ -965,7 +967,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Integer selectUserSourcePageCount(UserSourceQuery userSourceQuery) {
-        verifyParams(userSourceQuery);
+        if(!verifyParams(userSourceQuery)){
+            return NumberConstant.ZERO;
+        }
         return this.userMapper.selectUserSourcePageCount(userSourceQuery);
     }
 
@@ -992,15 +996,20 @@ public class UserServiceImpl implements UserService {
             }
         }
     }
-
-    private void verifyParams(UserSourceQuery userSourceQuery) {
-//        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
+    
+    private Boolean verifyParams(UserSourceQuery userSourceQuery) {
+        //        if (Objects.equals(userSourceQuery.getSource(), User.SOURCE_TYPE_SCAN) && Objects.nonNull(userSourceQuery.getStoreId())) {
         if (Objects.nonNull(userSourceQuery.getStoreId())) {
             List<Integer> eidList = electricityCabinetService.selectEidByStoreId(userSourceQuery.getStoreId());
             if (CollectionUtils.isNotEmpty(eidList)) {
                 userSourceQuery.setElectricityCabinetIds(eidList);
+                return Boolean.TRUE;
+            } else {
+                return Boolean.FALSE;
             }
         }
+        
+        return Boolean.TRUE;
     }
 
 }

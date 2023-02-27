@@ -44,7 +44,7 @@ public interface BoxOtherPropertiesService {
      * @param boxOtherProperties 实例对象
      * @return 实例对象
      */
-    BoxOtherProperties insert(BoxOtherProperties boxOtherProperties);
+    BoxOtherProperties insertOrUpdate(BoxOtherProperties boxOtherProperties);
     
     /**
      * 修改数据

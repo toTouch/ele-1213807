@@ -6,8 +6,6 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.ibatis.annotations.Param;
-import org.apache.poi.ss.formula.functions.T;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -117,5 +115,6 @@ public interface ElectricityMemberCardOrderService {
     ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid);
     
     ElectricityMemberCardOrder selectLatestByUid(Long uid);
-
+    
+    Triple<Boolean, String, Object> endOrder(String orderNo, Long uid);
 }

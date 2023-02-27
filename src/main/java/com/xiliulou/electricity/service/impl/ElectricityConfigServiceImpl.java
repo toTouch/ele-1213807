@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.*;
@@ -59,6 +60,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     ElectricityMemberCardService electricityMemberCardService;
     @Autowired
     ElectricityCarModelService electricityCarModelService;
+    @Autowired
+    FaceRecognizeDataService faceRecognizeDataService;
 
 
     @Override
@@ -75,6 +78,20 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         boolean result = redisService.setNx(CacheConstant.ELE_CONFIG_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+    
+        //实名审核方式若为人脸核身
+        if(Objects.equals(electricityConfigAddAndUpdateQuery.getIsManualReview(),ElectricityConfig.FACE_REVIEW)){
+            //是否购买资源包
+            FaceRecognizeData faceRecognizeData = faceRecognizeDataService.selectByTenantId(TenantContextHolder.getTenantId());
+            if(Objects.isNull(faceRecognizeData)){
+                return R.fail("100334", "未购买人脸核身资源包，请联系管理员");
+            }
+        
+            //资源包是否可用
+            if(faceRecognizeData.getFaceRecognizeCapacity()<=0){
+                return R.fail("100335", "人脸核身资源包余额不足，请充值");
+            }
         }
 
         String franchiseeMoveDetail = null;
@@ -156,6 +173,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
         }
+
         return R.ok();
     }
 

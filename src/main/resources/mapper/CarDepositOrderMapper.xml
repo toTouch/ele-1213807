@@ -289,4 +289,18 @@
         GROUP BY
         weekDate
     </select>
+    
+    <select id="queryLastPayDepositTimeByUid" resultMap="CarDepositOrderMap">
+        <include refid="selectCarDepositOrder"/>
+        <where>
+            status=1 and uid=#{uid}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+        ORDER BY id DESC limit 1
+    </select>
 </mapper>
