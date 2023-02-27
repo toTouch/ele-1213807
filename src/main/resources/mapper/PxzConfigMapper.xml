@@ -14,7 +14,7 @@
     <!--查询单个-->
     <select id="queryByTenantId" resultMap="PxzConfigMap">
         select
-           tenant_id, aes_key, merchant_code, create_time, update_time
+           id,tenant_id, aes_key, merchant_code, create_time, update_time
         from t_pxz_config
         where tenant_id = #{id}
     </select>
