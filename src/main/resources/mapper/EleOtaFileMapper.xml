@@ -96,7 +96,7 @@
             <if test="subName != null and subName != ''">
                 sub_name = #{subName},
             </if>
-            <if test="">
+            <if test="fileType != null">
                 file_type = #{fileType},
             </if>
         </set>
