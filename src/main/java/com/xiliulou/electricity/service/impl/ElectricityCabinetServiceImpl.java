@@ -209,6 +209,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     EleCabinetCoreDataService eleCabinetCoreDataService;
+    
+    @Autowired
+    EleOtaFileService eleOtaFileService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -3616,7 +3619,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
-        String fileType = "";
+        Integer fileType = null;
 
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
@@ -3629,11 +3632,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             OtaFileConfig subBoardOtaFileConfig = null;
             //ota文件是否存在
             if (isOldBoard(eid)) {
-                fileType = "OLD";
+                fileType = EleOtaFile.TYPE_OLD_FILE;
                 coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
             } else {
-                fileType = "NEW";
+                fileType = EleOtaFile.TYPE_NEW_FILE;
                 coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
             }
@@ -3645,7 +3648,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         coreBoardOtaFileConfig, subBoardOtaFileConfig);
                 return R.fail("100301", "ota升级文件不完整，请联系客服处理");
             }
-
+    
+            EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
+            if (Objects.nonNull(eleOtaFile)) {
+                EleOtaFile update = new EleOtaFile();
+                update.setId(eleOtaFile.getId());
+                update.setFileType(fileType);
+                update.setUpdateTime(System.currentTimeMillis());
+                eleOtaFileService.update(update);
+            } else {
+                EleOtaFile create = new EleOtaFile();
+                create.setElectricityCabinetId(eid);
+                create.setCoreSha256Value("");
+                create.setSubSha256Value("");
+                create.setCoreName("");
+                create.setSubName("");
+                create.setFileType(fileType);
+                create.setUpdateTime(System.currentTimeMillis());
+                create.setCreateTime(System.currentTimeMillis());
+                eleOtaFileService.insert(create);
+            }
+            
             content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
             content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
             content.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());

@@ -34,8 +34,15 @@ public class EleOtaFile {
     
     private Long updateTime;
     
-    public static final Integer DEL_NORMAL = 0;
+    /**
+     * 文件类型 1--旧 2--新
+     */
+    private Integer fileType;
     
+    public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     
+    public static final Integer TYPE_NEW_FILE = 1;
+    
+    public static final Integer TYPE_OLD_FILE = 2;
 }
