@@ -20,12 +20,18 @@ public interface ElectricityMemberCardOrderService {
 
     R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
+    @Deprecated
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
+    
+    List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
+    
+    Integer selectUserMemberCardOrderCount(ElectricityMemberCardOrderQuery orderQuery);
 
     BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId);
 
     List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
 
+    @Deprecated
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
 
@@ -109,6 +115,7 @@ public interface ElectricityMemberCardOrderService {
     Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard);
 
     ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid);
-
+    
     ElectricityMemberCardOrder selectLatestByUid(Long uid);
+
 }

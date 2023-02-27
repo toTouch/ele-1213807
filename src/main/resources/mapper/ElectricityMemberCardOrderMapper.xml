@@ -112,6 +112,49 @@
         limit #{offset},#{size}
 
     </select>
+    
+    <select id="selectUserMemberCardOrderList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        SELECT
+        id,pay_amount,valid_days,create_time,order_id,status,member_card_id,user_name,max_use_count,card_name,franchisee_id,pay_type,pay_count,source
+        FROM
+        t_electricity_member_card_order
+        WHERE uid =#{uid}
+        and member_card_model=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="queryStartTime != null">
+            and create_time &gt;= #{queryStartTime}
+        </if>
+        <if test="queryEndTime != null">
+            and create_time &lt;= #{queryEndTime}
+        </if>
+        order by create_time desc
+        limit #{offset},#{size}
+    
+    </select>
+    
+    <select id="selectUserMemberCardOrderCount" resultType="java.lang.Long">
+        SELECT count(1)
+        FROM t_electricity_member_card_order
+        WHERE uid =#{uid}
+        and member_card_model=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="queryStartTime != null">
+            and create_time &gt;= #{queryStartTime}
+        </if>
+        <if test="queryEndTime != null">
+            and create_time &lt;= #{queryEndTime}
+        </if>
+    </select>
 
     <select id="getMemberCardOrderCount" resultType="java.lang.Long">
 

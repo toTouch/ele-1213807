@@ -609,6 +609,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    @Deprecated
     public R queryUserList(Long offset, Long size, Long startTime, Long endTime) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -618,7 +619,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
         return R.ok(baseMapper.queryUserList(user.getUid(), offset, size, startTime, endTime));
     }
-
+    
+    @Override
+    public List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery) {
+        List<ElectricityMemberCardOrder> orderList = this.baseMapper.selectUserMemberCardOrderList(orderQuery);
+        if (CollectionUtils.isEmpty(orderList)) {
+            return Collections.EMPTY_LIST;
+        }
+    
+        return orderList;
+    }
+    
+    @Override
+    public Integer selectUserMemberCardOrderCount(ElectricityMemberCardOrderQuery orderQuery) {
+        return this.baseMapper.selectUserMemberCardOrderCount(orderQuery);
+    }
+    
     /**
      * 获取交易次数
      *
@@ -626,6 +642,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * @return
      */
     @Override
+    @Deprecated
     public R getMemberCardOrderCount(Long uid, Long startTime, Long endTime) {
         return R.ok(baseMapper.getMemberCardOrderCount(uid, startTime, endTime));
     }
