@@ -137,6 +137,7 @@ public class EleOtaFileServiceImpl implements EleOtaFileService {
             otaFileCheckSumVo.setCoreSha256HexEle(eleOtaFile.getCoreSha256Value());
             otaFileCheckSumVo.setCoreNameEle(eleOtaFile.getCoreName());
             otaFileCheckSumVo.setSubNameEle(eleOtaFile.getSubName());
+            otaFileCheckSumVo.setFileType(eleOtaFile.getFileType());
         }
         
         OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);

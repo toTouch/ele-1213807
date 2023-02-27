@@ -35,5 +35,5 @@ public class OtaFileCheckSumVo {
     
     private String subSha256HexEle;
     
-    
+    private Integer fileType;
 }
