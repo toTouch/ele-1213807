@@ -30,7 +30,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     private Integer orderTime;
 
     /**
-     * 是否人工审核 0--是，1--否
+     * 实名审核方式审核（0:人工审核 ,1:自动审核,2:人脸核身）
      */
     private Integer isManualReview;
 

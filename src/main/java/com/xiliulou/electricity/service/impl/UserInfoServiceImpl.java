@@ -667,6 +667,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
+        userInfo.setAuthType(UserInfo.AUTH_TYPE_PERSON);
 //        if (Objects.equals(authStatus, UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
 //            userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
 //        }
@@ -1417,7 +1418,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public List<UserInfo> queryByIdNumber(String idNumber) {
         return userInfoMapper.queryByIdNumber(idNumber, TenantContextHolder.getTenantId());
     }
-    
+
+    @Override
+    public Integer verifyIdNumberExist(String idNumber, Integer tenantId) {
+        return userInfoMapper.verifyIdNumberExist(idNumber, tenantId);
+    }
+
     @Override
     public R queryDetailsBasicInfo(Long uid) {
         UserInfo userInfo = this.queryByUidFromCache(uid);

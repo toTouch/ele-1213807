@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.Objects;
+
 /**
  * 门店表(TStore)表控制层
  *
@@ -30,7 +33,10 @@ public class JsonUserStoreController {
                                 @RequestParam(value = "name", required = false) String name,
                                 @RequestParam("lon") Double lon,
                                 @RequestParam("lat") Double lat) {
-
+        if (Objects.isNull(lon) || Objects.isNull(lat)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
         if (lon <= 0.0 || lat <= 0.0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -58,6 +64,9 @@ public class JsonUserStoreController {
                                  @RequestParam(value = "name", required = false) String name,
                                  @RequestParam("lon") Double lon,
                                  @RequestParam("lat") Double lat) {
+        if (Objects.isNull(lon) || Objects.isNull(lat)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
 
         if (lon <= 0.0 || lat <= 0.0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
