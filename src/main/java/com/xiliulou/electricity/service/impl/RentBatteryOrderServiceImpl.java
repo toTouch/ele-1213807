@@ -1181,12 +1181,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
             return Triple.of(false, "0", "加盟商未绑定满电电池");
         }
-
+    
         List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxVOList.stream()
-                .sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
+                .sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed())
+                .collect(Collectors.toList());
 
         //}
-
+        final Double MAX_POWER = usableBoxes.get(0).getPower();
+        usableBoxes = usableBoxes.stream().filter(item -> MAX_POWER.compareTo(item.getPower()) == 0)
+                .sorted(Comparator.comparing(ElectricityCabinetBoxVO::getChargeV).reversed())
+                .collect(Collectors.toList());
+    
         return Triple.of(true, usableBoxes.get(0).getCellNo(), null);
     }
 

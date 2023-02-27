@@ -2500,7 +2500,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查最大电量是否有多个格挡，如果有取最大充电器电压
         final Double MAX_POWER = usableBatteryCellNos.get(0).getPower();
         usableBatteryCellNos.stream().filter(item -> Objects.equals(MAX_POWER, item.getPower()))
-                .sorted(Comparator.comparingDouble(ElectricityCabinetBox::getChargeV)).collect(Collectors.toList());
+                .sorted(Comparator.comparingDouble(ElectricityCabinetBox::getChargeV).reversed())
+                .collect(Collectors.toList());
         return Triple.of(true, null, usableBatteryCellNos.get(0));
     }
     
