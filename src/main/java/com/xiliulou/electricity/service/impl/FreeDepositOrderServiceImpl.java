@@ -207,7 +207,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
 
-        if (freeDepositData.getFreeDepositCapacity() >= NumberConstant.ZERO) {
+        if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
             log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
@@ -318,7 +318,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100404", "免押次数未充值，请联系管理员");
         }
 
-        if (freeDepositData.getFreeDepositCapacity() >= NumberConstant.ZERO) {
+        if (freeDepositData.getFreeDepositCapacity() <= NumberConstant.ZERO) {
             log.error("FREE DEPOSIT ERROR! freeDepositCapacity already run out,uid={}", uid);
             return Triple.of(false, "100405", "免押次数已用完，请联系管理员");
         }
