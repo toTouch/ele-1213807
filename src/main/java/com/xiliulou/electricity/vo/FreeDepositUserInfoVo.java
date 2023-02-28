@@ -51,4 +51,17 @@ public class FreeDepositUserInfoVo {
      * 车辆押金冻结状态
      */
     private Integer carDepositAuthStatus;
+
+    /**
+     * 是否开启电池免押 0：关闭 1：开启
+     */
+    private Integer isFreeBatteryDeposit;
+
+    /**
+     * 是否开启车辆免押 0：关闭 1：开启
+     */
+    private Integer isFreeCarDeposit;
+
+    public static final Integer FREE_DEPOSIT_CLOSE = 0;
+    public static final Integer FREE_DEPOSIT_OPEN = 1;
 }
