@@ -3617,8 +3617,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
-
-        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+    
         Integer fileType = null;
         if (isOldBoard(eid)) {
             fileType = EleOtaFile.TYPE_OLD_FILE;
@@ -3626,7 +3625,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             fileType = EleOtaFile.TYPE_NEW_FILE;
         }
     
-        sessionId = Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE) ? "OLD" : "NEW" + sessionId;
+        String sessionId =
+                (Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE) ? "OLD" : "NEW") + UUID.randomUUID().toString()
+                        .replaceAll("-", "");
 
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
