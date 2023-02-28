@@ -174,7 +174,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));
             eleOtaUpgradeHistory.setType(type);
             eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(fileType));
-            eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, fileType));
+            eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
             eleOtaUpgradeHistory.setStatus(EleOtaUpgrade.STATUS_INIT);
             eleOtaUpgradeHistory.setSessionId(sessionId);
             eleOtaUpgradeHistory.setCreateTime(System.currentTimeMillis());
@@ -192,7 +192,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     }
     
     private String queryEleVersionByEidAndCellNo(Integer eid, Integer cellNo, Integer type) {
-        if (OtaFileConfig.TYPE_CORE_BOARD.equals(type) || OtaFileConfig.TYPE_OLD_CORE_BOARD.equals(type)) {
+        if (EleOtaUpgrade.TYPE_CORE.equals(type)) {
             EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
             if (Objects.nonNull(eleCabinetCoreData)) {
                 return eleCabinetCoreData.getCoreVersion();
