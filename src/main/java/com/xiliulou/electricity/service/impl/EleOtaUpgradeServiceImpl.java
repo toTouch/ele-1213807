@@ -192,7 +192,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     }
     
     private String queryEleVersionByEidAndCellNo(Integer eid, Integer cellNo, Integer type) {
-        if (EleOtaUpgrade.TYPE_CORE.equals(type)) {
+        if (OtaFileConfig.TYPE_CORE_BOARD.equals(type) || OtaFileConfig.TYPE_OLD_CORE_BOARD.equals(type)) {
             EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
             if (Objects.nonNull(eleCabinetCoreData)) {
                 return eleCabinetCoreData.getCoreVersion();
