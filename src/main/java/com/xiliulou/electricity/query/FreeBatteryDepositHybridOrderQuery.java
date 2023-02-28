@@ -15,6 +15,7 @@ public class FreeBatteryDepositHybridOrderQuery {
 
     private String deviceName;
 
+    @NotNull(message = "加盟商Id不能为空!")
     private Long franchiseeId;
     /**
      * 套餐id
