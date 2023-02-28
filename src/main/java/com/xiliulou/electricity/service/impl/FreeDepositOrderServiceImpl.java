@@ -444,7 +444,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", uid);
-            return Triple.of(false, "100247", "用户信息不存在");
+            return Triple.of(true, "", "");
         }
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
@@ -581,7 +581,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCarDeposit)) {
             log.error("FREE DEPOSIT ERROR! not found userCarDeposit,uid={}", uid);
-            return Triple.of(false, "100247", "用户信息不存在");
+            return Triple.of(true, "", "");
         }
 
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
