@@ -120,6 +120,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Autowired
     FreeDepositDataService freeDepositDataService;
 
+    @Autowired
+    TradeOrderService tradeOrderService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -755,23 +758,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             if (Boolean.FALSE.equals(rentBatteryDepositTriple.getLeft())) {
                 return rentBatteryDepositTriple;
             }
-        }else{
-            //若免押成功，校验加盟商与电池型号是否与免押订单一致
-            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(freeDepositOrder.getOrderId());
-            if(Objects.isNull(eleDepositOrder)){
-                log.error("FFREE DEPOSIT HYBRID ERROR! not found eleDepositOrder,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
-            }
-
-            if(!Objects.equals( eleDepositOrder.getFranchiseeId(),query.getFranchiseeId())){
-                log.error("FFREE DEPOSIT HYBRID ERROR! franchiseeId inconsistency,uid={},franchiseeId={}", uid,query.getFranchiseeId());
-                return Triple.of(false, "100407", "加盟商与免押申请加盟商不一致");
-            }
-
-            if(Objects.nonNull(query.getModel()) && !Objects.equals( eleDepositOrder.getBatteryType(),BatteryConstant.acquireBatteryShort(query.getModel()) )){
-                log.error("FFREE DEPOSIT HYBRID ERROR! batteryType inconsistency,uid={},batteryModel={}", uid,query.getModel());
-                return Triple.of(false, "100408", "电池型号与免押申请电池型号不一致");
-            }
         }
 
         //处理电池套餐相关
@@ -819,6 +805,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
+        }
+
+        //处理支付0元场景
+        if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
+            Triple<Boolean, String, Object> result = tradeOrderService.handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            if (Boolean.FALSE.equals(result.getLeft())) {
+                return result;
+            }
+
+            return Triple.of(true, "", null);
         }
 
         try {
@@ -908,23 +904,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
             if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
                 return rentCarDepositTriple;
-            }
-        } else {
-            //若免押成功，校验加盟商与车辆型号型号是否与免押订单一致
-            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(freeDepositOrder.getOrderId());
-            if (Objects.isNull(carDepositOrder)) {
-                log.error("FFREE DEPOSIT HYBRID ERROR! not found carDepositOrder,uid={}", uid);
-                return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
-            }
-
-            if (!Objects.equals(carDepositOrder.getStoreId(), query.getStoreId())) {
-                log.error("FFREE DEPOSIT HYBRID ERROR! storeId inconsistency,uid={},storeId={}", uid, query.getStoreId());
-                return Triple.of(false, "100409", "门店与免押申请门店不一致");
-            }
-
-            if (!Objects.equals(carDepositOrder.getCarModelId(), query.getCarModelId())) {
-                log.error("FFREE DEPOSIT HYBRID ERROR! batteryType inconsistency,uid={},carModelId={}", uid, query.getCarModelId());
-                return Triple.of(false, "100410", "车辆型号与免押申请车辆型号不一致");
             }
         }
 

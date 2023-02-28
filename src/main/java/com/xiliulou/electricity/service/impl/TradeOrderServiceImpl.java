@@ -438,11 +438,11 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         if (BigDecimal.valueOf(0.01).compareTo(integratedPaAmount) == NumberConstant.ONE) {
 
             Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
-            if (!result.getLeft()) {
+            if (Boolean.FALSE.equals(result.getLeft())) {
                 return result;
             }
 
-            return Triple.of(true, "", "SUCCESS");
+            return Triple.of(true, "", null);
         }
 
         //调起支付
@@ -474,6 +474,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
      * @param orderTypeList
      * @return
      */
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> handleTotalAmountZero(UserInfo userInfo, List<String> orderList, List<Integer> orderTypeList) {
         if (CollectionUtils.isEmpty(orderList) || CollectionUtils.isEmpty(orderTypeList)) {
