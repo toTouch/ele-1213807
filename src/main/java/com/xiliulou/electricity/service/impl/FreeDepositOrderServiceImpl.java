@@ -213,7 +213,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isEmpty(pxzConfig.getAesKey()) || StrUtil.isEmpty(pxzConfig.getMerchantCode())) {
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
             return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
         }
 
@@ -281,9 +281,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         //绑定免押订单
         UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
-        userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+//        userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
         userBatteryDeposit.setUid(uid);
-        userBatteryDeposit.setDid(eleDepositOrder.getId());
+//        userBatteryDeposit.setDid(eleDepositOrder.getId());
         userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
         userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
         userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
@@ -398,9 +398,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //绑定免押订单
 
         UserCarDeposit userCarDeposit = new UserCarDeposit();
-        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+//        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
         userCarDeposit.setUid(userInfo.getUid());
-        userCarDeposit.setDid(carDepositOrder.getId());
+//        userCarDeposit.setDid(carDepositOrder.getId());
         userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_FREE);
         userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
         userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
@@ -533,6 +533,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             userBattery.setUpdateTime(System.currentTimeMillis());
             userBatteryService.insertOrUpdate(userBattery);
+
         }
 
         FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
@@ -1313,9 +1314,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         carDepositOrder.setUpdateTime(System.currentTimeMillis());
         carDepositOrder.setFranchiseeId(store.getFranchiseeId());
         carDepositOrder.setStoreId(query.getStoreId());
-        carDepositOrder.setPayType(CarDepositOrder.ONLINE_PAYTYPE);
+        carDepositOrder.setPayType(CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
         carDepositOrder.setCarModelId(query.getCarModelId());
-        carDepositOrder.setRentBattery(CarDepositOrder.RENTBATTERY_NO);
+        carDepositOrder.setRentBattery(Objects.isNull(query.getMemberCardId()) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
 
         return Triple.of(true, "", carDepositOrder);
     }

@@ -4,6 +4,9 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserCarDepositService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +27,10 @@ public class JsonUserFreeDepositController extends BaseController {
     
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
     
     /**
      * 电池押金免押的前置检查
@@ -102,6 +109,20 @@ public class JsonUserFreeDepositController extends BaseController {
         return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositHybridOrder(query, request));
     }
 
+    /**
+     * 获取租电免押申请时间
+     */
+    @GetMapping("/user/free/batteryDeposit/applyDepositTime")
+    public R selectUserBatteryDepositInfo() {
+        return R.ok(userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid()));
+    }
 
+    /**
+     * 获取租车免押申请时间
+     */
+    @GetMapping("/user/free/carDeposit/applyDepositTime")
+    public R selectUserCarDepositInfo() {
+        return R.ok(userCarDepositService.selectByUidFromCache(SecurityUtils.getUid()));
+    }
 
 }
