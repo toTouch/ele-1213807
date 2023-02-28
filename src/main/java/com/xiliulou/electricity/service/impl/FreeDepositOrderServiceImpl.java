@@ -228,7 +228,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
         EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
 
-        FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder().authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE)
+        FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder()
+                .uid(uid)
+                .authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE)
                 .idCard(freeBatteryDepositQuery.getIdCard())
                 .orderId(eleDepositOrder.getOrderId())
                 .phone(freeBatteryDepositQuery.getPhoneNumber())
@@ -341,7 +343,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         CarDepositOrder carDepositOrder = (CarDepositOrder) generateCarDepositOrderResult.getRight();
 
-        FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder().authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE)
+        FreeDepositOrder freeDepositOrder = FreeDepositOrder.builder()
+                .uid(uid)
+                .authStatus(FreeDepositOrder.AUTH_PENDING_FREEZE)
                 .idCard(freeCarDepositQuery.getIdCard())
                 .orderId(carDepositOrder.getOrderId())
                 .phone(freeCarDepositQuery.getPhoneNumber())
