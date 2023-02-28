@@ -1185,9 +1185,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfoResult.setUserCarDetail(userCarDetail);
         userInfoResult.setUserBatteryDetail(userBatteryDetail);
 
+
         //是否缴纳租电池押金
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit) || Objects.isNull(userBatteryDeposit.getOrderId())) {
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.NO);
         } else {
             userBatteryDetail.setIsBatteryDeposit(UserInfoResultVO.YES);
@@ -1234,8 +1234,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //是否缴纳租车押金
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarDeposit) || Objects.isNull(userCarDeposit.getOrderId())) {
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.NO);
         } else {
             userCarDetail.setIsCarDeposit(UserInfoResultVO.YES);
