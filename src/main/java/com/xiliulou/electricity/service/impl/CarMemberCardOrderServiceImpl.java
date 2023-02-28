@@ -642,6 +642,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
                 .uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldCardDay.intValue())
                 .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
+                .oldMemberCard(userCarModel.getName()).newMemberCard(bindCarModel.getName())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
     

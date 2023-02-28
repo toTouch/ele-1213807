@@ -122,7 +122,11 @@ public class EleUserOperateRecord {
     private Integer memberCardDisableStatus;
 
     private BigDecimal batteryServiceFee;
-
+    
+    private String oldMemberCard;
+    
+    private String newMemberCard;
+    
     public static final Integer BATTERY_MODEL = 0;
     public static final Integer DEPOSIT_MODEL = 1;
     public static final Integer MEMBER_CARD_MODEL = 2;
