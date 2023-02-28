@@ -3620,6 +3620,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
         Integer fileType = null;
+        if (isOldBoard(eid)) {
+            fileType = EleOtaFile.TYPE_OLD_FILE;
+        } else {
+            fileType = EleOtaFile.TYPE_NEW_FILE;
+        }
+    
+        sessionId = Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE) ? "OLD" : "NEW" + sessionId;
 
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
@@ -3631,18 +3638,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             OtaFileConfig coreBoardOtaFileConfig = null;
             OtaFileConfig subBoardOtaFileConfig = null;
             //ota文件是否存在
-            if (isOldBoard(eid)) {
-                fileType = EleOtaFile.TYPE_OLD_FILE;
+            if (Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE)) {
                 coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
             } else {
-                fileType = EleOtaFile.TYPE_NEW_FILE;
                 coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
             }
     
-            sessionId = Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE) ? "OLD" : "NEW" + sessionId.substring(3);
-
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
                         coreBoardOtaFileConfig, subBoardOtaFileConfig);
@@ -3659,7 +3662,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!DataUtil.collectionIsUsable(cellNos)) {
                 return R.fail("100303", "升级内容为空，请选择您要升级的板子");
             }
-
+    
             eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
             content.put("cellNos", cellNos);
         }
