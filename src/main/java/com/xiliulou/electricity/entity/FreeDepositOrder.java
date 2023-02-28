@@ -83,8 +83,10 @@ public class FreeDepositOrder {
 
 
     /**
-     * 4:待冻结;7:冻结中;10:已冻结;11:解冻中;12:已解冻;13超时关闭
+     * 0:初始化;4:待冻结;7:冻结中;10:已冻结;11:解冻中;12:已解冻;13超时关闭
      */
+    public static final Integer AUTH_INIT = 0;
+
     public static final Integer AUTH_PENDING_FREEZE = 4;
 
     public static final Integer AUTH_FREEZING = 7;
