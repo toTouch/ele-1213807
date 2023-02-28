@@ -1188,11 +1188,24 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //}
         final Double MAX_POWER = usableBoxes.get(0).getPower();
-        usableBoxes = usableBoxes.stream().filter(item -> MAX_POWER.compareTo(item.getPower()) == 0)
-                .sorted(Comparator.comparing(ElectricityCabinetBoxVO::getChargeV).reversed())
+        usableBoxes = usableBoxes.stream().filter(item -> Objects.equals(item.getPower(), MAX_POWER))
                 .collect(Collectors.toList());
     
-        return Triple.of(true, usableBoxes.get(0).getCellNo(), null);
+        int maxChargeVIndex = 0;
+        for (int i = 0; i < usableBoxes.size(); i++) {
+            if (Objects.isNull(usableBoxes.get(i).getChargeV())) {
+                continue;
+            }
+        
+            Double maxChargeV = Optional.ofNullable(usableBoxes.get(maxChargeVIndex).getChargeV()).orElse(0.0);
+            Double chargeV = Optional.ofNullable(usableBoxes.get(i).getChargeV()).orElse(0.0);
+        
+            if (maxChargeV.compareTo(chargeV) < 0) {
+                maxChargeVIndex = i;
+            }
+        }
+    
+        return Triple.of(true, usableBoxes.get(maxChargeVIndex).getCellNo(), null);
     }
 
     @Override
