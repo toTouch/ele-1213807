@@ -2504,13 +2504,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
         int maxChargeVIndex = 0;
         for (int i = 0; i < usableBatteryCellNos.size(); i++) {
-            if (Objects.isNull(usableBatteryCellNos.get(i).getChargeV())) {
-                continue;
-            }
-        
             Double maxChargeV = Optional.ofNullable(usableBatteryCellNos.get(maxChargeVIndex).getChargeV()).orElse(0.0);
             Double chargeV = Optional.ofNullable(usableBatteryCellNos.get(i).getChargeV()).orElse(0.0);
-        
+    
             if (maxChargeV.compareTo(chargeV) < 0) {
                 maxChargeVIndex = i;
             }

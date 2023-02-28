@@ -1193,10 +1193,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
         int maxChargeVIndex = 0;
         for (int i = 0; i < usableBoxes.size(); i++) {
-            if (Objects.isNull(usableBoxes.get(i).getChargeV())) {
-                continue;
-            }
-        
             Double maxChargeV = Optional.ofNullable(usableBoxes.get(maxChargeVIndex).getChargeV()).orElse(0.0);
             Double chargeV = Optional.ofNullable(usableBoxes.get(i).getChargeV()).orElse(0.0);
         
