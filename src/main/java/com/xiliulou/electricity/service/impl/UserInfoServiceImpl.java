@@ -138,6 +138,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     CarDepositOrderService carDepositOrderService;
 
+    @Autowired
+    FreeDepositOrderService freeDepositOrderService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -1163,15 +1166,52 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Triple<Boolean, String, Object> selectUserInfoStatus() {
         UserInfoResultVO userInfoResult = new UserInfoResultVO();
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
+        if (Objects.isNull(SecurityUtils.getUid())) {
             log.error("ELE ERROR! not found user ");
             return Triple.of(false, "100001", userInfoResult);
         }
 
-        UserInfo userInfo = this.queryByUidFromCache(user.getUid());
+        //电池订单类型为免押
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+
+            //若免押状态为待冻结
+            if (Objects.nonNull(freeDepositOrder) && (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE))) {
+                FreeDepositUserInfoVo freeDepositUserInfoVo = null;
+                //获取电池免押结果
+                Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.selectFreeBatteryDepositOrderStatus();
+                if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
+                    freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeBatteryDepositOrderResult.getRight();
+                }
+
+                userInfoResult.setBatteryFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getBatteryDepositAuthStatus() : null);
+                userInfoResult.setBatteryFreeApplyTime(userBatteryDeposit.getApplyDepositTime());
+            }
+        }
+
+        //车辆订单类型为免押
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.nonNull(userCarDeposit) && Objects.equals(userCarDeposit.getDepositType(), UserCarDeposit.DEPOSIT_TYPE_FREE)) {
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+
+            //若免押状态为待冻结
+            if (Objects.nonNull(freeDepositOrder) && (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE))) {
+                FreeDepositUserInfoVo freeDepositUserInfoVo = null;
+                //获取车辆免押结果
+                Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.selectFreeCarDepositOrderStatus();
+                if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
+                    freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeCarDepositOrderResult.getRight();
+                }
+
+                userInfoResult.setCarFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getCarDepositAuthStatus() : null);
+                userInfoResult.setCarFreeApplyTime(userCarDeposit.getApplyDepositTime());
+            }
+        }
+
+        UserInfo userInfo = this.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo! uid={}", user.getUid());
+            log.error("ELE ERROR! not found userInfo! uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100001", userInfoResult);
         }
 
@@ -1218,7 +1258,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //是否产生电池服务费
         Pair<Boolean, Object> batteryServiceFeePair = electricityMemberCardOrderService.checkUserHaveBatteryServiceFee(userInfo, userBatteryMemberCard);
-        if (batteryServiceFeePair.getLeft()) {
+        if (Boolean.TRUE.equals(batteryServiceFeePair.getLeft())) {
             userBatteryDetail.setIsBatteryServiceFee(UserInfoResultVO.YES);
             userBatteryDetail.setBatteryServiceFee((BigDecimal) batteryServiceFeePair.getRight());
         } else {
