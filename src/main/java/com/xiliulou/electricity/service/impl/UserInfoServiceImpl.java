@@ -1174,38 +1174,46 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //电池订单类型为免押
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
         if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
+            userInfoResult.setBatteryFreeApplyTime(userBatteryDeposit.getApplyDepositTime());
+
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                //若免押状态为待冻结
+                if(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)){
+                    FreeDepositUserInfoVo freeDepositUserInfoVo = null;
+                    //获取电池免押结果
+                    Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.selectFreeBatteryDepositOrderStatus();
+                    if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
+                        freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeBatteryDepositOrderResult.getRight();
+                    }
 
-            //若免押状态为待冻结
-            if (Objects.nonNull(freeDepositOrder) && (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE))) {
-                FreeDepositUserInfoVo freeDepositUserInfoVo = null;
-                //获取电池免押结果
-                Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.selectFreeBatteryDepositOrderStatus();
-                if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
-                    freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeBatteryDepositOrderResult.getRight();
+                    userInfoResult.setBatteryFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getBatteryDepositAuthStatus() : null);
+                }else{
+                    userInfoResult.setBatteryFreeStatus(freeDepositOrder.getAuthStatus());
                 }
-
-                userInfoResult.setBatteryFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getBatteryDepositAuthStatus() : null);
-                userInfoResult.setBatteryFreeApplyTime(userBatteryDeposit.getApplyDepositTime());
             }
         }
 
         //车辆订单类型为免押
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
         if (Objects.nonNull(userCarDeposit) && Objects.equals(userCarDeposit.getDepositType(), UserCarDeposit.DEPOSIT_TYPE_FREE)) {
+            userInfoResult.setCarFreeApplyTime(userCarDeposit.getApplyDepositTime());
+
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                //若免押状态为待冻结
+                if(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)){
+                    FreeDepositUserInfoVo freeDepositUserInfoVo = null;
+                    //获取车辆免押结果
+                    Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.selectFreeCarDepositOrderStatus();
+                    if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
+                        freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeCarDepositOrderResult.getRight();
+                    }
 
-            //若免押状态为待冻结
-            if (Objects.nonNull(freeDepositOrder) && (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE))) {
-                FreeDepositUserInfoVo freeDepositUserInfoVo = null;
-                //获取车辆免押结果
-                Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.selectFreeCarDepositOrderStatus();
-                if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
-                    freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeCarDepositOrderResult.getRight();
+                    userInfoResult.setCarFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getCarDepositAuthStatus() : null);
+                }else{
+                    userInfoResult.setCarFreeStatus(freeDepositOrder.getAuthStatus());
                 }
-
-                userInfoResult.setCarFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getCarDepositAuthStatus() : null);
-                userInfoResult.setCarFreeApplyTime(userCarDeposit.getApplyDepositTime());
             }
         }
 
