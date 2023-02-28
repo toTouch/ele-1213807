@@ -251,6 +251,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         request.setSubject("电池免押");
         request.setRealName(freeBatteryDepositQuery.getRealName());
         request.setIdNumber(freeBatteryDepositQuery.getIdCard());
+        request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
         query.setData(request);
 
@@ -363,6 +364,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         request.setSubject("车辆免押");
         request.setRealName(freeCarDepositQuery.getRealName());
         request.setIdNumber(freeCarDepositQuery.getIdCard());
+        request.setTransId(freeDepositOrder.getOrderId());
         request.setTransAmt(BigDecimal.valueOf(freeDepositOrder.getTransAmt()).multiply(BigDecimal.valueOf(100)).intValue());
         query.setData(request);
 
@@ -456,6 +458,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         query.setMerchantCode(pxzConfig.getMerchantCode());
 
         PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+        request.setTransId(freeDepositOrder.getOrderId());
         query.setData(request);
 
 
@@ -591,6 +594,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         query.setMerchantCode(pxzConfig.getMerchantCode());
 
         PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+        request.setTransId(freeDepositOrder.getOrderId());
         query.setData(request);
 
 

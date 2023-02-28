@@ -517,7 +517,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
         queryRequest.setRemark("电池免押解冻");
-//        queryRequest.setTransId("234567");
+        queryRequest.setTransId(userBatteryDeposit.getOrderId());
         query.setData(queryRequest);
 
         PxzCommonRsp<PxzDepositUnfreezeRsp> pxzDepositUnfreezeRspPxzCommonRsp = null;
@@ -639,7 +639,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
         queryRequest.setRemark("车辆免押解冻");
-//        queryRequest.setTransId("234567");
+        queryRequest.setTransId(userCarDeposit.getOrderId());
         query.setData(queryRequest);
 
         PxzCommonRsp<PxzDepositUnfreezeRsp> pxzDepositUnfreezeRspPxzCommonRsp = null;
