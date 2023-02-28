@@ -3641,7 +3641,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
             }
     
-            sessionId = fileType + sessionId;
+            sessionId = Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE) ? "OLD" : "NEW" + sessionId.substring(3);
 
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
@@ -3649,25 +3649,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.fail("100301", "ota升级文件不完整，请联系客服处理");
             }
     
-            EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
-            if (Objects.nonNull(eleOtaFile)) {
-                EleOtaFile update = new EleOtaFile();
-                update.setId(eleOtaFile.getId());
-                update.setFileType(fileType);
-                update.setUpdateTime(System.currentTimeMillis());
-                eleOtaFileService.update(update);
-            } else {
-                EleOtaFile create = new EleOtaFile();
-                create.setElectricityCabinetId(eid);
-                create.setCoreSha256Value("");
-                create.setSubSha256Value("");
-                create.setCoreName("");
-                create.setSubName("");
-                create.setFileType(fileType);
-                create.setUpdateTime(System.currentTimeMillis());
-                create.setCreateTime(System.currentTimeMillis());
-                eleOtaFileService.insert(create);
-            }
+            createOrUpdateEleOtaFile(eid, fileType);
             
             content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
             content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
@@ -3695,6 +3677,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return R.ok(sessionId);
+    }
+    
+    private void createOrUpdateEleOtaFile(Integer eid, Integer fileType) {
+        EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
+        if (Objects.nonNull(eleOtaFile)) {
+            EleOtaFile update = new EleOtaFile();
+            update.setId(eleOtaFile.getId());
+            update.setFileType(fileType);
+            update.setUpdateTime(System.currentTimeMillis());
+            eleOtaFileService.update(update);
+            return;
+        }
+        
+        EleOtaFile create = new EleOtaFile();
+        create.setElectricityCabinetId(eid);
+        create.setCoreSha256Value("");
+        create.setSubSha256Value("");
+        create.setCoreName("");
+        create.setSubName("");
+        create.setFileType(fileType);
+        create.setUpdateTime(System.currentTimeMillis());
+        create.setCreateTime(System.currentTimeMillis());
+        eleOtaFileService.insert(create);
     }
     
     

@@ -142,6 +142,15 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     public void updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid, String sessionId) {
         Optional.ofNullable(cellNos).orElse(Lists.newArrayList()).parallelStream().forEach(cellNo -> {
             Integer type = Objects.equals(cellNo, 0) ? EleOtaUpgrade.TYPE_CORE : EleOtaUpgrade.TYPE_SUB;
+    
+            Integer fileType = null;
+            if (sessionId.startsWith("OLD")) {
+                fileType = Objects.equals(cellNo, 0) ? OtaFileConfig.TYPE_OLD_CORE_BOARD
+                        : OtaFileConfig.TYPE_OLD_SUB_BOARD;
+            } else {
+                fileType = Objects.equals(cellNo, 0) ? OtaFileConfig.TYPE_CORE_BOARD : OtaFileConfig.TYPE_SUB_BOARD;
+            }
+            
             EleOtaUpgrade eleOtaUpgradeFromDb = queryByEidAndCellNo(eid, cellNo, type);
             if (Objects.isNull(eleOtaUpgradeFromDb)) {
                 EleOtaUpgrade eleOtaUpgrade = new EleOtaUpgrade();
@@ -164,8 +173,8 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             eleOtaUpgradeHistory.setCellNo(String.valueOf(cellNo));
             eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));
             eleOtaUpgradeHistory.setType(type);
-            eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(type));
-            eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
+            eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(fileType));
+            eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, fileType));
             eleOtaUpgradeHistory.setStatus(EleOtaUpgrade.STATUS_INIT);
             eleOtaUpgradeHistory.setSessionId(sessionId);
             eleOtaUpgradeHistory.setCreateTime(System.currentTimeMillis());
