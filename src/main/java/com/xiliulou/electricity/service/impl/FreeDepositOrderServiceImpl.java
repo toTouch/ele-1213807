@@ -281,9 +281,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         //绑定免押订单
         UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
-//        userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+        userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
         userBatteryDeposit.setUid(uid);
-//        userBatteryDeposit.setDid(eleDepositOrder.getId());
+        userBatteryDeposit.setDid(eleDepositOrder.getId());
         userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
         userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_FREE);
         userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
@@ -398,9 +398,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //绑定免押订单
 
         UserCarDeposit userCarDeposit = new UserCarDeposit();
-//        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+        userCarDeposit.setOrderId(carDepositOrder.getOrderId());
         userCarDeposit.setUid(userInfo.getUid());
-//        userCarDeposit.setDid(carDepositOrder.getId());
+        userCarDeposit.setDid(carDepositOrder.getId());
         userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_FREE);
         userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
         userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
