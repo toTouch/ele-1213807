@@ -51,7 +51,7 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @GetMapping("/user/free/batteryDeposit/order/status")
     public R freeBatteryDepositOrderStatus() {
-        return returnTripleResult(freeDepositOrderService.selectFreeBatteryDepositOrderStatus());
+        return returnTripleResult(freeDepositOrderService.acquireUserFreeBatteryDepositStatus());
     }
 
     /**
@@ -79,7 +79,7 @@ public class JsonUserFreeDepositController extends BaseController {
      */
     @GetMapping("/user/free/carDeposit/order/status")
     public R freeCarDepositOrderStatus() {
-        return returnTripleResult(freeDepositOrderService.selectFreeCarDepositOrderStatus());
+        return returnTripleResult(freeDepositOrderService.acquireFreeCarDepositStatus());
     }
 
     /**

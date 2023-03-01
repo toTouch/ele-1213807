@@ -99,7 +99,22 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
 
         return R.ok(this.freeDepositOrderService.selectByPageCount(query));
     }
-    
+
+    /**
+     * 查询免押订单状态
+     */
+    @GetMapping("/admin/freeDepositOrder/order/status")
+    public R selectFreeDepositOrderStatus(@RequestParam(value = "orderId") String orderId) {
+
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+
+        return returnTripleResult(this.freeDepositOrderService.selectFreeDepositOrderStatus(orderId));
+    }
+
+
     /**
      * 授权转支付
      */

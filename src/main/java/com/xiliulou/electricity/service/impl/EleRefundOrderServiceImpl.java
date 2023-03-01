@@ -471,7 +471,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
-        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("REFUND ORDER ERROR! user is not rent deposit,uid={}", uid);
             return Triple.of(false, "100238", "未缴纳押金");
         }
@@ -535,6 +535,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if (!pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
             return Triple.of(false, "100402", pxzDepositUnfreezeRspPxzCommonRsp.getRespDesc());
+        }
+
+        //解冻中
+        if(!Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
+            return Triple.of(false, "100413", "免押押金解冻中");
         }
 
         //更新免押订单状态
@@ -657,6 +662,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if (!pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
             return Triple.of(false, "100402", pxzDepositUnfreezeRspPxzCommonRsp.getRespDesc());
+        }
+
+        //解冻中
+        if(!Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
+            return Triple.of(false, "100413", "免押押金解冻中");
         }
 
         //更新免押订单状态
