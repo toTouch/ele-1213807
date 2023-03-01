@@ -305,6 +305,10 @@ public interface CacheConstant {
      * 迁移加盟商缓存锁
      */
     String ELE_CACHE_USER_MOVE_FRANCHISEE_LOCK_KEY = "user_move_franchisee_lock_key:";
+    /**
+     * 电池套餐取消支付缓存锁
+     */
+    String ELE_CACHE_BATTERY_CANCELL_PAYMENT_LOCK_KEY = "battery_cancell_payment_lock_key:";
     
     /**
      * 已分配过的格挡缓存

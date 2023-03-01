@@ -2496,7 +2496,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //把加盟商绑定的电池过滤出来
         usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId()))
                 .collect(Collectors.toList());
-        return Triple.of(true, null, usableBatteryCellNos.get(0));
+    
+        //查最大电量是否有多个格挡，如果有取最大充电器电压
+        final Double MAX_POWER = usableBatteryCellNos.get(0).getPower();
+        usableBatteryCellNos = usableBatteryCellNos.stream().filter(item -> Objects.equals(item.getPower(), MAX_POWER))
+                .collect(Collectors.toList());
+    
+        int maxChargeVIndex = 0;
+        for (int i = 0; i < usableBatteryCellNos.size(); i++) {
+            Double maxChargeV = Optional.ofNullable(usableBatteryCellNos.get(maxChargeVIndex).getChargeV()).orElse(0.0);
+            Double chargeV = Optional.ofNullable(usableBatteryCellNos.get(i).getChargeV()).orElse(0.0);
+    
+            if (maxChargeV.compareTo(chargeV) < 0) {
+                maxChargeVIndex = i;
+            }
+        }
+        return Triple.of(true, null, usableBatteryCellNos.get(maxChargeVIndex));
     }
     
     @Override
