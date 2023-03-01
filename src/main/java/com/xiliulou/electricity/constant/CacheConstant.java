@@ -325,4 +325,8 @@ public interface CacheConstant {
      * 人脸核身结果缓存锁
      */
     String ELE_CACHE_FACEID_RESULT_LOCK_KEY = "faceid_result_lock_key:";
+    /**
+     * 用户活跃缓存
+     */
+    String USER_ACTIVE_INFO_CACHE = "user_active_info_cache:";
 }
