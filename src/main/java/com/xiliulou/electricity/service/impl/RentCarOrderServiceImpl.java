@@ -622,7 +622,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //处理电池押金相关
-        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getModel(), userInfo);
+        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(),query.getModel(), userInfo);
         if (!rentBatteryDepositTriple.getLeft()) {
             return rentBatteryDepositTriple;
         }
@@ -698,7 +698,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             totalPayAmount = totalPayAmount.add(insuranceOrder.getPayAmount());
         }
 
-        //保存套餐订单
+        //保存电池套餐订单
         if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight()) && !CollectionUtils.isEmpty(((List) rentBatteryMemberCardTriple.getRight()))) {
             ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);

@@ -99,4 +99,6 @@ public interface EleRefundOrderService {
     Triple<Boolean,String,Object> batteryFreeDepositRefund(String errMsg, Long uid);
 
     Triple<Boolean, String, Object> carFreeDepositRefund(String errMsg, Long uid);
+
+    List<EleRefundOrder> selectFreeDepositRefundingOrder();
 }

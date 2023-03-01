@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.*;
@@ -50,6 +51,8 @@ import java.util.Objects;
 @Service("freeDepositOrderService")
 @Slf4j
 public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
+
+    private static final Integer REFUND_ORDER_LIMIT=50;
 
     @Resource
     private FreeDepositOrderMapper freeDepositOrderMapper;
@@ -1291,6 +1294,33 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return Triple.of(true, null, freeDepositUserInfoVo);
     }
 
+    @Override
+    public void handleFreeDepositRefundOrder() {
+
+        Long offset = 0L;
+//        while (true) {
+//            memberCardOrderQuery.setOffset(offset);
+//            memberCardOrderQuery.setSize(REFUND_ORDER_LIMIT);
+//            List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
+//            offset += EXPORT_LIMIT;
+//
+//            if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
+//                break;
+//            }
+//
+//            electricityMemberCardOrders.addAll(electricityMemberCardOrderVOList);
+//        }
+
+
+
+
+
+
+
+
+
+    }
+
     private Triple<Boolean, String, Object> checkUserCanFreeBatteryDeposit(Long uid, UserInfo userInfo) {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
@@ -1436,43 +1466,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         carDepositOrder.setRentBattery(Objects.isNull(query.getMemberCardId()) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
 
         return Triple.of(true, "", carDepositOrder);
-    }
-
-    private boolean acquireFreeCarDepositResult(UserInfo userInfo) {
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarDeposit)) {
-            return Boolean.FALSE;
-        }
-
-        FreeDepositOrder freeDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
-        if (Objects.isNull(freeDepositOrder)) {
-            return Boolean.FALSE;
-        }
-
-        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            return Boolean.TRUE;
-        }
-
-        return Boolean.FALSE;
-    }
-
-    private boolean acquireFreeBatteryDepositResult(UserInfo userInfo) {
-
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryDeposit)) {
-            return Boolean.FALSE;
-        }
-
-        FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
-        if (Objects.isNull(freeDepositOrder)) {
-            return Boolean.FALSE;
-        }
-
-        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            return Boolean.TRUE;
-        }
-
-        return Boolean.FALSE;
     }
 
 }

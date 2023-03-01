@@ -74,4 +74,6 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> selectFreeDepositAuthToPay(String orderId);
 
     Triple<Boolean, String, Object> selectFreeDepositOrderStatus(String orderId);
+
+    void handleFreeDepositRefundOrder();
 }
