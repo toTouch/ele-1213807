@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.UserActiveInfo;
+import com.xiliulou.electricity.query.UserActiveInfoQuery;
+import com.xiliulou.electricity.vo.UserActiveInfoVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -67,4 +69,8 @@ public interface UserActiveInfoMapper extends BaseMapper<UserActiveInfo> {
     int insertOrUpdate(UserActiveInfo userActiveInfo);
     
     UserActiveInfo queryByUId(Long uid);
+    
+    List<UserActiveInfoVo> queryList(UserActiveInfoQuery query);
+    
+    Long queryCount(UserActiveInfoQuery query);
 }

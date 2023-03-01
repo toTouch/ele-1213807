@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.UserActiveInfo;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.UserActiveInfoQuery;
 
 import java.util.List;
 
@@ -64,4 +68,10 @@ public interface UserActiveInfoService {
     Boolean deleteById(Long id);
     
     UserActiveInfo insertOrUpdate(UserActiveInfo userActiveInfo);
+    
+    UserActiveInfo userActiveRecord(UserInfo userInfo);
+    
+    R queryList(UserActiveInfoQuery query);
+    
+    R queryCount(UserActiveInfoQuery query);
 }

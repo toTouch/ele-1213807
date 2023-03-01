@@ -93,6 +93,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     UserBatteryService userBatteryService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    UserActiveInfoService userActiveInfoService;
 
     /**
      * 修改数据
@@ -389,6 +392,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0020", "未找到电池");
             }
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             //3.根据用户查询旧电池
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
@@ -1467,20 +1473,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
     
-            UserActiveInfo userActiveInfo = new UserActiveInfo();
-            userActiveInfo.setUid(userInfo.getUid());
-            userActiveInfo.setUserName(userInfo.getName());
-            userActiveInfo.setPhone(userInfo.getPhone());
-            if (Objects.nonNull(electricityBatteryBox)) {
-                userActiveInfo.setBatteryId(electricityBatteryBox.getId());
-                userActiveInfo.setBatteryName(electricityBatteryBox.getSn());
-            }
-            userActiveInfo.setTenantId(TenantContextHolder.getTenantId());
-            userActiveInfo.setActiveTime(System.currentTimeMillis());
-            userActiveInfo.setCreateTime(System.currentTimeMillis());
-            userActiveInfo.setUpdateTime(System.currentTimeMillis());
-
-
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
+            
             HashMap<String, Object> commandData = Maps.newHashMap();
             commandData.put("orderId", electricityCabinetOrder.getOrderId());
             commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());

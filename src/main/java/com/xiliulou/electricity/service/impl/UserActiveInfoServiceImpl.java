@@ -1,18 +1,28 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.UserActiveInfo;
 import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserActiveInfoMapper;
+import com.xiliulou.electricity.query.UserActiveInfoQuery;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.UserActiveInfoVo;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,6 +43,9 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     
     @Autowired
     RedisService redisService;
+    
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -132,5 +145,47 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
             return null;
         });
         return userActiveInfo;
+    }
+    
+    @Override
+    public UserActiveInfo userActiveRecord(UserInfo userInfo) {
+        UserActiveInfo userActiveInfo = new UserActiveInfo();
+        userActiveInfo.setUid(userInfo.getUid());
+        userActiveInfo.setUserName(userInfo.getName());
+        userActiveInfo.setPhone(userInfo.getPhone());
+        userActiveInfo.setTenantId(TenantContextHolder.getTenantId());
+        userActiveInfo.setActiveTime(System.currentTimeMillis());
+        userActiveInfo.setCreateTime(System.currentTimeMillis());
+        userActiveInfo.setUpdateTime(System.currentTimeMillis());
+        insertOrUpdate(userActiveInfo);
+        return userActiveInfo;
+    }
+    
+    @Override
+    public R queryList(UserActiveInfoQuery query) {
+        Integer day = Objects.isNull(query.getDay()) ? 0 : query.getDay();
+        query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);
+        
+        List<UserActiveInfoVo> userActiveInfoList = userActiveInfoMapper.queryList(query);
+        if (CollectionUtils.isEmpty(userActiveInfoList)) {
+            return R.ok(new ArrayList<>());
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        userActiveInfoList.parallelStream().forEach(item -> {
+            BigDecimal batteryServiceFee = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, item.getUid());
+            item.setBatteryServiceFee(batteryServiceFee);
+        });
+        return R.ok(userActiveInfoList);
+    }
+    
+    @Override
+    public R queryCount(UserActiveInfoQuery query) {
+        Integer day = Objects.isNull(query.getDay()) ? 0 : query.getDay();
+        query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);
+        
+        Long count = userActiveInfoMapper.queryCount(query);
+        return R.ok(count);
     }
 }

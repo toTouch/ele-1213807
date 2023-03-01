@@ -23,10 +23,6 @@ public class UserActiveInfo {
     
     private Long activeTime;
     
-    private Long batteryId;
-    
-    private String batteryName;
-    
     private Long uid;
     
     private String phone;
