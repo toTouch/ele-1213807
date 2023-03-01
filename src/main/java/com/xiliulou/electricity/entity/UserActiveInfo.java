@@ -31,7 +31,9 @@ public class UserActiveInfo {
     
     private String phone;
     
-    private Long tenantId;
+    private String userName;
+    
+    private Integer tenantId;
     
     private Long createTime;
     

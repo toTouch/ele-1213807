@@ -13,12 +13,13 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="queryById" resultMap="UserActiveInfoMap">
         select
-          id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time
+          id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time, user_name
         from t_user_active_info
         where id = #{id}
     </select>
@@ -26,7 +27,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="UserActiveInfoMap">
         select
-          id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time
+          id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time, user_name
         from t_user_active_info
         limit #{offset}, #{limit}
     </select>
@@ -34,7 +35,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="UserActiveInfoMap">
         select
-        id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time
+        id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time,user_name
         from t_user_active_info
         <where>
             <if test="id != null">
@@ -64,13 +65,16 @@
             <if test="updateTime != null">
                 and update_time = #{updateTime}
             </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
         </where>
     </select>
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_active_info(active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time)
-        values (#{activeTime}, #{batteryId}, #{batteryName}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_user_active_info(active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time, user_name)
+        values (#{activeTime}, #{batteryId}, #{batteryName}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName})
     </insert>
     
     <!--通过主键修改数据-->
@@ -101,6 +105,9 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -112,16 +119,16 @@
     
     
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery(active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time)
-        values (#{activeTime}, #{batteryId}, #{batteryName}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_user_battery(active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time, user_name)
+        values (#{activeTime}, #{batteryId}, #{batteryName}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName})
         on duplicate key
         update active_time=#{activeTime}, battery_id=#{batteryId}, battery_name=#{batteryName}, uid=#{uid},phone=#{phone},
-        tenant_id=#{tenantId},create_time=#{createTime},update_time=#{updateTime}
+        tenant_id=#{tenantId},create_time=#{createTime},update_time=#{updateTime}, user_name = #{userName}
     </insert>
     
     <select id="queryByUId" resultMap="UserActiveInfoMap">
         select
-          id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time
+          id, active_time, battery_id, battery_name, uid, phone, tenant_id, create_time, update_time , user_name
         from t_user_active_info
         where uid = #{uid}
     </select>

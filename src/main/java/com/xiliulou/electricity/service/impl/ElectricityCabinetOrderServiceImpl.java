@@ -1438,16 +1438,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!modifyResult.getLeft()) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
-
+    
+            ElectricityCabinetBox electricityCabinetBox = (ElectricityCabinetBox) usableBatteryCellNoResult.getRight();
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-
+    
+            ElectricityBattery electricityBatteryBox = electricityBatteryService
+                    .queryBySnFromDb(electricityCabinetBox.getSn(), TenantContextHolder.getTenantId());
+    
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                     .orderId(generateExchangeOrderId(user.getUid()))
                     .uid(user.getUid())
                     .phone(userInfo.getPhone())
                     .electricityCabinetId(orderQuery.getEid())
                     .oldCellNo(usableEmptyCellNo.getRight())
-                    .newCellNo(Integer.parseInt(((ElectricityCabinetBox) usableBatteryCellNoResult.getRight()).getCellNo()))
+                    .newCellNo(Integer.parseInt(electricityCabinetBox.getCellNo()))
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT)
                     .status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource())
@@ -1462,6 +1466,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
+    
+            UserActiveInfo userActiveInfo = new UserActiveInfo();
+            userActiveInfo.setUid(userInfo.getUid());
+            userActiveInfo.setUserName(userInfo.getName());
+            userActiveInfo.setPhone(userInfo.getPhone());
+            if (Objects.nonNull(electricityBatteryBox)) {
+                userActiveInfo.setBatteryId(electricityBatteryBox.getId());
+                userActiveInfo.setBatteryName(electricityBatteryBox.getSn());
+            }
+            userActiveInfo.setTenantId(TenantContextHolder.getTenantId());
+            userActiveInfo.setActiveTime(System.currentTimeMillis());
+            userActiveInfo.setCreateTime(System.currentTimeMillis());
+            userActiveInfo.setUpdateTime(System.currentTimeMillis());
 
 
             HashMap<String, Object> commandData = Maps.newHashMap();

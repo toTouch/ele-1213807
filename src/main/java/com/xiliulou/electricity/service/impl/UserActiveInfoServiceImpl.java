@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserActiveInfo;
+import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.mapper.UserActiveInfoMapper;
 import com.xiliulou.electricity.service.UserActiveInfoService;
+import com.xiliulou.electricity.utils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -120,5 +122,15 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userActiveInfoMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public UserActiveInfo insertOrUpdate(UserActiveInfo userActiveInfo) {
+        int insert = this.userActiveInfoMapper.insertOrUpdate(userActiveInfo);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            redisService.delete(CacheConstant.USER_ACTIVE_INFO_CACHE + userActiveInfo.getUid());
+            return null;
+        });
+        return userActiveInfo;
     }
 }

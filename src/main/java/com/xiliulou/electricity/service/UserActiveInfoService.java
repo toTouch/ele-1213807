@@ -63,4 +63,5 @@ public interface UserActiveInfoService {
      */
     Boolean deleteById(Long id);
     
+    UserActiveInfo insertOrUpdate(UserActiveInfo userActiveInfo);
 }
