@@ -255,7 +255,7 @@
         select
         ero.id,ero.order_id from t_ele_refund_order  ero
         left join t_ele_deposit_order edo on ero.order_id=edo.order_id
-        WHERE edo.pay_type=2 and ero.status=3 and ero.refund_order_type=0 limit offset,size
+        WHERE edo.pay_type=2 and ero.status=3 and ero.refund_order_type=0 limit #{offset},#{size}
     </select>
 
 
@@ -263,6 +263,6 @@
         select
         ero.id,ero.order_id from t_ele_refund_order  ero
         left join t_car_deposit_order cdo on ero.order_id=cdo.order_id
-        WHERE cdo.pay_type=2 and ero.status=3 and ero.refund_order_type=1 limit offset,size
+        WHERE cdo.pay_type=2 and ero.status=3 and ero.refund_order_type=1 limit #{offset},#{size}
     </select>
 </mapper>
