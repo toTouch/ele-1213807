@@ -480,7 +480,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isEmpty(pxzConfig.getAesKey()) || StrUtil.isEmpty(pxzConfig.getMerchantCode())) {
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
             return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
         }
 
@@ -587,7 +587,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isEmpty(pxzConfig.getAesKey()) || StrUtil.isEmpty(pxzConfig.getMerchantCode())) {
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
             log.error("FREE DEPOSIT ERROR! not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
@@ -718,7 +718,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(pxzConfig) || StrUtil.isEmpty(pxzConfig.getAesKey()) || StrUtil.isEmpty(pxzConfig.getMerchantCode())) {
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
             log.error("FREE DEPOSIT ERROR! not found pxzConfig,uid={}", uid);
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
@@ -731,7 +731,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, carDepositOrder.getOrderId());
+            log.error("ELE CAR REFUND ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
