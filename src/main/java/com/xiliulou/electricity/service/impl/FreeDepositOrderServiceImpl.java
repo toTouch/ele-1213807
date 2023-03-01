@@ -1255,11 +1255,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
 
-        //若缴纳电池押金  判断用户加盟商与租车加盟商是否一致
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
-            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals userInfo franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId());
-            return Triple.of(false, "100255", "车辆型号加盟商与用户加盟商不一致！");
-        }
+        //若缴纳电池押金  判断用户加盟商与租车加盟商是否一致  TODO
+//        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES) && !Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
+//            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals userInfo franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId());
+//            return Triple.of(false, "100255", "车辆型号加盟商与用户加盟商不一致！");
+//        }
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
 
