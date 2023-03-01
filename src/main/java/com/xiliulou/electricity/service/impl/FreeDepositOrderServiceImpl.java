@@ -428,7 +428,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
 
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_FREE_BATTERY_DEPOSIT_LOCK_KEY + uid, "1", 5 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_FREE_BATTERY_DEPOSIT_LOCK_KEY + uid, "1", 1 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
 
@@ -508,7 +508,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
 
             //扣减免押次数
-            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 5 * 60 * 1000L, false)) {
+            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 24 * 60 * 60 * 1000L, false)) {
                 FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
                 FreeDepositData freeDepositDataUpdate = new FreeDepositData();
                 freeDepositDataUpdate.setId(freeDepositData.getId());
@@ -565,7 +565,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
 
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_FREE_CAR_DEPOSIT_LOCK_KEY + uid, "1", 5 * 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_FREE_CAR_DEPOSIT_LOCK_KEY + uid, "1", 1 * 1000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
 
@@ -645,7 +645,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
 
             //扣减免押次数
-            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 5 * 60 * 1000L, false)) {
+            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 24 * 60 * 60 * 1000L, false)) {
                 FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
                 FreeDepositData freeDepositDataUpdate = new FreeDepositData();
                 freeDepositDataUpdate.setId(freeDepositData.getId());
@@ -751,13 +751,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
 
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
-        Triple<Boolean, String, Object> rentBatteryDepositTriple = null;
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            //若免押订单不存在或免押失败，生成租电池押金订单
-            rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getModel(), userInfo);
-            if (Boolean.FALSE.equals(rentBatteryDepositTriple.getLeft())) {
-                return rentBatteryDepositTriple;
-            }
+            log.error("FFREE DEPOSIT HYBRID ERROR! freeDepositOrder is anomaly,uid={}", uid);
+            return Triple.of(false, "100402", "免押失败！");
         }
 
         //处理电池套餐相关
@@ -771,18 +767,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query.getInsuranceId(), userInfo);
         if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
             return rentBatteryInsuranceTriple;
-        }
-
-        //保存租电池押金订单
-        if ((Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
-            EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
-            eleDepositOrderService.insert(eleDepositOrder);
-
-            orderList.add(eleDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
-            payAmountList.add(eleDepositOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(eleDepositOrder.getPayAmount());
         }
 
         //保存保险订单
@@ -898,13 +882,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
 
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
-        Triple<Boolean, String, Object> rentCarDepositTriple = null;
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            //若免押订单不存在或免押失败，生成租车押金订单
-            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
-            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
-                return rentCarDepositTriple;
-            }
+            log.error("FFREE DEPOSIT HYBRID ERROR! freeDepositOrder is anomaly,uid={}", uid);
+            return Triple.of(false, "100402", "免押失败！");
         }
 
         //处理租车套餐订单
@@ -913,16 +893,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return rentCarMemberCardTriple;
         }
 
-        //保存租车押金订单
-        if ((Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) && Objects.nonNull(rentCarDepositTriple.getRight())) {
-            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
-            carDepositOrderService.insert(carDepositOrder);
-
-            orderList.add(carDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
-            payAmountList.add(carDepositOrder.getPayAmount());
-            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
-        }
 
         //保存租车套餐订单
         if (Objects.nonNull(rentCarMemberCardTriple.getRight())) {
@@ -933,6 +903,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD);
             payAmountList.add(carMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(carMemberCardOrder.getPayAmount());
+        }
+
+        if (totalPayAmount.doubleValue() <= NumberConstant.ZERO) {
+            return Triple.of(false, "ELECTRICITY.0007", "支付金额异常！");
         }
 
         try {
@@ -1007,9 +981,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
-
-
-
 
 
         Triple<Boolean, String, Object> rentCarDepositTriple = null;
