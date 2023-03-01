@@ -345,7 +345,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     public Triple<Boolean, String, Object> selectFreeDepositOrderStatus(String orderId) {
 
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
-        if (Objects.isNull(freeDepositOrder)) {
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
@@ -386,6 +386,51 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
         if (Objects.isNull(queryOrderRspData)) {
             log.error("Pxz ERROR! freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", orderId);
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+
+        return Triple.of(true, "", queryOrderRspData);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectFreeDepositOrderStatus(FreeDepositOrder freeDepositOrder) {
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+            log.error("Pxz ERROR! pxzConfig is null! uid={},orderId={}", freeDepositOrder.getUid(), freeDepositOrder.getOrderId());
+            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
+        }
+
+        PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(freeDepositOrder.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+
+        PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+        request.setTransId(freeDepositOrder.getOrderId());
+        query.setData(request);
+
+
+        PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+        try {
+            pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+        } catch (PxzFreeDepositException e) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! uid={},orderId={}", freeDepositOrder.getOrderId(), e);
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+
+        if (Objects.isNull(pxzQueryOrderRsp)) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", freeDepositOrder.getOrderId());
+            return Triple.of(false, "100402", "免押查询失败！");
+        }
+
+        if (!pxzQueryOrderRsp.isSuccess()) {
+            return Triple.of(false, "100402", pxzQueryOrderRsp.getRespDesc());
+        }
+
+        PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+        if (Objects.isNull(queryOrderRspData)) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", freeDepositOrder.getOrderId());
             return Triple.of(false, "100402", "免押查询失败！");
         }
 
@@ -1336,7 +1381,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 }
 
                 //获取免押解冻结果
-                Triple<Boolean, String, Object> depositOrderStatusResult = this.selectFreeDepositOrderStatus(freeDepositOrder.getOrderId());
+                Triple<Boolean, String, Object> depositOrderStatusResult = this.selectFreeDepositOrderStatus(freeDepositOrder);
                 if (Boolean.FALSE.equals(depositOrderStatusResult.getLeft())) {
                     log.error("FREE DEPOSIT TASK ERROR!acquire batteryFreeDepositOrder UN_FROZEN fail,orderId={},uid={}", eleRefundOrder.getOrderId(), freeDepositOrder.getUid());
                     continue;
@@ -1402,7 +1447,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 }
 
                 //获取免押解冻结果
-                Triple<Boolean, String, Object> depositOrderStatusResult = this.selectFreeDepositOrderStatus(freeDepositOrder.getOrderId());
+                Triple<Boolean, String, Object> depositOrderStatusResult = this.selectFreeDepositOrderStatus(freeDepositOrder);
                 if (Boolean.FALSE.equals(depositOrderStatusResult.getLeft())) {
                     log.error("FREE DEPOSIT TASK ERROR!acquire carFreeDepositOrder un_frozen fail,orderId={},uid={}", eleRefundOrder.getOrderId(), freeDepositOrder.getUid());
                     continue;
