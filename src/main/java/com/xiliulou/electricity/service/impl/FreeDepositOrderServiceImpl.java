@@ -345,7 +345,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     public Triple<Boolean, String, Object> selectFreeDepositOrderStatus(String orderId) {
 
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
-        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(freeDepositOrder)) {
             log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
