@@ -2930,7 +2930,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 log.error("ELECTRICITY  ERROR! not found coupon! userCouponId={},uid={} ", query.getUserCouponId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0085", "未找到优惠券");
             }
-
+    
             //使用满减劵
             if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.FULL_REDUCTION)) {
 
@@ -2946,6 +2946,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
         }
+    
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                .selectByUidFromCache(userInfo.getUid());
+        Integer payCount = this.queryMaxPayCount(userBatteryMemberCard);
 
         //支付金额不能为负数
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -2971,6 +2975,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setSource(source);
         electricityMemberCardOrder.setRefId(refId);
+        electricityMemberCardOrder.setPayCount(payCount);
         if (Objects.nonNull(query.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(query.getUserCouponId().longValue());
         }
