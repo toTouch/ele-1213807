@@ -149,9 +149,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        if (!Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD) && !Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD)
-                && !Objects.equals(type, OtaFileConfig.TYPE_OLD_CORE_BOARD) && !Objects
-                .equals(type, OtaFileConfig.TYPE_OLD_SUB_BOARD)) {
+        if (type < 1 || type > 4) {
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
     
