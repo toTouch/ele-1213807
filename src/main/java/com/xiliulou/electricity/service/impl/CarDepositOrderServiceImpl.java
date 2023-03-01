@@ -408,7 +408,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentCarDeposit(Long carModelId, Long storeId, Integer memberCardId, UserInfo userInfo) {
+    public Triple<Boolean, String, Object> handleRentCarDeposit(Long franchiseeId ,Long carModelId, Long storeId, Integer memberCardId, UserInfo userInfo) {
         if (Objects.isNull(carModelId) || Objects.isNull(storeId)) {
             return Triple.of(true, "", null);
         }
@@ -426,7 +426,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //租车押金和电池押金一起购买，校验换电套餐加盟商与车辆型号加盟商是否一致
-        if (!Objects.equals(userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId())) {
+        if (!Objects.equals(franchiseeId, electricityCarModel.getFranchiseeId())) {
             log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId());
             return Triple.of(false, "100255", "车辆型号加盟商与电池套餐加盟商不一致！");
         }

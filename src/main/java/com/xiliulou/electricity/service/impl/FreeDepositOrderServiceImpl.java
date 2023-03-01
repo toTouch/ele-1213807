@@ -458,7 +458,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={}", uid);
+            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
@@ -505,17 +505,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         this.update(freeDepositOrderUpdate);
 
         //冻结成功
-        if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+        if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
 
             //扣减免押次数
-            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 24 * 60 * 60 * 1000L, false)) {
-                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
-                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
-                freeDepositDataUpdate.setId(freeDepositData.getId());
-                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
-                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositDataService.update(freeDepositDataUpdate);
-            }
+            FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+            FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+            freeDepositDataUpdate.setId(freeDepositData.getId());
+            freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
+            freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositDataService.update(freeDepositDataUpdate);
+
 
             //更新押金订单状态
             EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
@@ -538,17 +537,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             userBattery.setBatteryType(eleDepositOrder.getBatteryType());
             userBattery.setUpdateTime(System.currentTimeMillis());
             userBatteryService.insertOrUpdate(userBattery);
-
         }
 
         FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
         freeDepositUserInfoVo.setName(userInfo.getName());
         freeDepositUserInfoVo.setPhone(userInfo.getPhone());
         freeDepositUserInfoVo.setIdCard(userInfo.getIdNumber());
-
-        freeDepositUserInfoVo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
-        freeDepositUserInfoVo.setModel(StringUtils.isNoneBlank(eleDepositOrder.getBatteryType()) ? BatteryConstant.acquireBatteryModel(eleDepositOrder.getBatteryType()) : null);
-        freeDepositUserInfoVo.setBatteryDepositType(userBatteryDeposit.getDepositType());
         freeDepositUserInfoVo.setApplyBatteryDepositTime(userBatteryDeposit.getApplyDepositTime());
         freeDepositUserInfoVo.setBatteryDepositAuthStatus(queryOrderRspData.getAuthStatus());
 
@@ -595,7 +589,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(carDepositOrder.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={}", uid);
+            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,uid={},orderId={}", uid, carDepositOrder.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
@@ -642,17 +636,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         this.update(freeDepositOrderUpdate);
 
         //冻结成功
-        if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-
+        if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
             //扣减免押次数
-            if (redisService.setNx(CacheConstant.ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY + freeDepositOrder.getOrderId(), "1", 24 * 60 * 60 * 1000L, false)) {
-                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
-                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
-                freeDepositDataUpdate.setId(freeDepositData.getId());
-                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
-                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositDataService.update(freeDepositDataUpdate);
-            }
+            FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+            FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+            freeDepositDataUpdate.setId(freeDepositData.getId());
+            freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
+            freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositDataService.update(freeDepositDataUpdate);
 
             //更新押金订单状态
             CarDepositOrder carDepositOrderUpdate = new CarDepositOrder();
@@ -681,9 +672,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositUserInfoVo.setName(userInfo.getName());
         freeDepositUserInfoVo.setPhone(userInfo.getPhone());
         freeDepositUserInfoVo.setIdCard(userInfo.getIdNumber());
-
-        freeDepositUserInfoVo.setFranchiseeId(carDepositOrder.getFranchiseeId());
-        freeDepositUserInfoVo.setCarModel(carDepositOrder.getCarModelId());
         freeDepositUserInfoVo.setApplyCarDepositTime(userCarDeposit.getApplyDepositTime());
         freeDepositUserInfoVo.setCarDepositAuthStatus(queryOrderRspData.getAuthStatus());
 
