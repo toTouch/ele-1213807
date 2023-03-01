@@ -249,4 +249,20 @@
     <select id="queryRefundTime" resultType="long">
         select update_time from t_ele_refund_order where order_id=#{orderId} and status=4;
     </select>
+
+
+    <select id="selectBatteryFreeDepositRefundingOrder" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select
+        ero.id,ero.order_id from t_ele_refund_order  ero
+        left join t_ele_deposit_order edo on ero.order_id=edo.order_id
+        WHERE edo.pay_type=2 and ero.status=3 and ero.refund_order_type=0 limit offset,size
+    </select>
+
+
+    <select id="selectCarFreeDepositRefundingOrder" resultType="com.xiliulou.electricity.entity.EleRefundOrder">
+        select
+        ero.id,ero.order_id from t_ele_refund_order  ero
+        left join t_car_deposit_order cdo on ero.order_id=cdo.order_id
+        WHERE cdo.pay_type=2 and ero.status=3 and ero.refund_order_type=1 limit offset,size
+    </select>
 </mapper>

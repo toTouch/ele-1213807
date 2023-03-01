@@ -2,14 +2,12 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -19,9 +17,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
-import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
-import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
@@ -136,7 +132,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EleRefundOrder eleRefundOrder) {
         return this.eleRefundOrderMapper.updateById(eleRefundOrder);
+    }
 
+    @Override
+    public List<EleRefundOrder> selectBatteryFreeDepositRefundingOrder(Integer offset, Integer size) {
+        return this.eleRefundOrderMapper.selectBatteryFreeDepositRefundingOrder(offset,size);
+    }
+
+    @Override
+    public List<EleRefundOrder> selectCarFreeDepositRefundingOrder(int offset, Integer size) {
+        return this.eleRefundOrderMapper.selectCarFreeDepositRefundingOrder(offset,size);
     }
 
     @Override
@@ -409,14 +414,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderService.update(eleRefundOrderUpdate);
 
         return Triple.of(false, "ELECTRICITY.00100", "退款失败");
-    }
-
-    @Override
-    public List<EleRefundOrder> selectFreeDepositRefundingOrder() {
-
-
-
-        return null;
     }
 
     /**
