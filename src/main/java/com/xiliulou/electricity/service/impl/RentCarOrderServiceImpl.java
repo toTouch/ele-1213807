@@ -697,8 +697,8 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //保存套餐订单
-        if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) rentBatteryMemberCardTriple.getRight();
+        if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight()) && !CollectionUtils.isEmpty(((List) rentBatteryMemberCardTriple.getRight()))) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
@@ -707,7 +707,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
     
-            //优惠券处理
+            //优惠券处理  抄的换电
             if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
         
                 UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);

@@ -2980,7 +2980,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         list.add(electricityMemberCardOrder);
         list.add(userCoupon);
 
-        return Triple.of(true, null, electricityMemberCardOrder);
+        return Triple.of(true, null, list);
     }
 
     @Override
