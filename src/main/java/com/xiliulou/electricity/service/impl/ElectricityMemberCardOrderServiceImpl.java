@@ -2974,8 +2974,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(query.getUserCouponId())) {
             electricityMemberCardOrder.setCouponId(query.getUserCouponId().longValue());
         }
+    
+        //处理优惠券 抄的换电混合支付
+        List<Object> list = new ArrayList<>();
+        list.add(electricityMemberCardOrder);
+        list.add(userCoupon);
 
-        return Triple.of(true, null, electricityMemberCardOrder);
+        return Triple.of(true, null, list);
     }
 
     @Override
