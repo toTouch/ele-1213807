@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -19,8 +20,12 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositAuthToPayOrderQueryRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositAuthToPayRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderQueryRequest;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositOrderRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzAuthToPayOrderQueryRsp;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzAuthToPayRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
@@ -183,7 +188,150 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     public Integer update(FreeDepositOrder freeDepositOrder) {
         return this.freeDepositOrderMapper.update(freeDepositOrder);
     }
-
+    
+    @Override
+    public Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt) {
+        
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_INIT)) {
+            log.error("FREE DEPOSIT ERROR! freeDepositOrder already AuthToPay,orderId={}", orderId);
+            return Triple.of(false, "100412", "免押订单已授权支付");
+        }
+        
+        if (Objects.isNull(payTransAmt) || payTransAmt.compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
+            log.error("FREE DEPOSIT ERROR! payTransAmt is illegal,orderId={}", orderId);
+            return Triple.of(false, "ELECTRICITY.0007", "退款金额不能大于支付金额!");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(freeDepositOrder.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("FREE DEPOSIT ERROR! not found user info! uid={}", freeDepositOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+        
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("FREE DEPOSIT ERROR! user is disable,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("FREE DEPOSIT ERROR! user not auth,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+        
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("FREE DEPOSIT ERROR! user not pay deposit,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+        
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils
+                .isBlank(pxzConfig.getMerchantCode())) {
+            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
+        }
+        
+        PxzCommonRequest<PxzFreeDepositAuthToPayRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(freeDepositOrder.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositAuthToPayRequest request = new PxzFreeDepositAuthToPayRequest();
+        request.setPayNo(freeDepositOrder.getOrderId());
+        request.setTransId(freeDepositOrder.getOrderId());
+        request.setAuthNo(freeDepositOrder.getAuthNo());
+        request.setTransAmt(payTransAmt.multiply(BigDecimal.valueOf(100)).longValue());
+        query.setData(request);
+        
+        PxzCommonRsp<PxzAuthToPayRsp> pxzAuthToPayRspPxzCommonRsp = null;
+        try {
+            pxzAuthToPayRspPxzCommonRsp = pxzDepositService.authToPay(query);
+        } catch (Exception e) {
+            log.error("Pxz ERROR! freeDepositOrder authToPay fail! uid={},orderId={}", userInfo.getUid(),
+                    freeDepositOrder.getOrderId(), e);
+            return Triple.of(false, "100411", "授权支付调用失败！");
+        }
+        
+        if (Objects.isNull(pxzAuthToPayRspPxzCommonRsp)) {
+            log.error("Pxz ERROR! freeDepositOrder authToPay fail! rsp is null! uid={},orderId={}", userInfo.getUid(),
+                    freeDepositOrder.getOrderId());
+            return Triple.of(false, "100411", "授权支付调用失败！");
+        }
+        
+        if (!pxzAuthToPayRspPxzCommonRsp.isSuccess()) {
+            return Triple.of(false, "100411", pxzAuthToPayRspPxzCommonRsp.getRespDesc());
+        }
+        
+        //更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setPayStatus(pxzAuthToPayRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositOrderUpdate.setPayTransAmt(payTransAmt.doubleValue());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(freeDepositOrderUpdate);
+        
+        return Triple.of(true, "", "授权转支付交易处理中！");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> selectFreeDepositAuthToPay(String orderId) {
+        
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+            return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
+        }
+        
+        PxzCommonRequest<PxzFreeDepositAuthToPayOrderQueryRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(freeDepositOrder.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositAuthToPayOrderQueryRequest queryRequest = new PxzFreeDepositAuthToPayOrderQueryRequest();
+        queryRequest.setPayNo(freeDepositOrder.getOrderId());
+        queryRequest.setAuthNo(freeDepositOrder.getAuthNo());
+        query.setData(queryRequest);
+        
+        PxzCommonRsp<PxzAuthToPayOrderQueryRsp> pxzAuthToPayOrderQueryRspPxzCommonRsp = null;
+        
+        try {
+            pxzAuthToPayOrderQueryRspPxzCommonRsp = pxzDepositService.authToPayOrderQuery(query);
+        } catch (Exception e) {
+            log.error("Pxz ERROR! query freeDepositOrder authToPay fail! orderId={}", freeDepositOrder.getOrderId(), e);
+            return Triple.of(false, "100411", "授权支付调用失败！");
+        }
+        
+        if (Objects.isNull(pxzAuthToPayOrderQueryRspPxzCommonRsp)) {
+            log.error("Pxz ERROR! query freeDepositOrder authToPay fail! rsp is null! orderId={}",
+                    freeDepositOrder.getOrderId());
+            return Triple.of(false, "100411", "授权支付调用失败！");
+        }
+        
+        if (!pxzAuthToPayOrderQueryRspPxzCommonRsp.isSuccess()) {
+            return Triple.of(false, "100411", pxzAuthToPayOrderQueryRspPxzCommonRsp.getRespDesc());
+        }
+        
+        //更新免押订单状态
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setPayStatus(pxzAuthToPayOrderQueryRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(freeDepositOrderUpdate);
+        
+        return Triple.of(true, "", pxzAuthToPayOrderQueryRspPxzCommonRsp.getData());
+    }
+    
     /**
      * 生成电池免押订单
      *
@@ -452,7 +600,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("ELE CAR REFUND ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 

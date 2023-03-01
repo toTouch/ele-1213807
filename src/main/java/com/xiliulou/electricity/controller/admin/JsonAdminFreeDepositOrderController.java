@@ -2,15 +2,26 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.query.FreeDepositRechargeRecordQuery;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * @author zzlong
@@ -88,6 +99,49 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
 
         return R.ok(this.freeDepositOrderService.selectByPageCount(query));
     }
-
+    
+    /**
+     * 授权转支付
+     */
+    @PutMapping("/admin/freeDepositOrder/AuthToPay")
+    public R freeDepositAuthToPay(@RequestParam(value = "orderId") String orderId,
+            @RequestParam(value = "payTransAmt") BigDecimal payTransAmt) {
+    
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+    
+        return returnTripleResult(this.freeDepositOrderService.freeDepositAuthToPay(orderId, payTransAmt));
+    }
+    
+    /**
+     * 查询授权支付结果
+     */
+    @GetMapping("/admin/freeDepositOrder/AuthToPay/result")
+    public R selectFreeDepositAuthToPay(@RequestParam(value = "orderId") String orderId) {
+        
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+        
+        return returnTripleResult(this.freeDepositOrderService.selectFreeDepositAuthToPay(orderId));
+    }
+    
+    
+    private Triple<Boolean, String, Object> verifyPermission() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户!");
+        }
+        
+        if (!SecurityUtils.isAdmin() || (Objects.nonNull(user.getDataType()) && !Objects
+                .equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return Triple.of(false, "ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return Triple.of(true, "", null);
+    }
 
 }

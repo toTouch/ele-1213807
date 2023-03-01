@@ -50,55 +50,64 @@ public class FreeDepositOrder {
      */
     private Double payTransAmt;
     /**
-     * 授权免押的状态
+     * 支付状态
      */
     private Integer authStatus;
     /**
-     * 支付状态
+     * 授权免押的状态
      */
     private Integer payStatus;
-
+    
     private Integer tenantId;
     /**
      * 免押的类型0--支付宝
      */
     private Integer type;
-
+    
     /**
      * 押金类型 1：电池，2：租车
      */
     private Integer depositType;
-
+    
     private Long createTime;
-
+    
     private Long updateTime;
-
+    
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
-
+    
     /**
      * 支付宝
      */
     public static final Integer TYPE_ZHIFUBAO = 0;
-
-
+    
+    
     /**
-     * 0:初始化;4:待冻结;7:冻结中;10:已冻结;11:解冻中;12:已解冻;13超时关闭
+     * 支付状态 0:初始化;4:待冻结;7:冻结中;10:已冻结;11:解冻中;12:已解冻;13超时关闭
      */
     public static final Integer AUTH_INIT = 0;
-
+    
     public static final Integer AUTH_PENDING_FREEZE = 4;
-
+    
     public static final Integer AUTH_FREEZING = 7;
-
+    
     public static final Integer AUTH_FROZEN = 10;
-
+    
     public static final Integer AUTH_UN_FREEZING = 11;
-
+    
     public static final Integer AUTH_UN_FROZEN = 12;
-
+    
     public static final Integer AUTH_TIMEOUT = 13;
-
+    
+    /**
+     * 授权免押状态 -1:初始化;0:交易成功；1:交易处理中；2:交易失败；4:交易关闭
+     */
+    public static final Integer PAY_STATUS_INIT = -1;
+    public static final Integer PAY_STATUS_DEAL_SUCCESS = 0;
+    public static final Integer PAY_STATUS_DEALING = 1;
+    public static final Integer PAY_STATUS_DEAL_FAIL = 2;
+    public static final Integer PAY_STATUS_DEAL_CLOSE = 4;
+    
     //押金类型 1：电池，2：租车
     public static final Integer DEPOSIT_TYPE_BATTERY = 1;
     public static final Integer DEPOSIT_TYPE_CAR = 2;

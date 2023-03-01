@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.FreeDepositOrder;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
 import com.xiliulou.electricity.query.*;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -68,4 +68,8 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> freeCarBatteryDepositHybridOrder(FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request);
 
     Integer selectByPageCount(FreeDepositOrderQuery query);
+    
+    Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt);
+    
+    Triple<Boolean, String, Object> selectFreeDepositAuthToPay(String orderId);
 }
