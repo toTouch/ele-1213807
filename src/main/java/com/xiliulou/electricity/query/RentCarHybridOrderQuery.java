@@ -13,6 +13,10 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RentCarHybridOrderQuery {
+
+    @NotNull(message = "加盟商不能为空!")
+    private Long franchiseeId;
+
     @NotNull(message = "门店不能为空!")
     private Long storeId;
 
@@ -26,8 +30,6 @@ public class RentCarHybridOrderQuery {
     private String rentType;
 
     private Integer insuranceId;
-
-    private Long franchiseeId;
 
     private Integer model;
 

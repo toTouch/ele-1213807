@@ -1563,7 +1563,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public Triple<Boolean, String, Object> handleRentBatteryDeposit(Long franchiseeId, Integer memberCard ,Integer model, UserInfo userInfo) {
         EleDepositOrder eleDepositOrder = null;
-        if (Objects.isNull(franchiseeId) || Objects.isNull(memberCard)) {
+        if (Objects.isNull(memberCard)) {
             return Triple.of(true, "", null);
         }
 
