@@ -1169,57 +1169,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return Triple.of(false, "100001", userInfoResult);
         }
 
-        //电池订单类型为免押
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
-        if (Objects.nonNull(userBatteryDeposit) && Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
-            userInfoResult.setBatteryFreeApplyTime(userBatteryDeposit.getApplyDepositTime());
-
-            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
-            if (Objects.nonNull(freeDepositOrder)) {
-                //若免押状态为待冻结
-                if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
-                    //获取电池免押结果
-                    PxzQueryOrderRsp queryOrderRspData = null;
-                    Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.selectFreeDepositOrderStatus(freeDepositOrder);
-                    if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
-                        queryOrderRspData = (PxzQueryOrderRsp) freeBatteryDepositOrderResult.getRight();
-                    }
-
-                    userInfoResult.setBatteryFreeStatus(Objects.nonNull(queryOrderRspData) ? queryOrderRspData.getAuthStatus() : null);
-                } else {
-                    userInfoResult.setBatteryFreeStatus(freeDepositOrder.getAuthStatus());
-                }
-            }
-        }
-
-        //车辆订单类型为免押
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
-        if (Objects.nonNull(userCarDeposit) && Objects.equals(userCarDeposit.getDepositType(), UserCarDeposit.DEPOSIT_TYPE_FREE)) {
-            userInfoResult.setCarFreeApplyTime(userCarDeposit.getApplyDepositTime());
-
-            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
-            if (Objects.nonNull(freeDepositOrder)) {
-                //若免押状态为待冻结
-                if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
-                    //获取车辆免押结果
-                    PxzQueryOrderRsp queryOrderRspData = null;
-                    Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.selectFreeDepositOrderStatus(freeDepositOrder);
-                    if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
-                        queryOrderRspData = (PxzQueryOrderRsp) freeCarDepositOrderResult.getRight();
-                    }
-
-                    userInfoResult.setCarFreeStatus(Objects.nonNull(queryOrderRspData) ? queryOrderRspData.getAuthStatus() : null);
-                } else {
-                    userInfoResult.setCarFreeStatus(freeDepositOrder.getAuthStatus());
-                }
-            }
-        }
-
         UserInfo userInfo = this.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found userInfo! uid={}", SecurityUtils.getUid());
             return Triple.of(false, "100001", userInfoResult);
         }
+
+        //电池订单类型为免押
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        acquireBatteryFreeDepositResult(userBatteryDeposit, userInfo, userInfoResult);
+
+        //车辆订单类型为免押
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        acquireCarFreeDepositResult(userCarDeposit, userInfo, userInfoResult);
+
 
         //审核状态
         userInfoResult.setAuthStatus(userInfo.getAuthStatus());
@@ -1312,6 +1275,64 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         return Triple.of(true, "", userInfoResult);
+    }
+
+    private void acquireCarFreeDepositResult(UserCarDeposit userCarDeposit, UserInfo userInfo, UserInfoResultVO userInfoResult) {
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)
+                || !Objects.nonNull(userCarDeposit)
+                || !Objects.equals(userCarDeposit.getDepositType(), UserCarDeposit.DEPOSIT_TYPE_FREE)) {
+            return;
+        }
+
+        userInfoResult.setCarFreeApplyTime(userCarDeposit.getApplyDepositTime());
+
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            return;
+        }
+
+        //若免押状态为待冻结
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
+            //获取车辆免押结果
+            FreeDepositUserInfoVo freeDepositUserInfoVo = null;
+            Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.acquireFreeCarDepositStatus();
+            if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
+                freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeCarDepositOrderResult.getRight();
+            }
+
+            userInfoResult.setCarFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getCarDepositAuthStatus() : null);
+        } else {
+            userInfoResult.setCarFreeStatus(freeDepositOrder.getAuthStatus());
+        }
+    }
+
+    private void acquireBatteryFreeDepositResult(UserBatteryDeposit userBatteryDeposit, UserInfo userInfo, UserInfoResultVO userInfoResult) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)
+                || !Objects.nonNull(userBatteryDeposit)
+                || !Objects.equals(userBatteryDeposit.getDepositType(), UserBatteryDeposit.DEPOSIT_TYPE_FREE)) {
+            return;
+        }
+
+        userInfoResult.setBatteryFreeApplyTime(userBatteryDeposit.getApplyDepositTime());
+
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            return;
+        }
+
+        //若免押状态为待冻结
+        if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
+            //获取电池免押结果
+            FreeDepositUserInfoVo freeDepositUserInfoVo = null;
+            Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.acquireUserFreeBatteryDepositStatus();
+            if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
+                freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeBatteryDepositOrderResult.getRight();
+            }
+
+            userInfoResult.setBatteryFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getBatteryDepositAuthStatus() : null);
+        } else {
+            userInfoResult.setBatteryFreeStatus(freeDepositOrder.getAuthStatus());
+        }
     }
 
     @Deprecated

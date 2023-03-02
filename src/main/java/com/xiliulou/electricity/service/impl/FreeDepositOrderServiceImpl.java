@@ -684,10 +684,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
 
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_FREE_BATTERY_DEPOSIT_LOCK_KEY + uid, "1", 2 * 1000L, false)) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
-        }
-
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("FREE DEPOSIT ERROR! not found user info,uid={}", uid);
@@ -813,10 +809,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
-        }
-
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_FREE_CAR_DEPOSIT_LOCK_KEY + uid, "1", 2 * 1000L, false)) {
-            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
