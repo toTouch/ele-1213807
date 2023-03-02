@@ -686,10 +686,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
-            return R.ok();
-        }
-
+        userInfo.setTenantId(tenantId);
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = update(userInfo);
 
