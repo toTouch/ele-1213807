@@ -321,6 +321,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.userCreateBeginTime !=null">
+            and tui.create_time &gt;=#{query.userCreateBeginTime}
+        </if>
+        <if test="query.userCreateEndTime !=null">
+            and tui.create_time &lt;=#{query.userCreateEndTime}
+        </if>
     </select>
 
     <select id="queryAuthenticationCount" resultType="java.lang.Integer">
