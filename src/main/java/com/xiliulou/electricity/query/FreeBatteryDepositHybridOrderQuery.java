@@ -14,16 +14,16 @@ import javax.validation.constraints.NotNull;
 public class FreeBatteryDepositHybridOrderQuery {
     //==============车辆================
 
-    @NotNull(message = "门店不能为空!")
+
     private Long storeId;
 
-    @NotNull(message = "车辆型号不能为空!")
+
     private Long carModelId;
 
-    @NotNull(message = "车辆租赁时间不能为空!")
+
     private Integer rentTime;
 
-    @NotBlank(message = "车辆租赁方式不能为空!")
+
     private String rentType;
 
     //==============电池================
