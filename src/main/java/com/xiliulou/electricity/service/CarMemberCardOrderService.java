@@ -3,11 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
-import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
-import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
-import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
-import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Triple;
@@ -93,4 +89,6 @@ public interface CarMemberCardOrderService {
     R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate);
     
     R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardOrderAddAndUpdate);
+
+    Triple<Boolean, String, Object> freeDepositPayCarMemberCard(FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request);
 }
