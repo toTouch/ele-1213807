@@ -25,9 +25,11 @@ public class JsonAdminUserActiveInfoController {
     private UserActiveInfoService userActiveInfoService;
     
     @GetMapping("/admin/userActiveInfo/list")
-    public R queryList(@RequestParam("userName") String userName, @RequestParam("phone") String phone,
-            @RequestParam("day") Integer day, @RequestParam("batterySn") String batterySn,
-            @RequestParam("payCount") Integer payCount, @RequestParam("offset") Long offset,
+    public R queryList(@RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "day", required = false) Integer day,
+            @RequestParam(value = "batterySn", required = false) String batterySn,
+            @RequestParam(value = "payCount", required = false) Integer payCount, @RequestParam("offset") Long offset,
             @RequestParam("size") Long size) {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
@@ -45,9 +47,11 @@ public class JsonAdminUserActiveInfoController {
     }
     
     @GetMapping("/admin/userActiveInfo/count")
-    public R queryCount(@RequestParam("userName") String userName, @RequestParam("phone") String phone,
-            @RequestParam("day") Integer day, @RequestParam("batterySn") String batterySn,
-            @RequestParam("payCount") Integer payCount) {
+    public R queryCount(@RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "day", required = false) Integer day,
+            @RequestParam(value = "batterySn", required = false) String batterySn,
+            @RequestParam(value = "payCount", required = false) Integer payCount) {
         
         UserActiveInfoQuery query = UserActiveInfoQuery.builder().userName(userName).phone(phone).day(day)
                 .batterySn(batterySn).payCount(payCount).tenantId(TenantContextHolder.getTenantId()).build();
