@@ -334,19 +334,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (Objects.isNull(item.getUid())) {
                     return;
                 }
-            
-                FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
-                        .queryFinalHistoryByJoinUid(item.getUid(), item.getTenantId());
-                if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
-                    item.setInviterUserName(finalJoinShareActivityHistoryVo.getUserName());
-                    return;
-                }
-            
-                FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService
-                        .queryFinalHistoryByJoinUid(item.getUid(), item.getTenantId());
-                if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
-                    item.setInviterUserName(finalJoinShareMoneyActivityHistoryVo.getUserName());
-                }
+    
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
             });
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);
@@ -2013,13 +2002,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
             excelVo.setCardName(Objects.nonNull(electricityMemberCard) ? electricityMemberCard.getName() : "");
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
-            userInfoExcelVOS.add(excelVo);
-
-
+            excelVo.setInviterUserName(
+                    queryFinalInviterUserName(userBatteryInfoVO.getUid(), userBatteryInfoVO.getTenantId()));
+            
             if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(),NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
             }
-
+    
+            userInfoExcelVOS.add(excelVo);
         }
 
         String fileName = "会员列表报表.xlsx";
@@ -2035,5 +2025,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("导出报表失败！", e);
         }
 
+    }
+    
+    
+    private String queryFinalInviterUserName(Long uid, Integer tenantId) {
+        FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
+                .queryFinalHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
+            return finalJoinShareActivityHistoryVo.getUserName();
+        }
+        
+        FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService
+                .queryFinalHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
+            return finalJoinShareMoneyActivityHistoryVo.getUserName();
+        }
+        
+        return null;
     }
 }
