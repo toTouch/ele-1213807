@@ -46,7 +46,7 @@ public class JsonAdminUserActiveInfoController {
         return userActiveInfoService.queryList(query);
     }
     
-    @GetMapping("/admin/userActiveInfo/count")
+    @GetMapping("/admin/userActiveInfo/queryCount")
     public R queryCount(@RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "day", required = false) Integer day,
