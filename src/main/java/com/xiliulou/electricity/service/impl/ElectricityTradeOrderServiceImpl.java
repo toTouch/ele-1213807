@@ -115,6 +115,8 @@ public class ElectricityTradeOrderServiceImpl extends
     CarDepositOrderService carDepositOrderService;
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -821,9 +823,18 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserCarMemberCard.setOrderId(carMemberCardOrder.getOrderId());
             updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
             updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
+            updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
+            updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
-            userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+            userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+
+            //用户是否有绑定了车辆
+            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+            if (Objects.nonNull(electricityCar) && Objects
+                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            }
         }
 
 
