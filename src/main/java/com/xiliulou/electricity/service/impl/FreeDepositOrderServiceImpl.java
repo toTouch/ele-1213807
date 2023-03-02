@@ -1227,24 +1227,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
-            log.error("FREE DEPOSIT HYBRID ERROR! user is not rent deposit,uid={}", uid);
-            return Triple.of(false, "100238", "未缴纳车辆押金");
-        }
-
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
 
         //处理租车押金
-//        Triple<Boolean, String, Object> rentCarDepositTriple = null;
-//        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
-//            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
-//            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
-//                return rentCarDepositTriple;
-//            }
-//        }
+        Triple<Boolean, String, Object> rentCarDepositTriple = null;
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
+            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
+                return rentCarDepositTriple;
+            }
+        }
 
         //处理租车套餐订单
         Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
@@ -1253,10 +1248,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //处理电池押金相关
-        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(),query.getModel(), userInfo);
-        if (!rentBatteryDepositTriple.getLeft()) {
-            return rentBatteryDepositTriple;
+        Triple<Boolean, String, Object> rentBatteryDepositTriple = null;
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO)) {
+            rentBatteryDepositTriple =  eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(), query.getModel(), userInfo);
+            if (Boolean.FALSE.equals(rentBatteryDepositTriple.getLeft())) {
+                return rentBatteryDepositTriple;
+            }
         }
+
 
         //处理电池套餐相关
         Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(
@@ -1272,16 +1271,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存租车押金订单
-//        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.nonNull(rentCarDepositTriple.getRight())) {
-//            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
-//            carDepositOrderService.insert(carDepositOrder);
-//
-//            orderList.add(carDepositOrder.getOrderId());
-//            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
-//            payAmountList.add(carDepositOrder.getPayAmount());
-//
-//            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
-//        }
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.nonNull(rentCarDepositTriple.getRight())) {
+            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
+            carDepositOrderService.insert(carDepositOrder);
+
+            orderList.add(carDepositOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
+            payAmountList.add(carDepositOrder.getPayAmount());
+
+            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
+        }
 
         //保存租车套餐订单
         if (Objects.nonNull(rentCarMemberCardTriple.getRight())) {
@@ -1295,7 +1294,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存电池押金订单
-        if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_NO) && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
             eleDepositOrderService.insert(eleDepositOrder);
 
@@ -1317,8 +1316,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存电池套餐订单
-        if (CollectionUtils.isNotEmpty((List)rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List)rentBatteryMemberCardTriple.getRight()).get(0);
+        if (CollectionUtils.isNotEmpty((List) rentBatteryMemberCardTriple.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
