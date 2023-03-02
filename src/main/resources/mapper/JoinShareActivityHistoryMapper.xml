@@ -38,4 +38,13 @@
 		</if>
 
     </select>
+    
+    <select id="queryFinalHistoryByJoinUid" resultType="com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo">
+        select jsah.id, tui.user_name
+        from t_join_share_activity_history as jsah
+        left join t_user_info as tui on tui.uid = jsah.uid
+        where tui.tenant_id = #{tenantId} and jsah.join_uid = #{joinUid}
+        order by jsah.create_time desc
+        limit 1
+    </select>
 </mapper>

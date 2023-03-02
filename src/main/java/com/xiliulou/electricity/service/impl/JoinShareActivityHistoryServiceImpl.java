@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -154,6 +155,9 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	public void updateExpired(JoinShareActivityHistory joinShareActivityHistory) {
 		joinShareActivityHistoryMapper.updateExpired(joinShareActivityHistory);
 	}
-
-
+	
+	@Override
+	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
+		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
+	}
 }

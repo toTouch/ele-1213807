@@ -137,7 +137,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     CarDepositOrderService carDepositOrderService;
-
+    
+    @Autowired
+    JoinShareActivityHistoryService joinShareActivityHistoryService;
+    
+    @Autowired
+    JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -322,8 +327,34 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
-
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance);
+    
+        //用户邀请人
+        CompletableFuture<Void> queryInviterUser = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.forEach(item -> {
+                if (Objects.isNull(item.getUid())) {
+                    return;
+                }
+            
+                FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
+                        .queryFinalHistoryByJoinUid(item.getUid(), item.getTenantId());
+                if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
+                    item.setInviterUserName(finalJoinShareActivityHistoryVo.getUserName());
+                    return;
+                }
+            
+                FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService
+                        .queryFinalHistoryByJoinUid(item.getUid(), item.getTenantId());
+                if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
+                    item.setInviterUserName(finalJoinShareMoneyActivityHistoryVo.getUserName());
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+    
+        CompletableFuture<Void> resultFuture = CompletableFuture
+                .allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance, queryInviterUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

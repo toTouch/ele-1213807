@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
+import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 
 import java.util.List;
 
@@ -47,4 +48,6 @@ public interface JoinShareActivityHistoryService {
 	void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory);
 
 	void updateExpired(JoinShareActivityHistory joinShareActivityHistory);
+    
+    FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
 }

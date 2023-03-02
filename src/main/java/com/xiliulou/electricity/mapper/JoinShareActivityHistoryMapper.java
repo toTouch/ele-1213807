@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
+import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -32,4 +34,7 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 
 	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
 	void updateExpired(JoinShareActivityHistory joinShareActivityHistory);
+	
+	FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(@Param("joinUid") Long joinUid,
+			@Param("tenantId") Integer tenantId);
 }
