@@ -25,6 +25,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -1177,14 +1178,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(freeDepositOrder)) {
                 //若免押状态为待冻结
                 if(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)){
-                    FreeDepositUserInfoVo freeDepositUserInfoVo = null;
                     //获取电池免押结果
-                    Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.acquireUserFreeBatteryDepositStatus();
+                    PxzQueryOrderRsp queryOrderRspData = null;
+                    Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.selectFreeDepositOrderStatus(freeDepositOrder);
                     if (Boolean.TRUE.equals(freeBatteryDepositOrderResult.getLeft())) {
-                        freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeBatteryDepositOrderResult.getRight();
+                        queryOrderRspData = (PxzQueryOrderRsp) freeBatteryDepositOrderResult.getRight();
                     }
 
-                    userInfoResult.setBatteryFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getBatteryDepositAuthStatus() : null);
+                    userInfoResult.setBatteryFreeStatus(Objects.nonNull(queryOrderRspData) ? queryOrderRspData.getAuthStatus() : null);
                 }else{
                     userInfoResult.setBatteryFreeStatus(freeDepositOrder.getAuthStatus());
                 }
@@ -1200,14 +1201,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(freeDepositOrder)) {
                 //若免押状态为待冻结
                 if(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)){
-                    FreeDepositUserInfoVo freeDepositUserInfoVo = null;
                     //获取车辆免押结果
+                    PxzQueryOrderRsp queryOrderRspData = null;
                     Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.acquireFreeCarDepositStatus();
                     if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
-                        freeDepositUserInfoVo = (FreeDepositUserInfoVo) freeCarDepositOrderResult.getRight();
+                        queryOrderRspData = (PxzQueryOrderRsp) freeCarDepositOrderResult.getRight();
                     }
 
-                    userInfoResult.setCarFreeStatus(Objects.nonNull(freeDepositUserInfoVo) ? freeDepositUserInfoVo.getCarDepositAuthStatus() : null);
+                    userInfoResult.setCarFreeStatus(Objects.nonNull(queryOrderRspData) ? queryOrderRspData.getAuthStatus() : null);
                 }else{
                     userInfoResult.setCarFreeStatus(freeDepositOrder.getAuthStatus());
                 }
