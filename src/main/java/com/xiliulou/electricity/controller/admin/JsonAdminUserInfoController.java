@@ -203,6 +203,8 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+            @RequestParam(value = "userCreateTimeBegin", required = false) Long userCreateTimeBegin,
+            @RequestParam(value = "userCreateTimeEnd", required = false) Long userCreateTimeEnd,
                         @RequestParam(value = "batteryId", required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
@@ -248,7 +250,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryDepositStatus(batteryDepositStatus)
                 .cardPayCount(cardPayCount)
                 .memberCardExpireType(memberCardExpireType)
-                .franchiseeIds(franchiseeIds)
+                .franchiseeIds(franchiseeIds).userCreateBeginTime(userCreateTimeBegin)
+                .userCreateEndTime(userCreateTimeEnd)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
