@@ -791,7 +791,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             freeDepositOrderService.update(freeDepositOrderUpdate);
 
             //更新退款订单
-            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.update(eleRefundOrderUpdate);
 
