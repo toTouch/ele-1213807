@@ -319,6 +319,11 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         BeanUtils.copyProperties(carDepositOrder, userCarDepositVO);
 
+        Store store = storeService.queryByIdFromCache(carDepositOrder.getStoreId());
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carDepositOrder.getCarModelId().intValue());
+        userCarDepositVO.setStoreName(Objects.isNull(store) ? null : store.getName());
+        userCarDepositVO.setCarModelName(Objects.isNull(electricityCarModel) ? null : electricityCarModel.getName());
+
         return Triple.of(true, "", userCarDepositVO);
     }
 
