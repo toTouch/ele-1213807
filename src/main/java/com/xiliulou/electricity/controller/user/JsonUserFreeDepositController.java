@@ -93,17 +93,17 @@ public class JsonUserFreeDepositController extends BaseController {
     /**
      * 车辆免押 套餐混合支付
      */
-    @PostMapping("/user/freeCarDeposit/hybridOrder")
+//    @PostMapping("/user/freeCarDeposit/hybridOrder")
     public R freeCarDepositHybridOrder(@RequestBody @Validated FreeCarDepositHybridOrderQuery query, HttpServletRequest request) {
         return returnTripleResult(freeDepositOrderService.freeCarDepositHybridOrder(query, request));
     }
 
-//    /**
-//     * 车辆&电池免押混合支付
-//     */
-//    @PostMapping("/user/freeCarBatteryDeposit/hybridOrder")
-//    public R freeCarBatteryDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
-//        return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositHybridOrder(query, request));
-//    }
+    /**
+     * 车辆&电池免押混合支付
+     */
+    @PostMapping("/user/freeCarDeposit/hybridOrder")
+    public R freeCarBatteryDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
+        return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositHybridOrder(query, request));
+    }
 
 }

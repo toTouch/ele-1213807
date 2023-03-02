@@ -1228,18 +1228,30 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+            log.error("FREE DEPOSIT HYBRID ERROR! user is not rent deposit,uid={}", uid);
+            return Triple.of(false, "100238", "未缴纳车辆押金");
+        }
+
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
 
+        //处理租车押金
+//        Triple<Boolean, String, Object> rentCarDepositTriple = null;
+//        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+//            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
+//            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
+//                return rentCarDepositTriple;
+//            }
+//        }
 
         //处理租车套餐订单
         Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
         if (Boolean.FALSE.equals(rentCarMemberCardTriple.getLeft())) {
             return rentCarMemberCardTriple;
         }
-
 
         //处理电池套餐相关
         Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(
@@ -1253,6 +1265,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
             return rentBatteryInsuranceTriple;
         }
+
+        //保存租车押金订单
+//        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.nonNull(rentCarDepositTriple.getRight())) {
+//            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
+//            carDepositOrderService.insert(carDepositOrder);
+//
+//            orderList.add(carDepositOrder.getOrderId());
+//            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
+//            payAmountList.add(carDepositOrder.getPayAmount());
+//
+//            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
+//        }
 
         //保存租车套餐订单
         if (Objects.nonNull(rentCarMemberCardTriple.getRight())) {
@@ -1277,7 +1301,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             totalPayAmount = totalPayAmount.add(insuranceOrder.getPayAmount());
         }
 
-        //保存套餐订单
+        //保存电池套餐订单
         if (Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
             ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) rentBatteryMemberCardTriple.getRight();
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
@@ -1286,6 +1310,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
+
+            //优惠券处理
+            if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
+
+                UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
+                //修改劵可用状态
+                if (Objects.nonNull(userCoupon)) {
+                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
+                    userCoupon.setUpdateTime(System.currentTimeMillis());
+                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+                    userCouponService.update(userCoupon);
+                }
+            }
         }
 
         try {
