@@ -64,7 +64,7 @@
         limit #{offset}, #{size}
     </select>
 
-    <select id="selectByPageCount" resultMap="FreeDepositOrderMap">
+    <select id="selectByPageCount" resultType="int">
         select
         count(1)
         from t_free_deposit_order
