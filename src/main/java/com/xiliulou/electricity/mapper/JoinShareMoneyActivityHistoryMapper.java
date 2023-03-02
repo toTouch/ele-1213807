@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -35,6 +36,7 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 
 	@Update("update t_join_share_money_activity_history set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
 	void updateExpired(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
-	
-	FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(@Param("joinUid") Long joinUid,
+            @Param("tenantId") Integer tenantId);
 }

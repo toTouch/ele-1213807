@@ -45,7 +45,8 @@
         </where>
     </select>
     
-    <select id="queryFinalHistoryByJoinUid">
+    <select id="queryFinalHistoryByJoinUid"
+        resultType="com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo">
         select jsah.uid, tui.user_name
         from t_join_share_money_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.uid
