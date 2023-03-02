@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.UserActiveInfo;
@@ -162,6 +163,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     }
     
     @Override
+    @DS("slave_1")
     public R queryList(UserActiveInfoQuery query) {
         Integer day = Objects.isNull(query.getDay()) ? 0 : query.getDay();
         query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);
@@ -181,6 +183,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     }
     
     @Override
+    @DS("slave_1")
     public R queryCount(UserActiveInfoQuery query) {
         Integer day = Objects.isNull(query.getDay()) ? 0 : query.getDay();
         query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);
