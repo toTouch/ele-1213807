@@ -1201,7 +1201,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //是否购买租电池套餐
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+        if (Objects.isNull(userBatteryMemberCard)
+                || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) //如果送的次数卡  首页提示没有购买套餐
+                || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.NO);
         } else {
             userBatteryDetail.setIsBatteryMemberCard(UserInfoResultVO.YES);
