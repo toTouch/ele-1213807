@@ -992,6 +992,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100402", "免押失败！");
         }
 
+        //处理租车押金
+        Triple<Boolean, String, Object> rentCarDepositTriple =  carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
+        if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
+            return rentCarDepositTriple;
+        }
+
+        //处理租车套餐订单
+        Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
+        if (Boolean.FALSE.equals(rentCarMemberCardTriple.getLeft())) {
+            return rentCarMemberCardTriple;
+        }
+
         //处理电池套餐相关
         Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(
                 query.getProductKey(), query.getDeviceName(), query.getUserCouponId(), query.getMemberCardId(), userInfo.getFranchiseeId(), userInfo);
@@ -1003,6 +1015,28 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query.getInsuranceId(), userInfo);
         if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
             return rentBatteryInsuranceTriple;
+        }
+
+        //保存租车押金订单
+        if (Objects.nonNull(rentCarDepositTriple.getRight())) {
+            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
+            carDepositOrderService.insert(carDepositOrder);
+
+            orderList.add(carDepositOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
+            payAmountList.add(carDepositOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
+        }
+
+        //保存租车套餐订单
+        if (Objects.nonNull(rentCarMemberCardTriple.getRight())) {
+            CarMemberCardOrder carMemberCardOrder = (CarMemberCardOrder) rentCarMemberCardTriple.getRight();
+            carMemberCardOrderService.insert(carMemberCardOrder);
+
+            orderList.add(carMemberCardOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_MEMBER_CARD);
+            payAmountList.add(carMemberCardOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(carMemberCardOrder.getPayAmount());
         }
 
         //保存保险订单
