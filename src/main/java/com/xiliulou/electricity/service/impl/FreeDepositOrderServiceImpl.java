@@ -1252,6 +1252,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return rentCarMemberCardTriple;
         }
 
+        //处理电池押金相关
+        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(),query.getModel(), userInfo);
+        if (!rentBatteryDepositTriple.getLeft()) {
+            return rentBatteryDepositTriple;
+        }
+
         //处理电池套餐相关
         Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(
                 query.getProductKey(), query.getDeviceName(), query.getUserCouponId(), query.getMemberCardId(), userInfo.getFranchiseeId(), userInfo);
@@ -1288,6 +1294,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             totalPayAmount = totalPayAmount.add(carMemberCardOrder.getPayAmount());
         }
 
+        //保存电池押金订单
+        if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
+            EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
+            eleDepositOrderService.insert(eleDepositOrder);
+
+            orderList.add(eleDepositOrder.getOrderId());
+            orderTypeList.add(UnionPayOrder.ORDER_TYPE_DEPOSIT);
+            payAmountList.add(eleDepositOrder.getPayAmount());
+            totalPayAmount = totalPayAmount.add(eleDepositOrder.getPayAmount());
+        }
 
         //保存保险订单
         if (Objects.nonNull(rentBatteryInsuranceTriple.getRight())) {
