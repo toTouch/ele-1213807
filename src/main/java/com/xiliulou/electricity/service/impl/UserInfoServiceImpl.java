@@ -1177,7 +1177,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
             if (Objects.nonNull(freeDepositOrder)) {
                 //若免押状态为待冻结
-                if(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)){
+                if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
                     //获取电池免押结果
                     PxzQueryOrderRsp queryOrderRspData = null;
                     Triple<Boolean, String, Object> freeBatteryDepositOrderResult = freeDepositOrderService.selectFreeDepositOrderStatus(freeDepositOrder);
@@ -1186,7 +1186,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     }
 
                     userInfoResult.setBatteryFreeStatus(Objects.nonNull(queryOrderRspData) ? queryOrderRspData.getAuthStatus() : null);
-                }else{
+                } else {
                     userInfoResult.setBatteryFreeStatus(freeDepositOrder.getAuthStatus());
                 }
             }
@@ -1200,16 +1200,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
             if (Objects.nonNull(freeDepositOrder)) {
                 //若免押状态为待冻结
-                if(Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)){
+                if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_INIT) || Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_PENDING_FREEZE)) {
                     //获取车辆免押结果
                     PxzQueryOrderRsp queryOrderRspData = null;
-                    Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.acquireFreeCarDepositStatus();
+                    Triple<Boolean, String, Object> freeCarDepositOrderResult = freeDepositOrderService.selectFreeDepositOrderStatus(freeDepositOrder);
                     if (Boolean.TRUE.equals(freeCarDepositOrderResult.getLeft())) {
                         queryOrderRspData = (PxzQueryOrderRsp) freeCarDepositOrderResult.getRight();
                     }
 
                     userInfoResult.setCarFreeStatus(Objects.nonNull(queryOrderRspData) ? queryOrderRspData.getAuthStatus() : null);
-                }else{
+                } else {
                     userInfoResult.setCarFreeStatus(freeDepositOrder.getAuthStatus());
                 }
             }
