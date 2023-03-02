@@ -1039,7 +1039,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                     userCouponService.update(userCoupon);
                 }
             }
-
         }
 
         //处理支付0元场景
@@ -1302,14 +1301,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存电池套餐订单
-        if (Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) rentBatteryMemberCardTriple.getRight();
+        if (CollectionUtils.isNotEmpty((List)rentBatteryMemberCardTriple.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List)rentBatteryMemberCardTriple.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
+
 
             //优惠券处理
             if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
@@ -1323,6 +1323,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                     userCouponService.update(userCoupon);
                 }
             }
+
         }
 
         try {
