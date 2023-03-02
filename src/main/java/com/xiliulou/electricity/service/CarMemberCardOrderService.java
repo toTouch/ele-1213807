@@ -91,4 +91,6 @@ public interface CarMemberCardOrderService {
     R renewalUserMemberCard(CarMemberCardRenewalAddAndUpdate carMemberCardOrderAddAndUpdate);
 
     Triple<Boolean, String, Object> freeDepositPayCarMemberCard(FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request);
+
+    Triple<Boolean, String, Object> firstEditUserMemberCard(UserCarMemberCardQuery userCarMemberCardQuery);
 }
