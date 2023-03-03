@@ -167,6 +167,45 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
         return eleBatteryServiceFeeVO;
     }
-
-
+    
+    @Override
+    public BigDecimal queryUserBatteryServiceFee(UserInfo userInfo) {
+        ServiceFeeUserInfo serviceFeeUserInfo = queryByUidFromCache(userInfo.getUid());
+        
+        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
+        Long now = System.currentTimeMillis();
+        long cardDays = 0;
+        //用户产生的套餐过期电池服务费
+        
+        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            //查询用户是否存在套餐过期电池服务费
+            userChangeServiceFee = electricityMemberCardOrderService
+                    .checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+        }
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                .selectByUidFromCache(userInfo.getUid());
+        
+        Integer memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE;
+        
+        //用户产生的停卡电池服务费
+        if (Objects.nonNull(userBatteryMemberCard)) {
+            if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)
+                    || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+                cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+                //不足一天按一天计算
+                double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+                if (time < 24) {
+                    cardDays = 1;
+                }
+                userChangeServiceFee = electricityMemberCardOrderService
+                        .checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null,
+                                serviceFeeUserInfo);
+                memberCardStatus = UserBatteryMemberCard.MEMBER_CARD_DISABLE;
+            }
+        }
+        
+        return userChangeServiceFee;
+    }
 }

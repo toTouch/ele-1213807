@@ -6,8 +6,6 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.ibatis.annotations.Param;
-import org.apache.poi.ss.formula.functions.T;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,12 +18,18 @@ public interface ElectricityMemberCardOrderService {
 
     R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
+    @Deprecated
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
+    
+    List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
+    
+    Integer selectUserMemberCardOrderCount(ElectricityMemberCardOrderQuery orderQuery);
 
     BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId);
 
     List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
 
+    @Deprecated
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
 
@@ -109,8 +113,10 @@ public interface ElectricityMemberCardOrderService {
     Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard);
 
     ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid);
-
+    
     ElectricityMemberCardOrder selectLatestByUid(Long uid);
+    
+    Triple<Boolean, String, Object> endOrder(String orderNo, Long uid);
     
     R disableMemberCardForRollback();
 }

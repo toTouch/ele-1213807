@@ -15,4 +15,9 @@ public class TypeUserSuperServiceImpl implements UserTypeService {
     public List<Integer> getEleIdListByDataType(TokenUser user) {
         return null;
     }
+    
+    @Override
+    public List<Integer> getCarIdListByyDataType(TokenUser user) {
+        return null;
+    }
 }

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.CarDepositOrder;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.UserCarDepositOrderVo;
@@ -74,4 +75,7 @@ public interface CarDepositOrderMapper extends BaseMapper<CarDepositOrder> {
     
     List<UserCarDepositOrderVo> payDepositOrderList(@Param("uid") Long uid, @Param("tenantId") Integer tenantId,
             @Param("offset") Long offset, @Param("size") Long size);
+    
+    CarDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId,
+            @Param("tenantId") Integer tenantId);
 }

@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
@@ -13,6 +15,8 @@ import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -51,6 +55,9 @@ public class JsonAdminElectricityCarController {
     FranchiseeService franchiseeService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    
+    @Autowired
+    UserTypeFactory userTypeFactory;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -206,5 +213,81 @@ public class JsonAdminElectricityCarController {
     public R unBindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
         return electricityCarService.unBindUser(electricityCarBindUser);
     }
-
+    
+    /**
+     * 车辆总览
+     *
+     * @param
+     * @param sn
+     * @return
+     */
+    @GetMapping("/admin/car/electricityCar/overview")
+    public R queryBatteryOverview(@RequestParam(value = "sn", required = false) String sn) {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Integer> carIdList = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects
+                .equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+        
+            carIdList = userTypeService.getCarIdListByyDataType(user);
+            if (ObjectUtil.isEmpty(carIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        return electricityCarService.queryElectricityCarOverview(sn, carIdList);
+    }
+    
+    /**
+     * 车辆统计
+     *
+     * @return
+     */
+    @GetMapping("/admin/electricityCar/statistics")
+    public R batteryStatistical() {
+        
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Integer> carIdList = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects
+                .equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            
+            carIdList = userTypeService.getCarIdListByyDataType(user);
+            if (ObjectUtil.isEmpty(carIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+    
+        return electricityCarService.batteryStatistical(carIdList, TenantContextHolder.getTenantId());
+    }
+    
+    
+    
 }

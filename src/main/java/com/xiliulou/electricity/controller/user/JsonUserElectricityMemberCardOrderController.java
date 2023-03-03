@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.controller.user;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
@@ -26,7 +28,7 @@ import java.util.Objects;
 
 @Slf4j
 @RestController
-public class JsonUserElectricityMemberCardOrderController {
+public class JsonUserElectricityMemberCardOrderController extends BaseController {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
@@ -40,20 +42,60 @@ public class JsonUserElectricityMemberCardOrderController {
         return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
     }
 
+//    @GetMapping("user/memberCardOrder/list")
+//    public R queryUserList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+//                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+//        return electricityMemberCardOrderService.queryUserList(offset, size, queryStartTime, queryEndTime);
+//    }
+    
     @GetMapping("user/memberCardOrder/list")
-    public R queryUserList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-        return electricityMemberCardOrderService.queryUserList(offset, size, queryStartTime, queryEndTime);
-    }
-
-    @GetMapping("user/memberCardOrder/count")
-    public R getMemberCardOrderCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                                     @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+    public R queryUserList(@RequestParam("offset") long offset, @RequestParam("size") long size,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+            @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+        
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-        return electricityMemberCardOrderService.getMemberCardOrderCount(uid, queryStartTime, queryEndTime);
+        
+        ElectricityMemberCardOrderQuery orderQuery = new ElectricityMemberCardOrderQuery();
+        orderQuery.setSize(size);
+        orderQuery.setOffset(offset);
+        orderQuery.setUid(uid);
+        orderQuery.setStatus(status);
+        orderQuery.setTenantId(TenantContextHolder.getTenantId());
+        orderQuery.setQueryStartTime(queryStartTime);
+        orderQuery.setQueryEndTime(queryEndTime);
+        
+        return R.ok(electricityMemberCardOrderService.selectUserMemberCardOrderList(orderQuery));
+    }
+    
+    @GetMapping("user/memberCardOrder/count")
+    public R getMemberCardOrderCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+        
+        ElectricityMemberCardOrderQuery orderQuery = new ElectricityMemberCardOrderQuery();
+        orderQuery.setUid(uid);
+        orderQuery.setStatus(status);
+        orderQuery.setTenantId(TenantContextHolder.getTenantId());
+        orderQuery.setQueryStartTime(queryStartTime);
+        orderQuery.setQueryEndTime(queryEndTime);
+        
+        return R.ok(electricityMemberCardOrderService.selectUserMemberCardOrderCount(orderQuery));
     }
     
     /**
@@ -162,6 +204,22 @@ public class JsonUserElectricityMemberCardOrderController {
     public R cancelPayMemberCard(){
         return electricityMemberCardOrderService.cancelPayMemberCard();
     }
+    
+    /**
+     * 结束订单
+     */
+    @PutMapping("user/memberCard/endOrder/{orderNo}")
+    public R endOrder(@PathVariable("orderNo") String orderNo) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+    
+        return returnTripleResult(electricityMemberCardOrderService.endOrder(orderNo, uid));
+    }
+    
+    
+    
 
 
 }

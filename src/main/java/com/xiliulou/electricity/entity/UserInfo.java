@@ -83,6 +83,11 @@ public class UserInfo {
     private Integer carDepositStatus;
 
     /**
+     * 实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
+     */
+    private Integer authType;
+
+    /**
      *
      */
     private Long franchiseeId;
@@ -128,17 +133,13 @@ public class UserInfo {
 
     /**
      * 用户状态 扫码登录成功未开始实名认证
+     * -1：初始化，0：等待审核中，1：审核被拒绝，2：审核通过，3：人脸核身失败
      */
     public static final Integer AUTH_STATUS_STATUS_INIT = -1;
-
-    //等待审核中
     public static Integer AUTH_STATUS_PENDING_REVIEW = 0;
-
-    //审核被拒绝
     public static Integer AUTH_STATUS_REVIEW_REJECTED = 1;
-
-    //审核通过
     public static Integer AUTH_STATUS_REVIEW_PASSED = 2;
+    public static Integer AUTH_STATUS_FACE_FAIL = 3;
 
 
     //电池赁状态 0--未租电池，1--已租电池
@@ -151,9 +152,9 @@ public class UserInfo {
     public static final Integer BATTERY_DEPOSIT_STATUS_REFUNDING = 2;
     @Deprecated
     public static final Integer BATTERY_DEPOSIT_STATUS_REFUND_FAIL = 3;
-
-
-    //车辆赁状态 0--未租电池，1--已租电池
+    
+    
+    //车辆赁状态 0--未租，1--已租
     public static final Integer CAR_RENT_STATUS_NO = 0;
     public static final Integer CAR_RENT_STATUS_YES = 1;
 
@@ -167,5 +168,10 @@ public class UserInfo {
 
     public static final Integer RENT_BATTERY_TYPE = 0;
     public static final Integer BATTERY_DEPOSIT_TYPE = 1;
+
+    //实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
+    public static final Integer AUTH_TYPE_PERSON = 1;
+    public static final Integer AUTH_TYPE_SYSTEM = 2;
+    public static final Integer AUTH_TYPE_FACE = 3;
 
 }

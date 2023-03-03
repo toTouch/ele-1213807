@@ -74,4 +74,9 @@ public class UserAuthInfoVo {
 	 */
 	private Integer usableStatus;
 
+	/**
+	 * 实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
+	 */
+	private Integer authType;
+
 }

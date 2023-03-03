@@ -694,4 +694,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .payDepositOrderList(SecurityUtils.getUid(), TenantContextHolder.getTenantId(), offset, size);
         return R.ok(voList);
     }
+    
+    @Override
+    public CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
+        return carDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
+    }
 }

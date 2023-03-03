@@ -86,6 +86,8 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     CalcRentCarPriceFactory calcRentCarPriceFactory;
     @Autowired
     EleBindCarRecordService eleBindCarRecordService;
+    @Autowired
+    UserCouponService userCouponService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -313,6 +315,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
         updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
         userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+    
+        //用户是否有绑定了车辆
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
 
         return Triple.of(true, "", "操作成功!");
     }
@@ -689,8 +697,8 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //保存套餐订单
-        if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) rentBatteryMemberCardTriple.getRight();
+        if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight()) && !CollectionUtils.isEmpty(((List) rentBatteryMemberCardTriple.getRight()))) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
@@ -698,7 +706,19 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
 
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
-
+    
+            //优惠券处理  抄的换电
+            if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
+        
+                UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
+                //修改劵可用状态
+                if (Objects.nonNull(userCoupon)) {
+                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
+                    userCoupon.setUpdateTime(System.currentTimeMillis());
+                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+                    userCouponService.update(userCoupon);
+                }
+            }
 //            electricityMemberCardOrderService.handleUserCouponAndActivity(userInfo,electricityMemberCardOrder);
         }
 

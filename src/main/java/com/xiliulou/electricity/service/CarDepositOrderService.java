@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarDepositOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
@@ -87,6 +88,8 @@ public interface CarDepositOrderService {
     BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit, List<Long> finalFranchiseeIds);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer rentCarDeposit, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
+    
+    CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
     
     R payDepositOrderList(Long offset, Long size);
 }

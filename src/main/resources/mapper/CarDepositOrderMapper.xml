@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.CarDepositOrderMapper">
-    
+
     <resultMap type="com.xiliulou.electricity.entity.CarDepositOrder" id="CarDepositOrderMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
@@ -300,5 +300,19 @@
         and ero.refund_order_type = 1
         and ero.status = 4
         limit #{offset}, #{size}
+    </select>
+    
+    <select id="queryLastPayDepositTimeByUid" resultMap="CarDepositOrderMap">
+        <include refid="selectCarDepositOrder"/>
+        <where>
+            status=1 and uid=#{uid}
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+        ORDER BY id DESC limit 1
     </select>
 </mapper>

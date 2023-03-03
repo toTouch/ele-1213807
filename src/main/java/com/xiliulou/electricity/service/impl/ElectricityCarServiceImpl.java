@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
@@ -15,13 +18,19 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
+import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -69,6 +78,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     RentCarOrderService rentCarOrderService;
     @Autowired
     UserCarDepositService userCarDepositService;
+    
+    @Autowired
+    Jt808RetrofitService jt808RetrofitService;
     
     @Autowired
     ClickHouseService clickHouseService;
@@ -291,6 +303,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         });
         return update;
     }
+    
+    @Override
+    public Integer updateLockTypeByIds(List<Long> tempIds, Integer typeLock) {
+        int update = electricityCarMapper.updateLockTypeById(tempIds, typeLock);
+        //更新缓存
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            tempIds.forEach(id -> {
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
+            });
+            return null;
+        });
+        return update;
+    }
+    
+    
     
     @Override
     public R attrList(Long beginTime, Long endTime) {
@@ -553,5 +580,77 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public ElectricityCar selectBySn(String sn, Integer tenantId) {
         return electricityCarMapper.selectBySn(sn, tenantId);
+    }
+    
+    @Override
+    public Boolean carLockCtrl(ElectricityCar electricityCar, Integer lockType) {
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), lockType));
+        if (!result.isSuccess()) {
+            log.error("Jt808 error! controlDevice error! carId={},result={}", electricityCar.getId(), result);
+            return false;
+        }
+        
+        ElectricityCar update = new ElectricityCar();
+        update.setId(electricityCar.getId());
+        update.setLockType(lockType);
+        update.setUpdateTime(System.currentTimeMillis());
+        update(update);
+        return true;
+    }
+    
+    @Override
+    public R positionReport(CarPositionReportQuery query) {
+        if (Objects.isNull(query)) {
+            log.error("CAR POSITION REPORT WARN! query is null! ");
+            return R.failMsg("参数错误");
+        }
+        
+        final String requestId = query.getRequestId();
+        
+        if (StrUtil.isBlank(query.getDevId()) || Objects.isNull(query.getLatitude()) || Objects
+                .isNull(query.getLongitude()) || StrUtil.isBlank(query.getRequestId())) {
+            log.warn("CAR POSITION REPORT WARN! args error! requestId={}, query={}", requestId, query);
+            return R.failMsg("参数错误");
+        }
+        
+        ElectricityCar electricityCar = selectBySn(query.getDevId(), null);
+        if (Objects.isNull(electricityCar)) {
+            log.warn("CAR POSITION REPORT WARN! no electricityCar Sn! requestId={}, sn={}", requestId,
+                    query.getDevId());
+            return R.failMsg("未查询到车辆");
+        }
+        
+        if (Objects.equals(electricityCar.getLatitude(), query.getLatitude()) && Objects
+                .equals(electricityCar.getLongitude(), query.getLongitude())) {
+            return R.ok();
+        }
+        
+        ElectricityCar update = new ElectricityCar();
+        update.setId(electricityCar.getId());
+        update.setLongitude(query.getLongitude());
+        update.setLatitude(query.getLatitude());
+        update.setLockType(query.getDoorStatus());
+        update.setUpdateTime(System.currentTimeMillis());
+        update(update);
+        
+        return R.ok();
+    }
+    
+    @Override
+    public List<ElectricityCar> queryByStoreIds(List<Long> storeIds) {
+        return electricityCarMapper.queryByStoreIds(storeIds, TenantContextHolder.getTenantId());
+    }
+    
+    @Override
+    public R queryElectricityCarOverview(String sn, List<Integer> carIds) {
+        List<ElectricityCarOverviewVo> electricityCars = electricityCarMapper
+                .queryElectricityCarOverview(carIds, sn, TenantContextHolder.getTenantId());
+        return R.ok(electricityCars);
+    }
+    
+    @Override
+    public R batteryStatistical(List<Integer> carIdList, Integer tenantId) {
+        return R.ok(electricityCarMapper.batteryStatistical(carIdList, tenantId));
     }
 }
