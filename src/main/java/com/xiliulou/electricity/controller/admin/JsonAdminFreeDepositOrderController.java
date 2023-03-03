@@ -101,6 +101,21 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
     }
 
     /**
+     * 同步免押状态
+     */
+    @GetMapping("/admin/freeDepositOrder/synchroniz/status")
+    public R synchronizFreeDepositOrderStatus(@RequestParam(value = "orderId") String orderId) {
+
+        Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
+        if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
+            return returnTripleResult(verifyPermissionResult);
+        }
+
+        return returnTripleResult(this.freeDepositOrderService.synchronizFreeDepositOrderStatus(orderId));
+    }
+
+
+    /**
      * 查询免押订单状态
      */
     @GetMapping("/admin/freeDepositOrder/order/status")

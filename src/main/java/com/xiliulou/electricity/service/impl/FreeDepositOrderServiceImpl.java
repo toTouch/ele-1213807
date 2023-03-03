@@ -289,56 +289,273 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
     @Override
     public Triple<Boolean, String, Object> selectFreeDepositAuthToPay(String orderId) {
-        
+
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
             return Triple.of(false, "100403", "免押订单不存在");
         }
-        
+
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
             return Triple.of(false, "100400", "免押功能未配置相关信息！请联系客服处理");
         }
-        
+
         PxzCommonRequest<PxzFreeDepositAuthToPayOrderQueryRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
         query.setSessionId(freeDepositOrder.getOrderId());
         query.setMerchantCode(pxzConfig.getMerchantCode());
-        
+
         PxzFreeDepositAuthToPayOrderQueryRequest queryRequest = new PxzFreeDepositAuthToPayOrderQueryRequest();
         queryRequest.setPayNo(freeDepositOrder.getOrderId());
         queryRequest.setAuthNo(freeDepositOrder.getAuthNo());
         query.setData(queryRequest);
-        
+
         PxzCommonRsp<PxzAuthToPayOrderQueryRsp> pxzAuthToPayOrderQueryRspPxzCommonRsp = null;
-        
+
         try {
             pxzAuthToPayOrderQueryRspPxzCommonRsp = pxzDepositService.authToPayOrderQuery(query);
         } catch (Exception e) {
             log.error("Pxz ERROR! query freeDepositOrder authToPay fail! orderId={}", freeDepositOrder.getOrderId(), e);
             return Triple.of(false, "100411", "授权支付调用失败！");
         }
-        
+
         if (Objects.isNull(pxzAuthToPayOrderQueryRspPxzCommonRsp)) {
             log.error("Pxz ERROR! query freeDepositOrder authToPay fail! rsp is null! orderId={}",
                     freeDepositOrder.getOrderId());
             return Triple.of(false, "100411", "授权支付调用失败！");
         }
-        
+
         if (!pxzAuthToPayOrderQueryRspPxzCommonRsp.isSuccess()) {
             return Triple.of(false, "100411", pxzAuthToPayOrderQueryRspPxzCommonRsp.getRespDesc());
         }
-        
+
         //更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         freeDepositOrderUpdate.setPayStatus(pxzAuthToPayOrderQueryRspPxzCommonRsp.getData().getOrderStatus());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
-        
+
         return Triple.of(true, "", pxzAuthToPayOrderQueryRspPxzCommonRsp.getData());
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> synchronizFreeDepositOrderStatus(String orderId) {
+
+        FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
+        if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(freeDepositOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("FREE DEPOSIT ERROR! not found user info,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
+            log.error("FREE DEPOSIT ERROR! not found pxzConfig,tenantId={}", TenantContextHolder.getTenantId());
+            return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
+        }
+
+        //电池免押订单
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY)) {
+
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit)) {
+                log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+                return Triple.of(true, "", "");
+            }
+
+            if (!Objects.equals(orderId, userBatteryDeposit.getOrderId())) {
+                log.error("FREE DEPOSIT ERROR! illegal orderId,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+                return Triple.of(false, "100417", "免押订单与用户绑定订单不一致");
+            }
+
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+            if (Objects.isNull(eleDepositOrder)) {
+                log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", freeDepositOrder.getUid(), userBatteryDeposit.getOrderId());
+                return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+            }
+
+            PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+            query.setAesSecret(pxzConfig.getAesKey());
+            query.setDateTime(System.currentTimeMillis());
+            query.setSessionId(userBatteryDeposit.getOrderId());
+            query.setMerchantCode(pxzConfig.getMerchantCode());
+
+            PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+            request.setTransId(freeDepositOrder.getOrderId());
+            query.setData(request);
+
+            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+            try {
+                pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+            } catch (PxzFreeDepositException e) {
+                log.error("Pxz ERROR! freeDepositOrderQuery fail! uid={},orderId={}", userInfo.getUid(), userBatteryDeposit.getOrderId(), e);
+                return Triple.of(false, "100402", "免押查询失败！");
+            }
+
+            if (Objects.isNull(pxzQueryOrderRsp)) {
+                log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", userInfo.getUid(), userBatteryDeposit.getOrderId());
+                return Triple.of(false, "100402", "免押查询失败！");
+            }
+
+            if (!pxzQueryOrderRsp.isSuccess()) {
+                return Triple.of(false, "100402", pxzQueryOrderRsp.getRespDesc());
+            }
+
+            PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+            if (Objects.isNull(queryOrderRspData)) {
+                log.error("Pxz ERROR! freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", userInfo.getUid(), userBatteryDeposit.getOrderId());
+                return Triple.of(false, "100402", "免押查询失败！");
+            }
+
+            //更新免押订单状态
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthNo(queryOrderRspData.getAuthNo());
+            freeDepositOrderUpdate.setAuthStatus(queryOrderRspData.getAuthStatus());
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            this.update(freeDepositOrderUpdate);
+
+            //冻结成功
+            if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+
+                //扣减免押次数
+                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+                freeDepositDataUpdate.setId(freeDepositData.getId());
+                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
+                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositDataService.update(freeDepositDataUpdate);
+
+
+                //更新押金订单状态
+                EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
+                eleDepositOrderUpdate.setId(eleDepositOrder.getId());
+                eleDepositOrderUpdate.setStatus(EleDepositOrder.STATUS_SUCCESS);
+                eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                eleDepositOrderService.update(eleDepositOrderUpdate);
+
+                //绑定加盟商、更新押金状态
+                UserInfo userInfoUpdate = new UserInfo();
+                userInfoUpdate.setUid(userInfo.getUid());
+                userInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+                userInfoUpdate.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
+                userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(userInfoUpdate);
+
+                //绑定电池型号
+                UserBattery userBattery = new UserBattery();
+                userBattery.setUid(userInfo.getUid());
+                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
+                userBattery.setUpdateTime(System.currentTimeMillis());
+                userBatteryService.insertOrUpdate(userBattery);
+            }
+        }
+
+        //租车免押订单
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR)) {
+            UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userCarDeposit)) {
+                log.error("FREE DEPOSIT ERROR! not found userCarDeposit,uid={}", userInfo.getUid());
+                return Triple.of(true, "", "");
+            }
+
+            if (!Objects.equals(orderId, userCarDeposit.getOrderId())) {
+                log.error("FREE DEPOSIT ERROR! illegal orderId,uid={},orderId={}", freeDepositOrder.getUid(), orderId);
+                return Triple.of(false, "100417", "免押订单与用户绑定订单不一致");
+            }
+
+            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+            if (Objects.isNull(carDepositOrder)) {
+                log.error("FREE DEPOSIT ERROR! not found carDepositOrder! uid={},orderId={}", userInfo.getUid(), userCarDeposit.getOrderId());
+                return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+            }
+
+
+            PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
+            query.setAesSecret(pxzConfig.getAesKey());
+            query.setDateTime(System.currentTimeMillis());
+            query.setSessionId(carDepositOrder.getOrderId());
+            query.setMerchantCode(pxzConfig.getMerchantCode());
+
+            PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
+            request.setTransId(freeDepositOrder.getOrderId());
+            query.setData(request);
+
+
+            PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
+            try {
+                pxzQueryOrderRsp = pxzDepositService.queryFreeDepositOrder(query);
+            } catch (PxzFreeDepositException e) {
+                log.error("Pxz ERROR! freeDepositOrderQuery fail! uid={},orderId={}", userInfo.getUid(), carDepositOrder.getOrderId(), e);
+                return Triple.of(false, "100402", "免押查询失败！");
+            }
+
+            if (Objects.isNull(pxzQueryOrderRsp)) {
+                log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", userInfo.getUid(), carDepositOrder.getOrderId());
+                return Triple.of(false, "100402", "免押查询失败！");
+            }
+
+            if (!pxzQueryOrderRsp.isSuccess()) {
+                return Triple.of(false, "100402", pxzQueryOrderRsp.getRespDesc());
+            }
+
+            PxzQueryOrderRsp queryOrderRspData = pxzQueryOrderRsp.getData();
+            if (Objects.isNull(queryOrderRspData)) {
+                log.error("Pxz ERROR! freeDepositOrderQuery fail! queryOrderRspData is null! uid={},orderId={}", userInfo.getUid(), carDepositOrder.getOrderId());
+                return Triple.of(false, "100402", "免押查询失败！");
+            }
+
+            //更新免押订单状态
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthNo(queryOrderRspData.getAuthNo());
+            freeDepositOrderUpdate.setAuthStatus(queryOrderRspData.getAuthStatus());
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            this.update(freeDepositOrderUpdate);
+
+            //冻结成功
+            if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+                //扣减免押次数
+                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
+                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
+                freeDepositDataUpdate.setId(freeDepositData.getId());
+                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
+                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
+                freeDepositDataService.update(freeDepositDataUpdate);
+
+                //更新押金订单状态
+                CarDepositOrder carDepositOrderUpdate = new CarDepositOrder();
+                carDepositOrderUpdate.setId(carDepositOrder.getId());
+                carDepositOrderUpdate.setStatus(EleDepositOrder.STATUS_SUCCESS);
+                carDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                carDepositOrderService.update(carDepositOrderUpdate);
+
+                //绑定加盟商、更新押金状态
+                UserInfo userInfoUpdate = new UserInfo();
+                userInfoUpdate.setUid(userInfo.getUid());
+                userInfoUpdate.setFranchiseeId(carDepositOrder.getFranchiseeId());
+                userInfoUpdate.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
+                userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(userInfoUpdate);
+
+                //绑定车辆型号
+                UserCar userCar = new UserCar();
+                userCar.setUid(userInfo.getUid());
+                userCar.setCarModel(carDepositOrder.getCarModelId());
+                userCar.setUpdateTime(System.currentTimeMillis());
+                userCarService.insertOrUpdate(userCar);
+            }
+        }
+
+        return Triple.of(true, null, "同步成功");
     }
 
     /**

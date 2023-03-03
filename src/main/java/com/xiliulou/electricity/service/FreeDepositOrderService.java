@@ -78,4 +78,6 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> selectFreeDepositOrderStatus(FreeDepositOrder freeDepositOrder);
 
     void handleFreeDepositRefundOrder();
+
+    Triple<Boolean, String, Object> synchronizFreeDepositOrderStatus(String orderId);
 }
