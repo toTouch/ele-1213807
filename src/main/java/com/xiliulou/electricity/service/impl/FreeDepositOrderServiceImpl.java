@@ -690,6 +690,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
         }
 
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_BATTERY) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+            return Triple.of(false, null, "押金免押功能未开启,请联系客服处理");
+        }
+
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
             log.error("FREE DEPOSIT ERROR! not found pxzConfig,uid={}", uid);
@@ -815,6 +820,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (Objects.isNull(userInfo)) {
             log.error("FREE DEPOSIT ERROR! not found user info,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (!(Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_CAR) || Objects.equals(electricityConfig.getFreeDepositType(), ElectricityConfig.FREE_DEPOSIT_TYPE_ALL))) {
+            return Triple.of(false, null, "押金免押功能未开启,请联系客服处理");
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
