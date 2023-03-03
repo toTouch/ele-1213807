@@ -992,6 +992,27 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "100402", "免押失败！");
         }
 
+        //换电免押成功  校验前端传的数据与免押数据是否一致
+
+        //获取押金订单
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+
+        //免押加盟商与前端传过来的型号是否一致
+        if (Objects.nonNull(query.getFranchiseeId()) && !Objects.equals(query.getFranchiseeId(), eleDepositOrder.getFranchiseeId())) {
+            log.error("FREE DEPOSIT ERROR! franchiseeId illegal! uid={},franchiseeId={}", uid, query.getFranchiseeId());
+            return Triple.of(false, "100407", "加盟商不一致");
+        }
+
+        //免押电池型号与前端传过来的型号是否一致
+        if (Objects.nonNull(query.getModel()) && !Objects.equals(BatteryConstant.acquireBatteryShort(query.getModel()), eleDepositOrder.getBatteryType())) {
+            log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},orderId={},model={}", uid, userBatteryDeposit.getOrderId(), query.getModel());
+            return Triple.of(false, "100416", "电池型号不一致");
+        }
+
         //处理租车押金
         Triple<Boolean, String, Object> rentCarDepositTriple =  carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
         if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
