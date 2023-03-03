@@ -436,12 +436,6 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "100255", "车辆型号加盟商与电池套餐加盟商不一致！");
         }
 
-        //判断前端传的加盟商id与用户绑定的加盟商id是否一致
-        if (Objects.nonNull(franchiseeId) && Objects.nonNull(userInfo.getFranchiseeId()) && Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
-            log.error("ELE CAR DEPOSIT ERROR! user franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), franchiseeId);
-            return Triple.of(false, "100414", "免押绑定加盟商不一致！");
-        }
-
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
 
         BigDecimal payAmount = electricityCarModel.getCarDeposit();

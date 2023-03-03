@@ -1273,6 +1273,26 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
                 return rentCarDepositTriple;
             }
+        } else {
+            //租车免押成功
+            UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userCarDeposit)) {
+                log.error("FREE DEPOSIT ERROR! not found userCarDeposit! uid={}", uid);
+                return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+            }
+
+            //获取押金订单
+            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+            if (Objects.isNull(carDepositOrder)) {
+                log.error("FREE DEPOSIT ERROR! not found carDepositOrder! uid={},orderId={}", uid, userCarDeposit.getOrderId());
+                return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+            }
+
+            //免押车辆型号与前端传过来的型号是否一致
+            if (!Objects.equals(query.getCarModelId(), carDepositOrder.getCarModelId())) {
+                log.error("FREE DEPOSIT ERROR! carModel illegal! uid={},orderId={},carModelId={}", uid, userCarDeposit.getOrderId(), query.getCarModelId());
+                return Triple.of(false, "100415", "车辆型号不一致");
+            }
         }
 
         //处理租车套餐订单
@@ -1287,6 +1307,26 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             rentBatteryDepositTriple =  eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(), query.getModel(), userInfo);
             if (Boolean.FALSE.equals(rentBatteryDepositTriple.getLeft())) {
                 return rentBatteryDepositTriple;
+            }
+        }else{
+            //换电免押成功
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if(Objects.isNull(userBatteryDeposit)){
+                log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit! uid={}", uid);
+                return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+            }
+
+            //获取押金订单
+            EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+            if(Objects.isNull(eleDepositOrder)){
+                log.error("FREE DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+                return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+            }
+
+            //免押电池型号与前端传过来的型号是否一致
+            if (Objects.nonNull(query.getModel()) && !Objects.equals(BatteryConstant.acquireBatteryShort(query.getModel()), eleDepositOrder.getBatteryType())) {
+                log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},orderId={},model={}", uid, userBatteryDeposit.getOrderId(), query.getModel());
+                return Triple.of(false, "100416", "电池型号不一致");
             }
         }
 
