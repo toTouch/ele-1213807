@@ -1698,13 +1698,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         carDepositOrder.setRentBattery(CarDepositOrder.RENTBATTERY_NO);
         carDepositOrderService.insert(carDepositOrder);
     
-        //        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
-        //                .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
-        //                .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid())
-        //                .uid(userInfo.getUid()).name(user.getUsername()).oldCarDeposit(null).newCarDeposit(payAmount)
-        //                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
-        //                .updateTime(System.currentTimeMillis()).build();
-        //        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.CAR_DEPOSIT_MODEL)
+                .operateContent(EleUserOperateRecord.CAR_DEPOSIT_EDIT_CONTENT).operateUid(user.getUid())
+                .uid(userInfo.getUid()).name(user.getUsername()).oldCarDeposit(null).newCarDeposit(payAmount)
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
         
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());

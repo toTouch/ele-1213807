@@ -637,14 +637,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             carDayTemp = Math.ceil((memberCardExpireTime - now) / 3600000 / 24.0);
         }
     
-        //        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
-        //                .operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
-        //                .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
-        //                .uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldCardDay.intValue())
-        //                .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
-        //                .oldMemberCard(userCarModel.getName()).newMemberCard(bindCarModel.getName())
-        //                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        //        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
+                .uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldCardDay.intValue())
+                .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
+                .oldMemberCard(userCarModel.getName()).newMemberCard(bindCarModel.getName())
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
     
         //用户是否有绑定了车辆
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
@@ -789,13 +789,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             oldCardDay = Math.ceil((userCarMemberCard.getMemberCardExpireTime() - now) / 3600000 / 24.0);
         }
     
-        //        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().uid(userInfo.getUid())
-        //                .name(user.getUsername()).oldValidDays(oldCardDay.intValue())
-        //                .operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
-        //                .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
-        //                .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
-        //                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
-        //        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder().uid(userInfo.getUid())
+                .name(user.getUsername()).oldValidDays(oldCardDay.intValue())
+                .operateModel(EleUserOperateRecord.CAR_MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
+                .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
     
         //用户是否有绑定了车辆
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
