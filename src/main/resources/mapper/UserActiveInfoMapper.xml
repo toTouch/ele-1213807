@@ -105,7 +105,7 @@
     
     
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_user_battery(active_time, uid, phone, tenant_id, create_time, update_time, user_name)
+        insert into t_user_active_info(active_time, uid, phone, tenant_id, create_time, update_time, user_name)
         values (#{activeTime}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName})
         on duplicate key
         update active_time=#{activeTime}, uid=#{uid},phone=#{phone}, update_time=#{updateTime}, user_name = #{userName}
