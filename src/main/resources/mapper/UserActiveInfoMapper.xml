@@ -124,8 +124,8 @@
         eb.sn as battery_sn, ubmc.card_pay_count as pay_count
         from t_user_info ui
         left join t_user_active_info uai on ui.uid = uai.uid
-        left join t_electricity_battery eb on uai.uid = eb.uid
-        left join t_user_battery_member_card ubmc on ubmc.uid = ub.uid
+        left join t_electricity_battery eb on ui.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
         <where>
             ui.del_flag = 0
             <if test="phone != null and phone != ''">
@@ -155,8 +155,8 @@
         count(*)
         from t_user_info ui
         left join t_user_active_info uai on ui.uid = uai.uid
-        left join t_electricity_battery eb on uai.uid = eb.uid
-        left join t_user_battery_member_card ubmc on ubmc.uid = ub.uid
+        left join t_electricity_battery eb on ui.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
         <where>
             ui.del_flag = 0
             <if test="phone != null and phone != ''">
