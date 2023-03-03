@@ -121,11 +121,13 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserActiveInfoVo">
         select
         uai.id, uai.uid, uai.active_time, uai.phone, uai.user_name,
-        ub.now_battery_sn as battery_sn, ubmc.card_pay_count as pay_count
-        from t_user_active_info uai
-        left join t_user_battery ub on uai.uid = ub.uid
+        eb.sn as battery_sn, ubmc.card_pay_count as pay_count
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on uai.uid = eb.uid
         left join t_user_battery_member_card ubmc on ubmc.uid = ub.uid
         <where>
+            ui.del_flag = 0
             <if test="phone != null and phone != ''">
                 and uai.phone = #{phone}
             </if>
@@ -133,7 +135,7 @@
                 and uai.user_name = #{userName}
             </if>
             <if test="batterySn != null and batterySn != ''">
-                and ub.now_battery_sn = #{batterySn}
+                and eb.sn = #{batterySn}
             </if>
             <if test="payCount != null">
                 and ubmc.card_pay_count = #{payCount}
@@ -151,10 +153,12 @@
     <select id="queryCount" resultType="long">
         select
         count(*)
-        from t_user_active_info uai
-        left join t_user_battery ub on uai.uid = ub.uid
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on uai.uid = eb.uid
         left join t_user_battery_member_card ubmc on ubmc.uid = ub.uid
         <where>
+            ui.del_flag = 0
             <if test="phone != null and phone != ''">
                 and uai.phone = #{phone}
             </if>
@@ -162,7 +166,7 @@
                 and uai.user_name = #{userName}
             </if>
             <if test="batterySn != null and batterySn != ''">
-                and ub.now_battery_sn = #{batterySn}
+                and eb.sn = #{batterySn}
             </if>
             <if test="payCount != null">
                 and ubmc.card_pay_count = #{payCount}
