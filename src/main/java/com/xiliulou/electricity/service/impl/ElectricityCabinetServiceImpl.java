@@ -54,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -3618,8 +3619,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("100302", "ota操作类型不合法");
         }
     
+        Boolean isOld = isOldBoard(eid);
+        if (Objects.isNull(isOld)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is not version ！eid={}", eid);
+            return R.fail("100312", "柜机暂无版本号，无法ota升级");
+        }
+    
         Integer fileType = null;
-        if (isOldBoard(eid)) {
+        if (isOld) {
             fileType = EleOtaFile.TYPE_OLD_FILE;
         } else {
             fileType = EleOtaFile.TYPE_NEW_FILE;
@@ -3707,32 +3714,32 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     
-    private boolean isOldBoard(Integer eid) {
+    private Boolean isOldBoard(Integer eid) {
         final double MIN_OLD_BOARD_VERSION = 50.0;
         double versionPrefix = 50.0;
         
         EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
-        if (Objects.nonNull(eleCabinetCoreData) && StrUtil.isNotBlank(eleCabinetCoreData.getCoreVersion())) {
+        if (Objects.nonNull(eleCabinetCoreData) && StringUtils.isNotEmpty(eleCabinetCoreData.getCoreVersion())) {
             String version = eleCabinetCoreData.getCoreVersion();
             versionPrefix = Double.parseDouble(version.substring(0, version.indexOf(".")));
-            return versionPrefix < MIN_OLD_BOARD_VERSION ? false : true;
+            return versionPrefix < MIN_OLD_BOARD_VERSION ? Boolean.FALSE : Boolean.TRUE;
         }
         
         List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService
                 .queryAllBoxByElectricityCabinetId(eid);
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
-            return true;
+            return null;
         }
         
         List<ElectricityCabinetBox> collect = electricityCabinetBoxes.parallelStream()
                 .filter(item -> StrUtil.isNotBlank(item.getVersion())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(collect)) {
-            return true;
+            return null;
         }
     
         String version = collect.get(0).getVersion();
         versionPrefix = Double.parseDouble(version.substring(0, version.indexOf(".")));
-        return versionPrefix < MIN_OLD_BOARD_VERSION ? false : true;
+        return versionPrefix < MIN_OLD_BOARD_VERSION ? Boolean.FALSE : Boolean.TRUE;
     }
 
     @Override
