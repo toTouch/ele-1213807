@@ -29,7 +29,7 @@ public class ElectricityMemberCardOrder {
     private Long uid;
     //
     private String orderId;
-    // 0,未支付,1,支付成功 2,支付失败
+    // 0,未支付,1,支付成功 2,支付失败,3取消支付
     private Integer status;
     //月卡id
     private Integer memberCardId;
@@ -82,11 +82,14 @@ public class ElectricityMemberCardOrder {
      * 扫码的柜机
      */
     private Long refId;
-
+    
+    // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
-    public static final Integer STATUS_FAIL = 0;
-
+    public static final Integer STATUS_FAIL = 2;
+    public static final Integer STATUS_CANCELL = 3;
+    
+    
     public static final Integer BIND_ACTIVITY = 1;
     public static final Integer UNBIND_ACTIVITY = 0;
 

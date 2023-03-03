@@ -95,7 +95,6 @@ public abstract class ApiFilter implements Filter {
 
     private boolean requiresAuthentication(HttpServletRequest httpServletRequest, HttpServletResponse response) {
         return this.requiresAuthenticationRequestMatcher.matches(httpServletRequest);
-
     }
 
     /**

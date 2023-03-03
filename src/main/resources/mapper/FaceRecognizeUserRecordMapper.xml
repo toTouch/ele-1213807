@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FaceRecognizeUserRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.FaceRecognizeUserRecord" id="FaceRecognizeUserRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="authResultId" column="auth_result_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectFaceRecognizeUserRecord">
+       	select   id, uid, auth_result_id, status, tenant_id, del_flag, create_time, update_time        from t_face_recognize_user_record
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="FaceRecognizeUserRecordMap">
+        <include refid="selectFaceRecognizeUserRecord"/>
+        where id = #{id}
+    </select>
+
+    <!--根据uid查询最新的记录-->
+    <select id="selectLatestByUid" resultMap="FaceRecognizeUserRecordMap">
+        <include refid="selectFaceRecognizeUserRecord"/>
+        where uid = #{uid} and del_flag=0;
+        order by create_time desc limit 1
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.FaceRecognizeUserRecordVO">
+        select
+        frur.id,
+        frur.uid,
+        frur.status,
+        frur.create_time,
+        tui.name,
+        tui.phone
+        from t_face_recognize_user_record frur
+        left join t_user_info tui on tui.uid=frur.uid
+        where frur.del_flag=0
+
+        <if test="tenantId != null">
+            and frur.tenant_id = #{tenantId}
+        </if>
+        <if test="status != null">
+            and frur.status = #{status}
+        </if>
+        <if test="phone != null and phone != ''">
+            and tui.phone = #{phone}
+        </if>
+        <if test="userName != null and userName != '' ">
+            and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime != null">
+            and frur.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and frur.create_time &lt;= #{endTime}
+        </if>
+        order by frur.create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(1)
+        from t_face_recognize_user_record frur
+        left join t_user_info tui on tui.uid=frur.uid
+        where frur.del_flag=0
+        <if test="tenantId != null">
+            and frur.tenant_id = #{tenantId}
+        </if>
+        <if test="status != null">
+            and frur.status = #{status}
+        </if>
+        <if test="phone != null and phone != ''">
+            and tui.phone = #{phone}
+        </if>
+        <if test="userName != null and userName != '' ">
+            and tui.name like concat('%',#{userName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="startTime != null">
+            and frur.create_time &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            and frur.create_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="FaceRecognizeUserRecordMap">
+        <include refid="selectFaceRecognizeUserRecord"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="authResultId != null">
+                and auth_result_id = #{authResultId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_face_recognize_user_record(uid, auth_result_id, status, tenant_id, del_flag, create_time, update_time)
+        values (#{uid}, #{authResultId}, #{status}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_face_recognize_user_record
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="authResultId != null">
+                auth_result_id = #{authResultId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_face_recognize_user_record where id = #{id}
+    </delete>
+
+</mapper>

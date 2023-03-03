@@ -70,7 +70,7 @@ public class BoxOtherPropertiesServiceImpl implements BoxOtherPropertiesService 
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BoxOtherProperties insert(BoxOtherProperties boxOtherProperties) {
+    public BoxOtherProperties insertOrUpdate(BoxOtherProperties boxOtherProperties) {
         boxOtherProperties.setCreateTime(System.currentTimeMillis());
         boxOtherProperties.setUpdateTime(System.currentTimeMillis());
         boxOtherProperties.setDelFlag(BoxOtherProperties.DEL_NORMAL);
