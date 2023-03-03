@@ -429,7 +429,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
-        if(Objects.isNull(eleDepositOrder)){
+        if (Objects.isNull(eleDepositOrder)) {
             log.error("FREE REFUND ORDER ERROR!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
             return Triple.of(false, "100403", "免押订单不存在");
         }
@@ -498,7 +498,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         //如果解冻成功
-        if(Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
+        if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
             //更新免押订单状态
             FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
             freeDepositOrderUpdate.setId(freeDepositOrder.getId());
@@ -530,28 +530,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(true, "", "免押解冻成功");
         }
 
-        if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FREEZING)) {
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus());
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
 
-            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus());
-            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            freeDepositOrderService.update(freeDepositOrderUpdate);
-
-            //更新退款订单
-            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderService.update(eleRefundOrderUpdate);
-
-            return Triple.of(true, "", "退款中，请稍后");
-        }
-
-        //提交失败
-        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
+        //更新退款订单
+        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderService.update(eleRefundOrderUpdate);
 
-        return Triple.of(false, "ELECTRICITY.00100", "退款失败");
+        return Triple.of(true, "", "退款中，请稍后");
     }
 
     /**
@@ -877,6 +867,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     /**
      * 电池免押退押金
      */
+    @Deprecated
     private Triple<Boolean, String, Object> handleBatteryFreeDepositRefundOrder(UserBatteryDeposit userBatteryDeposit, EleRefundOrder eleRefundOrder, EleRefundOrder eleRefundOrderUpdate, UserInfo userInfo) {
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
