@@ -873,7 +873,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserBattery updateUserBattery = new UserBattery();
         updateUserBattery.setUid(oldUserInfo.getUid());
         updateUserBattery.setInitBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-        updateUserBattery.setBatteryType(oldElectricityBattery.getModel());
         updateUserBattery.setUpdateTime(System.currentTimeMillis());
         userBatteryService.updateByUid(updateUserBattery);
 
@@ -1757,8 +1756,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         updateByUid(updateUserInfo);
-        
-        //生成后台操作记录
+    
+        //        生成后台操作记录
         //        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
         //                .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
         //                .operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
