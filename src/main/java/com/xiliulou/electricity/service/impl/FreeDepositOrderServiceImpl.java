@@ -1323,6 +1323,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
             }
 
+            //免押加盟商与前端传过来的型号是否一致
+            if(Objects.nonNull(query.getFranchiseeId()) && !Objects.equals(query.getFranchiseeId(), eleDepositOrder.getFranchiseeId())) {
+                log.error("FREE DEPOSIT ERROR! franchiseeId illegal! uid={},franchiseeId={}", uid, query.getFranchiseeId());
+                return Triple.of(false, "100407", "加盟商不一致");
+            }
+
             //免押电池型号与前端传过来的型号是否一致
             if (Objects.nonNull(query.getModel()) && !Objects.equals(BatteryConstant.acquireBatteryShort(query.getModel()), eleDepositOrder.getBatteryType())) {
                 log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},orderId={},model={}", uid, userBatteryDeposit.getOrderId(), query.getModel());
