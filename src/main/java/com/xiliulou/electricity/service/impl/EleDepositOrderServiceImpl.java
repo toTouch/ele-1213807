@@ -522,6 +522,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public R queryUserDeposit() {
+        //优化 TODO
         Map<String, String> map = new HashMap<>();
 
         Long uid = SecurityUtils.getUid();
@@ -567,7 +568,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         } else {
             map.put("batteryType", null);
         }
-        //历史代码  别动，用的地方多  改了会出问题
+
         if ((Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
                 && Objects.nonNull(userBatteryDeposit.getBatteryDeposit()) && Objects.nonNull(userBatteryDeposit.getOrderId()))) {
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
@@ -590,7 +591,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 if (Objects.isNull(eleDepositOrder)) {
                     map.put("store", null);
                 } else {
-                    map.put("time", eleDepositOrder.getUpdateTime().toString());
+                    map.put("time", eleDepositOrder.getCreateTime().toString());
                     Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
                     if (Objects.nonNull(store)) {
                         map.put("store", store.getName());
