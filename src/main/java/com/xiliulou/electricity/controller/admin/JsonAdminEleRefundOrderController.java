@@ -286,6 +286,19 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                           HttpServletRequest request) {
         return returnTripleResult(eleRefundOrderService.handleRefundOrder(refundOrderNo, errMsg, status, refundAmount, uid, request));
     }
+
+    /**
+     * 电池免押后台退款审核处理
+     */
+    @PostMapping("/admin/battery/free/refund/audit")
+    @Log(title = "电池免押退款审核")
+    public R batteryFreeDepostRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo,
+                          @RequestParam("status") Integer status,
+                          @RequestParam(value = "errMsg", required = false) String errMsg,
+                          @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+                          @RequestParam("uid") Long uid) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepostRefundAudit(refundOrderNo, errMsg, status, refundAmount, uid));
+    }
     
     //后台线下退款处理
     @PostMapping("/admin/handleOffLineRefund")
