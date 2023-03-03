@@ -430,11 +430,17 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             return Triple.of(false, "100009", "未找到该型号车辆");
         }
 
-        //租车押金和电池押金一起购买，校验换电套餐加盟商与车辆型号加盟商是否一致  TODO
-//        if (!Objects.equals(franchiseeId, electricityCarModel.getFranchiseeId())) {
-//            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId());
-//            return Triple.of(false, "100255", "车辆型号加盟商与电池套餐加盟商不一致！");
-//        }
+        //租车押金和电池押金一起购买，校验换电套餐加盟商与车辆型号加盟商是否一致
+        if (Objects.nonNull(franchiseeId) && !Objects.equals(franchiseeId, electricityCarModel.getFranchiseeId())) {
+            log.error("ELE CAR DEPOSIT ERROR! car model franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), electricityCarModel.getFranchiseeId());
+            return Triple.of(false, "100255", "车辆型号加盟商与电池套餐加盟商不一致！");
+        }
+
+        //判断前端传的加盟商id与用户绑定的加盟商id是否一致
+        if (Objects.nonNull(franchiseeId) && Objects.nonNull(userInfo.getFranchiseeId()) && Objects.equals(franchiseeId, userInfo.getFranchiseeId())) {
+            log.error("ELE CAR DEPOSIT ERROR! user franchiseeId not equals battery franchiseeId, franchiseeId1={},franchiseeId2={}", userInfo.getFranchiseeId(), franchiseeId);
+            return Triple.of(false, "100414", "免押绑定加盟商不一致！");
+        }
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
 

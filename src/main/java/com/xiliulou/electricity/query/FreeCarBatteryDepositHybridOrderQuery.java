@@ -29,10 +29,10 @@ public class FreeCarBatteryDepositHybridOrderQuery {
 
     //==============电池================
 
-    @NotNull(message = "加盟商不能为空!")
+//    @NotNull(message = "加盟商不能为空!")
     private Long franchiseeId;
 
-    @NotNull(message = "电池套餐不能为空!")
+//    @NotNull(message = "电池套餐不能为空!")
     private Integer memberCardId;
 
     private Integer model;
@@ -44,7 +44,5 @@ public class FreeCarBatteryDepositHybridOrderQuery {
     private String productKey;
 
     private String deviceName;
-
-
 
 }
