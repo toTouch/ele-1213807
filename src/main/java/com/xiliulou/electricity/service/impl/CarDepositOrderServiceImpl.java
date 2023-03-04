@@ -455,7 +455,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         carDepositOrder.setStoreId(storeId);
         carDepositOrder.setPayType(CarDepositOrder.ONLINE_PAYTYPE);
         carDepositOrder.setCarModelId(carModelId);
-        carDepositOrder.setRentBattery(Objects.isNull(carModelId) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
+        carDepositOrder.setRentBattery(Objects.isNull(memberCardId) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
 
         return Triple.of(true, "", carDepositOrder);
     }
