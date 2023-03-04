@@ -130,4 +130,21 @@ public class UserCarDepositServiceImpl implements UserCarDepositService {
 
         return delete;
     }
+
+    @Override
+    public Integer logicDeleteByUid(Long uid) {
+        UserCarDeposit userCarDeposit = new UserCarDeposit();
+        userCarDeposit.setUid(uid);
+        userCarDeposit.setDelFlag(UserCarDeposit.DEL_DEL);
+        userCarDeposit.setUpdateTime(System.currentTimeMillis());
+
+        int update = this.userCarDepositMapper.updateByUid(userCarDeposit);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_CAR_DEPOSIT + userCarDeposit.getUid());
+            return null;
+        });
+
+        return update;
+    }
 }

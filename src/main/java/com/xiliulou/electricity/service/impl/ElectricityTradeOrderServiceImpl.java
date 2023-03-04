@@ -115,6 +115,8 @@ public class ElectricityTradeOrderServiceImpl extends
     CarDepositOrderService carDepositOrderService;
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -478,12 +480,14 @@ public class ElectricityTradeOrderServiceImpl extends
             UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
+            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDeposit.setTenantId(eleDepositOrder.getTenantId());
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
-            userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
-            userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
 
@@ -727,6 +731,9 @@ public class ElectricityTradeOrderServiceImpl extends
             UserCarDeposit userCarDeposit = new UserCarDeposit();
             userCarDeposit.setUid(userInfo.getUid());
             userCarDeposit.setOrderId(carDepositOrder.getOrderId());
+            userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+            userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userCarDeposit.setTenantId(carDepositOrder.getTenantId());
             userCarDeposit.setCreateTime(System.currentTimeMillis());
             userCarDeposit.setUpdateTime(System.currentTimeMillis());
@@ -816,9 +823,18 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserCarMemberCard.setOrderId(carMemberCardOrder.getOrderId());
             updateUserCarMemberCard.setCardId(carMemberCardOrder.getCarModelId());
             updateUserCarMemberCard.setMemberCardExpireTime(electricityMemberCardOrderService.calcRentCarMemberCardExpireTime(carMemberCardOrder.getMemberCardType(), carMemberCardOrder.getValidDays(), userCarMemberCard));
+            updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
+            updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
-            userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+            userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+
+            //用户是否有绑定了车辆
+            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+            if (Objects.nonNull(electricityCar) && Objects
+                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            }
         }
 
 

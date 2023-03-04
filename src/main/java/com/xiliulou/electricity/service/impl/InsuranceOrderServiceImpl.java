@@ -333,25 +333,25 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     }
 
     @Override
-    public Triple<Boolean, String, Object> handleRentBatteryInsurance(RentCarHybridOrderQuery query, UserInfo userInfo) {
-        if (Objects.isNull(query.getInsuranceId())) {
+    public Triple<Boolean, String, Object> handleRentBatteryInsurance(Integer insuranceId, UserInfo userInfo) {
+        if (Objects.isNull(insuranceId)) {
             return Triple.of(true, "", null);
         }
 
         //查询保险
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(query.getInsuranceId());
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceId);
 
         if (Objects.isNull(franchiseeInsurance)) {
-            log.error("CREATE INSURANCE_ORDER ERROR!not found member_card by id={},uid={}", query.getInsuranceId(), userInfo.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR!not found member_card by id={},uid={}", insuranceId, userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险!");
         }
         if (ObjectUtil.equal(FranchiseeInsurance.STATUS_UN_USABLE, franchiseeInsurance.getStatus())) {
-            log.error("CREATE INSURANCE_ORDER ERROR!member_card is un_usable id={},uid={}", query.getInsuranceId(), userInfo.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR!member_card is un_usable id={},uid={}", insuranceId, userInfo.getUid());
             return Triple.of(false, "100306", "保险已禁用!");
         }
 
         if (Objects.isNull(franchiseeInsurance.getPremium())) {
-            log.error("CREATE INSURANCE_ORDER ERROR!payAmount is null ！franchiseeId={},uid={}", query.getInsuranceId(), userInfo.getUid());
+            log.error("CREATE INSURANCE_ORDER ERROR!payAmount is null ！franchiseeId={},uid={}", insuranceId, userInfo.getUid());
             return Triple.of(false, "100305", "未找到保险");
         }
 

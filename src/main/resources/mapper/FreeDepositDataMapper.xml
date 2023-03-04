@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FreeDepositDataMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.FreeDepositData" id="FreeDepositDataMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="freeDepositCapacity" column="free_deposit_capacity" jdbcType="INTEGER"/>
+        <result property="rechargeTime" column="recharge_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectFreeDepositData">
+       	select   id, free_deposit_capacity, recharge_time, tenant_id, del_flag, create_time, update_time        from t_free_deposit_data
+    </sql>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="FreeDepositDataMap">
+        <include refid="selectFreeDepositData"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="FreeDepositDataMap">
+        <include refid="selectFreeDepositData"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="FreeDepositDataMap">
+        <include refid="selectFreeDepositData"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="freeDepositCapacity != null">
+                and free_deposit_capacity = #{freeDepositCapacity}
+            </if>
+            <if test="rechargeTime != null">
+                and recharge_time = #{rechargeTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_free_deposit_data(free_deposit_capacity, recharge_time, tenant_id, del_flag, create_time, update_time)
+        values (#{freeDepositCapacity}, #{rechargeTime}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_free_deposit_data
+        <set>
+            <if test="freeDepositCapacity != null">
+                free_deposit_capacity = #{freeDepositCapacity},
+            </if>
+            <if test="rechargeTime != null">
+                recharge_time = #{rechargeTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_free_deposit_data where id = #{id}
+    </delete>
+
+
+    <select id="selectByTenantId" resultMap="FreeDepositDataMap">
+        <include refid="selectFreeDepositData"/>
+        where tenant_id = #{tenantId} and del_flag =0
+    </select>
+
+</mapper>

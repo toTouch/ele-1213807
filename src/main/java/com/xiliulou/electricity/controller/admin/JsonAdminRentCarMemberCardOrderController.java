@@ -4,13 +4,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.CarMemberCardOrderAddAndUpdate;
-import com.xiliulou.electricity.query.CarMemberCardRenewalAddAndUpdate;
-import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
-import com.xiliulou.electricity.query.MemberCardOrderQuery;
-import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
-import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -171,6 +165,16 @@ public class JsonAdminRentCarMemberCardOrderController extends BaseController {
     @Log(title = "编辑用户车辆套餐")
     public R editUserMemberCard(@RequestBody @Validated CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
         return carMemberCardOrderService.editUserMemberCard(carMemberCardOrderAddAndUpdate);
+    }
+
+    /**
+     * 后台给用户买套餐（第一次绑定套餐  上面编辑接口不兼容）
+     * @return
+     */
+    @PutMapping(value = "/admin/rentCarMemberCard/firstEditUserMemberCard")
+    @Log(title = "用户首次购买车辆套餐")
+    public R firstEditUserMemberCard(@RequestBody @Validated UserCarMemberCardQuery userCarMemberCardQuery) {
+        return returnTripleResult(carMemberCardOrderService.firstEditUserMemberCard(userCarMemberCardQuery));
     }
     
     /**
