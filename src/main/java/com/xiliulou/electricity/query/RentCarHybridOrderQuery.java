@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class RentCarHybridOrderQuery {
 
-    @NotNull(message = "加盟商不能为空!")
+//    @NotNull(message = "加盟商不能为空!")
     private Long franchiseeId;
 
     @NotNull(message = "门店不能为空!")
