@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.UserCarQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -343,8 +344,23 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return R.ok(electricityCarModelMapper
                 .queryPull(size, offset, franchiseeId, name, TenantContextHolder.getTenantId()));
     }
-    
-    
+
+    @Override
+    public Triple<Boolean, String, Object> acquireUserCarModelInfo() {
+
+        UserCar userCar = userCarService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userCar)) {
+            return Triple.of(true, "", null);
+        }
+
+        ElectricityCarModel electricityCarModel = this.queryByIdFromCache(userCar.getCarModel().intValue());
+        if (Objects.nonNull(electricityCarModel.getRentType())) {
+            return Triple.of(true, "", electricityCarModel.getRentType());
+        }
+
+        return Triple.of(true, "", null);
+    }
+
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());

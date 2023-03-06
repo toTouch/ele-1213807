@@ -49,10 +49,12 @@ public class UserCarDepositVO {
      * 门店id
      */
     private Long storeId;
+    private String storeName;
     /**
      * 车辆型号Id
      */
     private Long carModelId;
+    private String carModelName;
     /**
      * 交易方式 0--线上 1--线下
      */

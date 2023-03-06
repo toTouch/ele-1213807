@@ -166,12 +166,10 @@ public class JsonOuterElectricityCabinetController {
      *
      * @return
      */
-    @PostMapping(value = "/outer/batteryReportForGps")
-    public R batteryReportForGps(@RequestBody BatteryReportQuery batteryReportQuery) {
-        return electricityCabinetService.batteryReport(batteryReportQuery);
-    }
-    
-    
+//    @PostMapping(value = "/outer/batteryReportForGps")
+//    public R batteryReportForGps(@RequestBody BatteryReportQuery batteryReportQuery) {
+//        return electricityCabinetService.batteryReport(batteryReportQuery);
+//    }
 
     /**
      * 三元组前置检测
