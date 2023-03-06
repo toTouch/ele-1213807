@@ -170,6 +170,8 @@ public class JsonOuterElectricityCabinetController {
     public R batteryReportForGps(@RequestBody BatteryReportQuery batteryReportQuery) {
         return electricityCabinetService.batteryReport(batteryReportQuery);
     }
+    
+    
 
     /**
      * 三元组前置检测

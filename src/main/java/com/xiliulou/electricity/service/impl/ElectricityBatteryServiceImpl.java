@@ -808,17 +808,42 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, "", batteryModel);
     }
     
-    private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId,
-            String appId, String appSecret, String batteryOuttimeTemplate) {
-        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-        appTemplateQuery.setAppId(appId);
-        appTemplateQuery.setSecret(appSecret);
-        appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
-        appTemplateQuery.setPage("/pages/start/template?tenantId=" + tenantId);
-        //发送内容
-        appTemplateQuery.setData(createData(batteryList));
-        return appTemplateQuery;
+    @Override
+    public Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn) {
+        ElectricityBattery electricityBattery = queryBySnFromDb(sn, TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityBattery)) {
+            return Triple.of(true, null, null);
+        }
+        
+        ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+        BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+        
+        if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)
+                && Objects.nonNull(electricityBattery.getUid())) {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
+            if (Objects.nonNull(userInfo)) {
+                electricityBatteryVO.setUserName(userInfo.getName());
+            }
+        }
+        
+        if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
+                && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
+                    electricityBattery.getElectricityCabinetId());
+            if (Objects.nonNull(electricityCabinet)) {
+                electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+            }
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
+        if (Objects.nonNull(franchisee)) {
+            electricityBatteryVO.setFranchiseeName(franchisee.getName());
+        }
+        
+        return Triple.of(true, null, electricityBatteryVO);
+        
     }
+    
     
     private Map<String, Object> createData(List<BorrowExpireBatteryVo> batteryList) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd号 HH:mm");

@@ -93,4 +93,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer isFranchiseeBindBattery(Long id,Integer tenantId);
 
     Triple<Boolean, String, Object> selectUserLatestBatteryType();
+    
+    Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn);
 }
