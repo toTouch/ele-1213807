@@ -21,5 +21,14 @@
             limit 1
         </where>
     </select>
-
+    
+    <select id="queryListBySn" resultType="com.xiliulou.electricity.entity.clickhouse.CarAttr">
+        select dev_id devId,longitude,latitude ,create_time createTime
+        from t_car_attr
+        where
+            dev_id = #{sn}
+            and create_time &gt;= #{begin}
+            and create_time &lt;=#{end}
+        order by  createTime desc
+    </select>
 </mapper>

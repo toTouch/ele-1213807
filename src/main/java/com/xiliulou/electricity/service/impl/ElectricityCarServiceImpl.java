@@ -30,6 +30,7 @@ import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
+import com.xiliulou.electricity.web.query.CarGpsQuery;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -84,6 +85,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     ClickHouseService clickHouseService;
+    
+    @Autowired
+    Jt808CarService jt808CarService;
 
 
     /**
@@ -334,12 +338,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
     
-        //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        //        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
-        //        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
-        //        String begin = formatter.format(beginLocalDateTime);
-        //        String end = formatter.format(endLocalDateTime);
-    
         if (StringUtils.isEmpty(userCar.getSn())) {
             log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
             return R.fail("100007", "未找到车辆");
@@ -347,9 +345,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
         String begin = TimeUtils.convertToStandardFormatTime(beginTime);
         String end = TimeUtils.convertToStandardFormatTime(endTime);
-        
-        String sql = "select dev_id devId,longitude,latitude ,create_time createTime from t_car_attr where dev_id=? and createTime>=? AND createTime<=? order by  createTime desc";
-        List<CarAttr> query = clickHouseService.query(CarAttr.class, sql, userCar.getSn().trim(), begin, end);
+    
+        List<CarAttr> query = jt808CarService.queryListBySn(userCar.getSn(), begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }

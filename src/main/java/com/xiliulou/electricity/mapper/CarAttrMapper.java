@@ -20,4 +20,6 @@ public interface CarAttrMapper extends BaseMapper<CarAttr> {
     List<CarAttr> getGpsList(CarGpsQuery carGpsQuery);
     
     CarAttr queryLastReportPointBySn(@Param("sn") String sn);
+    
+    List<CarAttr> queryListBySn(@Param("sn") String sn, @Param("begin") String begin, @Param("end") String end);
 }
