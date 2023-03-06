@@ -4,8 +4,10 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.query.FreeDepositCarMemberCardOrderQuery;
 import com.xiliulou.electricity.query.RentCarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -31,6 +33,8 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
 
     @Autowired
     private CarMemberCardOrderService carMemberCardOrderService;
+    @Autowired
+    private ElectricityCarModelService electricityCarModelService;
 
     @GetMapping("/user/rentCar/memberCard/list")
     public R getElectricityMemberCardPage(@RequestParam("size") Long size,
@@ -78,6 +82,23 @@ public class JsonUserRentCarMemberCardOrderController extends BaseController {
     public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
         return returnTripleResult(carMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request));
     }
+
+    /**
+     * 免押购买租车套餐
+     */
+    @PostMapping("/user/rentCar/freeDeposit/memberCard/order")
+    public R freeDepositPayCarMemberCard(@RequestBody @Validated FreeDepositCarMemberCardOrderQuery freeDepositCarMemberCardOrderQuery, HttpServletRequest request) {
+        return returnTripleResult(carMemberCardOrderService.freeDepositPayCarMemberCard(freeDepositCarMemberCardOrderQuery, request));
+    }
+
+    /**
+     * 获取当前用户所属车辆型号租赁方式
+     */
+    @GetMapping("/user/rentCar/userCarModel/rentType")
+    public R userCarModel(){
+        return returnTripleResult(electricityCarModelService.acquireUserCarModelInfo());
+    }
+
 
     /**
      * 查询用户套餐详情

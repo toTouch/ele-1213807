@@ -76,7 +76,7 @@ public abstract class OuterFilter implements Filter {
                 return;
             }
             
-            if (tenantAppInfo.getStatus().equals(TenantAppInfo.TYPE_STOP)) {
+            if (TenantAppInfo.TYPE_STOP.equals(tenantAppInfo.getStatus())) {
                 ResponseUtil.out(response, R.fail("AUTH.1003", "appId已停用!"));
                 return;
             }

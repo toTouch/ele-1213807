@@ -43,4 +43,6 @@ public class TenantVO {
      */
     private Integer faceRecognizeCapacity;
 
+    private Integer freeDepositCapacity;
+
 }

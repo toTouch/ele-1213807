@@ -287,6 +287,8 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDeposit.setDid(eleDepositOrder.getId());
             userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
+            userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
             userBatteryDeposit.setTenantId(userInfo.getTenantId());
@@ -360,7 +362,7 @@ public class UnionTradeOrderServiceImpl extends
     }
 
     /**
-     * 混合支付回调
+     * 混合支付回调 （新）
      *
      * @param callBackResource
      * @return
@@ -500,11 +502,13 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
             userBatteryDeposit.setDid(eleDepositOrder.getId());
-            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
+            userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
-            userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
+            userBatteryDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userBatteryDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userBatteryDeposit.setTenantId(userInfo.getTenantId());
+            userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
             UserBattery userBattery = new UserBattery();
@@ -814,6 +818,8 @@ public class UnionTradeOrderServiceImpl extends
             userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
             userCarDeposit.setTenantId(userInfo.getTenantId());
             userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+            userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+            userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
             userCarDeposit.setCreateTime(System.currentTimeMillis());
             userCarDeposit.setUpdateTime(System.currentTimeMillis());
             userCarDepositService.insertOrUpdate(userCarDeposit);

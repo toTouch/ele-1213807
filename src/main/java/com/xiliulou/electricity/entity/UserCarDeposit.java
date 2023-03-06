@@ -46,6 +46,16 @@ public class UserCarDeposit {
      * 押金金额
      */
     private BigDecimal carDeposit;
+
+    /**
+     * 押金类型
+     */
+    private Integer depositType;
+
+    /**
+     * 缴纳押金的时间
+     */
+    private Long applyDepositTime;
     /**
      * 0--正常 1--删除
      */
@@ -59,5 +69,15 @@ public class UserCarDeposit {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    /**
+     * 缴纳押金类型
+     */
+    public static final Integer DEPOSIT_TYPE_DEFAULT = 0;
+
+    /**
+     * 免押类型
+     */
+    public static final Integer DEPOSIT_TYPE_FREE = 1;
 
 }

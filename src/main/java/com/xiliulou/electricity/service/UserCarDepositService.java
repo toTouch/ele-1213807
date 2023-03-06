@@ -54,4 +54,6 @@ public interface UserCarDepositService {
      */
     Integer deleteByUid(Long uid);
 
+    Integer logicDeleteByUid(Long uid);
+
 }
