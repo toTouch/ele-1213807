@@ -63,8 +63,29 @@ public class UserBatteryDeposit {
     
     private Long updateTime;
     
+    /**
+     * 押金类型
+     */
+    private Integer depositType;
+    
+    /**
+     * 缴纳押金的时间
+     */
+    private Long applyDepositTime;
+    
     public static final Integer DEL_NORMAL = 0;
     
     public static final Integer DEL_DEL = 1;
+    
+    /**
+     * 缴纳押金类型
+     */
+    public static final Integer DEPOSIT_TYPE_DEFAULT = 0;
+    
+    /**
+     * 免押类型
+     */
+    public static final Integer DEPOSIT_TYPE_FREE = 1;
+    
     
 }

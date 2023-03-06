@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
@@ -33,7 +34,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminEleRefundOrderController {
+public class JsonAdminEleRefundOrderController extends BaseController {
     /**
      * 服务对象
      */
@@ -273,17 +274,30 @@ public class JsonAdminEleRefundOrderController {
     }
 
     /**
-     * 后台退款审核处理
+     * 电池押金后台退款审核处理
      */
     @PostMapping("/admin/handleRefund")
-    @Log(title = "后台退款审核处理")
+    @Log(title = "电池押金退款审核")
     public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo,
                           @RequestParam("status") Integer status,
                           @RequestParam(value = "errMsg", required = false) String errMsg,
                           @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                           @RequestParam("uid") Long uid,
                           HttpServletRequest request) {
-        return eleRefundOrderService.handleRefundRentCar(refundOrderNo, errMsg, status, refundAmount, uid, request);
+        return returnTripleResult(eleRefundOrderService.handleRefundOrder(refundOrderNo, errMsg, status, refundAmount, uid, request));
+    }
+
+    /**
+     * 电池免押后台退款审核处理
+     */
+    @PostMapping("/admin/battery/free/refund/audit")
+    @Log(title = "电池免押退款审核")
+    public R batteryFreeDepostRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo,
+                          @RequestParam("status") Integer status,
+                          @RequestParam(value = "errMsg", required = false) String errMsg,
+                          @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+                          @RequestParam("uid") Long uid) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepostRefundAudit(refundOrderNo, errMsg, status, refundAmount, uid));
     }
     
     //后台线下退款处理
@@ -312,7 +326,8 @@ public class JsonAdminEleRefundOrderController {
                           @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
                           @RequestParam("uid") Long uid,
                           HttpServletRequest request) {
-        return eleRefundOrderService.handleRefundRentCar(refundOrderNo, errMsg, status, refundAmount, uid, request);
+        // TODO 租车押金退款审核重新写方法   不要和电池退押金混一起
+        return returnTripleResult(eleRefundOrderService.handleRefundOrder(refundOrderNo, errMsg, status, refundAmount, uid, request));
     }
 
     /**
@@ -355,5 +370,25 @@ public class JsonAdminEleRefundOrderController {
                                   @RequestParam("uid") Long uid,
                                   @RequestParam("refundType") Integer refundType) {
         return eleRefundOrderService.batteryOffLineRefund( errMsg,refundAmount, uid, refundType);
+    }
+
+    /**
+     * 电池免押退押金
+     */
+    @PostMapping("/admin/battery/freeDeposit/refund")
+    @Log(title = "电池免押后台退押金")
+    public R batteryFreeDepositRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
+                                      @RequestParam("uid") Long uid) {
+        return returnTripleResult(eleRefundOrderService.batteryFreeDepositRefund(errMsg, uid));
+    }
+
+    /**
+     * 租车免押退押金
+     */
+    @PostMapping("/admin/car/freeDeposit/refund")
+    @Log(title = "租车免押后台退押金")
+    public R carFreeDepositRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
+                                      @RequestParam("uid") Long uid) {
+        return returnTripleResult(eleRefundOrderService.carFreeDepositRefund(errMsg, uid));
     }
 }

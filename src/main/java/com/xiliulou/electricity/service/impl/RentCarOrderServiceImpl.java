@@ -288,6 +288,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         userCarDeposit.setDid(carDepositOrder.getId());
         userCarDeposit.setOrderId(carDepositOrder.getOrderId());
         userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
+        userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+        userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
+        userCarDeposit.setDepositType(UserBatteryDeposit.DEPOSIT_TYPE_DEFAULT);
         userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
         userCarDeposit.setCreateTime(System.currentTimeMillis());
@@ -607,31 +610,31 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //处理租车押金
-        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query, userInfo);
+        Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
         if (!rentCarDepositTriple.getLeft()) {
             return rentCarDepositTriple;
         }
 
         //处理租车套餐订单
-        Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query, userInfo);
+        Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
         if (!rentCarMemberCardTriple.getLeft()) {
             return rentCarMemberCardTriple;
         }
 
         //处理电池押金相关
-        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query, userInfo);
+        Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(),query.getModel(), userInfo);
         if (!rentBatteryDepositTriple.getLeft()) {
             return rentBatteryDepositTriple;
         }
 
         //处理电池套餐相关
-        Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query, userInfo);
+        Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query.getProductKey(), query.getDeviceName(), query.getUserCouponId(), query.getMemberCardId(), query.getFranchiseeId(), userInfo);
         if (!rentBatteryMemberCardTriple.getLeft()) {
             return rentBatteryMemberCardTriple;
         }
 
         //处理保险套餐相关
-        Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query, userInfo);
+        Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query.getInsuranceId(), userInfo);
         if (!rentBatteryInsuranceTriple.getLeft()) {
             return rentBatteryInsuranceTriple;
         }
@@ -639,7 +642,6 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         List<String> orderList = new ArrayList<>();
         List<Integer> orderTypeList = new ArrayList<>();
         List<BigDecimal> payAmountList = new ArrayList<>();
-
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
 
 
@@ -671,9 +673,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //保存电池押金订单
         if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
-            }
+//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+//                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
+//            }
             eleDepositOrderService.insert(eleDepositOrder);
 
             orderList.add(eleDepositOrder.getOrderId());
@@ -696,7 +698,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             totalPayAmount = totalPayAmount.add(insuranceOrder.getPayAmount());
         }
 
-        //保存套餐订单
+        //保存电池套餐订单
         if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight()) && !CollectionUtils.isEmpty(((List) rentBatteryMemberCardTriple.getRight()))) {
             ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
@@ -706,10 +708,10 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
 
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
-    
+
             //优惠券处理  抄的换电
             if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
-        
+
                 UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
                 //修改劵可用状态
                 if (Objects.nonNull(userCoupon)) {
@@ -730,7 +732,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
                     .payAmount(totalPayAmount)
                     .tenantId(tenantId)
                     .attach(UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)
-                    .description("集成支付收费")
+                    .description("租车押金")
                     .uid(user.getUid()).build();
             WechatJsapiOrderResultDTO resultDTO =
                     unionTradeOrderService.unionCreateTradeOrderAndGetPayParams(unionPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);

@@ -41,7 +41,7 @@ public interface InsuranceOrderService {
 
     void insert(InsuranceOrder insuranceOrder);
 
-    Triple<Boolean, String, Object> handleRentBatteryInsurance(RentCarHybridOrderQuery query, UserInfo userInfo);
+    Triple<Boolean, String, Object> handleRentBatteryInsurance(Integer insuranceId, UserInfo userInfo);
 
     List<InsuranceOrderVO> queryListByStatus(InsuranceOrderQuery insuranceOrderQuery);
 }
