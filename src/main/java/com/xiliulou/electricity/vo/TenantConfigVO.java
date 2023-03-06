@@ -73,5 +73,8 @@ public class TenantConfigVO {
      */
     private String franchiseeMoveInfo;
 
-
+    /**
+     * 押金缴纳类型 (0：缴纳押金，1：电池免押金，2：租车免押金，3：车辆电池免押金)
+     */
+    private Integer freeDepositType;
 }

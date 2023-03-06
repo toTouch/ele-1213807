@@ -102,6 +102,11 @@ public class EleDepositOrder {
 
     public static final Integer ONLINE_PAYMENT = 0;
     public static final Integer OFFLINE_PAYMENT = 1;
+    
+    /**
+     * 免押
+     */
+    public static final Integer FREE_DEPOSIT_PAYMENT = 2;
 
 
 }

@@ -93,6 +93,7 @@ public class CarDepositOrder {
 
     public static final Integer ONLINE_PAYTYPE = 0;
     public static final Integer OFFLINE_PAYTYPE = 1;
+    public static final Integer FREE_DEPOSIT_PAYTYPE = 2;
 
     public static final Integer RENTBATTERY_YES = 0;
     public static final Integer RENTBATTERY_NO = 1;

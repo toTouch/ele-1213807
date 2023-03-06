@@ -18,6 +18,26 @@ public class UserInfoResultVO {
      */
     private Long franchiseeId;
 
+    /**
+     * 电池免押状态
+     */
+    private Integer batteryFreeStatus;
+
+    /**
+     * 电池免押时间
+     */
+    private Long batteryFreeApplyTime;
+
+    /**
+     * 车辆免押状态
+     */
+    private Integer carFreeStatus;
+
+    /**
+     * 车辆免押时间
+     */
+    private Long carFreeApplyTime;
+
     private UserBatteryDetail userBatteryDetail;
 
     private UserCarDetail UserCarDetail;

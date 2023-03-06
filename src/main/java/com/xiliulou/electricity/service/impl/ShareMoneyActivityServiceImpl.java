@@ -305,7 +305,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         if (Objects.isNull(shareMoneyActivity)) {
-            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+//            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareMoneyActivity", 1);
         }
 
@@ -313,7 +313,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
                 .eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
         if (Objects.isNull(shareActivity)) {
-            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+//            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareActivity", 1);
         }
         return R.ok(map);

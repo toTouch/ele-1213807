@@ -38,4 +38,8 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     BigDecimal queryCarRefundTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("refundOrderType") Integer refundOrderType, @Param("franchiseeIds") List<Long> franchiseeIds);
 
     Long queryRefundTime(@Param("orderId") String orderId);
+
+    List<EleRefundOrder> selectBatteryFreeDepositRefundingOrder(@Param("offset") Integer offset, @Param("size") Integer size);
+
+    List<EleRefundOrder> selectCarFreeDepositRefundingOrder(@Param("offset") Integer offset, @Param("size") Integer size);
 }

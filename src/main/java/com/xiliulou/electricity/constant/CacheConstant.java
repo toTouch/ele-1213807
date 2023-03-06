@@ -88,7 +88,7 @@ public interface CacheConstant {
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
 
-    String ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY="ele_cache_user_battery_service_fee_lock_key";
+    String ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY = "ele_cache_user_battery_service_fee_lock_key";
 
     //用户集成支付
     String ELE_CACHE_USER_INTEGRATED_PAYMENT_LOCK_KEY = "ele_cache_user_integrated_payment_lock_key:";
@@ -216,14 +216,14 @@ public interface CacheConstant {
      * 满仓柜机缓存
      */
     String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
-    
-    String CHECK_FULL_BATTERY_CACHE="check_full_battery_cache:";
+
+    String CHECK_FULL_BATTERY_CACHE = "check_full_battery_cache:";
 
     String OTA_OPERATE_CACHE = "ota_operate_cache:";
     /**
      * 异常告警导出缓存
      */
-    String WARN_MESSAGE_EXPORT_CACHE="warn_message_export_cache:";
+    String WARN_MESSAGE_EXPORT_CACHE = "warn_message_export_cache:";
 
     /**
      * 保险缓存
@@ -238,52 +238,52 @@ public interface CacheConstant {
     /**
      * 用户电池缓存
      */
-    String CACHE_USER_BATTERY="user_battery:";
+    String CACHE_USER_BATTERY = "user_battery:";
 
     /**
      * 用户电池套餐缓存
      */
-    String CACHE_USER_BATTERY_MEMBERCARD="user_battery_membercard:";
+    String CACHE_USER_BATTERY_MEMBERCARD = "user_battery_membercard:";
 
     /**
      * 用户电池服务费缓存
      */
-    String CACHE_USER_BATTERY_SERVICE_FEE="user_battery_service_fee:";
+    String CACHE_USER_BATTERY_SERVICE_FEE = "user_battery_service_fee:";
 
     /**
      * 用户电池押金缓存
      */
-    String CACHE_USER_DEPOSIT="user_deposit:";
+    String CACHE_USER_DEPOSIT = "user_deposit:";
     /**
      * 用户电租车押金缓存
      */
-    String CACHE_USER_CAR_DEPOSIT="user_car_deposit:";
+    String CACHE_USER_CAR_DEPOSIT = "user_car_deposit:";
     /**
      * 用户租车套餐缓存
      */
-    String CACHE_USER_CAR_MEMBERCARD="user_car_membercard:";
+    String CACHE_USER_CAR_MEMBERCARD = "user_car_membercard:";
     /**
      * 用户车辆缓存
      */
-    String CACHE_USER_CAR="user_car:";
+    String CACHE_USER_CAR = "user_car:";
 
     /**
      * 电池电压电流变化记录缓存
      */
-    String CACHE_VOLTAGE_CURRENT_CHANGE="voltage_current_change:";
+    String CACHE_VOLTAGE_CURRENT_CHANGE = "voltage_current_change:";
 
     String SERVICE_FEE_USER_INFO = "service_fee_user_info:";
 
     /**
      * 区/县缓存
      */
-    String CACHE_REGION_CODE="region_code:";
-    String CACHE_REGION_ID="region_id:";
+    String CACHE_REGION_CODE = "region_code:";
+    String CACHE_REGION_ID = "region_id:";
 
     /**
      * 城市缓存
      */
-    String CACHE_CITY_CODE="city_code:";
+    String CACHE_CITY_CODE = "city_code:";
 
 
     /**
@@ -309,7 +309,7 @@ public interface CacheConstant {
      * 电池套餐取消支付缓存锁
      */
     String ELE_CACHE_BATTERY_CANCELL_PAYMENT_LOCK_KEY = "battery_cancell_payment_lock_key:";
-    
+
     /**
      * 已分配过的格挡缓存
      */
@@ -329,6 +329,19 @@ public interface CacheConstant {
      * 人脸核身结果缓存锁
      */
     String ELE_CACHE_FACEID_RESULT_LOCK_KEY = "faceid_result_lock_key:";
+    String CACHE_PXZ_CONFIG = "cache_pxz_config:";
+
+    /**
+     * 免押订单查询缓存锁
+     */
+    String ELE_CACHE_FREE_BATTERY_DEPOSIT_LOCK_KEY = "free_battery_deposit_lock_key:";
+    String ELE_CACHE_FREE_CAR_DEPOSIT_LOCK_KEY = "free_car_deposit_lock_key:";
+    String ELE_CACHE_FREE_DEPOSIT_CAPACITY_LOCK_KEY = "free_deposit_capacity_lock_key:";
+
+    /**
+     * 免押电池套餐押金支付缓存锁
+     */
+    String ELE_CACHE_FREE_DEPOSIT_MEMBERCARD_LOCK_KEY = "free_deposit_membercard_lock_key:";
     /**
      * 用户活跃缓存
      */

@@ -104,7 +104,7 @@ public interface ElectricityMemberCardOrderService {
 
     R queryUserExistMemberCard();
 
-    Triple<Boolean, String, Object> handleRentBatteryMemberCard(RentCarHybridOrderQuery query, UserInfo userInfo);
+    Triple<Boolean, String, Object> handleRentBatteryMemberCard(String productKey, String deviceName, Integer userCouponId, Integer memberCardId, Long franchiseeId, UserInfo userInfo);
 
     R cancelPayMemberCard();
 

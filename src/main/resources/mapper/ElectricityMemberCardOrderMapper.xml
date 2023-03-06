@@ -137,7 +137,7 @@
     
     </select>
     
-    <select id="selectUserMemberCardOrderCount" resultType="java.lang.Long">
+    <select id="selectUserMemberCardOrderCount" resultType="java.lang.Integer">
         SELECT count(1)
         FROM t_electricity_member_card_order
         WHERE uid =#{uid}

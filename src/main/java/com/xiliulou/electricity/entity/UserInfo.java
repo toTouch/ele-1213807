@@ -150,20 +150,17 @@ public class UserInfo {
     public static final Integer BATTERY_DEPOSIT_STATUS_NO = 0;
     public static final Integer BATTERY_DEPOSIT_STATUS_YES = 1;
     public static final Integer BATTERY_DEPOSIT_STATUS_REFUNDING = 2;
-    @Deprecated
-    public static final Integer BATTERY_DEPOSIT_STATUS_REFUND_FAIL = 3;
-    
-    
-    //车辆赁状态 0--未租，1--已租
+
+
+    //车辆赁状态 0--未租电池，1--已租电池
     public static final Integer CAR_RENT_STATUS_NO = 0;
     public static final Integer CAR_RENT_STATUS_YES = 1;
+
 
     //车辆押金状态 0--未缴纳押金，1--已缴纳押金，2--押金退款中,3--押金退款失败
     public static final Integer CAR_DEPOSIT_STATUS_NO = 0;
     public static final Integer CAR_DEPOSIT_STATUS_YES = 1;
     public static final Integer CAR_DEPOSIT_STATUS_REFUNDING = 2;
-    @Deprecated
-    public static final Integer CAR_DEPOSIT_STATUS_REFUND_FAIL = 3;
 
 
     public static final Integer RENT_BATTERY_TYPE = 0;

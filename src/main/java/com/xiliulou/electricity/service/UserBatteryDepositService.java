@@ -51,5 +51,8 @@ public interface UserBatteryDepositService {
      * @return 是否成功
      */
     Integer deleteByUid(Long uid);
-    
+
+
+    Integer logicDeleteByUid(Long uid);
+
 }
