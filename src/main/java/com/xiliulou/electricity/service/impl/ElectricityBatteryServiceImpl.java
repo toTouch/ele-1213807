@@ -101,6 +101,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
     @Autowired
     BatteryGeoService geoService;
     
@@ -403,19 +404,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    public ElectricityBattery queryPartAttrBySnFromCache(String sn) {
-        ElectricityBattery existsBt = redisService.getWithHash(CacheConstant.CACHE_BT_ATTR + sn,
-                ElectricityBattery.class);
-        if (Objects.nonNull(existsBt)) {
-            return existsBt;
-        }
-        ElectricityBattery dbBattery = electricitybatterymapper.queryPartAttrBySn(sn);
-        if (Objects.isNull(dbBattery)) {
-            return null;
-        }
-        
-        redisService.saveWithHash(CacheConstant.CACHE_BT_ATTR + sn, dbBattery);
-        return dbBattery;
+    public ElectricityBattery queryPartAttrBySnFromDb(String sn) {
+        return electricitybatterymapper.queryPartAttrBySn(sn);
     }
     
     @Override

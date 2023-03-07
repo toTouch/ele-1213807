@@ -2202,7 +2202,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("batteryName is null");
             return R.ok();
         }
-        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromCache(batteryName);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromDb(batteryName);
         if (Objects.isNull(electricityBattery)) {
             log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
