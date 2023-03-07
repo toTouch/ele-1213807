@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
@@ -553,6 +554,31 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
         eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
         eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+    
+        //处理为0
+        if (NumberConstant.ZERO_BD.compareTo(refundAmount) >= 0) {
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+        
+            userCarService.deleteByUid(userInfo.getUid());
+        
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+        
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+        
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+        
+            EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+            eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            return Triple.of(true, "", "操作成功");
+        }
 
         //调起退款
         try {
