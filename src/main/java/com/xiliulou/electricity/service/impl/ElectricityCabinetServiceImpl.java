@@ -2235,10 +2235,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Double longitude = batteryReportQuery.getLongitude();
         if (Objects.nonNull(longitude)) {
             batteryGeo.setLongitude(longitude);
-            //这里如果纬度没有，那么就用上次的值
-            if(Objects.isNull(latitude)) {
-                batteryGeo.setLatitude(electricityBattery.getLatitude());
-            }
             newElectricityBattery.setLongitude(longitude);
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
