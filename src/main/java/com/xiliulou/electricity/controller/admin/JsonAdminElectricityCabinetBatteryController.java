@@ -412,7 +412,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             return R.ok(Collections.emptyList());
         }
         
-        returnTripleResult(electricityBatteryService.queryBatteryMapList(offset, size,franchiseeIds));
+       return returnTripleResult(electricityBatteryService.queryBatteryMapList(offset, size,franchiseeIds));
         
     }
     
