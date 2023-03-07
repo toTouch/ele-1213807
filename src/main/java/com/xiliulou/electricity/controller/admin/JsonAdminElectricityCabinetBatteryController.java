@@ -384,6 +384,38 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
     }
     
+    @GetMapping("/admin/battery/location/map/list")
+    public R queryBatteryMapLimit(@RequestParam("offset") Integer offset, @RequestParam("size") Integer size) {
+        if (offset < 0) {
+            offset = 0;
+        }
+        
+        if (size < 0 || size > 100) {
+            size = 10;
+        }
+    
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.emptyList());
+            }
+        }
+    
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.emptyList());
+        }
+        
+        returnTripleResult(electricityBatteryService.queryBatteryMapList(offset, size,franchiseeIds));
+        
+    }
+    
     @GetMapping("/admin/battery/location/map")
     public R queryBatteryMap(@RequestParam(value = "lat") Double lat, @RequestParam(value = "lon") Double lon,
             @RequestParam(value = "size", required = false, defaultValue = "10000") Long size,

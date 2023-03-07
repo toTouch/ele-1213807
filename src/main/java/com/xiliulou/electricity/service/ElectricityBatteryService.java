@@ -95,4 +95,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Triple<Boolean, String, Object> selectUserLatestBatteryType();
     
     Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn);
+    
+    Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds);
+    
 }

@@ -844,17 +844,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         
     }
     
-    
-    private Map<String, Object> createData(List<BorrowExpireBatteryVo> batteryList) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd号 HH:mm");
+    @Override
+    public Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
         
-        Map<String, Object> data = new HashMap<>(2);
-        
-        data.put("time1", dateFormat.format(new Date()));
-        
-        data.put("number2", String.valueOf(batteryList.size()));
-        
-        return data;
+        return Triple.of(true, null, electricitybatterymapper.queryPartAttrList(offset, size, franchiseeIds,
+                TenantContextHolder.getTenantId()));
     }
+    
     
 }
