@@ -11,6 +11,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -194,7 +195,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(UserInfoQuery userInfoQuery) {
 
         List<UserBatteryInfoVO> userBatteryInfoVOS ;
@@ -775,9 +776,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(result);
     }
 
+    @Slave
     @Override
     public R queryCount(UserInfoQuery userInfoQuery) {
-        return R.ok(userInfoMapper.queryCountForBatteryService(userInfoQuery));
+        Integer count ;
+        if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
+            count = userInfoMapper.queryCountByMemberCardExpireTime(userInfoQuery);
+        } else {
+            count = userInfoMapper.queryCountForBatteryService(userInfoQuery);
+        }
+        return R.ok(count);
     }
 
     @Override

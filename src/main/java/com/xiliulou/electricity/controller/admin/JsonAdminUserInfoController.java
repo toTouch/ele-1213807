@@ -205,6 +205,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardId", required = false) Long memberCardId,
                         @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                         @RequestParam(value = "authType", required = false) Integer authType,
+                        @RequestParam(value = "sortType", required = false) Integer sortType,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
     
@@ -237,6 +238,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .authType(authType)
+                .sortType(sortType)
                 .serviceStatus(serviceStatus)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
