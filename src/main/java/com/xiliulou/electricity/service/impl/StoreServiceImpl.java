@@ -9,6 +9,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreMapper;
@@ -680,6 +681,24 @@ public class StoreServiceImpl implements StoreService {
         parseBusinessTime(storeVO);
 
         return storeVO;
+    }
+
+    @Slave
+    @Override
+    public List<StoreVO> selectByAddress(StoreQuery storeQuery) {
+        List<StoreVO> stores = storeMapper.selectByAddress(storeQuery);
+        if(CollectionUtils.isEmpty(stores)){
+            return Collections.EMPTY_LIST;
+        }
+        return stores.parallelStream().map(item -> {
+
+            List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
+            if (!CollectionUtils.isEmpty(pictures)) {
+                item.setPictureList(pictureService.pictureParseVO(pictures));
+            }
+
+            return item;
+        }).collect(Collectors.toList());
     }
 
     public Long getTime(Long time) {

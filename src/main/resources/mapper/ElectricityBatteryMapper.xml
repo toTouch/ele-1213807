@@ -75,6 +75,9 @@
 		<if test="query.tenantId != null">
 			and tenant_id = #{query.tenantId}
 		</if>
+		<if test="query.power != null">
+			and power = #{query.power}
+		</if>
 		<if test="query.electricityCabinetName != null">
 			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
 		</if>
@@ -185,6 +188,9 @@
 		</if>
 		<if test="query.tenantId != null">
 			and tenant_id = #{query.tenantId}
+		</if>
+		<if test="query.power != null">
+			and power = #{query.power}
 		</if>
 		<if test="query.electricityCabinetName != null">
 			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')

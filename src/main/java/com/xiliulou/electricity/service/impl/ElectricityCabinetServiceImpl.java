@@ -18,14 +18,15 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.*;
@@ -579,7 +580,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .collect(Collectors.toList());
         return R.ok(electricityCabinetList);
     }
-    
+
+    /**
+     * TODO 优化
+     * @param electricityCabinetQuery
+     * @return
+     */
     @Override
     @DS("slave_1")
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
@@ -670,6 +676,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .collect(Collectors.toList()));
     }
 
+    /**
+     * TODO 优化
+     * @param electricityCabinetQuery
+     * @return
+     */
+    @Slave
     @Override
     public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
@@ -3727,6 +3739,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public List<Integer> selectEidByStoreId(Long storeId) {
         return electricityCabinetMapper.selectEidByStoreId(TenantContextHolder.getTenantId(), storeId);
+    }
+
+    @Slave
+    @Override
+    public List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery) {
+        List<ElectricityCabinetVO> electricityCabinets = electricityCabinetMapper.selectElectricityCabinetByAddress(electricityCabinetQuery);
+        if (CollectionUtils.isEmpty(electricityCabinets)) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return electricityCabinets.parallelStream().peek(item -> {
+            //获取柜机图片
+            List<String> electricityCabinetPicture = getElectricityCabinetPicture(item.getId().longValue());
+            if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
+                item.setPictureUrl(electricityCabinetPicture.get(0));
+            }
+        }).collect(Collectors.toList());
     }
 
     /**

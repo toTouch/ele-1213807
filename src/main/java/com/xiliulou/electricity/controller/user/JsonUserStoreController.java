@@ -86,6 +86,39 @@ public class JsonUserStoreController {
     }
 
     /**
+     * 根据位置搜索门店列表 TODO 优化
+     */
+    @GetMapping(value = "/user/store/selectByAddress")
+    public R selectByAddress(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                             @RequestParam("lon") Double lon,
+                             @RequestParam("lat") Double lat,
+                             @RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
+                             @RequestParam(value = "address", required = false) String address) {
+        if (Objects.isNull(lon) || Objects.isNull(lat) || lon <= 0.0 || lat <= 0.0) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        StoreQuery storeQuery = StoreQuery.builder()
+                .size(size)
+                .offset(offset)
+                .lon(lon).lat(lat)
+                .franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .address(address).build();
+
+        return R.ok(storeService.selectByAddress(storeQuery));
+    }
+
+
+    /**
      * 门店详情
      */
     @GetMapping(value = "/user/store/{id}")

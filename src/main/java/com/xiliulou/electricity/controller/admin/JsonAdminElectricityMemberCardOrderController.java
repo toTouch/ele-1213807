@@ -48,23 +48,24 @@ public class JsonAdminElectricityMemberCardOrderController {
     @GetMapping("admin/electricityMemberCardOrder/page")
     public R getElectricityMemberCardPage(@RequestParam("size") Long size,
                                           @RequestParam("offset") Long offset,
-                                          @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                           @RequestParam(value = "phone", required = false) String phone,
                                           @RequestParam(value = "orderId", required = false) String orderId,
                                           @RequestParam(value = "memberCardType", required = false) Integer cardType,
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "source", required = false) Integer source,
+                                          @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 
-        if (size < 0 || size > 50) {
+        if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
 
-        if (offset < 0) {
+        if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
 
@@ -99,7 +100,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .source(source)
                 .refId(refId)
                 .cardModel(memberCardModel)
-                .franchiseeName(franchiseeName)
+                .franchiseeId(franchiseeId)
+                .cardPayCount(cardPayCount)
 		        .userName(userName)
 		        .franchiseeIds(franchiseeIds).build();
 
@@ -117,12 +119,13 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "refId", required = false) Long refId,
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
 		                @RequestParam(value = "userName", required = false) String userName,
-                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -153,7 +156,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .source(source)
                 .refId(refId)
                 .cardModel(memberCardModel)
-                .franchiseeName(franchiseeName)
+                .franchiseeId(franchiseeId)
+                .cardPayCount(cardPayCount)
 		        .userName(userName)
 		        .franchiseeIds(franchiseeIds).build();
 

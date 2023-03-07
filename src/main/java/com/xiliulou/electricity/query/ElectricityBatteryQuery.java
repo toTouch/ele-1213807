@@ -41,4 +41,6 @@ public class ElectricityBatteryQuery {
 
     private String electricityCabinetName;
     private String franchiseeName;
+
+    private Double power;
 }

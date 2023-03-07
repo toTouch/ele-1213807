@@ -1,12 +1,9 @@
 package com.xiliulou.electricity.controller.user;
 
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -15,13 +12,9 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -70,6 +63,10 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		return electricityCabinetService.showInfoByDistance(electricityCabinetQuery);
 	}
 
+	/**
+	 * TODO 优化
+	 * @return
+	 */
 	@GetMapping(value = "/outer/electricityCabinet/showInfoByDistanceV2")
 	public R showInfoByDistanceV2(@RequestParam(value = "distance", required = false) Double distance,
 								@RequestParam(value = "franchiseeId" , required = false) Long franchiseeId,
@@ -92,6 +89,43 @@ public class JsonUserElectricityCabinetController extends BaseController {
 				.tenantId(tenantId).build();
 
 		return electricityCabinetService.showInfoByDistanceV2(electricityCabinetQuery);
+	}
+
+	/**
+	 * 根据柜机位置搜索 TODO 优化
+	 *
+	 * @param address
+	 * @return
+	 */
+	@GetMapping(value = "/user/electricityCabinet/selectByAddress")
+	public R selectElectricityCabinetByAddress(@RequestParam("size") long size,
+											   @RequestParam("offset") long offset,
+											   @RequestParam("lon") Double lon,
+											   @RequestParam("lat") Double lat,
+											   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+											   @RequestParam(value = "address", required = false) String address) {
+		if (Objects.isNull(lon) || lon <= 0.0 || Objects.isNull(lat) || lat <= 0.0) {
+			return R.ok(Collections.EMPTY_LIST);
+		}
+
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+				.offset(offset)
+				.size(size)
+				.lon(lon)
+				.lat(lat)
+				.franchiseeId(franchiseeId)
+				.address(address)
+				.tenantId(TenantContextHolder.getTenantId()).build();
+
+		return R.ok(electricityCabinetService.selectElectricityCabinetByAddress(electricityCabinetQuery));
 	}
 
 	//列表查询

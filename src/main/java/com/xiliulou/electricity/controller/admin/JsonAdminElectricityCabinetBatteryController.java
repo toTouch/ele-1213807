@@ -99,9 +99,18 @@ public class JsonAdminElectricityCabinetBatteryController {
                                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                                        @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                                        @RequestParam(value = "sn", required = false) String sn,
+                                       @RequestParam(value = "power", required = false) Double power,
                                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
-        
+
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -124,6 +133,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setPower(power);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
@@ -163,6 +173,7 @@ public class JsonAdminElectricityCabinetBatteryController {
                         @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                         @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "power", required = false) Double power,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
     
@@ -188,6 +199,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setPower(power);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
