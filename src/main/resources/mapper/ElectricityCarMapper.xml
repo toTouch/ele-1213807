@@ -197,4 +197,8 @@
         </where>
     </select>
 
+    <select id="isUserBindCar" resultType="Integer">
+		SELECT 1 FROM t_electricity_car WHERE del_flag=0 and uid = #{uid} AND tenant_id = #{tenantId} LIMIT 1
+	</select>
+
 </mapper>

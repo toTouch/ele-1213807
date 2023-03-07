@@ -1383,14 +1383,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
-        }
-
-        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            return R.fail("100253", "已绑定车辆");
-        }
-
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
         if (result.getLeft()) {
             return R.ok();

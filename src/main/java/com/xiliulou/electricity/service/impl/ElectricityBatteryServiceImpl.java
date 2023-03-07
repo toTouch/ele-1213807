@@ -758,7 +758,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public Integer isFranchiseeBindBattery(Long id, Integer tenantId) {
         return electricitybatterymapper.isFranchiseeBindBattery(id, tenantId);
     }
-    
+
+    /**
+     * 检查用户是否绑定有电池
+     *
+     * @return
+     */
+    @Override
+    public Integer isUserBindBattery(Long uid, Integer tenantId) {
+        return electricitybatterymapper.isUserBindBattery(uid, tenantId);
+    }
+
     /**
      * 迁移用户所属加盟商  获取用户电池型号
      *

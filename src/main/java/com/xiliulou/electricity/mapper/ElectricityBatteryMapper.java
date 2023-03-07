@@ -84,4 +84,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     @Select("select id, sn,tenant_id from t_electricity_battery where sn = #{sn}")
     ElectricityBattery queryPartAttrBySn(@Param("sn") String sn);
+
+    Integer isUserBindBattery(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 }

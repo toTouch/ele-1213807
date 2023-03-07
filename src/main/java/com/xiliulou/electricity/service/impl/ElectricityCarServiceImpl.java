@@ -6,15 +6,15 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
-import com.xiliulou.electricity.query.*;
-import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCarBindUser;
+import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
@@ -35,7 +35,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -589,5 +591,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public R batteryStatistical(List<Integer> carIdList, Integer tenantId) {
         return R.ok(electricityCarMapper.batteryStatistical(carIdList, tenantId));
+    }
+
+    /**
+     * 判断用户是否绑定的有车
+     *
+     * @return
+     */
+    @Override
+    public Integer isUserBindCar(Long uid, Integer tenantId) {
+        return electricityCarMapper.isUserBindCar(uid, tenantId);
     }
 }

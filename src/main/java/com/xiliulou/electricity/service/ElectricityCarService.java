@@ -63,4 +63,6 @@ public interface ElectricityCarService {
     R queryElectricityCarOverview(String sn, List<Integer> franchiseeIds);
     
     R batteryStatistical(List<Integer> carIdList, Integer tenantId);
+
+    Integer isUserBindCar(Long uid, Integer tenantId);
 }

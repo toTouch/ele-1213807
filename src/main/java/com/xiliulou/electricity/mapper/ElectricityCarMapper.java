@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
@@ -38,4 +37,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
             @Param("tenantId") Integer tenantId);
     
     Long batteryStatistical(@Param("carIds") List<Integer> carIdList, @Param("tenantId") Integer tenantId);
+
+    Integer isUserBindCar(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 }
