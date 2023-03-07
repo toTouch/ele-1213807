@@ -47,7 +47,7 @@ public interface BatteryGeoMapper extends BaseMapper<BatteryGeo> {
      * @param batteryGeo 实例对象
      * @return 影响行数
      */
-    int insertOne(BatteryGeo batteryGeo);
+    int insertOrUpdate(BatteryGeo batteryGeo);
     
     /**
      * 修改数据
@@ -71,4 +71,5 @@ public interface BatteryGeoMapper extends BaseMapper<BatteryGeo> {
             @Param("lat") Double lat, @Param("lon") Double lon, @Param("size") Long size);
     
     
+    int deleteBySn(@Param("sn") String sn);
 }

@@ -101,6 +101,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Autowired
     ElectricityConfigService electricityConfigService;
+    @Autowired
+    BatteryGeoService geoService;
     
     /**
      * 保存电池
@@ -362,6 +364,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         int raws = electricitybatterymapper.deleteById(id, TenantContextHolder.getTenantId());
+        geoService.deleteBySn(electricityBattery.getSn());
         if (raws > 0) {
             redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
             return R.ok();

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.BatteryGeoMapper;
@@ -83,8 +82,8 @@ public class BatteryGeoServiceImpl implements BatteryGeoService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public BatteryGeo insert(BatteryGeo batteryGeo) {
-        this.batteryGeoMapper.insertOne(batteryGeo);
+    public BatteryGeo insertOrUpdate(BatteryGeo batteryGeo) {
+        this.batteryGeoMapper.insertOrUpdate(batteryGeo);
         return batteryGeo;
     }
     
@@ -135,5 +134,10 @@ public class BatteryGeoServiceImpl implements BatteryGeoService {
         
         return Triple.of(true, null, batteryGeoMapper.queryAllList(franchiseeIds,GeoHashUtil.getGeoHashBase32For9(lat, lon, length),
                 TenantContextHolder.getTenantId(), lat, lon, size));
+    }
+    
+    @Override
+    public int deleteBySn(String sn) {
+        return batteryGeoMapper.deleteBySn(sn);
     }
 }

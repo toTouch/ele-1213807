@@ -67,9 +67,10 @@
     </select>
 
     <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_geo(sn, longitude, latitude, gis, geohash, tenant_id, create_time, update_time)
-        values (#{sn}, #{longitude}, #{latitude}, #{gis}, #{geohash}, #{tenantId}, #{createTime}, #{updateTime})
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_battery_geo(sn, longitude, latitude, gis,  tenant_id, create_time, update_time)
+        values (#{sn}, #{longitude}, #{latitude},ST_GeometryFromText(CONCAT('POINT(', longitude, ' ', latitude, ')')) , #{tenantId}, #{createTime}, #{updateTime})
+         on duplicate key update longitude=#{longitude},latitude= #{latitude},update_time=#{updateTime},gis=ST_GeometryFromText(CONCAT('POINT(', longitude, ' ', latitude, ')'))
     </insert>
 
     <!--通过主键修改数据-->
@@ -107,6 +108,9 @@
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_battery_geo where id = #{id}
+    </delete>
+    <delete id="deleteBySn">
+        delete from t_battery_geo where sn = #{sn}
     </delete>
     
     

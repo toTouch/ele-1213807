@@ -44,7 +44,7 @@ public interface BatteryGeoService {
      * @param batteryGeo 实例对象
      * @return 实例对象
      */
-    BatteryGeo insert(BatteryGeo batteryGeo);
+    BatteryGeo insertOrUpdate(BatteryGeo batteryGeo);
 
     /**
      * 修改数据
@@ -63,4 +63,6 @@ public interface BatteryGeoService {
     Boolean deleteById(Long id);
     
     Triple<Boolean, String, Object> queryBatteryMap(Double lat, Double lon, Long size, Integer length);
+    
+    int deleteBySn(String sn);
 }
