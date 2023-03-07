@@ -483,7 +483,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
@@ -2297,7 +2297,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return false;
     }
-    
+
+    @Slave
     @Override
     public R queryCount(ElectricityCabinetQuery electricityCabinetQuery) {
         return R.ok(electricityCabinetMapper.queryCount(electricityCabinetQuery));
