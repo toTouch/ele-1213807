@@ -297,8 +297,6 @@
         left join t_electricity_car_model ecm on ecm.id = cdo.car_model_id
         where cdo.uid = #{uid}
         and cdo.tenant_id = #{tenantId}
-        and ero.refund_order_type = 1
-        and ero.status = 4
         limit #{offset}, #{size}
     </select>
     
