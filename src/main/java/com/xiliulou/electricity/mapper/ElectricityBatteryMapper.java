@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BatteryStatisticalVo;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
+import com.xiliulou.electricity.vo.ElectricityBatteryLocationVO;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
@@ -86,6 +87,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     @Select("select id, sn,tenant_id from t_electricity_battery where sn = #{sn}")
     ElectricityBattery queryPartAttrBySn(@Param("sn") String sn);
     
-    List<ElectricityBattery> queryPartAttrList(@Param("offset") Integer offset, @Param("size") Integer size,
+    List<ElectricityBatteryLocationVO> queryPartAttrList(@Param("offset") Integer offset, @Param("size") Integer size,
             @Param("franchiseeIds") List<Long> franchiseeIds,@Param("tenantId")Integer tenantId);
 }
