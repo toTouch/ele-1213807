@@ -50,4 +50,6 @@ public interface JoinShareActivityHistoryService {
 	void updateExpired(JoinShareActivityHistory joinShareActivityHistory);
     
     FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 }

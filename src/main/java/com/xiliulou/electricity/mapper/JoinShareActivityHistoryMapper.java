@@ -37,4 +37,6 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 	
 	FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(@Param("joinUid") Long joinUid,
 			@Param("tenantId") Integer tenantId);
+	
+	Long queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 }

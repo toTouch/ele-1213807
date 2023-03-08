@@ -47,4 +47,34 @@
         order by jsah.create_time desc
         limit 1
     </select>
+    
+    <select id="queryCount" resultType="long">
+        select
+        count(1)
+        from t_join_share_activity_history as jsah
+        left join t_user_info as tui on tui.uid = jsah.join_uid
+        <where>
+            <if test="uid != null">
+                and jsah.uid = #{uid}
+            </if>
+            <if test="activityId != null">
+                and jsah.activity_id = #{activityId}
+            </if>
+            <if test="tenantId != null">
+                and jsah.tenant_id = #{tenantId}
+            </if>
+            <if test="status != null">
+                and jsah.status = #{status}
+            </if>
+            <if test="joinName != null and joinName != ''">
+                and tui.name like concat('%', #{joinName}, '%')
+            </if>
+            <if test="startTime != null">
+                and jsah.start_time &gt;= #{startTime}
+            </if>
+            <if test="startTime != null">
+                and jsah.start_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
 </mapper>
