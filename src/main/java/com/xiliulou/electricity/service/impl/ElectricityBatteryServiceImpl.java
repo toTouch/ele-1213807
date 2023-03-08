@@ -102,6 +102,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Autowired
     ElectricityConfigService electricityConfigService;
     
+    @Autowired
+    BatteryGeoService geoService;
+    
     /**
      * 保存电池
      *
@@ -186,7 +189,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         electricityBattery.setTenantId(TenantContextHolder.getTenantId());
         Integer rows = electricitybatterymapper.update(electricityBattery);
         if (rows > 0) {
-            redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());
             return R.ok();
         } else {
             return R.fail("修改失败!");
@@ -362,8 +364,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
         
         int raws = electricitybatterymapper.deleteById(id, TenantContextHolder.getTenantId());
+        geoService.deleteBySn(electricityBattery.getSn());
         if (raws > 0) {
-            redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
             return R.ok();
         } else {
             return R.fail("100227", "删除失败!");
@@ -400,19 +402,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    public ElectricityBattery queryPartAttrBySnFromCache(String sn) {
-        ElectricityBattery existsBt = redisService.getWithHash(CacheConstant.CACHE_BT_ATTR + sn,
-                ElectricityBattery.class);
-        if (Objects.nonNull(existsBt)) {
-            return existsBt;
-        }
-        ElectricityBattery dbBattery = electricitybatterymapper.queryPartAttrBySn(sn);
-        if (Objects.isNull(dbBattery)) {
-            return null;
-        }
-        
-        redisService.saveWithHash(CacheConstant.CACHE_BT_ATTR + sn, dbBattery);
-        return dbBattery;
+    public ElectricityBattery queryPartAttrBySnFromDb(String sn) {
+        return electricitybatterymapper.queryPartAttrBySn(sn);
     }
     
     @Override
@@ -808,28 +799,53 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, "", batteryModel);
     }
     
-    private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId,
-            String appId, String appSecret, String batteryOuttimeTemplate) {
-        AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-        appTemplateQuery.setAppId(appId);
-        appTemplateQuery.setSecret(appSecret);
-        appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
-        appTemplateQuery.setPage("/pages/start/template?tenantId=" + tenantId);
-        //发送内容
-        appTemplateQuery.setData(createData(batteryList));
-        return appTemplateQuery;
+    @Override
+    public Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn) {
+        ElectricityBattery electricityBattery = queryBySnFromDb(sn, TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityBattery)) {
+            return Triple.of(true, null, null);
+        }
+        
+        ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+        BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+        
+        if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)
+                && Objects.nonNull(electricityBattery.getUid())) {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
+            if (Objects.nonNull(userInfo)) {
+                electricityBatteryVO.setUserName(userInfo.getName());
+            }
+        }
+        
+        if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
+                && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
+                    electricityBattery.getElectricityCabinetId());
+            if (Objects.nonNull(electricityCabinet)) {
+                electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+            }
+        }
+        
+        Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
+        if (Objects.nonNull(franchisee)) {
+            electricityBatteryVO.setFranchiseeName(franchisee.getName());
+        }
+        
+        return Triple.of(true, null, electricityBatteryVO);
+        
     }
     
-    private Map<String, Object> createData(List<BorrowExpireBatteryVo> batteryList) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd号 HH:mm");
+    @Override
+    public Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
         
-        Map<String, Object> data = new HashMap<>(2);
-        
-        data.put("time1", dateFormat.format(new Date()));
-        
-        data.put("number2", String.valueOf(batteryList.size()));
-        
-        return data;
+        return Triple.of(true, null, electricitybatterymapper.queryPartAttrList(offset, size, franchiseeIds,
+                TenantContextHolder.getTenantId()));
     }
+    
     
 }

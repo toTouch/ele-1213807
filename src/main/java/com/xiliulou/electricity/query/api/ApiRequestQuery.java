@@ -28,12 +28,9 @@ public class ApiRequestQuery {
      * 生成的签名
      */
     private String sign;
+    
     /**
-     * 发送的指令
-     */
-    private String command;
-    /**
-     * 数据
+     * 附带的数据
      */
     private String data;
 

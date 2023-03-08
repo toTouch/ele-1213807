@@ -1,0 +1,68 @@
+package com.xiliulou.electricity.service;
+
+import com.xiliulou.electricity.entity.BatteryGeo;
+import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.List;
+
+/**
+ * (BatteryGeo)表服务接口
+ *
+ * @author makejava
+ * @since 2023-03-03 08:54:46
+ */
+public interface BatteryGeoService {
+
+    /**
+     * 通过ID查询单条数据从数据库
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    BatteryGeo queryByIdFromDB(Long id);
+    
+      /**
+     * 通过ID查询单条数据从缓存
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    BatteryGeo queryByIdFromCache(Long id);
+
+    /**
+     * 查询多条数据
+     *
+     * @param offset 查询起始位置
+     * @param limit 查询条数
+     * @return 对象列表
+     */
+    List<BatteryGeo> queryAllByLimit(int offset, int limit);
+
+    /**
+     * 新增数据
+     *
+     * @param batteryGeo 实例对象
+     * @return 实例对象
+     */
+    BatteryGeo insertOrUpdate(BatteryGeo batteryGeo);
+
+    /**
+     * 修改数据
+     *
+     * @param batteryGeo 实例对象
+     * @return 实例对象
+     */
+    Integer update(BatteryGeo batteryGeo);
+
+    /**
+     * 通过主键删除数据
+     *
+     * @param id 主键
+     * @return 是否成功
+     */
+    Boolean deleteById(Long id);
+    
+    Triple<Boolean, String, Object> queryBatteryMap(Double lat, Double lon, Long size, Integer length);
+    
+    int deleteBySn(String sn);
+}

@@ -214,6 +214,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     EleOtaFileService eleOtaFileService;
 
+    
+    @Autowired
+    BatteryGeoService batteryGeoService;
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -2206,7 +2210,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("batteryName is null");
             return R.ok();
         }
-        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromCache(batteryName);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromDb(batteryName);
         if (Objects.isNull(electricityBattery)) {
             log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();
@@ -2218,21 +2222,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //修改电池
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
+    
+        BatteryGeo batteryGeo  = new BatteryGeo();
+        batteryGeo.setSn(electricityBattery.getSn());
+        batteryGeo.setCreateTime(System.currentTimeMillis());
+        batteryGeo.setUpdateTime(System.currentTimeMillis());
+        batteryGeo.setTenantId(electricityBattery.getTenantId());
+        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
+        
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power);
         }
+        
         Double latitude = batteryReportQuery.getLatitude();
         if (Objects.nonNull(latitude)) {
+            batteryGeo.setLatitude(latitude);
             newElectricityBattery.setLatitude(latitude);
         }
+        
         Double longitude = batteryReportQuery.getLongitude();
         if (Objects.nonNull(longitude)) {
+            batteryGeo.setLongitude(longitude);
             newElectricityBattery.setLongitude(longitude);
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setTenantId(electricityBattery.getTenantId());
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
+        
+        if(Objects.nonNull(batteryGeo.getLatitude()) && Objects.nonNull(batteryGeo.getLongitude())) {
+            batteryGeoService.insertOrUpdate(batteryGeo);
+        }
         
         //电池上报是否有其他信息
         if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {

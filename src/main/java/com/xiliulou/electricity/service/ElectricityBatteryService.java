@@ -40,7 +40,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn);
     
-    ElectricityBattery queryPartAttrBySnFromCache(String sn);
+    ElectricityBattery queryPartAttrBySnFromDb(String sn);
     
     
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
@@ -93,4 +93,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer isFranchiseeBindBattery(Long id,Integer tenantId);
 
     Triple<Boolean, String, Object> selectUserLatestBatteryType();
+    
+    Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn);
+    
+    Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds);
+    
 }

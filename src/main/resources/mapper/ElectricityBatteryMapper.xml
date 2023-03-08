@@ -535,5 +535,19 @@
 	<delete id="deleteById">
         delete from t_electricity_battery where id = #{id} and tenant_id = #{tenantId}
     </delete>
+	
+	<select id="queryPartAttrList"  resultType="com.xiliulou.electricity.vo.ElectricityBatteryLocationVO">
+		select sn, longitude,latitude
+		from t_electricity_battery
+		where del_flag=0
+		and tenant_id=#{tenantId}
+		<if test="franchiseeIds != null">
+			and franchisee_id in
+			<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+				#{id}
+			</foreach>
+		</if>
+		limit #{offset}, #{size}
+	</select>
 
 </mapper>
