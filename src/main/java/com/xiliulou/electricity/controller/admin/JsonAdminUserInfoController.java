@@ -156,6 +156,7 @@ public class JsonAdminUserInfoController extends BaseController {
                             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                             @RequestParam(value = "uid", required = false) Long uid,
                             @RequestParam(value = "memberCardId", required = false) Long memberCardId,
+                            @RequestParam(value = "sortType", required = false) Integer sortType,
                             @RequestParam(value = "cardName", required = false) String cardName,
                             @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,

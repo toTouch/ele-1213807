@@ -29,6 +29,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -2022,9 +2023,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
         userInfoQuery.setOffset(0L);
         userInfoQuery.setSize(2000L);
-        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
-        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
-            throw new CustomBusinessException("查不到会员用户");
+//        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+//        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
+//            throw new CustomBusinessException("查不到会员用户");
+//        }
+
+        List<UserBatteryInfoVO> userBatteryInfoVOS ;
+        if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
+            //按认证时间排序
+            userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
+        } else {
+            //按电池套餐过期时间排序
+            userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+        }
+
+        if(CollectionUtils.isEmpty(userBatteryInfoVOS)){
+            throw new CustomBusinessException("用户列表为空！");
         }
 
         List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
