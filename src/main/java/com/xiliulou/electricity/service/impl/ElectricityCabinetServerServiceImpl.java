@@ -269,7 +269,7 @@ public class ElectricityCabinetServerServiceImpl
         electricityCabinetServer.setTenantId(electricityCabinet.getTenantId());
         electricityCabinetServer.setServerBeginTime(electricityCabinet.getCreateTime());
         electricityCabinetServer.setServerEndTime(Objects.isNull(electricityCabinet.getCreateTime()) ? 0
-                : electricityCabinet.getCreateTime() + 24L * 3600000 * 365);
+                : electricityCabinet.getCreateTime() + 24L * 3600000 * 395);  //395 ==> 365 + 30  一年零一月
         electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_NORMAL);
         electricityCabinetServer.setCreateTime(System.currentTimeMillis());
         electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
