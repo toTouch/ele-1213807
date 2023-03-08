@@ -93,6 +93,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     UserBatteryService userBatteryService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
 
     /**
      * 修改数据
@@ -1416,6 +1419,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!checkUserBatteryServiceFeeResult.getLeft()) {
                 return checkUserBatteryServiceFeeResult;
             }
+    
+            //判断车电关联是否可换电
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+                Triple<Boolean, String, Object> checkUserCarMemberCardResult = checkUserCarMemberCard(userCarMemberCard,
+                        user);
+                if (!checkUserCarMemberCardResult.getLeft()) {
+                    return checkUserCarMemberCardResult;
+                }
+            }
 
             //默认是小程序下单
             if (Objects.isNull(orderQuery.getSource())) {
@@ -1469,8 +1485,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());
             commandData.put("takeCellNo", electricityCabinetOrder.getNewCellNo());
             commandData.put("phone", user.getPhone());
-
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+    
+            //ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                 commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
             }
@@ -1495,7 +1511,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());
         }
     }
-
+    
+    private Triple<Boolean, String, Object> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard,
+            TokenUser user) {
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
+            log.warn("ORDER WARN! user haven't carMemberCard uid={}", user.getUid());
+            return Triple.of(false, "100210", "用户未开通套餐");
+        }
+        
+        //套餐是否可用
+        long now = System.currentTimeMillis();
+        if (userCarMemberCard.getMemberCardExpireTime() < now) {
+            log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+                    userCarMemberCard.getCardId());
+            return Triple.of(false, "100212", "用户套餐已过期");
+        }
+        return Triple.of(true, null, null);
+    }
+    
     private String generateExchangeOrderId(Long uid) {
         return String.valueOf(uid) + System.currentTimeMillis() / 1000 + RandomUtil.randomNumbers(3);
     }
