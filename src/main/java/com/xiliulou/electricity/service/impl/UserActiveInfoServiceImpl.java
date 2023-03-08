@@ -166,7 +166,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     @DS("slave_1")
     public R queryList(UserActiveInfoQuery query) {
         //默认为30天
-        Integer day = Objects.isNull(query.getDay()) ? 30 : query.getDay();
+        int day = Objects.isNull(query.getDay()) ? 30 : query.getDay();
         query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);
         
         List<UserActiveInfoVo> userActiveInfoList = userActiveInfoMapper.queryList(query);
@@ -186,7 +186,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     @Override
     @DS("slave_1")
     public R queryCount(UserActiveInfoQuery query) {
-        Integer day = Objects.isNull(query.getDay()) ? 0 : query.getDay();
+        int day = Objects.isNull(query.getDay()) ? 30 : query.getDay();
         query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);
         
         Long count = userActiveInfoMapper.queryCount(query);
