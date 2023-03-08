@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
@@ -401,7 +402,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     }
 
     private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
-        if (query.getCarDeposit().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        if (NumberConstant.ZERO_BD.compareTo(query.getCarDeposit()) == NumberConstant.ONE) {
             return Pair.of(false, "车辆押金不合法！");
         }
 

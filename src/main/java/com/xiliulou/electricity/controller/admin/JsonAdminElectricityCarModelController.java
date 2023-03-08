@@ -201,7 +201,7 @@ public class JsonAdminElectricityCarModelController {
         if (NumberConstant.ZERO_BD.compareTo(electricityCarModelQuery.getCarDeposit()) == NumberConstant.ONE) {
             return Boolean.TRUE;
         }
-
+    
         //校验套餐
         if (StringUtils.isNotBlank(electricityCarModelQuery.getRentType())) {
             List<RentCarTypeDTO> rentCarTypes = JsonUtil.fromJsonArray(electricityCarModelQuery.getRentType(), RentCarTypeDTO.class);
