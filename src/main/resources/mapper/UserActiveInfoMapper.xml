@@ -147,6 +147,7 @@
                 and uai.tenant_id = #{tenantId}
             </if>
         </where>
+        order by uai.active_time
         limit #{offset}, #{size}
     </select>
     

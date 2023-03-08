@@ -59,29 +59,19 @@ public class JsonAdminJoinShareActivityHistoryController {
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
     
-    /**
-     * 用户参与记录admin
-     */
+    
     @GetMapping(value = "/admin/joinShareActivityHistory/queryCount")
-    public R joinActivityCount(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam("id") Long id, @RequestParam(value = "joinName", required = false) String joinName,
+    public R joinActivityCount(@RequestParam("id") Long id,
+            @RequestParam(value = "joinName", required = false) String joinName,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "status", required = false) Integer status) {
-        
-        if (size < 0 || size > 50) {
-            size = 10L;
-        }
-        
-        if (offset < 0) {
-            offset = 0L;
-        }
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         
         JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
-                .offset(offset).size(size).tenantId(tenantId).id(id).joinName(joinName).status(status)
+                .tenantId(tenantId).id(id).joinName(joinName).status(status)
                 .startTime(beginTime).endTime(endTime).build();
         return joinShareActivityHistoryService.queryCount(jsonShareActivityHistoryQuery);
     }
