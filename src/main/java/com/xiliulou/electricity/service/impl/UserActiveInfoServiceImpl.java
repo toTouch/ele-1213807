@@ -183,8 +183,6 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
             return R.ok(new ArrayList<>());
         }
         
-        Integer tenantId = TenantContextHolder.getTenantId();
-        
         userActiveInfoList.parallelStream().forEach(item -> {
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
             BigDecimal batteryServiceFee = serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo);
