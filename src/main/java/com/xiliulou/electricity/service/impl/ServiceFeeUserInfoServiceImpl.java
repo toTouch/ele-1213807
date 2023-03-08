@@ -150,9 +150,13 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     
     @Override
     public BigDecimal queryUserBatteryServiceFee(UserInfo userInfo) {
+        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
+        if (Objects.isNull(userInfo)) {
+            return userChangeServiceFee;
+        }
+        
         ServiceFeeUserInfo serviceFeeUserInfo = queryByUidFromCache(userInfo.getUid());
         
-        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
         Long now = System.currentTimeMillis();
         long cardDays = 0;
         //用户产生的套餐过期电池服务费

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.UserActiveInfo;
@@ -11,7 +12,9 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserActiveInfoMapper;
 import com.xiliulou.electricity.query.UserActiveInfoQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
 import com.xiliulou.electricity.service.UserActiveInfoService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.UserActiveInfoVo;
@@ -47,6 +50,12 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+    
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    UserInfoService userInfoService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -163,7 +172,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     }
     
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(UserActiveInfoQuery query) {
         //默认为30天
         long day = Objects.isNull(query.getDay()) ? 30 : query.getDay();
@@ -177,7 +186,8 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
         Integer tenantId = TenantContextHolder.getTenantId();
         
         userActiveInfoList.parallelStream().forEach(item -> {
-            BigDecimal batteryServiceFee = eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            BigDecimal batteryServiceFee = serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo);
             item.setBatteryServiceFee(batteryServiceFee);
         });
         return R.ok(userActiveInfoList);
