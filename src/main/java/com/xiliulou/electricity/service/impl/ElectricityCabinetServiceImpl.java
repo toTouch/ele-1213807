@@ -54,7 +54,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -2210,7 +2209,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("batteryName is null");
             return R.ok();
         }
-        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromDb(batteryName);
+        ElectricityBattery electricityBattery = electricityBatteryService.queryPartAttrBySnFromCache(batteryName);
         if (Objects.isNull(electricityBattery)) {
             log.warn("ele battery error! no electricityBattery,sn,{}", batteryName);
             return R.ok();

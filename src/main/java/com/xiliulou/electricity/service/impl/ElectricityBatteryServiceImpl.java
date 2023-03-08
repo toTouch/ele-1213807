@@ -189,6 +189,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         electricityBattery.setTenantId(TenantContextHolder.getTenantId());
         Integer rows = electricitybatterymapper.update(electricityBattery);
         if (rows > 0) {
+            redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBatteryDb.getSn());
             return R.ok();
         } else {
             return R.fail("修改失败!");
@@ -366,6 +367,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         int raws = electricitybatterymapper.deleteById(id, TenantContextHolder.getTenantId());
         geoService.deleteBySn(electricityBattery.getSn());
         if (raws > 0) {
+            redisService.delete(CacheConstant.CACHE_BT_ATTR + electricityBattery.getSn());
             return R.ok();
         } else {
             return R.fail("100227", "删除失败!");
@@ -402,8 +404,19 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    public ElectricityBattery queryPartAttrBySnFromDb(String sn) {
-        return electricitybatterymapper.queryPartAttrBySn(sn);
+    public ElectricityBattery queryPartAttrBySnFromCache(String sn) {
+        ElectricityBattery existsBt = redisService.getWithHash(CacheConstant.CACHE_BT_ATTR + sn,
+                ElectricityBattery.class);
+        if (Objects.nonNull(existsBt)) {
+            return existsBt;
+        }
+        ElectricityBattery dbBattery = electricitybatterymapper.queryPartAttrBySn(sn);
+        if (Objects.isNull(dbBattery)) {
+            return null;
+        }
+    
+        redisService.saveWithHash(CacheConstant.CACHE_BT_ATTR + sn, dbBattery);
+        return dbBattery;
     }
     
     @Override
