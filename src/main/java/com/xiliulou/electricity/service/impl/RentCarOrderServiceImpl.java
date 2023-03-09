@@ -88,6 +88,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     EleBindCarRecordService eleBindCarRecordService;
     @Autowired
     UserCouponService userCouponService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -481,7 +484,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             log.error("ELE RENT CAR ERROR! rent car memberCard expired,uid={}", user.getUid());
             return Triple.of(false, "100233", "租车套餐已过期");
         }
-
+    
         //车辆是否可用
         ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn(), TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {

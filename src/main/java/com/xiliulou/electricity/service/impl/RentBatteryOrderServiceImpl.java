@@ -98,6 +98,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
 
 
     /**
@@ -267,6 +270,25 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
                 return R.fail("100211", "用户套餐已暂停");
+            }
+    
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
+                    log.warn("ORDER WARN! user haven't carMemberCard uid={}", user.getUid());
+                    return R.fail(false, "100210", "用户未开通套餐");
+                }
+        
+                //套餐是否可用
+                long now = System.currentTimeMillis();
+                if (userCarMemberCard.getMemberCardExpireTime() < now) {
+                    log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+                            userCarMemberCard.getCardId());
+                    return R.fail(false, "100212", "用户套餐已过期");
+                }
             }
 
             //已绑定电池

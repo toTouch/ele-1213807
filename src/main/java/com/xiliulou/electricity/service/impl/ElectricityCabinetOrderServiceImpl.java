@@ -310,6 +310,26 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
                 return R.fail("100211", "用户套餐已暂停");
             }
+    
+            //判断车电关联是否可换电
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
+                    log.warn("ORDER WARN! user haven't carMemberCard uid={}", user.getUid());
+                    return R.fail(false, "100210", "用户未开通套餐");
+                }
+        
+                //套餐是否可用
+                long now = System.currentTimeMillis();
+                if (userCarMemberCard.getMemberCardExpireTime() < now) {
+                    log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+                            userCarMemberCard.getCardId());
+                    return R.fail(false, "100212", "用户套餐已过期");
+                }
+            }
 
             //未租电池
             if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
@@ -412,7 +432,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("status", electricityCabinetOrder.getStatus());
 
             //是否开启电池检测
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            //ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
