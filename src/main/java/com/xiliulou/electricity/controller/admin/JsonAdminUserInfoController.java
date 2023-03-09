@@ -152,6 +152,7 @@ public class JsonAdminUserInfoController extends BaseController {
                             @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "nowElectricityBatterySn", required = false) String nowElectricityBatterySn,
                             @RequestParam(value = "authStatus", required = false) Integer authStatus,
+                            @RequestParam(value = "batteryId", required = false) Long batteryId,
                             @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                             @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
                             @RequestParam(value = "batteryDepositStatus", required = false) Integer batteryDepositStatus,
