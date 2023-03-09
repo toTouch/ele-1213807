@@ -221,7 +221,6 @@
     </select>
 
     <select id="queryCountByMemberCardExpireTime" resultType="java.lang.Integer">
-        select
         select COUNT(1)
         from t_user_battery_member_card ubmc
         left join t_user_info tui on ubmc.uid=tui.uid
