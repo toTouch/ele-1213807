@@ -101,6 +101,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    
+    @Autowired
+    UserCarDepositService userCarDepositService;
 
 
     /**
@@ -277,17 +280,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
                 UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-                if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
-                    log.warn("ORDER WARN! user haven't carMemberCard uid={}", user.getUid());
-                    return R.fail(false, "100210", "用户未开通套餐");
-                }
-        
-                //套餐是否可用
-                long now = System.currentTimeMillis();
-                if (userCarMemberCard.getMemberCardExpireTime() < now) {
-                    log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
-                            userCarMemberCard.getCardId());
-                    return R.fail(false, "100212", "用户套餐已过期");
+                Triple<Boolean, String, String> booleanStringObjectTriple = checkUserCarMemberCard(userCarMemberCard,
+                        userInfo);
+                if (!booleanStringObjectTriple.getLeft()) {
+                    return R.fail(booleanStringObjectTriple.getMiddle(), booleanStringObjectTriple.getRight());
                 }
             }
 
@@ -1479,6 +1475,34 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     public String generateOrderId(Long uid, String cellNo) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid + cellNo +
                 RandomUtil.randomNumbers(4);
+    }
+    
+    private Triple<Boolean, String, String> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {
+        
+        //用户未缴纳押金可直接换电
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            return Triple.of(true, null, null);
+        }
+        
+        //用户未缴纳押金可直接换电
+        if (!Objects.equals(user.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return Triple.of(true, null, null);
+        }
+        
+        //用户从未买过车辆套餐则可直接换电
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
+            return Triple.of(true, null, null);
+        }
+        
+        //套餐是否可用
+        long now = System.currentTimeMillis();
+        if (userCarMemberCard.getMemberCardExpireTime() < now) {
+            log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+                    userCarMemberCard.getCardId());
+            return Triple.of(false, "100212", "用户租车套餐已过期");
+        }
+        return Triple.of(true, null, null);
     }
 
 }

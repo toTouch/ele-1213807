@@ -96,7 +96,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
-
+    
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    
+    
+    
     /**
      * 修改数据
      *
@@ -316,18 +321,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .queryFromCacheByTenantId(userInfo.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+    
                 UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-                if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
-                    log.warn("ORDER WARN! user haven't carMemberCard uid={}", user.getUid());
-                    return R.fail(false, "100210", "用户未开通套餐");
-                }
-        
-                //套餐是否可用
-                long now = System.currentTimeMillis();
-                if (userCarMemberCard.getMemberCardExpireTime() < now) {
-                    log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
-                            userCarMemberCard.getCardId());
-                    return R.fail(false, "100212", "用户套餐已过期");
+                Triple<Boolean, String, Object> checkUserCarMemberCardResult = checkUserCarMemberCard(userCarMemberCard,
+                        userInfo);
+                if (!checkUserCarMemberCardResult.getLeft()) {
+                    return R.fail(checkUserCarMemberCardResult.getMiddle(),
+                            String.valueOf(checkUserCarMemberCardResult.getRight()));
                 }
             }
 
@@ -1447,7 +1447,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
                 UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
                 Triple<Boolean, String, Object> checkUserCarMemberCardResult = checkUserCarMemberCard(userCarMemberCard,
-                        user);
+                        userInfo);
                 if (!checkUserCarMemberCardResult.getLeft()) {
                     return checkUserCarMemberCardResult;
                 }
@@ -1532,11 +1532,22 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     }
     
-    private Triple<Boolean, String, Object> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard,
-            TokenUser user) {
+    private Triple<Boolean, String, Object> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {
+    
+        //用户未缴纳押金可直接换电
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            return Triple.of(true, null, null);
+        }
+    
+        //用户未缴纳押金可直接换电
+        if (!Objects.equals(user.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return Triple.of(true, null, null);
+        }
+    
+        //用户从未买过车辆套餐则可直接换电
         if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
-            log.warn("ORDER WARN! user haven't carMemberCard uid={}", user.getUid());
-            return Triple.of(false, "100210", "用户未开通套餐");
+            return Triple.of(true, null, null);
         }
         
         //套餐是否可用
@@ -1544,7 +1555,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (userCarMemberCard.getMemberCardExpireTime() < now) {
             log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
                     userCarMemberCard.getCardId());
-            return Triple.of(false, "100212", "用户套餐已过期");
+            return Triple.of(false, "100212", "用户租车套餐已过期");
         }
         return Triple.of(true, null, null);
     }
