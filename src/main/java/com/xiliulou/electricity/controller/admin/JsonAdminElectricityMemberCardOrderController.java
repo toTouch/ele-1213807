@@ -55,7 +55,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "source", required = false) Integer source,
-                                          @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
+                                          @RequestParam(value = "payCount", required = false) Integer payCount,
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
@@ -101,7 +101,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
-                .cardPayCount(cardPayCount)
+                .cardPayCount(payCount)
 		        .userName(userName)
 		        .franchiseeIds(franchiseeIds).build();
 
@@ -119,7 +119,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "memberCardType", required = false) Integer cardType,
                         @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                         @RequestParam(value = "status", required = false) Integer status,
-                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
+                        @RequestParam(value = "payCount", required = false) Integer payCount,
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "refId", required = false) Long refId,
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
@@ -157,7 +157,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
-                .cardPayCount(cardPayCount)
+                .cardPayCount(payCount)
 		        .userName(userName)
 		        .franchiseeIds(franchiseeIds).build();
 
