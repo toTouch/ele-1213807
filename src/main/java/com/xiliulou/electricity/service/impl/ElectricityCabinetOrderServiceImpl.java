@@ -1553,7 +1553,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //套餐是否可用
         long now = System.currentTimeMillis();
         if (userCarMemberCard.getMemberCardExpireTime() < now) {
-            log.warn("ORDER WARN! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+            log.error("ORDER ERROR! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
                     userCarMemberCard.getCardId());
             return Triple.of(false, "100212", "用户租车套餐已过期");
         }
