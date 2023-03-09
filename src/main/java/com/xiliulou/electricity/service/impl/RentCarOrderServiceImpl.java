@@ -91,6 +91,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+    
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -485,6 +491,19 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             return Triple.of(false, "100233", "租车套餐已过期");
         }
     
+        //判断车电关联用户电池套餐
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                    .selectByUidFromCache(userInfo.getUid());
+            Triple<Boolean, String, Object> checkUserMemberCardResult = checkUserMemberCard(userBatteryMemberCard,
+                    user);
+            if (!checkUserMemberCardResult.getLeft()) {
+                return checkUserMemberCardResult;
+            }
+        }
+    
         //车辆是否可用
         ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn(), TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
@@ -745,5 +764,41 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         return Triple.of(false, "ELECTRICITY.0099", "下单失败");
+    }
+    
+    
+    private Triple<Boolean, String, Object> checkUserMemberCard(UserBatteryMemberCard userBatteryMemberCard,
+            TokenUser user) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+            log.warn("ELE RENT CAR WARN! user haven't memberCard uid={}", user.getUid());
+            return Triple.of(false, "100210", "用户未开通套餐");
+        }
+        
+        //套餐是否可用
+        long now = System.currentTimeMillis();
+        if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
+            log.warn("ELE RENT CAR WARN! user's member card is expire! uid={} cardId={}", user.getUid(),
+                    userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false, "100212", "用户套餐已过期");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("ELE RENT CAR WARN! user's member card is stop! uid={}", user.getUid());
+            return Triple.of(false, "100211", "用户套餐已暂停");
+        }
+        
+        //如果用户不是送的套餐
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService
+                .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)
+                    && userBatteryMemberCard.getRemainingNumber() < 0) {
+                log.warn("ELE RENT CAR WARN! user's count < 0 ,uid={},cardId={}", user.getUid(),
+                        electricityMemberCard.getType());
+                return Triple.of(false, "100213", "用户套餐剩余次数不足");
+            }
+        }
+        return Triple.of(true, null, null);
     }
 }
