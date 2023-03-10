@@ -161,7 +161,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("100313", "ota文件版本号不合法");
         }
     
-        Pair<Boolean, Integer> result = resolutionVersion(version);
+        Pair<Boolean, Integer> result = resolutionVersion(version, type);
         if (!result.getLeft()) {
             log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
             return R.fail("100313", "ota文件版本号不合法");
@@ -280,16 +280,27 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
      * @param version
      * @return
      */
-    private Pair<Boolean, Integer> resolutionVersion(String version) {
+    private Pair<Boolean, Integer> resolutionVersion(String version, Integer type) {
         int index = version.indexOf(".");
         if (Objects.equals(index, -1)) {
             return Pair.of(false, null);
         }
+    
+        int versionLine = 50;
         
         String versionPrefix = version.substring(index);
         try {
             int i = Integer.parseInt(versionPrefix);
-            return Pair.of(true, i);
+            if ((Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD)
+                    || Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD) && i > versionLine)) {
+                return Pair.of(false, null);
+            }
+    
+            if ((Objects.equals(type, OtaFileConfig.TYPE_OLD_SUB_BOARD)
+                    || Objects.equals(type, OtaFileConfig.TYPE_OLD_CORE_BOARD) && i < versionLine)) {
+                return Pair.of(false, null);
+            }
+            return Pair.of(true, null);
         } catch (Exception e) {
             log.error("RESOLUTION VERSION ERROR!", e);
         }
