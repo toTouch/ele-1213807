@@ -69,4 +69,8 @@ public interface ElectricityCarService {
     R attrList(Long beginTime, Long endTime);
     
     CarAttr queryLastReportPointBySn(String sn);
+    
+    R queryElectricityCarMove(Long storeId);
+    
+    R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
 }

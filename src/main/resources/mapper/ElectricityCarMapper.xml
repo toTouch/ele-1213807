@@ -196,5 +196,40 @@
             </if>
         </where>
     </select>
-
+    
+    <select id="queryEnableMoveCarByStoreId" resultType="com.xiliulou.electricity.vo.ElectricityCarMoveVo">
+        select
+            id, sn
+        from t_electricity_car
+        where tenant_id = #{tenantId} and del_flag = 0
+        and store_id = #{storeId} and status = 0
+    </select>
+    
+    <select id="queryIdsBySidAndIds" resultType="long">
+        select id from t_electricity_car
+        <where>
+            del_flag = 0
+            and tenant_id = #{tenantId}
+            and id in
+            <foreach collection="carIds" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="sid != null">
+                and store_id = #{sid}
+            </if>
+        </where>
+    </select>
+    
+    <update id="updateStoreIdByIds">
+        update t_electricity_car
+        set store_id = #{sid}, update_time = #{updateTime}
+        where tenant_id = #{tenantId} and del_flag = 0
+        and id in
+        <foreach collection="carIds" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </update>
 </mapper>

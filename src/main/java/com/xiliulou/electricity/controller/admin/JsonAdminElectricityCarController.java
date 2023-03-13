@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCarBindUser;
+import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -288,6 +289,21 @@ public class JsonAdminElectricityCarController {
         return electricityCarService.batteryStatistical(carIdList, TenantContextHolder.getTenantId());
     }
     
+    /**
+     * 迁移车辆查询
+     */
+    @GetMapping("/admin/electricityCar/moveCar")
+    public R queryElectricityCarMove(@RequestParam("storeId") Long storeId) {
+        return electricityCarService.queryElectricityCarMove(storeId);
+    }
     
-    
+    /**
+     * 车辆迁移
+     */
+    @PutMapping("/admin/electricityCar/moveCar")
+    @Log(title = "车辆迁移")
+    public R electricityCarMove(
+            @RequestBody @Validated(value = UpdateGroup.class) ElectricityCarMoveQuery electricityCarMoveQuery) {
+        return electricityCarService.electricityCarMove(electricityCarMoveQuery);
+    }
 }

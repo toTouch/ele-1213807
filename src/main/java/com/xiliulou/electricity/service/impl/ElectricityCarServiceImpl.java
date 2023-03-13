@@ -26,6 +26,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -88,6 +90,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     Jt808CarService jt808CarService;
+    
+    @Autowired
+    StoreService storeService;
 
 
     /**
@@ -362,6 +367,52 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @DS(value = "clickhouse")
     public CarAttr queryLastReportPointBySn(String sn) {
         return carAttrMapper.queryLastReportPointBySn(sn);
+    }
+    
+    @Override
+    public R queryElectricityCarMove(Long storeId) {
+        List<ElectricityCarMoveVo> queryList = electricityCarMapper
+                .queryEnableMoveCarByStoreId(storeId, TenantContextHolder.getTenantId());
+        return R.ok(queryList);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery) {
+        List<Long> carIds = electricityCarMoveQuery.getCarIds();
+        if (CollectionUtils.isEmpty(carIds)) {
+            return R.ok();
+        }
+        
+        Store targetStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getTargetSid());
+        if (Objects.isNull(targetStore)) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found store！storeId={}", electricityCarMoveQuery.getTargetSid());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        
+        Store sourceStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getSourceSid());
+        if (Objects.isNull(sourceStore)) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found store！storeId={}", electricityCarMoveQuery.getSourceSid());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        
+        if (!Objects.equals(targetStore.getTenantId(), TenantContextHolder.getTenantId()) || !Objects
+                .equals(sourceStore.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+        
+        List<Long> queryList = electricityCarMapper
+                .queryIdsBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
+                        TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(queryList) || queryList.size() != carIds.size()) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars！carIds={}", carIds);
+            return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
+        }
+        
+        electricityCarMapper.updateStoreIdByIds(targetStore.getId(), carIds, System.currentTimeMillis(),
+                TenantContextHolder.getTenantId());
+        
+        return R.ok();
     }
     
     @Override
