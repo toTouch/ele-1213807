@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -11,10 +13,12 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCarMemberCardMapper;
 import com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
-import com.xiliulou.electricity.queue.CarBreakPowerQueueHandler;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
+import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,7 +60,10 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     ElectricityCarModelService electricityCarModelService;
     
     @Autowired
-    CarBreakPowerQueueHandler carBreakPowerQueueHandler;
+    private Jt808RetrofitService jt808RetrofitService;
+    
+    @Autowired
+    private ElectricityCarService electricityCarService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -268,8 +275,14 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                 if (StrUtil.isEmpty(item.getSn()) || Objects.isNull(item.getCid())) {
                     return;
                 }
-                
-                carBreakPowerQueueHandler.putQueue(item);
+    
+                R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
+                        new Jt808DeviceControlRequest(IdUtil.randomUUID(), item.getSn(), ElectricityCar.TYPE_LOCK));
+                if (result.isSuccess()) {
+                    electricityCarService.updateLockTypeByIds(Arrays.asList(item.getCid()), ElectricityCar.TYPE_LOCK);
+                } else {
+                    log.error("Jt808 error! controlDevice error! carSN={},result={}", item.getSn(), result);
+                }
             });
             
             offset += size;

@@ -189,4 +189,9 @@ public class UserBatteryInfoVO {
      * 购买套餐次数
      */
     private Integer cardPayCount;
+    
+    /**
+     * 邀请人
+     */
+    private String inviterUserName;
 }

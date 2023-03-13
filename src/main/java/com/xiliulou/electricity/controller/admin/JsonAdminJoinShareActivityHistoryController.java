@@ -58,6 +58,23 @@ public class JsonAdminJoinShareActivityHistoryController {
                 .build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);
 	}
+    
+    
+    @GetMapping(value = "/admin/joinShareActivityHistory/queryCount")
+    public R joinActivityCount(@RequestParam("id") Long id,
+            @RequestParam(value = "joinName", required = false) String joinName,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "status", required = false) Integer status) {
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
+                .tenantId(tenantId).id(id).joinName(joinName).status(status)
+                .startTime(beginTime).endTime(endTime).build();
+        return joinShareActivityHistoryService.queryCount(jsonShareActivityHistoryQuery);
+    }
 
 }
 

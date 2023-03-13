@@ -2815,6 +2815,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(franchisee)) {
             franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         }
+    
+        if (Objects.isNull(franchisee)) {
+            return BigDecimal.valueOf(0);
+        }
+        
         BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, userInfo, null);
 
         //判断服务费
