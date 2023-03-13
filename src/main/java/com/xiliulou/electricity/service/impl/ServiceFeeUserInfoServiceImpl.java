@@ -2,10 +2,13 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.mapper.ServiceFeeUserInfoMapper;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
@@ -45,6 +48,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Autowired
     UserInfoService userInfoService;
+    
+    @Autowired
+    UserBatteryService userBatteryService;
 
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
@@ -113,6 +119,20 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
 
         ServiceFeeUserInfo serviceFeeUserInfo = queryByUidFromCache(uid);
+    
+        List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil
+                .fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+        eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
+    
+        eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
+    
+        if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
+            UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
+            if (Objects.nonNull(userBattery)) {
+                eleBatteryServiceFeeVO.setBatteryType(userBattery.getBatteryType());
+                eleBatteryServiceFeeVO.setModel(BatteryConstant.acquireBattery(userBattery.getBatteryType()));
+            }
+        }
 
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
         Long now = System.currentTimeMillis();

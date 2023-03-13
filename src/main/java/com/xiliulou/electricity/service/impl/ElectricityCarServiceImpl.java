@@ -7,11 +7,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.clickhouse.service.ClickHouseService;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
@@ -23,8 +27,10 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
+import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
+import com.xiliulou.electricity.web.query.CarGpsQuery;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +41,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +58,9 @@ import java.util.stream.Collectors;
 public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Resource
     private ElectricityCarMapper electricityCarMapper;
+    
+    @Resource
+    CarAttrMapper carAttrMapper;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -70,6 +82,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
+    
+    @Autowired
+    ClickHouseService clickHouseService;
+    
+    @Autowired
+    Jt808CarService jt808CarService;
 
 
     /**
@@ -303,6 +321,48 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return update;
     }
     
+    
+    
+    @Override
+    public R attrList(Long beginTime, Long endTime) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("rentBattery  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCar)) {
+            log.error("query  ERROR! not found car! uid:{} ", user.getUid());
+            return R.fail("100007", "未找到车辆");
+        }
+    
+        if (StringUtils.isEmpty(userCar.getSn())) {
+            log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
+            return R.fail("100007", "未找到车辆");
+        }
+    
+        String begin = TimeUtils.convertToStandardFormatTime(beginTime);
+        String end = TimeUtils.convertToStandardFormatTime(endTime);
+    
+        List<CarAttr> query = jt808CarService.queryListBySn(userCar.getSn(), begin, end);
+        if (CollectionUtils.isEmpty(query)) {
+            query = new ArrayList<>();
+        }
+    
+        List<CarGpsVo> result = query.parallelStream()
+                .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude())
+                        .setDevId(e.getDevId()).setCreateTime(e.getCreateTime().getTime()))
+                .collect(Collectors.toList());
+        return R.ok(result);
+    }
+    
+    @Override
+    @DS(value = "clickhouse")
+    public CarAttr queryLastReportPointBySn(String sn) {
+        return carAttrMapper.queryLastReportPointBySn(sn);
+    }
     
     @Override
     @Transactional(rollbackFor = Exception.class)

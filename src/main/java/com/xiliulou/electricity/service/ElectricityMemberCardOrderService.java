@@ -117,4 +117,6 @@ public interface ElectricityMemberCardOrderService {
     ElectricityMemberCardOrder selectLatestByUid(Long uid);
     
     Triple<Boolean, String, Object> endOrder(String orderNo, Long uid);
+    
+    R disableMemberCardForRollback();
 }

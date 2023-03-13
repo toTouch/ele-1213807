@@ -155,4 +155,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     public int updateBYId(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
         return eleDisableMemberCardRecordMapper.updateById(eleDisableMemberCardRecord);
     }
+    
+    @Override
+    public EleDisableMemberCardRecord queryByDisableMemberCardNo(String disableMemberCardNo, Integer tenantId) {
+        return eleDisableMemberCardRecordMapper.queryByDisableMemberCardNo(disableMemberCardNo, tenantId);
+    }
 }

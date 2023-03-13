@@ -6,6 +6,7 @@ import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.Jt808CarService;
@@ -122,5 +123,11 @@ public class Jt808CarServiceImpl implements Jt808CarService {
                 .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude()).setDevId(e.getDevId())
                         .setCreateTime(e.getCreateTime().getTime())).collect(Collectors.toList());
         return Pair.of(true, result);
+    }
+    
+    @Override
+    @DS(value = "clickhouse")
+    public List<CarAttr> queryListBySn(String sn, String begin, String end) {
+        return carAttrMapper.queryListBySn(sn, begin, end);
     }
 }

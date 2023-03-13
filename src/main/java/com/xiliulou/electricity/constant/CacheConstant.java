@@ -220,6 +220,7 @@ public interface CacheConstant {
     String CHECK_FULL_BATTERY_CACHE = "check_full_battery_cache:";
 
     String OTA_OPERATE_CACHE = "ota_operate_cache:";
+    String NEW_OTA_OPERATE_CACHE = "new_ota_operate_cache:";
     /**
      * 异常告警导出缓存
      */

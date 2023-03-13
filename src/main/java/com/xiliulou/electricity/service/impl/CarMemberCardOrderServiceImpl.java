@@ -7,6 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.UserCarMemberCardVO;
@@ -78,6 +80,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     ElectricityCarService electricityCarService;
+    
+    @Autowired
+    ElectricityCarService electricityCarService;
+    
+    @Autowired
+    CarDepositOrderService carDepositOrderService;
+    
 
     @Autowired
     CarDepositOrderService carDepositOrderService;
@@ -237,8 +246,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
         if(Objects.nonNull(userCarDeposit)){
             userCarMemberCardVO.setCarDeposit(userCarDeposit.getCarDeposit());
+            //押金时间
+            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+            if (Objects.nonNull(carDepositOrder)) {
+                userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
+            }
         }
-
+    
         //车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
         if (Objects.nonNull(electricityCarModel)) {
@@ -256,7 +270,14 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(store)) {
             userCarMemberCardVO.setStoreName(store.getName());
         }
-
+    
+        //车辆经纬度
+        CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
+        if (Objects.nonNull(carAttr)) {
+            userCarMemberCardVO.setLongitude(carAttr.getLongitude());
+            userCarMemberCardVO.setLatitude(carAttr.getLatitude());
+            userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+        }
         return Triple.of(true, "", userCarMemberCardVO);
     }
 

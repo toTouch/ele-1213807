@@ -36,4 +36,14 @@ public class PayDepositOrderVO {
      * 缴纳押金订单号
      */
     private String orderId;
+    
+    /**
+     * 电池型号
+     */
+    private Integer model;
+    
+    /**
+     * 电池型号
+     */
+    private String batteryType;
 }

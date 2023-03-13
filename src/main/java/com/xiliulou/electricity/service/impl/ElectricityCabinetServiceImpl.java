@@ -21,6 +21,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
@@ -3779,7 +3780,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R checkOtaSession(String sessionId) {
         String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + sessionId);
-        if (StrUtil.isEmpty(s)) {
+        if (StrUtil.isBlank(s)) {
             return R.ok();
         }
         return R.ok(s);
