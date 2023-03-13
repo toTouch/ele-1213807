@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
+import com.xiliulou.electricity.query.JoinShareMoneyActivityHistoryExcelQuery;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
@@ -36,7 +37,9 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 
 	@Update("update t_join_share_money_activity_history set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
 	void updateExpired(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
-    
-    FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(@Param("joinUid") Long joinUid,
-            @Param("tenantId") Integer tenantId);
+	
+	FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(@Param("joinUid") Long joinUid,
+			@Param("tenantId") Integer tenantId);
+	
+	//List<JoinShareMoneyActivityHistoryExcelQuery> queryExportExcel(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 }

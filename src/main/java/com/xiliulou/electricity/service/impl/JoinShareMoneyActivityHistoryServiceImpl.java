@@ -3,12 +3,14 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper;
+import com.xiliulou.electricity.query.JoinShareMoneyActivityHistoryExcelQuery;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -151,30 +154,10 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
         
         jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
         jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
-        List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper
-                .queryList(jsonShareMoneyActivityHistoryQuery);
+		List<JoinShareMoneyActivityHistoryVO> voList = joinShareMoneyActivityHistoryMapper
+				.queryList(jsonShareMoneyActivityHistoryQuery);
         
         return R.ok(voList);
-        
-        //		if(ObjectUtil.isEmpty(voList)){
-        //			return R.ok(voList);
-        //		}
-        //		List<JoinShareMoneyActivityHistoryVO>  joinShareMoneyActivityHistoryVOList=new ArrayList<>();
-        //		for (JoinShareMoneyActivityHistoryVO vo :voList) {
-        //
-        //			JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO=new JoinShareMoneyActivityHistoryVO();
-        //			BeanUtil.copyProperties(vo,joinShareMoneyActivityHistoryVO);
-        //
-        //
-        //			User joinUser=userService.queryByUidFromCache(vo.getJoinUid());
-        //			if(Objects.nonNull(joinUser)){
-        //				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-        //			}
-        //
-        //			joinShareMoneyActivityHistoryVOList.add(joinShareMoneyActivityHistoryVO);
-        //		}
-        //
-        //		return R.ok(joinShareMoneyActivityHistoryVOList);
 	}
 
 	@Override
@@ -204,5 +187,23 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	@Override
 	public FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareMoneyActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
+	}
+	
+	@Override
+	public void queryExportExcel(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery,
+			HttpServletResponse response) {
+		ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService
+				.queryByIdFromDB(jsonShareMoneyActivityHistoryQuery.getId());
+		if (Objects.isNull(shareMoneyActivityRecord)) {
+			throw new CustomBusinessException("查询不到记录");
+		}
+		
+		jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
+		jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
+		jsonShareMoneyActivityHistoryQuery.setOffset(0L);
+		jsonShareMoneyActivityHistoryQuery.setSize(2000L);
+		
+		//List<JoinShareMoneyActivityHistoryExcelQuery> voList = joinShareMoneyActivityHistoryMapper.queryExportExcel(jsonShareMoneyActivityHistoryQuery);
+		//return null;
 	}
 }
