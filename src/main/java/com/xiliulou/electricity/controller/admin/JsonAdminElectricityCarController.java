@@ -292,7 +292,7 @@ public class JsonAdminElectricityCarController {
     /**
      * 迁移车辆查询
      */
-    @GetMapping("/admin/electricityCar/moveCar")
+    @GetMapping("/admin/electricityCar/queryMoveCar")
     public R queryElectricityCarMove(@RequestParam("storeId") Long storeId) {
         return electricityCarService.queryElectricityCarMove(storeId);
     }
