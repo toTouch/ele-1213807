@@ -80,7 +80,7 @@
     
     
     <select id="queryExportExcel" resultType="com.xiliulou.electricity.query.ElectricityCabinetOrderExcelQuery">
-        select uid, jsah.start_time as startTime, jsah.expired_time as expiredTime,
+        select jsah.uid, jsah.start_time as startTime, jsah.expired_time as expiredTime,
         jsah.status as status, tui.phone as join_phone, tui.name as join_name
         from t_join_share_activity_history as jsah
         left join t_user_info as tui on tui.uid = jsah.join_uid

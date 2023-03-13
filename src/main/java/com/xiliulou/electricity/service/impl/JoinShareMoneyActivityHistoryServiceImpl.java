@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
@@ -9,17 +10,20 @@ import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper;
 import com.xiliulou.electricity.query.JoinShareMoneyActivityHistoryExcelQuery;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
+import com.xiliulou.electricity.vo.JoinShareActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -29,8 +33,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,6 +64,9 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
     
     @Autowired
     ShareMoneyActivityRecordService shareMoneyActivityRecordService;
+	
+	@Autowired
+	UserInfoService userInfoService;
 
 
 	/**
@@ -121,18 +133,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
             return R.ok(voList);
         }
         
-        //		List<JoinShareMoneyActivityHistoryVO>  joinShareMoneyActivityHistoryVOList=new ArrayList<>();
-        
         for (JoinShareMoneyActivityHistoryVO vo : voList) {
-            
-            //			JoinShareMoneyActivityHistoryVO joinShareMoneyActivityHistoryVO=new JoinShareMoneyActivityHistoryVO();
-            //			BeanUtil.copyProperties(joinShareMoneyActivityHistory,joinShareMoneyActivityHistoryVO);
-            //
-            //
-            //			User joinUser=userService.queryByUidFromCache(joinShareMoneyActivityHistory.getJoinUid());
-            //			if(Objects.nonNull(joinUser)){
-            //				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-            //			}
             
             ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(vo.getActivityId());
 
@@ -199,20 +200,45 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		if (Objects.isNull(shareMoneyActivityRecord)) {
 			throw new CustomBusinessException("查询不到记录");
 		}
-        
-        List<JoinShareMoneyActivityHistoryExcelVo> voList = new ArrayList<>();
+		
 		jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
 		jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
 		jsonShareMoneyActivityHistoryQuery.setOffset(0L);
 		jsonShareMoneyActivityHistoryQuery.setSize(2000L);
+		
+		List<JoinShareMoneyActivityHistoryExcelVo> voList = new ArrayList<>();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = new Date();
         
         List<JoinShareMoneyActivityHistoryExcelQuery> queryList = joinShareMoneyActivityHistoryMapper
                 .queryExportExcel(jsonShareMoneyActivityHistoryQuery);
         Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
             JoinShareMoneyActivityHistoryExcelVo vo = new JoinShareMoneyActivityHistoryExcelVo();
             vo.setJoinName(item.getJoinName());
-            //vo.setJoinPhone();
+	        vo.setJoinPhone(item.getJoinPhone());
+	        date.setTime(item.getExpiredTime());
+	        vo.setExpiredTime(sdf.format(date));
+	        date.setTime(item.getStartTime());
+	        vo.setStartTime(sdf.format(date));
+	
+	        UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+	        if (Objects.nonNull(userInfo)) {
+		        vo.setName(userInfo.getName());
+		        vo.setPhone(userInfo.getPhone());
+	        }
         });
-        return;
+		
+		String fileName = "邀请返现记录.xlsx";
+		try {
+			ServletOutputStream outputStream = response.getOutputStream();
+			// 告诉浏览器用什么软件可以打开此文件
+			response.setHeader("content-Type", "application/vnd.ms-excel");
+			// 下载文件的默认名称
+			response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+			EasyExcel.write(outputStream, JoinShareMoneyActivityHistoryExcelVo.class).sheet("sheet").doWrite(voList);
+			return;
+		} catch (IOException e) {
+			log.error("导出报表失败！", e);
+		}
 	}
 }

@@ -209,8 +209,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 			}
 			voList.add(vo);
 		});
-		
-		String fileName = "会员列表报表.xlsx";
+        
+        String fileName = "邀请活动记录.xlsx";
 		try {
 			ServletOutputStream outputStream = response.getOutputStream();
 			// 告诉浏览器用什么软件可以打开此文件
