@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
+import com.xiliulou.electricity.query.RentCarDepositQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -227,8 +228,8 @@ public class JsonAdminEleDepositOrderController {
     //缴纳租车押金
     @PostMapping(value = "/admin/eleDepositOrder/carDeposit")
     @Log(title = "缴纳电池押金")
-    public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
-        return eleDepositOrderService.adminPayCarDeposit(rentCarDepositAdd);
+    public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositQuery rentCarDepositQuery) {
+        return eleDepositOrderService.adminPayCarDeposit(rentCarDepositQuery);
     }
     
     
