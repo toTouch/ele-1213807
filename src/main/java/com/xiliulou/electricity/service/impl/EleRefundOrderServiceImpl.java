@@ -431,7 +431,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
             log.error("FREE REFUND ORDER ERROR!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
-            return Triple.of(false, "100403", "免押订单不存在");
+            return Triple.of(false, "ELECTRICITY.0015", "换电订单不存在");
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
