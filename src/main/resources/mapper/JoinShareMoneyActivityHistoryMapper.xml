@@ -27,8 +27,8 @@
             <if test="joinName != null and joinName != ''">
                 and tui.name like concat('%', #{joinName}, '%')
             </if>
-            <if test="startTime != null">
-                and jsah.start_time &gt;= #{startTime}
+            <if test="beginTime != null">
+                and jsah.start_time &gt;= #{beginTime}
             </if>
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
@@ -60,8 +60,8 @@
             <if test="joinName != null and joinName != ''">
                 and tui.name like concat('%', #{joinName}, '%')
             </if>
-            <if test="startTime != null">
-                and jsah.start_time &gt;= #{startTime}
+            <if test="beginTime != null">
+                and jsah.start_time &gt;= #{beginTime}
             </if>
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
@@ -102,8 +102,8 @@
             <if test="joinName != null and joinName != ''">
                 and tui.name like concat('%', #{joinName}, '%')
             </if>
-            <if test="startTime != null">
-                and jsah.start_time &gt;= #{startTime}
+            <if test="beginTime != null">
+                and jsah.start_time &gt;= #{beginTime}
             </if>
             <if test="endTime != null">
                 and jsah.start_time &lt;= #{endTime}
