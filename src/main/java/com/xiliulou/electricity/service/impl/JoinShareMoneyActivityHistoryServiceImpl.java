@@ -220,12 +220,13 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	        vo.setExpiredTime(sdf.format(date));
 	        date.setTime(item.getStartTime());
 	        vo.setStartTime(sdf.format(date));
-	
-	        UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+    
+            UserInfo userInfo = userInfoService.queryByIdFromDB(item.getUid());
 	        if (Objects.nonNull(userInfo)) {
 		        vo.setName(userInfo.getName());
 		        vo.setPhone(userInfo.getPhone());
 	        }
+            voList.add(vo);
         });
 		
 		String fileName = "邀请返现记录.xlsx";

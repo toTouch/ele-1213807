@@ -202,7 +202,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 			date.setTime(item.getExpiredTime());
 			vo.setExpiredTime(sdf.format(date));
 			
-			UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+			UserInfo userInfo = userInfoService.queryByIdFromDB(item.getUid());
 			if (Objects.nonNull(userInfo)) {
 				vo.setName(userInfo.getName());
 				vo.setPhone(userInfo.getPhone());
