@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -52,4 +53,6 @@ public interface JoinShareActivityHistoryService {
     FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
     
     R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+    
+    void queryExportExcel(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery, HttpServletResponse response);
 }
