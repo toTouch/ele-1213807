@@ -48,6 +48,7 @@ public class RentCarDepositAdd {
     /**
      * uid
      */
+    @NotEmpty(message = "用户不能为空!", groups = {CreateGroup.class})
     private Long uid;
 
     /**

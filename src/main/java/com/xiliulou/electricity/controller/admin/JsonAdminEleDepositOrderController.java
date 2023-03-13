@@ -224,12 +224,12 @@ public class JsonAdminEleDepositOrderController {
         return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
     }
     
-    //    //缴纳租车押金
-    //    @PostMapping(value = "/admin/eleDepositOrder/carDeposit")
-    //    @Log(title = "缴纳电池押金")
-    //    public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
-    //        return eleDepositOrderService.adminPayCarDeposit(rentCarDepositAdd);
-    //    }
+    //缴纳租车押金
+    @PostMapping(value = "/admin/eleDepositOrder/carDeposit")
+    @Log(title = "缴纳电池押金")
+    public R carDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
+        return eleDepositOrderService.adminPayCarDeposit(rentCarDepositAdd);
+    }
     
     
     //缴纳租车押金
