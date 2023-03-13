@@ -41,5 +41,6 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 	FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(@Param("joinUid") Long joinUid,
 			@Param("tenantId") Integer tenantId);
 	
-	//List<JoinShareMoneyActivityHistoryExcelQuery> queryExportExcel(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+	List<JoinShareMoneyActivityHistoryExcelQuery> queryExportExcel(
+			JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 }

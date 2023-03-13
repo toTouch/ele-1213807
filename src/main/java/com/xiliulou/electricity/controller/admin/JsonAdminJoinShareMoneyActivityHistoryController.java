@@ -70,7 +70,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
 	}
     
     @GetMapping(value = "/admin/joinShareMoneyActivityHistory/exportExcel")
-    public R queryExportExcel(@RequestParam("id") Long id,
+    public void queryExportExcel(@RequestParam("id") Long id,
             @RequestParam(value = "joinName", required = false) String joinName,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
@@ -78,8 +78,8 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
         JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery
                 .builder().id(id).joinName(joinName).beginTime(beginTime).endTime(endTime).status(status)
                 .tenantId(TenantContextHolder.getTenantId()).build();
-        
-        return joinShareMoneyActivityHistoryService.queryExportExcel(jsonShareMoneyActivityHistoryQuery, response);
+    
+        joinShareMoneyActivityHistoryService.queryExportExcel(jsonShareMoneyActivityHistoryQuery, response);
     }
 }
 

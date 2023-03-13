@@ -20,6 +20,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
+import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 参与邀请活动记录(JoinShareActivityHistory)表服务实现类
@@ -197,13 +199,20 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		if (Objects.isNull(shareMoneyActivityRecord)) {
 			throw new CustomBusinessException("查询不到记录");
 		}
-		
+        
+        List<JoinShareMoneyActivityHistoryExcelVo> voList = new ArrayList<>();
 		jsonShareMoneyActivityHistoryQuery.setUid(shareMoneyActivityRecord.getUid());
 		jsonShareMoneyActivityHistoryQuery.setActivityId(shareMoneyActivityRecord.getActivityId());
 		jsonShareMoneyActivityHistoryQuery.setOffset(0L);
 		jsonShareMoneyActivityHistoryQuery.setSize(2000L);
-		
-		//List<JoinShareMoneyActivityHistoryExcelQuery> voList = joinShareMoneyActivityHistoryMapper.queryExportExcel(jsonShareMoneyActivityHistoryQuery);
-		//return null;
+        
+        List<JoinShareMoneyActivityHistoryExcelQuery> queryList = joinShareMoneyActivityHistoryMapper
+                .queryExportExcel(jsonShareMoneyActivityHistoryQuery);
+        Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
+            JoinShareMoneyActivityHistoryExcelVo vo = new JoinShareMoneyActivityHistoryExcelVo();
+            vo.setJoinName(item.getJoinName());
+            //vo.setJoinPhone();
+        });
+        return;
 	}
 }
