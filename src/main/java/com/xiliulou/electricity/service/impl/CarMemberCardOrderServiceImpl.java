@@ -82,13 +82,6 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     ElectricityCarService electricityCarService;
     
     @Autowired
-    ElectricityCarService electricityCarService;
-    
-    @Autowired
-    CarDepositOrderService carDepositOrderService;
-    
-
-    @Autowired
     CarDepositOrderService carDepositOrderService;
 
     /**
