@@ -83,7 +83,35 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
-     * 电池免押套餐、保险混合支付
+     * 电池车辆押金免押的前置检查
+     *
+     * @return
+     */
+    @GetMapping("/user/free/carBatteryDeposit/pre/check")
+    public R freeCarBatteryDepositPreCheck() {
+        return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositPreCheck());
+    }
+
+    /**
+     * 电池车辆免押订单
+     *
+     * @return
+     */
+    @PostMapping("/user/free/carBatteryDeposit/order")
+    public R freeCarBatteryDepositOrder(@RequestBody @Validated FreeCarBatteryDepositQuery freeCarBatteryDepositQuery) {
+        return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositOrder(freeCarBatteryDepositQuery));
+    }
+
+    /**
+     * 查询电池车辆免押订单状态
+     */
+    @GetMapping("/user/free/carBatteryDeposit/order/status")
+    public R freeCarBatteryDepositOrderStatus() {
+        return returnTripleResult(freeDepositOrderService.acquireFreeCarBatteryDepositStatus());
+    }
+
+    /**
+     * 电池免押混合支付
      */
     @PostMapping("/user/freeBatteryDeposit/hybridOrder")
     public R freeBatteryDepositHybridOrder(@RequestBody @Validated FreeBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
@@ -91,19 +119,22 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
-     * 车辆免押 套餐混合支付
-     */
-//    @PostMapping("/user/freeCarDeposit/hybridOrder")
-//    public R freeCarDepositHybridOrder(@RequestBody @Validated FreeCarDepositHybridOrderQuery query, HttpServletRequest request) {
-//        return returnTripleResult(freeDepositOrderService.freeCarDepositHybridOrder(query, request));
-//    }
-
-    /**
-     * 车辆&电池免押混合支付
+     * 车辆免押混合支付
      */
     @PostMapping("/user/freeCarDeposit/hybridOrder")
-    public R freeCarBatteryDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
+    public R freeCarDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request) {
         return returnTripleResult(freeDepositOrderService.freeCarBatteryDepositHybridOrder(query, request));
+    }
+
+    /**
+     * 电池车辆免押混合支付
+     */
+    /**
+     * 车辆免押混合支付
+     */
+    @PostMapping("/user/freeBatteryCarDeposit/hybridOrder")
+    public R freeBatteryCarDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositOrderQuery query, HttpServletRequest request) {
+        return returnTripleResult(freeDepositOrderService.freeCarBatteryCarDepositHybridOrder(query, request));
     }
 
 }
