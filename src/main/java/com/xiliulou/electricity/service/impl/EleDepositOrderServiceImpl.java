@@ -1666,8 +1666,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     rentCarDepositQuery.getFranchiseeId(), userInfo.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-        
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+    
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR DEPOSIT ERROR! user is rent deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
