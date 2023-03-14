@@ -138,9 +138,6 @@
         <if test="tenantId != null ">
             and tec.tenant_id = #{tenantId}
         </if>
-        <if test="distance != null">
-            having distance &lt; #{distance}
-        </if>
         order by distance asc
         limit #{offset}, #{size}
     </select>

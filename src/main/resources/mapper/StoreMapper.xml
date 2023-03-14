@@ -310,9 +310,6 @@
         <if test="address != null and address != ''">
             and address like concat('%',#{address},'%')
         </if>
-        <if test="distance != null">
-            having distance &lt; #{distance}
-        </if>
         order by distance asc
         limit #{offset}, #{size}
     </select>
