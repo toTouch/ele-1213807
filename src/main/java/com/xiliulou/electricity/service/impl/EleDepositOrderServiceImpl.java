@@ -1734,6 +1734,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         userCarDeposit.setCreateTime(System.currentTimeMillis());
         userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setUpdateTime(System.currentTimeMillis());
+        userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_DEFAULT);
         userCarDepositService.insertOrUpdate(userCarDeposit);
         
         UserCar userCar = new UserCar();
