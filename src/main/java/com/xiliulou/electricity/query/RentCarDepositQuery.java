@@ -27,13 +27,13 @@ public class RentCarDepositQuery {
     /**
      * 加盟商Id
      */
-    @NotNull(message = "加盟商id不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "加盟商id不能为空!", groups = {CreateGroup.class})
     private Long franchiseeId;
     
     /**
      * uid
      */
-    @NotEmpty(message = "用户不能为空!", groups = {CreateGroup.class})
+    @NotNull(message = "用户不能为空!", groups = {CreateGroup.class})
     private Long uid;
     
     /**
@@ -41,12 +41,6 @@ public class RentCarDepositQuery {
      */
     @NotNull(message = "押金不能为空!", groups = {CreateGroup.class})
     private BigDecimal payAmount;
-    
-    //    /**
-    //     * 门店Id
-    //     */
-    //    @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
-    //    private Long storeId;
     
     /**
      * 车辆型号Id
