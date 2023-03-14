@@ -85,8 +85,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id, electricityCarModel);
         return electricityCarModel;
     }
-
-
+    
+    @Override
+    public Integer insert(ElectricityCarModel electricityCarModel) {
+        return electricityCarModelMapper.insert(electricityCarModel);
+    }
+    
+    
     @Override
     @Transactional
     public R save(ElectricityCarModelQuery query) {
@@ -360,7 +365,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
         return Triple.of(true, "", null);
     }
-
+    
+    @Override
+    public ElectricityCarModel queryByNameAndStoreId(String name, Long storeId) {
+        return electricityCarModelMapper.queryByNameAndStoreId(name, storeId);
+    }
+    
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());

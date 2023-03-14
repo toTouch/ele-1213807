@@ -93,6 +93,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     StoreService storeService;
+    
+    @Autowired
+    FranchiseeService franchiseeService;
 
 
     /**
@@ -401,6 +404,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.ok();
         }
     
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", franchisee.getId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+    
         List<ElectricityCar> queryList = electricityCarMapper
                 .queryModelIdBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
                         TenantContextHolder.getTenantId());
@@ -414,7 +423,34 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
                 .collect(Collectors.groupingBy(ElectricityCar::getModelId));
         collect.forEach((k, v) -> {
-        
+            ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(k);
+            if (Objects.isNull(electricityCarModel)) {
+                log.error("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
+                return;
+            }
+    
+            ElectricityCarModel targetCarModel = electricityCarModelService
+                    .queryByNameAndStoreId(electricityCarModel.getName(), targetStore.getId());
+            if (Objects.isNull(targetCarModel)) {
+                targetCarModel = new ElectricityCarModel();
+                BeanUtil.copyProperties(electricityCarModel, targetCarModel);
+                targetCarModel.setFranchiseeId(franchisee.getId());
+                targetCarModel.setStoreId(targetStore.getId());
+                targetCarModel.setUpdateTime(System.currentTimeMillis());
+                targetCarModel.setCreateTime(System.currentTimeMillis());
+                electricityCarModelService.insert(targetCarModel);
+            }
+    
+            Integer targetCarModelId = targetCarModel.getId();
+    
+            Optional.ofNullable(v).orElse(new ArrayList<>()).parallelStream().forEach(item -> {
+                ElectricityCar updateElectricityCar = new ElectricityCar();
+                updateElectricityCar.setId(item.getId());
+                updateElectricityCar.setModelId(targetCarModelId);
+                updateElectricityCar.setStoreId(targetStore.getId());
+                updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+                this.update(updateElectricityCar);
+            });
         });
     
         return R.ok();
