@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.entity.BatteryGeo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.BatteryGeoMapper;
@@ -132,8 +133,13 @@ public class BatteryGeoServiceImpl implements BatteryGeoService {
             return Triple.of(true, null, Collections.emptyList());
         }
         
-        return Triple.of(true, null, batteryGeoMapper.queryAllList(franchiseeIds,GeoHashUtil.getGeoHashBase32For9(lat, lon, length),
-                TenantContextHolder.getTenantId(), lat, lon, size));
+        List<String> geoHashBase32For9 = GeoHashUtil.getGeoHashBase32For9(lat, lon, length);
+        if (!DataUtil.collectionIsUsable(geoHashBase32For9)) {
+            return Triple.of(true, null, Collections.emptyList());
+        }
+        
+        return Triple.of(true, null,
+                batteryGeoMapper.queryAllList(franchiseeIds,geoHashBase32For9 , TenantContextHolder.getTenantId(), lat, lon, size));
     }
     
     @Override
