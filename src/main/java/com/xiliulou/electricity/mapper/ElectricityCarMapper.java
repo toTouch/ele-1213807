@@ -43,7 +43,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<ElectricityCarMoveVo> queryEnableMoveCarByStoreId(@Param("storeId") Long storeId,
             @Param("tenantId") Integer tenantId);
     
-    List<Long> queryIdsBySidAndIds(@Param("carIds") List<Long> carIds, @Param("sid") Long sid,
+    List<ElectricityCar> queryModelIdBySidAndIds(@Param("carIds") List<Long> carIds, @Param("sid") Long sid,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId);
     
     Integer updateStoreIdByIds(@Param("sid") Long sid, @Param("carIds") List<Long> carIds,

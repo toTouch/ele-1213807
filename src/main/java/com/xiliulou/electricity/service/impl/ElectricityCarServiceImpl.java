@@ -400,18 +400,23 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 .equals(sourceStore.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-        
-        List<Long> queryList = electricityCarMapper
-                .queryIdsBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
+    
+        List<ElectricityCar> queryList = electricityCarMapper
+                .queryModelIdBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
                         TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(queryList) || queryList.size() != carIds.size()) {
             log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars！carIds={}", carIds);
             return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
         }
+    
+        //        electricityCarMapper.updateStoreIdByIds(targetStore.getId(), carIds, System.currentTimeMillis(),
+        //                TenantContextHolder.getTenantId());
+        Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
+                .collect(Collectors.groupingBy(ElectricityCar::getModelId));
+        collect.forEach((k, v) -> {
         
-        electricityCarMapper.updateStoreIdByIds(targetStore.getId(), carIds, System.currentTimeMillis(),
-                TenantContextHolder.getTenantId());
-        
+        });
+    
         return R.ok();
     }
     
