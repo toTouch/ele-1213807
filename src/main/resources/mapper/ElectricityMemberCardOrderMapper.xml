@@ -119,6 +119,9 @@
         <if test="query.franchiseeId != null">
             and tel.franchisee_id = #{query.franchiseeId}
         </if>
+        <if test="query.cardPayCount != null">
+            and tel.pay_count =#{query.cardPayCount}
+        </if>
     </select>
 
 
