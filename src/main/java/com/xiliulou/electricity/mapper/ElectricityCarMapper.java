@@ -46,6 +46,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<Long> queryIdsBySidAndIds(@Param("carIds") List<Long> carIds, @Param("sid") Long sid,
             @Param("status") Integer status, @Param("tenantId") Integer tenantId);
     
-    Integer updateStoreIdByIds(@Param("id") Long id, @Param("carIds") List<Long> carIds,
+    Integer updateStoreIdByIds(@Param("sid") Long sid, @Param("carIds") List<Long> carIds,
             @Param("updateTime") Long updateTime, @Param("tenantId") Integer tenantId);
 }
