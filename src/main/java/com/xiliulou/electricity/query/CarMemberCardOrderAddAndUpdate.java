@@ -24,19 +24,19 @@ public class CarMemberCardOrderAddAndUpdate {
     @NotNull(message = "用户id不能为空!")
     private Long uid;
     
-    /**
-     * 车辆型号
-     */
-    @NotNull(message = "车辆型号不能为空!")
-    private Integer carModelId;
+    //    /**
+    //     * 车辆型号
+    //     */
+    //    @NotNull(message = "车辆型号不能为空!")
+    //    private Integer carModelId;
     
-    /**
-     * 租赁方式
-     */
-    private String rentType;
-    
-    /**
-     * 周期
-     */
-    private Integer validDays;
+    //    /**
+    //     * 租赁方式
+    //     */
+    //    private String rentType;
+    //
+    //    /**
+    //     * 周期
+    //     */
+    //    private Integer validDays;
 }
