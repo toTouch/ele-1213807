@@ -1546,8 +1546,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
     
         //用户从未买过车辆套餐则可直接换电
-        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime())) {
-            return Triple.of(true, null, null);
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime()) || Objects
+                .equals(userCarMemberCard.getMemberCardExpireTime(), 0L)) {
+            return Triple.of(false, "100232", "未购买租车套餐");
         }
         
         //套餐是否可用
@@ -1555,7 +1556,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (userCarMemberCard.getMemberCardExpireTime() < now) {
             log.error("ORDER ERROR! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
                     userCarMemberCard.getCardId());
-            return Triple.of(false, "100212", "用户租车套餐已过期");
+            return Triple.of(false, "100233", "租车套餐已过期");
         }
         return Triple.of(true, null, null);
     }

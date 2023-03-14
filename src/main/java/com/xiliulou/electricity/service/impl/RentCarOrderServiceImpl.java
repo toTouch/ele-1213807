@@ -592,7 +592,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //用户未开通套餐可直接租车
         if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
                 || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            return Triple.of(true, "", "");
+            return Triple.of(false, "100210", "用户未购买套餐");
         }
         
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
