@@ -2367,7 +2367,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     private void batteryFreeDepositRefundingOrder() {
         int offset = 0;
-        Long timeFlag = System.currentTimeMillis() + 300 * 1000L;
+        long timeFlag = System.currentTimeMillis() + 300 * 1000L;
         while (System.currentTimeMillis() < timeFlag) {
 
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectBatteryFreeDepositRefundingOrder(offset, REFUND_ORDER_LIMIT);
@@ -2413,6 +2413,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 this.update(freeDepositOrderUpdate);
 
                 UserInfo updateUserInfo = new UserInfo();
+
+                //如果车电一起免押，解绑用户车辆信息
+                if(Objects.equals(freeDepositOrder.getDepositType(),FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)){
+                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+
+                    userCarService.deleteByUid(freeDepositOrder.getUid());
+
+                    userCarDepositService.logicDeleteByUid(freeDepositOrder.getUid());
+
+                    userCarMemberCardService.deleteByUid(freeDepositOrder.getUid());
+                }
+
                 updateUserInfo.setUid(freeDepositOrder.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -2434,7 +2446,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     private void carFreeDepositRefundingOrder() {
         int offset = 0;
-        Long timeFlag = System.currentTimeMillis() + 300 * 1000L;
+        long timeFlag = System.currentTimeMillis() + 300 * 1000L;
         while (System.currentTimeMillis() < timeFlag) {
             List<EleRefundOrder> eleRefundOrders = eleRefundOrderService.selectCarFreeDepositRefundingOrder(offset, REFUND_ORDER_LIMIT);
             offset += REFUND_ORDER_LIMIT;
@@ -2479,6 +2491,22 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 this.update(freeDepositOrderUpdate);
 
                 UserInfo updateUserInfo = new UserInfo();
+
+                //车辆电池一起免押，退押金解绑用户电池信息
+                if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+
+                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(freeDepositOrder.getUid());
+                    userBatteryDepositService.logicDeleteByUid(freeDepositOrder.getUid());
+                    userBatteryService.deleteByUid(freeDepositOrder.getUid());
+
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(freeDepositOrder.getUid());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    }
+                }
+
                 updateUserInfo.setUid(freeDepositOrder.getUid());
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
