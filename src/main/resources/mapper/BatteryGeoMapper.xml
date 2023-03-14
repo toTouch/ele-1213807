@@ -124,7 +124,7 @@
                 geohash like concat(#{i},'%')
             </foreach>
             <if test="size != null">
-                and st_distance_sphere(st_geomfromtext(concat('point(',#{lon},' ',#{lat},')')),gis) &lt; #{size};
+                and st_distance_sphere(st_geomfromtext(concat('point(',#{lon},' ',#{lat},')')),gis) &lt; #{size}
             </if>
             <if test="franchiseeIds != null">
                 and franchisee_id in
