@@ -1728,10 +1728,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         UserCarDeposit userCarDeposit = new UserCarDeposit();
         userCarDeposit.setUid(userInfo.getUid());
+        userCarDeposit.setDid(carDepositOrder.getId());
         userCarDeposit.setOrderId(orderId);
         userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
-        userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setCreateTime(System.currentTimeMillis());
+        userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setUpdateTime(System.currentTimeMillis());
         userCarDepositService.insertOrUpdate(userCarDeposit);
         
