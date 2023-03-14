@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FreeDepositData;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * (FreeDepositData)表数据库访问层
@@ -66,4 +65,6 @@ public interface FreeDepositDataMapper extends BaseMapper<FreeDepositData> {
     int deleteById(Long id);
 
     FreeDepositData selectByTenantId(@Param("tenantId") Integer tenantId);
+
+    Integer deductionFreeDepositCapacity(@Param("tenantId") Integer tenantId, @Param("count") Integer count);
 }

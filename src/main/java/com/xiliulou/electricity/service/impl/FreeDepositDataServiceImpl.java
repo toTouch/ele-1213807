@@ -6,19 +6,15 @@ import com.xiliulou.electricity.mapper.FreeDepositDataMapper;
 import com.xiliulou.electricity.query.FreeDepositDataQuery;
 import com.xiliulou.electricity.service.FreeDepositDataService;
 import com.xiliulou.electricity.service.FreeDepositRechargeRecordService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (FreeDepositData)表服务实现类
@@ -111,6 +107,11 @@ public class FreeDepositDataServiceImpl implements FreeDepositDataService {
     @Override
     public FreeDepositData selectByTenantId(Integer tenantId) {
         return this.freeDepositDataMapper.selectByTenantId(tenantId);
+    }
+
+    @Override
+    public Integer deductionFreeDepositCapacity(Integer tenantId, Integer count) {
+        return this.freeDepositDataMapper.deductionFreeDepositCapacity(tenantId, count);
     }
 
     @Override

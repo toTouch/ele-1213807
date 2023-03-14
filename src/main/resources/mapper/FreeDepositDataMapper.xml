@@ -100,4 +100,10 @@
         where tenant_id = #{tenantId} and del_flag =0
     </select>
 
+
+    <!--扣减免押次数-->
+    <update id="deductionFreeDepositCapacity">
+        update t_free_deposit_data set free_deposit_capacity = freeDepositCapacity-#{count}   where tenantId = #{tenantId}
+    </update>
+
 </mapper>

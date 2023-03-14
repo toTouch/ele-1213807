@@ -66,4 +66,11 @@ public interface FreeDepositDataService {
     FreeDepositData selectByTenantId(Integer tenantId);
 
     Triple<Boolean, String, Object> recharge(FreeDepositDataQuery freeDepositDataQuery);
+
+    /**
+     * 扣减次数
+     *
+     * @return
+     */
+    Integer deductionFreeDepositCapacity(Integer tenantId, Integer count);
 }

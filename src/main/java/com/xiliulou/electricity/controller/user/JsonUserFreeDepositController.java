@@ -47,7 +47,7 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
-     * 查询电池免押订单
+     * 查询电池免押是否成功
      */
     @GetMapping("/user/free/batteryDeposit/order/status")
     public R freeBatteryDepositOrderStatus() {
@@ -75,7 +75,7 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
-     * 查询车辆免押订单状态
+     * 查询车辆免押是否成功
      */
     @GetMapping("/user/free/carDeposit/order/status")
     public R freeCarDepositOrderStatus() {
@@ -103,7 +103,7 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
-     * 查询电池车辆免押订单状态
+     * 查询电池车辆免押是否成功
      */
     @GetMapping("/user/free/carBatteryDeposit/order/status")
     public R freeCarBatteryDepositOrderStatus() {
@@ -128,9 +128,6 @@ public class JsonUserFreeDepositController extends BaseController {
 
     /**
      * 电池车辆免押混合支付
-     */
-    /**
-     * 车辆免押混合支付
      */
     @PostMapping("/user/freeBatteryCarDeposit/hybridOrder")
     public R freeBatteryCarDepositHybridOrder(@RequestBody @Validated FreeCarBatteryDepositOrderQuery query, HttpServletRequest request) {
