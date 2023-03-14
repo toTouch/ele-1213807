@@ -23,16 +23,14 @@
         tel.coupon_id ,
         tel.source ,
         tel.ref_id ,
-        ubmc.card_pay_count,
         tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
 
         LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
-        LEFT JOIN t_user_battery_member_card ubmc on tui.uid = ubmc.uid
         WHERE 0= 0
         <if test="query.cardPayCount != null">
-            and ubmc.card_pay_count =#{query.cardPayCount}
+            and tel.pay_count =#{query.cardPayCount}
         </if>
         <if test="query.franchiseeId != null">
             and tel.franchisee_id = #{query.franchiseeId}
@@ -81,7 +79,6 @@
         select COUNT(1)
         from t_electricity_member_card_order tel
         LEFT JOIN t_user_info tui on tui.uid = tel.uid
-        LEFT JOIN t_user_battery_member_card ubmc on tui.uid = ubmc.uid
         WHERE 0= 0
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
@@ -121,9 +118,6 @@
         </if>
         <if test="query.franchiseeId != null">
             and tel.franchisee_id = #{query.franchiseeId}
-        </if>
-        <if test="query.cardPayCount != null">
-            and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
     </select>
 
