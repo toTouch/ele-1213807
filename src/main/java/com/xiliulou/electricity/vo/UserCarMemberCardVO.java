@@ -30,6 +30,7 @@ public class UserCarMemberCardVO {
      * 车辆型号
      */
     private String carModelName;
+    
     private Long carModelId;
     /**
      * 套餐类型
@@ -59,6 +60,24 @@ public class UserCarMemberCardVO {
      * 车辆押金
      */
     private BigDecimal carDeposit;
-
+    
+    /**
+     * 车辆押金缴纳时间
+     */
+    private Long payDepositTime;
+    /**
+     * 地址经度
+     */
+    private Double longitude;
+    
+    /**
+     * 地址纬度
+     */
+    private Double latitude;
+    
+    /**
+     * 地址更新时间
+     */
+    private Long pointUpdateTime;
 
 }

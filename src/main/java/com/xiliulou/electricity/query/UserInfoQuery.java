@@ -59,6 +59,10 @@ public class UserInfoQuery {
     private Integer batteryRentStatus;
 
     private Integer batteryDepositStatus;
+    
+    private Long userCreateBeginTime;
+    
+    private Long userCreateEndTime;
 
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     public static final Integer SORT_TYPE_AUTH_TIME = 1;

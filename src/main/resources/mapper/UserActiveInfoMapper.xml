@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserActiveInfoMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.UserActiveInfo" id="UserActiveInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="activeTime" column="active_time" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserActiveInfoMap">
+        select
+          id, active_time, uid, phone, tenant_id, create_time, update_time, user_name
+        from t_user_active_info
+        where id = #{id}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="UserActiveInfoMap">
+        select
+          id, active_time, uid, phone, tenant_id, create_time, update_time, user_name
+        from t_user_active_info
+        limit #{offset}, #{limit}
+    </select>
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="UserActiveInfoMap">
+        select
+        id, active_time, uid, phone, tenant_id, create_time, update_time,user_name
+        from t_user_active_info
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="activeTime != null">
+                and active_time = #{activeTime}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+        </where>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_active_info(active_time, uid, phone, tenant_id, create_time, update_time, user_name)
+        values (#{activeTime}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_user_active_info
+        <set>
+            <if test="activeTime != null">
+                active_time = #{activeTime},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_user_active_info where id = #{id}
+    </delete>
+    
+    
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_user_active_info(active_time, uid, phone, tenant_id, create_time, update_time, user_name)
+        values (#{activeTime}, #{uid}, #{phone}, #{tenantId}, #{createTime}, #{updateTime}, #{userName})
+        on duplicate key
+        update active_time=#{activeTime}, uid=#{uid},phone=#{phone}, update_time=#{updateTime}, user_name = #{userName}
+    </insert>
+    
+    <select id="queryByUId" resultMap="UserActiveInfoMap">
+        select
+          id, active_time,  uid, phone, tenant_id, create_time, update_time , user_name
+        from t_user_active_info
+        where uid = #{uid}
+    </select>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.UserActiveInfoVo">
+        select
+        uai.id, uai.uid, uai.active_time, uai.phone, uai.user_name,
+        eb.sn as battery_sn, ubmc.card_pay_count as pay_count
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on ui.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        <where>
+            ui.del_flag = 0
+            <if test="phone != null and phone != ''">
+                and uai.phone = #{phone}
+            </if>
+            <if test="userName != null and userName != ''">
+                and uai.user_name = #{userName}
+            </if>
+            <if test="batterySn != null and batterySn != ''">
+                and eb.sn = #{batterySn}
+            </if>
+            <if test="payCount != null">
+                and ubmc.card_pay_count = #{payCount}
+            </if>
+            <if test="limitTime != null">
+                and uai.active_time &lt;= #{limitTime}
+            </if>
+            <if test="tenantId != null">
+                and uai.tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by uai.active_time
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="queryCount" resultType="long">
+        select
+        count(*)
+        from t_user_info ui
+        left join t_user_active_info uai on ui.uid = uai.uid
+        left join t_electricity_battery eb on ui.uid = eb.uid
+        left join t_user_battery_member_card ubmc on ubmc.uid = ui.uid
+        <where>
+            ui.del_flag = 0
+            <if test="phone != null and phone != ''">
+                and uai.phone = #{phone}
+            </if>
+            <if test="userName != null and userName != ''">
+                and uai.user_name = #{userName}
+            </if>
+            <if test="batterySn != null and batterySn != ''">
+                and eb.sn = #{batterySn}
+            </if>
+            <if test="payCount != null">
+                and ubmc.card_pay_count = #{payCount}
+            </if>
+            <if test="limitTime != null">
+                and uai.active_time &lt;= #{limitTime}
+            </if>
+            <if test="tenantId != null">
+                and uai.tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -121,28 +122,6 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		List<JoinShareActivityHistoryVO> joinShareActivityHistoryVOList = joinShareActivityHistoryMapper
 				.queryList(jsonShareActivityHistoryQuery);
         return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
-        
-        //		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
-        //			return R.ok(joinShareActivityHistoryList);
-        //		}
-        //
-        //		List<JoinShareActivityHistoryVO>  joinShareActivityHistoryVOList=new ArrayList<>();
-        //
-        //		for (JoinShareActivityHistory joinShareActivityHistory:joinShareActivityHistoryList) {
-        //
-        //			JoinShareActivityHistoryVO joinShareActivityHistoryVO=new JoinShareActivityHistoryVO();
-        //			BeanUtil.copyProperties(joinShareActivityHistory,joinShareActivityHistoryVO);
-        //
-        //
-        //			User joinUser=userService.queryByUidFromCache(joinShareActivityHistory.getJoinUid());
-        //			if(Objects.nonNull(joinUser)){
-        //				joinShareActivityHistoryVO.setJoinPhone(joinUser.getPhone());
-        //			}
-        //
-        //			joinShareActivityHistoryVOList.add(joinShareActivityHistoryVO);
-        //		}
-        //
-        //		return R.ok(joinShareActivityHistoryVOList);
 	}
 
 	@Override
@@ -154,6 +133,24 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	public void updateExpired(JoinShareActivityHistory joinShareActivityHistory) {
 		joinShareActivityHistoryMapper.updateExpired(joinShareActivityHistory);
 	}
-
-
+	
+	@Override
+	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
+		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
+	}
+	
+	@Override
+	public R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService
+				.queryByIdFromDB(jsonShareActivityHistoryQuery.getId());
+		if (Objects.isNull(shareActivityRecord)) {
+			return R.failMsg("未查询到相关邀请记录");
+		}
+		
+		jsonShareActivityHistoryQuery.setActivityId(shareActivityRecord.getActivityId());
+		jsonShareActivityHistoryQuery.setUid(shareActivityRecord.getUid());
+		
+		Long count = joinShareActivityHistoryMapper.queryCount(jsonShareActivityHistoryQuery);
+		return R.ok(count);
+	}
 }

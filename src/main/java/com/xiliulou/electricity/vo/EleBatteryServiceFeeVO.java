@@ -42,5 +42,7 @@ public class EleBatteryServiceFeeVO {
     private Integer model;
 
     private Integer memberCardStatus;
+    
+    private String batteryType;
 
 }

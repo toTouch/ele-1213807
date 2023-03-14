@@ -25,5 +25,7 @@ public class UserInfoExcelVO {
 	private String memberCardExpireTime;
 	@ExcelProperty("押金")
 	private BigDecimal batteryDeposit;
-
+	
+	@ExcelProperty("邀请人")
+	private String inviterUserName;
 }

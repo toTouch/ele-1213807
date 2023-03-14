@@ -98,6 +98,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Autowired
+    UserActiveInfoService userActiveInfoService;
 
 
     /**
@@ -411,6 +414,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     }
                 }
             }*/
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             String orderId = generateOrderId(user.getUid(), cellNo);
 
@@ -653,6 +659,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             String cellNo = usableEmptyCellNo.getRight().toString();
 
             String orderId = generateOrderId(user.getUid(), cellNo);
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())

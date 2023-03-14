@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -35,6 +36,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -136,6 +138,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     @Autowired
     CarDepositOrderService carDepositOrderService;
+    
+    @Autowired
+    JoinShareActivityHistoryService joinShareActivityHistoryService;
+    
+    @Autowired
+    JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
@@ -324,8 +332,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
-
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance);
+    
+        //用户邀请人
+        CompletableFuture<Void> queryInviterUser = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.forEach(item -> {
+                if (Objects.isNull(item.getUid())) {
+                    return;
+                }
+    
+                item.setInviterUserName(queryFinalInviterUserName(item.getUid(), item.getTenantId()));
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+    
+        CompletableFuture<Void> resultFuture = CompletableFuture
+                .allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance, queryInviterUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -1725,15 +1748,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityCarService.update(updateElectricityCar);
     
             //生成后台操作记录
-            //            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
-            //                    .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(
-            //                            Objects.nonNull(userBindElectricityCar) ? EleUserOperateRecord.EDIT_CAR_CONTENT
-            //                                    : EleUserOperateRecord.BIND_CAR_CONTENT).operateUid(user.getUid())
-            //                    .uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).name(user.getUsername())
-            //                    .initElectricityCarSn(Objects.nonNull(userBindElectricityCar) ? userBindElectricityCar.getSn() : "")
-            //                    .newElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
-            //                    .updateTime(System.currentTimeMillis()).build();
-            //            eleUserOperateRecordService.insert(eleUserOperateRecord);
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(
+                            Objects.nonNull(userBindElectricityCar) ? EleUserOperateRecord.EDIT_CAR_CONTENT
+                                    : EleUserOperateRecord.BIND_CAR_CONTENT).operateUid(user.getUid())
+                    .uid(userInfo.getUid()).tenantId(TenantContextHolder.getTenantId()).name(user.getUsername())
+                    .initElectricityCarSn(Objects.nonNull(userBindElectricityCar) ? userBindElectricityCar.getSn() : "")
+                    .newElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
             
             return null;
         });
@@ -1801,13 +1824,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateByUid(updateUserInfo);
     
         //        生成后台操作记录
-        //        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
-        //                .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
-        //                .operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
-        //                .initElectricityCarSn(electricityCar.getSn()).newElectricityCarSn(null)
-        //                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
-        //                .updateTime(System.currentTimeMillis()).build();
-        //        eleUserOperateRecordService.insert(eleUserOperateRecord);
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.CAR_MODEL).operateContent(EleUserOperateRecord.UN_BIND_CAR_CONTENT)
+                .operateUid(user.getUid()).uid(userInfo.getUid()).name(user.getUsername())
+                .initElectricityCarSn(electricityCar.getSn()).newElectricityCarSn(null)
+                .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
         return R.ok();
     }
     
@@ -2044,13 +2067,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             excelVo.setBatteryDeposit(Objects.nonNull(userBatteryDeposit) ? userBatteryDeposit.getBatteryDeposit() : BigDecimal.valueOf(0));
             excelVo.setCardName(Objects.nonNull(electricityMemberCard) ? electricityMemberCard.getName() : "");
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
-            userInfoExcelVOS.add(excelVo);
-
-
+            excelVo.setInviterUserName(
+                    queryFinalInviterUserName(userBatteryInfoVO.getUid(), userBatteryInfoVO.getTenantId()));
+            
             if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime()) && !Objects.equals(userBatteryInfoVO.getMemberCardExpireTime(),NumberConstant.ZERO_L)) {
                 excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
             }
-
+    
+            userInfoExcelVOS.add(excelVo);
         }
 
         String fileName = "会员列表报表.xlsx";
@@ -2066,5 +2090,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("导出报表失败！", e);
         }
 
+    }
+    
+    
+    private String queryFinalInviterUserName(Long uid, Integer tenantId) {
+        FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
+                .queryFinalHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(finalJoinShareActivityHistoryVo)) {
+            return finalJoinShareActivityHistoryVo.getUserName();
+        }
+        
+        FinalJoinShareMoneyActivityHistoryVo finalJoinShareMoneyActivityHistoryVo = joinShareMoneyActivityHistoryService
+                .queryFinalHistoryByJoinUid(uid, tenantId);
+        if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
+            return finalJoinShareMoneyActivityHistoryVo.getUserName();
+        }
+        
+        return null;
     }
 }

@@ -28,5 +28,6 @@ public interface EleDisableMemberCardRecordService {
     List<EleDisableMemberCardRecord> queryDisableCardExpireRecord(Integer offset, Integer size, Long nowTime);
 
     int updateBYId(EleDisableMemberCardRecord eleDisableMemberCardRecord);
-
+    
+    EleDisableMemberCardRecord queryByDisableMemberCardNo(String disableMemberCardNo, Integer tenantId);
 }

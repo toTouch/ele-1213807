@@ -93,6 +93,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     UserBatteryService userBatteryService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    UserActiveInfoService userActiveInfoService;
 
     /**
      * 修改数据
@@ -389,6 +392,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0020", "未找到电池");
             }
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             //3.根据用户查询旧电池
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
@@ -1438,16 +1444,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!modifyResult.getLeft()) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
-
+    
+            ElectricityCabinetBox electricityCabinetBox = (ElectricityCabinetBox) usableBatteryCellNoResult.getRight();
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-
+    
+            ElectricityBattery electricityBatteryBox = electricityBatteryService
+                    .queryBySnFromDb(electricityCabinetBox.getSn(), TenantContextHolder.getTenantId());
+    
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                     .orderId(generateExchangeOrderId(user.getUid()))
                     .uid(user.getUid())
                     .phone(userInfo.getPhone())
                     .electricityCabinetId(orderQuery.getEid())
                     .oldCellNo(usableEmptyCellNo.getRight())
-                    .newCellNo(Integer.parseInt(((ElectricityCabinetBox) usableBatteryCellNoResult.getRight()).getCellNo()))
+                    .newCellNo(Integer.parseInt(electricityCabinetBox.getCellNo()))
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT)
                     .status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource())
@@ -1462,8 +1472,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
-
-
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
+            
             HashMap<String, Object> commandData = Maps.newHashMap();
             commandData.put("orderId", electricityCabinetOrder.getOrderId());
             commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());

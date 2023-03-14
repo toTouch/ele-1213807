@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper">
-
+    
     <!--通过实体作为筛选条件查询-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO">
         select
@@ -43,5 +43,15 @@
                 and jsah.tenant_id = #{tenantId}
             </if>
         </where>
+    </select>
+    
+    <select id="queryFinalHistoryByJoinUid"
+        resultType="com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo">
+        select jsah.uid, tui.name as user_name
+        from t_join_share_money_activity_history as jsah
+        left join t_user_info as tui on tui.uid = jsah.uid
+        where tui.tenant_id = #{tenantId} and jsah.join_uid = #{joinUid}
+        order by jsah.create_time desc
+        limit 1
     </select>
 </mapper>

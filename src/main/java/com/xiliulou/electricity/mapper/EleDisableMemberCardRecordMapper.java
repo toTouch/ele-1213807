@@ -23,4 +23,7 @@ public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableM
     EleDisableMemberCardRecord queryCreateTimeMaxEleDisableMemberCardRecord(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 
     List<EleDisableMemberCardRecord> queryDisableCardExpireRecord(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
+    
+    EleDisableMemberCardRecord queryByDisableMemberCardNo(@Param("disableMemberCardNo") String disableMemberCardNo,
+            @Param("tenantId") Integer tenantId);
 }

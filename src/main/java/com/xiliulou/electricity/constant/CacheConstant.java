@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.constant;
 
 public interface CacheConstant {
-
+    
     Long CACHE_EXPIRE_MONTH = 30 * 24 * 3600000L;
     //换电柜缓存
     String CACHE_ELECTRICITY_CABINET = "electricity_cabinet:";
@@ -220,6 +220,7 @@ public interface CacheConstant {
     String CHECK_FULL_BATTERY_CACHE = "check_full_battery_cache:";
 
     String OTA_OPERATE_CACHE = "ota_operate_cache:";
+    String NEW_OTA_OPERATE_CACHE = "new_ota_operate_cache:";
     /**
      * 异常告警导出缓存
      */
@@ -342,4 +343,8 @@ public interface CacheConstant {
      * 免押电池套餐押金支付缓存锁
      */
     String ELE_CACHE_FREE_DEPOSIT_MEMBERCARD_LOCK_KEY = "free_deposit_membercard_lock_key:";
+    /**
+     * 用户活跃缓存
+     */
+    String USER_ACTIVE_INFO_CACHE = "user_active_info_cache:";
 }

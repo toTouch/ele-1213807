@@ -218,8 +218,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         
         //更新旧电池为在仓
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySnFromDb(
-                offlineEleOrderVo.getOldElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService
+                .queryBySnFromDb(offlineEleOrderVo.getOldElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}",
                     offlineEleOrderVo.getOldElectricityBatterySn());
@@ -235,7 +235,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         inWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
         inWarehouseElectricityBattery.setBorrowExpireTime(null);
         electricityBatteryService.updateBatteryUser(inWarehouseElectricityBattery);
-        
+    
         //更新新电池为在用
         ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySnFromDb(
                 offlineEleOrderVo.getNewElectricityBatterySn());

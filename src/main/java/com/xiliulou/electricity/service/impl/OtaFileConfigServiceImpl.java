@@ -253,14 +253,6 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             log.error("OTA_FILE_CONFIG_DELETE ERROR! otaFileConfig is null! id={}", id);
             return R.fail("oat文件不存在");
         }
-        try {
-            String ossPath = eleIotOtaPathConfig + otaFileConfig.getName();
-            //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
-            this.deleteById(id);
-        } catch (Exception e) {
-            log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
-            return R.fail("ota文件删除失败！");
-        }
         return R.ok();
     }
     
@@ -285,8 +277,8 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         if (Objects.equals(index, -1)) {
             return Pair.of(false, null);
         }
-        
-        String versionPrefix = version.substring(index);
+    
+        String versionPrefix = version.substring(0, index);
         try {
             int i = Integer.parseInt(versionPrefix);
             return Pair.of(true, i);

@@ -16,6 +16,8 @@ import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
+import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -198,6 +200,9 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	public void updateExpired(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory) {
 		joinShareMoneyActivityHistoryMapper.updateExpired(joinShareMoneyActivityHistory);
 	}
-
-
+	
+	@Override
+	public FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
+		return joinShareMoneyActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
+	}
 }
