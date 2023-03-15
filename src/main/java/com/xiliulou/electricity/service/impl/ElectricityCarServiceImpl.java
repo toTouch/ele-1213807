@@ -426,17 +426,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
         }
     
-        //        electricityCarMapper.updateStoreIdByIds(targetStore.getId(), carIds, System.currentTimeMillis(),
-        //                TenantContextHolder.getTenantId());
         Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
                 .collect(Collectors.groupingBy(ElectricityCar::getModelId));
         collect.forEach((k, v) -> {
+            //k --> ModelId  v --> List<ElectricityCar>
             ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(k);
             if (Objects.isNull(electricityCarModel)) {
                 log.error("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
                 return;
             }
     
+            //如果目标门店没同名类型则要创建
             ElectricityCarModel targetCarModel = electricityCarModelService
                     .queryByNameAndStoreId(electricityCarModel.getName(), targetStore.getId());
             if (Objects.isNull(targetCarModel)) {
@@ -450,7 +450,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 electricityCarModelService.insert(targetCarModel);
     
                 //拷贝标签
-                List<CarModelTag> carModelTags = carModelTagService.selectByCarModelId(electricityCarModel.getId());
+                List<CarModelTag> carModelTags = Optional
+                        .ofNullable(carModelTagService.selectByCarModelId(electricityCarModel.getId()))
+                        .orElse(new ArrayList<>());
                 for (CarModelTag carModelTag : carModelTags) {
                     carModelTag.setId(null);
                     carModelTag.setCarModelId(targetCarModel.getId().longValue());
@@ -459,18 +461,25 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 }
                 carModelTagService.batchInsert(carModelTags);
     
-                //                PictureQuery pictureQuery = new PictureQuery();
-                //                pictureQuery.setBusinessId(targetCarModel.getId().longValue());
-                //                pictureQuery.setStatus(Picture.STATUS_ENABLE);
-                //                pictureQuery.setDelFlag(Picture.DEL_NORMAL);
-                //                pictureQuery.setTenantId(tenantId);
-                //                pictureService.selectByQuery()
-                //                //拷贝图片
-                //                pictureService.savePictureCallBack()
+                ///拷贝图片
+                PictureQuery pictureQuery = new PictureQuery();
+                pictureQuery.setBusinessId(targetCarModel.getId().longValue());
+                pictureQuery.setStatus(Picture.STATUS_ENABLE);
+                pictureQuery.setDelFlag(Picture.DEL_NORMAL);
+                pictureQuery.setTenantId(tenantId);
+                List<Picture> pictures = pictureService.queryListByQuery(pictureQuery);
+                for (Picture picture : pictures) {
+                    picture.setId(null);
+                    picture.setBusinessId(targetCarModel.getId().longValue());
+                    picture.setCreateTime(System.currentTimeMillis());
+                    picture.setUpdateTime(System.currentTimeMillis());
+                }
+                pictureService.batchInsert(pictures);
             }
     
             Integer targetCarModelId = targetCarModel.getId();
     
+            //修改被迁移车辆门店及类型
             Optional.ofNullable(v).orElse(new ArrayList<>()).parallelStream().forEach(item -> {
                 ElectricityCar updateElectricityCar = new ElectricityCar();
                 updateElectricityCar.setId(item.getId());

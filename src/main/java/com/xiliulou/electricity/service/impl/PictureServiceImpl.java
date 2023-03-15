@@ -78,6 +78,15 @@ public class PictureServiceImpl implements PictureService {
 
         return pictureParseVO(pictures);
     }
+    
+    @Override
+    public List<Picture> queryListByQuery(PictureQuery pictureQuery) {
+        List<Picture> pictures = this.pictureMapper.selectByQuery(pictureQuery);
+        if (CollectionUtils.isEmpty(pictures)) {
+            return Collections.EMPTY_LIST;
+        }
+        return pictures;
+    }
 
     @Override
     public List<PictureVO> pictureParseVO(List<Picture> pictures) {
