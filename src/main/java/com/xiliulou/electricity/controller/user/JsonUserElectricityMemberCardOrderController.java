@@ -97,17 +97,10 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
         
         return R.ok(electricityMemberCardOrderService.selectUserMemberCardOrderCount(orderQuery));
     }
-
-//    @GetMapping("user/memberCardOrder/count")
-//    public R getMemberCardOrderCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-//                                     @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-//        Long uid = SecurityUtils.getUid();
-//        if (Objects.isNull(uid)) {
-//            return R.fail("ELECTRICITY.0001", "未找到用户!");
-//        }
-//        return electricityMemberCardOrderService.getMemberCardOrderCount(uid, queryStartTime, queryEndTime);
-//    }
-
+    
+    /**
+     * 不限制时间停启卡
+     */
     @PutMapping("user/memberCard/openOrDisableMemberCard")
     public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus) {
         return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
@@ -132,6 +125,14 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     @PutMapping("user/memberCard/enableMemberCardForLimitTime")
     public R enableMemberCardForLimitTime() {
         return electricityMemberCardOrderService.enableMemberCardForLimitTime();
+    }
+    
+    /***
+     * 停卡撤销
+     */
+    @PutMapping("user/memberCard/disableMemberCardForRollback")
+    public R disableMemberCardForRollback() {
+        return electricityMemberCardOrderService.disableMemberCardForRollback();
     }
 
     /**

@@ -18,6 +18,8 @@ import java.io.InputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -149,9 +151,38 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        if (!Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD) && !Objects
-                .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
+        if (type < 1 || type > 4) {
+            log.error("OTA UPLOAD ERROR! ota file type error! name={}, version={}, type={}", name, version, type);
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
+        }
+    
+        if (StringUtils.isBlank(version)) {
+            log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
+            return R.fail("100313", "ota文件版本号不合法");
+        }
+    
+        Pair<Boolean, Integer> result = resolutionVersion(version);
+        if (!result.getLeft()) {
+            log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version, type);
+            return R.fail("100313", "ota文件版本号不合法");
+        }
+    
+        Integer versionNum = result.getRight();
+        if (Objects.equals(type, OtaFileConfig.TYPE_OLD_CORE_BOARD) || Objects
+                .equals(type, OtaFileConfig.TYPE_OLD_SUB_BOARD)) {
+            if (Objects.isNull(versionNum) || versionNum < 50) {
+                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version,
+                        type);
+                return R.fail("100313", "ota文件版本号不合法");
+            }
+        }
+    
+        if (Objects.equals(type, OtaFileConfig.TYPE_CORE_BOARD) || Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD)) {
+            if (Objects.isNull(versionNum) || versionNum > 50) {
+                log.error("OTA UPLOAD ERROR! ota file version error! name={}, version={}, type={}", name, version,
+                        type);
+                return R.fail("100313", "ota文件版本号不合法");
+            }
         }
     
         InputStream ossInputStream = null;
@@ -222,14 +253,6 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             log.error("OTA_FILE_CONFIG_DELETE ERROR! otaFileConfig is null! id={}", id);
             return R.fail("oat文件不存在");
         }
-        try {
-            String ossPath = eleIotOtaPathConfig + otaFileConfig.getName();
-            //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
-            this.deleteById(id);
-        } catch (Exception e) {
-            log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
-            return R.fail("ota文件删除失败！");
-        }
         return R.ok();
     }
     
@@ -240,6 +263,30 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         }
     
         return R.ok(queryAll());
+    }
+    
+    
+    /**
+     * 解析版本号开头
+     *
+     * @param version
+     * @return
+     */
+    private Pair<Boolean, Integer> resolutionVersion(String version) {
+        int index = version.indexOf(".");
+        if (Objects.equals(index, -1)) {
+            return Pair.of(false, null);
+        }
+    
+        String versionPrefix = version.substring(0, index);
+        try {
+            int i = Integer.parseInt(versionPrefix);
+            return Pair.of(true, i);
+        } catch (Exception e) {
+            log.error("RESOLUTION VERSION ERROR!", e);
+        }
+        
+        return Pair.of(false, null);
     }
     
 }

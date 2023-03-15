@@ -119,7 +119,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //若上报时间为空  或者  上报时间小于上次上报时间，不处理
         if (Objects.nonNull(reportTime) && Objects.nonNull(eleBox.getReportTime())
                 && eleBox.getReportTime() >= reportTime) {
-            log.error("ELE BATTERY REPORT ERROR! reportTime is empty,electricityCabinetId={},sessionId={}",
+            log.warn("ELE BATTERY REPORT ERROR! reportTime is empty,electricityCabinetId={},sessionId={}",
                     electricityCabinet.getId(), sessionId);
             return;
         }
@@ -157,7 +157,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySnFromDb(batteryName,
                 electricityCabinet.getTenantId());
         if (Objects.isNull(electricityBattery)) {
-            log.error("ELE BATTERY REPORT ERROR! not found battery,batteryName={},sessionId={}", batteryName,
+            log.warn("ELE BATTERY REPORT ERROR! not found battery,batteryName={},sessionId={}", batteryName,
                     sessionId);
             return;
         }

@@ -98,6 +98,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
+    
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    
+    @Autowired
+    UserActiveInfoService userActiveInfoService;
 
 
     /**
@@ -268,6 +277,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
                 return R.fail("100211", "用户套餐已暂停");
             }
+    
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+                Triple<Boolean, String, String> booleanStringObjectTriple = checkUserCarMemberCard(userCarMemberCard,
+                        userInfo);
+                if (!booleanStringObjectTriple.getLeft()) {
+                    return R.fail(booleanStringObjectTriple.getMiddle(), booleanStringObjectTriple.getRight());
+                }
+            }
 
             //已绑定电池
             if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
@@ -411,6 +432,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     }
                 }
             }*/
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             String orderId = generateOrderId(user.getUid(), cellNo);
 
@@ -653,6 +677,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             String cellNo = usableEmptyCellNo.getRight().toString();
 
             String orderId = generateOrderId(user.getUid(), cellNo);
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder().orderId(orderId).uid(user.getUid())
@@ -1457,6 +1484,35 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     public String generateOrderId(Long uid, String cellNo) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid + cellNo +
                 RandomUtil.randomNumbers(4);
+    }
+    
+    private Triple<Boolean, String, String> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {
+        
+        //用户未缴纳押金可直接换电
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            return Triple.of(true, null, null);
+        }
+        
+        //用户未缴纳押金可直接换电
+        if (!Objects.equals(user.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return Triple.of(true, null, null);
+        }
+    
+        //用户从未买过车辆套餐则可直接换电
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime()) || Objects
+                .equals(userCarMemberCard.getMemberCardExpireTime(), 0L)) {
+            return Triple.of(false, "100232", "未购买租车套餐");
+        }
+        
+        //套餐是否可用
+        long now = System.currentTimeMillis();
+        if (userCarMemberCard.getMemberCardExpireTime() < now) {
+            log.error("RENTBATTERY ERROR! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+                    userCarMemberCard.getCardId());
+            return Triple.of(false, "100233", "租车套餐已过期");
+        }
+        return Triple.of(true, null, null);
     }
 
 }

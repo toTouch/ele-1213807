@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component()
 @Order(200)
-public class Jt808ElectricityCarFilter extends OuterFilter {
+public class Jt808ElectricityCarFilterApi extends ApiOuterFilter {
     
     static final String CUPBOARD_URL = "/outer/jt808/**";
     
@@ -23,7 +23,7 @@ public class Jt808ElectricityCarFilter extends OuterFilter {
     
     private final String APP_SECRET = "fgfifHVZfFLTa0buIAUvU3VoidGdlERz+lf1HqVfR4s=";
     
-    public Jt808ElectricityCarFilter() {
+    public Jt808ElectricityCarFilterApi() {
         super(new AntPathRequestMatcher(CUPBOARD_URL, Request.HttpMethod.POST.name()));
     }
     

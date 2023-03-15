@@ -712,7 +712,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     }
     
     /**
-     * ota操作  1--下载  2-- 同步  3--升级
+     * ota操作： 1--下载新  2-- 同步  3--升级
      */
     @PostMapping("/admin/electricityCabinet/ota/command")
     public R otaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType,

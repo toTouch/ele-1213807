@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 
@@ -63,6 +65,10 @@ public interface ElectricityCarService {
     R queryElectricityCarOverview(String sn, List<Integer> franchiseeIds);
     
     R batteryStatistical(List<Integer> carIdList, Integer tenantId);
+
+    R attrList(Long beginTime, Long endTime);
+
+    CarAttr queryLastReportPointBySn(String sn);
 
     Integer isUserBindCar(Long uid, Integer tenantId);
 }

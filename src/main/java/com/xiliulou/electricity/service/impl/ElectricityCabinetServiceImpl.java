@@ -22,6 +22,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
@@ -207,7 +208,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     CarMemberCardOrderService carMemberCardOrderService;
+    
+    @Autowired
+    EleCabinetCoreDataService eleCabinetCoreDataService;
+    
+    @Autowired
+    EleOtaFileService eleOtaFileService;
 
+    
+    @Autowired
+    BatteryGeoService batteryGeoService;
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -2223,21 +2234,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //修改电池
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
+    
+        BatteryGeo batteryGeo  = new BatteryGeo();
+        batteryGeo.setSn(electricityBattery.getSn());
+        batteryGeo.setCreateTime(System.currentTimeMillis());
+        batteryGeo.setUpdateTime(System.currentTimeMillis());
+        batteryGeo.setTenantId(electricityBattery.getTenantId());
+        batteryGeo.setFranchiseeId(electricityBattery.getFranchiseeId());
+        
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power);
         }
+        
         Double latitude = batteryReportQuery.getLatitude();
         if (Objects.nonNull(latitude)) {
+            batteryGeo.setLatitude(latitude);
             newElectricityBattery.setLatitude(latitude);
         }
+        
         Double longitude = batteryReportQuery.getLongitude();
         if (Objects.nonNull(longitude)) {
+            batteryGeo.setLongitude(longitude);
             newElectricityBattery.setLongitude(longitude);
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setTenantId(electricityBattery.getTenantId());
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
+        
+        if(Objects.nonNull(batteryGeo.getLatitude()) && Objects.nonNull(batteryGeo.getLongitude())) {
+            batteryGeoService.insertOrUpdate(batteryGeo);
+        }
         
         //电池上报是否有其他信息
         if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
@@ -3639,8 +3666,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
-
-        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+    
+        Boolean isOld = isOldBoard(eid);
+        if (Objects.isNull(isOld)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is not version ！eid={}", eid);
+            return R.fail("100312", "柜机暂无版本号，无法ota升级");
+        }
+    
+        Integer fileType = null;
+        if (isOld) {
+            fileType = EleOtaFile.TYPE_OLD_FILE;
+        } else {
+            fileType = EleOtaFile.TYPE_NEW_FILE;
+        }
+    
+        String sessionId =
+                (Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE) ? "OLD" : "NEW") + UUID.randomUUID().toString()
+                        .replaceAll("-", "");
 
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
@@ -3649,16 +3691,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         data.put("username", user.getName());
 
         if (TYPE_DOWNLOAD.equals(operateType)) {
+            OtaFileConfig coreBoardOtaFileConfig = null;
+            OtaFileConfig subBoardOtaFileConfig = null;
             //ota文件是否存在
-            OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
-            OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
-
+            if (Objects.equals(fileType, EleOtaFile.TYPE_OLD_FILE)) {
+                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_CORE_BOARD);
+                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_OLD_SUB_BOARD);
+            } else {
+                coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
+                subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+            }
+    
             if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
                 log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
                         coreBoardOtaFileConfig, subBoardOtaFileConfig);
                 return R.fail("100301", "ota升级文件不完整，请联系客服处理");
             }
-
+    
+            createOrUpdateEleOtaFile(eid, fileType);
+            
             content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
             content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
             content.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
@@ -3667,7 +3718,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!DataUtil.collectionIsUsable(cellNos)) {
                 return R.fail("100303", "升级内容为空，请选择您要升级的板子");
             }
-
+    
             eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
             content.put("cellNos", cellNos);
         }
@@ -3686,11 +3737,63 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(sessionId);
     }
+    
+    private void createOrUpdateEleOtaFile(Integer eid, Integer fileType) {
+        EleOtaFile eleOtaFile = eleOtaFileService.queryByEid(eid);
+        if (Objects.nonNull(eleOtaFile)) {
+            EleOtaFile update = new EleOtaFile();
+            update.setId(eleOtaFile.getId());
+            update.setFileType(fileType);
+            update.setUpdateTime(System.currentTimeMillis());
+            eleOtaFileService.update(update);
+            return;
+        }
+        
+        EleOtaFile create = new EleOtaFile();
+        create.setElectricityCabinetId(eid);
+        create.setCoreSha256Value("");
+        create.setSubSha256Value("");
+        create.setCoreName("");
+        create.setSubName("");
+        create.setFileType(fileType);
+        create.setUpdateTime(System.currentTimeMillis());
+        create.setCreateTime(System.currentTimeMillis());
+        eleOtaFileService.insert(create);
+    }
+    
+    
+    private Boolean isOldBoard(Integer eid) {
+        final double MIN_OLD_BOARD_VERSION = 50.0;
+        double versionPrefix = 50.0;
+        
+        EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
+        if (Objects.nonNull(eleCabinetCoreData) && StringUtils.isNotEmpty(eleCabinetCoreData.getCoreVersion())) {
+            String version = eleCabinetCoreData.getCoreVersion();
+            versionPrefix = Double.parseDouble(version.substring(0, version.indexOf(".")));
+            return versionPrefix < MIN_OLD_BOARD_VERSION ? Boolean.FALSE : Boolean.TRUE;
+        }
+        
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService
+                .queryAllBoxByElectricityCabinetId(eid);
+        if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+            return null;
+        }
+        
+        List<ElectricityCabinetBox> collect = electricityCabinetBoxes.parallelStream()
+                .filter(item -> StrUtil.isNotBlank(item.getVersion())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(collect)) {
+            return null;
+        }
+    
+        String version = collect.get(0).getVersion();
+        versionPrefix = Double.parseDouble(version.substring(0, version.indexOf(".")));
+        return versionPrefix < MIN_OLD_BOARD_VERSION ? Boolean.FALSE : Boolean.TRUE;
+    }
 
     @Override
     public R checkOtaSession(String sessionId) {
         String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + sessionId);
-        if (StrUtil.isEmpty(s)) {
+        if (StrUtil.isBlank(s)) {
             return R.ok();
         }
         return R.ok(s);

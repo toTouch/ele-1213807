@@ -111,12 +111,16 @@ public class ElectricityConfig {
      * 迁移加盟商
      */
     private String franchiseeMoveInfo;
+    
+    /**
+     * 是否打开车电关联 0--是 1--否
+     */
+    private Integer isOpenCarBatteryBind;
 
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
 
     public static Integer MOVE_FRANCHISEE_OPEN = 0;
-
-
+    
     //人工审核
     //实名审核方式 0:人工审核 ,1:自动审核,2:人脸核身
     public static Integer MANUAL_REVIEW = 0;
@@ -175,6 +179,11 @@ public class ElectricityConfig {
     public static Integer FREE_DEPOSIT_TYPE_BATTERY = 1;
     public static Integer FREE_DEPOSIT_TYPE_CAR = 2;
     public static Integer FREE_DEPOSIT_TYPE_ALL = 3;
-
-
+    
+    /**
+     * 车电关联 0--是 1--否
+     */
+    public static Integer ENABLE_CAR_BATTERY_BIND = 0;
+    
+    public static Integer DISABLE_CAR_BATTERY_BIND = 1;
 }

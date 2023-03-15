@@ -88,6 +88,15 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     EleBindCarRecordService eleBindCarRecordService;
     @Autowired
     UserCouponService userCouponService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+    
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -431,87 +440,98 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> rentCarOrder(UserRentCarOrderQuery query) {
-
+    
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE RENT CAR ERROR! not found user,sn={}", query.getSn());
             return Triple.of(false, "100001", "用户不存在");
         }
-
+    
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELE RENT CAR ERROR! not found user,uid={}", user.getUid());
             return Triple.of(false, "100001", "用户不存在");
         }
-
+    
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("ELE RENT CAR ERROR! user is disable!uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
-
+    
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("ELE RENT CAR ERROR! user not auth,uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
-
+    
         //判断是否缴纳押金
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarDeposit)) {
             log.error("ELE RENT CAR ERROR! userCarDeposit is null,uid={}", user.getUid());
             return Triple.of(false, "100238", "未缴纳押金");
         }
-
+    
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE RENT CAR ERROR! not pay deposit,uid={}", user.getUid());
             return Triple.of(false, "100238", "未缴纳押金");
         }
-
-
+    
         //是否购买套餐
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarMemberCard)) {
             log.error("ELE RENT CAR ERROR! not pay rent car memberCard,uid={}", user.getUid());
             return Triple.of(false, "100232", "未购买租车套餐");
         }
-
+    
         //套餐是否过期
         if (userCarMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
             log.error("ELE RENT CAR ERROR! rent car memberCard expired,uid={}", user.getUid());
             return Triple.of(false, "100233", "租车套餐已过期");
         }
-
+    
+        //车电关联是否可租车
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                    .selectByUidFromCache(userInfo.getUid());
+            Triple<Boolean, String, Object> checkUserBatteryMemberCardResult = checkUserBatteryMemberCard(
+                    userBatteryMemberCard, userInfo);
+            if (!checkUserBatteryMemberCardResult.getLeft()) {
+                return checkUserBatteryMemberCardResult;
+            }
+        }
+    
         //车辆是否可用
         ElectricityCar electricityCar = electricityCarService.selectBySn(query.getSn(), TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityCar) || !Objects.equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("ELE RENT CAR ERROR! not found electricityCar,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100007", "车辆不存在");
         }
-
+    
         if (Objects.equals(electricityCar.getStatus(), ElectricityCar.STATUS_IS_RENT)) {
             log.error("ELE RENT CAR ERROR! this car has been bound others,sn={},uid={}", query.getSn(), user.getUid());
             return Triple.of(false, "100231", "车辆已绑定其它用户");
         }
-
+    
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE RENT CAR ERROR! electricityCarModel is null,uid={}", user.getUid());
             return Triple.of(false, "100009", "车辆型号不存在");
         }
-
+    
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
             log.error("ELE RENT CAR ERROR! this user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "100247", "未找到用户信息");
         }
-
+    
         if (!Objects.equals(userCar.getCarModel(), electricityCar.getModelId().longValue())) {
             log.error("ELE RENT CAR ERROR! this user bind car model not equals this car model,uid={}", userInfo.getUid());
             return Triple.of(false, "100236", "车辆型号不匹配");
         }
-
-
+    
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RENT_CAR, user.getUid());
         RentCarOrder rentCarOrder = new RentCarOrder();
         rentCarOrder.setOrderId(orderId);
@@ -529,9 +549,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         rentCarOrder.setTenantId(TenantContextHolder.getTenantId());
         rentCarOrder.setCreateTime(System.currentTimeMillis());
         rentCarOrder.setUpdateTime(System.currentTimeMillis());
-
+    
         int insert = rentCarOrderMapper.insertOne(rentCarOrder);
-
+    
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //更新用户车辆租赁状态
             UserInfo updateUserInfo = new UserInfo();
@@ -539,13 +559,13 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_YES);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
-
+        
             UserCar updateUserCar = new UserCar();
             updateUserCar.setUid(user.getUid());
             updateUserCar.setSn(query.getSn());
             updateUserCar.setUpdateTime(System.currentTimeMillis());
             userCarService.updateByUid(updateUserCar);
-
+        
             ElectricityCar updateElectricityCar = new ElectricityCar();
             updateElectricityCar.setId(electricityCar.getId());
             updateElectricityCar.setStatus(ElectricityCar.STATUS_IS_RENT);
@@ -555,14 +575,54 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             updateElectricityCar.setUserName(userInfo.getName());
             updateElectricityCar.setUpdateTime(System.currentTimeMillis());
             electricityCarService.update(updateElectricityCar);
-
+        
             return null;
         });
-
+    
         return Triple.of(true, "车辆绑定成功", null);
     }
-
-
+    
+    private Triple<Boolean, String, Object> checkUserBatteryMemberCard(UserBatteryMemberCard userBatteryMemberCard,
+            UserInfo userInfo) {
+        //用户没缴纳押金可直接租车
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return Triple.of(true, "", "");
+        }
+        
+        //用户未开通套餐可直接租车
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+            return Triple.of(false, "100210", "用户未购买套餐");
+        }
+        
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("ORDER WARN! user's member card is stop! uid={}", userInfo.getUid());
+            return Triple.of(false, "100211", "用户电池套餐已暂停");
+        }
+        
+        //套餐是否可用
+        long now = System.currentTimeMillis();
+        if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
+            log.warn("ORDER WARN! user's member card is expire! uid={} cardId={}", userInfo.getUid(),
+                    userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false, "100212", "用户电池套餐已过期");
+        }
+        
+        //如果用户不是送的套餐
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService
+                .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.LIMITED_COUNT_TYPE)
+                    && userBatteryMemberCard.getRemainingNumber() < 0) {
+                log.warn("ORDER ERROR! user's count < 0 ,uid={},cardId={}", userInfo.getUid(),
+                        electricityMemberCard.getType());
+                return Triple.of(false, "100213", "用户电池套餐剩余次数不足");
+            }
+        }
+        return Triple.of(true, null, null);
+    }
+    
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> rentCarHybridOrder(RentCarHybridOrderQuery query, HttpServletRequest request) {

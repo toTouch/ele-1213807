@@ -93,6 +93,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     UserBatteryService userBatteryService;
     @Autowired
     ServiceFeeUserInfoService serviceFeeUserInfoService;
+    
+    @Autowired
+    UserCarMemberCardService userCarMemberCardService;
+    
+    @Autowired
+    UserCarDepositService userCarDepositService;
+    
+    
+    
+    
+    @Autowired
+    UserActiveInfoService userActiveInfoService;
 
     /**
      * 修改数据
@@ -307,6 +319,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.warn("ORDER WARN! user's member card is stop! uid={}", user.getUid());
                 return R.fail("100211", "用户套餐已暂停");
             }
+    
+            //判断车电关联是否可换电
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+    
+                UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+                Triple<Boolean, String, Object> checkUserCarMemberCardResult = checkUserCarMemberCard(userCarMemberCard,
+                        userInfo);
+                if (!checkUserCarMemberCardResult.getLeft()) {
+                    return R.fail(checkUserCarMemberCardResult.getMiddle(),
+                            String.valueOf(checkUserCarMemberCardResult.getRight()));
+                }
+            }
 
             //未租电池
             if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
@@ -389,6 +416,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0020", "未找到电池");
             }
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
 
             //3.根据用户查询旧电池
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
@@ -409,7 +439,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("status", electricityCabinetOrder.getStatus());
 
             //是否开启电池检测
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            //ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
@@ -1416,6 +1446,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!checkUserBatteryServiceFeeResult.getLeft()) {
                 return checkUserBatteryServiceFeeResult;
             }
+    
+            //判断车电关联是否可换电
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarBatteryBind(), ElectricityConfig.ENABLE_CAR_BATTERY_BIND)) {
+                UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+                Triple<Boolean, String, Object> checkUserCarMemberCardResult = checkUserCarMemberCard(userCarMemberCard,
+                        userInfo);
+                if (!checkUserCarMemberCardResult.getLeft()) {
+                    return checkUserCarMemberCardResult;
+                }
+            }
 
             //默认是小程序下单
             if (Objects.isNull(orderQuery.getSource())) {
@@ -1438,16 +1481,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!modifyResult.getLeft()) {
                 return Triple.of(false, modifyResult.getMiddle(), modifyResult.getRight());
             }
-
+    
+            ElectricityCabinetBox electricityCabinetBox = (ElectricityCabinetBox) usableBatteryCellNoResult.getRight();
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-
+    
+            ElectricityBattery electricityBatteryBox = electricityBatteryService
+                    .queryBySnFromDb(electricityCabinetBox.getSn(), TenantContextHolder.getTenantId());
+    
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                     .orderId(generateExchangeOrderId(user.getUid()))
                     .uid(user.getUid())
                     .phone(userInfo.getPhone())
                     .electricityCabinetId(orderQuery.getEid())
                     .oldCellNo(usableEmptyCellNo.getRight())
-                    .newCellNo(Integer.parseInt(((ElectricityCabinetBox) usableBatteryCellNoResult.getRight()).getCellNo()))
+                    .newCellNo(Integer.parseInt(electricityCabinetBox.getCellNo()))
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT)
                     .status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource())
@@ -1462,15 +1509,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
-
-
+    
+            //记录活跃时间
+            userActiveInfoService.userActiveRecord(userInfo);
+            
             HashMap<String, Object> commandData = Maps.newHashMap();
             commandData.put("orderId", electricityCabinetOrder.getOrderId());
             commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());
             commandData.put("takeCellNo", electricityCabinetOrder.getNewCellNo());
             commandData.put("phone", user.getPhone());
-
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+    
+            //ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                 commandData.put("userBindingBatterySn", Objects.isNull(electricityBattery) ? "UNKNOWN" : electricityBattery.getSn());
             }
@@ -1495,7 +1544,36 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());
         }
     }
-
+    
+    private Triple<Boolean, String, Object> checkUserCarMemberCard(UserCarMemberCard userCarMemberCard, UserInfo user) {
+    
+        //用户未缴纳押金可直接换电
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            return Triple.of(true, null, null);
+        }
+    
+        //用户未缴纳押金可直接换电
+        if (!Objects.equals(user.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            return Triple.of(true, null, null);
+        }
+    
+        //用户从未买过车辆套餐则可直接换电
+        if (Objects.isNull(userCarMemberCard) || Objects.isNull(userCarMemberCard.getMemberCardExpireTime()) || Objects
+                .equals(userCarMemberCard.getMemberCardExpireTime(), 0L)) {
+            return Triple.of(false, "100232", "未购买租车套餐");
+        }
+        
+        //套餐是否可用
+        long now = System.currentTimeMillis();
+        if (userCarMemberCard.getMemberCardExpireTime() < now) {
+            log.error("ORDER ERROR! user's carMemberCard is expire! uid={} cardId={}", user.getUid(),
+                    userCarMemberCard.getCardId());
+            return Triple.of(false, "100233", "租车套餐已过期");
+        }
+        return Triple.of(true, null, null);
+    }
+    
     private String generateExchangeOrderId(Long uid) {
         return String.valueOf(uid) + System.currentTimeMillis() / 1000 + RandomUtil.randomNumbers(3);
     }

@@ -30,7 +30,7 @@ public class OtaFileConfig {
     private String sha256Value;
     
     /**
-     * 文件类型 1--核心板 2--子板
+     * 文件类型 1--核心板 2--子板 3--旧核心板 4--旧子板
      */
     private Integer type;
     
@@ -39,10 +39,12 @@ public class OtaFileConfig {
     private Long updateTime;
     
     public static final Integer DEL_NORMAL = 0;
-    
     public static final Integer DEL_DEL = 1;
     
     public static final Integer TYPE_CORE_BOARD = 1;
-    
     public static final Integer TYPE_SUB_BOARD = 2;
+    
+    public static final Integer TYPE_OLD_CORE_BOARD = 3;
+    
+    public static final Integer TYPE_OLD_SUB_BOARD = 4;
 }

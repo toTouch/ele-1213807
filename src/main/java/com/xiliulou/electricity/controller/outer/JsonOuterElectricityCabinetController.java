@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import retrofit2.http.DELETE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -145,6 +147,7 @@ public class JsonOuterElectricityCabinetController {
      *
      * @return
      */
+    @Deprecated
     @PostMapping(value = "/outer/batteryReport")
     public R batteryReport(@RequestBody BatteryReportQuery batteryReportQuery) {
         return electricityCabinetService.batteryReport(batteryReportQuery);
