@@ -57,7 +57,8 @@ public class JsonAdminCarRefundOrderController {
     }
     
     @PutMapping("admin/carRefundOrder/review")
-    public R carRefundOrderReview(@RequestParam("id") Long id, @RequestParam("status") Integer status) {
-        return carRefundOrderService.carRefundOrderReview(id, status);
+    public R carRefundOrderReview(@RequestParam("id") Long id, @RequestParam("status") Integer status,
+            @RequestParam("remark ") String remark) {
+        return carRefundOrderService.carRefundOrderReview(id, status, remark);
     }
 }
