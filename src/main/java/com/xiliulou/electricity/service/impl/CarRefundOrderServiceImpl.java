@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.CarRefundOrder;
+import com.xiliulou.electricity.entity.EleBindCarRecord;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Store;
@@ -71,6 +72,9 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     
     @Autowired
     private StoreService storeService;
+    
+    @Autowired
+    private UserCarService userCarService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -154,6 +158,86 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     @Override
     public R queryCount(CarRefundOrderQuery query) {
         return R.ok(this.carRefundOrderMapper.queryCount(query));
+    }
+    
+    @Override
+    public R carRefundOrderReview(Long id, Integer status, String remark) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("CAR REFUND ORDER ERROR! user is null");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("CAR REFUND ORDER ERROR! userInfo is null error! uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
+            return R.ok();
+        }
+        
+        CarRefundOrder carRefundOrder = this.queryByIdFromDB(id);
+        if (Objects.isNull(carRefundOrder)) {
+            log.error("CAR REFUND ORDER ERROR! carRefundOrder is null error! uid={}, id={}", user.getUid(), id);
+            return R.fail("100263", "未找到还车审核记录");
+        }
+        
+        if (!Objects.equals(carRefundOrder.getStatus(), CarRefundOrder.STATUS_INIT)) {
+            return R.fail("100264", "还车审核记录已处理");
+        }
+        
+        UserInfo carRefundUserInfo = userInfoService.queryByUidFromCache(carRefundOrder.getUid());
+        if (Objects.isNull(carRefundUserInfo) || !Objects
+                .equals(carRefundUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("CAR REFUND ORDER ERROR! userInfo is null error! uid={}", carRefundOrder.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        //用户是否绑定车辆
+        if (!Objects.equals(carRefundUserInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
+            return R.fail("100015", "用户未绑定车辆");
+        }
+        
+        ElectricityCar electricityCar = electricityCarService.queryByIdFromCache(carRefundOrder.getCarId().intValue());
+        if (!Objects.equals(carRefundUserInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
+            return R.fail("100007", "未找到车辆");
+        }
+        
+        CarRefundOrder updateCarRefundOrder = new CarRefundOrder();
+        updateCarRefundOrder.setId(carRefundOrder.getId());
+        updateCarRefundOrder.setStatus(status);
+        updateCarRefundOrder.setRemark(remark);
+        updateCarRefundOrder.setUpdateTime(System.currentTimeMillis());
+        update(updateCarRefundOrder);
+        
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(carRefundUserInfo.getUid());
+        updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateByUid(updateUserInfo);
+        
+        UserCar updateUserCar = new UserCar();
+        updateUserCar.setUid(carRefundUserInfo.getUid());
+        updateUserCar.setCid(null);
+        updateUserCar.setSn("");
+        userCarService.unBindingCarByUid(updateUserCar);
+        
+        ElectricityCar updateElectricityCar = new ElectricityCar();
+        updateElectricityCar.setId(electricityCar.getId());
+        updateElectricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
+        updateElectricityCar.setUid(null);
+        updateElectricityCar.setPhone(null);
+        updateElectricityCar.setUserInfoId(null);
+        updateElectricityCar.setUserName(null);
+        updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+        electricityCarService.carUnBindUser(updateElectricityCar);
+        return R.ok();
     }
     
     @Override

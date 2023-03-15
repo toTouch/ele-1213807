@@ -55,4 +55,9 @@ public class JsonAdminCarRefundOrderController {
         
         return carRefundOrderService.queryCount(query);
     }
+    
+    @PutMapping("admin/carRefundOrder/review")
+    public R carRefundOrderReview(@RequestParam("id") Long id, @RequestParam("status") Integer status) {
+        return carRefundOrderService.carRefundOrderReview(id, status);
+    }
 }

@@ -70,4 +70,6 @@ public interface CarRefundOrderService {
     Integer queryCountByStatus(Long uid, Integer tenantId, Integer status);
     
     R queryCount(CarRefundOrderQuery query);
+    
+    R carRefundOrderReview(Long id, Integer status, String remark);
 }
