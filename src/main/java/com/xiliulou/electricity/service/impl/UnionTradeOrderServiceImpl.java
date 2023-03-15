@@ -138,6 +138,9 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
 
+    @Autowired
+    ShippingManagerService shippingManagerService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -358,6 +361,9 @@ public class UnionTradeOrderServiceImpl extends
         updateInsuranceOrder.setUpdateTime(System.currentTimeMillis());
         updateInsuranceOrder.setStatus(depositOrderStatus);
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
         return Pair.of(result, null);
     }
 
@@ -462,6 +468,10 @@ public class UnionTradeOrderServiceImpl extends
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
         });
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(),transactionId);
+
         return Pair.of(result, null);
     }
 

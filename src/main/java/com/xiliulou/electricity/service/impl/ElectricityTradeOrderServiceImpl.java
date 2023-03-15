@@ -117,6 +117,8 @@ public class ElectricityTradeOrderServiceImpl extends
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     ElectricityCarService electricityCarService;
+    @Autowired
+    ShippingManagerService shippingManagerService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -416,6 +418,9 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setPayCount(payCount + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
 
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
+
         return Pair.of(result, null);
     }
 
@@ -516,6 +521,10 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleDepositOrderService.update(eleDepositOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
+
         return Pair.of(result, null);
     }
 
@@ -668,6 +677,10 @@ public class ElectricityTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
+
         return Pair.of(result, null);
     }
 
@@ -762,6 +775,10 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleDepositOrderService.update(eleDepositOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
+
         return Pair.of(result, null);
     }
 
@@ -852,6 +869,9 @@ public class ElectricityTradeOrderServiceImpl extends
         updateCarMemberCardOrder.setStatus(memberOrderStatus);
         updateCarMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         carMemberCardOrderService.update(updateCarMemberCardOrder);
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
 
         return Pair.of(result, null);
 
@@ -947,6 +967,10 @@ public class ElectricityTradeOrderServiceImpl extends
         updateInsuranceOrder.setUpdateTime(System.currentTimeMillis());
         updateInsuranceOrder.setStatus(insuranceOrderStatus);
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
+
+        //小程序虚拟发货
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
+
         return Pair.of(result, null);
     }
 

@@ -1,0 +1,56 @@
+package com.xiliulou.electricity.service.impl;
+
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.ShippingManagerService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.pay.shipping.service.ShippingUploadService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+
+/**
+ * 小程序发货管理
+ *
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-03-15-13:49
+ */
+@Slf4j
+@Service
+public class ShippingManagerServiceImpl implements ShippingManagerService {
+
+    private ExecutorService shippingManagerExecutorService =
+            XllThreadPoolExecutors.newFixedThreadPool("shippingUpload", 2, "ele_shipping");
+
+    @Autowired
+    ShippingUploadService shippingUploadService;
+
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
+
+    @Override
+    public void uploadShippingInfo(Long uid, String orderNo) {
+
+        //支付相关
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("SHIPPING ERROR! not found electricityPayParams,tenantId={}", TenantContextHolder.getTenantId());
+            return;
+        }
+
+        if (StringUtils.isBlank(electricityPayParams.getMerchantMinProAppId()) || StringUtils.isBlank(electricityPayParams.getMerchantMinProAppSecert())) {
+            log.error("SHIPPING ERROR! electricityPayParams is illegal,tenantId={}", TenantContextHolder.getTenantId());
+            return;
+        }
+
+        shippingManagerExecutorService.execute(() -> {
+            shippingUploadService.shippingUploadInfo(uid, orderNo, electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert());
+        });
+    }
+}
