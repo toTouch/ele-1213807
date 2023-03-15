@@ -24,7 +24,7 @@ public class JsonAdminCarRefundOrderController {
     @Resource
     private CarRefundOrderService carRefundOrderService;
     
-    @GetMapping("admin/carRefundOrder/queryList")
+    @GetMapping("admin/car/refundOrder/queryList")
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
             @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "userName", required = false) String userName,
@@ -44,7 +44,7 @@ public class JsonAdminCarRefundOrderController {
         return carRefundOrderService.queryList(query);
     }
     
-    @GetMapping("admin/carRefundOrder/queryCount")
+    @GetMapping("admin/car/refundOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "userName", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
@@ -56,7 +56,7 @@ public class JsonAdminCarRefundOrderController {
         return carRefundOrderService.queryCount(query);
     }
     
-    @PutMapping("admin/carRefundOrder/review")
+    @PutMapping("admin/car/refundOrder/review")
     public R carRefundOrderReview(@RequestParam("id") Long id, @RequestParam("status") Integer status,
             @RequestParam("remark ") String remark) {
         return carRefundOrderService.carRefundOrderReview(id, status, remark);
