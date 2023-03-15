@@ -465,6 +465,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 PictureQuery pictureQuery = new PictureQuery();
                 pictureQuery.setBusinessId(electricityCarModel.getId().longValue());
                 pictureQuery.setStatus(Picture.STATUS_ENABLE);
+                pictureQuery.setImgType(Picture.TYPE_CAR_IMG);
                 pictureQuery.setDelFlag(Picture.DEL_NORMAL);
                 pictureQuery.setTenantId(tenantId);
                 List<Picture> pictures = pictureService.queryListByQuery(pictureQuery);
