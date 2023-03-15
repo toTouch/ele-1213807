@@ -186,6 +186,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
                 .sortType(sortType)
+                .batteryId(batteryId)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .uid(uid)
@@ -193,6 +194,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .cardName(cardName)
                 .cardPayCount(cardPayCount)
                 .tenantId(TenantContextHolder.getTenantId()).build();
+
+        verifyMemberCardExpireTimeEnd(userInfoQuery);
 
         userInfoService.exportExcel(userInfoQuery, response);
     }
