@@ -498,6 +498,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
+        //判断是否退电池
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.error("ELE DEPOSIT ERROR! not return battery,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
+        }
+
         //判断是否缴纳押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
@@ -506,9 +512,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
             log.error("ELE DEPOSIT ERROR! not found userBatteryMemberCard! uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+            return Triple.of(true, "", null);
         }
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
@@ -544,6 +550,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+            log.error("ELE DEPOSIT ERROR! travel to store,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.00115", "请前往门店退押金");
+        }
+
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
 
         long cardDays = 0;
@@ -572,17 +583,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
             return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
-        }
-
-        //判断是否退电池
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! not return battery,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
-        }
-
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
-            log.error("ELE DEPOSIT ERROR! travel to store,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.00115", "请前往门店退押金");
         }
 
         //是否有正在进行中的退款

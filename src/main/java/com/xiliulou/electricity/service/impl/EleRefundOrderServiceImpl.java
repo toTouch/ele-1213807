@@ -626,8 +626,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         //如果车电一起免押，检查用户是否归还车辆
-        if(Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)&& Objects.equals(userInfo.getCarDepositStatus(),
-                UserInfo.CAR_DEPOSIT_STATUS_YES)){
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && Objects.equals(userInfo.getCarRentStatus(),
+                UserInfo.CAR_RENT_STATUS_YES)) {
             log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
             return Triple.of(false, "100253", "用户已绑定车辆");
         }
@@ -791,7 +791,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         //如果车电一起免押，检查用户是否归还电池
         Triple<Boolean, String, Object> batteryDepositPreCheckResult = eleDepositOrderService.returnDepositPreCheck(userInfo);
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)
-                && !batteryDepositPreCheckResult.getLeft()) {
+                && Boolean.TRUE.equals(!batteryDepositPreCheckResult.getLeft())) {
             log.error("REFUND ORDER ERROR! user not return battery,uid={}", userInfo.getUid());
             return batteryDepositPreCheckResult;
         }
