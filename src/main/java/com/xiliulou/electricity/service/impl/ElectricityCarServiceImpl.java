@@ -463,7 +463,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
                 ///拷贝图片
                 PictureQuery pictureQuery = new PictureQuery();
-                pictureQuery.setBusinessId(targetCarModel.getId().longValue());
+                pictureQuery.setBusinessId(electricityCarModel.getId().longValue());
                 pictureQuery.setStatus(Picture.STATUS_ENABLE);
                 pictureQuery.setDelFlag(Picture.DEL_NORMAL);
                 pictureQuery.setTenantId(tenantId);
