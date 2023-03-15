@@ -1469,8 +1469,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         FreeDepositUserInfoVo freeDepositUserInfoVo = new FreeDepositUserInfoVo();
         if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-            freeDepositUserInfoVo.setApplyCarDepositTime(userCarDeposit.getApplyDepositTime());
-            freeDepositUserInfoVo.setCarDepositAuthStatus(freeDepositOrder.getAuthStatus());
+            freeDepositUserInfoVo.setApplyCarBatteryDepositTime(userCarDeposit.getApplyDepositTime());
+            freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(freeDepositOrder.getAuthStatus());
             return Triple.of(true, null, freeDepositUserInfoVo);
         }
 
