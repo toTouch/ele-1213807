@@ -2031,10 +2031,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         List<UserBatteryInfoVO> userBatteryInfoVOS ;
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
-            //按认证时间排序
             userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
         } else {
-            //按电池套餐过期时间排序
             userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
         }
 

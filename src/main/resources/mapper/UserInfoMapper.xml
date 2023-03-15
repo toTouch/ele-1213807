@@ -216,7 +216,7 @@
                 #{id}
             </foreach>
         </if>
-        order by ubmc.member_card_expire_time desc
+        order by ubmc.member_card_expire_time,tui.uid desc
         limit #{query.offset}, #{query.size}
     </select>
 
