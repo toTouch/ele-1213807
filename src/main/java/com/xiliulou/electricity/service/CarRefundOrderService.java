@@ -72,4 +72,6 @@ public interface CarRefundOrderService {
     R queryCount(CarRefundOrderQuery query);
     
     R carRefundOrderReview(Long id, Integer status, String remark);
+    
+    Integer queryStatusByLastCreateTime(Long uid, Integer tenantId);
 }
