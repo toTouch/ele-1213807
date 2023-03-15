@@ -15,15 +15,6 @@ public class FreeCarBatteryDepositOrderQuery {
     @NotNull(message = "加盟商id不能为空")
     private Long franchiseeId;
 
-    @NotBlank(message = "手机号不能为空")
-    private String phoneNumber;
-
-    @NotBlank(message = "身份证不能为空")
-    private String idCard;
-
-    @NotBlank(message = "真实姓名不能为空")
-    private String realName;
-
     @NotNull(message = "门店不能为空!")
     private Long storeId;
 
