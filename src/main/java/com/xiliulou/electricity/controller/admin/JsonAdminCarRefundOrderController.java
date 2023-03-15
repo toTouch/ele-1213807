@@ -12,7 +12,7 @@ import javax.annotation.Resource;
  * @since 2023-03-15 13:42:00
  */
 @RestController
-public class CarRefundOrderController {
+public class JsonAdminCarRefundOrderController {
     
     /**
      * 服务对象
