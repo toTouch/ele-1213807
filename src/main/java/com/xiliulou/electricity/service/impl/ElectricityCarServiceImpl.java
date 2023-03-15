@@ -96,6 +96,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     FranchiseeService franchiseeService;
+    
+    @Autowired
+    CarModelTagService carModelTagService;
+    
+    @Autowired
+    PictureService pictureService;
 
 
     /**
@@ -386,6 +392,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (CollectionUtils.isEmpty(carIds)) {
             return R.ok();
         }
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
         
         Store targetStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getTargetSid());
         if (Objects.isNull(targetStore)) {
@@ -432,6 +440,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             ElectricityCarModel targetCarModel = electricityCarModelService
                     .queryByNameAndStoreId(electricityCarModel.getName(), targetStore.getId());
             if (Objects.isNull(targetCarModel)) {
+                //拷贝类型
                 targetCarModel = new ElectricityCarModel();
                 BeanUtil.copyProperties(electricityCarModel, targetCarModel);
                 targetCarModel.setFranchiseeId(franchisee.getId());
@@ -439,6 +448,25 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 targetCarModel.setUpdateTime(System.currentTimeMillis());
                 targetCarModel.setCreateTime(System.currentTimeMillis());
                 electricityCarModelService.insert(targetCarModel);
+    
+                //拷贝标签
+                List<CarModelTag> carModelTags = carModelTagService.selectByCarModelId(electricityCarModel.getId());
+                for (CarModelTag carModelTag : carModelTags) {
+                    carModelTag.setId(null);
+                    carModelTag.setCarModelId(targetCarModel.getId().longValue());
+                    carModelTag.setCreateTime(System.currentTimeMillis());
+                    carModelTag.setUpdateTime(System.currentTimeMillis());
+                }
+                carModelTagService.batchInsert(carModelTags);
+    
+                //                PictureQuery pictureQuery = new PictureQuery();
+                //                pictureQuery.setBusinessId(targetCarModel.getId().longValue());
+                //                pictureQuery.setStatus(Picture.STATUS_ENABLE);
+                //                pictureQuery.setDelFlag(Picture.DEL_NORMAL);
+                //                pictureQuery.setTenantId(tenantId);
+                //                pictureService.selectByQuery()
+                //                //拷贝图片
+                //                pictureService.savePictureCallBack()
             }
     
             Integer targetCarModelId = targetCarModel.getId();
