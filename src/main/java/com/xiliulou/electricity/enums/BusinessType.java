@@ -18,7 +18,7 @@ public enum BusinessType {
     CAR_REFUND(16),
     RENT_CAR(17),
     FREE_DEPOSIT(18),
-    RETURN_CAR(19);
+    RETURN_CAR(20);
 
     private final Integer business;
     

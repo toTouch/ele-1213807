@@ -289,7 +289,7 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
         Integer count = queryCountByStatus(userInfo.getUid(), tenantId, CarRefundOrder.STATUS_INIT);
         if (!Objects.equals(count, 0)) {
             log.warn("CAR REFUND ORDER WARN! return car under review! uid={}", user.getUid());
-            return R.fail("100262", "还车审核中，请耐心等待");
+            return R.fail("100265", "还车审核中，请耐心等待");
         }
         
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_CAR, userInfo.getUid());
