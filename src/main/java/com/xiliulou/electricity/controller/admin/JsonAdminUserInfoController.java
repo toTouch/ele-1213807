@@ -162,6 +162,7 @@ public class JsonAdminUserInfoController extends BaseController {
                             @RequestParam(value = "sortType", required = false) Integer sortType,
                             @RequestParam(value = "cardName", required = false) String cardName,
                             @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
+                            @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
 
@@ -187,6 +188,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryDepositStatus(batteryDepositStatus)
                 .sortType(sortType)
                 .batteryId(batteryId)
+                .memberCardExpireType(memberCardExpireType)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .uid(uid)
