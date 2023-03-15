@@ -21,14 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
@@ -87,9 +80,9 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
-            @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-            @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateBeginTime,
-            @RequestParam(value = "userCreateEndTime", required = false) Long userCreateEndTime) {
+                       @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+                       @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateBeginTime,
+                       @RequestParam(value = "userCreateEndTime", required = false) Long userCreateEndTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -167,7 +160,7 @@ public class JsonAdminUserInfoController extends BaseController {
                             @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                             @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                             @RequestParam(value = "userCreateTimeBegin", required = false) Long userCreateTimeBegin,
-            @RequestParam(value = "userCreateTimeEnd", required = false) Long userCreateTimeEnd,
+                            @RequestParam(value = "userCreateTimeEnd", required = false) Long userCreateTimeEnd,
                             @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                             @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
 
