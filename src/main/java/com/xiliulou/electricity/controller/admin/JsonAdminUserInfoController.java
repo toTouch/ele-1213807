@@ -288,18 +288,6 @@ public class JsonAdminUserInfoController extends BaseController {
     }
 
     /**
-     * 更新用户服务状态
-     * @param uid
-     * @param serviceStatus
-     * @return
-     */
-//    @PutMapping(value = "/admin/userInfo/serviceStatus")
-//    @Log(title = "修改用户租赁状态")
-//    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
-//        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
-//    }
-
-    /**
      * 修改用户电池租赁状态
      *
      * @param uid
