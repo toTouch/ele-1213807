@@ -1432,8 +1432,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return Triple.of(true, null, freeDepositUserInfoVo);
     }
 
-    /**
-     * 获取电池车辆共同免押结果
+    /*
+     * 查询电池车辆免押是否成功
      *
      * @return
      */
@@ -1583,7 +1583,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         freeDepositUserInfoVo.setApplyCarDepositTime(userCarDeposit.getApplyDepositTime());
-        freeDepositUserInfoVo.setCarDepositAuthStatus(queryOrderRspData.getAuthStatus());
+        freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(queryOrderRspData.getAuthStatus());
 
         return Triple.of(true, null, freeDepositUserInfoVo);
     }
