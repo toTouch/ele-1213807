@@ -103,7 +103,7 @@
 
     <!--扣减免押次数-->
     <update id="deductionFreeDepositCapacity">
-        update t_free_deposit_data set free_deposit_capacity = freeDepositCapacity-#{count}   where tenantId = #{tenantId}
+        update t_free_deposit_data set free_deposit_capacity = free_deposit_capacity -#{count}   where tenant_id = #{tenantId}
     </update>
 
 </mapper>
