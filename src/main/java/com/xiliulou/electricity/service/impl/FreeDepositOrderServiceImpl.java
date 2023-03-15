@@ -1582,7 +1582,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             eleDepositOrderService.update(eleDepositOrderUpdate);
         }
 
-        freeDepositUserInfoVo.setApplyCarDepositTime(userCarDeposit.getApplyDepositTime());
+        freeDepositUserInfoVo.setApplyCarBatteryDepositTime(userCarDeposit.getApplyDepositTime());
         freeDepositUserInfoVo.setCarBatteryDepositAuthStatus(queryOrderRspData.getAuthStatus());
 
         return Triple.of(true, null, freeDepositUserInfoVo);
