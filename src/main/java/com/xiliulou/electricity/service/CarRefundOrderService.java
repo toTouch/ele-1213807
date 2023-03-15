@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarRefundOrder;
+import com.xiliulou.electricity.query.CarRefundOrderQuery;
 
 import java.util.List;
 
@@ -63,4 +64,10 @@ public interface CarRefundOrderService {
     Boolean deleteById(Long id);
     
     R userCarRefundOrder();
+    
+    R queryList(CarRefundOrderQuery query);
+    
+    Integer queryCountByStatus(Long uid, Integer tenantId, Integer status);
+    
+    R queryCount(CarRefundOrderQuery query);
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.CarRefundOrder;
+import com.xiliulou.electricity.query.CarRefundOrderQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -64,4 +65,10 @@ public interface CarRefundOrderMapper extends BaseMapper<CarRefundOrder> {
      */
     int deleteById(Long id);
     
+    List<CarRefundOrder> queryList(CarRefundOrderQuery query);
+    
+    Integer queryCountByStatus(@Param("uid") Long uid, @Param("tenantId") Integer tenantId,
+            @Param("status") Integer status);
+    
+    Long queryCount(CarRefundOrderQuery query);
 }

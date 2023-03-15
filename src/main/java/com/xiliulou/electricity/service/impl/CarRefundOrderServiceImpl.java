@@ -5,25 +5,36 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.CarRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarRefundOrderMapper;
+import com.xiliulou.electricity.query.CarRefundOrderQuery;
 import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserCarDepositService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.CarRefundOrderVo;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,15 +59,18 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     @Autowired
     private UserInfoService userInfoService;
     
-    //    @Autowired
-    //    private UserCarService userCarService;
+    
     @Autowired
     private ElectricityCarService electricityCarService;
     
-    //    @Autowired
-    //    private CarDepositOrderService carDepositOrderService;
     @Autowired
     private UserCarDepositService userCarDepositService;
+    
+    @Autowired
+    private ElectricityCarModelService electricityCarModelService;
+    
+    @Autowired
+    private StoreService storeService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -132,6 +146,18 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer queryCountByStatus(Long uid, Integer tenantId, Integer status) {
+        return this.carRefundOrderMapper.queryCountByStatus(uid, tenantId, status);
+    }
+    
+    @Override
+    public R queryCount(CarRefundOrderQuery query) {
+        return R.ok(this.carRefundOrderMapper.queryCount(query));
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public R userCarRefundOrder() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -142,6 +168,8 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
         if (!redisService.setNx(CacheConstant.CACHE_USER_RETURN_CAR_LOCK + user.getUid(), "ok", 3000L, false)) {
             return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
         }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
@@ -173,12 +201,61 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
             return R.fail("100015", "用户未绑定车辆");
         }
         
-        //OrderIdUtil.generateBusinessOrderId()
+        //是否有正在审核的订单
+        Integer count = queryCountByStatus(userInfo.getUid(), tenantId, CarRefundOrder.STATUS_INIT);
+        if (!Objects.equals(count, 0)) {
+            log.warn("CAR REFUND ORDER WARN! return car under review! uid={}", user.getUid());
+            return R.fail("100262", "还车审核中，请耐心等待");
+        }
+        
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_CAR, userInfo.getUid());
         
         //生成审核记录
-        //        CarRefundOrder carRefundOrder = new CarRefundOrder();
-        //        carRefundOrder
+        CarRefundOrder carRefundOrder = new CarRefundOrder();
+        carRefundOrder.setOrderId(orderId);
+        carRefundOrder.setUid(userInfo.getUid());
+        carRefundOrder.setName(userInfo.getName());
+        carRefundOrder.setPhone(userInfo.getPhone());
+        carRefundOrder.setCarId(electricityCar.getId().longValue());
+        carRefundOrder.setCarSn(electricityCar.getSn());
+        carRefundOrder.setCarDeposit(userCarDeposit.getCarDeposit());
+        carRefundOrder.setCarModelId(electricityCar.getModelId().longValue());
+        carRefundOrder.setStatus(CarRefundOrder.STATUS_INIT);
+        carRefundOrder.setStoreId(electricityCar.getStoreId());
+        carRefundOrder.setTenantId(TenantContextHolder.getTenantId());
+        carRefundOrder.setCreateTime(System.currentTimeMillis());
+        carRefundOrder.setUpdateTime(System.currentTimeMillis());
+        insert(carRefundOrder);
         
-        return null;
+        //等待后台审核后车辆接触绑定
+        return R.ok();
+    }
+    
+    @Override
+    public R queryList(CarRefundOrderQuery query) {
+        List<CarRefundOrder> carRefundOrders = carRefundOrderMapper.queryList(query);
+        if (CollectionUtils.isEmpty(carRefundOrders)) {
+            return R.ok(new ArrayList<>());
+        }
+        
+        List<CarRefundOrderVo> voList = new ArrayList<>();
+        
+        carRefundOrders.forEach(item -> {
+            CarRefundOrderVo vo = new CarRefundOrderVo();
+            BeanUtils.copyProperties(item, vo);
+            
+            ElectricityCarModel electricityCarModel = electricityCarModelService
+                    .queryByIdFromCache(item.getCarModelId().intValue());
+            if (Objects.nonNull(electricityCarModel)) {
+                vo.setCarModelName(electricityCarModel.getName());
+            }
+            
+            Store store = storeService.queryByIdFromCache(item.getStoreId());
+            if (Objects.nonNull(store)) {
+                vo.setStoreName(store.getName());
+            }
+            voList.add(vo);
+        });
+        return R.ok();
     }
 }

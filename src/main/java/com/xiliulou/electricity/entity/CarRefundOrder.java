@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * (CarRefundOrder)实体类
  *
@@ -33,12 +35,12 @@ public class CarRefundOrder {
     
     private String carSn;
     
-    private Double carDeposit;
+    private BigDecimal carDeposit;
     
     private Long carModelId;
     
     /**
-     * 0--待审核 1--审核中 2--审核通过 3--审核拒绝
+     * 1--审核中 2--审核通过 3--审核拒绝
      */
     private Integer status;
     
@@ -53,7 +55,11 @@ public class CarRefundOrder {
     private Integer tenantId;
     
     public static final Integer DEL_NORMAL = 0;
-    
     public static final Integer DEL_DEL = 1;
     
+    public static final Integer STATUS_INIT = 1;
+    
+    public static final Integer STATUS_SUCCESS = 2;
+    
+    public static final Integer STATUS_FAIL = 3;
 }

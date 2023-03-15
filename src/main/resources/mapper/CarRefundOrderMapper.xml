@@ -152,5 +152,59 @@
     <delete id="deleteById">
         delete from t_car_refund_order where id = #{id}
     </delete>
+    
+    <select id="queryList" resultMap="CarRefundOrderMap">
+        select
+        id, order_id, uid, `name`, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time,
+        update_time, store_id, tenant_id
+        from t_car_refund_order
+        <where>
+            
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and `name` = #{userName}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+    
+    <select id="queryCount" resultType="long">
+        select
+        count(*)
+        from t_car_refund_order
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and `name` = #{userName}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+        </where>
+    </select>
+    
+    <select id="queryCountByStatus" resultType="integer">
+        select count(*)
+        from t_car_refund_order
+        where uid = {uid} and tenant_id = #{tenantId}
+        <if test="status != null">
+            and status = #{status}
+        </if>
+    </select>
+
 
 </mapper>
