@@ -1745,6 +1745,84 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok();
     }
     
+    @Override
+    public R refundCarDeposit() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("CAR REFUND DEPOSIT ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!redisService
+                .setNx(CacheConstant.CACHE_USER_CAR_RETURN_DEPOSIT_LOCK + user.getUid(), "ok", 3 * 1000L, false)) {
+            return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("CAR REFUND DEPOSIT ERROR! not found user,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CAR REFUND DEPOSIT ERROR! user is disable,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        
+        if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+            log.error("CAR REFUND DEPOSIT ERROR! user is not rent deposit,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        
+        //是否归还车辆
+        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_NO)) {
+            log.error("CAR REFUND DEPOSIT ERROR! user is rent car,uid={}", user.getUid());
+            return R.fail("100250", "用户未归还车辆");
+        }
+        
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("CAR REFUND DEPOSIT ERROR! not found userCarDeposit! uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户信息");
+        }
+        
+        //查找缴纳押金订单
+        EleDepositOrder eleDepositOrder = queryByOrderId(userCarDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("CAR REFUND DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),
+                    userCarDeposit.getOrderId());
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        
+        if (eleDepositOrder.getPayAmount().compareTo(userCarDeposit.getCarDeposit()) == 0) {
+            log.error("CAR REFUND DEPOSIT ERROR! deposit not equals! uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0044", "退款金额不符");
+        }
+        
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        if (refundCount > 0) {
+            log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0047", "请勿重复退款");
+        }
+        
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
+        
+        //生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(orderId).payAmount(userCarDeposit.getCarDeposit())
+                .refundAmount(eleDepositOrder.getPayAmount()).status(EleRefundOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                .build();
+        eleRefundOrderService.insert(eleRefundOrder);
+        
+        //等到后台同意退款
+        return R.ok();
+        
+    }
+    
     /**
      * 根据型号计算押金
      *
