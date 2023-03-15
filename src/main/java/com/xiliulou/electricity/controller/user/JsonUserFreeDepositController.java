@@ -134,4 +134,14 @@ public class JsonUserFreeDepositController extends BaseController {
         return returnTripleResult(freeDepositOrderService.freeCarBatteryCarDepositHybridOrder(query, request));
     }
 
+    /**
+     * 获取用户免押订单类型
+     *
+     * @return
+     */
+    @GetMapping("/user/freeDepositOrder/detail")
+    public R freeDepositOrderDetail() {
+        return returnTripleResult(freeDepositOrderService.selectFreeDepositOrderDetail());
+    }
+
 }

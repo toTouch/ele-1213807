@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.FreeDepositOrderVO;
 import com.xiliulou.electricity.vo.FreeDepositUserInfoVo;
 import com.xiliulou.pay.deposit.paixiaozu.exception.PxzFreeDepositException;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.request.*;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -194,6 +196,31 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Override
     public Integer update(FreeDepositOrder freeDepositOrder) {
         return this.freeDepositOrderMapper.update(freeDepositOrder);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectFreeDepositOrderDetail() {
+        FreeDepositOrderVO freeDepositOrderVO = new FreeDepositOrderVO();
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.nonNull(userBatteryDeposit) && StringUtils.isNotBlank(userBatteryDeposit.getOrderId())) {
+            FreeDepositOrder freeDepositOrder = this.selectByOrderId(userBatteryDeposit.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                BeanUtils.copyProperties(freeDepositOrder, freeDepositOrderVO);
+                return Triple.of(true, "", freeDepositOrderVO);
+            }
+        }
+
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.nonNull(userCarDeposit) && StringUtils.isNotBlank(userCarDeposit.getOrderId())) {
+            FreeDepositOrder freeDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
+            if (Objects.nonNull(freeDepositOrder)) {
+                BeanUtils.copyProperties(freeDepositOrder, freeDepositOrderVO);
+                return Triple.of(true, "", freeDepositOrderVO);
+            }
+        }
+
+        return Triple.of(true, "", freeDepositOrderVO);
     }
 
     @Override
@@ -2713,16 +2740,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     private Triple<Boolean, String, Object> generateCarDepositOrder(UserInfo userInfo, FreeCarDepositQuery query) {
-        Store store = storeService.queryByIdFromCache(query.getStoreId());
-        if (Objects.isNull(store)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
-        }
-
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
             return Triple.of(false, "100009", "未找到该型号车辆");
+        }
+
+        Store store = storeService.queryByIdFromCache(electricityCarModel.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, userInfo.getUid());
@@ -2741,7 +2768,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         carDepositOrder.setCreateTime(System.currentTimeMillis());
         carDepositOrder.setUpdateTime(System.currentTimeMillis());
         carDepositOrder.setFranchiseeId(store.getFranchiseeId());
-        carDepositOrder.setStoreId(query.getStoreId());
+        carDepositOrder.setStoreId(store.getId());
         carDepositOrder.setPayType(CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
         carDepositOrder.setCarModelId(query.getCarModelId());
         carDepositOrder.setRentBattery(Objects.isNull(query.getMemberCardId()) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);
@@ -2750,16 +2777,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     private Triple<Boolean, String, Object> generateCarDepositOrder(UserInfo userInfo, FreeCarBatteryDepositQuery query, String orderId) {
-        Store store = storeService.queryByIdFromCache(query.getStoreId());
-        if (Objects.isNull(store)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
-            return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
-        }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(query.getCarModelId().intValue());
         if (Objects.isNull(electricityCarModel)) {
             log.error("ELE CAR DEPOSIT ERROR! not find carMode, carModelId={},uid={}", query.getCarModelId(), userInfo.getUid());
             return Triple.of(false, "100009", "未找到该型号车辆");
+        }
+
+        Store store = storeService.queryByIdFromCache(electricityCarModel.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found store,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0018", "未找到门店");
         }
 
         BigDecimal payAmount = electricityCarModel.getCarDeposit();
@@ -2776,7 +2804,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         carDepositOrder.setCreateTime(System.currentTimeMillis());
         carDepositOrder.setUpdateTime(System.currentTimeMillis());
         carDepositOrder.setFranchiseeId(store.getFranchiseeId());
-        carDepositOrder.setStoreId(query.getStoreId());
+        carDepositOrder.setStoreId(electricityCarModel.getStoreId());
         carDepositOrder.setPayType(CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
         carDepositOrder.setCarModelId(query.getCarModelId());
         carDepositOrder.setRentBattery(Objects.isNull(query.getMemberCardId()) ? CarDepositOrder.RENTBATTERY_NO : CarDepositOrder.RENTBATTERY_YES);

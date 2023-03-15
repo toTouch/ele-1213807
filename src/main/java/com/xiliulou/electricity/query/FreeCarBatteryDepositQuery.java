@@ -26,29 +26,12 @@ public class FreeCarBatteryDepositQuery {
     @NotBlank(message = "真实姓名不能为空")
     private String realName;
 
-    @NotNull(message = "门店不能为空!")
-    private Long storeId;
-
     @NotNull(message = "车辆型号不能为空!")
     private Long carModelId;
-
-    @NotNull(message = "车辆租赁时间不能为空!")
-    private Integer rentTime;
-
-    @NotBlank(message = "车辆租赁方式不能为空!")
-    private String rentType;
-
-    @NotNull(message = "套餐不能为空!")
-    private Integer memberCardId;
 
     @NotNull(message = "电池型号不能为空!")
     private Integer model;
 
-    private Integer insuranceId;
+    private Integer memberCardId;
 
-    private Integer userCouponId;
-
-    private String productKey;
-
-    private String deviceName;
 }
