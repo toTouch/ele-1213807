@@ -80,6 +80,9 @@
             <if test="isMoveFranchisee != null">
                 is_move_franchisee = #{isMoveFranchisee},
             </if>
+            <if test="isOpenCarBatteryBind != null">
+                is_open_car_battery_bind = #{isOpenCarBatteryBind},
+            </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
         where id = #{id} and tenant_id = #{tenantId}
