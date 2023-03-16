@@ -174,7 +174,7 @@
             </if>
         </where>
         order by create_time desc
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
     
     <select id="queryCount" resultType="long">
