@@ -448,17 +448,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
+            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+                return Triple.of(true, null, "同步成功");
+            }
+
             //冻结成功
-            if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-
+            if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
                 //扣减免押次数
-                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
-                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
-                freeDepositDataUpdate.setId(freeDepositData.getId());
-                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
-                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositDataService.update(freeDepositDataUpdate);
-
+                freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
 
                 //更新押金订单状态
                 EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
@@ -503,7 +500,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
             }
 
-
             PxzCommonRequest<PxzFreeDepositOrderQueryRequest> query = new PxzCommonRequest<>();
             query.setAesSecret(pxzConfig.getAesKey());
             query.setDateTime(System.currentTimeMillis());
@@ -513,7 +509,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             PxzFreeDepositOrderQueryRequest request = new PxzFreeDepositOrderQueryRequest();
             request.setTransId(freeDepositOrder.getOrderId());
             query.setData(request);
-
 
             PxzCommonRsp<PxzQueryOrderRsp> pxzQueryOrderRsp = null;
             try {
@@ -546,15 +541,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
+            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+                return Triple.of(true, null, "同步成功");
+            }
+
             //冻结成功
-            if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
                 //扣减免押次数
-                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
-                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
-                freeDepositDataUpdate.setId(freeDepositData.getId());
-                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
-                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositDataService.update(freeDepositDataUpdate);
+                freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
 
                 //更新押金订单状态
                 CarDepositOrder carDepositOrderUpdate = new CarDepositOrder();
@@ -652,16 +646,14 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-            //冻结成功
-            if (!Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN) && Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+                return Triple.of(true, null, "同步成功");
+            }
 
+            //冻结成功
+            if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
                 //扣减免押次数
-                FreeDepositData freeDepositData = freeDepositDataService.selectByTenantId(TenantContextHolder.getTenantId());
-                FreeDepositData freeDepositDataUpdate = new FreeDepositData();
-                freeDepositDataUpdate.setId(freeDepositData.getId());
-                freeDepositDataUpdate.setFreeDepositCapacity(freeDepositData.getFreeDepositCapacity() - 1);
-                freeDepositDataUpdate.setUpdateTime(System.currentTimeMillis());
-                freeDepositDataService.update(freeDepositDataUpdate);
+                freeDepositDataService.deductionFreeDepositCapacity(TenantContextHolder.getTenantId(), 1);
 
                 //用户绑定加盟商、更新押金状态
                 UserInfo userInfoUpdate = new UserInfo();
