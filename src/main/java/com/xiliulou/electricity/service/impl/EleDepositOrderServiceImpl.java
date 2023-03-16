@@ -1788,20 +1788,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         //查找缴纳押金订单
-        EleDepositOrder eleDepositOrder = queryByOrderId(userCarDeposit.getOrderId());
-        if (Objects.isNull(eleDepositOrder)) {
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+        if (Objects.isNull(carDepositOrder)) {
             log.error("CAR REFUND DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),
                     userCarDeposit.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-        
-        if (eleDepositOrder.getPayAmount().compareTo(userCarDeposit.getCarDeposit()) == 0) {
+    
+        if (carDepositOrder.getPayAmount().compareTo(userCarDeposit.getCarDeposit()) == 0) {
             log.error("CAR REFUND DEPOSIT ERROR! deposit not equals! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
         
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
         if (refundCount > 0) {
             log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
@@ -1810,11 +1810,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
         
         //生成退款订单
-        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
                 .refundOrderNo(orderId).payAmount(userCarDeposit.getCarDeposit())
-                .refundAmount(eleDepositOrder.getPayAmount()).status(EleRefundOrder.STATUS_INIT)
+                .refundAmount(carDepositOrder.getPayAmount()).status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                .tenantId(carDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
         
