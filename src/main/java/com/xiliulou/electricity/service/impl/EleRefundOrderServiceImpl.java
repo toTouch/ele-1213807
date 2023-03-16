@@ -624,6 +624,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
             eleRefundOrderService.update(eleRefundOrderUpdate);
+            return Triple.of(true, "", null);
         }
         
         //后台同意
@@ -631,6 +632,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (BigDecimal.valueOf(0).compareTo(userRefundAmount) == 0 || CarDepositOrder.OFFLINE_PAYTYPE
                 .equals(carDepositOrder.getPayType())) {
             handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
+            return Triple.of(true, "", null);
         }
         
         try {
