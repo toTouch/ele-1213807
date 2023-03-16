@@ -1724,6 +1724,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateUserInfo.setFranchiseeId(carDepositOrder.getFranchiseeId());
         userInfoService.updateByUid(updateUserInfo);
         
         UserCarDeposit userCarDeposit = new UserCarDeposit();
@@ -1736,6 +1737,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         userCarDeposit.setUpdateTime(System.currentTimeMillis());
         userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_DEFAULT);
         userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+        userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
         userCarDepositService.insertOrUpdate(userCarDeposit);
         
         UserCar userCar = new UserCar();
@@ -1744,6 +1746,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         userCar.setTenantId(userInfo.getTenantId());
         userCar.setCreateTime(System.currentTimeMillis());
         userCar.setUpdateTime(System.currentTimeMillis());
+        userCar.setDelFlag(UserCar.DEL_NORMAL);
         userCarService.insertOrUpdate(userCar);
     
         return R.ok();
