@@ -105,4 +105,7 @@ public interface EleRefundOrderService {
     List<EleRefundOrder> selectCarFreeDepositRefundingOrder(int offset, Integer refundOrderLimit);
 
     Triple<Boolean, String, Object> batteryFreeDepostRefundAudit(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid);
+    
+    Triple<Boolean, String, Object> carRefundDepositReview(Long id, String errMsg, Integer status,
+            BigDecimal refundAmount, HttpServletRequest request);
 }

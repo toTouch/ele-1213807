@@ -8,6 +8,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -543,7 +544,118 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         return Triple.of(true, "", "退款中，请稍后");
     }
-
+    
+    @Override
+    public Triple<Boolean, String, Object> carRefundDepositReview(Long id, String errMsg, Integer status,
+            BigDecimal refundAmount, HttpServletRequest request) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found userInfo!");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        UserInfo user = userInfoService.queryByUidFromCache(tokenUser.getUid());
+        if (Objects.isNull(user)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found userInfo! uid={}", tokenUser.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectById(id);
+        if (Objects.isNull(eleRefundOrder)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found electricityRefundOrder! id={}", id);
+            return Triple.of(false, "", "未找到退款订单!");
+        }
+        
+        //订单状态判断
+        if (!Objects.equals(eleRefundOrder.getStatus(), EleRefundOrder.STATUS_INIT)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! EleRefundOrder status illegal! id={}", id);
+            return Triple.of(false, "", "退款订单已处理，请勿重复提交");
+        }
+        
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(carDepositOrder)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found carDepositOrder! orderId={}",
+                    eleRefundOrder.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found userInfo!  uid={}", carDepositOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+        
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! user is bind car! uid={} ", carDepositOrder.getUid());
+            return Triple.of(false, "100012", "用户绑定车辆");
+        }
+        
+        BigDecimal userRefundAmount = refundAmount;
+        
+        if (Objects.nonNull(userRefundAmount)) {
+            if (userRefundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
+                log.error("CAR REFUND DEPOSIT REVIEW ERROR! ,refundAmount > payAmount! eleRefundOrder={}",
+                        eleRefundOrder.getRefundOrderNo());
+                return Triple.of(false, "", "退款金额不能大于支付金额!");
+            }
+            
+            //插入修改记录
+            EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+            eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+            eleRefundOrderHistory.setRefundAmount(refundAmount);
+            eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+            eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+            eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+        } else {
+            userRefundAmount = eleRefundOrder.getRefundAmount();
+        }
+        
+        //更新退款订单
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setErrMsg(errMsg);
+        
+        //后台拒绝
+        if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+        }
+        
+        //后台同意
+        //零元或线下
+        if (BigDecimal.valueOf(0).compareTo(userRefundAmount) == 0 || CarDepositOrder.OFFLINE_PAYTYPE
+                .equals(carDepositOrder.getPayType())) {
+            handleBatteryZeroDepositRefundOrder(eleRefundOrderUpdate, userInfo);
+        }
+        
+        try {
+            RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId())
+                    .refundOrderNo(eleRefundOrder.getRefundOrderNo()).payAmount(eleRefundOrder.getPayAmount())
+                    .refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+            
+            eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+            
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            
+            return Triple.of(true, "", null);
+        } catch (WechatPayException e) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! wechat v3 refund  error! ", e);
+        }
+        
+        //提交失败
+        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderService.update(eleRefundOrderUpdate);
+        return Triple.of(false, "ELECTRICITY.00100", "退款失败");
+    }
+    
     /**
      * 电池免押退押金
      *
