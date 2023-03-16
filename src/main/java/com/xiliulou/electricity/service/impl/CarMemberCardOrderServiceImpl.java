@@ -666,12 +666,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                     carMemberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarMemberCard)) {
-            log.warn("HOME WARN! user haven't carMemberCard uid={}", userInfo.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
+    
+        //        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        //        if (Objects.isNull(userCarMemberCard)) {
+        //            log.warn("HOME WARN! user haven't carMemberCard uid={}", userInfo.getUid());
+        //            return R.fail("100210", "用户未开通套餐");
+        //        }
         
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
@@ -760,14 +760,83 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         //            memberCardExpireTime = calculationOrderMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
         //                    carMemberCardOrder.getValidDays());
         //        }
+    
+        Long cardId = null;
+        String cardOrderId = null;
+    
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
+            if (Objects.isNull(carMemberCardOrderAddAndUpdate.getValidDays())) {
+                return R.failMsg("请填写租赁周期");
+            }
         
+            //获取租车套餐计费规则
+            Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(userCarModel);
+            if (ObjectUtil.isEmpty(rentCarPriceRule)) {
+                log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", userCarModel.getId(),
+                        user.getUid());
+                return R.fail("100237", "车辆租赁方式不存在!");
+            }
+        
+            EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory
+                    .getInstance(carMemberCardOrderAddAndUpdate.getRentType());
+            if (Objects.isNull(calcRentCarPriceInstance)) {
+                log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", user.getUid());
+                return R.fail("100237", "车辆租赁方式不存在!");
+            }
+        
+            Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance
+                    .getRentCarPrice(userInfo, carMemberCardOrderAddAndUpdate.getValidDays(), rentCarPriceRule);
+            if (!calcSavePrice.getLeft()) {
+                return R.fail("100237", "车辆租赁方式不存在!");
+            }
+        
+            if (Objects.nonNull(userCar.getCid()) || StringUtils.isNotBlank(userCar.getSn()) || Objects
+                    .equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+                return R.fail("100253", "用户已绑定车辆，请先解绑");
+            }
+        
+            BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
+            String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
+        
+            CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
+            carMemberCardOrder.setUid(userInfo.getUid());
+            carMemberCardOrder.setOrderId(orderId);
+            carMemberCardOrder.setCreateTime(System.currentTimeMillis());
+            carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+            carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_SUCCESS);
+            carMemberCardOrder.setCarModelId(userCarModel.getId().longValue());
+            carMemberCardOrder.setUid(userInfo.getUid());
+            carMemberCardOrder.setCardName(getCardName(carMemberCardOrderAddAndUpdate.getRentType()));
+            carMemberCardOrder.setMemberCardType(carMemberCardOrderAddAndUpdate.getRentType());
+            carMemberCardOrder.setPayAmount(rentCarPrice);
+            carMemberCardOrder.setUserName(userInfo.getName());
+            carMemberCardOrder.setValidDays(carMemberCardOrderAddAndUpdate.getValidDays());
+            carMemberCardOrder.setPayType(CarMemberCardOrder.OFFLINE_PAYTYPE);
+            carMemberCardOrder.setStoreId(userCarModel.getStoreId());
+            carMemberCardOrder.setFranchiseeId(userCarModel.getFranchiseeId());
+            carMemberCardOrder.setTenantId(userInfo.getTenantId());
+            insert(carMemberCardOrder);
+        
+            cardId = carMemberCardOrder.getId();
+            cardOrderId = orderId;
+            memberCardExpireTime = calculationOrderMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
+                    carMemberCardOrder.getValidDays());
+        } else {
+            cardId = userCarMemberCard.getCardId();
+            cardOrderId = userCarMemberCard.getOrderId();
+        }
+    
         UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
         updateUserCarMemberCard.setUid(userInfo.getUid());
-        //updateUserCarMemberCard.setOrderId(oldOrderId);
-        //updateUserCarMemberCard.setCardId(bindCarModel.getId().longValue());
-        updateUserCarMemberCard.setMemberCardExpireTime(carMemberCardOrderAddAndUpdate.getMemberCardExpireTime());
+        updateUserCarMemberCard.setCardId(cardId);
+        updateUserCarMemberCard.setOrderId(cardOrderId);
+        updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+        updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
+        updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
         updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
-        userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+        userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+        
         
         Double oldCardDay = 0.0;
         Long now = System.currentTimeMillis();
