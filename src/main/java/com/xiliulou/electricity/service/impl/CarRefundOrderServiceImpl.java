@@ -168,15 +168,9 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
-        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("CAR REFUND ORDER ERROR! userInfo is null error! uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
+    
+        if (!Objects.equals(tenantId, user.getTenantId())) {
             return R.ok();
         }
         
@@ -191,21 +185,20 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
         }
         
         UserInfo carRefundUserInfo = userInfoService.queryByUidFromCache(carRefundOrder.getUid());
-        if (Objects.isNull(carRefundUserInfo) || !Objects
-                .equals(carRefundUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(carRefundUserInfo) || !Objects.equals(carRefundUserInfo.getTenantId(), tenantId)) {
             log.error("CAR REFUND ORDER ERROR! userInfo is null error! uid={}", carRefundOrder.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         
         //用户是否绑定车辆
         if (!Objects.equals(carRefundUserInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
+            log.error("ELE CAR ERROR! user not binding car,uid={}", carRefundUserInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
         
         ElectricityCar electricityCar = electricityCarService.queryByIdFromCache(carRefundOrder.getCarId().intValue());
         if (!Objects.equals(carRefundUserInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
+            log.error("ELE CAR ERROR! user not binding car,uid={}", carRefundUserInfo.getUid());
             return R.fail("100007", "未找到车辆");
         }
         
