@@ -643,6 +643,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -840,8 +841,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         
         Double oldCardDay = 0.0;
         Long now = System.currentTimeMillis();
-        if (userCarMemberCard.getMemberCardExpireTime() > now) {
-            oldCardDay = Math.ceil((userCarMemberCard.getMemberCardExpireTime() - now) / 3600000 / 24.0);
+        if (memberCardExpireTime > now) {
+            oldCardDay = Math.ceil((memberCardExpireTime - now) / 3600000 / 24.0);
         }
         
         Double carDayTemp = 0.0;
