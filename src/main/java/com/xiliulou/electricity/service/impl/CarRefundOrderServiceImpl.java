@@ -201,14 +201,21 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
             log.error("ELE CAR ERROR! user not binding car,uid={}", carRefundUserInfo.getUid());
             return R.fail("100007", "未找到车辆");
         }
-        
+    
         CarRefundOrder updateCarRefundOrder = new CarRefundOrder();
         updateCarRefundOrder.setId(carRefundOrder.getId());
-        updateCarRefundOrder.setStatus(status);
         updateCarRefundOrder.setRemark(remark);
         updateCarRefundOrder.setUpdateTime(System.currentTimeMillis());
+    
+        if (!Objects.equals(status, CarRefundOrder.STATUS_SUCCESS)) {
+            updateCarRefundOrder.setStatus(CarRefundOrder.STATUS_FAIL);
+            update(updateCarRefundOrder);
+            return R.ok();
+        }
+    
+        updateCarRefundOrder.setStatus(CarRefundOrder.STATUS_SUCCESS);
         update(updateCarRefundOrder);
-        
+    
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(carRefundUserInfo.getUid());
         updateUserInfo.setCarRentStatus(UserInfo.CAR_RENT_STATUS_NO);
