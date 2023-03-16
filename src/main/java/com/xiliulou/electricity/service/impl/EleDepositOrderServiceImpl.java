@@ -1795,7 +1795,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
     
-        if (carDepositOrder.getPayAmount().compareTo(userCarDeposit.getCarDeposit()) == 0) {
+        if (carDepositOrder.getPayAmount().compareTo(userCarDeposit.getCarDeposit()) != 0) {
             log.error("CAR REFUND DEPOSIT ERROR! deposit not equals! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
