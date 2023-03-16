@@ -344,7 +344,7 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     }
     
     @Override
-    public Integer queryStatusByLastCreateTime(Long uid, Integer tenantId) {
-        return carRefundOrderMapper.queryStatusByLastCreateTime(uid, tenantId);
+    public Integer queryStatusByLastCreateTime(Long uid, Integer tenantId, String sn) {
+        return carRefundOrderMapper.queryStatusByLastCreateTime(uid, tenantId, sn);
     }
 }

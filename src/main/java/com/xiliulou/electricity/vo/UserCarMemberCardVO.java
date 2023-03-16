@@ -79,5 +79,9 @@ public class UserCarMemberCardVO {
      * 地址更新时间
      */
     private Long pointUpdateTime;
-
+    
+    /**
+     * 归还车辆状态
+     */
+    private Integer returnCarStatus;
 }

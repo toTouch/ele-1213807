@@ -83,6 +83,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     CarDepositOrderService carDepositOrderService;
+    
+    @Autowired
+    CarRefundOrderService carRefundOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -256,6 +259,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
         if (Objects.nonNull(userCar)) {
             userCarMemberCardVO.setCarSN(StringUtils.isBlank(userCar.getSn()) ? null : userCar.getSn());
+        }
+    
+        //还车审核状态, 为空用户没发送审核 默认为0
+        if (Objects.nonNull(userCar) && !StringUtils.isBlank(userCar.getSn())) {
+            Integer status = carRefundOrderService
+                    .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), userCar.getSn());
+            userCarMemberCardVO.setReturnCarStatus(Objects.isNull(status) ? 0 : status);
         }
 
         //门店名称
