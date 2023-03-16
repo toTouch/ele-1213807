@@ -200,7 +200,7 @@
     <select id="queryCountByStatus" resultType="integer">
         select count(*)
         from t_car_refund_order
-        where uid = {uid} and tenant_id = #{tenantId}
+        where uid = #{uid} and tenant_id = #{tenantId}
         <if test="status != null">
             and status = #{status}
         </if>
@@ -209,7 +209,7 @@
     <select id="queryStatusByLastCreateTime" resultType="integer">
         select status
         from t_car_refund_order
-        where uid = {uid} and tenant_id = #{tenantId}
+        where uid = #{uid} and tenant_id = #{tenantId}
         order by create_time desc
         limit 1
     </select>
