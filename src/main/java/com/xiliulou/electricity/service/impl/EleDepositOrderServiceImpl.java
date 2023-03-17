@@ -1808,6 +1808,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
+        String success = null;
         
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
@@ -1839,12 +1840,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
             //退押金解绑用户所属加盟商
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+            //退押金成功通知前端
+            success = "SUCCESS";
         }
     
         eleRefundOrderService.insert(eleRefundOrder);
         
         //等到后台同意退款
-        return R.ok();
+        return R.ok(success);
     }
     
     /**

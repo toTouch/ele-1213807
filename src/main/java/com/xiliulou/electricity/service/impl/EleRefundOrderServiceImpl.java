@@ -550,13 +550,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             BigDecimal refundAmount, HttpServletRequest request) {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(tokenUser)) {
-            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found userInfo!");
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found user!");
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
-        
-        UserInfo user = userInfoService.queryByUidFromCache(tokenUser.getUid());
+    
+        User user = userService.queryByUidFromCache(tokenUser.getUid());
         if (Objects.isNull(user)) {
-            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found userInfo! uid={}", tokenUser.getUid());
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found user! uid={}", tokenUser.getUid());
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
