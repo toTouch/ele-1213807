@@ -651,7 +651,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         try {
             RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId())
                     .refundOrderNo(eleRefundOrder.getRefundOrderNo()).payAmount(eleRefundOrder.getPayAmount())
-                    .refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+                    .refundAmount(eleRefundOrder.getRefundAmount()).build();
             
             eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
             
