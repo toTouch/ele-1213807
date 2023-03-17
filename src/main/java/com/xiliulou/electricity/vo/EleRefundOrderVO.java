@@ -72,7 +72,7 @@ public class EleRefundOrderVO {
 
     private Integer payType;
     
-    private Integer refundOrderType;
+    //private Integer refundOrderType;
 
     public Long getId() {
         return id;
@@ -186,11 +186,11 @@ public class EleRefundOrderVO {
         this.payType = payType;
     }
     
-    public Integer getRefundOrderType() {
-        return refundOrderType;
-    }
-    
-    public void setRefundOrderType(Integer refundOrderType) {
-        this.refundOrderType = refundOrderType;
-    }
+    //    public Integer getRefundOrderType() {
+    //        return refundOrderType;
+    //    }
+    //
+    //    public void setRefundOrderType(Integer refundOrderType) {
+    //        this.refundOrderType = refundOrderType;
+    //    }
 }
