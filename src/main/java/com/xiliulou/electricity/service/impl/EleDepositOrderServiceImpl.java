@@ -116,7 +116,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     CarDepositOrderService carDepositOrderService;
-
+    
+    @Autowired
+    
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, orderNo));
@@ -1822,22 +1824,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (BigDecimal.valueOf(0).compareTo(carDepositOrder.getPayAmount()) == 0) {
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-        
+    
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
-        
-            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-            userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-            userBatteryService.deleteByUid(userInfo.getUid());
-        
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo);
-            }
-        
+    
+            userCarService.deleteByUid(userInfo.getUid());
+    
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+    
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+    
             //退押金解绑用户所属加盟商
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
             //退押金成功通知前端
