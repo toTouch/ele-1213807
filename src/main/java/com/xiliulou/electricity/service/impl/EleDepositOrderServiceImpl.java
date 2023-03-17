@@ -1816,11 +1816,35 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
+    
+        //零元直接退
+        if (BigDecimal.valueOf(0).compareTo(carDepositOrder.getPayAmount()) == 0) {
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+        
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+        
+            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+            userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+            userBatteryService.deleteByUid(userInfo.getUid());
+        
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.nonNull(insuranceUserInfo)) {
+                insuranceUserInfoService.deleteById(insuranceUserInfo);
+            }
+        
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+        }
+    
         eleRefundOrderService.insert(eleRefundOrder);
         
         //等到后台同意退款
         return R.ok();
-        
     }
     
     /**
