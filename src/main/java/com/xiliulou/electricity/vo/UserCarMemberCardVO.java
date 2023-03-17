@@ -84,4 +84,9 @@ public class UserCarMemberCardVO {
      * 归还车辆状态
      */
     private Integer returnCarStatus;
+    
+    /**
+     * 车辆退押审核状态
+     */
+    private Integer returnDepositStatus;
 }

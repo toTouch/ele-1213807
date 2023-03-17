@@ -86,6 +86,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     CarRefundOrderService carRefundOrderService;
+    
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -247,6 +250,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             if (Objects.nonNull(carDepositOrder)) {
                 userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
             }
+    
+            Integer integer = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
+            userCarMemberCardVO.setReturnDepositStatus(integer);
         }
     
         //车辆型号
