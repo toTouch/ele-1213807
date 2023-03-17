@@ -1943,13 +1943,13 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         BigDecimal totalPayAmount = BigDecimal.valueOf(0);
 
         //处理租车押金
-        Triple<Boolean, String, Object> rentCarDepositTriple = null;
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
-            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
-            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
-                return rentCarDepositTriple;
-            }
-        } else {
+//        Triple<Boolean, String, Object> rentCarDepositTriple = null;
+//        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
+//            rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
+//            if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
+//                return rentCarDepositTriple;
+//            }
+//        } else {
             //租车免押成功
             UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userCarDeposit)) {
@@ -1969,7 +1969,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 log.error("FREE DEPOSIT ERROR! carModel illegal! uid={},orderId={},carModelId={}", uid, userCarDeposit.getOrderId(), query.getCarModelId());
                 return Triple.of(false, "100415", "车辆型号不一致");
             }
-        }
+//        }
 
         //处理租车套餐订单
         Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
@@ -1985,7 +1985,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 return rentBatteryDepositTriple;
             }
         } else {
-            //换电免押成功
+            //用户已绑定电池
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit)) {
                 log.error("FREE DEPOSIT ERROR! not found userBatteryDeposit! uid={}", uid);
@@ -2000,7 +2000,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             }
 
             //免押加盟商与前端传过来的型号是否一致
-            if (Objects.nonNull(query.getFranchiseeId()) && !Objects.equals(query.getFranchiseeId(), eleDepositOrder.getFranchiseeId())) {
+            if (Objects.nonNull(query.getFranchiseeId()) && !Objects.equals(query.getFranchiseeId(), userInfo.getFranchiseeId())) {
                 log.error("FREE DEPOSIT ERROR! franchiseeId illegal! uid={},franchiseeId={}", uid, query.getFranchiseeId());
                 return Triple.of(false, "100407", "加盟商不一致");
             }
@@ -2027,16 +2027,16 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存租车押金订单
-        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.nonNull(rentCarDepositTriple.getRight())) {
-            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
-            carDepositOrderService.insert(carDepositOrder);
-
-            orderList.add(carDepositOrder.getOrderId());
-            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
-            payAmountList.add(carDepositOrder.getPayAmount());
-
-            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
-        }
+//        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO) && Objects.nonNull(rentCarDepositTriple.getRight())) {
+//            CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
+//            carDepositOrderService.insert(carDepositOrder);
+//
+//            orderList.add(carDepositOrder.getOrderId());
+//            orderTypeList.add(UnionPayOrder.ORDER_TYPE_RENT_CAR_DEPOSIT);
+//            payAmountList.add(carDepositOrder.getPayAmount());
+//
+//            totalPayAmount = totalPayAmount.add(carDepositOrder.getPayAmount());
+//        }
 
         //保存租车套餐订单
         if (Objects.nonNull(rentCarMemberCardTriple.getRight())) {
