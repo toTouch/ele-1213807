@@ -1332,13 +1332,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .selectByUidFromCache(userInfo.getUid());
 
         ElectricityMemberCard electricityMemberCard = null;
-        if (Objects.nonNull(userBatteryMemberCard)) {
+        if (Objects.nonNull(userBatteryMemberCard) && !Objects
+                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_MEMBER_CARD_ID_ZERO)) {
             electricityMemberCard = electricityMemberCardService
                     .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
         }
-        if (Objects.nonNull(userBatteryMemberCard) && !Objects
-                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && Objects
-                .isNull(electricityMemberCard)) {
+    
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.isNull(electricityMemberCard) && !Objects
+                .equals(userBatteryMemberCard.getRemainingNumber(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)
+                && !Objects
+                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_MEMBER_CARD_ID_ZERO)) {
             log.error("HOME ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(),
                     userBatteryMemberCard.getMemberCardId());
             return R.fail("ELECTRICITY.00121", "套餐不存在");
