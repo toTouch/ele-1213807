@@ -118,6 +118,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     CarDepositOrderService carDepositOrderService;
     
     @Autowired
+    UserCarMemberCardService userCarMemberCardService;
     
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
