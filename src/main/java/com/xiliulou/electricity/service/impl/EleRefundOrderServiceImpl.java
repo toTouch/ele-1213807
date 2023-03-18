@@ -631,6 +631,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         //零元或线下
         if (BigDecimal.valueOf(0).compareTo(userRefundAmount) == 0 || CarDepositOrder.OFFLINE_PAYTYPE
                 .equals(carDepositOrder.getPayType())) {
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            
+            
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
