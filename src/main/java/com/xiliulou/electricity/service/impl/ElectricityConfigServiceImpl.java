@@ -159,6 +159,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
             electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
             electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
+            electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -180,6 +181,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setFreeDepositType(electricityConfigAddAndUpdateQuery.getFreeDepositType());
         electricityConfig.setIsMoveFranchisee(electricityConfigAddAndUpdateQuery.getIsMoveFranchisee());
         electricityConfig.setFranchiseeMoveInfo(franchiseeMoveDetail);
+        electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());
