@@ -1075,7 +1075,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, userInfo.getFranchiseeId(), userInfo.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryDeposit)) {
+            log.error("DEPOSIT ERROR! not found userBatteryDeposit,uid={}", uid);
+            return R.ok();
+        }
+
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("DEPOSIT ERROR! not found eleDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return R.ok();
+        }
+
         return R.ok(eleDepositOrder.getPayType());
     }
 
