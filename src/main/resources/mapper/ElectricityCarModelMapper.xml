@@ -63,8 +63,8 @@
                 #{id}
             </foreach>
         </if>
-        <if test="storeId != null">
-            and tecm.store_id = #{storeId}
+        <if test="query.storeId != null">
+            and tecm.store_id = #{query.storeId}
         </if>
     </select>
 
