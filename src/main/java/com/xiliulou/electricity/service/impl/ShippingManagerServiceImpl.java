@@ -56,7 +56,7 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
         }
         
         UserOauthBind userOauthBind = userOauthBindService
-                .queryByUserPhone(phone, UserOauthBind.SOURCE_WX_PRO, TenantContextHolder.getTenantId());
+                .queryByUserPhone(phone, UserOauthBind.SOURCE_WX_PRO, tenantId);
         if (Objects.isNull(userOauthBind)) {
             log.error("SHIPPING ERROR! userOauthBind is illegal,tenantId={},phone={}", tenantId, phone);
             return;
