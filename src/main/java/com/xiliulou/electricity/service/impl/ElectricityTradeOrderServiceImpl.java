@@ -483,7 +483,8 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }
@@ -587,7 +588,8 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderService.update(eleDepositOrderUpdate);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }
@@ -743,7 +745,8 @@ public class ElectricityTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }
@@ -841,7 +844,8 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderService.update(eleDepositOrderUpdate);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }
@@ -935,7 +939,8 @@ public class ElectricityTradeOrderServiceImpl extends
         carMemberCardOrderService.update(updateCarMemberCardOrder);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
 
@@ -1033,7 +1038,8 @@ public class ElectricityTradeOrderServiceImpl extends
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }

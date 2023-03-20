@@ -1,20 +1,73 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.WechatPayConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.CarDepositOrder;
+import com.xiliulou.electricity.entity.CarMemberCardOrder;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
+import com.xiliulou.electricity.entity.UnionPayOrder;
+import com.xiliulou.electricity.entity.UnionTradeOrder;
+import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserBatteryDeposit;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserCar;
+import com.xiliulou.electricity.entity.UserCarDeposit;
+import com.xiliulou.electricity.entity.UserCarMemberCard;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.CarDepositOrderService;
+import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.OldUserActivityService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.ShippingManagerService;
+import com.xiliulou.electricity.service.UnionTradeOrderService;
+import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserCarDepositService;
+import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
-import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -363,7 +416,8 @@ public class UnionTradeOrderServiceImpl extends
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
         return Pair.of(result, null);
     }
 
@@ -476,7 +530,8 @@ public class UnionTradeOrderServiceImpl extends
         }
     
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId);
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId,
+                userInfo.getTenantId());
 
         return Pair.of(result, null);
     }
