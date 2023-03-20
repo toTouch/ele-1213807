@@ -63,6 +63,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="storeId != null">
+            and tecm.store_id = #{storeId}
+        </if>
     </select>
 
     <!--查询指定行数据-->
