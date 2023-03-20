@@ -220,6 +220,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	        vo.setExpiredTime(sdf.format(date));
 	        date.setTime(item.getStartTime());
 	        vo.setStartTime(sdf.format(date));
+            vo.setStatus(queryStatus(item.getStatus()));
 	
 	        UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
 	        if (Objects.nonNull(userInfo)) {
@@ -242,4 +243,29 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 			log.error("导出报表失败！", e);
 		}
 	}
+    
+    private String queryStatus(Integer status) {
+        //参与状态 1--初始化，2--已参与，3--已过期，4--被替换
+        String result = "";
+        switch (status) {
+            case 1:
+                result = "已参与";
+                break;
+            case 2:
+                result = "邀请成功";
+                break;
+            case 3:
+                result = "已过期";
+                break;
+            case 4:
+                result = "已失效";
+                break;
+            case 5:
+                result = "活动已下架";
+                break;
+            default:
+                result = "";
+        }
+        return result;
+    }
 }

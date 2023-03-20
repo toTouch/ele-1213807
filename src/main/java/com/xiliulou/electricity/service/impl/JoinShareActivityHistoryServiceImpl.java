@@ -230,16 +230,19 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		String result = "";
 		switch (status) {
 			case 1:
-				result = "初始化";
+				result = "已参与";
 				break;
 			case 2:
-				result = "已参与";
+				result = "邀请成功";
 				break;
 			case 3:
 				result = "已过期";
 				break;
 			case 4:
-				result = "被替换";
+				result = "已失效";
+				break;
+			case 5:
+				result = "活动已下架";
 				break;
 			default:
 				result = "";
