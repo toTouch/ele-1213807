@@ -363,7 +363,7 @@ public class UnionTradeOrderServiceImpl extends
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
 
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(userInfo.getUid(),transactionId);
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId);
         return Pair.of(result, null);
     }
 
@@ -468,9 +468,15 @@ public class UnionTradeOrderServiceImpl extends
             electricityTradeOrder.setChannelOrderNo(transactionId);
             electricityTradeOrderService.updateElectricityTradeOrderById(electricityTradeOrder);
         });
-
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(unionTradeOrder.getUid());
+        if(Objects.isNull(userInfo)){
+            
+            return Pair.of(result, null);
+        }
+    
         //小程序虚拟发货
-        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(),transactionId);
+        shippingManagerService.uploadShippingInfo(unionTradeOrder.getUid(), userInfo.getPhone(), transactionId);
 
         return Pair.of(result, null);
     }

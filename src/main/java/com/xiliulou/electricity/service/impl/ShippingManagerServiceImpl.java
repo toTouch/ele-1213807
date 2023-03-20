@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ShippingManagerService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.shipping.service.ShippingUploadService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,12 +32,15 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
 
     @Autowired
     ShippingUploadService shippingUploadService;
+    
+    @Autowired
+    UserOauthBindService userOauthBindService;
 
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
 
     @Override
-    public void uploadShippingInfo(Long uid, String orderNo) {
+    public void uploadShippingInfo(Long uid,String phone, String orderNo) {
 
         //支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(TenantContextHolder.getTenantId());
@@ -48,9 +53,16 @@ public class ShippingManagerServiceImpl implements ShippingManagerService {
             log.error("SHIPPING ERROR! electricityPayParams is illegal,tenantId={}", TenantContextHolder.getTenantId());
             return;
         }
-
+    
+        UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(phone, UserOauthBind.SOURCE_WX_PRO, TenantContextHolder.getTenantId());
+        if(Objects.isNull(userOauthBind)){
+            log.error("SHIPPING ERROR! userOauthBind is illegal,tenantId={},phone={}", TenantContextHolder.getTenantId(),phone);
+            return;
+        }
+    
         shippingManagerExecutorService.execute(() -> {
-            shippingUploadService.shippingUploadInfo(uid, orderNo, electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert());
+            shippingUploadService.shippingUploadInfo(userOauthBind.getThirdId(), orderNo,
+                    electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert());
         });
     }
 }
