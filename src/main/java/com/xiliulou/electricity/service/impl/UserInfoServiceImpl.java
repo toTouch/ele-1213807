@@ -2020,25 +2020,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void unBindUserFranchiseeId(Long uid) {
         //租车押金
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
-        if (Objects.nonNull(userCarDeposit)) {
+        if (Objects.nonNull(userCarDeposit) && StringUtils.isNotBlank(userCarDeposit.getOrderId())) {
             return;
         }
 
         //租电池押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.nonNull(userBatteryDeposit)) {
+        if (Objects.nonNull(userBatteryDeposit) && StringUtils.isNotBlank(userBatteryDeposit.getOrderId())) {
             return;
         }
 
         //若租车和租电押金都退了，则解绑用户所属加盟商
-        if (Objects.isNull(userCarDeposit) && Objects.isNull(userCarDeposit)) {
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(uid);
-            updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(uid);
+        updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-            this.updateByUid(updateUserInfo);
-        }
+        this.updateByUid(updateUserInfo);
     }
 
     @Override
