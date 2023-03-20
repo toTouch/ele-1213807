@@ -2020,13 +2020,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void unBindUserFranchiseeId(Long uid) {
         //租车押金
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
-        if (Objects.nonNull(userCarDeposit) && StringUtils.isNotBlank(userCarDeposit.getOrderId())) {
+        if (Objects.nonNull(userCarDeposit)) {
             return;
         }
 
         //租电池押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.nonNull(userBatteryDeposit) && StringUtils.isNotBlank(userBatteryDeposit.getOrderId())) {
+        if (Objects.nonNull(userBatteryDeposit)) {
             return;
         }
 
