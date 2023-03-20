@@ -393,6 +393,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.ok();
         }
     
+        if (Objects.equals(electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid())) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! Same store ！sourceStore={}， targetStore={}",
+                    electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid());
+            return R.fail("ELECTRICITY.0018", "车辆迁移门店不能相同");
+        }
+    
         Integer tenantId = TenantContextHolder.getTenantId();
         
         Store targetStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getTargetSid());
