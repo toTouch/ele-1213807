@@ -274,7 +274,7 @@
         from t_store
         where del_flag=0
         <if test="name != null and name != ''">
-            name = #{name}
+            and name = #{name}
         </if>
         limit #{offset}, #{size}
     </select>
