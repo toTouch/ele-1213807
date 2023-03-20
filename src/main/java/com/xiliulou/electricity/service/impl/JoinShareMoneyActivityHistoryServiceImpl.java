@@ -220,8 +220,8 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	        vo.setExpiredTime(sdf.format(date));
 	        date.setTime(item.getStartTime());
 	        vo.setStartTime(sdf.format(date));
-    
-            UserInfo userInfo = userInfoService.queryByIdFromDB(item.getUid());
+	
+	        UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
 	        if (Objects.nonNull(userInfo)) {
 		        vo.setName(userInfo.getName());
 		        vo.setPhone(userInfo.getPhone());

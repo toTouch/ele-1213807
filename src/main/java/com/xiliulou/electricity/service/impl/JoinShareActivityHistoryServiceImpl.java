@@ -33,6 +33,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.SimpleBeanInfo;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -202,7 +203,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 			date.setTime(item.getExpiredTime());
 			vo.setExpiredTime(sdf.format(date));
 			
-			UserInfo userInfo = userInfoService.queryByIdFromDB(item.getUid());
+			UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
 			if (Objects.nonNull(userInfo)) {
 				vo.setName(userInfo.getName());
 				vo.setPhone(userInfo.getPhone());
