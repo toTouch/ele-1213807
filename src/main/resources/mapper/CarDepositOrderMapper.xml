@@ -298,6 +298,7 @@
         where cdo.uid = #{uid}
         and cdo.tenant_id = #{tenantId}
         and cdo.status = 1
+        and ero.status = 4
         order by cdo.create_time desc
         limit #{offset}, #{size}
     </select>
