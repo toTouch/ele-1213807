@@ -3105,8 +3105,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(
                     homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
-            log.error("getCarDeposit:{}", JsonUtil.toJson(homePageDepositVo.getCarDeposit()));
-            log.error("getHistoryRefundCarDeposit:{}", JsonUtil.toJson(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setCarDeposit(
                     homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
             homePageDepositVo.setSumDepositTurnover(
