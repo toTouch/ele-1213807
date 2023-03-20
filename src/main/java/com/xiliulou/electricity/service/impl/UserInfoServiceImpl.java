@@ -1990,10 +1990,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     private void queryUserBatteryDeposit(DetailsBatteryInfoVo vo, UserInfo userInfo) {
         vo.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
-        
-        EleDepositOrder eleDepositOrder = eleDepositOrderService
-                .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId(),
-                        EleDepositOrder.ELECTRICITY_DEPOSIT);
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryDeposit)) {
+            vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+        }
+
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.nonNull(eleDepositOrder)) {
             vo.setPayDepositTime(eleDepositOrder.getCreateTime());
             
@@ -2010,10 +2013,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setFranschiseeName(franchisee.getName());
         }
         
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(userBatteryDeposit)) {
-            vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-        }
+
     }
     
     @Override
