@@ -48,4 +48,5 @@ public interface StoreMapper extends BaseMapper<Store> {
 
     List<StoreVO> selectListByDistance(StoreQuery storeQuery);
 
+    List<StoreVO> selectByAddress(StoreQuery storeQuery);
 }

@@ -2,13 +2,39 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
-        select tel.* , tui.phone as phone , tui.name as userName, tf.name as franchiseeName from
+        select
+        tel.id ,
+        tel.pay_amount ,
+        tel.valid_days ,
+        tel.create_time ,
+        tel.order_id ,
+        tel.status ,
+        tel.user_name ,
+        tel.member_card_type ,
+        tel.max_use_count ,
+        tel.card_name ,
+        tel.franchisee_id ,
+        tel.is_bind_activity ,
+        tel.activity_id ,
+        tel.member_card_model ,
+        tel.pay_type ,
+        tel.pay_count ,
+        tel.eid ,
+        tel.coupon_id ,
+        tel.source ,
+        tel.ref_id ,
+        tui.phone as phone , tui.name as userName from
         t_electricity_member_card_order tel
 
         LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
-        LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
         WHERE 0= 0
+        <if test="query.cardPayCount != null">
+            and tel.pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.franchiseeId != null">
+            and tel.franchisee_id = #{query.franchiseeId}
+        </if>
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
         </if>
@@ -44,9 +70,6 @@
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
-        </if>
-        <if test="query.franchiseeName != null and query.franchiseeName != ''">
-            and tf.name = #{query.franchiseeName}
         </if>
         order by tel.create_time desc
         limit #{query.offset}, #{query.size}
@@ -56,7 +79,6 @@
         select COUNT(1)
         from t_electricity_member_card_order tel
         LEFT JOIN t_user_info tui on tui.uid = tel.uid
-        LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
         WHERE 0= 0
         <if test="query.userName != null and query.userName != ''">
             and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
@@ -94,8 +116,11 @@
                 #{id}
             </foreach>
         </if>
-        <if test="query.franchiseeName != null and query.franchiseeName != ''">
-            and tf.name = #{query.franchiseeName}
+        <if test="query.franchiseeId != null">
+            and tel.franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.cardPayCount != null">
+            and tel.pay_count =#{query.cardPayCount}
         </if>
     </select>
 
