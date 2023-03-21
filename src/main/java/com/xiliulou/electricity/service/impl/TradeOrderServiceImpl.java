@@ -284,6 +284,24 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         List<BigDecimal> allPayAmount = new ArrayList<>();
         allPayAmount.add(depositPayAmount);
         allPayAmount.add(franchiseeInsurance.getPremium());
+    
+        BigDecimal totalPayAmount = new BigDecimal(0);
+        totalPayAmount.add(depositPayAmount);
+        totalPayAmount.add(franchiseeInsurance.getPremium());
+    
+        //处理0元问题
+        if (BigDecimal.valueOf(0.01).compareTo(totalPayAmount) == NumberConstant.ONE) {
+        
+            Triple<Boolean, String, Object> result = handleTotalAmountZero(userInfo, orderList, orderTypeList);
+            if (Boolean.FALSE.equals(result.getLeft())) {
+                R r = R.fail(null);
+                r.setErrCode(result.getMiddle());
+                r.setErrMsg(String.valueOf(result.getRight()));
+                return r;
+            }
+        
+            return R.ok();
+        }
 
         //调起支付
         try {
