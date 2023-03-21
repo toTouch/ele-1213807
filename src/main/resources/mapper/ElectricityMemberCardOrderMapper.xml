@@ -19,7 +19,6 @@
         tel.member_card_model ,
         tel.pay_type ,
         tel.pay_count ,
-        tel.eid ,
         tel.coupon_id ,
         tel.source ,
         tel.ref_id ,
