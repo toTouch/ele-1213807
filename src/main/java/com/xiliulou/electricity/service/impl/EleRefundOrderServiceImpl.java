@@ -1188,7 +1188,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
-//            userBatteryDepositService.deleteByUid(userInfo.getUid());
             userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
 
             userBatteryService.deleteByUid(userInfo.getUid());
@@ -1233,7 +1232,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 userBatteryService.deleteByUid(userInfo.getUid());
 
-//                userBatteryDepositService.deleteByUid(userInfo.getUid());
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+
                 userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
 
                 userInfoService.unBindUserFranchiseeId(uid);

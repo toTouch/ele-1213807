@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.constant;
 
+import java.math.BigDecimal;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -13,5 +15,6 @@ public class NumberConstant {
 
     public static final Long ZERO_L = 0L;
     public static final Long ONE_L = 1L;
-
+    
+    public static final BigDecimal ZERO_BD = BigDecimal.valueOf(0);
 }
