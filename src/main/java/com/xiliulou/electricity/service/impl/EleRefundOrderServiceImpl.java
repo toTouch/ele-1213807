@@ -676,31 +676,30 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
     
     @Override
-    public Triple<Boolean, String, Object> carFreeDepostRefundAudit(String refundOrderNo, String errMsg, Integer status,
-            BigDecimal refundAmount, Long uid) {
-        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(
-                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo)
-                        .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
-                        .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT,
-                                EleRefundOrder.STATUS_REFUSE_REFUND));
+    public Triple<Boolean, String, Object> carFreeDepostRefundAudit(Long id, String errMsg, Integer status,
+            BigDecimal refundAmount) {
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectById(id);
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("CAR FREE REFUND ORDER ERROR! eleRefundOrder is null, refoundOrderNo={},uid={}", refundOrderNo,
-                    uid);
-            return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
+            log.error("CAR FREE REFUND ORDER ERROR! not found electricityRefundOrder! id={}", id);
+            return Triple.of(false, "", "未找到退款订单!");
         }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("CAR FREE REFUND ORDER ERROR! userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+    
+        //订单状态判断
+        if (!Objects.equals(eleRefundOrder.getStatus(), EleRefundOrder.STATUS_INIT)) {
+            log.error("CAR FREE REFUND ORDER ERROR! EleRefundOrder status illegal! id={}", id);
+            return Triple.of(false, "", "退款订单已处理，请勿重复提交");
         }
         
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("CAR  FREE REFUND ORDER ERROR! carDepositOrder is null,orderId={},uid={}",
-                    eleRefundOrder.getOrderId(),
-                    uid);
+            log.error("CAR  FREE REFUND ORDER ERROR! carDepositOrder is null,orderId={}", eleRefundOrder.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("CAR FREE REFUND ORDER ERROR! userInfo is null,id={}, uid={}", id, carDepositOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -719,7 +718,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         //处理电池免押订单退款
         if (!Objects.equals(carDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.error("CAR FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}",
-                    eleRefundOrder.getOrderId(), uid);
+                    eleRefundOrder.getOrderId(), carDepositOrder.getUid());
             return Triple.of(false, "100406", "订单非免押支付");
         }
         
