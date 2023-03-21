@@ -684,19 +684,21 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT,
                                 EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("FREE REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
+            log.error("CAR FREE REFUND ORDER ERROR! eleRefundOrder is null, refoundOrderNo={},uid={}", refundOrderNo,
+                    uid);
             return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
         }
         
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.error("FREE REFUND ORDER ERROR!userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
+            log.error("CAR FREE REFUND ORDER ERROR! userInfo is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
         
         CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(carDepositOrder)) {
-            log.error("FREE REFUND ORDER ERROR!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(),
+            log.error("CAR  FREE REFUND ORDER ERROR! carDepositOrder is null,orderId={},uid={}",
+                    eleRefundOrder.getOrderId(),
                     uid);
             return Triple.of(false, "100403", "免押订单不存在");
         }
@@ -716,7 +718,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         
         //处理电池免押订单退款
         if (!Objects.equals(carDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-            log.error("FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}",
+            log.error("CAR FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}",
                     eleRefundOrder.getOrderId(), uid);
             return Triple.of(false, "100406", "订单非免押支付");
         }
@@ -724,13 +726,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils
                 .isBlank(pxzConfig.getMerchantCode())) {
-            log.error("REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
+            log.error("CAR REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
             return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
         }
         
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
-            log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+            log.error("CAR REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
             return Triple.of(false, "100403", "免押订单不存在");
         }
         
@@ -750,19 +752,21 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         try {
             pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
         } catch (Exception e) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(),
+            log.error("CAR REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(),
                     freeDepositOrder.getOrderId(), e);
             return Triple.of(false, "100401", "免押解冻调用失败！");
         }
         
         if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(),
+            log.error("CAR REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}",
+                    userInfo.getUid(),
                     freeDepositOrder.getOrderId());
             return Triple.of(false, "100401", "免押调用失败！");
         }
         
         if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
-            log.error("REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}", userInfo.getUid(),
+            log.error("CAR REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}",
+                    userInfo.getUid(),
                     freeDepositOrder.getOrderId());
             return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
         }
@@ -770,31 +774,22 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         //如果解冻成功
         if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
             //更新免押订单状态
-            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
-            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            freeDepositOrderService.update(freeDepositOrderUpdate);
-            
-            //更新退款订单
-            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrderService.update(eleRefundOrderUpdate);
-            
+    
             UserInfo updateUserInfo = new UserInfo();
             updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
-            
-            userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-            userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-            userBatteryService.deleteByUid(userInfo.getUid());
-            
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-            if (Objects.nonNull(insuranceUserInfo)) {
-                insuranceUserInfoService.deleteById(insuranceUserInfo);
-            }
+    
+            userCarService.deleteByUid(userInfo.getUid());
+    
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+    
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+    
+            //退押金解绑用户所属加盟商
             userInfoService.unBindUserFranchiseeId(userInfo.getUid());
             
             return Triple.of(true, "", "免押解冻成功");
