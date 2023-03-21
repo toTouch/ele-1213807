@@ -27,7 +27,7 @@ public class JsonAdminCarRefundOrderController {
     @GetMapping("admin/car/refundOrder/queryList")
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
             @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "storeId", required = false) Long storeId) {
         if (Objects.isNull(offset) || offset < 0) {
@@ -39,18 +39,18 @@ public class JsonAdminCarRefundOrderController {
         }
         
         CarRefundOrderQuery query = CarRefundOrderQuery.builder().offset(offset).size(size).orderId(orderId)
-                .userName(userName).storeId(storeId).phone(phone).tenantId(TenantContextHolder.getTenantId()).build();
+                .userName(name).storeId(storeId).phone(phone).tenantId(TenantContextHolder.getTenantId()).build();
         
         return carRefundOrderService.queryList(query);
     }
     
     @GetMapping("admin/car/refundOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "storeId", required = false) Long storeId) {
-        
-        CarRefundOrderQuery query = CarRefundOrderQuery.builder().orderId(orderId).userName(userName).storeId(storeId)
+    
+        CarRefundOrderQuery query = CarRefundOrderQuery.builder().orderId(orderId).userName(name).storeId(storeId)
                 .phone(phone).tenantId(TenantContextHolder.getTenantId()).build();
         
         return carRefundOrderService.queryCount(query);
