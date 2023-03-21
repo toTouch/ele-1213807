@@ -333,8 +333,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         userCarDepositVO.setPayTime(carDepositOrder.getCreateTime());
     
         //判断用户是否有车辆
-        UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
-        if (Objects.isNull(userCar) || Objects.isNull(userCar.getCid())) {
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(user.getUid());
+        if (Objects.isNull(electricityCar)) {
             userCarDepositVO.setHasCarStatus(UserCarDepositVO.HAS_CAR_STATUS_NO);
         } else {
             userCarDepositVO.setHasCarStatus(UserCarDepositVO.HAS_CAR_STATUS_YES);
