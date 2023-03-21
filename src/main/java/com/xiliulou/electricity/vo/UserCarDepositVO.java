@@ -75,6 +75,11 @@ public class UserCarDepositVO {
      */
     private Integer hasCarStatus;
     
+    /**
+     * 缴纳时间
+     */
+    private Long payTime;
+    
     public static final Integer HAS_CAR_STATUS_YES = 1;
     
     public static final Integer HAS_CAR_STATUS_NO = 2;

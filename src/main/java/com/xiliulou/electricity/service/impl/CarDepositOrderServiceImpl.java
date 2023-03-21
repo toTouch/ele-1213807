@@ -323,11 +323,13 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         Store store = storeService.queryByIdFromCache(carDepositOrder.getStoreId());
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carDepositOrder.getCarModelId().intValue());
+        Integer status = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
+        
         userCarDepositVO.setStoreName(Objects.isNull(store) ? null : store.getName());
         userCarDepositVO.setCarModelName(Objects.isNull(electricityCarModel) ? null : electricityCarModel.getName());
-    
-        Integer status = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
         userCarDepositVO.setReturnDepositStatus(status);
+        userCarDepositVO.setDepositType(userCarDeposit.getDepositType());
+        userCarDepositVO.setPayTime(carDepositOrder.getCreateTime());
     
         //判断用户是否有车辆
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
