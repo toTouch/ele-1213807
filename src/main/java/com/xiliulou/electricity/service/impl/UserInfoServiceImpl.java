@@ -1990,10 +1990,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     
     private void queryUserBatteryDeposit(DetailsBatteryInfoVo vo, UserInfo userInfo) {
         vo.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
-        
-        EleDepositOrder eleDepositOrder = eleDepositOrderService
-                .queryLastPayDepositTimeByUid(userInfo.getUid(), userInfo.getFranchiseeId(), userInfo.getTenantId(),
-                        EleDepositOrder.ELECTRICITY_DEPOSIT);
+
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userBatteryDeposit)) {
+            vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
+        }
+
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.nonNull(eleDepositOrder)) {
             vo.setPayDepositTime(eleDepositOrder.getCreateTime());
             
@@ -2010,10 +2013,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             vo.setFranschiseeName(franchisee.getName());
         }
         
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.nonNull(userBatteryDeposit)) {
-            vo.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
-        }
+
     }
     
     @Override
@@ -2031,14 +2031,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //若租车和租电押金都退了，则解绑用户所属加盟商
-        if (Objects.isNull(userCarDeposit) && Objects.isNull(userCarDeposit)) {
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(uid);
-            updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        UserInfo updateUserInfo = new UserInfo();
+        updateUserInfo.setUid(uid);
+        updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
+        updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-            this.updateByUid(updateUserInfo);
-        }
+        this.updateByUid(updateUserInfo);
     }
 
     @Override
