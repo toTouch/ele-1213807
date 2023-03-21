@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -710,6 +711,10 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     public R payDepositOrderList(Long offset, Long size) {
         List<UserCarDepositOrderVo> voList = carDepositOrderMapper
                 .payDepositOrderList(SecurityUtils.getUid(), TenantContextHolder.getTenantId(), offset, size);
+        Optional.ofNullable(voList).orElse(new ArrayList<>()).parallelStream().forEachOrdered(item -> {
+            Long refundTime = eleRefundOrderService.queryRefundTime(item.getOrderId());
+            item.setRefundTime(refundTime);
+        });
         return R.ok(voList);
     }
     
