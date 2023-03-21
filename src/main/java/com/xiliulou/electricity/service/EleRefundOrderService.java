@@ -108,4 +108,7 @@ public interface EleRefundOrderService {
     
     Triple<Boolean, String, Object> carRefundDepositReview(Long id, String errMsg, Integer status,
             BigDecimal refundAmount, HttpServletRequest request);
+    
+    Triple<Boolean, String, Object> carFreeDepostRefundAudit(String refundOrderNo, String errMsg, Integer status,
+            BigDecimal refundAmount, Long uid);
 }

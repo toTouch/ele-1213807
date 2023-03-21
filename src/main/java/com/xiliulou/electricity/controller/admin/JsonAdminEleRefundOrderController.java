@@ -405,5 +405,16 @@ public class JsonAdminEleRefundOrderController extends BaseController {
                 eleRefundOrderService.carRefundDepositReview(id, errMsg, status, refundAmount, request));
     }
     
-    
+    /**
+     * 车辆免押退款审核
+     */
+    @PostMapping("/admin/car/free/refund/audit")
+    @Log(title = "车辆免押退款审核")
+    public R carFreeDepostRefundAudit(@RequestParam("refundOrderNo") String refundOrderNo,
+            @RequestParam("status") Integer status, @RequestParam(value = "errMsg", required = false) String errMsg,
+            @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+            @RequestParam("uid") Long uid) {
+        return returnTripleResult(
+                eleRefundOrderService.carFreeDepostRefundAudit(refundOrderNo, errMsg, status, refundAmount, uid));
+    }
 }
