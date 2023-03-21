@@ -50,6 +50,7 @@ public class ElectricityCabinetOrderQuery {
     private String electricityCabinetName;
 
     private Integer oldCellNo;
-
+    
+    private String name;
 
 }

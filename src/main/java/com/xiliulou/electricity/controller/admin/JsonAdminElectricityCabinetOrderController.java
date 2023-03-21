@@ -52,7 +52,8 @@ public class JsonAdminElectricityCabinetOrderController {
                        @RequestParam(value = "source", required = false) Integer source,
                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                       @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "name", required = false) String name) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -109,7 +110,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .eleIdList(eleIdList)
                 .source(source)
                 .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .oldCellNo(oldCellNo).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
@@ -126,7 +127,8 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "name", required = false) String name) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -159,7 +161,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .eleIdList(null)
                 .source(source)
                 .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .oldCellNo(oldCellNo).name(name)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
@@ -174,7 +176,8 @@ public class JsonAdminElectricityCabinetOrderController {
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                        @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "name", required = false) String name) {
 
 
         //用户区分
@@ -221,7 +224,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .eleIdList(eleIdList)
                 .source(source)
                 .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .oldCellNo(oldCellNo).name(name)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
@@ -235,7 +238,8 @@ public class JsonAdminElectricityCabinetOrderController {
                              @RequestParam(value = "source", required = false) Integer source,
                              @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                              @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "name", required = false) String name) {
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -258,7 +262,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .eleIdList(null)
                 .source(source)
                 .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .oldCellNo(oldCellNo).name(name)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }

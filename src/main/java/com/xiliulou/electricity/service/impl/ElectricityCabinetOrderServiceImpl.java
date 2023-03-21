@@ -672,11 +672,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                         }
                     }
                 }
-
-                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
-                if (Objects.nonNull(userInfo)) {
-                    e.setUName(userInfo.getName());
-                }
+    
+                //                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
+                //                if (Objects.nonNull(userInfo)) {
+                //                    e.setUName(userInfo.getName());
+                //                }
             });
         }
 
