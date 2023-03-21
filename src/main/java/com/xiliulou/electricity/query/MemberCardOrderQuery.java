@@ -43,4 +43,9 @@ public class MemberCardOrderQuery {
      * 扫码的柜机
      */
     private Long refId;
+
+    /**
+     * 套餐购买次数
+     */
+    private Integer cardPayCount;
 }

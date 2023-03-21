@@ -643,6 +643,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R editUserMemberCard(CarMemberCardOrderAddAndUpdate carMemberCardOrderAddAndUpdate) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -667,24 +668,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
-        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userCarMemberCard)) {
-            log.warn("HOME WARN! user haven't carMemberCard uid={}", userInfo.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
-        
         UserCar userCar = userCarService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userCar)) {
             log.error("admin editUserMemberCard ERROR! user haven't userCar uid={}", userInfo.getUid());
             return R.failMsg("未找到用户信息!");
         }
-        
-        ElectricityCarModel bindCarModel = electricityCarModelService
-                .queryByIdFromCache(carMemberCardOrderAddAndUpdate.getCarModelId());
-        if (Objects.isNull(bindCarModel) || !Objects
-                .equals(bindCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
-            return R.fail("100258", "未找到车辆型号");
-        }
+    
         
         ElectricityCarModel userCarModel = electricityCarModelService
                 .queryByIdFromCache(Objects.isNull(userCar.getCarModel()) ? null : userCar.getCarModel().intValue());
@@ -692,52 +681,54 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .equals(userCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.fail("100258", "未找到车辆型号");
         }
-        
-        String oldOrderId = userCarMemberCard.getOrderId();
+    
         Long memberCardExpireTime = carMemberCardOrderAddAndUpdate.getMemberCardExpireTime();
-        
-        if (!Objects.equals(bindCarModel.getId(), userCarModel.getId())) {
+    
+        Long cardId = null;
+        String cardOrderId = null;
+    
+        UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userCarMemberCard)) {
             if (Objects.isNull(carMemberCardOrderAddAndUpdate.getValidDays())) {
                 return R.failMsg("请填写租赁周期");
             }
-            
+        
             //获取租车套餐计费规则
-            Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(bindCarModel);
+            Map<String, Double> rentCarPriceRule = electricityCarModelService.parseRentCarPriceRule(userCarModel);
             if (ObjectUtil.isEmpty(rentCarPriceRule)) {
-                log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", bindCarModel.getId(),
+                log.error("ELE CAR MEMBER CARD ERROR! not found rentCarPriceRule id={},uid={}", userCarModel.getId(),
                         user.getUid());
                 return R.fail("100237", "车辆租赁方式不存在!");
             }
-            
+        
             EleCalcRentCarPriceService calcRentCarPriceInstance = calcRentCarPriceFactory
                     .getInstance(carMemberCardOrderAddAndUpdate.getRentType());
             if (Objects.isNull(calcRentCarPriceInstance)) {
                 log.error("ELE CAR MEMBER CARD ERROR! calcRentCarPriceInstance is null,uid={}", user.getUid());
                 return R.fail("100237", "车辆租赁方式不存在!");
             }
-            
+        
             Pair<Boolean, Object> calcSavePrice = calcRentCarPriceInstance
                     .getRentCarPrice(userInfo, carMemberCardOrderAddAndUpdate.getValidDays(), rentCarPriceRule);
             if (!calcSavePrice.getLeft()) {
                 return R.fail("100237", "车辆租赁方式不存在!");
             }
-    
+        
             if (Objects.nonNull(userCar.getCid()) || StringUtils.isNotBlank(userCar.getSn()) || Objects
                     .equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
                 return R.fail("100253", "用户已绑定车辆，请先解绑");
             }
-            
-            
+        
             BigDecimal rentCarPrice = (BigDecimal) calcSavePrice.getRight();
             String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_PACKAGE, userInfo.getUid());
-            
+        
             CarMemberCardOrder carMemberCardOrder = new CarMemberCardOrder();
             carMemberCardOrder.setUid(userInfo.getUid());
             carMemberCardOrder.setOrderId(orderId);
             carMemberCardOrder.setCreateTime(System.currentTimeMillis());
             carMemberCardOrder.setUpdateTime(System.currentTimeMillis());
             carMemberCardOrder.setStatus(CarMemberCardOrder.STATUS_SUCCESS);
-            carMemberCardOrder.setCarModelId(bindCarModel.getId().longValue());
+            carMemberCardOrder.setCarModelId(userCarModel.getId().longValue());
             carMemberCardOrder.setUid(userInfo.getUid());
             carMemberCardOrder.setCardName(getCardName(carMemberCardOrderAddAndUpdate.getRentType()));
             carMemberCardOrder.setMemberCardType(carMemberCardOrderAddAndUpdate.getRentType());
@@ -745,34 +736,35 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             carMemberCardOrder.setUserName(userInfo.getName());
             carMemberCardOrder.setValidDays(carMemberCardOrderAddAndUpdate.getValidDays());
             carMemberCardOrder.setPayType(CarMemberCardOrder.OFFLINE_PAYTYPE);
-            carMemberCardOrder.setStoreId(bindCarModel.getStoreId());
-            carMemberCardOrder.setFranchiseeId(bindCarModel.getFranchiseeId());
+            carMemberCardOrder.setStoreId(userCarModel.getStoreId());
+            carMemberCardOrder.setFranchiseeId(userCarModel.getFranchiseeId());
             carMemberCardOrder.setTenantId(userInfo.getTenantId());
             insert(carMemberCardOrder);
-            
-            UserCar updateUserCar = new UserCar();
-            updateUserCar.setUid(userInfo.getUid());
-            updateUserCar.setCarModel(bindCarModel.getId().longValue());
-            updateUserCar.setUpdateTime(System.currentTimeMillis());
-            userCarService.updateByUid(updateUserCar);
-            
-            oldOrderId = orderId;
+        
+            cardId = carMemberCardOrder.getId();
+            cardOrderId = orderId;
             memberCardExpireTime = calculationOrderMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
                     carMemberCardOrder.getValidDays());
+        } else {
+            cardId = userCarMemberCard.getCardId();
+            cardOrderId = userCarMemberCard.getOrderId();
         }
-        
+    
         UserCarMemberCard updateUserCarMemberCard = new UserCarMemberCard();
         updateUserCarMemberCard.setUid(userInfo.getUid());
-        updateUserCarMemberCard.setOrderId(oldOrderId);
-        updateUserCarMemberCard.setCardId(bindCarModel.getId().longValue());
+        updateUserCarMemberCard.setCardId(cardId);
+        updateUserCarMemberCard.setOrderId(cardOrderId);
         updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
+        updateUserCarMemberCard.setDelFlag(UserCarMemberCard.DEL_NORMAL);
+        updateUserCarMemberCard.setCreateTime(System.currentTimeMillis());
         updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
-        userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+        userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
+        
         
         Double oldCardDay = 0.0;
         Long now = System.currentTimeMillis();
-        if (userCarMemberCard.getMemberCardExpireTime() > now) {
-            oldCardDay = Math.ceil((userCarMemberCard.getMemberCardExpireTime() - now) / 3600000 / 24.0);
+        if (memberCardExpireTime > now) {
+            oldCardDay = Math.ceil((memberCardExpireTime - now) / 3600000 / 24.0);
         }
         
         Double carDayTemp = 0.0;
@@ -785,7 +777,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 .operateContent(EleUserOperateRecord.CAR_MEMBER_CARD_EXPIRE_CONTENT).operateUid(user.getUid())
                 .uid(userInfo.getUid()).name(user.getUsername()).oldValidDays(oldCardDay.intValue())
                 .newValidDays(carDayTemp.intValue()).tenantId(TenantContextHolder.getTenantId())
-                .oldMemberCard(userCarModel.getName()).newMemberCard(bindCarModel.getName())
+                .oldMemberCard(userCarModel.getName()).newMemberCard(userCarModel.getName())
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
     

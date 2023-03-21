@@ -12,6 +12,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzQueryOrderRsp;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -36,8 +39,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -202,7 +203,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(UserInfoQuery userInfoQuery) {
 
         List<UserBatteryInfoVO> userBatteryInfoVOS ;
@@ -798,9 +799,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(result);
     }
 
+    @Slave
     @Override
     public R queryCount(UserInfoQuery userInfoQuery) {
-        return R.ok(userInfoMapper.queryCountForBatteryService(userInfoQuery));
+        Integer count ;
+        if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
+            count = userInfoMapper.queryCountByMemberCardExpireTime(userInfoQuery);
+        } else {
+            count = userInfoMapper.queryCountForBatteryService(userInfoQuery);
+        }
+        return R.ok(count);
     }
 
     @Override
@@ -1404,14 +1412,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(userInfo)) {
             log.error("ELE ERROR! not found userInfo,uid={} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-
-        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
-        }
-
-        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            return R.fail("100253", "已绑定车辆");
         }
 
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
@@ -2045,9 +2045,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
         userInfoQuery.setOffset(0L);
         userInfoQuery.setSize(2000L);
-        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
-        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
-            throw new CustomBusinessException("查不到会员用户");
+//        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+//        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
+//            throw new CustomBusinessException("查不到会员用户");
+//        }
+
+        List<UserBatteryInfoVO> userBatteryInfoVOS ;
+        if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
+            userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
+        } else {
+            userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+        }
+
+        if(CollectionUtils.isEmpty(userBatteryInfoVOS)){
+            throw new CustomBusinessException("用户列表为空！");
         }
 
         List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
@@ -2084,7 +2095,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             response.setHeader("content-Type", "application/vnd.ms-excel");
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, UserInfoExcelVO.class).sheet("sheet").doWrite(userInfoExcelVOS);
+            EasyExcel.write(outputStream, UserInfoExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(userInfoExcelVOS);
             return;
         } catch (IOException e) {
             log.error("导出报表失败！", e);

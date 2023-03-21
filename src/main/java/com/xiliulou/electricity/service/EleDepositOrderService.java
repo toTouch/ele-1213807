@@ -76,6 +76,6 @@ public interface EleDepositOrderService {
     BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime);
 
     Triple<Boolean, String, Object> handleRentBatteryDeposit(Long franchiseeId, Integer memberCardId,Integer model, UserInfo userInfo);
-
-    R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd);
+    
+    R adminPayCarDeposit(RentCarDepositQuery rentCarDepositQuery);
 }

@@ -37,14 +37,11 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
-
-import java.time.LocalDateTime;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +54,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -648,8 +646,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @DS("slave_1")
     public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
-        if (ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
-            return R.ok(baseMapper.queryList(memberCardOrderQuery));
+        if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         List<ElectricityMemberCardOrderVO> ElectricityMemberCardOrderVOs = new ArrayList<>();
@@ -679,6 +677,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderVO.setElectricityCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
             }
 
+            if (Objects.nonNull(electricityMemberCardOrderVO.getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityMemberCardOrderVO.getFranchiseeId());
+                electricityMemberCardOrderVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            }
+
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
 
@@ -689,59 +692,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
-//        memberCardOrderQuery.setOffset(0L);
-//        memberCardOrderQuery.setSize(2000L);
-//        List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
-//        if (ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
-//            throw new CustomBusinessException("查不到订单");
-//        }
-//
-//        List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
-//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        int index = 0;
-//        for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
-//            index++;
-//            ElectricityMemberCardOrderExcelVO excelVo = new ElectricityMemberCardOrderExcelVO();
-//            excelVo.setId(index);
-//            excelVo.setOrderId(electricityMemberCardOrderVO.getOrderId());
-//            excelVo.setPhone(electricityMemberCardOrderVO.getPhone());
-//            excelVo.setPayAmount(electricityMemberCardOrderVO.getPayAmount());
-//
-//            if (Objects.nonNull(electricityMemberCardOrderVO.getUpdateTime())) {
-//                excelVo.setBeginningTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime())));
-//                if (Objects.nonNull(electricityMemberCardOrderVO.getValidDays())) {
-//                    excelVo.setEndTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime() + electricityMemberCardOrderVO.getValidDays() * 24 * 60 * 60 * 1000)));
-//                }
-//            }
-//
-//            if (Objects.isNull(electricityMemberCardOrderVO.getMemberCardType())) {
-//                excelVo.setMemberCardType("");
-//            }
-//            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_MONTH_CARD)) {
-//                excelVo.setMemberCardType("月卡");
-//            }
-//            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_SEASON_CARD)) {
-//                excelVo.setMemberCardType("季卡");
-//            }
-//            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_YEAR_CARD)) {
-//                excelVo.setMemberCardType("年卡");
-//            }
-//
-//            if (Objects.isNull(electricityMemberCardOrderVO.getStatus())) {
-//                excelVo.setStatus("");
-//            }
-//            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_INIT)) {
-//                excelVo.setStatus("未支付");
-//            }
-//            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS)) {
-//                excelVo.setStatus("支付成功");
-//            }
-//            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_FAIL)) {
-//                excelVo.setStatus("支付失败");
-//            }
-//
-//            electricityMemberCardOrderExcelVOS.add(excelVo);
-//        }
 
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrders = Lists.newArrayList();
         Long offset = 0L;

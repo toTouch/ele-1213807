@@ -115,6 +115,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
+    @Autowired
+    ElectricityCarService electricityCarService;
+
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -777,11 +783,19 @@ public class UserServiceImpl implements UserService {
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
             delUserOauthBindAndClearToken(userOauthBinds);
         }
-        //删除套餐
-        UserInfo userInfo1 = userInfoService.queryByUidFromCache(uid);
-//        franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
+
+        Integer checkBatteryResult = electricityBatteryService.isUserBindBattery(uid, user.getTenantId());
+        if (!Objects.isNull(checkBatteryResult)) {
+            return Triple.of(false, "ELECTRICITY.0045", "用户已绑定电池");
+        }
+
+        Integer checkCarResult = electricityCarService.isUserBindCar(uid, user.getTenantId());
+        if (!Objects.isNull(checkCarResult)) {
+            return Triple.of(false, "100253", "用户已绑定车辆");
+        }
+
         //删除用户
-        deleteWxProUser(uid, userInfo1.getTenantId());
+        deleteWxProUser(uid, user.getTenantId());
         userInfoService.deleteByUid(uid);
 
         return Triple.of(true, null, null);

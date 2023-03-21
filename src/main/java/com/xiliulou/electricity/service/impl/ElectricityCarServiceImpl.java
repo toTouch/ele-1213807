@@ -17,8 +17,9 @@ import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
-import com.xiliulou.electricity.query.*;
-import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCarBindUser;
+import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
@@ -58,7 +59,7 @@ import java.util.stream.Collectors;
 public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Resource
     private ElectricityCarMapper electricityCarMapper;
-    
+
     @Resource
     CarAttrMapper carAttrMapper;
     @Autowired
@@ -82,10 +83,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
-    
+
     @Autowired
     ClickHouseService clickHouseService;
-    
+
     @Autowired
     Jt808CarService jt808CarService;
 
@@ -322,7 +323,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     
-    
+
     @Override
     public R attrList(Long beginTime, Long endTime) {
         //用户
@@ -331,39 +332,39 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("rentBattery  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         UserCar userCar = userCarService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCar)) {
             log.error("query  ERROR! not found car! uid:{} ", user.getUid());
             return R.fail("100007", "未找到车辆");
         }
-    
+
         if (StringUtils.isEmpty(userCar.getSn())) {
             log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
             return R.fail("100007", "未找到车辆");
         }
-    
+
         String begin = TimeUtils.convertToStandardFormatTime(beginTime);
         String end = TimeUtils.convertToStandardFormatTime(endTime);
-    
+
         List<CarAttr> query = jt808CarService.queryListBySn(userCar.getSn(), begin, end);
         if (CollectionUtils.isEmpty(query)) {
             query = new ArrayList<>();
         }
-    
+
         List<CarGpsVo> result = query.parallelStream()
                 .map(e -> new CarGpsVo().setLatitude(e.getLatitude()).setLongitude(e.getLongitude())
                         .setDevId(e.getDevId()).setCreateTime(e.getCreateTime().getTime()))
                 .collect(Collectors.toList());
         return R.ok(result);
     }
-    
+
     @Override
     @DS(value = "clickhouse")
     public CarAttr queryLastReportPointBySn(String sn) {
         return carAttrMapper.queryLastReportPointBySn(sn);
     }
-    
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
@@ -649,5 +650,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public R batteryStatistical(List<Integer> carIdList, Integer tenantId) {
         return R.ok(electricityCarMapper.batteryStatistical(carIdList, tenantId));
+    }
+
+    /**
+     * 判断用户是否绑定的有车
+     *
+     * @return
+     */
+    @Override
+    public Integer isUserBindCar(Long uid, Integer tenantId) {
+        return electricityCarMapper.isUserBindCar(uid, tenantId);
     }
 }
