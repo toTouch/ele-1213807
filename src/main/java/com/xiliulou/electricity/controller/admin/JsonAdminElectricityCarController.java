@@ -293,8 +293,16 @@ public class JsonAdminElectricityCarController {
      * 迁移车辆查询
      */
     @GetMapping("/admin/electricityCar/queryMoveCar")
-    public R queryElectricityCarMove(@RequestParam("storeId") Long storeId) {
-        return electricityCarService.queryElectricityCarMove(storeId);
+    public R queryElectricityCarMove(@RequestParam("storeId") Long storeId, @RequestParam("size") Long size,
+            @RequestParam("offset") Long offset, @RequestParam(value = "sn", required = false) String sn) {
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+    
+        if (Objects.isNull(size) || size < 0 || size > 100) {
+            size = 100L;
+        }
+        return electricityCarService.queryElectricityCarMove(storeId, sn, size, offset);
     }
     
     /**

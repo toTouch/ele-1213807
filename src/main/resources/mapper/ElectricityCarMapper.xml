@@ -203,6 +203,10 @@
         from t_electricity_car
         where tenant_id = #{tenantId} and del_flag = 0
         and store_id = #{storeId} and status = 0
+        <if test="sn != null and sn != ''">
+            and sn = #{sn}
+        </if>
+        limit #{offset}, #{size}
     </select>
     
     <select id="queryModelIdBySidAndIds" resultType="com.xiliulou.electricity.entity.ElectricityCar">

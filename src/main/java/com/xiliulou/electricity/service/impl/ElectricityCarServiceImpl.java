@@ -379,9 +379,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public R queryElectricityCarMove(Long storeId) {
+    public R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset) {
         List<ElectricityCarMoveVo> queryList = electricityCarMapper
-                .queryEnableMoveCarByStoreId(storeId, TenantContextHolder.getTenantId());
+                .queryEnableMoveCarByStoreId(storeId, sn, size, offset, TenantContextHolder.getTenantId());
         return R.ok(queryList);
     }
     
@@ -391,6 +391,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         List<Long> carIds = electricityCarMoveQuery.getCarIds();
         if (CollectionUtils.isEmpty(carIds)) {
             return R.ok();
+        }
+    
+        if (carIds.size() > 50) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! car size too long ！sourceStore={}， targetStore={}, size={}",
+                    electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid(), carIds.size());
+            return R.fail("100270", "迁移车辆数量过多");
         }
     
         if (Objects.equals(electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid())) {

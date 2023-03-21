@@ -70,7 +70,7 @@ public interface ElectricityCarService {
     
     CarAttr queryLastReportPointBySn(String sn);
     
-    R queryElectricityCarMove(Long storeId);
+    R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset);
     
     R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
 }
