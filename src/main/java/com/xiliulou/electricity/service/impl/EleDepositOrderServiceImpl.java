@@ -1633,16 +1633,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd) {
+    public R adminPayCarDeposit(RentCarDepositQuery rentCarDepositQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE CAR DEPOSIT ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(rentCarDepositAdd.getUid());
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(rentCarDepositQuery.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found user,uid={}", rentCarDepositAdd.getUid());
+            log.error("ELE CAR DEPOSIT ERROR! not found user,uid={}", rentCarDepositQuery.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //修改该用户不在当前租户下直接返回
@@ -1653,40 +1653,41 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //若用户已绑定加盟商，判断选择的加盟商与用户加盟商是否一致
         if (Objects.nonNull(userInfo.getFranchiseeId()) && !Objects
                 .equals(userInfo.getFranchiseeId(), NumberConstant.ZERO_L)) {
-            if (!Objects.equals(userInfo.getFranchiseeId(), rentCarDepositAdd.getFranchiseeId())) {
+            if (!Objects.equals(userInfo.getFranchiseeId(), rentCarDepositQuery.getFranchiseeId())) {
                 log.error("ELE CAR DEPOSIT ERROR! user bind franchisee not equals params franchisee,uid={}",
                         userInfo.getUid());
                 return R.fail("100252", "用户所属加盟商与选择的加盟商不符");
             }
         }
-        
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(rentCarDepositAdd.getFranchiseeId());
+    
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(rentCarDepositQuery.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("ELE CAR DEPOSIT ERROR! not found Franchisee,franchiseeId={},uid={}",
-                    rentCarDepositAdd.getFranchiseeId(), userInfo.getUid());
+                    rentCarDepositQuery.getFranchiseeId(), userInfo.getUid());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
-        
-        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+    
+        if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("ELE CAR DEPOSIT ERROR! user is rent deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
-        
-        Store store = storeService.queryByIdFromCache(rentCarDepositAdd.getStoreId());
-        if (Objects.isNull(store)) {
-            log.error("ELE CAR DEPOSIT ERROR! not found store!  uid={},sid={}", userInfo.getUid(),
-                    rentCarDepositAdd.getStoreId());
-            return R.fail("100204", "未找到门店");
-        }
-        
-        ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(rentCarDepositAdd.getCarModelId());
+    
+        ElectricityCarModel carModel = electricityCarModelService
+                .queryByIdFromCache(rentCarDepositQuery.getCarModelId());
         if (Objects.isNull(carModel)) {
             log.error("ELE CAR DEPOSIT ERROR! not found carModel!  uid={},carModelId={}", userInfo.getUid(),
-                    rentCarDepositAdd.getCarModelId());
+                    rentCarDepositQuery.getCarModelId());
             return R.fail("100005", "未找到车辆型号");
         }
-        
-        BigDecimal payAmount = rentCarDepositAdd.getPayAmount();
+    
+        Store store = storeService.queryByIdFromCache(carModel.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ELE CAR DEPOSIT ERROR! not found store!  uid={},sid={}", userInfo.getUid(),
+                    carModel.getStoreId());
+            return R.fail("100204", "未找到门店");
+        }
+    
+        BigDecimal payAmount = rentCarDepositQuery.getPayAmount();
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             payAmount = BigDecimal.valueOf(0);
         }
@@ -1705,7 +1706,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         carDepositOrder.setCreateTime(System.currentTimeMillis());
         carDepositOrder.setUpdateTime(System.currentTimeMillis());
         carDepositOrder.setFranchiseeId(store.getFranchiseeId());
-        carDepositOrder.setStoreId(rentCarDepositAdd.getStoreId());
+        carDepositOrder.setStoreId(carModel.getStoreId());
         carDepositOrder.setPayType(CarDepositOrder.OFFLINE_PAYTYPE);
         carDepositOrder.setCarModelId(carModel.getId().longValue());
         carDepositOrder.setRentBattery(CarDepositOrder.RENTBATTERY_NO);
@@ -1723,23 +1724,29 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         updateUserInfo.setUid(userInfo.getUid());
         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateUserInfo.setFranchiseeId(carDepositOrder.getFranchiseeId());
         userInfoService.updateByUid(updateUserInfo);
         
         UserCarDeposit userCarDeposit = new UserCarDeposit();
         userCarDeposit.setUid(userInfo.getUid());
+        userCarDeposit.setDid(carDepositOrder.getId());
         userCarDeposit.setOrderId(orderId);
         userCarDeposit.setCarDeposit(carDepositOrder.getPayAmount());
-        userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setCreateTime(System.currentTimeMillis());
+        userCarDeposit.setTenantId(userInfo.getTenantId());
         userCarDeposit.setUpdateTime(System.currentTimeMillis());
+        userCarDeposit.setDepositType(UserCarDeposit.DEPOSIT_TYPE_DEFAULT);
+        userCarDeposit.setDelFlag(UserCarDeposit.DEL_NORMAL);
+        userCarDeposit.setApplyDepositTime(System.currentTimeMillis());
         userCarDepositService.insertOrUpdate(userCarDeposit);
         
         UserCar userCar = new UserCar();
         userCar.setUid(userInfo.getUid());
-        userCar.setCarModel(rentCarDepositAdd.getCarModelId().longValue());
+        userCar.setCarModel(rentCarDepositQuery.getCarModelId().longValue());
         userCar.setTenantId(userInfo.getTenantId());
         userCar.setCreateTime(System.currentTimeMillis());
         userCar.setUpdateTime(System.currentTimeMillis());
+        userCar.setDelFlag(UserCar.DEL_NORMAL);
         userCarService.insertOrUpdate(userCar);
     
         return R.ok();
