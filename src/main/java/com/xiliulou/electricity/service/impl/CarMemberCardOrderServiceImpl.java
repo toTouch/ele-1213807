@@ -251,9 +251,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
             }
     
-            Integer integer = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
-            userCarMemberCardVO.setReturnDepositStatus(integer);
-            userCarMemberCardVO.setDepositType(userCarDeposit.getDepositType());
+            //            Integer integer = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
+            //            userCarMemberCardVO.setReturnDepositStatus(integer);
+            //            userCarMemberCardVO.setDepositType(userCarDeposit.getDepositType());
         }
     
         //车辆型号

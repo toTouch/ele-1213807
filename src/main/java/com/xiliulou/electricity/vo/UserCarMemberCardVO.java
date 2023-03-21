@@ -85,13 +85,13 @@ public class UserCarMemberCardVO {
      */
     private Integer returnCarStatus;
     
-    /**
-     * 车辆退押审核状态
-     */
-    private Integer returnDepositStatus;
+    //    /**
+    //     * 车辆退押审核状态
+    //     */
+    //    private Integer returnDepositStatus;
     
-    /**
-     * 押金类型
-     */
-    private Integer depositType;
+    //    /**
+    //     * 押金类型
+    //     */
+    //    private Integer depositType;
 }

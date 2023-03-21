@@ -59,4 +59,23 @@ public class UserCarDepositVO {
      * 交易方式 0--线上 1--线下
      */
     private Integer payType;
+    
+    /**
+     * 车辆退押审核状态
+     */
+    private Integer returnDepositStatus;
+    
+    /**
+     * 押金类型
+     */
+    private Integer depositType;
+    
+    /**
+     * 是否有车辆  1--有  2--无
+     */
+    private Integer hasCarStatus;
+    
+    public static final Integer HAS_CAR_STATUS_YES = 1;
+    
+    public static final Integer HAS_CAR_STATUS_NO = 2;
 }
