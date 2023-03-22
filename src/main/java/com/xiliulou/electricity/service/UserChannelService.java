@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserChannel;
+import com.xiliulou.electricity.query.UserChannelQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public interface UserChannelService {
      * @param id 主键
      * @return 实例对象
      */
-    UserChannel queryByIdFromDB(Long id);
+    UserChannel queryByUidFromDB(Long id);
     
     /**
      * 通过ID查询单条数据从缓存
@@ -27,7 +28,7 @@ public interface UserChannelService {
      * @param id 主键
      * @return 实例对象
      */
-    UserChannel queryByIdFromCache(Long id);
+    UserChannel queryByUidFromCache(Long id);
     
     /**
      * 查询多条数据
@@ -63,4 +64,8 @@ public interface UserChannelService {
     Boolean deleteById(Long id);
     
     Triple<Boolean, String, Object> queryList(Long offset, Long size, String name, String phone);
+    
+    Triple<Boolean, String, Object> queryCount(String name, String phone);
+    
+    Triple<Boolean, String, Object> saveOne(UserChannelQuery userChannelQuery);
 }

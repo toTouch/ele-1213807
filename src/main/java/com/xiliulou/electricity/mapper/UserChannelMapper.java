@@ -66,4 +66,8 @@ public interface UserChannelMapper extends BaseMapper<UserChannel> {
     
     List<UserChannel> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("name") String name,
             @Param("phone") String phone);
+    
+    Long queryCount(@Param("name") String name, @Param("phone") String phone);
+    
+    UserChannel queryByUidFromDB(@Param("uid") Long uid);
 }

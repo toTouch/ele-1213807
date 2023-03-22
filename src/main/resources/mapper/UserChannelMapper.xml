@@ -91,16 +91,39 @@
     
     <select id="queryList" resultMap="UserChannelMap">
         select
-        id, uid, operate_uid, create_time, update_time, tenant_id
-        from t_user_channel
+        u.id, u.uid, u.operate_uid, u.create_time, u.update_time, u.tenant_id
+        from t_user_channel u
+        left join t_user_info ui on u.uid = ui.uid
         <where>
             <if test="name != null and name != ''">
-                and name = #{name}
+                and ui.name = #{name}
             </if>
             <if test="phone != null and phone != ''">
-                and phone = #{phone}
+                and ui.phone = #{phone}
             </if>
         </where>
         limit #{offset}, #{limit}
+    </select>
+    
+    <select id="queryCount" resultType="long">
+        select
+        count(*)
+        from t_user_channel
+        left join t_user_info ui on u.uid = ui.uid
+        <where>
+            <if test="name != null and name != ''">
+                and ui.name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and ui.phone = #{phone}
+            </if>
+        </where>
+    </select>
+    
+    <select id="queryByUidFromDB" resultMap="UserChannelMap">
+        select
+          id, uid, operate_uid, create_time, update_time, tenant_id
+        from t_user_channel
+        where uid = #{uid}
     </select>
 </mapper>

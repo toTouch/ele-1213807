@@ -29,7 +29,7 @@ public class UserChannel {
     
     private Long updateTime;
     
-    private Long tenantId;
+    private Integer tenantId;
     
     public static final Integer DEL_NORMAL = 0;
     

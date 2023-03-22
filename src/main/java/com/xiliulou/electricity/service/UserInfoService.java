@@ -63,6 +63,8 @@ public interface UserInfoService extends IService<UserInfo> {
     UserInfo queryByUidFromCache(Long uid);
 
     Integer homeOne(Long first, Long now, Integer tenantId);
+    
+    UserInfo queryByUidFromDb(Long uid);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId);
 

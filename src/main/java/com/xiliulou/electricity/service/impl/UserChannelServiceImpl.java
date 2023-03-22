@@ -1,9 +1,22 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
+import com.xiliulou.electricity.query.UserChannelQuery;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserChannelVo;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -15,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +49,15 @@ public class UserChannelServiceImpl implements UserChannelService {
     @Autowired
     private UserInfoService userInfoService;
     
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    private RedisService redisService;
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -42,19 +65,29 @@ public class UserChannelServiceImpl implements UserChannelService {
      * @return 实例对象
      */
     @Override
-    public UserChannel queryByIdFromDB(Long id) {
-        return this.userChannelMapper.queryById(id);
+    public UserChannel queryByUidFromDB(Long id) {
+        return this.userChannelMapper.queryByUidFromDB(id);
     }
     
     /**
      * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
      */
     @Override
-    public UserChannel queryByIdFromCache(Long id) {
-        return null;
+    public UserChannel queryByUidFromCache(Long uid) {
+        UserChannel userChannel = redisService.getWithHash(CacheConstant.CACHE_USER_CHANNEL + uid, UserChannel.class);
+        if (Objects.nonNull(userChannel)) {
+            return userChannel;
+        }
+    
+        UserChannel userChannelFromDb = queryByUidFromDB(uid);
+        if (Objects.isNull(userChannelFromDb)) {
+            return null;
+        }
+    
+        redisService.saveWithHash(CacheConstant.CACHE_USER_CHANNEL + uid, userChannelFromDb);
+        redisService.expire(CacheConstant.CACHE_USER_CHANNEL, CacheConstant.CACHE_EXPIRE_MONTH, false);
+    
+        return userChannelFromDb;
     }
     
     
@@ -93,7 +126,6 @@ public class UserChannelServiceImpl implements UserChannelService {
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserChannel userChannel) {
         return this.userChannelMapper.update(userChannel);
-        
     }
     
     /**
@@ -116,10 +148,80 @@ public class UserChannelServiceImpl implements UserChannelService {
         Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
             UserChannelVo vo = new UserChannelVo();
             BeanUtils.copyProperties(item, vo);
-        
+    
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            if (Objects.nonNull(userInfo)) {
+                vo.setName(userInfo.getName());
+                vo.setPhone(userInfo.getPhone());
+            }
+    
+            User user = userService.queryByUidFromCache(item.getOperateUid());
+            if (Objects.nonNull(user)) {
+                vo.setOperateName(user.getName());
+            }
+    
             voList.add(vo);
         });
     
         return Triple.of(true, null, voList);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryCount(String name, String phone) {
+        Long count = this.userChannelMapper.queryCount(name, phone);
+        return Triple.of(true, null, count);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> saveOne(UserChannelQuery userChannelQuery) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("USER CHANNEL ERROR! not found user");
+            return Triple.of(false, "100001", "用户不存在");
+        }
+        
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("USER CHANNEL ERROR! not found user, uid={}", uid);
+            return Triple.of(false, "100001", "用户不存在");
+        }
+        
+        String name = userChannelQuery.getName();
+        String phone = userChannelQuery.getPhone();
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
+        if (Objects.isNull(userInfo) || !Objects.equals(name, userInfo.getName())) {
+            log.error("USER CHANNEL ERROR! not found user,phone={}", phone);
+            return Triple.of(false, "100001", "用户不存在");
+        }
+        
+        //购买过套餐
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                .selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
+            return Triple.of(false, "100210", "用户未开通套餐");
+        }
+        
+        //不是渠道人，
+        UserChannel userChannel = queryByUidFromCache(userInfo.getUid());
+        if (Objects.nonNull(userChannel)) {
+            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
+            return Triple.of(false, "100453", "该用户已是渠道用户，请勿重复添加");
+        }
+        
+        //TODO 没邀请记录，也不是受别人邀请
+        
+        UserChannel updateUserChannel = new UserChannel();
+        updateUserChannel.setOperateUid(uid);
+        updateUserChannel.setUid(userInfo.getUid());
+        updateUserChannel.setTenantId(tenantId);
+        updateUserChannel.setCreateTime(System.currentTimeMillis());
+        updateUserChannel.setUpdateTime(System.currentTimeMillis());
+        insert(updateUserChannel);
+        return Triple.of(true, "", "");
     }
 }
