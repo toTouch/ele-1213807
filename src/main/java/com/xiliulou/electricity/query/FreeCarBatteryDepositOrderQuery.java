@@ -30,7 +30,7 @@ public class FreeCarBatteryDepositOrderQuery {
     @NotNull(message = "套餐不能为空!")
     private Integer memberCardId;
 
-    @NotNull(message = "电池型号不能为空!")
+//    @NotNull(message = "电池型号不能为空!")
     private Integer model;
 
     private Integer insuranceId;
