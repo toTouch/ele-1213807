@@ -117,5 +117,13 @@
     <delete id="deleteById">
         delete from t_channel_activity where id = #{id}
     </delete>
-
+  
+  <!--查询指定行数据-->
+  <select id="queryList" resultMap="ChannelActivityMap">
+        select
+          id, name, valid_day, valid_day_limit, status, bind_activity_id, bind_activity_type, create_time, update_time, tenant_id
+        from t_channel_activity
+        where tenant_id = #{tenantId}
+        limit #{offset}, #{limit}
+    </select>
 </mapper>

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 
 import com.xiliulou.electricity.entity.ChannelActivity;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -62,4 +63,5 @@ public interface ChannelActivityService {
      */
     Boolean deleteById(Long id);
     
+    Triple<Boolean, String, Object> queryList(Long offset, Long size);
 }

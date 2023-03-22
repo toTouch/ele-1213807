@@ -3,12 +3,19 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.mapper.ChannelActivityMapper;
 import com.xiliulou.electricity.service.ChannelActivityService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ChannelActivityVo;
+import org.apache.commons.collections.ArrayStack;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author zgw
  * @since 2023-03-22 10:42:57
  */
-@Service("channelActivityService")
+@Service
 @Slf4j
 public class ChannelActivityServiceImpl implements ChannelActivityService {
     
@@ -96,5 +103,17 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.channelActivityMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryList(Long offset, Long size) {
+        List<ChannelActivity> query = channelActivityMapper.queryList(offset, size, TenantContextHolder.getTenantId());
+        List<ChannelActivityVo> voList = new ArrayList<>();
+        Optional.ofNullable(query).orElse(new ArrayList<>()).forEach(item -> {
+            ChannelActivityVo vo = new ChannelActivityVo();
+            BeanUtils.copyProperties(item, vo);
+            voList.add(vo);
+        });
+        return Triple.of(true, null, voList);
     }
 }
