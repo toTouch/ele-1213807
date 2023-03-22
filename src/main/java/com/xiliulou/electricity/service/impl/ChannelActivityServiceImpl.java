@@ -116,4 +116,10 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
         });
         return Triple.of(true, null, voList);
     }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryCount() {
+        Integer count = channelActivityMapper.queryCount(TenantContextHolder.getTenantId());
+        return Triple.of(true, null, count);
+    }
 }
