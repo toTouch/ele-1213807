@@ -66,4 +66,8 @@ public interface ChannelActivityService {
     Triple<Boolean, String, Object> queryList(Long offset, Long size);
     
     Triple<Boolean, String, Object> queryCount();
+    
+    Triple<Boolean, String, Object> updateStatus(Long id, Integer status);
+    
+    ChannelActivity findUsableActivity(Integer tenantId);
 }

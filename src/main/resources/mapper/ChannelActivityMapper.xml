@@ -127,10 +127,17 @@
         limit #{offset}, #{limit}
     </select>
     
-    <select id="queryCount" resultMap="ChannelActivityMap">
+    <select id="queryCount" resultType="long">
         select
           count(*)
         from t_channel_activity
         where tenant_id = #{tenantId}
+    </select>
+    
+    <select id="findUsableActivity" resultMap="ChannelActivityMap">
+        select
+          id, name, valid_day, valid_day_limit, status, bind_activity_id, bind_activity_type, create_time, update_time, tenant_id
+        from t_channel_activity
+        where tenant_id = #{tenantId} and status = 0
     </select>
 </mapper>

@@ -25,7 +25,7 @@ public class JsonAdminChannelActivityController extends BaseController {
     @Resource
     private ChannelActivityService channelActivityService;
     
-    @GetMapping("admin/channelActivity/list")
+    @GetMapping("/admin/channelActivity/list")
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size) {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
@@ -38,8 +38,13 @@ public class JsonAdminChannelActivityController extends BaseController {
         return returnTripleResult(channelActivityService.queryList(offset, size));
     }
     
-    @GetMapping("admin/channelActivity/queryCount")
+    @GetMapping("/admin/channelActivity/queryCount")
     public R queryCount() {
         return returnTripleResult(channelActivityService.queryCount());
+    }
+    
+    @PutMapping("/admin/channelActivity/status")
+    public R updateStatus(@RequestParam("id") Long id, @RequestParam("status") Integer status) {
+        return returnTripleResult(channelActivityService.updateStatus(id, status));
     }
 }

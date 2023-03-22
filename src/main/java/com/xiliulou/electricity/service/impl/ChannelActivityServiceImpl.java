@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +120,46 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
     
     @Override
     public Triple<Boolean, String, Object> queryCount() {
-        Integer count = channelActivityMapper.queryCount(TenantContextHolder.getTenantId());
+        Long count = channelActivityMapper.queryCount(TenantContextHolder.getTenantId());
         return Triple.of(true, null, count);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> updateStatus(Long id, Integer status) {
+        ChannelActivity channelActivity = queryByIdFromDB(id);
+        if (Objects.isNull(channelActivity)) {
+            log.error("CHANNEL ACTIVITY ERROR! ont find channelActivity error! id={}", id);
+            return Triple.of(false, "100450", "渠道活动不存在");
+        }
+        
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        if (!Objects.equals(tenantId, channelActivity.getTenantId())) {
+            return Triple.of(true, "", "");
+        }
+        
+        if (!Objects.equals(status, ChannelActivity.STATUS_START_USING) && !Objects
+                .equals(status, ChannelActivity.STATUS_FORBIDDEN)) {
+            return Triple.of(false, "100452", "渠道活动状态不合法");
+        }
+        
+        ChannelActivity usableActivity = findUsableActivity(tenantId);
+        if (Objects.nonNull(usableActivity)) {
+            log.error("CHANNEL ACTIVITY ERROR! activity exists error! id={}", id);
+            return Triple.of(false, "100451", "已有启用中的渠道活动，请勿重复添加");
+        }
+        
+        ChannelActivity updateChannelActivity = new ChannelActivity();
+        updateChannelActivity.setId(channelActivity.getId());
+        updateChannelActivity.setStatus(status);
+        updateChannelActivity.setUpdateTime(System.currentTimeMillis());
+        update(updateChannelActivity);
+        return Triple.of(true, "", "");
+    }
+    
+    @Override
+    public ChannelActivity findUsableActivity(Integer tenantId) {
+        return channelActivityMapper.findUsableActivity(tenantId);
     }
 }
