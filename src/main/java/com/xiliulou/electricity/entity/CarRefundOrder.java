@@ -25,6 +25,8 @@ public class CarRefundOrder {
     
     private String orderId;
     
+    private String depositOrderId;
+    
     private Long uid;
     
     private String name;

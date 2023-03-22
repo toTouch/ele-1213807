@@ -234,7 +234,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             log.error("ELE CAR MEMBER CARD ERROR! not found carMemberCardOrder,uid={}", user.getUid());
             return Triple.of(true, "", null);
         }
-
+    
         userCarMemberCardVO.setCarModelId(carMemberCardOrder.getCarModelId());
         userCarMemberCardVO.setCardName(carMemberCardOrder.getCardName());
         userCarMemberCardVO.setPayAmount(carMemberCardOrder.getPayAmount());
@@ -271,7 +271,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         //还车审核状态, 为空用户没发送审核 默认为0
         if (Objects.nonNull(userCar) && !StringUtils.isBlank(userCar.getSn())) {
             Integer status = carRefundOrderService
-                    .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), userCar.getSn());
+                    .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), userCar.getSn(),
+                            userCarDeposit.getOrderId());
             userCarMemberCardVO.setReturnCarStatus(Objects.isNull(status) ? 0 : status);
         }
 

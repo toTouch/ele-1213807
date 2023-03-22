@@ -161,6 +161,7 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R carRefundOrderReview(Long id, Integer status, String remark) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -297,6 +298,7 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
         //生成审核记录
         CarRefundOrder carRefundOrder = new CarRefundOrder();
         carRefundOrder.setOrderId(orderId);
+        carRefundOrder.setDepositOrderId(userCarDeposit.getOrderId());
         carRefundOrder.setUid(userInfo.getUid());
         carRefundOrder.setName(userInfo.getName());
         carRefundOrder.setPhone(userInfo.getPhone());
@@ -344,7 +346,7 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     }
     
     @Override
-    public Integer queryStatusByLastCreateTime(Long uid, Integer tenantId, String sn) {
-        return carRefundOrderMapper.queryStatusByLastCreateTime(uid, tenantId, sn);
+    public Integer queryStatusByLastCreateTime(Long uid, Integer tenantId, String sn, String depositOrderId) {
+        return carRefundOrderMapper.queryStatusByLastCreateTime(uid, tenantId, sn, depositOrderId);
     }
 }

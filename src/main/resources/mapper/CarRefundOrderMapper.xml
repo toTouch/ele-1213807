@@ -19,12 +19,13 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="storeId" column="store_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="depositOrderId" column="deposit_order_id" jdbcType="VARCHAR"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="queryById" resultMap="CarRefundOrderMap">
         select
-          id, order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time, update_time, store_id, tenant_id
+          id, order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time, update_time, store_id, tenant_id, deposit_order_id
         from t_car_refund_order
         where id = #{id}
     </select>
@@ -32,7 +33,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="CarRefundOrderMap">
         select
-          id, order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time, update_time, store_id, tenant_id
+          id, order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time, update_time, store_id, tenant_id, deposit_order_id
         from t_car_refund_order
         limit #{offset}, #{limit}
     </select>
@@ -40,7 +41,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="CarRefundOrderMap">
         select
-        id, order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark,
+        id, order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, deposit_order_id
         create_time, update_time, store_id, tenant_id
         from t_car_refund_order
         <where>
@@ -94,8 +95,8 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_car_refund_order(order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time, update_time, store_id, tenant_id)
-        values (#{orderId}, #{uid}, #{name}, #{phone}, #{carId}, #{carSn}, #{carDeposit}, #{carModelId}, #{status}, #{remark}, #{createTime}, #{updateTime}, #{storeId}, #{tenantId})
+        insert into t_car_refund_order(order_id, uid, name, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time, update_time, store_id, tenant_id, deposit_order_id)
+        values (#{orderId}, #{uid}, #{name}, #{phone}, #{carId}, #{carSn}, #{carDeposit}, #{carModelId}, #{status}, #{remark}, #{createTime}, #{updateTime}, #{storeId}, #{tenantId}, #{depositOrderId})
     </insert>
     
     <!--通过主键修改数据-->
@@ -144,6 +145,9 @@
             <if test="tenantId != null">
                 tenant_id = #{tenantId},
             </if>
+            <if test="depositOrderId != null and depositOrderId != ''">
+                deposit_order_id = #{depositOrderId}
+            </if>
         </set>
         where id = #{id}
     </update>
@@ -155,7 +159,8 @@
     
     <select id="queryList" resultMap="CarRefundOrderMap">
         select
-        id, order_id, uid, `name`, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time,
+        id, order_id, uid, `name`, phone, car_id, car_sn, car_deposit, car_model_id, status, remark, create_time ,
+        deposit_order_id
         update_time, store_id, tenant_id
         from t_car_refund_order
         <where>
@@ -209,7 +214,7 @@
     <select id="queryStatusByLastCreateTime" resultType="integer">
         select status
         from t_car_refund_order
-        where uid = #{uid} and tenant_id = #{tenantId} and car_sn = #{sn}
+        where uid = #{uid} and tenant_id = #{tenantId} and car_sn = #{sn} and deposit_order_id = #{depositOrderId}
         order by create_time desc
         limit 1
     </select>

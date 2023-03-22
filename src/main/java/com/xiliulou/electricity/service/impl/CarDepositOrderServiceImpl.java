@@ -311,7 +311,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarDeposit)) {
             log.error("ELE CAR DEPOSIT CARD ERROR! not found userCarDeposit! uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+            return Triple.of(true, "", userCarDepositVO);
         }
 
         CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());

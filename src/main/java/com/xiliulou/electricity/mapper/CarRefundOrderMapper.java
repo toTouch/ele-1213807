@@ -73,5 +73,5 @@ public interface CarRefundOrderMapper extends BaseMapper<CarRefundOrder> {
     Long queryCount(CarRefundOrderQuery query);
     
     Integer queryStatusByLastCreateTime(@Param("uid") Long uid, @Param("tenantId") Integer tenantId,
-            @Param("sn") String sn);
+            @Param("sn") String sn, @Param("depositOrderId") String depositOrderId);
 }
