@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserChannel;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -61,4 +62,5 @@ public interface UserChannelService {
      */
     Boolean deleteById(Long id);
     
+    Triple<Boolean, String, Object> queryList(Long offset, Long size, String name, String phone);
 }

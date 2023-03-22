@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.service.UserChannelService;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -96,5 +97,10 @@ public class UserChannelServiceImpl implements UserChannelService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userChannelMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryList(Long offset, Long size, String name, String phone) {
+        return null;
     }
 }
