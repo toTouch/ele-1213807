@@ -66,4 +66,6 @@ public interface ChannelActivityMapper extends BaseMapper<ChannelActivity> {
     
     List<ChannelActivity> queryList(@Param("offset") Long offset, @Param("size") Long size,
             @Param("tenantId") Integer tenantId);
+    
+    Integer queryCount(Integer tenantId);
 }

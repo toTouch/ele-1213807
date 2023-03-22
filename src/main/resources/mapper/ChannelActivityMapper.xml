@@ -126,4 +126,11 @@
         where tenant_id = #{tenantId}
         limit #{offset}, #{limit}
     </select>
+    
+    <select id="queryCount" resultMap="ChannelActivityMap">
+        select
+          count(*)
+        from t_channel_activity
+        where tenant_id = #{tenantId}
+    </select>
 </mapper>

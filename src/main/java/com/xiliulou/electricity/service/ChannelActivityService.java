@@ -64,4 +64,6 @@ public interface ChannelActivityService {
     Boolean deleteById(Long id);
     
     Triple<Boolean, String, Object> queryList(Long offset, Long size);
+    
+    Triple<Boolean, String, Object> queryCount();
 }
