@@ -3,13 +3,19 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.service.UserChannelService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.vo.UserChannelVo;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,6 +31,9 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Resource
     private UserChannelMapper userChannelMapper;
+    
+    @Autowired
+    private UserInfoService userInfoService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -101,6 +110,16 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Override
     public Triple<Boolean, String, Object> queryList(Long offset, Long size, String name, String phone) {
-        return null;
+        List<UserChannel> queryList = this.userChannelMapper.queryList(offset, size, name, phone);
+        List<UserChannelVo> voList = new ArrayList<>();
+    
+        Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
+            UserChannelVo vo = new UserChannelVo();
+            BeanUtils.copyProperties(item, vo);
+        
+            voList.add(vo);
+        });
+    
+        return Triple.of(true, null, voList);
     }
 }

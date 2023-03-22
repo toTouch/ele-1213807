@@ -64,4 +64,6 @@ public interface UserChannelMapper extends BaseMapper<UserChannel> {
      */
     int deleteById(Long id);
     
+    List<UserChannel> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("name") String name,
+            @Param("phone") String phone);
 }

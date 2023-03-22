@@ -88,5 +88,19 @@
     <delete id="deleteById">
         delete from t_user_channel where id = #{id}
     </delete>
-
+    
+    <select id="queryList" resultMap="UserChannelMap">
+        select
+        id, uid, operate_uid, create_time, update_time, tenant_id
+        from t_user_channel
+        <where>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+        </where>
+        limit #{offset}, #{limit}
+    </select>
 </mapper>
