@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.ChannelActivityHistory" id="ChannelActivityHistoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="inviteUid" column="invite_uid" jdbcType="INTEGER"/>
+        <result property="channelUid" column="channel_uid" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="ChannelActivityHistoryMap">
+        select
+          id, uid, invite_uid, channel_uid, status, create_time, update_time, tenant_id
+        from t_channel_activity_history
+        where id = #{id}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ChannelActivityHistoryMap">
+        select
+          id, uid, invite_uid, channel_uid, status, create_time, update_time, tenant_id
+        from t_channel_activity_history
+        limit #{offset}, #{limit}
+    </select>
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ChannelActivityHistoryMap">
+        select
+        id, uid, invite_uid, channel_uid, status, create_time, update_time, tenant_id
+        from t_channel_activity_history
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="inviteUid != null">
+                and invite_uid = #{inviteUid}
+            </if>
+            <if test="channelUid != null">
+                and channel_uid = #{channelUid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_channel_activity_history(uid, invite_uid, channel_uid, status, create_time, update_time, tenant_id)
+        values (#{uid}, #{inviteUid}, #{channelUid}, #{status}, #{createTime}, #{updateTime}, #{tenantId})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_channel_activity_history
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="inviteUid != null">
+                invite_uid = #{inviteUid},
+            </if>
+            <if test="channelUid != null">
+                channel_uid = #{channelUid},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_channel_activity_history where id = #{id}
+    </delete>
+    
+    <select id="queryInviteCount" resultType="long">
+    select
+       count(*)
+    from t_channel_activity_history
+    where  invite_uid = #{uid}
+  </select>
+    
+    <select id="queryByUid" resultMap="ChannelActivityHistoryMap">
+    select
+    id, uid, invite_uid, channel_uid, status, create_time, update_time, tenant_id
+    from t_channel_activity_history
+    where uid = #{uid}
+  </select>
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ChannelActivityHistoryVo">
+        select
+        tcah.id, tcah.uid, tcah.invite_uid, tcah.channel_uid, tcah.status, tcah.create_time, tcah.update_time,
+        tcah.tenant_id,
+        tui.name as name, tui.phone as phone
+        from t_channel_activity_history tcah
+        left join t_user_info tui on tui.uid = tcah.uid
+        <where>
+            <if test="name != null and name != ''">
+                and tui.name = concat('%', #{name}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                and tui.phone = concat('%', #{phone}, '%')
+            </if>
+            <if test="tenantId != null and tenantId != ''">
+                and tcah.tenant_id = #{tenantId}
+            </if>
+        </where>
+        limit #{offset}, #{size}
+    </select>
+    
+    
+    <select id="queryCount" resultType="long">
+        select
+        count(*)
+        from t_channel_activity_history tcah
+        left join t_user_info tui on tui.uid = tcah.uid
+        <where>
+            <if test="name != null and name != ''">
+                and tui.name = concat('%', #{name}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                and tui.phone = concat('%', #{phone}, '%')
+            </if>
+            <if test="tenantId != null and tenantId != ''">
+                and tcah.tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+</mapper>

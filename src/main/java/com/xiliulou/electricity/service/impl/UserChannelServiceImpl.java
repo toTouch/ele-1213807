@@ -2,12 +2,14 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.query.UserChannelQuery;
+import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TenantService;
@@ -57,6 +59,9 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Autowired
     private RedisService redisService;
+    
+    @Autowired
+    private ChannelActivityHistoryService channelActivityHistoryService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -209,12 +214,24 @@ public class UserChannelServiceImpl implements UserChannelService {
         //不是渠道人，
         UserChannel userChannel = queryByUidFromCache(userInfo.getUid());
         if (Objects.nonNull(userChannel)) {
-            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
+            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", userInfo.getUid());
             return Triple.of(false, "100453", "该用户已是渠道用户，请勿重复添加");
         }
-        
-        //TODO 没邀请记录，也不是受别人邀请
-        
+    
+        // 没邀请记录，
+        Long inviteCount = channelActivityHistoryService.queryInviteCount(userInfo.getUid());
+        if (Objects.nonNull(inviteCount) && Objects.equals(inviteCount, 0L)) {
+            log.error("USER CHANNEL ERROR! user exist invite users！uid={}", userInfo.getUid());
+            return Triple.of(false, "100454", "用户邀请过他人，不可添加为渠道用户");
+        }
+    
+        //不是受别人邀请
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory)) {
+            log.error("USER CHANNEL ERROR! user is invited by others！uid={}", userInfo.getUid());
+            return Triple.of(false, "100455", "用户存在邀请人，不可添加为渠道用户");
+        }
+    
         UserChannel updateUserChannel = new UserChannel();
         updateUserChannel.setOperateUid(uid);
         updateUserChannel.setUid(userInfo.getUid());
