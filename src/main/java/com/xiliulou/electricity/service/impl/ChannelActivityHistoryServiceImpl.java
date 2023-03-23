@@ -16,6 +16,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ChannelActivityCodeVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -174,12 +175,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             log.error("USER CHANNEL QUERY CODE ERROR! not found user");
             return R.fail("100001", "用户不存在");
         }
-        
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
-            return R.fail("100001", "用户不存在");
-        }
+    
+        //        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        //        if (Objects.isNull(userInfo)) {
+        //            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+        //            return R.fail("100001", "用户不存在");
+        //        }
         
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
@@ -211,9 +212,32 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         return R.fail("100456", "用户未参与渠道人活动");
     }
     
+    @Override
+    public R scanIntoActivity(String code) {
+        if (StringUtils.isBlank(code)) {
+            return R.ok();
+        }
+        
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            return R.fail("100001", "用户不存在");
+        }
+        
+        String decrypt = AESUtils.decrypt(code);
+        if (StringUtils.isBlank(decrypt)) {
+            log.error("USER CHANNEL SCAN ERROR! code decrypt error! code={}, user={}", code, uid);
+            return R.fail("100457", "渠道活动二维码解码失败");
+        }
+        
+        String[] split = decrypt.split(":");
+        
+        return null;
+    }
+    
     private String generateCode(Integer type, Long uid, Long channelUid) {
         StringBuilder sb = new StringBuilder();
-        sb.append(type).append(uid).append(channelUid);
+        sb.append(type).append(":").append(uid).append(":").append(channelUid);
         return AESUtils.encrypt(sb.toString());
     }
 }

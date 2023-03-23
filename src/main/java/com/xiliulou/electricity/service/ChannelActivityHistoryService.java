@@ -72,4 +72,6 @@ public interface ChannelActivityHistoryService {
     Triple<Boolean, String, Object> queryCount(String name, String phone);
     
     R queryCode();
+    
+    R scanIntoActivity(String code);
 }
