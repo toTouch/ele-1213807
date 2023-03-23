@@ -1,22 +1,32 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.alibaba.excel.EasyExcel;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
+import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ChannelActivityService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ChannelActivityCodeVo;
+import com.xiliulou.electricity.vo.ChannelActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
+import com.xiliulou.electricity.vo.UserInfoExcelVO;
+import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -26,9 +36,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,6 +73,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private ChannelActivityService channelActivityService;
+    
+    @Autowired
+    private UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    private CarMemberCardOrderService carMemberCardOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -144,32 +167,47 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
-    public Triple<Boolean, String, Object> queryList(Long size, Long offset, String name, String phone) {
+    public Triple<Boolean, String, Object> queryList(Long size, Long offset, String phone, Long beginTime,
+            Long endTime) {
         List<ChannelActivityHistoryVo> query = channelActivityHistoryMapper
-                .queryList(size, offset, name, phone, TenantContextHolder.getTenantId());
+                .queryList(size, offset, phone, TenantContextHolder.getTenantId(), beginTime, endTime);
         if (CollectionUtils.isEmpty(query)) {
             return Triple.of(true, "", new ArrayList<>());
         }
         
         query.forEach(item -> {
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            if (Objects.nonNull(userInfo)) {
+                item.setName(userInfo.getName());
+            }
+            
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 item.setInviteName(inviteUserInfo.getName());
-                item.setInvitePhone(inviteUserInfo.getPhone());
+            }
+    
+            User inviteUser = userService.queryByUidFromCache(item.getInviteUid());
+            if (Objects.nonNull(inviteUser)) {
+                item.setInvitePhone(inviteUser.getPhone());
             }
             
             UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 item.setChannelName(channelUserInfo.getName());
-                item.setChannelPhone(channelUserInfo.getPhone());
+            }
+    
+            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
+            if (Objects.nonNull(channelUser)) {
+                item.setInvitePhone(channelUser.getPhone());
             }
         });
         return Triple.of(true, "", query);
     }
     
     @Override
-    public Triple<Boolean, String, Object> queryCount(String name, String phone) {
-        Long count = channelActivityHistoryMapper.queryCount(name, phone, TenantContextHolder.getTenantId());
+    public Triple<Boolean, String, Object> queryCount(String phone, Long beginTime, Long endTime) {
+        Long count = channelActivityHistoryMapper
+                .queryCount(phone, TenantContextHolder.getTenantId(), beginTime, endTime);
         return Triple.of(true, "", count);
     }
     
@@ -181,36 +219,44 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.fail("100001", "用户不存在");
         }
     
-        //        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        //        if (Objects.isNull(userInfo)) {
-        //            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
-        //            return R.fail("100001", "用户不存在");
-        //        }
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            return R.fail("100001", "用户不存在");
+        }
+    
+        //活动是否下架
+        ChannelActivity usableActivity = channelActivityService.findUsableActivity(TenantContextHolder.getTenantId());
+        if (Objects.isNull(usableActivity)) {
+            log.error("USER CHANNEL SCAN ERROR! not find usableActivity! tenantId={},user={}",
+                    TenantContextHolder.getTenantId(), uid);
+            return R.fail("100458", "渠道活动未开启");
+        }
         
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
             String code = generateCode(ChannelActivityCodeVo.TYPE_INVITE, uid, channelActivityHistory.getChannelUid());
-            String name = null;
-            
-            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(channelActivityHistory.getInviteUid());
-            if (Objects.nonNull(inviteUserInfo)) {
-                name = inviteUserInfo.getName();
+            String phone = null;
+    
+            User user = userService.queryByUidFromCache(channelActivityHistory.getInviteUid());
+            if (Objects.nonNull(user)) {
+                phone = DesensitizationUtil.phoneDesensitization(user.getPhone());
             }
-            
-            return R.ok(new ChannelActivityCodeVo(code, name, ChannelActivityCodeVo.TYPE_INVITE));
+    
+            return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_INVITE));
         }
         
         UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
         if (Objects.nonNull(userChannel)) {
             String code = generateCode(ChannelActivityCodeVo.TYPE_CHANNEL, uid, uid);
-            String name = null;
-            
+            String phone = null;
+    
             User user = userService.queryByUidFromCache(userChannel.getOperateUid());
             if (Objects.nonNull(user)) {
-                name = user.getName();
+                phone = DesensitizationUtil.phoneDesensitization(user.getPhone());
             }
-            
-            return R.ok(new ChannelActivityCodeVo(code, name, ChannelActivityCodeVo.TYPE_CHANNEL));
+    
+            return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_CHANNEL));
         }
         
         log.warn("USER CHANNEL QUERY CODE ERROR! user not partake activity! uid={}", uid);
@@ -218,6 +264,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R scanIntoActivity(String code) {
         if (StringUtils.isBlank(code)) {
             return R.ok();
@@ -226,6 +273,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            return R.fail("100001", "用户不存在");
+        }
+    
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("USER CHANNEL QUERY CODE ERROR! not found user, uid={}", uid);
             return R.fail("100001", "用户不存在");
         }
     
@@ -279,22 +332,170 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
     
         //用户是否存在，
+        User inviteUser = userService.queryByUidFromCache(inviteUid);
+        if (Objects.isNull(inviteUser)) {
+            log.error("USER CHANNEL SCAN ERROR! inviteUser not find error! user={}", inviteUid);
+            return R.fail("100001", "邀请用户用户不存在");
+        }
+    
+        User channelUser = userService.queryByUidFromCache(channelUid);
+        if (Objects.isNull(channelUser)) {
+            log.error("USER CHANNEL SCAN ERROR! channelUser not find error! user={}", channelUid);
+            return R.fail("100001", "渠道人用户不存在");
+        }
+        
         // 是否参与过邀请活动，
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
             log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
-            return R.fail("100459", "渠道活动二维码内容不合法");
+            return R.fail("100460", "您已参与渠道活动，请勿重复扫码");
         }
+    
         // 是否渠道人，
+        UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
+        if (Objects.nonNull(userChannel)) {
+            log.error("USER CHANNEL SCAN ERROR! user is channel user! user={}", uid);
+            return R.fail("100461", "您已成为渠道人，请勿重复扫码");
+        }
+        
         // 是否购买过套餐
+        if (userBuyMemberCardCheck(uid)) {
+            log.error("USER CHANNEL SCAN ERROR! user has buy memberCard ! user={}", uid);
+            return R.fail("100462", "您是老用户，无法参加渠道活动");
+        }
+    
+        ChannelActivityHistory saveChannelActivityHistory = new ChannelActivityHistory();
+        saveChannelActivityHistory.setUid(uid);
+        saveChannelActivityHistory.setInviteUid(inviteUid);
+        saveChannelActivityHistory.setChannelUid(channelUid);
+        saveChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_INIT);
+        saveChannelActivityHistory.setCreateTime(System.currentTimeMillis());
+        saveChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+        saveChannelActivityHistory.setTenantId(TenantContextHolder.getTenantId());
+        insert(saveChannelActivityHistory);
+    
+        return R.ok();
+    }
+    
+    @Override
+    public void queryExportExcel(String phone, Long beginTime, Long endTime, HttpServletResponse response) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            throw new CustomBusinessException("未查询到用户");
+        }
         
+        if (Objects.isNull(beginTime) || Objects.isNull(endTime) || (endTime - beginTime) == 0) {
+            log.error("USER CHANNEL EXPORT EXCEL ERROR! Illegal time ! user={}", uid);
+            throw new CustomBusinessException("搜索日期不合法");
+        }
         
-        return null;
+        Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
+        if (days > 33) {
+            throw new CustomBusinessException("搜索日期不能大于33天");
+        }
+        
+        Long offset = 0L;
+        Long size = 2000L;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        
+        List<ChannelActivityHistoryVo> query = channelActivityHistoryMapper
+                .queryList(size, offset, phone, TenantContextHolder.getTenantId(), beginTime, endTime);
+        List<ChannelActivityHistoryExcelVo> voList = new ArrayList<>();
+        
+        Optional.ofNullable(query).orElse(new ArrayList<>()).forEach(item -> {
+            ChannelActivityHistoryExcelVo vo = new ChannelActivityHistoryExcelVo();
+            vo.setPhone(item.getPhone());
+            
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            vo.setName(queryUserInfoName(userInfo));
+            
+            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
+            vo.setInviterName(queryUserInfoName(inviteUserInfo));
+            
+            UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
+            vo.setInviterName(queryUserInfoName(channelUserInfo));
+            
+            User inviteUser = userService.queryByUidFromCache(item.getInviteUid());
+            if (Objects.nonNull(inviteUser)) {
+                vo.setInviterPhone(inviteUser.getPhone());
+            }
+            
+            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
+            if (Objects.nonNull(channelUser)) {
+                vo.setChannelPhone(channelUser.getPhone());
+            }
+            
+            date.setTime(item.getCreateTime());
+            vo.setCreateTime(sdf.format(date));
+            vo.setStatus(queryStatus(item.getStatus()));
+            
+            voList.add(vo);
+        });
+        
+        String fileName = "渠道活动记录报表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, ChannelActivityHistoryExcelVo.class).sheet("sheet").doWrite(voList);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+    }
+    
+    private String queryStatus(Integer status) {
+        String result = "";
+        switch (status) {
+            case 1:
+                result = "已参与";
+                break;
+            case 2:
+                result = "邀请成功";
+                break;
+            case 3:
+                result = "已过期";
+                break;
+            case 4:
+                result = "被替换";
+                break;
+            default:
+                result = "";
+        }
+        return result;
+    }
+    
+    private String queryUserInfoName(UserInfo userInfo) {
+        return Objects.isNull(userInfo) ? "未实名认证" : userInfo.getName();
     }
     
     private String generateCode(Integer type, Long uid, Long channelUid) {
         StringBuilder sb = new StringBuilder();
         sb.append(type).append(":").append(uid).append(":").append(channelUid);
         return AESUtils.encrypt(sb.toString());
+    }
+    
+    private boolean userBuyMemberCardCheck(Long uid) {
+        boolean batteryMemberCard = true;
+        boolean carMemberCard = true;
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || Objects
+                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            batteryMemberCard = false;
+        }
+        
+        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
+                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
+        if (Objects.isNull(carMemberCardOrder)) {
+            carMemberCard = false;
+        }
+        
+        return batteryMemberCard || carMemberCard;
     }
 }

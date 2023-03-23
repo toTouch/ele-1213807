@@ -14,7 +14,7 @@ public class ChannelActivityCodeVo {
     
     private String code;
     
-    private String inviteName;
+    private String invitePhone;
     
     private Integer type;
     

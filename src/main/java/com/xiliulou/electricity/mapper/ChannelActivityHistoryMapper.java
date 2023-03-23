@@ -70,7 +70,9 @@ public interface ChannelActivityHistoryMapper extends BaseMapper<ChannelActivity
     ChannelActivityHistory queryByUid(@Param("uid") Long uid);
     
     List<ChannelActivityHistoryVo> queryList(@Param("size") Long size, @Param("offset") Long offset,
-            @Param("name") String name, @Param("phone") String phone, @Param("tenantId") Integer tenantId);
+            @Param("phone") String phone, @Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime,
+            @Param("endTime") Long endTime);
     
-    Long queryCount(@Param("name") String name, @Param("phone") String phone, @Param("tenantId") Integer tenantId);
+    Long queryCount(@Param("phone") String phone, @Param("tenantId") Integer tenantId,
+            @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 }

@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -67,11 +68,13 @@ public interface ChannelActivityHistoryService {
     
     ChannelActivityHistory queryByUid(Long uid);
     
-    Triple<Boolean, String, Object> queryList(Long size, Long offset, String name, String phone);
+    Triple<Boolean, String, Object> queryList(Long size, Long offset, String phone, Long beginTime, Long endTime);
     
-    Triple<Boolean, String, Object> queryCount(String name, String phone);
+    Triple<Boolean, String, Object> queryCount(String phone, Long beginTime, Long endTime);
     
     R queryCode();
     
     R scanIntoActivity(String code);
+    
+    void queryExportExcel(String phone, Long beginTime, Long endTime, HttpServletResponse response);
 }

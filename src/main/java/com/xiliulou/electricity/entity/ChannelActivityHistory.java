@@ -39,7 +39,10 @@ public class ChannelActivityHistory {
     private Integer tenantId;
     
     public static final Integer DEL_NORMAL = 0;
-    
     public static final Integer DEL_DEL = 1;
+    
+    public static final Integer STATUS_INIT = 1;
+    
+    public static final Integer STATUS_SUCCESS = 2;
     
 }
