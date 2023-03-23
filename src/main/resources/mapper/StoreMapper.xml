@@ -276,6 +276,7 @@
         <if test="name != null and name != ''">
             and name = #{name}
         </if>
+        order by id
         limit #{offset}, #{size}
     </select>
 
