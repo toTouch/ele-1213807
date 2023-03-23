@@ -39,7 +39,7 @@ public class JsonAdminUserChannelController extends BaseController {
     }
     
     @PostMapping("admin/userChannel/save")
-    public R saveOne(@RequestBody @Validated(value = CreateGroup.class) UserChannelQuery userChannelQuery) {
-        return this.returnTripleResult(userChannelService.saveOne(userChannelQuery));
+    public R saveOne(@RequestParam("uid") Long uid) {
+        return this.returnTripleResult(userChannelService.saveOne(uid));
     }
 }

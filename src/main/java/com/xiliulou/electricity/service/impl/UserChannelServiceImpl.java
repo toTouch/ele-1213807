@@ -179,26 +179,24 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> saveOne(UserChannelQuery userChannelQuery) {
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
+    public Triple<Boolean, String, Object> saveOne(Long uid) {
+        Long currUid = SecurityUtils.getUid();
+        if (Objects.isNull(currUid)) {
             log.error("USER CHANNEL ERROR! not found user");
             return Triple.of(false, "100001", "用户不存在");
         }
-        
-        User user = userService.queryByUidFromCache(uid);
+    
+        User user = userService.queryByUidFromCache(currUid);
         if (Objects.isNull(user)) {
-            log.error("USER CHANNEL ERROR! not found user, uid={}", uid);
+            log.error("USER CHANNEL ERROR! not found user, uid={}", currUid);
             return Triple.of(false, "100001", "用户不存在");
         }
         
-        String name = userChannelQuery.getName();
-        String phone = userChannelQuery.getPhone();
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        UserInfo userInfo = userInfoService.queryUserInfoByPhone(phone, tenantId);
-        if (Objects.isNull(userInfo) || !Objects.equals(name, userInfo.getName())) {
-            log.error("USER CHANNEL ERROR! not found user,phone={}", phone);
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("USER CHANNEL ERROR! not found user, uid", uid);
             return Triple.of(false, "100001", "用户不存在");
         }
         
@@ -233,7 +231,7 @@ public class UserChannelServiceImpl implements UserChannelService {
         }
     
         UserChannel updateUserChannel = new UserChannel();
-        updateUserChannel.setOperateUid(uid);
+        updateUserChannel.setOperateUid(currUid);
         updateUserChannel.setUid(userInfo.getUid());
         updateUserChannel.setTenantId(tenantId);
         updateUserChannel.setCreateTime(System.currentTimeMillis());

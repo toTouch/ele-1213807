@@ -67,5 +67,5 @@ public interface UserChannelService {
     
     Triple<Boolean, String, Object> queryCount(String name, String phone);
     
-    Triple<Boolean, String, Object> saveOne(UserChannelQuery userChannelQuery);
+    Triple<Boolean, String, Object> saveOne(Long uid);
 }

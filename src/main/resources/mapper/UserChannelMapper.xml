@@ -96,13 +96,13 @@
         left join t_user_info ui on u.uid = ui.uid
         <where>
             <if test="name != null and name != ''">
-                and ui.name = #{name}
+                and ui.name like concat('%',#{name}, '%')
             </if>
             <if test="phone != null and phone != ''">
                 and ui.phone = #{phone}
             </if>
         </where>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
     
     <select id="queryCount" resultType="long">
@@ -112,7 +112,7 @@
         left join t_user_info ui on u.uid = ui.uid
         <where>
             <if test="name != null and name != ''">
-                and ui.name = #{name}
+                and ui.name like concat('%',#{name}, '%')
             </if>
             <if test="phone != null and phone != ''">
                 and ui.phone = #{phone}

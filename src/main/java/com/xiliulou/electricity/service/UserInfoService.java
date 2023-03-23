@@ -138,4 +138,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R webBindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
     
     R webUnBindCar(Long uid);
+    
+    R userInfoSearch(Long size, Long offset, String name);
 }
