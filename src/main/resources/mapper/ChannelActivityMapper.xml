@@ -124,7 +124,7 @@
           id, name, valid_day, valid_day_limit, status, bind_activity_id, bind_activity_type, create_time, update_time, tenant_id
         from t_channel_activity
         where tenant_id = #{tenantId}
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
     
     <select id="queryCount" resultType="long">

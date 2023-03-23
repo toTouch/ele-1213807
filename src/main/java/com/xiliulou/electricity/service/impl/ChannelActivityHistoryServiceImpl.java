@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
@@ -51,6 +53,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private ChannelActivityService channelActivityService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -223,7 +228,15 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             log.error("USER CHANNEL QUERY CODE ERROR! not found user");
             return R.fail("100001", "用户不存在");
         }
-        
+    
+        //活动是否下架
+        ChannelActivity usableActivity = channelActivityService.findUsableActivity(TenantContextHolder.getTenantId());
+        if (Objects.isNull(usableActivity)) {
+            log.error("USER CHANNEL SCAN ERROR! not find usableActivity! tenantId={},user={}",
+                    TenantContextHolder.getTenantId(), uid);
+            return R.fail("100458", "渠道活动未开启");
+        }
+    
         String decrypt = AESUtils.decrypt(code);
         if (StringUtils.isBlank(decrypt)) {
             log.error("USER CHANNEL SCAN ERROR! code decrypt error! code={}, user={}", code, uid);
@@ -231,6 +244,50 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
         
         String[] split = decrypt.split(":");
+        if (split.length != 3) {
+            log.error("USER CHANNEL SCAN ERROR! code length illegal! code={}, user={}", code, uid);
+            return R.fail("100459", "渠道活动二维码内容不合法");
+        }
+    
+        Integer type = null;
+        Long inviteUid = null;
+        Long channelUid = null;
+    
+        try {
+            type = Integer.parseInt(split[0]);
+            inviteUid = Long.parseLong(split[1]);
+            channelUid = Long.parseLong(split[2]);
+        } catch (Exception e) {
+            log.error("USER CHANNEL SCAN ERROR! code parse error!", e);
+        }
+    
+        if (Objects.isNull(type) || Objects.isNull(inviteUid) || Objects.isNull(channelUid)) {
+            log.error("USER CHANNEL SCAN ERROR! code parse error! decrypt={}, user={}", decrypt, uid);
+            return R.fail("100459", "渠道活动二维码内容不合法");
+        }
+    
+        // 是否自己扫自己的码，
+        if (Objects.equals(uid, inviteUid)) {
+            return R.ok();
+        }
+    
+        //类型是否一致，
+        if (!Objects.equals(type, ChannelActivityCodeVo.TYPE_CHANNEL) && !Objects
+                .equals(type, ChannelActivityCodeVo.TYPE_INVITE)) {
+            log.error("USER CHANNEL SCAN ERROR! code type error! type={}, user={}", type, uid);
+            return R.fail("100459", "渠道活动二维码内容不合法");
+        }
+    
+        //用户是否存在，
+        // 是否参与过邀请活动，
+        ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
+        if (Objects.nonNull(channelActivityHistory)) {
+            log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
+            return R.fail("100459", "渠道活动二维码内容不合法");
+        }
+        // 是否渠道人，
+        // 是否购买过套餐
+        
         
         return null;
     }
