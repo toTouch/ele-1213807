@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -69,4 +70,6 @@ public interface ChannelActivityHistoryService {
     Triple<Boolean, String, Object> queryList(Long size, Long offset, String name, String phone);
     
     Triple<Boolean, String, Object> queryCount(String name, String phone);
+    
+    R queryCode();
 }

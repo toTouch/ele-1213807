@@ -1,11 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ChannelActivityCodeVo;
 import com.xiliulou.electricity.vo.ChannelActivityHistoryVo;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -36,6 +44,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private UserInfoService userInfoService;
+    
+    @Autowired
+    private UserChannelService userChannelService;
+    
+    @Autowired
+    private UserService userService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -151,5 +165,55 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     public Triple<Boolean, String, Object> queryCount(String name, String phone) {
         Long count = channelActivityHistoryMapper.queryCount(name, phone, TenantContextHolder.getTenantId());
         return Triple.of(true, "", count);
+    }
+    
+    @Override
+    public R queryCode() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            return R.fail("100001", "用户不存在");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("USER CHANNEL QUERY CODE ERROR! not found user");
+            return R.fail("100001", "用户不存在");
+        }
+        
+        ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
+        if (Objects.nonNull(channelActivityHistory)) {
+            String code = generateCode(ChannelActivityCodeVo.TYPE_INVITE, uid, channelActivityHistory.getChannelUid());
+            String name = null;
+            
+            UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(channelActivityHistory.getInviteUid());
+            if (Objects.nonNull(inviteUserInfo)) {
+                name = inviteUserInfo.getName();
+            }
+            
+            return R.ok(new ChannelActivityCodeVo(code, name, ChannelActivityCodeVo.TYPE_INVITE));
+        }
+        
+        UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
+        if (Objects.nonNull(userChannel)) {
+            String code = generateCode(ChannelActivityCodeVo.TYPE_CHANNEL, uid, uid);
+            String name = null;
+            
+            User user = userService.queryByUidFromCache(userChannel.getOperateUid());
+            if (Objects.nonNull(user)) {
+                name = user.getName();
+            }
+            
+            return R.ok(new ChannelActivityCodeVo(code, name, ChannelActivityCodeVo.TYPE_CHANNEL));
+        }
+        
+        log.warn("USER CHANNEL QUERY CODE ERROR! user not partake activity! uid={}", uid);
+        return R.fail("100456", "用户未参与渠道人活动");
+    }
+    
+    private String generateCode(Integer type, Long uid, Long channelUid) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(type).append(uid).append(channelUid);
+        return AESUtils.encrypt(sb.toString());
     }
 }
