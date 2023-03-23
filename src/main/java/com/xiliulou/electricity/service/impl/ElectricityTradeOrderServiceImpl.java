@@ -117,6 +117,9 @@ public class ElectricityTradeOrderServiceImpl extends
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     ElectricityCarService electricityCarService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -383,6 +386,17 @@ public class ElectricityTradeOrderServiceImpl extends
 
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
+    
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
+                    .queryByUid(electricityMemberCardOrder.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
+            }
 
         } else {
             if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
@@ -834,6 +848,16 @@ public class ElectricityTradeOrderServiceImpl extends
             if (Objects.nonNull(electricityCar) && Objects
                     .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
                 electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            }
+    
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
             }
         }
 

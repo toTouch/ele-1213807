@@ -152,6 +152,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
 
     /**
      * 创建月卡订单
@@ -561,7 +564,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 }
             }
-
+    
+            //如果后台有记录那么一定是用户没购买过套餐时添加，如果为INIT就修改
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(user.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
+            }
+    
             return R.ok();
         }
 
