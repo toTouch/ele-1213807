@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.mapper.ChannelActivityMapper;
 import com.xiliulou.electricity.service.ChannelActivityService;
@@ -107,6 +108,7 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
     }
     
     @Override
+    @Slave
     public Triple<Boolean, String, Object> queryList(Long offset, Long size) {
         List<ChannelActivity> query = channelActivityMapper.queryList(offset, size, TenantContextHolder.getTenantId());
         List<ChannelActivityVo> voList = new ArrayList<>();
@@ -119,6 +121,7 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
     }
     
     @Override
+    @Slave
     public Triple<Boolean, String, Object> queryCount() {
         Long count = channelActivityMapper.queryCount(TenantContextHolder.getTenantId());
         return Triple.of(true, null, count);

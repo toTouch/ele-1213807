@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
@@ -174,6 +175,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
+    @Slave
     public Triple<Boolean, String, Object> queryList(Long size, Long offset, String phone, Long beginTime,
             Long endTime) {
         List<ChannelActivityHistoryVo> query = channelActivityHistoryMapper
@@ -212,6 +214,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
+    @Slave
     public Triple<Boolean, String, Object> queryCount(String phone, Long beginTime, Long endTime) {
         Long count = channelActivityHistoryMapper
                 .queryCount(phone, TenantContextHolder.getTenantId(), beginTime, endTime);
@@ -397,6 +400,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     @Override
+    @Slave
     public void queryExportExcel(String phone, Long beginTime, Long endTime, HttpServletResponse response) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {

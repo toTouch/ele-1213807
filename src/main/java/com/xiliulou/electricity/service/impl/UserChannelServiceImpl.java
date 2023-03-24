@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.User;
@@ -146,6 +147,7 @@ public class UserChannelServiceImpl implements UserChannelService {
     }
     
     @Override
+    @Slave
     public Triple<Boolean, String, Object> queryList(Long offset, Long size, String name, String phone) {
         List<UserChannel> queryList = this.userChannelMapper.queryList(offset, size, name, phone);
         List<UserChannelVo> voList = new ArrayList<>();
@@ -172,6 +174,7 @@ public class UserChannelServiceImpl implements UserChannelService {
     }
     
     @Override
+    @Slave
     public Triple<Boolean, String, Object> queryCount(String name, String phone) {
         Long count = this.userChannelMapper.queryCount(name, phone);
         return Triple.of(true, null, count);
