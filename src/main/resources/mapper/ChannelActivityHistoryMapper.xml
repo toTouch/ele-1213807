@@ -122,7 +122,7 @@
         tcah.id, tcah.uid, tcah.invite_uid, tcah.channel_uid, tcah.status, tcah.create_time, tcah.update_time,
         tcah.tenant_id, tu.phone as phone
         from t_channel_activity_history tcah
-        left join t_user tu on tu.uid = tcah.ui
+        left join t_user tu on tu.uid = tcah.uid
         <where>
             <if test="phone != null and phone != ''">
                 and tu.phone = concat('%', #{phone}, '%')
@@ -145,7 +145,7 @@
         select
         count(*)
         from t_channel_activity_history tcah
-        left join t_user tu on tu.uid = tcah.ui
+        left join t_user tu on tu.uid = tcah.uid
         <where>
             <if test="phone != null and phone != ''">
                 and tu.phone = concat('%', #{phone}, '%')

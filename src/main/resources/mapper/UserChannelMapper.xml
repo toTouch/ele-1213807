@@ -108,7 +108,7 @@
     <select id="queryCount" resultType="long">
         select
         count(*)
-        from t_user_channel
+        from t_user_channel u
         left join t_user_info ui on u.uid = ui.uid
         <where>
             <if test="name != null and name != ''">
