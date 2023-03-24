@@ -18,6 +18,8 @@ public class ChannelActivityCodeVo {
     
     private Integer type;
     
+    private String tenantCode;
+    
     /**
      * 类型 1--渠道人  2--邀请人
      */

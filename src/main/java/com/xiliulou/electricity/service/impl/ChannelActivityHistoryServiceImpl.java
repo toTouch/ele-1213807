@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ChannelActivityService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -30,6 +32,7 @@ import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,6 +82,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private CarMemberCardOrderService carMemberCardOrderService;
+    
+    @Autowired
+    private TenantService tenantService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -237,26 +243,38 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         if (Objects.nonNull(channelActivityHistory)) {
             String code = generateCode(ChannelActivityCodeVo.TYPE_INVITE, uid, channelActivityHistory.getChannelUid());
             String phone = null;
+            String tenantCode = null;
     
             User user = userService.queryByUidFromCache(channelActivityHistory.getInviteUid());
             if (Objects.nonNull(user)) {
                 phone = DesensitizationUtil.phoneDesensitization(user.getPhone());
             }
     
-            return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_INVITE));
+            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(tenant)) {
+                tenantCode = tenant.getCode();
+            }
+    
+            return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_INVITE, tenantCode));
         }
         
         UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
         if (Objects.nonNull(userChannel)) {
             String code = generateCode(ChannelActivityCodeVo.TYPE_CHANNEL, uid, uid);
             String phone = null;
+            String tenantCode = null;
     
             User user = userService.queryByUidFromCache(userChannel.getOperateUid());
             if (Objects.nonNull(user)) {
                 phone = DesensitizationUtil.phoneDesensitization(user.getPhone());
             }
     
-            return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_CHANNEL));
+            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+            if (Objects.nonNull(tenant)) {
+                tenantCode = tenant.getCode();
+            }
+    
+            return R.ok(new ChannelActivityCodeVo(code, phone, ChannelActivityCodeVo.TYPE_CHANNEL, tenantCode));
         }
         
         log.warn("USER CHANNEL QUERY CODE ERROR! user not partake activity! uid={}", uid);
