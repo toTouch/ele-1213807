@@ -1834,6 +1834,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
     
+    @Override
+    public R userInfoSearch(Long size, Long offset, String name) {
+        List<UserInfoSearchVo> qeury = userInfoMapper
+                .userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
+        return R.ok(qeury);
+    }
+    
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {
         if (Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_NO)) {
             return;

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.DetailsUserInfoVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserBatteryInfoVO;
+import com.xiliulou.electricity.vo.UserInfoSearchVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
@@ -62,4 +63,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     Integer verifyIdNumberExist(@Param("idNumber") String idNumber, @Param("tenantId") Integer tenantId);
     
     UserInfo queryDetailsUserInfo(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+    
+    List<UserInfoSearchVo> userInfoSearch(Long size, Long offset, String name, Integer tenantId);
 }

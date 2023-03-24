@@ -51,6 +51,6 @@ public class ElectricityCabinetOrderQuery {
 
     private Integer oldCellNo;
     
-    private String name;
+    //private Long uid;
 
 }
