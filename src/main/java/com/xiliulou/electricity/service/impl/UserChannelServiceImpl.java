@@ -218,7 +218,7 @@ public class UserChannelServiceImpl implements UserChannelService {
     
         // 没邀请记录，
         Long inviteCount = channelActivityHistoryService.queryInviteCount(userInfo.getUid());
-        if (Objects.nonNull(inviteCount) && Objects.equals(inviteCount, 0L)) {
+        if (Objects.nonNull(inviteCount) && !Objects.equals(inviteCount, 0L)) {
             log.error("USER CHANNEL ERROR! user exist invite users！uid={}", userInfo.getUid());
             return Triple.of(false, "100454", "用户邀请过他人，不可添加为渠道用户");
         }
