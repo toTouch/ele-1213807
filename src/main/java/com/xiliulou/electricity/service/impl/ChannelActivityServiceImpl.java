@@ -145,7 +145,7 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
         }
         
         ChannelActivity usableActivity = findUsableActivity(tenantId);
-        if (Objects.nonNull(usableActivity)) {
+        if (Objects.equals(ChannelActivity.STATUS_START_USING, status) && Objects.nonNull(usableActivity)) {
             log.error("CHANNEL ACTIVITY ERROR! activity exists error! id={}", id);
             return Triple.of(false, "100451", "已有启用中的渠道活动，请勿重复添加");
         }
