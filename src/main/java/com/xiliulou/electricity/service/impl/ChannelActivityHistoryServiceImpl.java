@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -241,7 +242,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
-            String code = generateCode(ChannelActivityCodeVo.TYPE_INVITE, uid, channelActivityHistory.getChannelUid());
+            String code = codeEnCoder(ChannelActivityCodeVo.TYPE_INVITE, uid, channelActivityHistory.getChannelUid());
             String phone = null;
             String tenantCode = null;
     
@@ -260,7 +261,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         
         UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
         if (Objects.nonNull(userChannel)) {
-            String code = generateCode(ChannelActivityCodeVo.TYPE_CHANNEL, uid, uid);
+            String code = codeEnCoder(ChannelActivityCodeVo.TYPE_CHANNEL, uid, uid);
             String phone = null;
             String tenantCode = null;
     
@@ -308,7 +309,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.fail("100458", "渠道活动未开启");
         }
     
-        String decrypt = AESUtils.decrypt(code);
+        String decrypt = codeDeCoder(code);
         if (StringUtils.isBlank(decrypt)) {
             log.error("USER CHANNEL SCAN ERROR! code decrypt error! code={}, user={}", code, uid);
             return R.fail("100457", "渠道活动二维码解码失败");
@@ -491,10 +492,33 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         return Objects.isNull(userInfo) ? "未实名认证" : userInfo.getName();
     }
     
-    private String generateCode(Integer type, Long uid, Long channelUid) {
+    private String codeDeCoder(String code) {
+        if (StringUtils.isNotBlank(code)) {
+            return null;
+        }
+        
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+        byte[] decode = decoder.decode(code.getBytes());
+        String base64Result = new String(decode);
+        
+        if (StringUtils.isNotBlank(base64Result)) {
+            return AESUtils.decrypt(base64Result);
+        }
+        return null;
+    }
+    
+    
+    private String codeEnCoder(Integer type, Long uid, Long channelUid) {
         StringBuilder sb = new StringBuilder();
         sb.append(type).append(":").append(uid).append(":").append(channelUid);
-        return AESUtils.encrypt(sb.toString());
+        
+        String encrypt = AESUtils.encrypt(sb.toString());
+        if (StringUtils.isNotBlank(encrypt)) {
+            Base64.Encoder encoder = Base64.getUrlEncoder();
+            byte[] base64Result = encoder.encode(encrypt.getBytes());
+            return new String(base64Result);
+        }
+        return null;
     }
     
     private boolean userBuyMemberCardCheck(Long uid) {
