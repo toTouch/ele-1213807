@@ -64,5 +64,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     
     UserInfo queryDetailsUserInfo(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
     
-    List<UserInfoSearchVo> userInfoSearch(Long size, Long offset, String name, Integer tenantId);
+    List<UserInfoSearchVo> userInfoSearch(@Param("size") Long size, @Param("offset") Long offset,
+            @Param("name") String name, @Param("tenantId") Integer tenantId);
 }
