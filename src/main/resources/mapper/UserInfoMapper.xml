@@ -554,7 +554,7 @@
     </select>
     
     <select id="userInfoSearch" resultType="com.xiliulou.electricity.vo.UserInfoSearchVo">
-        select id, name
+        select id, name FROM t_user_info
         WHERE del_flag = 0 and tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             name like concat('%', #{name}, '%')
