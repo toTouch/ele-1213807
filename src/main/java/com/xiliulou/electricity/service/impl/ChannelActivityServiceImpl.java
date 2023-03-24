@@ -134,8 +134,8 @@ public class ChannelActivityServiceImpl implements ChannelActivityService {
         }
         
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        if (!Objects.equals(tenantId, channelActivity.getTenantId())) {
+    
+        if (!Objects.equals(tenantId, channelActivity.getTenantId().intValue())) {
             return Triple.of(true, "", "");
         }
         
