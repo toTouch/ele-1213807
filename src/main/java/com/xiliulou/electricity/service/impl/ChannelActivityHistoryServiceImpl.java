@@ -493,7 +493,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     }
     
     private String codeDeCoder(String code) {
-        if (StringUtils.isNotBlank(code)) {
+        if (StringUtils.isBlank(code)) {
             return null;
         }
         
