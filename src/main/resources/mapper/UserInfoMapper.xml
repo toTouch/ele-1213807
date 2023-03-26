@@ -614,7 +614,7 @@
     
     <select id="userInfoSearch" resultType="com.xiliulou.electricity.vo.UserInfoSearchVo">
         select id, uid, name FROM t_user_info
-        WHERE del_flag = 0 and tenant_id = #{tenantId}
+        WHERE del_flag = 0 and auth_status=2 and tenant_id = #{tenantId}
         <if test="name != null and name != ''">
             and name like concat('%', #{name}, '%')
         </if>
