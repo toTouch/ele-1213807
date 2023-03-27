@@ -444,11 +444,11 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             if (Objects.nonNull(inviteUser)) {
                 vo.setInviterPhone(inviteUser.getPhone());
             }
-            
-            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
-            if (Objects.nonNull(channelUser)) {
-                vo.setChannelPhone(channelUser.getPhone());
-            }
+    
+            //            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
+            //            if (Objects.nonNull(channelUser)) {
+            //                vo.setChannelPhone(channelUser.getPhone());
+            //            }
             
             date.setTime(item.getCreateTime());
             vo.setCreateTime(sdf.format(date));
