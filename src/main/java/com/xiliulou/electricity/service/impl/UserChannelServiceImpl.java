@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.entity.UserChannel;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.query.UserChannelQuery;
+import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -63,6 +65,9 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Autowired
     private ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    private CarMemberCardOrderService carMemberCardOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -204,10 +209,15 @@ public class UserChannelServiceImpl implements UserChannelService {
         }
         
         //购买过套餐
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
-                .selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
-                || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+        //        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+        //                .selectByUidFromCache(userInfo.getUid());
+        //        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+        //                || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+        //            log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
+        //            return Triple.of(false, "100210", "用户未开通套餐");
+        //        }
+    
+        if (userBuyMemberCardCheck(userInfo.getUid())) {
             log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
@@ -241,5 +251,25 @@ public class UserChannelServiceImpl implements UserChannelService {
         updateUserChannel.setUpdateTime(System.currentTimeMillis());
         insert(updateUserChannel);
         return Triple.of(true, "", "");
+    }
+    
+    private boolean userBuyMemberCardCheck(Long uid) {
+        boolean batteryMemberCard = true;
+        boolean carMemberCard = true;
+        
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+                || Objects
+                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            batteryMemberCard = false;
+        }
+        
+        CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
+                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
+        if (Objects.isNull(carMemberCardOrder)) {
+            carMemberCard = false;
+        }
+        
+        return batteryMemberCard || carMemberCard;
     }
 }

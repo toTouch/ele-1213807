@@ -102,6 +102,7 @@
                 and ui.phone = #{phone}
             </if>
         </where>
+        order by create_time desc
         limit #{offset}, #{size}
     </select>
     
