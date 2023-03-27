@@ -217,7 +217,7 @@ public class UserChannelServiceImpl implements UserChannelService {
         //            return Triple.of(false, "100210", "用户未开通套餐");
         //        }
     
-        if (userBuyMemberCardCheck(userInfo.getUid())) {
+        if (!userBuyMemberCardCheck(userInfo.getUid())) {
             log.error("USER CHANNEL ERROR! user haven't memberCard uid={}", user.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
