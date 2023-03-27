@@ -438,7 +438,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             vo.setInviterName(queryUserInfoName(inviteUserInfo));
             
             UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
-            vo.setInviterName(queryUserInfoName(channelUserInfo));
+            vo.setChannelName(queryUserInfoName(channelUserInfo));
             
             User inviteUser = userService.queryByUidFromCache(item.getInviteUid());
             if (Objects.nonNull(inviteUser)) {
