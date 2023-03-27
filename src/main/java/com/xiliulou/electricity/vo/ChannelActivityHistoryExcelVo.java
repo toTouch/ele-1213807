@@ -14,20 +14,17 @@ public class ChannelActivityHistoryExcelVo {
     @ExcelProperty("用户名")
     private String name;
     
-    @ExcelProperty("用户手机号")
+    @ExcelProperty("手机号")
     private String phone;
     
-    @ExcelProperty("邀请人用户名")
+    @ExcelProperty("邀请人")
     private String inviterName;
     
-    @ExcelProperty("邀请人用户手机号")
+    @ExcelProperty("邀请人手机号")
     private String inviterPhone;
     
-    @ExcelProperty("渠道用户名")
+    @ExcelProperty("渠道人")
     private String channelName;
-    
-    @ExcelProperty("渠道用户手机号")
-    private String channelPhone;
     
     @ExcelProperty("状态")
     private String status;
