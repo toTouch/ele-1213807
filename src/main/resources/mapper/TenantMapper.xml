@@ -33,7 +33,7 @@
 		<if test="endTime != null">
 			and tt.create_time &lt;=#{endTime}
 		</if>
-		order by tt.create_time desc
+		order by tt.expire_time
 		limit #{offset}, #{size}
 	</select>
 	<select id="queryCount" resultType="java.lang.Integer">

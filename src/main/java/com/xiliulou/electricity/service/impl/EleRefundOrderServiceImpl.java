@@ -432,7 +432,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(eleRefundOrder.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
             log.error("FREE REFUND ORDER ERROR!eleDepositOrder is null,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
-            return Triple.of(false, "100403", "免押订单不存在");
+            return Triple.of(false, "ELECTRICITY.0015", "换电订单不存在");
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -448,13 +448,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(true, "", null);
         }
 
-
         //处理电池免押订单退款
         if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             log.error("FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}", eleRefundOrder.getOrderId(), uid);
             return Triple.of(false, "100406", "订单非免押支付");
         }
-
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils.isBlank(pxzConfig.getMerchantCode())) {
@@ -466,6 +464,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(freeDepositOrder)) {
             log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
             return Triple.of(false, "100403", "免押订单不存在");
+        }
+
+        //如果车电一起免押，检查用户是否归还车辆
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
+            return Triple.of(false, "100253", "用户已绑定车辆");
         }
 
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> testQuery = new PxzCommonRequest<>();
@@ -513,6 +517,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
 
             UserInfo updateUserInfo = new UserInfo();
+
+            //如果车电一起免押，解绑用户车辆信息
+            if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+
+                userCarService.deleteByUid(uid);
+
+                userCarDepositService.logicDeleteByUid(uid);
+
+                userCarMemberCardService.deleteByUid(uid);
+            }
+
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -871,6 +887,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
+        //如果车电一起免押，检查用户是否归还车辆
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && Objects.equals(userInfo.getCarRentStatus(),
+                UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
+            return Triple.of(false, "100253", "用户已绑定车辆");
+        }
+
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
@@ -922,6 +945,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             //更新用户状态
             UserInfo updateUserInfo = new UserInfo();
+
+            //如果车电一起免押，解绑用户车辆信息
+            if(Objects.equals(freeDepositOrder.getDepositType(),FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)){
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+
+                userCarService.deleteByUid(uid);
+
+                userCarDepositService.logicDeleteByUid(uid);
+
+                userCarMemberCardService.deleteByUid(uid);
+            }
+
             updateUserInfo.setUid(uid);
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -1015,6 +1050,14 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
+        //如果车电一起免押，检查用户是否归还电池
+        Triple<Boolean, String, Object> batteryDepositPreCheckResult = eleDepositOrderService.returnDepositPreCheck(userInfo);
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)
+                && Boolean.TRUE.equals(!batteryDepositPreCheckResult.getLeft())) {
+            log.error("REFUND ORDER ERROR! user not return battery,uid={}", userInfo.getUid());
+            return batteryDepositPreCheckResult;
+        }
+
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
@@ -1065,6 +1108,22 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.insert(eleRefundOrder);
 
             UserInfo updateUserInfo = new UserInfo();
+
+            //车辆电池一起免押，退押金解绑用户电池信息
+            if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                userBatteryService.deleteByUid(userInfo.getUid());
+
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+            }
+
             updateUserInfo.setUid(uid);
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());

@@ -179,9 +179,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //判断是否有用户绑定该套餐
-//        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
-
+        //判断是否有用户绑定该套餐 TODO 优化
         List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectByMemberCardId(id, tenantId);
         if (!CollectionUtils.isEmpty(userBatteryMemberCardList)) {
             log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);

@@ -52,6 +52,16 @@ public class FreeDepositUserInfoVo {
      */
     private Integer carDepositAuthStatus;
 
+    /**
+     * 车辆电池押金冻结状态
+     */
+    private Integer carBatteryDepositAuthStatus;
+
+    /**
+     * 缴纳车辆电池押金的时间
+     */
+    private Long applyCarBatteryDepositTime;
+
 
     public static final Integer FREE_DEPOSIT_CLOSE = 0;
     public static final Integer FREE_DEPOSIT_OPEN = 1;

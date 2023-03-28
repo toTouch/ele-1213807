@@ -16,13 +16,19 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.BatteryDepositAdd;
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
+import com.xiliulou.electricity.vo.EleDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.PayDepositOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -485,6 +491,111 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //等到后台同意退款
         return R.ok(packageOwe);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> returnDepositPreCheck(UserInfo userInfo) {
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELE DEPOSIT ERROR! user is disable! uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //判断是否退电池
+        if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            log.error("ELE DEPOSIT ERROR! not return battery,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
+        }
+
+        //判断是否缴纳押金
+        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
+            log.error("ELE DEPOSIT ERROR! not found userBatteryMemberCard! uid={}", userInfo.getUid());
+            return Triple.of(true, "", null);
+        }
+
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("returnDeposit  ERROR! disable member card is reviewing userId={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.100003", "套餐暂停审核中");
+        }
+
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.error("returnDeposit  ERROR! member card is disable userId={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.100004", "套餐已暂停");
+        }
+
+        //是否存在未完成的租电池订单
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(userInfo.getUid());
+        if (Objects.nonNull(rentBatteryOrder)) {
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+                return Triple.of(false, "ELECTRICITY.0013", "存在未完成租电订单");
+            } else if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                return Triple.of(false, "ELECTRICITY.0095", "存在未完成还电订单");
+            }
+        }
+
+        //是否存在未完成的换电订单
+        ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(oldElectricityCabinetOrder)) {
+            return Triple.of(false, "ELECTRICITY.0094", "存在未完成换电订单");
+        }
+
+        //查找缴纳押金订单
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+            log.error("ELE DEPOSIT ERROR! travel to store,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.00115", "请前往门店退押金");
+        }
+
+        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
+
+        long cardDays = 0;
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+
+        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
+            cardDays = (System.currentTimeMillis() - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            //查询用户是否存在套餐过期电池服务费
+            userChangeServiceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
+        }
+
+
+        //判断用户是否产生电池服务费
+        Long disableMemberCardTime = userBatteryMemberCard.getDisableMemberCardTime();
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
+            cardDays = (System.currentTimeMillis() - disableMemberCardTime) / 1000L / 60 / 60 / 24;
+
+            //不足一天按一天计算
+            double time = Math.ceil((System.currentTimeMillis() - disableMemberCardTime) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1;
+            }
+            userChangeServiceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
+        }
+
+
+        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
+            return Triple.of(false, "ELECTRICITY.100000", "存在电池服务费");
+        }
+
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        if (refundCount > 0) {
+            log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", userInfo.getUid());
+            return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
+        }
+
+        return Triple.of(true, "", null);
     }
 
     @Override

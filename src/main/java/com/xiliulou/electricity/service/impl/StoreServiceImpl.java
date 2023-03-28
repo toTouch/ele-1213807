@@ -327,7 +327,7 @@ public class StoreServiceImpl implements StoreService {
             return R.fail("门店已绑定换电柜");
         }
 
-        //查询门店是否绑定车辆型号
+        //查询门店是否绑定车辆型号 TODO 优化
         ElectricityCarModelQuery carModelQuery = new ElectricityCarModelQuery();
         carModelQuery.setStoreId(store.getId());
         carModelQuery.setDelFlag(ElectricityCarModel.DEL_NORMAL);

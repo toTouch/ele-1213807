@@ -798,6 +798,10 @@ public class UserServiceImpl implements UserService {
         deleteWxProUser(uid, user.getTenantId());
         userInfoService.deleteByUid(uid);
 
+        userBatteryMemberCardService.deleteByUid(uid);
+
+        userCarService.deleteByUid(uid);
+
         return Triple.of(true, null, null);
     }
 

@@ -108,8 +108,9 @@ public class FreeDepositOrder {
     public static final Integer PAY_STATUS_DEAL_FAIL = 2;
     public static final Integer PAY_STATUS_DEAL_CLOSE = 4;
     
-    //押金类型 1：电池，2：租车
+    //押金类型 1：电池，2：租车，3：租电池和租车
     public static final Integer DEPOSIT_TYPE_BATTERY = 1;
     public static final Integer DEPOSIT_TYPE_CAR = 2;
+    public static final Integer DEPOSIT_TYPE_CAR_BATTERY = 3;
 
 }

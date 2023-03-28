@@ -23,7 +23,7 @@ public class FreeDepositRefundTask extends IJobHandler {
     FreeDepositOrderService freeDepositOrderService;
 
     @Override
-    public ReturnT<String> execute(String s) throws Exception {
+    public ReturnT<String> execute(String s) {
         try {
             freeDepositOrderService.handleFreeDepositRefundOrder();
         } catch (Exception e) {
