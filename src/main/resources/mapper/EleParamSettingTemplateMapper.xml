@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleParamSettingTemplateMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.EleParamSettingTemplate" id="EleParamSettingTemplateMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="applicationMode" column="application_mode" jdbcType="VARCHAR"/>
+        <result property="chargeMinCondition" column="charge_min_condition" jdbcType="INTEGER"/>
+        <result property="chargeMaxCondition" column="charge_max_condition" jdbcType="INTEGER"/>
+        <result property="chargeMaxConditionV" column="charge_max_condition_v" jdbcType="INTEGER"/>
+        <result property="chargeMinConditionV" column="charge_min_condition_v" jdbcType="INTEGER"/>
+        <result property="chargingNum" column="charging_num" jdbcType="INTEGER"/>
+        <result property="normalChargeA" column="normal_charge_a" jdbcType="INTEGER"/>
+        <result property="normalChargeV" column="normal_charge_v" jdbcType="INTEGER"/>
+        <result property="openHeatCondition" column="open_heat_condition" jdbcType="INTEGER"/>
+        <result property="openFanCondition" column="open_fan_condition" jdbcType="INTEGER"/>
+        <result property="powerConsumptionMultiply" column="power_consumption_multiply"
+            jdbcType="INTEGER"/>
+        <result property="systemBarStatus" column="system_bar_status" jdbcType="INTEGER"/>
+        <result property="revertLockStatus" column="revert_lock_status" jdbcType="INTEGER"/>
+        <result property="autoTempControlStatus" column="auto_temp_control_status" jdbcType="INTEGER"/>
+        <result property="logStatus" column="log_status" jdbcType="INTEGER"/>
+        <result property="enableBatteryExceptionCheck" column="enable_battery_exception_check"
+            jdbcType="INTEGER"/>
+        <result property="serverHeartBeat" column="server_heart_beat" jdbcType="INTEGER"/>
+        <result property="enableBatteryBMSExceptionCheck" column="enable_battery_b_m_s_exception_check"
+            jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="EleParamSettingTemplateMap">
+        select
+          id, name, application_mode, charge_min_condition, charge_max_condition, charge_max_condition_v, charge_min_condition_v, charging_num, normal_charge_a, normal_charge_v, open_heat_condition, open_fan_condition, power_consumption_multiply, system_bar_status, revert_lock_status, auto_temp_control_status, log_status, enable_battery_exception_check, server_heart_beat, enable_battery_b_m_s_exception_check, create_time, update_time, tenant_id
+        from t_ele_param_setting_template
+        where id = #{id}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="EleParamSettingTemplateMap">
+        select
+          id, name, application_mode, charge_min_condition, charge_max_condition, charge_max_condition_v, charge_min_condition_v, charging_num, normal_charge_a, normal_charge_v, open_heat_condition, open_fan_condition, power_consumption_multiply, system_bar_status, revert_lock_status, auto_temp_control_status, log_status, enable_battery_exception_check, server_heart_beat, enable_battery_b_m_s_exception_check, create_time, update_time, tenant_id
+        from t_ele_param_setting_template
+        limit #{offset}, #{limit}
+    </select>
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EleParamSettingTemplateMap">
+        select
+        id, name, application_mode, charge_min_condition, charge_max_condition, charge_max_condition_v,
+        charge_min_condition_v, charging_num, normal_charge_a, normal_charge_v, open_heat_condition,
+        open_fan_condition, power_consumption_multiply, system_bar_status, revert_lock_status,
+        auto_temp_control_status, log_status, enable_battery_exception_check, server_heart_beat,
+        enable_battery_b_m_s_exception_check, create_time, update_time, tenant_id
+        from t_ele_param_setting_template
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="applicationMode != null and applicationMode != ''">
+                and application_mode = #{applicationMode}
+            </if>
+            <if test="chargeMinCondition != null">
+                and charge_min_condition = #{chargeMinCondition}
+            </if>
+            <if test="chargeMaxCondition != null">
+                and charge_max_condition = #{chargeMaxCondition}
+            </if>
+            <if test="chargeMaxConditionV != null">
+                and charge_max_condition_v = #{chargeMaxConditionV}
+            </if>
+            <if test="chargeMinConditionV != null">
+                and charge_min_condition_v = #{chargeMinConditionV}
+            </if>
+            <if test="chargingNum != null">
+                and charging_num = #{chargingNum}
+            </if>
+            <if test="normalChargeA != null">
+                and normal_charge_a = #{normalChargeA}
+            </if>
+            <if test="normalChargeV != null">
+                and normal_charge_v = #{normalChargeV}
+            </if>
+            <if test="openHeatCondition != null">
+                and open_heat_condition = #{openHeatCondition}
+            </if>
+            <if test="openFanCondition != null">
+                and open_fan_condition = #{openFanCondition}
+            </if>
+            <if test="powerConsumptionMultiply != null">
+                and power_consumption_multiply = #{powerConsumptionMultiply}
+            </if>
+            <if test="systemBarStatus != null">
+                and system_bar_status = #{systemBarStatus}
+            </if>
+            <if test="revertLockStatus != null">
+                and revert_lock_status = #{revertLockStatus}
+            </if>
+            <if test="autoTempControlStatus != null">
+                and auto_temp_control_status = #{autoTempControlStatus}
+            </if>
+            <if test="logStatus != null">
+                and log_status = #{logStatus}
+            </if>
+            <if test="enableBatteryExceptionCheck != null">
+                and enable_battery_exception_check = #{enableBatteryExceptionCheck}
+            </if>
+            <if test="serverHeartBeat != null">
+                and server_heart_beat = #{serverHeartBeat}
+            </if>
+            <if test="enableBatteryBMSExceptionCheck != null">
+                and enable_battery_b_m_s_exception_check = #{enableBatteryBMSExceptionCheck}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_param_setting_template(name, application_mode, charge_min_condition, charge_max_condition, charge_max_condition_v, charge_min_condition_v, charging_num, normal_charge_a, normal_charge_v, open_heat_condition, open_fan_condition, power_consumption_multiply, system_bar_status, revert_lock_status, auto_temp_control_status, log_status, enable_battery_exception_check, server_heart_beat, enable_battery_b_m_s_exception_check, create_time, update_time, tenant_id)
+        values (#{name}, #{applicationMode}, #{chargeMinCondition}, #{chargeMaxCondition}, #{chargeMaxConditionV}, #{chargeMinConditionV}, #{chargingNum}, #{normalChargeA}, #{normalChargeV}, #{openHeatCondition}, #{openFanCondition}, #{powerConsumptionMultiply}, #{systemBarStatus}, #{revertLockStatus}, #{autoTempControlStatus}, #{logStatus}, #{enableBatteryExceptionCheck}, #{serverHeartBeat}, #{enableBatteryBMSExceptionCheck}, #{createTime}, #{updateTime}, #{tenantId})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ele_param_setting_template
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="applicationMode != null and applicationMode != ''">
+                application_mode = #{applicationMode},
+            </if>
+            <if test="chargeMinCondition != null">
+                charge_min_condition = #{chargeMinCondition},
+            </if>
+            <if test="chargeMaxCondition != null">
+                charge_max_condition = #{chargeMaxCondition},
+            </if>
+            <if test="chargeMaxConditionV != null">
+                charge_max_condition_v = #{chargeMaxConditionV},
+            </if>
+            <if test="chargeMinConditionV != null">
+                charge_min_condition_v = #{chargeMinConditionV},
+            </if>
+            <if test="chargingNum != null">
+                charging_num = #{chargingNum},
+            </if>
+            <if test="normalChargeA != null">
+                normal_charge_a = #{normalChargeA},
+            </if>
+            <if test="normalChargeV != null">
+                normal_charge_v = #{normalChargeV},
+            </if>
+            <if test="openHeatCondition != null">
+                open_heat_condition = #{openHeatCondition},
+            </if>
+            <if test="openFanCondition != null">
+                open_fan_condition = #{openFanCondition},
+            </if>
+            <if test="powerConsumptionMultiply != null">
+                power_consumption_multiply = #{powerConsumptionMultiply},
+            </if>
+            <if test="systemBarStatus != null">
+                system_bar_status = #{systemBarStatus},
+            </if>
+            <if test="revertLockStatus != null">
+                revert_lock_status = #{revertLockStatus},
+            </if>
+            <if test="autoTempControlStatus != null">
+                auto_temp_control_status = #{autoTempControlStatus},
+            </if>
+            <if test="logStatus != null">
+                log_status = #{logStatus},
+            </if>
+            <if test="enableBatteryExceptionCheck != null">
+                enable_battery_exception_check = #{enableBatteryExceptionCheck},
+            </if>
+            <if test="serverHeartBeat != null">
+                server_heart_beat = #{serverHeartBeat},
+            </if>
+            <if test="enableBatteryBMSExceptionCheck != null">
+                enable_battery_b_m_s_exception_check = #{enableBatteryBMSExceptionCheck},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ele_param_setting_template where id = #{id}
+    </delete>
+
+</mapper>
