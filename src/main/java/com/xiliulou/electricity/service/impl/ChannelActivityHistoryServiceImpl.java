@@ -190,11 +190,11 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
         
         query.forEach(item -> {
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
-            if (Objects.nonNull(userInfo)) {
-                item.setPhone(userInfo.getPhone());
-                item.setName(userInfo.getName());
-            }
+            //            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            //            if (Objects.nonNull(userInfo)) {
+            //                item.setPhone(userInfo.getPhone());
+            //                item.setName(userInfo.getName());
+            //            }
             
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
@@ -433,12 +433,12 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         Optional.ofNullable(query).orElse(new ArrayList<>()).forEach(item -> {
             ChannelActivityHistoryExcelVo vo = new ChannelActivityHistoryExcelVo();
             vo.setPhone(Objects.isNull(item.getPhone()) ? "" : item.getPhone());
-            
-            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
-            if (Objects.nonNull(userInfo)) {
-                vo.setName(Objects.isNull(userInfo.getName()) ? "未实名认证" : userInfo.getName());
-                vo.setPhone(Objects.isNull(userInfo.getPhone()) ? "" : userInfo.getPhone());
-            }
+    
+            //            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
+            //            if (Objects.nonNull(userInfo)) {
+            //                vo.setName(Objects.isNull(userInfo.getName()) ? "未实名认证" : userInfo.getName());
+            //                vo.setPhone(Objects.isNull(userInfo.getPhone()) ? "" : userInfo.getPhone());
+            //            }
     
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
