@@ -190,12 +190,6 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         }
         
         query.forEach(item -> {
-            //            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
-            //            if (Objects.nonNull(userInfo)) {
-            //                item.setPhone(userInfo.getPhone());
-            //                item.setName(userInfo.getName());
-            //            }
-            
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 item.setInviteName(inviteUserInfo.getName());
@@ -205,7 +199,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
             if (Objects.nonNull(channelUserInfo)) {
                 item.setChannelName(channelUserInfo.getName());
-                item.setInvitePhone(channelUserInfo.getPhone());
+                item.setChannelPhone(channelUserInfo.getPhone());
             }
         });
         return Triple.of(true, "", query);
@@ -432,24 +426,18 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         
         Optional.ofNullable(query).orElse(new ArrayList<>()).forEach(item -> {
             ChannelActivityHistoryExcelVo vo = new ChannelActivityHistoryExcelVo();
+            vo.setName(Objects.isNull(item.getName()) ? "" : item.getName());
             vo.setPhone(Objects.isNull(item.getPhone()) ? "" : item.getPhone());
-    
-            //            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
-            //            if (Objects.nonNull(userInfo)) {
-            //                vo.setName(Objects.isNull(userInfo.getName()) ? "未实名认证" : userInfo.getName());
-            //                vo.setPhone(Objects.isNull(userInfo.getPhone()) ? "" : userInfo.getPhone());
-            //            }
     
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
-                item.setInviteName(Objects.isNull(inviteUserInfo.getName()) ? "未实名认证" : inviteUserInfo.getName());
-                item.setInvitePhone(Objects.isNull(inviteUserInfo.getPhone()) ? "" : inviteUserInfo.getPhone());
+                vo.setInviterName(Objects.isNull(inviteUserInfo.getName()) ? "未实名认证" : inviteUserInfo.getName());
+                vo.setInviterPhone(Objects.isNull(inviteUserInfo.getPhone()) ? "" : inviteUserInfo.getPhone());
             }
             
             UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
             if (Objects.nonNull(channelUserInfo)) {
-                item.setChannelName(Objects.isNull(channelUserInfo.getName()) ? "未实名认证" : channelUserInfo.getName());
-                item.setInvitePhone(Objects.isNull(channelUserInfo.getPhone()) ? "" : channelUserInfo.getPhone());
+                vo.setChannelName(Objects.isNull(channelUserInfo.getName()) ? "未实名认证" : channelUserInfo.getName());
             }
             
             date.setTime(item.getCreateTime());
