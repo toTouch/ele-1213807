@@ -120,12 +120,11 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ChannelActivityHistoryVo">
         select
         tcah.id, tcah.uid, tcah.invite_uid, tcah.channel_uid, tcah.status, tcah.create_time, tcah.update_time,
-        tcah.tenant_id, tu.phone as phone
+        tcah.tenant_id, tcah.phone as phone
         from t_channel_activity_history tcah
-        left join t_user tu on tu.uid = tcah.uid
         <where>
             <if test="phone != null and phone != ''">
-                and tu.phone = concat('%', #{phone}, '%')
+                and tcah.phone like concat('%', #{phone}, '%')
             </if>
             <if test="tenantId != null and tenantId != ''">
                 and tcah.tenant_id = #{tenantId}
@@ -146,10 +145,9 @@
         select
         count(*)
         from t_channel_activity_history tcah
-        left join t_user tu on tu.uid = tcah.uid
         <where>
             <if test="phone != null and phone != ''">
-                and tu.phone = concat('%', #{phone}, '%')
+                and tcah.phone like concat('%', #{phone}, '%')
             </if>
             <if test="tenantId != null and tenantId != ''">
                 and tcah.tenant_id = #{tenantId}
