@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.EleParamSettingTemplate;
+import com.xiliulou.electricity.query.EleParamSettingTemplateBatchSettingQuery;
+import com.xiliulou.electricity.query.EleParamSettingTemplateQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -61,4 +64,13 @@ public interface EleParamSettingTemplateService {
      */
     Boolean deleteById(Long id);
     
+    Triple<Boolean, String, Object> queryList(Long offset, Long size, String name);
+    
+    Triple<Boolean, String, Object> queryCount(String name);
+    
+    Triple<Boolean, String, Object> deleteOne(Long id);
+    
+    Triple<Boolean, String, Object> saveOne(EleParamSettingTemplateQuery eleParamSettingTemplateQuery);
+    
+    Triple<Boolean, String, Object> updateOne(EleParamSettingTemplateQuery eleParamSettingTemplateQuery);
 }

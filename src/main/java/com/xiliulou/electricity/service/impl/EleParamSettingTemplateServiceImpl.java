@@ -1,14 +1,22 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleParamSettingTemplate;
 import com.xiliulou.electricity.mapper.EleParamSettingTemplateMapper;
+import com.xiliulou.electricity.query.EleParamSettingTemplateBatchSettingQuery;
+import com.xiliulou.electricity.query.EleParamSettingTemplateQuery;
 import com.xiliulou.electricity.service.EleParamSettingTemplateService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,4 +105,58 @@ public class EleParamSettingTemplateServiceImpl implements EleParamSettingTempla
     public Boolean deleteById(Long id) {
         return this.eleParamSettingTemplateMapper.deleteById(id) > 0;
     }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryList(Long offset, Long size, String name) {
+        List<EleParamSettingTemplate> templates = eleParamSettingTemplateMapper.queryList(offset, size, name);
+        return Triple.of(true, null, templates);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> queryCount(String name) {
+        Long count = eleParamSettingTemplateMapper.queryCount(name);
+        return Triple.of(true, null, count);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> deleteOne(Long id) {
+        EleParamSettingTemplate update = new EleParamSettingTemplate();
+        update.setId(id);
+        update.setDelFlag(EleParamSettingTemplate.DEL_DEL);
+        update.setUpdateTime(System.currentTimeMillis());
+        eleParamSettingTemplateMapper.update(update);
+        return Triple.of(true, "", "");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> saveOne(EleParamSettingTemplateQuery eleParamSettingTemplateQuery) {
+        EleParamSettingTemplate save = new EleParamSettingTemplate();
+        BeanUtils.copyProperties(eleParamSettingTemplateQuery, save);
+        save.setCreateTime(System.currentTimeMillis());
+        save.setUpdateTime(System.currentTimeMillis());
+        save.setDelFlag(EleParamSettingTemplate.DEL_NORMAL);
+        save.setTenantId(TenantContextHolder.getTenantId());
+        eleParamSettingTemplateMapper.insertOne(save);
+        return Triple.of(true, "", "");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> updateOne(EleParamSettingTemplateQuery eleParamSettingTemplateQuery) {
+        EleParamSettingTemplate eleParamSettingTemplate = eleParamSettingTemplateMapper
+                .queryById(eleParamSettingTemplateQuery.getId());
+        if (Objects.isNull(eleParamSettingTemplate)) {
+            return Triple.of(false, "", "未找到参数模板");
+        }
+        
+        if (!Objects.equals(eleParamSettingTemplate.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, "", "");
+        }
+        
+        EleParamSettingTemplate update = new EleParamSettingTemplate();
+        BeanUtils.copyProperties(eleParamSettingTemplateQuery, update);
+        update.setUpdateTime(System.currentTimeMillis());
+        eleParamSettingTemplateMapper.update(update);
+        return Triple.of(true, "", "");
+    }
+    
 }

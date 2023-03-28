@@ -64,4 +64,7 @@ public interface EleParamSettingTemplateMapper extends BaseMapper<EleParamSettin
      */
     int deleteById(Long id);
     
+    List<EleParamSettingTemplate> queryList(Long offset, Long size, String name);
+    
+    Long queryCount(String name);
 }

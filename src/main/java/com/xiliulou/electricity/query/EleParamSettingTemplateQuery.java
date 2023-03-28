@@ -1,24 +1,19 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.query;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+
+import javax.validation.constraints.NotNull;
 
 /**
- * (EleParamSettingTemplate)实体类
- *
- * @author Eclair
- * @since 2023-03-28 09:53:16
+ * @author zgw
+ * @date 2023/3/28 16:06
+ * @mood
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_ele_param_setting_template")
-public class EleParamSettingTemplate {
+public class EleParamSettingTemplateQuery {
     
+    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
     
     /**
@@ -115,16 +110,4 @@ public class EleParamSettingTemplate {
      * enableBatteryBMSExceptionCheck 电池健康状态检测  1关 0开
      */
     private Integer enableBatteryBMSExceptionCheck;
-    
-    private Long createTime;
-    
-    private Long updateTime;
-    
-    private Integer tenantId;
-    
-    private Integer delFlag;
-    
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-    
 }
