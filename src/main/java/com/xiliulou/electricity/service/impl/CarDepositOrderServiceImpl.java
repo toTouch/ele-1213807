@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -311,7 +312,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarDeposit)) {
             log.error("ELE CAR DEPOSIT CARD ERROR! not found userCarDeposit! uid={}", user.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
+            return Triple.of(true, "", userCarDepositVO);
         }
 
         CarDepositOrder carDepositOrder = this.selectByOrderId(userCarDeposit.getOrderId());
@@ -324,9 +325,22 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
         Store store = storeService.queryByIdFromCache(carDepositOrder.getStoreId());
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carDepositOrder.getCarModelId().intValue());
+        Integer status = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
+        
         userCarDepositVO.setStoreName(Objects.isNull(store) ? null : store.getName());
         userCarDepositVO.setCarModelName(Objects.isNull(electricityCarModel) ? null : electricityCarModel.getName());
-
+        userCarDepositVO.setReturnDepositStatus(status);
+        userCarDepositVO.setDepositType(userCarDeposit.getDepositType());
+        userCarDepositVO.setPayTime(carDepositOrder.getCreateTime());
+    
+        //判断用户是否有车辆
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(user.getUid());
+        if (Objects.isNull(electricityCar)) {
+            userCarDepositVO.setHasCarStatus(UserCarDepositVO.HAS_CAR_STATUS_NO);
+        } else {
+            userCarDepositVO.setHasCarStatus(UserCarDepositVO.HAS_CAR_STATUS_YES);
+        }
+    
         return Triple.of(true, "", userCarDepositVO);
     }
 
@@ -723,6 +737,10 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     public R payDepositOrderList(Long offset, Long size) {
         List<UserCarDepositOrderVo> voList = carDepositOrderMapper
                 .payDepositOrderList(SecurityUtils.getUid(), TenantContextHolder.getTenantId(), offset, size);
+        Optional.ofNullable(voList).orElse(new ArrayList<>()).parallelStream().forEachOrdered(item -> {
+            Long refundTime = eleRefundOrderService.queryRefundTime(item.getOrderId());
+            item.setRefundTime(refundTime);
+        });
         return R.ok(voList);
     }
     

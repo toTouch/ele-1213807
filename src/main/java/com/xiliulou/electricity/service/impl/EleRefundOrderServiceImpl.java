@@ -8,6 +8,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -543,7 +544,270 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         return Triple.of(true, "", "退款中，请稍后");
     }
-
+    
+    @Override
+    public Triple<Boolean, String, Object> carRefundDepositReview(Long id, String errMsg, Integer status,
+            BigDecimal refundAmount, HttpServletRequest request) {
+        TokenUser tokenUser = SecurityUtils.getUserInfo();
+        if (Objects.isNull(tokenUser)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found user!");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+    
+        User user = userService.queryByUidFromCache(tokenUser.getUid());
+        if (Objects.isNull(user)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found user! uid={}", tokenUser.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectById(id);
+        if (Objects.isNull(eleRefundOrder)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found electricityRefundOrder! id={}", id);
+            return Triple.of(false, "", "未找到退款订单!");
+        }
+        
+        //订单状态判断
+        if (!Objects.equals(eleRefundOrder.getStatus(), EleRefundOrder.STATUS_INIT)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! EleRefundOrder status illegal! id={}", id);
+            return Triple.of(false, "", "退款订单已处理，请勿重复提交");
+        }
+        
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(carDepositOrder)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found carDepositOrder! orderId={}",
+                    eleRefundOrder.getOrderId());
+            return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
+        }
+        
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! not found userInfo!  uid={}", carDepositOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+        
+        if (Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! user is bind car! uid={} ", carDepositOrder.getUid());
+            return Triple.of(false, "100012", "用户绑定车辆");
+        }
+        
+        BigDecimal userRefundAmount = refundAmount;
+        
+        if (Objects.nonNull(userRefundAmount)) {
+            if (userRefundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
+                log.error("CAR REFUND DEPOSIT REVIEW ERROR! ,refundAmount > payAmount! eleRefundOrder={}",
+                        eleRefundOrder.getRefundOrderNo());
+                return Triple.of(false, "", "退款金额不能大于支付金额!");
+            }
+            
+            //插入修改记录
+            EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+            eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+            eleRefundOrderHistory.setRefundAmount(refundAmount);
+            eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+            eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+            eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+        } else {
+            userRefundAmount = eleRefundOrder.getRefundAmount();
+        }
+        
+        //更新退款订单
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setErrMsg(errMsg);
+        
+        //后台拒绝
+        if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            return Triple.of(true, "", null);
+        }
+        
+        //后台同意
+        //零元或线下
+        if (BigDecimal.valueOf(0).compareTo(userRefundAmount) == 0 || CarDepositOrder.OFFLINE_PAYTYPE
+                .equals(carDepositOrder.getPayType())) {
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            
+            
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+        
+            userCarService.deleteByUid(userInfo.getUid());
+        
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+        
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+        
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+            return Triple.of(true, "", null);
+        }
+        
+        try {
+            RefundOrder refundOrder = RefundOrder.builder().orderId(eleRefundOrder.getOrderId())
+                    .refundOrderNo(eleRefundOrder.getRefundOrderNo()).payAmount(eleRefundOrder.getPayAmount())
+                    .refundAmount(eleRefundOrder.getRefundAmount()).build();
+            
+            eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+            
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            
+            return Triple.of(true, "", null);
+        } catch (WechatPayException e) {
+            log.error("CAR REFUND DEPOSIT REVIEW ERROR! wechat v3 refund  error! ", e);
+        }
+        
+        //提交失败
+        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderService.update(eleRefundOrderUpdate);
+        return Triple.of(false, "ELECTRICITY.00100", "退款失败");
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> carFreeDepostRefundAudit(Long id, String errMsg, Integer status,
+            BigDecimal refundAmount) {
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectById(id);
+        if (Objects.isNull(eleRefundOrder)) {
+            log.error("CAR FREE REFUND ORDER ERROR! not found electricityRefundOrder! id={}", id);
+            return Triple.of(false, "", "未找到退款订单!");
+        }
+    
+        //订单状态判断
+        if (!Objects.equals(eleRefundOrder.getStatus(), EleRefundOrder.STATUS_INIT)) {
+            log.error("CAR FREE REFUND ORDER ERROR! EleRefundOrder status illegal! id={}", id);
+            return Triple.of(false, "", "退款订单已处理，请勿重复提交");
+        }
+        
+        CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(carDepositOrder)) {
+            log.error("CAR  FREE REFUND ORDER ERROR! carDepositOrder is null,orderId={}", eleRefundOrder.getOrderId());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(carDepositOrder.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("CAR FREE REFUND ORDER ERROR! userInfo is null,id={}, uid={}", id, carDepositOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+        
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+        eleRefundOrderUpdate.setRefundAmount(refundAmount);
+        eleRefundOrderUpdate.setErrMsg(errMsg);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        
+        //拒绝退款
+        if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            return Triple.of(true, "", null);
+        }
+        
+        //处理电池免押订单退款
+        if (!Objects.equals(carDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            log.error("CAR FREE REFUND ORDER ERROR!depositOrder payType is illegal,orderId={},uid={}",
+                    eleRefundOrder.getOrderId(), carDepositOrder.getUid());
+            return Triple.of(false, "100406", "订单非免押支付");
+        }
+        
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(pxzConfig) || StringUtils.isBlank(pxzConfig.getAesKey()) || StringUtils
+                .isBlank(pxzConfig.getMerchantCode())) {
+            log.error("CAR REFUND ORDER ERROR! not found pxzConfig,uid={}", userInfo.getUid());
+            return Triple.of(false, "100400", "免押功能未配置相关信息,请联系客服处理");
+        }
+        
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleRefundOrder.getOrderId());
+        if (Objects.isNull(freeDepositOrder)) {
+            log.error("CAR REFUND ORDER ERROR! not found freeDepositOrder,uid={}", userInfo.getUid());
+            return Triple.of(false, "100403", "免押订单不存在");
+        }
+        
+        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> testQuery = new PxzCommonRequest<>();
+        testQuery.setAesSecret(pxzConfig.getAesKey());
+        testQuery.setDateTime(System.currentTimeMillis());
+        testQuery.setSessionId(eleRefundOrder.getOrderId());
+        testQuery.setMerchantCode(pxzConfig.getMerchantCode());
+        
+        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+        queryRequest.setRemark("电池押金解冻");
+        queryRequest.setTransId(freeDepositOrder.getOrderId());
+        testQuery.setData(queryRequest);
+        
+        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzUnfreezeDepositCommonRsp = null;
+        
+        try {
+            pxzUnfreezeDepositCommonRsp = pxzDepositService.unfreezeDeposit(testQuery);
+        } catch (Exception e) {
+            log.error("CAR REFUND ORDER ERROR! unfreeDepositOrder fail! uid={},orderId={}", userInfo.getUid(),
+                    freeDepositOrder.getOrderId(), e);
+            return Triple.of(false, "100401", "免押解冻调用失败！");
+        }
+        
+        if (Objects.isNull(pxzUnfreezeDepositCommonRsp)) {
+            log.error("CAR REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}",
+                    userInfo.getUid(),
+                    freeDepositOrder.getOrderId());
+            return Triple.of(false, "100401", "免押调用失败！");
+        }
+        
+        if (!pxzUnfreezeDepositCommonRsp.isSuccess()) {
+            log.error("CAR REFUND ORDER ERROR! unfreeDepositOrder fail! rsp is null! uid={},orderId={}",
+                    userInfo.getUid(),
+                    freeDepositOrder.getOrderId());
+            return Triple.of(false, "100401", pxzUnfreezeDepositCommonRsp.getRespDesc());
+        }
+        
+        //如果解冻成功
+        if (Objects.equals(pxzUnfreezeDepositCommonRsp.getData().getAuthStatus(), FreeDepositOrder.AUTH_UN_FROZEN)) {
+            //更新免押订单状态
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+    
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(updateUserInfo);
+    
+            userCarService.deleteByUid(userInfo.getUid());
+    
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+    
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+    
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+            
+            return Triple.of(true, "", "免押解冻成功");
+        }
+        
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
+        
+        //更新退款订单
+        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderService.update(eleRefundOrderUpdate);
+        
+        return Triple.of(true, "", "退款中，请稍后");
+    }
+    
     /**
      * 电池免押退押金
      *

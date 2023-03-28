@@ -71,6 +71,8 @@ public class EleRefundOrderVO {
     private String phone;
 
     private Integer payType;
+    
+    //private Integer refundOrderType;
 
     public Long getId() {
         return id;
@@ -183,4 +185,12 @@ public class EleRefundOrderVO {
     public void setPayType(Integer payType) {
         this.payType = payType;
     }
+    
+    //    public Integer getRefundOrderType() {
+    //        return refundOrderType;
+    //    }
+    //
+    //    public void setRefundOrderType(Integer refundOrderType) {
+    //        this.refundOrderType = refundOrderType;
+    //    }
 }

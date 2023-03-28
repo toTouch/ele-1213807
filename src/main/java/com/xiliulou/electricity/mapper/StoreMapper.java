@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.MapVo;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -49,4 +50,6 @@ public interface StoreMapper extends BaseMapper<Store> {
     List<StoreVO> selectListByDistance(StoreQuery storeQuery);
 
     List<StoreVO> selectByAddress(StoreQuery storeQuery);
+    
+    List<SearchVo> storeSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name);
 }

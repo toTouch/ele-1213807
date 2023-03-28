@@ -494,5 +494,20 @@ public class JsonAdminStoreController extends BaseController {
 
         return storeAmountService.modifyBalance(storeId, modifyBalance);
     }
-
+    
+    
+    //搜索search
+    @GetMapping("/admin/store/search")
+    public R storeSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 20) {
+            size = 20L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        return storeService.storeSearch(size, offset, name);
+    }
 }

@@ -78,4 +78,8 @@ public interface EleDepositOrderService {
     Triple<Boolean, String, Object> handleRentBatteryDeposit(Long franchiseeId, Integer memberCardId,Integer model, UserInfo userInfo);
     
     R adminPayCarDeposit(RentCarDepositQuery rentCarDepositQuery);
+
+    R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd);
+    
+    R refundCarDeposit();
 }

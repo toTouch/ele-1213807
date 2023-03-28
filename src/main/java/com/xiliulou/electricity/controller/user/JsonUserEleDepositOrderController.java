@@ -201,6 +201,16 @@ public class JsonUserEleDepositOrderController {
     public R refundRentCarDeposit(HttpServletRequest request) {
         return eleDepositOrderService.refundRentCarDeposit(request);
     }
-
+    
+    /**
+     * 新退租车押金，可审核退线下缴纳押金
+     *
+     * @return
+     */
+    @PostMapping("/user/refundCarDeposit")
+    public R refundCarDeposit() {
+        return eleDepositOrderService.refundCarDeposit();
+    }
+  
 }
 

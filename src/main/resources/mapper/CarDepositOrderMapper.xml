@@ -291,9 +291,8 @@
     </select>
     
     <select id="payDepositOrderList" resultType="com.xiliulou.electricity.vo.UserCarDepositOrderVo">
-        select cdo.pay_amount as car_deposit_pay, cdo.create_time, ero.update_time as refund_time, ecm.name as car_model_name
+        select cdo.pay_amount as car_deposit_pay, cdo.create_time,  ecm.name as car_model_name, cdo.order_id
         from t_car_deposit_order cdo
-        left join t_ele_refund_order ero on cdo.order_id = ero.order_id
         left join t_electricity_car_model ecm on ecm.id = cdo.car_model_id
         where cdo.uid = #{uid}
         and cdo.tenant_id = #{tenantId}

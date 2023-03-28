@@ -20,6 +20,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.PictureVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.storage.config.StorageConfig;
@@ -682,6 +683,13 @@ public class StoreServiceImpl implements StoreService {
 
         return storeVO;
     }
+    
+    @Override
+    public R storeSearch(Long size, Long offset, String name) {
+        List<SearchVo> voList = storeMapper.storeSearch(size, offset, name);
+        return R.ok(voList);
+    }
+    
 
     @Slave
     @Override

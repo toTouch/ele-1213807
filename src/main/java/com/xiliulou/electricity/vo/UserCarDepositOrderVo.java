@@ -14,6 +14,8 @@ public class UserCarDepositOrderVo {
     
     private String carModelName;
     
+    private String orderId;
+    
     private BigDecimal carDepositPay;
     
     private Long createTime;

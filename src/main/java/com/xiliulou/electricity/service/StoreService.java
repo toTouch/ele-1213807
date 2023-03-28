@@ -86,4 +86,6 @@ public interface StoreService {
     StoreVO selectDetailById(Long id);
 
     List<StoreVO> selectByAddress(StoreQuery storeQuery);
+    
+    R storeSearch(Long size, Long offset, String name);
 }

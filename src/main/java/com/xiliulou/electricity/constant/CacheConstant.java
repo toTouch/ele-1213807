@@ -87,6 +87,8 @@ public interface CacheConstant {
 
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
+    //用户还车审核
+    String CACHE_USER_RETURN_CAR_LOCK = "cache_user_return_car_lock:";
 
     String ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY = "ele_cache_user_battery_service_fee_lock_key";
 
@@ -185,6 +187,8 @@ public interface CacheConstant {
 
     //用户缴纳租车押金
     String ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY = "ele_cache_user_car_deposit_lock_key:";
+    //用户退车押金
+    String CACHE_USER_CAR_RETURN_DEPOSIT_LOCK = "cache_user_car_return_deposit_lock:";
     //用户购买租车套餐
     String ELE_CACHE_USER_CAR_CARD_LOCK_KEY = "ele_cache_user_car_card_lock_key:";
     //租车订单
