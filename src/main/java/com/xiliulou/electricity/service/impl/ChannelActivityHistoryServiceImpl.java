@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.excel.EasyExcel;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
@@ -87,6 +89,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private TenantService tenantService;
+    
+    @Autowired
+    private RedisService redisService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -193,22 +198,24 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
             if (Objects.nonNull(inviteUserInfo)) {
                 item.setInviteName(inviteUserInfo.getName());
+                item.setInvitePhone(inviteUserInfo.getPhone());
             }
     
-            User inviteUser = userService.queryByUidFromCache(item.getInviteUid());
-            if (Objects.nonNull(inviteUser)) {
-                item.setInvitePhone(inviteUser.getPhone());
-            }
+            //            User inviteUser = userService.queryByUidFromCache(item.getInviteUid());
+            //            if (Objects.nonNull(inviteUser)) {
+            //
+            //            }
             
             UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
-            if (Objects.nonNull(inviteUserInfo)) {
+            if (Objects.nonNull(channelUserInfo)) {
                 item.setChannelName(channelUserInfo.getName());
+                item.setInvitePhone(channelUserInfo.getPhone());
             }
     
-            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
-            if (Objects.nonNull(channelUser)) {
-                item.setInvitePhone(channelUser.getPhone());
-            }
+            //            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
+            //            if (Objects.nonNull(channelUser)) {
+            //
+            //            }
         });
         return Triple.of(true, "", query);
     }
@@ -296,6 +303,11 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         if (Objects.isNull(uid)) {
             log.error("USER CHANNEL QUERY CODE ERROR! not found user");
             return R.fail("100001", "用户不存在");
+        }
+    
+        if (redisService.setNx(CacheConstant.CACHE_SCAN_INTO_ACTIVITY_LOCK + uid, "ok", 1000L, false)) {
+            log.warn("USER CHANNEL QUERY CODE ERROR! Frequency too fast");
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
     
         User user = userService.queryByUidFromCache(uid);
@@ -429,26 +441,22 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         
         Optional.ofNullable(query).orElse(new ArrayList<>()).forEach(item -> {
             ChannelActivityHistoryExcelVo vo = new ChannelActivityHistoryExcelVo();
-            vo.setPhone(item.getPhone());
+            vo.setPhone(Objects.isNull(item.getPhone()) ? "" : item.getPhone());
             
             UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
-            vo.setName(queryUserInfoName(userInfo));
-            
+            vo.setName(Objects.isNull(userInfo) ? "未实名认证" : userInfo.getName());
+    
             UserInfo inviteUserInfo = userInfoService.queryByUidFromDb(item.getInviteUid());
-            vo.setInviterName(queryUserInfoName(inviteUserInfo));
+            if (Objects.nonNull(inviteUserInfo)) {
+                item.setInviteName(Objects.isNull(inviteUserInfo.getName()) ? "未实名认证" : inviteUserInfo.getName());
+                item.setInvitePhone(Objects.isNull(inviteUserInfo.getPhone()) ? "" : inviteUserInfo.getPhone());
+            }
             
             UserInfo channelUserInfo = userInfoService.queryByUidFromDb(item.getChannelUid());
-            vo.setChannelName(queryUserInfoName(channelUserInfo));
-            
-            User inviteUser = userService.queryByUidFromCache(item.getInviteUid());
-            if (Objects.nonNull(inviteUser)) {
-                vo.setInviterPhone(inviteUser.getPhone());
+            if (Objects.nonNull(channelUserInfo)) {
+                item.setChannelName(Objects.isNull(channelUserInfo.getName()) ? "未实名认证" : channelUserInfo.getName());
+                item.setInvitePhone(Objects.isNull(channelUserInfo.getPhone()) ? "" : channelUserInfo.getPhone());
             }
-    
-            //            User channelUser = userService.queryByUidFromCache(item.getChannelUid());
-            //            if (Objects.nonNull(channelUser)) {
-            //                vo.setChannelPhone(channelUser.getPhone());
-            //            }
             
             date.setTime(item.getCreateTime());
             vo.setCreateTime(sdf.format(date));
@@ -490,10 +498,6 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
                 result = "";
         }
         return result;
-    }
-    
-    private String queryUserInfoName(UserInfo userInfo) {
-        return Objects.isNull(userInfo) ? "未实名认证" : userInfo.getName();
     }
     
     private String codeDeCoder(String code) {
