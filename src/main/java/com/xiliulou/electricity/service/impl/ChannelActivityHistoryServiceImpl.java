@@ -367,14 +367,14 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
         ChannelActivityHistory channelActivityHistory = this.queryByUid(uid);
         if (Objects.nonNull(channelActivityHistory)) {
             log.error("USER CHANNEL SCAN ERROR! user has participated in activities! user={}", uid);
-            return R.fail("100460", "您已参与渠道活动，请勿重复扫码");
+            return R.ok();
         }
     
         // 是否渠道人，
         UserChannel userChannel = userChannelService.queryByUidFromCache(uid);
         if (Objects.nonNull(userChannel)) {
             log.error("USER CHANNEL SCAN ERROR! user is channel user! user={}", uid);
-            return R.fail("100461", "您已成为渠道人，请勿重复扫码");
+            return R.ok();
         }
         
         // 是否购买过套餐
