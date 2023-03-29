@@ -290,7 +290,7 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
             return R.fail("100001", "用户不存在");
         }
     
-        if (!redisService.setNx(CacheConstant.CACHE_SCAN_INTO_ACTIVITY_LOCK + uid, "ok", 1000L, false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_SCAN_INTO_ACTIVITY_LOCK + uid, "ok", 3000L, false)) {
             log.warn("USER CHANNEL QUERY CODE ERROR! Frequency too fast");
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
