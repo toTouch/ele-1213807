@@ -120,6 +120,15 @@ public class EleParamSettingTemplateServiceImpl implements EleParamSettingTempla
     
     @Override
     public Triple<Boolean, String, Object> deleteOne(Long id) {
+        EleParamSettingTemplate eleParamSettingTemplate = eleParamSettingTemplateMapper.queryById(id);
+        if (Objects.isNull(eleParamSettingTemplate)) {
+            return Triple.of(false, "100451", "未找到电柜参数模板");
+        }
+    
+        if (!Objects.equals(eleParamSettingTemplate.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, "", "");
+        }
+        
         EleParamSettingTemplate update = new EleParamSettingTemplate();
         update.setId(id);
         update.setDelFlag(EleParamSettingTemplate.DEL_DEL);
@@ -145,7 +154,7 @@ public class EleParamSettingTemplateServiceImpl implements EleParamSettingTempla
         EleParamSettingTemplate eleParamSettingTemplate = eleParamSettingTemplateMapper
                 .queryById(eleParamSettingTemplateQuery.getId());
         if (Objects.isNull(eleParamSettingTemplate)) {
-            return Triple.of(false, "", "未找到参数模板");
+            return Triple.of(false, "100451", "未找到电柜参数模板");
         }
         
         if (!Objects.equals(eleParamSettingTemplate.getTenantId(), TenantContextHolder.getTenantId())) {
