@@ -5,6 +5,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserChannel;
@@ -13,6 +14,7 @@ import com.xiliulou.electricity.mapper.UserChannelMapper;
 import com.xiliulou.electricity.query.UserChannelQuery;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.TenantService;
@@ -68,6 +70,9 @@ public class UserChannelServiceImpl implements UserChannelService {
     
     @Autowired
     private CarMemberCardOrderService carMemberCardOrderService;
+    
+    @Autowired
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -256,11 +261,10 @@ public class UserChannelServiceImpl implements UserChannelService {
     private boolean userBuyMemberCardCheck(Long uid) {
         boolean batteryMemberCard = true;
         boolean carMemberCard = true;
-        
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
-                || Objects
-                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+    
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
+                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
             batteryMemberCard = false;
         }
         

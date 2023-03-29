@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
 import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ChannelActivityHistory;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
@@ -18,6 +19,8 @@ import com.xiliulou.electricity.mapper.ChannelActivityHistoryMapper;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.ChannelActivityService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.service.UserChannelService;
@@ -92,6 +95,9 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     
     @Autowired
     private RedisService redisService;
+    
+    @Autowired
+    private ElectricityMemberCardOrderService electricityMemberCardOrderService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -514,14 +520,20 @@ public class ChannelActivityHistoryServiceImpl implements ChannelActivityHistory
     private boolean userBuyMemberCardCheck(Long uid) {
         boolean batteryMemberCard = true;
         boolean carMemberCard = true;
-        
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
-                || Objects
-                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+    
+        //        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        //        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+        //                || Objects
+        //                .equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+        //            batteryMemberCard = false;
+        //        }
+    
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
+                .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
+        if (Objects.isNull(electricityMemberCardOrder)) {
             batteryMemberCard = false;
         }
-        
+    
         CarMemberCardOrder carMemberCardOrder = carMemberCardOrderService
                 .queryLastPayMemberCardTimeByUid(uid, null, TenantContextHolder.getTenantId());
         if (Objects.isNull(carMemberCardOrder)) {
