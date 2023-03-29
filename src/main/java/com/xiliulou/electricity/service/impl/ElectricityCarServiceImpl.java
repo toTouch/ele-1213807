@@ -628,7 +628,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         update.setId(electricityCar.getId());
         update.setLongitude(query.getLongitude());
         update.setLatitude(query.getLatitude());
-        update.setLockType(query.getDoorStatus());
         update.setUpdateTime(System.currentTimeMillis());
         update(update);
         

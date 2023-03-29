@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 public class CarMemberCardExpireBreakPowerQuery {
     
+    private Integer tenantId;
     private Long cid;
     private String sn;
 }

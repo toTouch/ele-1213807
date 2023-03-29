@@ -12,6 +12,7 @@ import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -117,6 +118,9 @@ public class ElectricityTradeOrderServiceImpl extends
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     ElectricityCarService electricityCarService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -828,11 +832,14 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
-
+    
             //用户是否有绑定了车辆
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            if (Objects.nonNull(electricityCar) && Objects
-                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(electricityTradeOrder.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
                 electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
             }
         }

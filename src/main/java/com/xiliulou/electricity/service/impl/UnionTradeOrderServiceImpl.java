@@ -137,6 +137,9 @@ public class UnionTradeOrderServiceImpl extends
     
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -882,8 +885,11 @@ public class UnionTradeOrderServiceImpl extends
     
             //用户是否有绑定了车辆
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            if (Objects.nonNull(electricityCar) && Objects
-                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
                 electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
             }
         }

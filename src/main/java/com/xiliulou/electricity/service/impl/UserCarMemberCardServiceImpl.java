@@ -64,6 +64,9 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     
     @Autowired
     private ElectricityCarService electricityCarService;
+    
+    @Autowired
+    private ElectricityConfigService electricityConfigService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -276,12 +279,13 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     return;
                 }
     
-                R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
-                        new Jt808DeviceControlRequest(IdUtil.randomUUID(), item.getSn(), ElectricityCar.TYPE_LOCK));
-                if (result.isSuccess()) {
-                    electricityCarService.updateLockTypeByIds(Arrays.asList(item.getCid()), ElectricityCar.TYPE_LOCK);
-                } else {
-                    log.error("Jt808 error! controlDevice error! carSN={},result={}", item.getSn(), result);
+                ElectricityConfig config = electricityConfigService.queryFromCacheByTenantId(item.getTenantId());
+                if (Objects.equals(config.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                    R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
+                            new Jt808DeviceControlRequest(IdUtil.randomUUID(), item.getSn(), ElectricityCar.TYPE_LOCK));
+                    if (!result.isSuccess()) {
+                        log.error("EXPIRE BREAK POWER ERROR! car control command send error! sn={}", item.getSn());
+                    }
                 }
             });
             
