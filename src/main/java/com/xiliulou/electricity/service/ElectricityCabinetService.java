@@ -174,4 +174,6 @@ public interface ElectricityCabinetService {
     List<Integer> selectEidByStoreId(Long storeId);
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
+    
+    R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
 }
