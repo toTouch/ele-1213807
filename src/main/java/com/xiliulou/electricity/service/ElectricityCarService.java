@@ -71,4 +71,8 @@ public interface ElectricityCarService {
     CarAttr queryLastReportPointBySn(String sn);
 
     Integer isUserBindCar(Long uid, Integer tenantId);
+    
+    R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset);
+    
+    R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
 }

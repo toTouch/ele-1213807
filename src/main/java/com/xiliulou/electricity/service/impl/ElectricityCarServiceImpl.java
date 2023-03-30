@@ -27,6 +27,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
 import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
 import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -89,6 +91,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Autowired
     Jt808CarService jt808CarService;
+    
+    @Autowired
+    StoreService storeService;
+    
+    @Autowired
+    FranchiseeService franchiseeService;
+    
+    @Autowired
+    CarModelTagService carModelTagService;
+    
+    @Autowired
+    PictureService pictureService;
 
 
     /**
@@ -365,6 +379,134 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return carAttrMapper.queryLastReportPointBySn(sn);
     }
 
+    @Override
+    public R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset) {
+        List<ElectricityCarMoveVo> queryList = electricityCarMapper
+                .queryEnableMoveCarByStoreId(storeId, sn, size, offset, TenantContextHolder.getTenantId());
+        return R.ok(queryList);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery) {
+        List<Long> carIds = electricityCarMoveQuery.getCarIds();
+        if (CollectionUtils.isEmpty(carIds)) {
+            return R.ok();
+        }
+    
+        if (carIds.size() > 50) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! car size too long ！sourceStore={}， targetStore={}, size={}",
+                    electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid(), carIds.size());
+            return R.fail("100270", "迁移车辆数量过多");
+        }
+    
+        if (Objects.equals(electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid())) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! Same store ！sourceStore={}， targetStore={}",
+                    electricityCarMoveQuery.getSourceSid(), electricityCarMoveQuery.getTargetSid());
+            return R.fail("ELECTRICITY.0018", "车辆迁移门店不能相同");
+        }
+    
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        Store targetStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getTargetSid());
+        if (Objects.isNull(targetStore)) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found store！storeId={}", electricityCarMoveQuery.getTargetSid());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        
+        Store sourceStore = storeService.queryByIdFromCache(electricityCarMoveQuery.getSourceSid());
+        if (Objects.isNull(sourceStore)) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found store！storeId={}", electricityCarMoveQuery.getSourceSid());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        
+        if (!Objects.equals(targetStore.getTenantId(), TenantContextHolder.getTenantId()) || !Objects
+                .equals(sourceStore.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
+    
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(targetStore.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! not found franchisee！franchiseeId={}", franchisee.getId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+    
+        List<ElectricityCar> queryList = electricityCarMapper
+                .queryModelIdBySidAndIds(carIds, electricityCarMoveQuery.getSourceSid(), ElectricityCar.STATUS_NOT_RENT,
+                        TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(queryList) || queryList.size() != carIds.size()) {
+            log.error("ELECTRICITY_CAR_MOVE ERROR! has illegal cars！carIds={}", carIds);
+            return R.fail("100262", "部分车辆不符合迁移条件，请检查后重试");
+        }
+    
+        Map<Integer, List<ElectricityCar>> collect = queryList.parallelStream()
+                .collect(Collectors.groupingBy(ElectricityCar::getModelId));
+        collect.forEach((k, v) -> {
+            //k --> ModelId  v --> List<ElectricityCar>
+            ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(k);
+            if (Objects.isNull(electricityCarModel)) {
+                log.error("ELECTRICITY_CAR_MOVE ERROR! CarModel is null error! carModel={}", k);
+                return;
+            }
+    
+            //如果目标门店没同名类型则要创建
+            ElectricityCarModel targetCarModel = electricityCarModelService
+                    .queryByNameAndStoreId(electricityCarModel.getName(), targetStore.getId());
+            if (Objects.isNull(targetCarModel)) {
+                //拷贝类型
+                targetCarModel = new ElectricityCarModel();
+                BeanUtil.copyProperties(electricityCarModel, targetCarModel);
+                targetCarModel.setFranchiseeId(franchisee.getId());
+                targetCarModel.setStoreId(targetStore.getId());
+                targetCarModel.setUpdateTime(System.currentTimeMillis());
+                targetCarModel.setCreateTime(System.currentTimeMillis());
+                electricityCarModelService.insert(targetCarModel);
+    
+                //拷贝标签
+                List<CarModelTag> carModelTags = Optional
+                        .ofNullable(carModelTagService.selectByCarModelId(electricityCarModel.getId()))
+                        .orElse(new ArrayList<>());
+                for (CarModelTag carModelTag : carModelTags) {
+                    carModelTag.setId(null);
+                    carModelTag.setCarModelId(targetCarModel.getId().longValue());
+                    carModelTag.setCreateTime(System.currentTimeMillis());
+                    carModelTag.setUpdateTime(System.currentTimeMillis());
+                }
+                carModelTagService.batchInsert(carModelTags);
+    
+                ///拷贝图片
+                PictureQuery pictureQuery = new PictureQuery();
+                pictureQuery.setBusinessId(electricityCarModel.getId().longValue());
+                pictureQuery.setStatus(Picture.STATUS_ENABLE);
+                pictureQuery.setImgType(Picture.TYPE_CAR_IMG);
+                pictureQuery.setDelFlag(Picture.DEL_NORMAL);
+                pictureQuery.setTenantId(tenantId);
+                List<Picture> pictures = pictureService.queryListByQuery(pictureQuery);
+                for (Picture picture : pictures) {
+                    picture.setId(null);
+                    picture.setBusinessId(targetCarModel.getId().longValue());
+                    picture.setCreateTime(System.currentTimeMillis());
+                    picture.setUpdateTime(System.currentTimeMillis());
+                }
+                pictureService.batchInsert(pictures);
+            }
+    
+            Integer targetCarModelId = targetCarModel.getId();
+    
+            //修改被迁移车辆门店及类型
+            Optional.ofNullable(v).orElse(new ArrayList<>()).parallelStream().forEach(item -> {
+                ElectricityCar updateElectricityCar = new ElectricityCar();
+                updateElectricityCar.setId(item.getId());
+                updateElectricityCar.setModelId(targetCarModelId);
+                updateElectricityCar.setStoreId(targetStore.getId());
+                updateElectricityCar.setUpdateTime(System.currentTimeMillis());
+                this.update(updateElectricityCar);
+            });
+        });
+    
+        return R.ok();
+    }
+    
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {

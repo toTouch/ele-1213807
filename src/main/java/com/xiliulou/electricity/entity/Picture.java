@@ -65,5 +65,7 @@ public class Picture {
 
     public static final Integer STATUS_ENABLE = 0;
     public static final Integer STATUS_DISABLE = 1;
+    
+    public static final Integer TYPE_CAR_IMG = 3;
 
 }

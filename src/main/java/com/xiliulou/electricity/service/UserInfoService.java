@@ -61,6 +61,8 @@ public interface UserInfoService extends IService<UserInfo> {
     R updateStatus(Long uid, Integer usableStatus);
 
     UserInfo queryByUidFromCache(Long uid);
+    
+    UserInfo queryByUidFromDb(Long uid);
 
     Integer homeOne(Long first, Long now, Integer tenantId);
 

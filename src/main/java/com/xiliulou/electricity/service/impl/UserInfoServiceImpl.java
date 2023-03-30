@@ -399,6 +399,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         redisService.saveWithHash(CacheConstant.CACHE_USER_INFO + uid, userInfo);
         return userInfo;
     }
+    
+    @Override
+    public UserInfo queryByUidFromDb(Long uid) {
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+    }
 
     @Override
     public Integer homeOne(Long first, Long now, Integer tenantId) {
