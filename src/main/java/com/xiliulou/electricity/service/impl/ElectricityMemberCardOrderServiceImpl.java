@@ -719,6 +719,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setOrderId(electricityMemberCardOrders.get(i).getOrderId());
             excelVo.setName(electricityMemberCardOrders.get(i).getUserName());
             excelVo.setPhone(electricityMemberCardOrders.get(i).getPhone());
+    
+            if (Objects.nonNull(electricityMemberCardOrders.get(i).getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService
+                        .queryByIdFromCache(electricityMemberCardOrders.get(i).getFranchiseeId());
+                excelVo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            }
+    
             excelVo.setFranchiseeName(electricityMemberCardOrders.get(i).getFranchiseeName());
             excelVo.setMemberCardName(electricityMemberCardOrders.get(i).getCardName());
             excelVo.setMaxUseCount(Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(), -1L) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));

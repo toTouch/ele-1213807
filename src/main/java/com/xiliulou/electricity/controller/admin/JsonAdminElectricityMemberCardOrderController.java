@@ -168,9 +168,9 @@ public class JsonAdminElectricityMemberCardOrderController {
     @GetMapping("/admin/electricityMemberCardOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
             @RequestParam(value = "phone", required = false) String phone,
-                            @RequestParam(value = "orderId", required = false) String orderId,
-                            @RequestParam(value = "memberCardType", required = false) Integer cardType,
-                            @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
+            @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "memberCardType", required = false) Integer cardType,
+            @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
             @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "source", required = false) Integer source,
             @RequestParam(value = "payCount", required = false) Integer payCount,
@@ -202,18 +202,15 @@ public class JsonAdminElectricityMemberCardOrderController {
                 throw new CustomBusinessException("订单不存在！");
             }
         }
-
+    
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
                 .phone(phone)
                 .orderId(orderId)
                 .cardType(cardType)
-                .status(status)
-                .userName(userName).franchiseeId(franchiseeId).cardPayCount(payCount).source(source).refId(refId)
-                .cardModel(memberCardModel)
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
-                .tenantId(TenantContextHolder.getTenantId())
-                .cardModel(ElectricityMemberCardOrder.BATTERY_MEMBER_CARD)
+                .tenantId(TenantContextHolder.getTenantId()).status(status).source(source).refId(refId)
+                .cardModel(memberCardModel).franchiseeId(franchiseeId).cardPayCount(payCount).userName(userName)
                 .franchiseeIds(franchiseeIds).build();
         electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
     }
