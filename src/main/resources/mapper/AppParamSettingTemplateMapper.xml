@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.BatteryParamSettingTemplateMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.AppParamSettingTemplateMapper">
     
-    <resultMap type="com.xiliulou.electricity.entity.BatteryParamSettingTemplate" id="BatteryParamSettingTemplateMap">
+    <resultMap type="com.xiliulou.electricity.entity.AppParamSettingTemplate" id="AppParamSettingTemplateMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="config" column="config" jdbcType="VARCHAR"/>
+        <result property="configContent" column="config_content" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
@@ -14,32 +14,35 @@
     </resultMap>
     
     <!--查询单个-->
-    <select id="queryById" resultMap="BatteryParamSettingTemplateMap">
+    <select id="queryById" resultMap="AppParamSettingTemplateMap">
         select
-          id, name,config, create_time, update_time, tenant_id, del_flag
-        from t_battery_param_setting_template
+          id, name, config_content, create_time, update_time, tenant_id, del_flag
+        from t_app_param_setting_template
         where id = #{id}
     </select>
     
     <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="BatteryParamSettingTemplateMap">
+    <select id="queryAllByLimit" resultMap="AppParamSettingTemplateMap">
         select
-          id, name, config,create_time, update_time, tenant_id, del_flag
-        from t_battery_param_setting_template
+          id, name, config_content, create_time, update_time, tenant_id, del_flag
+        from t_app_param_setting_template
         limit #{offset}, #{limit}
     </select>
     
     <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="BatteryParamSettingTemplateMap">
+    <select id="queryAll" resultMap="AppParamSettingTemplateMap">
         select
-        id, name, config, create_time, update_time, tenant_id, del_flag
-        from t_battery_param_setting_template
+        id, name, config_content, create_time, update_time, tenant_id, del_flag
+        from t_app_param_setting_template
         <where>
             <if test="id != null">
                 and id = #{id}
             </if>
             <if test="name != null and name != ''">
                 and name = #{name}
+            </if>
+            <if test="configContent != null and configContent != ''">
+                and config_content = #{configContent}
             </if>
             <if test="createTime != null">
                 and create_time = #{createTime}
@@ -58,19 +61,19 @@
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_param_setting_template(name, config, create_time, update_time, tenant_id, del_flag)
-        values (#{name}, #{config}, #{createTime}, #{updateTime}, #{tenantId}, #{delFlag})
+        insert into t_app_param_setting_template(name, config_content, create_time, update_time, tenant_id, del_flag)
+        values (#{name}, #{configContent}, #{createTime}, #{updateTime}, #{tenantId}, #{delFlag})
     </insert>
     
     <!--通过主键修改数据-->
     <update id="update">
-        update t_battery_param_setting_template
+        update t_app_param_setting_template
         <set>
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
-            <if test="config != null and config != ''">
-                config = #{config},
+            <if test="configContent != null and configContent != ''">
+                config_content = #{configContent},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},
@@ -90,37 +93,22 @@
     
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_battery_param_setting_template where id = #{id}
+        delete from t_app_param_setting_template where id = #{id}
     </delete>
     
-    <select id="queryList" resultMap="BatteryParamSettingTemplateMap">
+    <select id="queryList" resultMap="AppParamSettingTemplateMap">
         select
-        id, config, name, create_time, update_time, tenant_id, del_flag
-        from t_battery_param_setting_template
-        <where>
-            del_flag = 0
-            <if test="name != null and name != ''">
-                and name like concat('%', #{name}, '%')
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-        </where>
+          id, name, config_content, create_time, update_time, tenant_id, del_flag
+        from t_app_param_setting_template
+        where tenant_id = #{tenantId} and del_flag =0
         limit #{offset}, #{size}
     </select>
     
-    <select id="queryCount" resultMap="BatteryParamSettingTemplateMap">
+    <select id="queryCount" resultType="long">
         select
-        count(*)
-        from t_battery_param_setting_template
-        <where>
-            del_flag = 0
-            <if test="name != null and name != ''">
-                and name like concat('%', #{name}, '%')
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-        </where>
+          count(*)
+        from t_app_param_setting_template
+        where tenant_id = #{tenantId} and del_flag = 0
     </select>
+
 </mapper>

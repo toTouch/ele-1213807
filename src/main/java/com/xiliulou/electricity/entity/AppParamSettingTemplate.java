@@ -7,17 +7,17 @@ import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * (BatteryParamSettingTemplate)实体类
+ * (AppParamSettingTemplate)实体类
  *
  * @author Eclair
- * @since 2023-03-29 09:20:21
+ * @since 2023-03-30 19:53:08
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_battery_param_setting_template")
-public class BatteryParamSettingTemplate {
+@TableName("t_app_param_setting_template")
+public class AppParamSettingTemplate {
     
     private Long id;
     
@@ -26,7 +26,7 @@ public class BatteryParamSettingTemplate {
      */
     private String name;
     
-    private String config;
+    private String configContent;
     
     private Long createTime;
     

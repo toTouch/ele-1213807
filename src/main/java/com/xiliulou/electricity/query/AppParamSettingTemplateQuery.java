@@ -8,21 +8,21 @@ import javax.validation.constraints.NotNull;
 
 /**
  * @author zgw
- * @date 2023/3/29 13:37
+ * @date 2023/3/30 20:21
  * @mood
  */
 @Data
-public class BatteryParamSettingTemplateQuery {
+public class AppParamSettingTemplateQuery {
     
-    @NotNull(message = "模板名称不能为空", groups = {UpdateGroup.class})
+    @NotNull(message = "id不能为空", groups = UpdateGroup.class)
     private Long id;
     
     /**
      * 模板名
      */
-    @NotNull(message = "模板名称不能为空")
+    @NotEmpty(message = "模板名不能为空")
     private String name;
     
-    @NotEmpty(message = "模板配置内容不能为空")
-    private String config;
+    @NotEmpty(message = "模板参数不能为空")
+    private String configContent;
 }
