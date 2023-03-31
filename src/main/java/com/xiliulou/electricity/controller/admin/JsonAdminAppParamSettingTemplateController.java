@@ -30,6 +30,10 @@ public class JsonAdminAppParamSettingTemplateController {
         if (Objects.isNull(size) || size < 0 || size > 10) {
             size = 10L;
         }
+    
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
         
         return appParamSettingTemplateService.queryList(size, offset);
     }
