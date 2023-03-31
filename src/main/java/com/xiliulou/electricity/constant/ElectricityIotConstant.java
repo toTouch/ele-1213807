@@ -392,7 +392,7 @@ public class ElectricityIotConstant {
      */
     public static final String OTHER_SETTING_PARAM_TEMPLATE = "other_setting_param_template";
     
-    public static final String OTHER_SETTING_PARAM_TEMPLATE_RSP = "other_setting_param_template_rsp";
+    public static final String READ_OTHER_SETTING_PARAM_TEMPLATE = "read_other_setting_param_template";
     
 
     static {
@@ -516,6 +516,6 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT,NORMAL_BATTERY_SNAPSHOT_HANDLER);
     
         COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
-        COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE_RSP, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(READ_OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
     }
 }
