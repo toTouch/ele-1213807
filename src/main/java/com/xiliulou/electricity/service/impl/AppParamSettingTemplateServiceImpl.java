@@ -127,6 +127,8 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
     @Override
     public R saveOne(AppParamSettingTemplateQuery query) {
         if (this.queryCount() >= 5) {
+            log.error("APP PARAM SETTING TEMPLATE ERROR! too many templates! tenantId={}",
+                    TenantContextHolder.getTenantId());
             return R.fail("100431", "您的模板过多，最多可设置五个模板");
         }
         
@@ -145,7 +147,7 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
     public R updateOne(AppParamSettingTemplateQuery query) {
         AppParamSettingTemplate template = this.queryByIdFromDB(query.getId());
         if (Objects.isNull(template)) {
-            log.error("AppParamSettingTemplate ERROR! template not find! id={}", query.getId());
+            log.error("APP PARAM SETTING TEMPLATE ERROR! template not find! id={}", query.getId());
             return R.fail("100450", "未查询到APP参数模板");
         }
         
