@@ -166,14 +166,17 @@ public class JsonAdminElectricityMemberCardOrderController {
 
     //换电柜购卡订单导出报表
     @GetMapping("/admin/electricityMemberCardOrder/exportExcel")
-    public void exportExcel(@RequestParam(value = "phone", required = false) String phone,
+    public void exportExcel(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+            @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "orderId", required = false) String orderId,
-                            @RequestParam(value = "userName", required = false) String userName,
-                            @RequestParam(value = "status", required = false) Integer status,
                             @RequestParam(value = "memberCardType", required = false) Integer cardType,
-                            @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                             @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "source", required = false) Integer source,
+            @RequestParam(value = "payCount", required = false) Integer payCount,
+            @RequestParam(value = "refId", required = false) Long refId,
                             @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+            @RequestParam(value = "userName", required = false) String userName,
                             @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                             HttpServletResponse response) {
 
@@ -205,8 +208,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .orderId(orderId)
                 .cardType(cardType)
                 .status(status)
-                .userName(userName)
-                .franchiseeName(franchiseeName)
+                .userName(userName).franchiseeId(franchiseeId).cardPayCount(payCount).source(source).refId(refId)
                 .cardModel(memberCardModel)
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
