@@ -132,7 +132,7 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
         appParamSettingTemplate.setConfigContent(query.getConfigContent());
         appParamSettingTemplate.setCreateTime(System.currentTimeMillis());
         appParamSettingTemplate.setUpdateTime(System.currentTimeMillis());
-        appParamSettingTemplate.setDelFlag(AppParamSettingTemplate.DEL_DEL);
+        appParamSettingTemplate.setDelFlag(AppParamSettingTemplate.DEL_NORMAL);
         appParamSettingTemplate.setTenantId(TenantContextHolder.getTenantId());
         appParamSettingTemplateMapper.insertOne(appParamSettingTemplate);
         return R.ok();
