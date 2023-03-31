@@ -21,6 +21,7 @@ import java.util.Objects;
  * @Date: 2021/03/30 17:02
  * @Description:
  */
+//
 @Service(value= ElectricityIotConstant.NORMAL_OTHER_CONFIG_HANDLER)
 @Slf4j
 public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
