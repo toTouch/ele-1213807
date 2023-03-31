@@ -65,7 +65,7 @@ public interface AppParamSettingTemplateService {
     
     R queryList(Long size, Long offset);
     
-    R queryCount();
+    Long queryCount();
     
     R deleteOne(Long id);
     

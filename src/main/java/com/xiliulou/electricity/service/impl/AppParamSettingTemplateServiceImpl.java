@@ -110,9 +110,8 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
     }
     
     @Override
-    public R queryCount() {
-        Long count = this.appParamSettingTemplateMapper.queryCount(TenantContextHolder.getTenantId());
-        return R.ok(count);
+    public Long queryCount() {
+        return this.appParamSettingTemplateMapper.queryCount(TenantContextHolder.getTenantId());
     }
     
     @Override
@@ -127,6 +126,10 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
     
     @Override
     public R saveOne(AppParamSettingTemplateQuery query) {
+        if (this.queryCount() >= 5) {
+            return R.fail("100431", "您的模板过多，最多可设置五个模板");
+        }
+        
         AppParamSettingTemplate appParamSettingTemplate = new AppParamSettingTemplate();
         appParamSettingTemplate.setName(query.getName());
         appParamSettingTemplate.setConfigContent(query.getConfigContent());
@@ -152,7 +155,7 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
         
         AppParamSettingTemplate appParamSettingTemplate = new AppParamSettingTemplate();
         appParamSettingTemplate.setId(query.getId());
-        appParamSettingTemplate.setName(query.getName());
+        //appParamSettingTemplate.setName(query.getName());
         appParamSettingTemplate.setConfigContent(query.getConfigContent());
         appParamSettingTemplate.setUpdateTime(System.currentTimeMillis());
         appParamSettingTemplateMapper.update(appParamSettingTemplate);

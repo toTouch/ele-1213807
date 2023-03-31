@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
@@ -20,7 +21,7 @@ public class AppParamSettingTemplateQuery {
     /**
      * 模板名
      */
-    @NotEmpty(message = "模板名不能为空")
+    @NotEmpty(message = "模板名不能为空", groups = CreateGroup.class)
     private String name;
     
     @NotEmpty(message = "模板参数不能为空")

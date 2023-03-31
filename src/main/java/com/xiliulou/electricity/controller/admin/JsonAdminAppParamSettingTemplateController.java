@@ -38,10 +38,10 @@ public class JsonAdminAppParamSettingTemplateController {
         return appParamSettingTemplateService.queryList(size, offset);
     }
     
-    @GetMapping("/admin/appParamSettingTemplate/queryCount")
-    public R queryCount() {
-        return appParamSettingTemplateService.queryCount();
-    }
+    //    @GetMapping("/admin/appParamSettingTemplate/queryCount")
+    //    public R queryCount() {
+    //        return appParamSettingTemplateService.queryCount();
+    //    }
     
     @PostMapping("/admin/appParamSettingTemplate")
     public R saveOne(@RequestBody @Validated AppParamSettingTemplateQuery query) {
