@@ -8,7 +8,7 @@
         select
         id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,
         online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
-        update_time, del_flag,tenant_id,store_id
+        update_time, del_flag,tenant_id,store_id, exchange_type
         from t_electricity_cabinet
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -318,6 +318,9 @@
 			<if test="sn != null and sn != ''">
 				sn = #{sn},
 			</if>
+            <if test="exchangeType != null">
+                exchange_type = #{exchangeType},
+            </if>
 		</set>
 		where id = #{id} and tenant_id = #{tenantId}
 	</update>

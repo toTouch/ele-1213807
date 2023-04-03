@@ -175,6 +175,8 @@ public class ElectricityCabinetVO {
      */
     private String pictureUrl;
 
+    private Integer exchangeType;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
