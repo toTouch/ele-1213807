@@ -3872,21 +3872,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok(new ArrayList<>());
         }
         
-        electricityCabinetList.forEach(e -> {
-            boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
-            ElectricityCabinet item = new ElectricityCabinet();
-            item.setUpdateTime(System.currentTimeMillis());
-            item.setId(e.getId());
-            if (result) {
-                e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
-                item.setOnlineStatus(e.getOnlineStatus());
-                checkCupboardStatusAndUpdateDiff(true, item);
-            } else {
-                e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
-                item.setOnlineStatus(e.getOnlineStatus());
-                checkCupboardStatusAndUpdateDiff(false, item);
-            }
-        });
         return R.ok(electricityCabinetList);
     }
     
