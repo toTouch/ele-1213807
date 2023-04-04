@@ -380,7 +380,7 @@ public class UserServiceImpl implements UserService {
             return Pair.of(false, "uid:" + adminUserQuery.getUid() + "用户不存在!");
         }
 
-        if (!Objects.equals(user.getTenantId(), tenantId)) {
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getTenantId(), tenantId)) {
             return Pair.of(true, null);
         }
 
