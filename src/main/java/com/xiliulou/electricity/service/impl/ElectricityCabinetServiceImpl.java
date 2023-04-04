@@ -22,7 +22,6 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
@@ -590,6 +589,35 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed())
                 .collect(Collectors.toList());
         return R.ok(electricityCabinetList);
+    }
+
+    @Slave
+    @Override
+    public CabinetBatteryVO batteryStatistics(Long eid) {
+        ElectricityCabinet cabinet = this.queryByIdFromCache(eid.intValue());
+        if (Objects.isNull(cabinet)) {
+            return null;
+        }
+
+        Double fullyCharged = cabinet.getFullyCharged();
+
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(eid.intValue());
+        if (CollectionUtils.isEmpty(cabinetBoxList)) {
+            return null;
+        }
+
+        CabinetBatteryVO cabinetBatteryVO = new CabinetBatteryVO();
+        //空仓
+        long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+        //有电池仓门
+        long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+        //可换电数量
+        long exchangeableNumber = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).count();
+
+        cabinetBatteryVO.setEmptyCellNumber(emptyCellNumber);
+        cabinetBatteryVO.setHaveBatteryNumber(haveBatteryNumber);
+        cabinetBatteryVO.setExchangeableNumber(exchangeableNumber);
+        return cabinetBatteryVO;
     }
 
     /**
@@ -2289,6 +2317,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+    }
+
+    private boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
+        return Objects.nonNull(electricityCabinetBox.getPower())
+                && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
     }
     
     public Long getTime(Long time) {

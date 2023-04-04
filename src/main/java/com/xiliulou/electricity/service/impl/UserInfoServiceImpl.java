@@ -233,7 +233,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardDays(carDays);
 
                     if (!Objects.equals(item.getCardId().longValue(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-//                        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                         ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectLatestByUid(item.getUid());
                         if (Objects.nonNull(electricityMemberCardOrder)) {
                             item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
@@ -268,11 +267,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setOrderId(userBatteryDeposit.getOrderId());
                 }
 
-//                //获取用户电池编码
-//                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-//                if (Objects.nonNull(electricityBattery)) {
-//                    item.setNowElectricityBatterySn(electricityBattery.getSn());
-//                }
             });
         }, threadPool).exceptionally(e -> {
             log.error("payDepositTime list ERROR! query memberCard error!", e);
@@ -348,8 +342,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
     
-        CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance, queryInviterUser);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime, queryInsurance, queryInviterUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

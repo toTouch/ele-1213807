@@ -11,10 +11,8 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
@@ -29,17 +27,11 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.*;
 
 /**
@@ -272,6 +264,14 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                 .eleIdList(null).build();
         
         return electricityCabinetService.queryCount(electricityCabinetQuery);
+    }
+
+    /**
+     * 查询空仓、有电池数量
+     */
+    @GetMapping("/admin/cabinet/battery/statistics/{id}")
+    public R batteryStatistics(@PathVariable("id") Long id) {
+        return R.ok(electricityCabinetService.batteryStatistics(id));
     }
 
     //禁启用换电柜
