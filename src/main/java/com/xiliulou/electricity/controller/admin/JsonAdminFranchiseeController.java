@@ -23,7 +23,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -202,6 +201,14 @@ public class JsonAdminFranchiseeController extends BaseController {
     @GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Long id) {
         return franchiseeService.getElectricityBatteryList(id);
+    }
+
+    /**
+     * 删除电池型号校验
+     */
+    @GetMapping(value = "/admin/franchisee/checkBatteryType")
+    public R checkBatteryType(@RequestParam("id") Long id, @RequestParam("batteryType") String batteryType) {
+        return returnTripleResult(franchiseeService.checkBatteryType(id, batteryType));
     }
 
     //分账设置

@@ -14,7 +14,10 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -29,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -675,6 +677,30 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return null;
         });
         return result;
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> checkBatteryType(Long id, String batteryType) {
+        Franchisee franchisee = this.queryByIdFromCache(id);
+        if (Objects.isNull(franchisee)) {
+            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            return Triple.of(true, null, null);
+        }
+
+        List<UserBattery> userBatteryList = userBatteryService.selectBatteryTypeByFranchiseeId(franchisee.getId());
+        if (CollectionUtils.isEmpty(userBatteryList)) {
+            return Triple.of(false, "000001", "系统异常");
+        }
+
+        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
+        if (batteryList.contains(batteryType)) {
+            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
+        }
+
+        return Triple.of(true, null, null);
     }
 
     /**
