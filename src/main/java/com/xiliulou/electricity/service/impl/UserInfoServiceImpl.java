@@ -410,11 +410,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.homeOne(first, now, tenantId);
     }
     
-    @Override
-    public UserInfo queryByUidFromDb(Long uid) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
-    }
-    
+    //    @Override
+    //    public UserInfo queryByUidFromDb(Long uid) {
+    //        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+    //    }
+    //
 
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId) {
