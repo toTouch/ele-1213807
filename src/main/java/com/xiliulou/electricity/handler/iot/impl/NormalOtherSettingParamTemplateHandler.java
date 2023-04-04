@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2023/3/31 11:00
  * @mood
  */
-@Service(value = ElectricityIotConstant.NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER)
+//@Service(value = ElectricityIotConstant.NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER)
 @Slf4j
 public class NormalOtherSettingParamTemplateHandler extends AbstractElectricityIotHandler {
     
