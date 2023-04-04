@@ -97,6 +97,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -332,6 +335,16 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
         if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
             electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
         }
 
         return Triple.of(true, "", "操作成功!");
