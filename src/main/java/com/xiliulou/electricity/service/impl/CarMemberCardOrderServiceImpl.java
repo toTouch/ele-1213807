@@ -803,15 +803,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         eleUserOperateRecordService.insert(eleUserOperateRecord);
     
         //用户是否有绑定了车辆
-    
-        //用户是否有绑定了车辆
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < memberCardExpireTime) {
-            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
         }
         return R.ok();
     }
@@ -927,7 +925,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < memberCardExpireTime) {
-            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
         }
     
         return Triple.of(true, "", "操作成功!");
@@ -1082,7 +1080,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < memberCardExpireTime) {
-            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
         }
         return R.ok();
     }

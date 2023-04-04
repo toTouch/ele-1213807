@@ -581,19 +581,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
     
     @Override
-    public Boolean carLockCtrl(ElectricityCar electricityCar, Integer lockType) {
+    public Boolean carLockCtrl(String sn, Integer lockType) {
         R<Jt808DeviceInfoVo> result = jt808RetrofitService
-                .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), electricityCar.getSn(), lockType));
+                .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
         if (!result.isSuccess()) {
-            log.error("Jt808 error! controlDevice error! carId={},result={}", electricityCar.getId(), result);
+            log.error("Jt808 error! controlDevice error! carSn={},result={}", sn, result);
             return false;
         }
-        
-        ElectricityCar update = new ElectricityCar();
-        update.setId(electricityCar.getId());
-        update.setLockType(lockType);
-        update.setUpdateTime(System.currentTimeMillis());
-        update(update);
+    
+        //        ElectricityCar update = new ElectricityCar();
+        //        update.setId(electricityCar.getId());
+        //        update.setLockType(lockType);
+        //        update.setUpdateTime(System.currentTimeMillis());
+        //        update(update);
         return true;
     }
     
@@ -659,5 +659,26 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public Integer isUserBindCar(Long uid, Integer tenantId) {
         return electricityCarMapper.isUserBindCar(uid, tenantId);
+    }
+    
+    @Override
+    public Boolean retryCarLockCtrl(String sn, Integer lockType, Integer retryCount) {
+        if (Objects.isNull(retryCount)) {
+            retryCount = 1;
+        }
+        
+        retryCount = retryCount > 5 ? 5 : retryCount;
+        
+        for (int i = 0; i < retryCount; i++) {
+            R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                    .controlDevice(new Jt808DeviceControlRequest(IdUtil.randomUUID(), sn, lockType));
+            if (result.isSuccess()) {
+                return true;
+            }
+            log.error("Jt808 error! controlDevice error! carSn={},result={}, retryCount={}", sn, result, i);
+        }
+        
+        log.error("Jt808 error! controlDevice error! carSn={}", sn);
+        return false;
     }
 }

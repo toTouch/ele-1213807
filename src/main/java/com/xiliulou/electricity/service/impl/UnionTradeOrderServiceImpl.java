@@ -890,7 +890,7 @@ public class UnionTradeOrderServiceImpl extends
             if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                     && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+                electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
             }
         }
 
