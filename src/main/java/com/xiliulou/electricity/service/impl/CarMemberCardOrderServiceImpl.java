@@ -781,8 +781,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         
         Double oldCardDay = 0.0;
         Long now = System.currentTimeMillis();
-        if (memberCardExpireTime > now) {
-            oldCardDay = Math.ceil((memberCardExpireTime - now) / 3600000 / 24.0);
+        //如果之前的套餐到期时间
+        Long oldMemberCardExpireTime =
+                Objects.isNull(userCarMemberCard) ? now : userCarMemberCard.getMemberCardExpireTime();
+        oldMemberCardExpireTime = Objects.isNull(oldMemberCardExpireTime) ? now : oldMemberCardExpireTime;
+        if (oldMemberCardExpireTime > now) {
+            oldCardDay = Math.ceil((oldMemberCardExpireTime - now) / 3600000 / 24.0);
         }
         
         Double carDayTemp = 0.0;
