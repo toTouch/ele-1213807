@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -107,7 +109,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
+    @Slave
+    @Override
+    public List<SearchVo> search(FranchiseeQuery franchiseeQuery) {
+        List<SearchVo>  list=franchiseeMapper.search(franchiseeQuery);
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.emptyList();
+        }
 
+        return list;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
