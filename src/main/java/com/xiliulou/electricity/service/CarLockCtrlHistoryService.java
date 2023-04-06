@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 
 import java.util.List;
@@ -61,4 +62,7 @@ public interface CarLockCtrlHistoryService {
      */
     Boolean deleteById(Long id);
     
+    R queryList(Long offset, Long size, String name, String phone, String carSn);
+    
+    R queryCount(String name, String phone, String carSn);
 }

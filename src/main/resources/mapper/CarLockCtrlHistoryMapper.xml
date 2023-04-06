@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace=".mapper.CarLockCtrlHistoryMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.CarLockCtrlHistoryMapper">
     
-    <resultMap type=".entity.CarLockCtrlHistory" id="CarLockCtrlHistoryMap">
+    <resultMap type="com.xiliulou.electricity.entity.CarLockCtrlHistory" id="CarLockCtrlHistoryMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
@@ -138,5 +138,40 @@
     <delete id="deleteById">
         delete from t_car_lock_ctrl_history where id = #{id}
     </delete>
-
+    
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.CarLockCtrlHistoryVo">
+        select
+        id, uid, name, phone, status, type, car_id, car_sn, car_model, car_model_id, create_time,
+        update_time, tenant_id
+        from t_car_lock_ctrl_history
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="carSn != null and carSn != ''">
+                and car_sn like concat('%', #{carSn}, '%')
+            </if>
+        </where>
+        limit #{offset}, #{size}
+    </select>
+    
+    <select id="queryCount" resultType="integer">
+        select
+        count(*)
+        from t_car_lock_ctrl_history
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="carSn != null and carSn != ''">
+                and car_sn like concat('%', #{carSn}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

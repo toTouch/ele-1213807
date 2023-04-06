@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,5 +21,18 @@ public class JsonAdminCarLockCtrlHistoryController {
     @Resource
     private CarLockCtrlHistoryService carLockCtrlHistoryService;
     
+    @GetMapping("admin/carLockCtrlHistory/list")
+    public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "carSn", required = false) String carSn) {
+        return carLockCtrlHistoryService.queryList(offset, size, name, phone, carSn);
+    }
     
+    @GetMapping("admin/carLockCtrlHistory/queryCount")
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "carSn", required = false) String carSn) {
+        return carLockCtrlHistoryService.queryCount(name, phone, carSn);
+    }
 }

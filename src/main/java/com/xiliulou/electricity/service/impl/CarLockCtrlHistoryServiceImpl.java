@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.mapper.CarLockCtrlHistoryMapper;
 import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
+import com.xiliulou.electricity.vo.CarLockCtrlHistoryVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -96,5 +98,17 @@ public class CarLockCtrlHistoryServiceImpl implements CarLockCtrlHistoryService 
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.carLockCtrlHistoryMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public R queryList(Long offset, Long size, String name, String phone, String carSn) {
+        List<CarLockCtrlHistoryVo> listVo = this.carLockCtrlHistoryMapper.queryList(offset, size, name, phone, carSn);
+        return R.ok(listVo);
+    }
+    
+    @Override
+    public R queryCount(String name, String phone, String carSn) {
+        Integer count = this.carLockCtrlHistoryMapper.queryCount(name, phone, carSn);
+        return R.ok(count);
     }
 }
