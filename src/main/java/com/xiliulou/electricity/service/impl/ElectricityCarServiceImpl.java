@@ -599,7 +599,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
-            boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+            boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
         
             CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
             carLockCtrlHistory.setUid(userInfo.getUid());
