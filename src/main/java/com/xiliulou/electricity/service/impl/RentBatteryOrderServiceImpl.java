@@ -646,7 +646,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             String cellNo = usableEmptyCellNo.getRight().toString();
 
-            String orderId = generateOrderId(user.getUid(), cellNo);
+            String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid());
     
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
