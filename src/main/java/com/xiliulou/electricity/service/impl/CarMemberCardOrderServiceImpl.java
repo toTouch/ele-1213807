@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarGpsVo;
@@ -92,6 +94,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -809,7 +814,22 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < memberCardExpireTime) {
-            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+            boolean result = electricityCarService
+                    .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+            carLockCtrlHistory.setType(
+                    result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
         return R.ok();
     }
@@ -925,7 +945,22 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < memberCardExpireTime) {
-            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+            boolean result = electricityCarService
+                    .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+            carLockCtrlHistory.setType(
+                    result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
     
         return Triple.of(true, "", "操作成功!");
@@ -1080,7 +1115,22 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < memberCardExpireTime) {
-            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+            boolean result = electricityCarService
+                    .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+            carLockCtrlHistory.setType(
+                    result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
         return R.ok();
     }

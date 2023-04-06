@@ -89,8 +89,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Autowired
     Jt808CarService jt808CarService;
-
-
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
+   
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -493,6 +498,29 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());
         electricityCar.setUpdateTime(System.currentTimeMillis());
+    
+        //用户绑定解锁
+        //ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+            boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+        
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_BIND_USER_UN_LOCK);
+            carLockCtrlHistory.setType(
+                    result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
+        }
         return R.ok(this.update(electricityCar));
     }
 
@@ -562,7 +590,30 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(null);
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
-        return R.ok(this.carUnBindUser(electricityCar));
+        this.carUnBindUser(electricityCar);
+    
+        //用户解绑加锁
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+            boolean result = this.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+        
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+            carLockCtrlHistory
+                    .setType(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
+        }
+        return R.ok();
     }
 
     @Override

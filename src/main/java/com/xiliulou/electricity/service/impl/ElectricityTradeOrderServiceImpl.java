@@ -121,6 +121,9 @@ public class ElectricityTradeOrderServiceImpl extends
     
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -833,14 +836,29 @@ public class ElectricityTradeOrderServiceImpl extends
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
     
-            //用户是否有绑定了车辆
+            //用户是否有绑定了车
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
             ElectricityConfig electricityConfig = electricityConfigService
-                    .queryFromCacheByTenantId(electricityTradeOrder.getTenantId());
+                    .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                     && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-                electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+                carLockCtrlHistory.setType(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
         }
 

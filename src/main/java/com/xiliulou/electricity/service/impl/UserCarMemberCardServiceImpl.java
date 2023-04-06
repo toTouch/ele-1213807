@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
@@ -279,13 +280,33 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     return;
                 }
     
-                ElectricityConfig config = electricityConfigService.queryFromCacheByTenantId(item.getTenantId());
-                if (Objects.equals(config.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
-                    R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
-                            new Jt808DeviceControlRequest(IdUtil.randomUUID(), item.getSn(), ElectricityCar.TYPE_LOCK));
-                    if (!result.isSuccess()) {
-                        log.error("EXPIRE BREAK POWER ERROR! car control command send error! sn={}", item.getSn());
-                    }
+                //                ElectricityConfig config = electricityConfigService.queryFromCacheByTenantId(item.getTenantId());
+                //                if (Objects.equals(config.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                //                    R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
+                //                            new Jt808DeviceControlRequest(IdUtil.randomUUID(), item.getSn(), ElectricityCar.TYPE_LOCK));
+                //                    if (!result.isSuccess()) {
+                //                        log.error("EXPIRE BREAK POWER ERROR! car control command send error! sn={}", item.getSn());
+                //                    }
+                //                }
+    
+                ElectricityConfig electricityConfig = electricityConfigService
+                        .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+                if (Objects.nonNull(electricityConfig) && Objects
+                        .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                    boolean result = electricityCarService.retryCarLockCtrl(item.getSn(), ElectricityCar.TYPE_LOCK, 3);
+        
+                    //                    CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                    //                    carLockCtrlHistory.setUid(query.getUid());
+                    //                    carLockCtrlHistory.setName(query.getName());
+                    //                    carLockCtrlHistory.setPhone(query.getPhone());
+                    //                    carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+                    //                    carLockCtrlHistory.setType(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                    //                    carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                    //                    carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                    //                    carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                    //                    carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                    //                    carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+                    //                    carLockCtrlHistoryService.insert(carLockCtrlHistory);
                 }
             });
             

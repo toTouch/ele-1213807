@@ -97,6 +97,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -329,14 +332,38 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
     
         //用户是否有绑定了车辆
+        //        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        //        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        //        if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+        //                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+        //                && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+        //            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+        //        }
+    
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                 && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+            boolean boo = electricityCarService
+                    .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+            carLockCtrlHistory
+                    .setType(boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
         }
-
+    
         return Triple.of(true, "", "操作成功!");
     }
 

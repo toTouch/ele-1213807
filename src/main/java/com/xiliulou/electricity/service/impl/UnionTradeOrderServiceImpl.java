@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -140,6 +141,9 @@ public class UnionTradeOrderServiceImpl extends
     
     @Autowired
     ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -884,13 +888,37 @@ public class UnionTradeOrderServiceImpl extends
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
     
             //用户是否有绑定了车辆
+            //            ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+            //            ElectricityConfig electricityConfig = electricityConfigService
+            //                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            //            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+            //                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+            //                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+            //                electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+            //            }
+    
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
             ElectricityConfig electricityConfig = electricityConfigService
-                    .queryFromCacheByTenantId(userInfo.getTenantId());
+                    .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                     && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
-                electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+                carLockCtrlHistory.setType(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
         }
 
