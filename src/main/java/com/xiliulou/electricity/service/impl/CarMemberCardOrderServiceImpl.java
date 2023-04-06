@@ -826,6 +826,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                     result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
             carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
             carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
             carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
@@ -957,6 +959,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                     result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
             carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
             carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
             carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
@@ -1127,6 +1131,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                     result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
             carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
             carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
             carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());

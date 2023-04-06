@@ -1781,6 +1781,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
                 carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
                 carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
                 carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
                 carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
                 carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
@@ -1878,6 +1880,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .setType(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
             carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
             carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
             carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
