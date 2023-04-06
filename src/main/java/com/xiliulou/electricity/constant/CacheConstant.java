@@ -351,4 +351,10 @@ public interface CacheConstant {
      * 用户活跃缓存
      */
     String USER_ACTIVE_INFO_CACHE = "user_active_info_cache:";
+    /**
+     * 渠道人缓存
+     */
+    String CACHE_USER_CHANNEL = "cache_user_channel:";
+    
+    String CACHE_SCAN_INTO_ACTIVITY_LOCK = "CACHE_SCAN_INTO_ACTIVITY_LOCK:";
 }
