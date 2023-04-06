@@ -3,10 +3,12 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.entity.CarRefundOrder;
 import com.xiliulou.electricity.entity.EleBindCarRecord;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.UserCarDeposit;
@@ -15,9 +17,11 @@ import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarRefundOrderMapper;
 import com.xiliulou.electricity.query.CarRefundOrderQuery;
 import com.xiliulou.electricity.service.CarDepositOrderService;
+import com.xiliulou.electricity.service.CarLockCtrlHistoryService;
 import com.xiliulou.electricity.service.CarRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserCarDepositService;
 import com.xiliulou.electricity.service.UserCarService;
@@ -75,6 +79,12 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     
     @Autowired
     private UserCarService userCarService;
+    
+    @Autowired
+    private ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -238,6 +248,29 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
         updateElectricityCar.setUserName(null);
         updateElectricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCarService.carUnBindUser(updateElectricityCar);
+    
+        //车辆控制 -- 用户解绑加锁
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+            boolean result = electricityCarService
+                    .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
+        
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(carRefundUserInfo.getUid());
+            carLockCtrlHistory.setName(carRefundUserInfo.getName());
+            carLockCtrlHistory.setPhone(carRefundUserInfo.getPhone());
+            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
+            carLockCtrlHistory
+                    .setType(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
+        }
         return R.ok();
     }
     
