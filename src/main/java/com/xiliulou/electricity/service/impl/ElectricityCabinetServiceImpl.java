@@ -502,7 +502,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
-                
+
+                Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
+                e.setStoreName(Objects.nonNull(store) ? "" : store.getName());
+
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
