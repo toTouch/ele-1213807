@@ -703,7 +703,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
         List<UserBattery> userBatteryList = userBatteryService.selectBatteryTypeByFranchiseeId(franchisee.getId());
         if (CollectionUtils.isEmpty(userBatteryList)) {
-            return Triple.of(false, "000001", "系统异常");
+            return Triple.of(true, null, null);
         }
 
         String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
