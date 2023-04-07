@@ -221,7 +221,7 @@ public class JsonAdminFranchiseeController extends BaseController {
      * 删除电池型号校验
      */
     @GetMapping(value = "/admin/franchisee/checkBatteryType")
-    public R checkBatteryType(@RequestParam("id") Long id, @RequestParam("batteryType") String batteryType) {
+    public R checkBatteryType(@RequestParam("id") Long id, @RequestParam("batteryType") Integer batteryType) {
         return returnTripleResult(franchiseeService.checkBatteryType(id, batteryType));
     }
 

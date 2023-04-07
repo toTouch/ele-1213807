@@ -72,7 +72,7 @@ public interface FranchiseeService {
 
     Triple<Boolean, String, Object> moveFranchisee();
 
-    Triple<Boolean, String, Object> checkBatteryType(Long id, String batteryType);
+    Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryType);
 
     List<SearchVo> search(FranchiseeQuery franchiseeQuery);
 }

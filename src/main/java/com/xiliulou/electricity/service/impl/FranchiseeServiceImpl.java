@@ -691,7 +691,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> checkBatteryType(Long id, String batteryType) {
+    public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
         Franchisee franchisee = this.queryByIdFromCache(id);
         if (Objects.isNull(franchisee)) {
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
@@ -706,6 +706,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "000001", "系统异常");
         }
 
+        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
         List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
         if (batteryList.contains(batteryType)) {
             return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
