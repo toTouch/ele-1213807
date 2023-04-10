@@ -9,7 +9,13 @@ import lombok.Data;
  */
 @Data
 public class CarMemberCardExpireBreakPowerQuery {
-    
+    private Integer tenantId;
     private Long cid;
     private String sn;
+    
+    private Long uid;
+    
+    private String name;
+    
+    private String phone;
 }
