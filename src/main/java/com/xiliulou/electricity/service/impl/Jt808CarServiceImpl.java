@@ -218,8 +218,8 @@ public class Jt808CarServiceImpl implements Jt808CarService {
             log.error("USER CONTROL CAR ERROR! not found electricityCar, uid={}", uid);
             return Triple.of(false, "", "车辆sn码为空");
         }
-        
-        if (!electricityCarService.carLockCtrl(electricityCar, query.getLockType())) {
+    
+        if (!electricityCarService.carLockCtrl(electricityCar.getSn(), query.getLockType())) {
             return Triple.of(false, "", "请求失败");
         }
     
@@ -244,6 +244,5 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         }
         
         return Triple.of(true, "", "002");
-        ;
     }
 }
