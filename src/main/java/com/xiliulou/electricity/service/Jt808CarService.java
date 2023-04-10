@@ -25,5 +25,5 @@ public interface Jt808CarService {
     
     Triple<Boolean, String, Object> userControlCar(CarControlQuery query);
     
-    Triple<Boolean, String, Object> controlCarCheck(String sn);
+    Triple<Boolean, String, Object> controlCarCheck();
 }

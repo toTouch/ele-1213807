@@ -29,7 +29,7 @@ public class JsonUserJt808CarController extends BaseController {
     }
     
     @GetMapping("/user/jt808/car/control/check")
-    public R controlCarCheck(@RequestParam("sn") String sn) {
-        return returnTripleResult(jt808CarService.controlCarCheck(sn));
+    public R controlCarCheck() {
+        return returnTripleResult(jt808CarService.controlCarCheck());
     }
 }

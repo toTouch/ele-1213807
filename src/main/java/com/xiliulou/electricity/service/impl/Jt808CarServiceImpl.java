@@ -224,18 +224,39 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         }
     
         //缓存车辆锁状态  同步给客户进行通知  前端超时15S
-        redisService.setNx(CacheConstant.CACHE_CAR_LOCK_STATUS + electricityCar.getSn(),
+        redisService.setNx(CacheConstant.CACHE_CAR_LOCK_STATUS + uid,
                 String.valueOf(query.getLockType()), 17000L, false);
         return Triple.of(true, null, null);
     }
     
     @Override
-    public Triple<Boolean, String, Object> controlCarCheck(String sn) {
-        String status = redisService.get(CacheConstant.CACHE_CAR_LOCK_STATUS + sn);
-        
-        R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), sn));
+    public Triple<Boolean, String, Object> controlCarCheck() {
+    
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("USER CONTROL CAR CHECK ERROR! not found user ");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+    
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("USER CONTROL CAR CHECK ERROR! not found user! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+    
+        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(uid);
+        if (Objects.isNull(electricityCar) || !Objects
+                .equals(electricityCar.getTenantId(), TenantContextHolder.getTenantId())) {
+            log.error("USER CONTROL CAR CHECK ERROR! not found electricityCar, uid={}", uid);
+            return Triple.of(false, "100007", "车辆不存在");
+        }
+    
+        String status = redisService.get(CacheConstant.CACHE_CAR_LOCK_STATUS + uid);
+    
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
         if (!result.isSuccess()) {
-            log.error("Jt808 error! control Car Check! sn={},result={}", sn, result);
+            log.error("Jt808 error! control Car Check! sn={},result={}", electricityCar.getSn(), result);
             return Triple.of(true, "", "003");
         }
         
