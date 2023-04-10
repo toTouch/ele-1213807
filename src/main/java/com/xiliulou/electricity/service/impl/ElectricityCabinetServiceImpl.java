@@ -494,7 +494,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Slave
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
