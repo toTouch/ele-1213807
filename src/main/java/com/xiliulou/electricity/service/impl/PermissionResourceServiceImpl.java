@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
@@ -277,7 +278,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	}
 
 	@Override
-	@DS("slave_1")
+	@Slave
 	public Pair<Boolean, Object> getList() {
 //		TokenUser userInfo = SecurityUtils.getUserInfo();
 
