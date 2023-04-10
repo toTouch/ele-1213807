@@ -223,7 +223,7 @@ public class Jt808CarServiceImpl implements Jt808CarService {
             return Triple.of(false, "", "请求失败");
         }
     
-        //缓存车辆锁状态  同步给客户进行通知
+        //缓存车辆锁状态  同步给客户进行通知  前端超时15S
         redisService.setNx(CacheConstant.CACHE_CAR_LOCK_STATUS + electricityCar.getSn(),
                 String.valueOf(query.getLockType()), 17000L, false);
         return Triple.of(true, null, null);
