@@ -6,8 +6,10 @@ import com.xiliulou.electricity.query.CarControlQuery;
 import com.xiliulou.electricity.service.Jt808CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -24,5 +26,10 @@ public class JsonUserJt808CarController extends BaseController {
     @PostMapping("/user/jt808/car/control")
     public R controlCar(@RequestBody @Validated CarControlQuery query) {
         return returnTripleResult(jt808CarService.userControlCar(query));
+    }
+    
+    @GetMapping("/user/jt808/car/control/check")
+    public R controlCarCheck(@RequestParam("sn") String sn) {
+        return returnTripleResult(jt808CarService.controlCarCheck(sn));
     }
 }

@@ -24,4 +24,6 @@ public interface Jt808CarService {
     List<CarAttr> queryListBySn(String sn, String begin, String end);
     
     Triple<Boolean, String, Object> userControlCar(CarControlQuery query);
+    
+    Triple<Boolean, String, Object> controlCarCheck(String sn);
 }

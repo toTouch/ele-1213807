@@ -2,9 +2,11 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.UserCarDeposit;
 import com.xiliulou.electricity.entity.UserCarMemberCard;
@@ -62,6 +64,9 @@ public class Jt808CarServiceImpl implements Jt808CarService {
     
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+    
+    @Autowired
+    RedisService redisService;
     
     @Override
     public Pair<Boolean, Object> queryDeviceInfo(Integer carId) {
@@ -217,7 +222,28 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         if (!electricityCarService.carLockCtrl(electricityCar, query.getLockType())) {
             return Triple.of(false, "", "请求失败");
         }
-        
+    
+        //缓存车辆锁状态  同步给客户进行通知
+        redisService.setNx(CacheConstant.CACHE_CAR_LOCK_STATUS + electricityCar.getSn(),
+                String.valueOf(query.getLockType()), 17000L, false);
         return Triple.of(true, null, null);
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> controlCarCheck(String sn) {
+        String status = redisService.get(CacheConstant.CACHE_CAR_LOCK_STATUS + sn);
+        
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), sn));
+        if (!result.isSuccess()) {
+            log.error("Jt808 error! control Car Check! sn={},result={}", sn, result);
+            return Triple.of(true, "", "003");
+        }
+        
+        if (Objects.equals(status, String.valueOf(result.getData().getDoorStatus()))) {
+            return Triple.of(true, "", "001");
+        }
+        
+        return Triple.of(true, "", "002");
+        ;
     }
 }

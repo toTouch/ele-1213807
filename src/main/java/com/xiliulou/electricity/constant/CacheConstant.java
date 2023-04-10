@@ -357,4 +357,9 @@ public interface CacheConstant {
     String CACHE_USER_CHANNEL = "cache_user_channel:";
     
     String CACHE_SCAN_INTO_ACTIVITY_LOCK = "CACHE_SCAN_INTO_ACTIVITY_LOCK:";
+    
+    /**
+     * 车辆锁状态
+     */
+    String CACHE_CAR_LOCK_STATUS = "cache_car_lock_status:";
 }
