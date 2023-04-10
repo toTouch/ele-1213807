@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -13,13 +14,16 @@ import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.CarMemberCardOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.CarMemberCardOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.vo.UserCarMemberCardVO;
+import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -92,6 +96,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    Jt808RetrofitService jt808RetrofitService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -254,9 +261,6 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
                 userCarMemberCardVO.setPayDepositTime(carDepositOrder.getCreateTime());
             }
     
-            //            Integer integer = eleRefundOrderService.queryStatusByOrderId(userCarDeposit.getOrderId());
-            //            userCarMemberCardVO.setReturnDepositStatus(integer);
-            //            userCarMemberCardVO.setDepositType(userCarDeposit.getDepositType());
         }
     
         //车辆型号
@@ -292,6 +296,16 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             userCarMemberCardVO.setLatitude(carAttr.getLatitude());
             userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
         }
+    
+        //车辆锁状态
+        if (StringUtils.isNotBlank(userCar.getSn())) {
+            R<Jt808DeviceInfoVo> result = jt808RetrofitService
+                    .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), userCar.getSn()));
+            if (result.isSuccess()) {
+                userCarMemberCardVO.setLockType(result.getData().getDoorStatus());
+            }
+        }
+        
         return Triple.of(true, "", userCarMemberCardVO);
     }
 
