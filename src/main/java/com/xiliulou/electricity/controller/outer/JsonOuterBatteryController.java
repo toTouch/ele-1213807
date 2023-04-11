@@ -1,31 +1,13 @@
 package com.xiliulou.electricity.controller.outer;
 
-import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -42,6 +24,9 @@ public class JsonOuterBatteryController {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
     /**
      * 电池电量上报
      *
@@ -53,6 +38,12 @@ public class JsonOuterBatteryController {
     }
 
 
-
+    /**
+     * 电池型号
+     */
+    @GetMapping("/outer/battery/model/{tenantId}")
+    public R batteryModels(@PathVariable("tenantId") Integer tenantId ) {
+        return R.ok(batteryModelService.selectBatteryModels(tenantId));
+    }
 
 }
