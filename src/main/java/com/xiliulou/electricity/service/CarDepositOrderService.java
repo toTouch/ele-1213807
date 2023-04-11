@@ -84,8 +84,9 @@ public interface CarDepositOrderService {
     Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request);
 
     Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, Long uid, HttpServletRequest request);
-
-    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit, List<Long> finalFranchiseeIds);
+    
+    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit,
+            List<Long> finalFranchiseeIds, Integer payType);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer rentCarDeposit, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
     

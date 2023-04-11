@@ -3089,21 +3089,52 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
         //            return null;
         //        });
+    
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal carDepositTurnover = carDepositOrderService
+            BigDecimal onlineCarDepositTurnover = carDepositOrderService
                     .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
-                            finalFranchiseeIds);
-            BigDecimal todayCarDeposit = carDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
-                            finalFranchiseeIds);
-            homePageDepositVo.setCarDeposit(carDepositTurnover);
-            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
+                            finalFranchiseeIds, CarDepositOrder.ONLINE_PAYTYPE);
+            BigDecimal offlineCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.OFFLINE_PAYTYPE);
+            BigDecimal freeCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
+            //            BigDecimal todayCarDeposit = carDepositOrderService
+            //                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+            //                            finalFranchiseeIds);
+            //            homePageDepositVo.setCarDeposit(carDepositTurnover);
+            //            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
+    
+            homePageDepositVo.setOnlineCarDeposit(onlineCarDepositTurnover);
+            homePageDepositVo.setOfflineCarDeposit(offlineCarDepositTurnover);
+            homePageDepositVo.setFreeCarDeposit(freeCarDepositTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
+    
+        //今日租车押金
+        CompletableFuture<Void> carDepositToDay = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.ONLINE_PAYTYPE);
+            BigDecimal todayOfflineCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.OFFLINE_PAYTYPE);
+            BigDecimal todayFreeCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
         
+            homePageDepositVo.setTodayOnlineCarDeposit(todayOnlineCarDeposit);
+            homePageDepositVo.setTodayOfflineCarDeposit(todayOfflineCarDeposit);
+            homePageDepositVo.setTodayFreeCarDeposit(todayFreeCarDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+    
         //退电池押金
         CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
             BigDecimal todayRefundDeposit = refundOrderService
@@ -3141,7 +3172,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit, batteryDepositToDay);
+                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit, batteryDepositToDay,
+                        carDepositToDay);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(

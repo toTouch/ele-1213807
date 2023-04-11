@@ -265,6 +265,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="payType != null">
+            and pay_type = #{payType}
+        </if>
     </select>
 
     <select id="queryDepositTurnOverAnalysisByDepositType"            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">

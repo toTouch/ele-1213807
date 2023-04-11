@@ -724,8 +724,11 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     }
 
     @Override
-    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> finalFranchiseeIds) {
-        return Optional.ofNullable(carDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, finalFranchiseeIds)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType,
+            List<Long> finalFranchiseeIds, Integer payType) {
+        return Optional.ofNullable(carDepositOrderMapper
+                .queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, finalFranchiseeIds, payType))
+                .orElse(BigDecimal.valueOf(0));
     }
 
     @Override
