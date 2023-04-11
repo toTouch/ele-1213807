@@ -31,11 +31,27 @@ public class HomePageDepositVo {
      * 电池总押金
      */
     private BigDecimal batteryDeposit;
-
+    
+    /**
+     * 线上车辆押金
+     */
+    private BigDecimal onlineCarDeposit;
+    
+    /**
+     * 线下车辆押金
+     */
+    private BigDecimal offlineCarDeposit;
+    
+    /**
+     * 免押车辆押金
+     */
+    private BigDecimal freeCarDeposit;
+    
     /**
      * 车辆押金
      */
     private BigDecimal carDeposit;
+    
     
     /**
      * 今日线上电池押金
@@ -56,12 +72,28 @@ public class HomePageDepositVo {
      * 今日电池总押金
      */
     private BigDecimal todayBatteryDeposit;
-
+    
     /**
-     * 今日车辆押金
+     * 今日线上车辆押金
+     */
+    private BigDecimal todayOnlineCarDeposit;
+    
+    /**
+     * 今日线下车辆押金
+     */
+    private BigDecimal todayOfflineCarDeposit;
+    
+    /**
+     * 今日免押车辆押金
+     */
+    private BigDecimal todayFreeCarDeposit;
+    
+    /**
+     * 今日车辆总押金
      */
     private BigDecimal todayCarDeposit;
-
+    
+    
     /**
      * 今日缴纳押金
      */
