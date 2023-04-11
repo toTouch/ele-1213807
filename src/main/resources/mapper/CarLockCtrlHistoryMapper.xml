@@ -155,6 +155,12 @@
             <if test="carSn != null and carSn != ''">
                 and car_sn like concat('%', #{carSn}, '%')
             </if>
+            <if test="beginTime != null">
+                and create_tiem &gt; #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_tiem &lt; #{endTime}
+            </if>
         </where>
         limit #{offset}, #{size}
     </select>
@@ -173,6 +179,12 @@
             </if>
             <if test="carSn != null and carSn != ''">
                 and car_sn like concat('%', #{carSn}, '%')
+            </if>
+            <if test="beginTime != null">
+                and create_tiem &gt; #{beginTime}
+            </if>
+            <if test="endTime != null">
+                and create_tiem &lt; #{endTime}
             </if>
         </where>
     </select>

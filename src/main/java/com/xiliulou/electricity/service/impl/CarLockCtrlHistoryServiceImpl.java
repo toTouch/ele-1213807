@@ -104,16 +104,17 @@ public class CarLockCtrlHistoryServiceImpl implements CarLockCtrlHistoryService 
     
     @Override
     @Slave
-    public R queryList(Long offset, Long size, String name, String phone, String carSn) {
+    public R queryList(Long offset, Long size, String name, String phone, String carSn, Long beginTime, Long endTime) {
         List<CarLockCtrlHistoryVo> listVo = this.carLockCtrlHistoryMapper
-                .queryList(offset, size, name, phone, carSn, TenantContextHolder.getTenantId());
+                .queryList(offset, size, name, phone, carSn, TenantContextHolder.getTenantId(), beginTime, endTime);
         return R.ok(listVo);
     }
     
     @Override
     @Slave
-    public R queryCount(String name, String phone, String carSn) {
-        Integer count = this.carLockCtrlHistoryMapper.queryCount(name, phone, carSn, TenantContextHolder.getTenantId());
+    public R queryCount(String name, String phone, String carSn, Long beginTime, Long endTime) {
+        Integer count = this.carLockCtrlHistoryMapper
+                .queryCount(name, phone, carSn, TenantContextHolder.getTenantId(), beginTime, endTime);
         return R.ok(count);
     }
 }

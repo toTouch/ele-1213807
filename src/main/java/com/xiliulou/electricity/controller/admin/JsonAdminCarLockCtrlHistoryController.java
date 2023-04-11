@@ -25,14 +25,18 @@ public class JsonAdminCarLockCtrlHistoryController {
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "carSn", required = false) String carSn) {
-        return carLockCtrlHistoryService.queryList(offset, size, name, phone, carSn);
+            @RequestParam(value = "carSn", required = false) String carSn,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+        return carLockCtrlHistoryService.queryList(offset, size, name, phone, carSn, beginTime, endTime);
     }
     
     @GetMapping("admin/carLockCtrlHistory/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "carSn", required = false) String carSn) {
-        return carLockCtrlHistoryService.queryCount(name, phone, carSn);
+            @RequestParam(value = "carSn", required = false) String carSn,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+        return carLockCtrlHistoryService.queryCount(name, phone, carSn, beginTime, endTime);
     }
 }

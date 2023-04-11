@@ -62,7 +62,7 @@ public interface CarLockCtrlHistoryService {
      */
     Boolean deleteById(Long id);
     
-    R queryList(Long offset, Long size, String name, String phone, String carSn);
+    R queryList(Long offset, Long size, String name, String phone, String carSn, Long beginTime, Long endTime);
     
-    R queryCount(String name, String phone, String carSn);
+    R queryCount(String name, String phone, String carSn, Long beginTime, Long endTime);
 }
