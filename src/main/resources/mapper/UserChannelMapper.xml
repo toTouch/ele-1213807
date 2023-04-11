@@ -95,6 +95,7 @@
         from t_user_channel u
         left join t_user_info ui on u.uid = ui.uid
         <where>
+            tenant_id = #{tenantId}
             <if test="name != null and name != ''">
                 and ui.name like concat('%',#{name}, '%')
             </if>
@@ -112,6 +113,7 @@
         from t_user_channel u
         left join t_user_info ui on u.uid = ui.uid
         <where>
+            tenant_id = #{tenantId}
             <if test="name != null and name != ''">
                 and ui.name like concat('%',#{name}, '%')
             </if>

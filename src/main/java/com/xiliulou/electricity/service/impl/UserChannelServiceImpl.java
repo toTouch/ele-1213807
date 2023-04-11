@@ -159,7 +159,8 @@ public class UserChannelServiceImpl implements UserChannelService {
     @Override
     @Slave
     public Triple<Boolean, String, Object> queryList(Long offset, Long size, String name, String phone) {
-        List<UserChannel> queryList = this.userChannelMapper.queryList(offset, size, name, phone);
+        List<UserChannel> queryList = this.userChannelMapper
+                .queryList(offset, size, name, phone, TenantContextHolder.getTenantId());
         List<UserChannelVo> voList = new ArrayList<>();
     
         Optional.ofNullable(queryList).orElse(new ArrayList<>()).forEach(item -> {
@@ -186,7 +187,7 @@ public class UserChannelServiceImpl implements UserChannelService {
     @Override
     @Slave
     public Triple<Boolean, String, Object> queryCount(String name, String phone) {
-        Long count = this.userChannelMapper.queryCount(name, phone);
+        Long count = this.userChannelMapper.queryCount(name, phone, TenantContextHolder.getTenantId());
         return Triple.of(true, null, count);
     }
     
