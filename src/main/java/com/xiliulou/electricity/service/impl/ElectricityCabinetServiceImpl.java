@@ -3039,18 +3039,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //缴纳电池押金
         List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = eleDepositOrderService
+            BigDecimal onlineBatteryDepositTurnover = eleDepositOrderService
                     .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
-                            finalFranchiseeIds);
-            BigDecimal todayBatteryDeposit = eleDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
-                            finalFranchiseeIds);
-            homePageDepositVo.setBatteryDeposit(batteryDepositTurnover);
-            homePageDepositVo.setTodayBatteryDeposit(todayBatteryDeposit);
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal offlineBatteryDepositTurnover = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal freeBatteryDepositTurnover = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            homePageDepositVo.setOnlineBatteryDeposit(onlineBatteryDepositTurnover);
+            homePageDepositVo.setOfflineBatteryDeposit(offlineBatteryDepositTurnover);
+            homePageDepositVo.setFreeBatteryDeposit(freeBatteryDepositTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
+    
+        //今日电池押金
+        CompletableFuture<Void> batteryDepositToDay = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+        
+            homePageDepositVo.setTodayOfflineBatteryDeposit(todayOfflineBatteryDeposit);
+            homePageDepositVo.setTodayOnlineBatteryDeposit(todayOnlineBatteryDeposit);
+            homePageDepositVo.setTodayFreeBatteryDeposit(todayFreeBatteryDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+        
+        
 
         //        //缴纳租车押金
         //        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
@@ -3114,7 +3141,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit);
+                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit, batteryDepositToDay);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(

@@ -41,8 +41,10 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
     EleDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId,@Param("depositType") Integer depositType);
 
     EleDepositOrder selectLatestByUid(@Param("uid") Long uid);
-
-    BigDecimal queryDepositTurnOverByDepositType(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("depositType") Integer depositType, @Param("franchiseeIds") List<Long> franchiseeIds);
+    
+    BigDecimal queryDepositTurnOverByDepositType(@Param("tenantId") Integer tenantId,
+            @Param("todayStartTime") Long todayStartTime, @Param("depositType") Integer depositType,
+            @Param("franchiseeIds") List<Long> franchiseeIds, @Param("payType") Integer payType);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(@Param("tenantId") Integer tenantId, @Param("depositType") Integer depositType, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 

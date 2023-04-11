@@ -11,9 +11,24 @@ import java.math.BigDecimal;
  */
 @Data
 public class HomePageDepositVo {
+    
+    /**
+     * 线上电池押金
+     */
+    private BigDecimal onlineBatteryDeposit;
+    
+    /**
+     * 线下电池押金
+     */
+    private BigDecimal offlineBatteryDeposit;
+    
+    /**
+     * 免押电池押金
+     */
+    private BigDecimal freeBatteryDeposit;
 
     /**
-     * 电池押金
+     * 电池总押金
      */
     private BigDecimal batteryDeposit;
 
@@ -21,9 +36,24 @@ public class HomePageDepositVo {
      * 车辆押金
      */
     private BigDecimal carDeposit;
+    
+    /**
+     * 今日线上电池押金
+     */
+    private BigDecimal todayOnlineBatteryDeposit;
+    
+    /**
+     * 今日线下电池押金
+     */
+    private BigDecimal todayOfflineBatteryDeposit;
+    
+    /**
+     * 今日免押电池押金
+     */
+    private BigDecimal todayFreeBatteryDeposit;
 
     /**
-     * 今日电池押金
+     * 今日电池总押金
      */
     private BigDecimal todayBatteryDeposit;
 

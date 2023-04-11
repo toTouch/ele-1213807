@@ -1662,8 +1662,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> franchiseeIds) {
-        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeIds)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType,
+            List<Long> franchiseeIds, Integer payType) {
+        return Optional.ofNullable(eleDepositOrderMapper
+                .queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeIds, payType))
+                .orElse(BigDecimal.valueOf(0));
     }
 
     @Override
