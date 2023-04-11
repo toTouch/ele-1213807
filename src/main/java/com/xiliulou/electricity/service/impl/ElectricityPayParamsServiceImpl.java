@@ -86,7 +86,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	 * @return
 	 */
 	@Override
-	@DS("slave_1")
 	public ElectricityPayParams queryFromCache(Integer tenantId) {
 		ElectricityPayParams electricityPayParams = redisService.getWithHash(CacheConstant.CACHE_PAY_PARAMS + tenantId, ElectricityPayParams.class);
 		if (Objects.isNull(electricityPayParams)) {

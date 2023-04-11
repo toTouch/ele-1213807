@@ -494,7 +494,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Slave
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
@@ -599,7 +598,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @return
      */
     @Override
-    @DS("slave_1")
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
                 .showInfoByDistance(electricityCabinetQuery);
@@ -693,7 +691,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @param electricityCabinetQuery
      * @return
      */
-    @Slave
     @Override
     public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
