@@ -66,7 +66,9 @@ public interface CarLockCtrlHistoryMapper extends BaseMapper<CarLockCtrlHistory>
     int deleteById(Long id);
     
     List<CarLockCtrlHistoryVo> queryList(@Param("offset") Long offset, @Param("size") Long size,
-            @Param("name") String name, @Param("phone") String phone, @Param("carSn") String carSn);
+            @Param("name") String name, @Param("phone") String phone, @Param("carSn") String carSn,
+            @Param("tenantId") Integer tenantId);
     
-    Integer queryCount(@Param("name") String name, @Param("phone") String phone, @Param("carSn") String carSn);
+    Integer queryCount(@Param("name") String name, @Param("phone") String phone, @Param("carSn") String carSn,
+            @Param("tenantId") Integer tenantId);
 }

@@ -145,6 +145,7 @@
         update_time, tenant_id
         from t_car_lock_ctrl_history
         <where>
+            tenant_id = #{tenantId}
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
             </if>
@@ -163,6 +164,7 @@
         count(*)
         from t_car_lock_ctrl_history
         <where>
+            tenant_id = #{tenantId}
             <if test="name != null and name != ''">
                 and name like concat('%', #{name}, '%')
             </if>
