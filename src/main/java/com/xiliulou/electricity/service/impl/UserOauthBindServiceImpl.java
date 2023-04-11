@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.mapper.UserOauthBindMapper;
@@ -83,7 +84,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     }
 
     @Override
-    @DS(value = "slave_1")
+    @Slave
     public Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone,Integer tenantId) {
         List<UserOauthBind> list = this.userOauthBindMapper.queryListByCondition(size, offset, uid, thirdId, phone,tenantId);
         return Pair.of(true, list);

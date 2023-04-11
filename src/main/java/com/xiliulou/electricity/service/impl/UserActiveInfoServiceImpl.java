@@ -192,7 +192,7 @@ public class UserActiveInfoServiceImpl implements UserActiveInfoService {
     }
     
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryCount(UserActiveInfoQuery query) {
         long day = Objects.isNull(query.getDay()) ? 30 : query.getDay();
         query.setLimitTime(System.currentTimeMillis() - day * 24 * 3600000);

@@ -11,6 +11,7 @@ import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
@@ -276,7 +277,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(ElectricityCarQuery electricityCarQuery) {
         List<ElectricityCarVO> electricityCarVOS = electricityCarMapper.queryList(electricityCarQuery);
         if (CollectionUtils.isEmpty(electricityCarVOS)) {

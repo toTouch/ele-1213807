@@ -428,7 +428,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return
      */
     @Override
-    @DS("slave_1")
     public R getMemberCardInfo(Long uid) {
         UserInfo userInfo = queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {

@@ -14,6 +14,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -204,7 +205,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
         List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery,
                 offset, size);
@@ -250,7 +251,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryBindListByPage(Long offset, Long size, Long franchiseeId) {
         
         List<ElectricityBatteryVO> batteryVOList = new ArrayList<>();

@@ -164,7 +164,6 @@
         update_time, store_id, tenant_id
         from t_car_refund_order
         <where>
-            
             <if test="orderId != null and orderId != ''">
                 and order_id = #{orderId}
             </if>
@@ -176,6 +175,9 @@
             </if>
             <if test="storeId != null">
                 and store_id = #{storeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
             </if>
         </where>
         order by create_time desc
@@ -198,6 +200,9 @@
             </if>
             <if test="storeId != null">
                 and store_id = #{storeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
             </if>
         </where>
     </select>
