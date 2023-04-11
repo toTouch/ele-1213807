@@ -62,7 +62,9 @@ public class ElectricityIotConstant {
      * 电池充电设置
      */
     public static final String NORMAL_BATTERY_MULTI_SETTING_HANDLER = "normalEleBatteryMultiSettingHandler";
-
+    
+    public static final String NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER = "normalOtherSettingParamTemplateHandler";
+    
 
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
@@ -145,8 +147,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
                 || Objects.equals(command, RESTART_APP)
                 || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY)
-                || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING)
-                || Objects.equals(command, ELE_BATTERY_MULTI_PARAMS_READ);
+                || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING) || Objects
+                .equals(command, ELE_BATTERY_MULTI_PARAMS_READ) || Objects
+                .equals(command, OTHER_SETTING_PARAM_TEMPLATE);
 
     }
 
@@ -383,7 +386,14 @@ public class ElectricityIotConstant {
     public static final String ELE_BATTERY_MULTI_PARAMS_READ_RSP = "battery_multi_rsp";
     
     public static final String ELE_BATTERY_SNAPSHOT = "battery_snap_shot";
-
+    
+    /**
+     * 电柜模板 app参数设置
+     */
+    public static final String OTHER_SETTING_PARAM_TEMPLATE = "other_setting_param_template";
+    
+    public static final String READ_OTHER_SETTING_PARAM_TEMPLATE = "read_other_setting_param_template";
+    
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -402,6 +412,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CUPBOARD_REQUEST_LOG, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OTHER_CONFIG, NORMAL_ELE_OPERATE_HANDLER);
+    
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CUPBOARD_RESTART, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_UNLOCK_CABINET, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OPERATE, NORMAL_ELE_OPERATE_HANDLER);
@@ -503,7 +514,8 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ_RSP, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAM_SETTING, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT,NORMAL_BATTERY_SNAPSHOT_HANDLER);
-
-
+    
+        COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(READ_OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
     }
 }
