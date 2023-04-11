@@ -134,7 +134,6 @@ public class TenantServiceImpl implements TenantService {
             roleService.insert(item);
         });
 
-
         //新增用户
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
@@ -152,7 +151,6 @@ public class TenantServiceImpl implements TenantService {
             return result;
         }
 
-
         //获取角色默认权限
         List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
         //保存角色默认权限
@@ -161,7 +159,6 @@ public class TenantServiceImpl implements TenantService {
                 rolePermissionService.insert(e);
             });
         }
-
 
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());

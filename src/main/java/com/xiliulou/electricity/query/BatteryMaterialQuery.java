@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 /**
  * @author zzlong
@@ -35,6 +36,7 @@ public class BatteryMaterialQuery {
      * 类型
      */
     @NotBlank(message = "类型不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @Pattern(regexp = "^[A-Z_]{1,}$", message = "非法的类型")
     private String type;
 
 }

@@ -705,6 +705,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     }
 
+    @Slave
     @Override
     public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
 
