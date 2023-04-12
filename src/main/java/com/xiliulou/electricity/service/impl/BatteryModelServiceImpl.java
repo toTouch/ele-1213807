@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.BatteryModelMapper;
@@ -125,12 +126,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Override
     public Triple<Boolean, String, Object> delete(Long id) {
         BatteryModel batteryModel = this.queryByIdFromDB(id);
-        if(Objects.isNull(batteryModel)){
+        if (Objects.isNull(batteryModel)) {
             return Triple.of(true, null, null);
         }
 
-        if(batteryModel.getBatteryModel()<=16){
-            return Triple.of(false,"","默认型号不允许删除");
+        if (batteryModel.getBatteryModel() <= 16) {
+            return Triple.of(false, "", "默认型号不允许删除");
         }
 
         this.deleteById(id);
@@ -194,9 +195,43 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         }).collect(Collectors.toList());
     }
 
-    public static List<BatteryModel> generateDefaultBatteryModel(Integer tenantId){
-        List<BatteryModel> list=new ArrayList<>();
-        BatteryModel b1=new BatteryModel();
+    /**
+     * 根据batteryModel获取batteryType
+     */
+    @Override
+    public String acquireBatteryShort(Integer batteryModel, Integer tenantId) {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            log.warn("BATTERY MODEL WARN!batteryModels is empty,tenantId={}", tenantId);
+            return "";
+        }
+
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryModel, BatteryModel::getBatteryType)).getOrDefault(batteryModel, "");
+    }
+
+    /**
+     * 根据batteryType获取batteryModel
+     */
+    @Override
+    public Integer acquireBatteryModel(String type, Integer tenantId) {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            log.warn("BATTERY MODEL WARN!batteryModels is empty,tenantId={}", tenantId);
+            return NumberConstant.ZERO;
+        }
+
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel)).getOrDefault(type, NumberConstant.ZERO);
+    }
+
+    /**
+     * 生成系统默认电池型号
+     *
+     * @param tenantId
+     * @return
+     */
+    public static List<BatteryModel> generateDefaultBatteryModel(Integer tenantId) {
+        List<BatteryModel> list = new ArrayList<>();
+        BatteryModel b1 = new BatteryModel();
         b1.setBatteryModel(1);
         b1.setBatteryType("B_12V_TERNARY_LITHIUM_03");
         b1.setBatteryV(12.6);
@@ -206,7 +241,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b1.setCreateTime(System.currentTimeMillis());
         b1.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b2=new BatteryModel();
+        BatteryModel b2 = new BatteryModel();
         b2.setBatteryModel(2);
         b2.setBatteryType("B_12V_IRON_LITHIUM_03");
         b2.setBatteryV(14.6);
@@ -216,7 +251,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b2.setCreateTime(System.currentTimeMillis());
         b2.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b3=new BatteryModel();
+        BatteryModel b3 = new BatteryModel();
         b3.setBatteryModel(3);
         b3.setBatteryType("B_24V_TERNARY_LITHIUM_07");
         b3.setBatteryV(29.4);
@@ -226,7 +261,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b3.setCreateTime(System.currentTimeMillis());
         b3.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b4=new BatteryModel();
+        BatteryModel b4 = new BatteryModel();
         b4.setBatteryModel(4);
         b4.setBatteryType("B_24V_IRON_LITHIUM_08");
         b4.setBatteryV(29.2);
@@ -236,7 +271,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b4.setCreateTime(System.currentTimeMillis());
         b4.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b5=new BatteryModel();
+        BatteryModel b5 = new BatteryModel();
         b5.setBatteryModel(5);
         b5.setBatteryType("B_36V_TERNARY_LITHIUM_10");
         b5.setBatteryV(42D);
@@ -246,7 +281,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b5.setCreateTime(System.currentTimeMillis());
         b5.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b6=new BatteryModel();
+        BatteryModel b6 = new BatteryModel();
         b6.setBatteryModel(6);
         b6.setBatteryType("B_36V_IRON_LITHIUM_10");
         b6.setBatteryV(36.5);
@@ -256,7 +291,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b6.setCreateTime(System.currentTimeMillis());
         b6.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b7=new BatteryModel();
+        BatteryModel b7 = new BatteryModel();
         b7.setBatteryModel(7);
         b7.setBatteryType("B_36V_IRON_LITHIUM_11");
         b7.setBatteryV(40.15);
@@ -266,7 +301,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b7.setCreateTime(System.currentTimeMillis());
         b7.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b8=new BatteryModel();
+        BatteryModel b8 = new BatteryModel();
         b8.setBatteryModel(8);
         b8.setBatteryType("B_36V_IRON_LITHIUM_12");
         b8.setBatteryV(43.8);
@@ -276,7 +311,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b8.setCreateTime(System.currentTimeMillis());
         b8.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b9=new BatteryModel();
+        BatteryModel b9 = new BatteryModel();
         b9.setBatteryModel(9);
         b9.setBatteryType("B_48V_TERNARY_LITHIUM_13");
         b9.setBatteryV(54.6);
@@ -286,7 +321,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b9.setCreateTime(System.currentTimeMillis());
         b9.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b10=new BatteryModel();
+        BatteryModel b10 = new BatteryModel();
         b10.setBatteryModel(10);
         b10.setBatteryType("B_48V_TERNARY_LITHIUM_14");
         b10.setBatteryV(58.8);
@@ -296,7 +331,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b10.setCreateTime(System.currentTimeMillis());
         b10.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b11=new BatteryModel();
+        BatteryModel b11 = new BatteryModel();
         b11.setBatteryModel(11);
         b11.setBatteryType("B_48V_IRON_LITHIUM_15");
         b11.setBatteryV(54.8);
@@ -306,7 +341,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b11.setCreateTime(System.currentTimeMillis());
         b11.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b12=new BatteryModel();
+        BatteryModel b12 = new BatteryModel();
         b12.setBatteryModel(12);
         b12.setBatteryType("B_48V_IRON_LITHIUM_16");
         b12.setBatteryV(58.4);
@@ -316,7 +351,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b12.setCreateTime(System.currentTimeMillis());
         b12.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b13=new BatteryModel();
+        BatteryModel b13 = new BatteryModel();
         b13.setBatteryModel(13);
         b13.setBatteryType("B_60V_TERNARY_LITHIUM_17");
         b13.setBatteryV(71.4);
@@ -326,7 +361,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b13.setCreateTime(System.currentTimeMillis());
         b13.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b14=new BatteryModel();
+        BatteryModel b14 = new BatteryModel();
         b14.setBatteryModel(14);
         b14.setBatteryType("B_60V_IRON_LITHIUM_20");
         b14.setBatteryV(73D);
@@ -336,7 +371,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b14.setCreateTime(System.currentTimeMillis());
         b14.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b15=new BatteryModel();
+        BatteryModel b15 = new BatteryModel();
         b15.setBatteryModel(15);
         b15.setBatteryType("B_72V_TERNARY_LITHIUM_20");
         b15.setBatteryV(84D);
@@ -346,7 +381,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b15.setCreateTime(System.currentTimeMillis());
         b15.setUpdateTime(System.currentTimeMillis());
 
-        BatteryModel b16=new BatteryModel();
+        BatteryModel b16 = new BatteryModel();
         b16.setBatteryModel(16);
         b16.setBatteryType("B_72V_IRON_LITHIUM_24");
         b16.setBatteryV(87.6);

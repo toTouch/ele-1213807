@@ -6,6 +6,7 @@ import com.xiliulou.electricity.vo.BatteryModelVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 电池型号(BatteryModel)表服务接口
@@ -72,4 +73,8 @@ public interface BatteryModelService {
     Integer checkMidExist(Long mid);
 
     Integer batchInsertDefaultBatteryModel(List<BatteryModel> generateDefaultBatteryModel);
+
+    String acquireBatteryShort(Integer batteryModel,Integer tenantId);
+
+    Integer acquireBatteryModel(String type,Integer tenantId);
 }
