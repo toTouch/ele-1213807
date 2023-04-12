@@ -31,6 +31,8 @@ public class BatteryMaterial {
      * 类型
      */
     private String type;
+
+    private String shortType;
     /**
      * 0--正常 1--删除
      */

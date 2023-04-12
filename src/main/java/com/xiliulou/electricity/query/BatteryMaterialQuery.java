@@ -35,8 +35,12 @@ public class BatteryMaterialQuery {
     /**
      * 类型
      */
-    @NotBlank(message = "类型不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
-    @Pattern(regexp = "^[A-Z_]{1,}$", message = "非法的类型")
+    @NotBlank(message = "短类型不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @Pattern(regexp = "^[A-Z_]{1,}$", message = "非法的短类型")
     private String type;
+
+    @NotBlank(message = "类型不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @Pattern(regexp = "^[A-Z_]{10,}$", message = "非法的类型")
+    private String shortType;
 
 }

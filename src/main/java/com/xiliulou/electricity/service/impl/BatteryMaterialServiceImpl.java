@@ -79,6 +79,11 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
 
     @Override
     public Triple<Boolean, String, Object> modify(BatteryMaterialQuery batteryMaterialQuery) {
+        BatteryMaterial batteryMaterial = this.queryByIdFromCache(batteryMaterialQuery.getId());
+        if(Objects.isNull(batteryMaterial)){
+            return Triple.of(true,null,null);
+        }
+
         return Triple.of(true, null, null);
     }
 
