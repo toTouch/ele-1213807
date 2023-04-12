@@ -95,22 +95,87 @@ public class HomePageDepositVo {
     
     
     /**
-     * 今日缴纳押金
+     * 今日总缴纳押金
      */
     private BigDecimal todayPayDeposit;
-
+    
+    
     /**
-     * 今日退押金
+     * 今日电池线上退押金
+     */
+    private BigDecimal todayOnlineRefundDeposit;
+    /**
+     * 今日电池线下退押金
+     */
+    private BigDecimal todayOfflineRefundDeposit;
+    
+    /**
+     * 今日电池免押退押金
+     */
+    private BigDecimal todayFreeRefundDeposit;
+    /**
+     * 今日电池总退押金
      */
     private BigDecimal todayRefundDeposit;
-
+    
     /**
-     * 历史退换电押金
+     * 今日车辆线上退押金
+     */
+    private BigDecimal todayOnlineCarRefundDeposit;
+    
+    /**
+     * 今日车辆线下退押金
+     */
+    private BigDecimal todayOfflineCarRefundDeposit;
+    
+    /**
+     * 今日车辆免押退押金
+     */
+    private BigDecimal todayFreeCarRefundDeposit;
+    
+    /**
+     * 今日车辆总退押金
+     */
+    private BigDecimal todayCarRefundDeposit;
+    
+    
+    /**
+     * 历史线上退换电押金
+     */
+    private BigDecimal historyOnlineRefundBatteryDeposit;
+    
+    /**
+     * 历史线下退换电押金
+     */
+    private BigDecimal historyOfflineRefundBatteryDeposit;
+    
+    /**
+     * 历史免押退换电押金
+     */
+    private BigDecimal historyFreeRefundBatteryDeposit;
+    /**
+     * 历史总退换电押金
      */
     private BigDecimal historyRefundBatteryDeposit;
-
+    
+    
     /**
-     * 历史退租车押金
+     * 历史线上退租车押金
+     */
+    private BigDecimal historyOnlineRefundCarDeposit;
+    
+    /**
+     * 历史线下退租车押金
+     */
+    private BigDecimal historyOfflineRefundCarDeposit;
+    
+    /**
+     * 历史免押退租车押金
+     */
+    private BigDecimal historyFreeRefundCarDeposit;
+    
+    /**
+     * 历史总退租车押金
      */
     private BigDecimal historyRefundCarDeposit;
 

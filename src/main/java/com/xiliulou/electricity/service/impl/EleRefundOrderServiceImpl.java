@@ -1656,13 +1656,19 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType, List<Long> franchiseeIds) {
-        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId, todayStartTime, refundOrderType,franchiseeIds)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
+            List<Long> franchiseeIds, Integer payType) {
+        return Optional.ofNullable(eleRefundOrderMapper
+                .queryTurnOverByTime(tenantId, todayStartTime, refundOrderType, franchiseeIds, payType))
+                .orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType, List<Long> franchiseeIds) {
-        return Optional.ofNullable(eleRefundOrderMapper.queryCarRefundTurnOverByTime(tenantId, todayStartTime, refundOrderType,franchiseeIds)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
+            List<Long> franchiseeIds, Integer payType) {
+        return Optional.ofNullable(eleRefundOrderMapper
+                .queryCarRefundTurnOverByTime(tenantId, todayStartTime, refundOrderType, franchiseeIds, payType))
+                .orElse(BigDecimal.valueOf(0));
     }
 
     @Override

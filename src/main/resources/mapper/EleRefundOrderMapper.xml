@@ -224,6 +224,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="payType != null">
+            and tedo.pay_type = #{payType}
+        </if>
     </select>
 
     <select id="queryCarRefundTurnOverByTime" resultType="decimal">
@@ -243,6 +246,9 @@
             <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="payType != null">
+            and pay_type = #{payType}
         </if>
     </select>
 
