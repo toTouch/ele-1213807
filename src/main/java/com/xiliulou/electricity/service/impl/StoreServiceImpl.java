@@ -491,6 +491,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Slave
     public Store queryByUid(Long uid) {
         return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid, uid).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
