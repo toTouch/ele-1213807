@@ -18,6 +18,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
@@ -150,6 +151,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
 
     /**
      * 创建月卡订单
@@ -559,7 +563,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 }
             }
-
+    
+            //如果后台有记录那么一定是用户没购买过套餐时添加，如果为INIT就修改
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(user.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
+            }
+    
             return R.ok();
         }
 
@@ -643,7 +658,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
@@ -1847,6 +1862,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
+        }
         return R.ok();
     }
 
@@ -2052,6 +2077,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
+        }
         return R.ok();
     }
 
@@ -2227,6 +2262,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
+        }
         return R.ok();
     }
 

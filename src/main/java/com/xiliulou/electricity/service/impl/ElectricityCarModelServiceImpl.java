@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -233,7 +234,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(ElectricityCarModelQuery electricityCarModelQuery) {
         List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(electricityCarModelQuery);
         if (CollectionUtils.isEmpty(electricityCarModelVOS)) {

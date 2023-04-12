@@ -89,6 +89,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -781,8 +784,12 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         
         Double oldCardDay = 0.0;
         Long now = System.currentTimeMillis();
-        if (memberCardExpireTime > now) {
-            oldCardDay = Math.ceil((memberCardExpireTime - now) / 3600000 / 24.0);
+        //如果之前的套餐到期时间
+        Long oldMemberCardExpireTime =
+                Objects.isNull(userCarMemberCard) ? now : userCarMemberCard.getMemberCardExpireTime();
+        oldMemberCardExpireTime = Objects.isNull(oldMemberCardExpireTime) ? now : oldMemberCardExpireTime;
+        if (oldMemberCardExpireTime > now) {
+            oldCardDay = Math.ceil((oldMemberCardExpireTime - now) / 3600000 / 24.0);
         }
         
         Double carDayTemp = 0.0;
@@ -804,6 +811,16 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)
                 && now < memberCardExpireTime) {
             electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
         }
         return R.ok();
     }
@@ -917,6 +934,16 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)
                 && System.currentTimeMillis() < memberCardExpireTime) {
             electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
         }
 
         return Triple.of(true, "", "操作成功!");
@@ -1068,6 +1095,16 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
         if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
             electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        }
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
         }
         return R.ok();
     }

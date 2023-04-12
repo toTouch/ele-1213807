@@ -409,6 +409,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer homeOne(Long first, Long now, Integer tenantId) {
         return userInfoMapper.homeOne(first, now, tenantId);
     }
+    
+    //    @Override
+    //    public UserInfo queryByUidFromDb(Long uid) {
+    //        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+    //    }
+    //
 
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId) {
@@ -422,7 +428,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return
      */
     @Override
-    @DS("slave_1")
     public R getMemberCardInfo(Long uid) {
         UserInfo userInfo = queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
@@ -1837,6 +1842,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
         return R.ok();
+    }
+    
+    @Override
+    public R userInfoSearch(Long size, Long offset, String name) {
+        List<UserInfoSearchVo> qeury = userInfoMapper
+                .userInfoSearch(size, offset, name, TenantContextHolder.getTenantId());
+        return R.ok(qeury);
     }
     
     private void queryUserCarMemberCard(DetailsCarInfoVo vo, UserInfo userInfo) {

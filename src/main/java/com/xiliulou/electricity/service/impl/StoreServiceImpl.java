@@ -367,7 +367,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
         if (CollectionUtils.isEmpty(storeVOList)) {

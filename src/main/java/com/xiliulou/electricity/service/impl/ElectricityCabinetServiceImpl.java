@@ -494,13 +494,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Slave
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
         if (ObjectUtil.isEmpty(electricityCabinetList)) {
             return R.ok();
         }
+    
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
                 
@@ -598,7 +598,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @return
      */
     @Override
-    @DS("slave_1")
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
                 .showInfoByDistance(electricityCabinetQuery);
@@ -692,7 +691,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @param electricityCabinetQuery
      * @return
      */
-    @Slave
     @Override
     public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
@@ -3870,7 +3868,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }).collect(Collectors.toList());
     }
-
+    
+    @Override
+    public R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList) {
+        List<ElectricityCabinetBatchOperateVo> electricityCabinetList = electricityCabinetMapper
+                .batchOperateList(size, offset, name, eleIdList, TenantContextHolder.getTenantId());
+        if (ObjectUtil.isEmpty(electricityCabinetList)) {
+            return R.ok(new ArrayList<>());
+        }
+        
+        return R.ok(electricityCabinetList);
+    }
+    
+    
     /**
      * 通过云端下发命令更新换电标准
      */

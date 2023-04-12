@@ -27,3 +27,6 @@ management:
       exposure:
         include: "*"
         exclude: httptrace
+rocketmq:
+  producer:
+    send-message-timeout: 6000

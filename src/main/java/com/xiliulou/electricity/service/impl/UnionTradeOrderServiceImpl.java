@@ -8,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.CarDepositOrder;
 import com.xiliulou.electricity.entity.CarMemberCardOrder;
+import com.xiliulou.electricity.entity.ChannelActivityHistory;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCar;
@@ -39,6 +40,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.service.ChannelActivityHistoryService;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
@@ -190,6 +192,9 @@ public class UnionTradeOrderServiceImpl extends
     
     @Autowired
     Jt808RetrofitService jt808RetrofitService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
 
     @Autowired
     ShippingManagerService shippingManagerService;
@@ -784,6 +789,17 @@ public class UnionTradeOrderServiceImpl extends
 
                 }
             }
+    
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
+                    .queryByUid(electricityMemberCardOrder.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
+            }
         }
 
 
@@ -956,6 +972,16 @@ public class UnionTradeOrderServiceImpl extends
             if (Objects.nonNull(electricityCar) && Objects
                     .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
                 electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            }
+    
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
             }
         }
 
