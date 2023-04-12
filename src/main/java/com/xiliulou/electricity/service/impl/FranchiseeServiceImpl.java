@@ -105,6 +105,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
 
 
     @Override
@@ -749,7 +751,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
 
-        String batteryType = BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel());
+        String batteryType = batteryModelService.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel(),TenantContextHolder.getTenantId());
 
         //获取用户绑定的保险
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(userInfo.getUid(), TenantContextHolder.getTenantId());

@@ -13,7 +13,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
@@ -41,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -105,6 +103,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     
     @Autowired
     BatteryGeoService geoService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
     
     /**
      * 保存电池
@@ -774,54 +775,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.isUserBindBattery(uid, tenantId);
     }
 
-    /**
-     * 迁移用户所属加盟商  获取用户电池型号
-     *
-     * @return
-     */
-    @Override
-    public Triple<Boolean, String, Object> selectUserLatestBatteryType() {
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(
-                TenantContextHolder.getTenantId());
-        if (Objects.isNull(electricityConfig)) {
-            log.error("ELE ERROR!not found electricityConfig,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "000001", "系统异常");
-        }
-        
-        if (!Objects.equals(electricityConfig.getIsMoveFranchisee(), ElectricityConfig.MOVE_FRANCHISEE_OPEN)) {
-            log.error("ELE ERROR!not found open move franchisee,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "100353", "未启用加盟商迁移");
-        }
-        
-        String batteryType = null;
-        
-        //1.查询当前用户最新换电订单
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.selectLatestByUid(
-                SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-        if (Objects.nonNull(electricityCabinetOrder)) {
-            String batterySn = electricityCabinetOrder.getNewElectricityBatterySn();
-            batteryType = BatteryConstant.parseBatteryModelByBatteryName(batterySn);
-        } else {
-            //查询当前用户最新的租电订单
-            RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.selectLatestByUid(SecurityUtils.getUid(),
-                    TenantContextHolder.getTenantId());
-            String batterySn = rentBatteryOrder.getElectricityBatterySn();
-            batteryType = BatteryConstant.parseBatteryModelByBatteryName(batterySn);
-        }
-        
-        if (StringUtils.isBlank(batteryType)) {
-            log.error("ELE ERROR!not found user batteryType,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "100352", "未找到用户电池型号");
-        }
-        
-        Integer batteryModel = BatteryConstant.acquireBatteryModel(batteryType);
-        if (Objects.isNull(batteryModel)) {
-            log.error("ELE ERROR!not found user batteryModel,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "100352", "未找到用户电池型号");
-        }
-        
-        return Triple.of(true, "", batteryModel);
-    }
     
     @Override
     public Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn) {
