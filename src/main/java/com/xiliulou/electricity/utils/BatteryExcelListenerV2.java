@@ -44,7 +44,6 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
     private String code;
 
 
-
     public BatteryExcelListenerV2() {
         // 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
         electricityBatteryService = new ElectricityBatteryServiceImpl();
@@ -54,7 +53,7 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
-    public BatteryExcelListenerV2(ElectricityBatteryService electricityBatteryService, BatteryPlatRetrofitService batteryPlatRetrofitService,String tenantCode) {
+    public BatteryExcelListenerV2(ElectricityBatteryService electricityBatteryService, BatteryPlatRetrofitService batteryPlatRetrofitService, String tenantCode) {
         this.electricityBatteryService = electricityBatteryService;
         this.batteryPlatRetrofitService = batteryPlatRetrofitService;
         this.code = tenantCode;
@@ -134,17 +133,12 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
                 saveList.add(electricityBattery);
             }
 
-            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-            if (Objects.isNull(tenant)) {
-                throw new CustomBusinessException("获取租户信息失败");
-            }
-
             Map<String, String> headers = new HashMap<>();
             String time = String.valueOf(System.currentTimeMillis());
             headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
             headers.put(CommonConstant.INNER_HEADER_TIME, time);
             headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
-            headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+            headers.put(CommonConstant.INNER_TENANT_ID, code);
 
             BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
             query.setJsonBatterySnList(JsonUtil.toJson(snList));
