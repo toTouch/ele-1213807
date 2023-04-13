@@ -112,4 +112,9 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
         Long count = freeDepositAlipayHistoryMapper.queryCount(query);
         return R.ok(count);
     }
+    
+    @Override
+    public FreeDepositAlipayHistory queryByOrderId(String orderId) {
+        return freeDepositAlipayHistoryMapper.queryByOrderId(orderId);
+    }
 }

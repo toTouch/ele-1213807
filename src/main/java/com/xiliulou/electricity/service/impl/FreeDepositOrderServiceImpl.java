@@ -339,8 +339,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setIdCard(freeDepositOrder.getIdCard());
         freeDepositAlipayHistory.setOperateName(user.getName());
         freeDepositAlipayHistory.setOperateUid(user.getUid());
-        freeDepositAlipayHistory.setPayAmount(freeDepositOrder.getTransAmt());
-        freeDepositAlipayHistory.setAlipayAmount(payTransAmt.doubleValue());
+        freeDepositAlipayHistory.setPayAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()));
+        freeDepositAlipayHistory.setAlipayAmount(payTransAmt);
         freeDepositAlipayHistory.setType(freeDepositOrder.getType());
         freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());

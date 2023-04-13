@@ -69,4 +69,6 @@ public interface FreeDepositAlipayHistoryMapper extends BaseMapper<FreeDepositAl
     List<FreeDepositAlipayHistoryVo> queryList(FreeDepositAlipayHistoryQuery query);
     
     Long queryCount(FreeDepositAlipayHistoryQuery query);
+    
+    FreeDepositAlipayHistory queryByOrderId(@Param("orderId") String orderId);
 }

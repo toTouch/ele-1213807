@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * (FreeDepositAlipayHistory)实体类
  *
@@ -38,12 +40,12 @@ public class FreeDepositAlipayHistory {
     /**
      * 支付金额
      */
-    private Double payAmount;
+    private BigDecimal payAmount;
     
     /**
      * 代扣金额
      */
-    private Double alipayAmount;
+    private BigDecimal alipayAmount;
     
     private Integer type;
     

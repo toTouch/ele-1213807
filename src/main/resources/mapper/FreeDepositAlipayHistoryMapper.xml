@@ -212,4 +212,12 @@
             </if>
         </where>
     </select>
+    
+    <select id="queryByOrderId" resultMap="FreeDepositAlipayHistoryMap">
+        select
+        id, order_id, name, phone, id_card, operate_name, pay_amount, alipay_amount,
+        type, create_time, tenant_id
+        from t_free_deposit_alipay_history
+        where order_id = #{orderId}
+    </select>
 </mapper>

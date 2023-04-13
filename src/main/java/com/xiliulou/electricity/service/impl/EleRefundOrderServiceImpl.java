@@ -109,6 +109,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     PxzConfigService pxzConfigService;
     @Autowired
     PxzDepositService pxzDepositService;
+    
+    @Autowired
+    FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
 
     /**
      * 新增数据
@@ -893,7 +896,17 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
             return Triple.of(false, "100253", "用户已绑定车辆");
         }
-
+    
+        //获取订单代扣信息计算返还金额
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
+                .queryByOrderId(userBatteryDeposit.getOrderId());
+        if (Objects.nonNull(freeDepositAlipayHistory)) {
+            BigDecimal subtractAmount = eleDepositOrder.getPayAmount()
+                    .subtract(freeDepositAlipayHistory.getAlipayAmount());
+            refundAmount = subtractAmount.doubleValue() < 0 ? BigDecimal.ZERO : subtractAmount;
+        }
+        
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
         query.setDateTime(System.currentTimeMillis());
@@ -934,8 +947,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                     .orderId(eleDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
-                    .payAmount(eleDepositOrder.getPayAmount())
-                    .refundAmount(eleDepositOrder.getPayAmount())
+                    .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount)
                     .status(EleRefundOrder.STATUS_SUCCESS)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
@@ -987,8 +999,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
-                .payAmount(eleDepositOrder.getPayAmount())
-                .refundAmount(eleDepositOrder.getPayAmount())
+                .payAmount(eleDepositOrder.getPayAmount()).refundAmount(refundAmount)
                 .status(EleRefundOrder.STATUS_REFUND)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
@@ -1057,6 +1068,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("REFUND ORDER ERROR! user not return battery,uid={}", userInfo.getUid());
             return batteryDepositPreCheckResult;
         }
+    
+        //获取订单代扣信息计算返还金额
+        BigDecimal refundAmount = carDepositOrder.getPayAmount();
+        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
+                .queryByOrderId(userCarDeposit.getOrderId());
+        if (Objects.nonNull(freeDepositAlipayHistory)) {
+            BigDecimal subtractAmount = carDepositOrder.getPayAmount()
+                    .subtract(freeDepositAlipayHistory.getAlipayAmount());
+            refundAmount = subtractAmount.doubleValue() < 0 ? BigDecimal.ZERO : subtractAmount;
+        }
 
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
@@ -1097,8 +1118,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                     .orderId(carDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
-                    .payAmount(carDepositOrder.getPayAmount())
-                    .refundAmount(carDepositOrder.getPayAmount())
+                    .payAmount(carDepositOrder.getPayAmount()).refundAmount(refundAmount)
                     .status(EleRefundOrder.STATUS_SUCCESS)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
@@ -1146,8 +1166,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(carDepositOrder.getOrderId())
                 .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
-                .payAmount(carDepositOrder.getPayAmount())
-                .refundAmount(carDepositOrder.getPayAmount())
+                .payAmount(carDepositOrder.getPayAmount()).refundAmount(refundAmount)
                 .status(EleRefundOrder.STATUS_REFUND)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())

@@ -84,6 +84,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     ElectricityCarService electricityCarService;
     @Autowired
     MemberCardFailureRecordService memberCardFailureRecordService;
+    
+    @Autowired
+    FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -409,6 +412,9 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
+    
+        //获取退还金额
+        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
 
@@ -416,8 +422,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(orderId)
-                .payAmount(payAmount)
-                .refundAmount(payAmount)
+                .payAmount(payAmount).refundAmount(refundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
@@ -428,7 +433,24 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         //等到后台同意退款
         return Triple.of(true, "", "提交成功！");
     }
-
+    
+    private BigDecimal getRefundAmount(EleDepositOrder eleDepositOrder) {
+        if (!Objects.equals(eleDepositOrder.getDepositType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            return eleDepositOrder.getPayAmount();
+        }
+        
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
+                .queryByOrderId(eleDepositOrder.getOrderId());
+        if (Objects.nonNull(freeDepositAlipayHistory)) {
+            BigDecimal subtractAmount = eleDepositOrder.getPayAmount()
+                    .subtract(freeDepositAlipayHistory.getAlipayAmount());
+            refundAmount = subtractAmount.doubleValue() < 0 ? BigDecimal.ZERO : subtractAmount;
+        }
+        
+        return refundAmount;
+    }
+    
     @Override
     public Triple<Boolean, String, Object> handleRentCarDeposit(Long franchiseeId ,Long carModelId, Long storeId, Integer memberCardId, UserInfo userInfo) {
         if (Objects.isNull(carModelId) || Objects.isNull(storeId)) {
