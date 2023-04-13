@@ -132,6 +132,7 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
                 electricityBattery.setExchangeCount(0);
                 electricityBattery.setChargeStatus(0);
                 electricityBattery.setHealthStatus(0);
+                electricityBattery.setDelFlag(0);
                 electricityBattery.setStatus(0);
                 electricityBattery.setTenantId(tenantId);
                 snList.add(batteryExcelQuery.getSn());
