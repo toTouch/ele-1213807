@@ -177,8 +177,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return R.ok();
     }
 
-    private Pair<Boolean, String> callBatteryPlatSaveSn(List<String> list, boolean isNeedSync) {
-        if (!isNeedSync) {
+    private Pair<Boolean, String> callBatteryPlatSaveSn(List<String> list, Boolean isNeedSync) {
+        if (Objects.isNull(isNeedSync) || !isNeedSync) {
             return Pair.of(true, null);
         }
 
@@ -206,10 +206,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Pair.of(true, null);
     }
 
-    private Pair<Boolean, String> callBatteryPlatDeleteSn(List<String> list, boolean isNeedSync) {
-        if (!isNeedSync) {
+    private Pair<Boolean, String> callBatteryPlatDeleteSn(List<String> list, Boolean isNeedSync) {
+        if (Objects.isNull(isNeedSync) || !isNeedSync) {
             return Pair.of(true, null);
         }
+
 
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(tenant)) {
@@ -234,7 +235,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     private Pair<Boolean, String> callBatteryPlatModify(String newSn, String oldSn, Boolean isNeedSync) {
-        if (!isNeedSync) {
+        if (Objects.isNull(isNeedSync) || !isNeedSync) {
             return Pair.of(true, null);
         }
 
