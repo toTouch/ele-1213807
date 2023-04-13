@@ -30,6 +30,6 @@ public interface BatteryPlatRetrofitService {
     R batchDelete(@HeaderMap Map<String, String> headers, @Body BatteryBatchOperateQuery request);
 
 
-    @POST("/battery/inner/battery/modifye")
+    @POST("/battery/inner/battery/modify")
     R modifyBatterySn(@HeaderMap Map<String, String> headers, @Body BatteryModifyQuery request);
 }
