@@ -41,8 +41,8 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
     private ElectricityBatteryService electricityBatteryService;
 
     private BatteryPlatRetrofitService batteryPlatRetrofitService;
+    private String code;
 
-    private TenantService tenantService;
 
 
     public BatteryExcelListenerV2() {
@@ -50,13 +50,14 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
         electricityBatteryService = new ElectricityBatteryServiceImpl();
     }
 
+
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
-    public BatteryExcelListenerV2(ElectricityBatteryService electricityBatteryService, BatteryPlatRetrofitService batteryPlatRetrofitService, TenantService tenantService) {
+    public BatteryExcelListenerV2(ElectricityBatteryService electricityBatteryService, BatteryPlatRetrofitService batteryPlatRetrofitService,String tenantCode) {
         this.electricityBatteryService = electricityBatteryService;
         this.batteryPlatRetrofitService = batteryPlatRetrofitService;
-        this.tenantService = tenantService;
+        this.code = tenantCode;
     }
 
 

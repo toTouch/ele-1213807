@@ -374,7 +374,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R uploadV2(@RequestParam("file") MultipartFile file) {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService)).sheet().doRead();
+                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode())).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }
