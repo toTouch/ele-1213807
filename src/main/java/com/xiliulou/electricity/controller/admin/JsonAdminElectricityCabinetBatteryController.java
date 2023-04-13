@@ -10,10 +10,7 @@ import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.service.BatteryGeoService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BatteryExcelListener;
@@ -58,6 +55,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     BatteryGeoService batteryGeoService;
     @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
+    @Autowired
+    TenantService tenantService;
 
     /**
      * 新增电池
@@ -375,7 +374,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     public R uploadV2(@RequestParam("file") MultipartFile file) {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService)).sheet().doRead();
+                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService)).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }

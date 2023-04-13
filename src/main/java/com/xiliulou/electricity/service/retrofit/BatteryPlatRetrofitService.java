@@ -11,7 +11,10 @@ import com.xiliulou.electricity.web.query.battery.BatteryModifyQuery;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import retrofit2.http.Body;
+import retrofit2.http.HeaderMap;
 import retrofit2.http.POST;
+
+import java.util.Map;
 
 /**
  * @author : eclair
@@ -19,14 +22,14 @@ import retrofit2.http.POST;
  */
 @RetrofitClient(serviceId = "xiliulou-battery-service", fallback = BatteryPlatRetrofitServiceImpl.class)
 public interface BatteryPlatRetrofitService {
-    
+
     @POST("/battery/inner/battery/batch/save")
-    R batchSave(@Body BatteryBatchOperateQuery request);
-    
+    R batchSave(@HeaderMap Map<String, String> headers, @Body BatteryBatchOperateQuery request);
+
     @POST("/battery/inner/battery/batch/delete")
-    R batchDelete(@Body BatteryBatchOperateQuery request);
+    R batchDelete(@HeaderMap Map<String, String> headers, @Body BatteryBatchOperateQuery request);
 
 
     @POST("/battery/inner/battery/modifye")
-    R modifyBatterySn(@Body BatteryModifyQuery request);
+    R modifyBatterySn(@HeaderMap Map<String, String> headers, @Body BatteryModifyQuery request);
 }

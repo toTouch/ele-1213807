@@ -7,9 +7,12 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.impl.ElectricityBatteryServiceImpl;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -17,9 +20,7 @@ import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 模板的读取类
@@ -41,6 +42,8 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
 
     private BatteryPlatRetrofitService batteryPlatRetrofitService;
 
+    private TenantService tenantService;
+
 
     public BatteryExcelListenerV2() {
         // 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
@@ -50,9 +53,10 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
      */
-    public BatteryExcelListenerV2(ElectricityBatteryService electricityBatteryService, BatteryPlatRetrofitService batteryPlatRetrofitService) {
+    public BatteryExcelListenerV2(ElectricityBatteryService electricityBatteryService, BatteryPlatRetrofitService batteryPlatRetrofitService, TenantService tenantService) {
         this.electricityBatteryService = electricityBatteryService;
         this.batteryPlatRetrofitService = batteryPlatRetrofitService;
+        this.tenantService = tenantService;
     }
 
 
@@ -128,9 +132,22 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
                 snList.add(batteryExcelQuery.getSn());
                 saveList.add(electricityBattery);
             }
+
+            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+            if (Objects.isNull(tenant)) {
+                throw new CustomBusinessException("获取租户信息失败");
+            }
+
+            Map<String, String> headers = new HashMap<>();
+            String time = String.valueOf(System.currentTimeMillis());
+            headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+            headers.put(CommonConstant.INNER_HEADER_TIME, time);
+            headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+            headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+
             BatteryBatchOperateQuery query = new BatteryBatchOperateQuery();
             query.setJsonBatterySnList(JsonUtil.toJson(snList));
-            R r = batteryPlatRetrofitService.batchSave(query);
+            R r = batteryPlatRetrofitService.batchSave(headers, query);
             if (!r.isSuccess()) {
                 log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
                 throw new CustomBusinessException("远程调用异常");

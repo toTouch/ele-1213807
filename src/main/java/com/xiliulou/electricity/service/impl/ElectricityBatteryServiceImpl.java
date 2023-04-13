@@ -18,6 +18,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -27,7 +28,9 @@ import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.SignUtils;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
@@ -113,6 +116,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
 
+    @Autowired
+    TenantService tenantService;
+
     /**
      * 保存电池
      *
@@ -176,9 +182,23 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return Pair.of(true, null);
         }
 
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(tenant)) {
+            return Pair.of(false, "租户信息不能为空");
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        String time = String.valueOf(System.currentTimeMillis());
+        headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+        headers.put(CommonConstant.INNER_HEADER_TIME, time);
+        headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+        headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+
         BatteryBatchOperateQuery batteryBatchOperateQuery = new BatteryBatchOperateQuery();
         batteryBatchOperateQuery.setJsonBatterySnList(JsonUtil.toJson(list));
-        R r = batteryPlatRetrofitService.batchSave(batteryBatchOperateQuery);
+
+
+        R r = batteryPlatRetrofitService.batchSave(headers, batteryBatchOperateQuery);
         if (!r.isSuccess()) {
             log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
             return Pair.of(false, r.getErrMsg());
@@ -191,9 +211,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return Pair.of(true, null);
         }
 
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(tenant)) {
+            return Pair.of(false, "租户信息不能为空");
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        String time = String.valueOf(System.currentTimeMillis());
+        headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+        headers.put(CommonConstant.INNER_HEADER_TIME, time);
+        headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+        headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+
         BatteryBatchOperateQuery batteryBatchOperateQuery = new BatteryBatchOperateQuery();
         batteryBatchOperateQuery.setJsonBatterySnList(JsonUtil.toJson(list));
-        R r = batteryPlatRetrofitService.batchDelete(batteryBatchOperateQuery);
+        R r = batteryPlatRetrofitService.batchDelete(headers,batteryBatchOperateQuery);
         if (!r.isSuccess()) {
             log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
             return Pair.of(false, r.getErrMsg());
@@ -206,10 +238,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return Pair.of(true, null);
         }
 
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(tenant)) {
+            return Pair.of(false, "租户信息不能为空");
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        String time = String.valueOf(System.currentTimeMillis());
+        headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+        headers.put(CommonConstant.INNER_HEADER_TIME, time);
+        headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+        headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+
         BatteryModifyQuery query = new BatteryModifyQuery();
         query.setNewSn(newSn);
         query.setOriginalSn(oldSn);
-        R r = batteryPlatRetrofitService.modifyBatterySn(query);
+        R r = batteryPlatRetrofitService.modifyBatterySn(headers,query);
         if (!r.isSuccess()) {
             log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
             return Pair.of(false, r.getErrMsg());

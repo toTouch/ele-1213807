@@ -8,24 +8,24 @@ import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 /**
  * @author : eclair
  * @date : 2023/4/12 16:29
  */
 @Service
 public class BatteryPlatRetrofitServiceImpl implements BatteryPlatRetrofitService {
-    @Override
-    public R batchSave(BatteryBatchOperateQuery request) {
-        return null;
-    }
 
     @Override
-    public R batchDelete(BatteryBatchOperateQuery request) {
-        return null;
-    }
+    public R batchSave(Map<String, String> headers, BatteryBatchOperateQuery request) {
+        return R.fail("200001","服务调用出错");    }
 
     @Override
-    public R modifyBatterySn(BatteryModifyQuery request) {
-        return null;
-    }
+    public R batchDelete(Map<String, String> headers, BatteryBatchOperateQuery request) {
+        return R.fail("200001","服务调用出错");    }
+
+    @Override
+    public R modifyBatterySn(Map<String, String> headers, BatteryModifyQuery request) {
+        return R.fail("200001","服务调用出错");    }
 }
