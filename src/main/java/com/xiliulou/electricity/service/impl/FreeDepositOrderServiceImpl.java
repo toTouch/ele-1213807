@@ -253,6 +253,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             log.error("FREE DEPOSIT ERROR! freeDepositOrder already AuthToPay,orderId={}", orderId);
             return Triple.of(false, "100412", "免押订单已授权支付");
         }
+    
+        if (Objects.isNull(payTransAmt)) {
+            payTransAmt = BigDecimal.valueOf(freeDepositOrder.getTransAmt());
+        }
 
         if (Objects.isNull(payTransAmt) || payTransAmt.compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
             log.error("FREE DEPOSIT ERROR! payTransAmt is illegal,orderId={}", orderId);
@@ -278,10 +282,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("FREE DEPOSIT ERROR! user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
-        }
-    
-        if (Objects.equals(freeDepositOrder.getType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY)) {
-        
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());

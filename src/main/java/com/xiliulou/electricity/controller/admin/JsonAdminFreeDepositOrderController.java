@@ -135,7 +135,7 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
      */
     @PutMapping("/admin/freeDepositOrder/AuthToPay")
     public R freeDepositAuthToPay(@RequestParam(value = "orderId") String orderId,
-            @RequestParam(value = "payTransAmt") BigDecimal payTransAmt) {
+            @RequestParam(value = "payTransAmt", required = false) BigDecimal payTransAmt) {
     
         Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
         if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
