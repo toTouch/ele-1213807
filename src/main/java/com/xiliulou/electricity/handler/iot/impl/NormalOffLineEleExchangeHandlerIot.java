@@ -7,10 +7,30 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.BatteryTrackRecord;
+import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOfflineReportOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
+import com.xiliulou.electricity.service.BatteryTrackRecordService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOfflineReportOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.vo.OperateMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -166,7 +186,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .oldCellNo(Integer.valueOf(offlineEleOrderVo.getOldCellNo())).newCellNo(newCellNo)
                 .newElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn())
                 .oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn()).orderSeq(null)
-                .status(orderStatus).source(offlineEleOrderVo.getOfflineOrderStatus()).paymentMethod(electricityMemberCard.getType())
+                .status(orderStatus)
+                .source(Objects.isNull(offlineEleOrderVo.getOfflineOrderStatus()) ? ORDER_SOURCE_FOR_OFFLINE
+                        : offlineEleOrderVo.getOfflineOrderStatus()).paymentMethod(electricityMemberCard.getType())
                 .createTime(offlineEleOrderVo.getStartTime()).updateTime(offlineEleOrderVo.getEndTime())
                 .storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
