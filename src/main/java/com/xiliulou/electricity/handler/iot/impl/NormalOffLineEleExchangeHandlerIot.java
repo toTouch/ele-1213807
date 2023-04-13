@@ -166,7 +166,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .oldCellNo(Integer.valueOf(offlineEleOrderVo.getOldCellNo())).newCellNo(newCellNo)
                 .newElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn())
                 .oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn()).orderSeq(null)
-                .status(orderStatus).source(ORDER_SOURCE_FOR_OFFLINE).paymentMethod(electricityMemberCard.getType())
+                .status(orderStatus).source(offlineEleOrderVo.getOfflineOrderStatus()).paymentMethod(electricityMemberCard.getType())
                 .createTime(offlineEleOrderVo.getStartTime()).updateTime(offlineEleOrderVo.getEndTime())
                 .storeId(electricityCabinet.getStoreId()).tenantId(electricityCabinet.getTenantId()).build();
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
@@ -377,7 +377,10 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
          * 订单来源 APP离线换电
          */
         //        protected static final Integer ORDER_SOURCE_FOR_OFFLINE = 3;
-        
+        /**
+         * 离线订单类型  3 离线换电  4  蓝牙
+         * */
+        private Integer offlineOrderStatus;
     }
 }
 
