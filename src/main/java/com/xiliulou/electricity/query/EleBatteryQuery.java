@@ -35,7 +35,7 @@ public class EleBatteryQuery {
      */
     private String iotCardNumber;
 
-    private Boolean isNeedSync;
+    private Integer isNeedSync;
 
 
 }
