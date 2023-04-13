@@ -30,7 +30,6 @@ import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.utils.SignUtils;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
@@ -468,7 +467,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    public R deleteElectricityBattery(Long id, Boolean isNeedSync) {
+    public R deleteElectricityBattery(Long id, Integer isNeedSync) {
         ElectricityBattery electricityBattery = electricitybatterymapper.selectOne(
                 new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, id)
                         .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL)

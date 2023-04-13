@@ -94,7 +94,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @DeleteMapping(value = "/admin/battery/{id}")
     @Log(title = "删除电池")
-    public R delete(@PathVariable("id") Long id, @RequestParam(value = "isNeedSync", defaultValue = "false", required = false) Boolean isNeedSync) {
+    public R delete(@PathVariable("id") Long id, @RequestParam(value = "isNeedSync", defaultValue = "1", required = false) Integer isNeedSync) {
         return electricityBatteryService.deleteElectricityBattery(id, isNeedSync);
     }
 

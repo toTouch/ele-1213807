@@ -33,7 +33,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R queryById(Long electricityBatteryId);
 
-    R deleteElectricityBattery(Long id, Boolean isNeedSync);
+    R deleteElectricityBattery(Long id, Integer isNeedSync);
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
