@@ -138,6 +138,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     @Autowired
     UserCouponService userCouponService;
+    
+    @Autowired
+    UserService userService;
+    
+    @Autowired
+    FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -225,7 +231,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     @Override
     public Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt) {
-
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("FREE DEPOSIT ERROR! not found user!");
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+    
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(uid)) {
+            log.error("FREE DEPOSIT ERROR! not found user! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+    
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
@@ -261,6 +278,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
             log.error("FREE DEPOSIT ERROR! user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+    
+        if (Objects.equals(freeDepositOrder.getType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY)) {
+        
         }
 
         PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -305,10 +326,26 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
         freeDepositOrderUpdate.setPayStatus(pxzAuthToPayRspPxzCommonRsp.getData().getOrderStatus());
-        freeDepositOrderUpdate.setPayTransAmt(payTransAmt.doubleValue());
+        freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getTransAmt() - payTransAmt.doubleValue());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
-
+    
+        //代扣记录
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setUid(freeDepositOrder.getUid());
+        freeDepositAlipayHistory.setName(freeDepositOrder.getRealName());
+        freeDepositAlipayHistory.setPhone(freeDepositOrder.getPhone());
+        freeDepositAlipayHistory.setIdCard(freeDepositOrder.getIdCard());
+        freeDepositAlipayHistory.setOperateName(user.getName());
+        freeDepositAlipayHistory.setOperateUid(user.getUid());
+        freeDepositAlipayHistory.setPayAmount(freeDepositOrder.getTransAmt());
+        freeDepositAlipayHistory.setAlipayAmount(payTransAmt.doubleValue());
+        freeDepositAlipayHistory.setType(freeDepositOrder.getType());
+        freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
+        freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
         return Triple.of(true, "", "授权转支付交易处理中！");
     }
 
