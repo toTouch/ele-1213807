@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.query.BatteryMaterialQuery;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -22,14 +23,9 @@ public interface BatteryMaterialService {
      */
     BatteryMaterial queryByIdFromDB(Long id);
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    BatteryMaterial queryByIdFromCache(Long id);
+    List<BatteryMaterial> selectAllFromCache();
 
+    List<BatteryMaterial> selectAllFromDB();
 
     /**
      * 新增数据
@@ -53,7 +49,7 @@ public interface BatteryMaterialService {
      * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    Integer deleteById(Long id);
 
     List<BatteryMaterial> selectByPage(BatteryMaterialQuery query);
 
@@ -65,5 +61,5 @@ public interface BatteryMaterialService {
 
     Triple<Boolean, String, Object> delete(Long id);
 
-    Triple<Boolean, String, Object> modify(BatteryMaterialQuery batteryMaterialQuery);
+    List<SearchVo> selectBySearch(BatteryMaterialQuery query);
 }

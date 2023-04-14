@@ -8,9 +8,11 @@ import com.xiliulou.electricity.mapper.BatteryMaterialMapper;
 import com.xiliulou.electricity.query.BatteryMaterialQuery;
 import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.SearchVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,11 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
     }
 
     @Override
+    public List<SearchVo> selectBySearch(BatteryMaterialQuery query) {
+        return this.batteryMaterialMapper.selectBySearch(query);
+    }
+
+    @Override
     public Integer checkExistByName(String name) {
         return this.batteryMaterialMapper.checkExistByName(name);
     }
@@ -69,20 +76,11 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
 
         BatteryMaterial batteryMaterial = new BatteryMaterial();
         BeanUtils.copyProperties(batteryMaterialQuery, batteryMaterial);
+        batteryMaterial.setShortType(StringUtils.isBlank(batteryMaterialQuery.getType()) ? "" : batteryMaterialQuery.getType().substring(0, 1).toUpperCase());
         batteryMaterial.setDelFlag(BatteryMaterial.DEL_NORMAL);
         batteryMaterial.setCreateTime(System.currentTimeMillis());
         batteryMaterial.setUpdateTime(System.currentTimeMillis());
         this.insert(batteryMaterial);
-
-        return Triple.of(true, null, null);
-    }
-
-    @Override
-    public Triple<Boolean, String, Object> modify(BatteryMaterialQuery batteryMaterialQuery) {
-        BatteryMaterial batteryMaterial = this.queryByIdFromCache(batteryMaterialQuery.getId());
-        if(Objects.isNull(batteryMaterial)){
-            return Triple.of(true,null,null);
-        }
 
         return Triple.of(true, null, null);
     }
@@ -110,26 +108,25 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
         return this.batteryMaterialMapper.queryById(id);
     }
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
     @Override
-    public BatteryMaterial queryByIdFromCache(Long id) {
-        BatteryMaterial cacheBatteryMaterial = redisService.getWithHash(CacheConstant.CACHE_BATTERY_MATERIAL + id, BatteryMaterial.class);
-        if (Objects.nonNull(cacheBatteryMaterial)) {
+    public List<BatteryMaterial> selectAllFromCache() {
+        List<BatteryMaterial> cacheBatteryMaterial = redisService.getWithList(CacheConstant.CACHE_BATTERY_MATERIAL, BatteryMaterial.class);
+        if (CollectionUtils.isNotEmpty(cacheBatteryMaterial)) {
             return cacheBatteryMaterial;
         }
 
-        BatteryMaterial batteryMaterial = this.queryByIdFromDB(id);
-        if (Objects.isNull(batteryMaterial)) {
+        List<BatteryMaterial> batteryMaterial = this.batteryMaterialMapper.selectAllFromDB();
+        if (CollectionUtils.isEmpty(batteryMaterial)) {
             return batteryMaterial;
         }
 
-        redisService.saveWithHash(CacheConstant.CACHE_BATTERY_MATERIAL + id, batteryMaterial);
+        redisService.saveWithList(CacheConstant.CACHE_BATTERY_MATERIAL, batteryMaterial);
         return batteryMaterial;
+    }
+
+    @Override
+    public List<BatteryMaterial> selectAllFromDB() {
+        return this.batteryMaterialMapper.selectAllFromDB();
     }
 
     /**
@@ -142,6 +139,7 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
     @Transactional(rollbackFor = Exception.class)
     public BatteryMaterial insert(BatteryMaterial batteryMaterial) {
         this.batteryMaterialMapper.insertOne(batteryMaterial);
+        redisService.delete(CacheConstant.CACHE_BATTERY_MATERIAL);
         return batteryMaterial;
     }
 
@@ -154,8 +152,12 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryMaterial batteryMaterial) {
-        return this.batteryMaterialMapper.update(batteryMaterial);
+        int update = this.batteryMaterialMapper.update(batteryMaterial);
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            redisService.delete(CacheConstant.CACHE_BATTERY_MATERIAL);
+        });
 
+        return update;
     }
 
     /**
@@ -166,7 +168,12 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.batteryMaterialMapper.deleteById(id) > 0;
+    public Integer deleteById(Long id) {
+        int delete = this.batteryMaterialMapper.deleteById(id);
+        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
+            redisService.delete(CacheConstant.CACHE_BATTERY_MATERIAL);
+        });
+
+        return delete;
     }
 }

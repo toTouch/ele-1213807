@@ -28,18 +28,25 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="selectByPage" resultMap="BatteryModelMap">
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.BatteryModelPageVO">
         select
-        id, mid,battery_model, battery_type, battery_v, battery_v_short, create_time, update_time
-        from t_battery_model
-        where del_flag=0
+        tbm.id,
+        bm.name as material,
+        tbm.battery_model,
+        tbm.battery_type,
+        tbm.battery_v,
+        tbm.battery_v_short,
+        tbm.create_time,
+        tbm.update_time
+        from t_battery_model tbm left join t_battery_material bm on tbm.mid=bm.id
+        where tbm.del_flag=0
         <if test="batteryType != null and batteryType != ''">
-            and battery_type = #{batteryType}
+            and tbm.battery_type = #{batteryType}
         </if>
         <if test="tenantId != null">
-            and tenant_id = #{tenantId}
+            and tbm.tenant_id = #{tenantId}
         </if>
-        order by create_time desc
+        order by tbm.create_time desc
         limit #{offset}, #{size}
     </select>
 

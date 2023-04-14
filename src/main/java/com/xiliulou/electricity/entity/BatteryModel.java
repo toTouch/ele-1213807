@@ -41,6 +41,12 @@ public class BatteryModel {
      * 电池短型号
      */
     private String batteryVShort;
+
+    /**
+     * 1--系统 1--自定义
+     */
+    private Integer type;
+
     /**
      * 0--正常 1--删除
      */
@@ -58,5 +64,8 @@ public class BatteryModel {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer TYPE_SYSTEM = 1;
+    public static final Integer TYPE_CUSTOMIZE = 2;
 
 }

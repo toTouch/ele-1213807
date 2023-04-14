@@ -68,6 +68,23 @@ public class JsonAdminBatteryModelController extends BaseController {
     }
 
     /**
+     * 获取用户自定义的电池型号
+     *
+     * @param batteryType
+     * @return
+     */
+    @GetMapping("/admin/battery/type/customize")
+    public R customizeBatteryType(@RequestParam(value = "batteryType", required = false) String batteryType) {
+
+        BatteryModelQuery query = BatteryModelQuery.builder()
+                .batteryType(batteryType)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+
+        return R.ok(batteryModelService.selectCustomizeBatteryType(query));
+    }
+
+    /**
      * 新增
      */
     @PostMapping("/admin/battery/model")

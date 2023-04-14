@@ -5,16 +5,21 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.BatteryModelMapper;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.BatteryModelPageVO;
 import com.xiliulou.electricity.vo.BatteryModelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +39,16 @@ import java.util.stream.Collectors;
 @Service("batteryModelService")
 @Slf4j
 public class BatteryModelServiceImpl implements BatteryModelService {
+
+    private static final String SEPARATOR = "_";
     @Resource
     private BatteryModelMapper batteryModelMapper;
     @Autowired
     private TenantService tenantService;
     @Autowired
     private RedisService redisService;
+    @Autowired
+    private BatteryMaterialService materialService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -47,6 +56,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public BatteryModel queryByIdFromDB(Long id) {
         return this.batteryModelMapper.queryById(id);
@@ -71,13 +81,14 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Slave
     @Override
     public List<BatteryModel> queryByTenantIdFromDB(Integer tenantId) {
-        return this.batteryModelMapper.selectList(new LambdaQueryWrapper<BatteryModel>().eq(BatteryModel::getTenantId, tenantId).eq(BatteryModel::getDelFlag, BatteryModel.DEL_NORMAL));
+        return this.batteryModelMapper.selectList(new LambdaQueryWrapper<BatteryModel>().eq(BatteryModel::getTenantId, tenantId)
+                .eq(BatteryModel::getDelFlag, BatteryModel.DEL_NORMAL).orderByAsc(BatteryModel::getId));
     }
 
     @Slave
     @Override
-    public List<BatteryModel> selectByPage(BatteryModelQuery query) {
-        List<BatteryModel> batteryModels = this.batteryModelMapper.selectByPage(query);
+    public List<BatteryModelPageVO> selectByPage(BatteryModelQuery query) {
+        List<BatteryModelPageVO> batteryModels = this.batteryModelMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
         }
@@ -91,6 +102,25 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         return this.batteryModelMapper.selectByPageCount(query);
     }
 
+    /**
+     * 获取用户自定义电池型号列表
+     */
+    @Override
+    public List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query) {
+
+        List<BatteryModel> batteryModels = queryByTenantIdFromCache(query.getTenantId());
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        List<BatteryModel> list = batteryModels.stream().filter(item -> Objects.equals(item.getType(), BatteryModel.TYPE_CUSTOMIZE)).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        return list;
+    }
+
     @Override
     public Triple<Boolean, String, Object> save(BatteryModelQuery batteryModelQuery) {
         List<BatteryModel> batteryModels = queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -101,14 +131,35 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Triple.of(false, "100342", "电池型号超出限制，请联系管理员");
         }
 
+        BatteryMaterial batteryMaterial = materialService.queryByIdFromDB(batteryModelQuery.getMid());
+        if (Objects.isNull(batteryMaterial)) {
+            return Triple.of(false, "100346", "电池材质不存在");
+        }
+
+        if (Objects.isNull(batteryMaterial.getKind()) || StringUtils.isBlank(batteryMaterial.getType()) || StringUtils.isBlank(batteryMaterial.getShortType())) {
+            return Triple.of(false, "", "电池材质异常");
+        }
+
+        //生成电池型号
+        String batteryType = generateBatteryType(batteryModelQuery, batteryMaterial);
+
+        //生成短电池型号
+        String batteryShortType = generateBatteryShortType(batteryModelQuery, batteryMaterial);
+
         BatteryModel batteryModel = new BatteryModel();
-        BeanUtils.copyProperties(batteryModelQuery, batteryModel);
+        batteryModel.setMid(batteryModelQuery.getMid());
         batteryModel.setBatteryModel(++maxBatteryModel);
+        batteryModel.setBatteryType(batteryType);
+        batteryModel.setBatteryVShort(batteryShortType);
+        batteryModel.setBatteryV(batteryModelQuery.getChargeV());
         batteryModel.setTenantId(TenantContextHolder.getTenantId());
+        batteryModel.setType(BatteryModel.TYPE_CUSTOMIZE);
         batteryModel.setDelFlag(BatteryModel.DEL_NORMAL);
         batteryModel.setCreateTime(System.currentTimeMillis());
         batteryModel.setUpdateTime(System.currentTimeMillis());
         this.insert(batteryModel);
+
+        redisService.delete(CacheConstant.CACHE_BATTERY_MODEL + TenantContextHolder.getTenantId());
 
         return Triple.of(true, null, null);
     }
@@ -118,6 +169,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         BatteryModel batteryModel = new BatteryModel();
         BeanUtils.copyProperties(batteryModelQuery, batteryModel);
         batteryModel.setUpdateTime(System.currentTimeMillis());
+
         this.update(batteryModel);
 
         return Triple.of(true, null, null);
@@ -149,13 +201,19 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Transactional(rollbackFor = Exception.class)
     public BatteryModel insert(BatteryModel batteryModel) {
         this.batteryModelMapper.insertOne(batteryModel);
+
+        redisService.delete(CacheConstant.CACHE_BATTERY_MODEL + TenantContextHolder.getTenantId());
         return batteryModel;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryModel batteryModel) {
-        return this.batteryModelMapper.update(batteryModel);
+        int update = this.batteryModelMapper.update(batteryModel);
+        DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
+            redisService.delete(CacheConstant.CACHE_BATTERY_MODEL + TenantContextHolder.getTenantId());
+        });
+        return update;
     }
 
     /**
@@ -166,13 +224,21 @@ public class BatteryModelServiceImpl implements BatteryModelService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.batteryModelMapper.deleteById(id) > 0;
+    public Integer deleteById(Long id) {
+        int delete = this.batteryModelMapper.deleteById(id);
+        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
+            redisService.delete(CacheConstant.CACHE_BATTERY_MODEL + TenantContextHolder.getTenantId());
+        });
+        return delete;
     }
 
     @Override
     public Integer batchInsertDefaultBatteryModel(List<BatteryModel> generateDefaultBatteryModel) {
-        return this.batteryModelMapper.batchInsertDefaultBatteryModel(generateDefaultBatteryModel);
+        Integer result = this.batteryModelMapper.batchInsertDefaultBatteryModel(generateDefaultBatteryModel);
+        DbUtils.dbOperateSuccessThenHandleCache(result, i -> {
+            redisService.delete(CacheConstant.CACHE_BATTERY_MODEL + TenantContextHolder.getTenantId());
+        });
+        return result;
     }
 
     @Slave
@@ -223,6 +289,68 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel)).getOrDefault(type, NumberConstant.ZERO);
     }
 
+    @Override
+    public String analysisBatteryTypeByBatteryName(String batteryName) {
+        String type = "";
+
+        try {
+            //获取系统定义的电池材质
+            List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
+            if (CollectionUtils.isEmpty(batteryMaterials)) {
+                return type;
+            }
+
+            if (StringUtils.isBlank(batteryName) || batteryName.length() < 11) {
+                return type;
+            }
+
+            StringBuilder modelTypeName = new StringBuilder("B_");
+            char[] batteryChars = batteryName.toCharArray();
+
+            //获取电压
+            String chargeV = split(batteryChars, 4, 6);
+            modelTypeName.append(chargeV).append("V").append(SEPARATOR);
+
+            //获取材料体系
+            char material = batteryChars[2];
+            Map<Integer, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getKind, BatteryMaterial::getType));
+
+            modelTypeName.append(materialMap.getOrDefault((int) material, "UNKNOW_TYPE")).append(SEPARATOR);
+            modelTypeName.append(split(batteryChars, 9, 11));
+            return modelTypeName.toString();
+        } catch (Exception e) {
+            log.error("ELE ERROR!battery type analysis fail,batteryName={}", batteryName, e);
+        }
+
+        return type;
+    }
+
+    private static String split(char[] strArray, int beginIndex, int endIndex) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = beginIndex; i < endIndex; i++) {
+            stringBuilder.append(strArray[i]);
+        }
+        return stringBuilder.toString();
+    }
+
+    private String generateBatteryShortType(BatteryModelQuery batteryModelQuery, BatteryMaterial batteryMaterial) {
+        String separator = "/";
+        String V = "V/";
+
+        StringBuilder builder = new StringBuilder();
+        return builder.append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getType())
+                .append(separator).append(batteryModelQuery.getNumber()).toString();
+    }
+
+    private String generateBatteryType(BatteryModelQuery batteryModelQuery, BatteryMaterial batteryMaterial) {
+        String B = "B_";
+        String V = "V_";
+
+        StringBuilder builder = new StringBuilder();
+        return builder.append(B).append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getType())
+                .append(SEPARATOR).append(batteryModelQuery.getNumber()).toString();
+    }
+
     /**
      * 生成系统默认电池型号
      *
@@ -237,6 +365,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b1.setBatteryV(12.6);
         b1.setBatteryVShort("12V/T/3");
         b1.setTenantId(tenantId);
+        b1.setType(BatteryModel.TYPE_SYSTEM);
         b1.setDelFlag(BatteryModel.DEL_NORMAL);
         b1.setCreateTime(System.currentTimeMillis());
         b1.setUpdateTime(System.currentTimeMillis());
@@ -247,6 +376,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b2.setBatteryV(14.6);
         b2.setBatteryVShort("12V/I/3");
         b2.setTenantId(tenantId);
+        b2.setType(BatteryModel.TYPE_SYSTEM);
         b2.setDelFlag(BatteryModel.DEL_NORMAL);
         b2.setCreateTime(System.currentTimeMillis());
         b2.setUpdateTime(System.currentTimeMillis());
@@ -257,6 +387,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b3.setBatteryV(29.4);
         b3.setBatteryVShort("24V/T/7");
         b3.setTenantId(tenantId);
+        b3.setType(BatteryModel.TYPE_SYSTEM);
         b3.setDelFlag(BatteryModel.DEL_NORMAL);
         b3.setCreateTime(System.currentTimeMillis());
         b3.setUpdateTime(System.currentTimeMillis());
@@ -267,6 +398,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b4.setBatteryV(29.2);
         b4.setBatteryVShort("24V/I/8");
         b4.setTenantId(tenantId);
+        b4.setType(BatteryModel.TYPE_SYSTEM);
         b4.setDelFlag(BatteryModel.DEL_NORMAL);
         b4.setCreateTime(System.currentTimeMillis());
         b4.setUpdateTime(System.currentTimeMillis());
@@ -277,6 +409,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b5.setBatteryV(42D);
         b5.setBatteryVShort("36V/T/10");
         b5.setTenantId(tenantId);
+        b5.setType(BatteryModel.TYPE_SYSTEM);
         b5.setDelFlag(BatteryModel.DEL_NORMAL);
         b5.setCreateTime(System.currentTimeMillis());
         b5.setUpdateTime(System.currentTimeMillis());
@@ -287,6 +420,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b6.setBatteryV(36.5);
         b6.setBatteryVShort("36V/I/10");
         b6.setTenantId(tenantId);
+        b6.setType(BatteryModel.TYPE_SYSTEM);
         b6.setDelFlag(BatteryModel.DEL_NORMAL);
         b6.setCreateTime(System.currentTimeMillis());
         b6.setUpdateTime(System.currentTimeMillis());
@@ -297,6 +431,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b7.setBatteryV(40.15);
         b7.setBatteryVShort("36V/I/11");
         b7.setTenantId(tenantId);
+        b7.setType(BatteryModel.TYPE_SYSTEM);
         b7.setDelFlag(BatteryModel.DEL_NORMAL);
         b7.setCreateTime(System.currentTimeMillis());
         b7.setUpdateTime(System.currentTimeMillis());
@@ -307,6 +442,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b8.setBatteryV(43.8);
         b8.setBatteryVShort("36V/I/12");
         b8.setTenantId(tenantId);
+        b8.setType(BatteryModel.TYPE_SYSTEM);
         b8.setDelFlag(BatteryModel.DEL_NORMAL);
         b8.setCreateTime(System.currentTimeMillis());
         b8.setUpdateTime(System.currentTimeMillis());
@@ -317,6 +453,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b9.setBatteryV(54.6);
         b9.setBatteryVShort("48V/T/13");
         b9.setTenantId(tenantId);
+        b9.setType(BatteryModel.TYPE_SYSTEM);
         b9.setDelFlag(BatteryModel.DEL_NORMAL);
         b9.setCreateTime(System.currentTimeMillis());
         b9.setUpdateTime(System.currentTimeMillis());
@@ -327,6 +464,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b10.setBatteryV(58.8);
         b10.setBatteryVShort("48V/T/14");
         b10.setTenantId(tenantId);
+        b10.setType(BatteryModel.TYPE_SYSTEM);
         b10.setDelFlag(BatteryModel.DEL_NORMAL);
         b10.setCreateTime(System.currentTimeMillis());
         b10.setUpdateTime(System.currentTimeMillis());
@@ -337,6 +475,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b11.setBatteryV(54.8);
         b11.setBatteryVShort("48/I/15");
         b11.setTenantId(tenantId);
+        b11.setType(BatteryModel.TYPE_SYSTEM);
         b11.setDelFlag(BatteryModel.DEL_NORMAL);
         b11.setCreateTime(System.currentTimeMillis());
         b11.setUpdateTime(System.currentTimeMillis());
@@ -347,6 +486,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b12.setBatteryV(58.4);
         b12.setBatteryVShort("48V/I/16");
         b12.setTenantId(tenantId);
+        b12.setType(BatteryModel.TYPE_SYSTEM);
         b12.setDelFlag(BatteryModel.DEL_NORMAL);
         b12.setCreateTime(System.currentTimeMillis());
         b12.setUpdateTime(System.currentTimeMillis());
@@ -357,6 +497,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b13.setBatteryV(71.4);
         b13.setBatteryVShort("60V/T/17");
         b13.setTenantId(tenantId);
+        b13.setType(BatteryModel.TYPE_SYSTEM);
         b13.setDelFlag(BatteryModel.DEL_NORMAL);
         b13.setCreateTime(System.currentTimeMillis());
         b13.setUpdateTime(System.currentTimeMillis());
@@ -367,6 +508,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b14.setBatteryV(73D);
         b14.setBatteryVShort("60V/I/20");
         b14.setTenantId(tenantId);
+        b14.setType(BatteryModel.TYPE_SYSTEM);
         b14.setDelFlag(BatteryModel.DEL_NORMAL);
         b14.setCreateTime(System.currentTimeMillis());
         b14.setUpdateTime(System.currentTimeMillis());
@@ -377,6 +519,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b15.setBatteryV(84D);
         b15.setBatteryVShort("72V/T/20");
         b15.setTenantId(tenantId);
+        b15.setType(BatteryModel.TYPE_SYSTEM);
         b15.setDelFlag(BatteryModel.DEL_NORMAL);
         b15.setCreateTime(System.currentTimeMillis());
         b15.setUpdateTime(System.currentTimeMillis());
@@ -387,6 +530,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b16.setBatteryV(87.6);
         b16.setBatteryVShort("72V/I/24");
         b16.setTenantId(tenantId);
+        b16.setType(BatteryModel.TYPE_SYSTEM);
         b16.setDelFlag(BatteryModel.DEL_NORMAL);
         b16.setCreateTime(System.currentTimeMillis());
         b16.setUpdateTime(System.currentTimeMillis());

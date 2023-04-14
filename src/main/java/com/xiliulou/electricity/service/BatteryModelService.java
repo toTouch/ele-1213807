@@ -2,11 +2,11 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.vo.BatteryModelPageVO;
 import com.xiliulou.electricity.vo.BatteryModelVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 电池型号(BatteryModel)表服务接口
@@ -26,10 +26,8 @@ public interface BatteryModelService {
 
     /**
      * 通过ID查询单条数据从缓存
-     *
      */
     List<BatteryModel> queryByTenantIdFromCache(Integer tenantId);
-
 
     List<BatteryModel> queryByTenantIdFromDB(Integer tenantId);
 
@@ -56,11 +54,11 @@ public interface BatteryModelService {
      * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    Integer deleteById(Long id);
 
     List<BatteryModelVO> selectBatteryModels(Integer tenantId);
 
-    List<BatteryModel> selectByPage(BatteryModelQuery query);
+    List<BatteryModelPageVO> selectByPage(BatteryModelQuery query);
 
     Integer selectByPageCount(BatteryModelQuery query);
 
@@ -74,7 +72,11 @@ public interface BatteryModelService {
 
     Integer batchInsertDefaultBatteryModel(List<BatteryModel> generateDefaultBatteryModel);
 
-    String acquireBatteryShort(Integer batteryModel,Integer tenantId);
+    String acquireBatteryShort(Integer batteryModel, Integer tenantId);
 
-    Integer acquireBatteryModel(String type,Integer tenantId);
+    Integer acquireBatteryModel(String type, Integer tenantId);
+
+    String analysisBatteryTypeByBatteryName(String batteryName);
+
+    List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query);
 }

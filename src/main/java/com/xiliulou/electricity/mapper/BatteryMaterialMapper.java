@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.BatteryMaterial;
 import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryMaterialQuery;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -24,13 +25,8 @@ public interface BatteryMaterialMapper extends BaseMapper<BatteryMaterial> {
      */
     BatteryMaterial queryById(Long id);
 
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param batteryMaterial 实例对象
-     * @return 对象列表
-     */
-    List<BatteryMaterial> queryAll(BatteryMaterial batteryMaterial);
+
+    List<BatteryMaterial> selectAllFromDB();
 
     /**
      * 新增数据
@@ -61,4 +57,6 @@ public interface BatteryMaterialMapper extends BaseMapper<BatteryMaterial> {
     Integer selectByPageCount(BatteryMaterialQuery query);
 
     Integer checkExistByName(@Param("name") String name);
+
+    List<SearchVo> selectBySearch(BatteryMaterialQuery query);
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +24,7 @@ public class BatteryMaterial {
     /**
      * id
      */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
      * 名称
@@ -33,6 +36,10 @@ public class BatteryMaterial {
     private String type;
 
     private String shortType;
+    /**
+     * 材料体系
+     */
+    private Integer kind;
     /**
      * 0--正常 1--删除
      */

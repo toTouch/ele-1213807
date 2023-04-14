@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.BatteryModel;
 import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.vo.BatteryModelPageVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -56,7 +57,7 @@ public interface BatteryModelMapper extends BaseMapper<BatteryModel> {
      */
     int deleteById(Long id);
 
-    List<BatteryModel> selectByPage(BatteryModelQuery query);
+    List<BatteryModelPageVO> selectByPage(BatteryModelQuery query);
 
     Integer selectByPageCount(BatteryModelQuery query);
 

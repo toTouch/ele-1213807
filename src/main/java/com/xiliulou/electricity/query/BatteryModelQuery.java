@@ -26,24 +26,30 @@ public class BatteryModelQuery {
 
     private Integer tenantId;
 
+    private String batteryType;
+
     @NotNull(message = "id不能为空!", groups = {UpdateGroup.class})
     private Long id;
 
     @NotNull(message = "电池材质不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Long mid;
-    /**
-     * 电池型号
-     */
-    @NotBlank(message = "电池型号不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
-    private String batteryType;
+
     /**
      * 电池电压
      */
     @NotNull(message = "电池电压不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
-    private Double batteryV;
+    private Integer standardV;
+
     /**
-     * 电池短型号
+     * 默认充电电压
      */
-    @NotBlank(message = "电池短型号不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
-    private String batteryVShort;
+    @NotNull(message = "默认充电电压电压不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    private Double chargeV;
+
+    /**
+     * 电池串数
+     */
+    @NotNull(message = "电池串数不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    private Integer number;
+
 }

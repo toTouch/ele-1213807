@@ -7,6 +7,7 @@
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="type" column="type" jdbcType="VARCHAR"/>
         <result property="shortType" column="short_type" jdbcType="VARCHAR"/>
+        <result property="kind" column="kind" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -15,7 +16,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMaterialMap">
         select
-          id, name, type, short_type, del_flag, tenant_id, create_time, update_time
+          id, name, type, short_type, kind, del_flag, tenant_id, create_time, update_time
         from t_battery_material
         where id = #{id}
     </select>
@@ -28,11 +29,11 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="BatteryMaterialMap">
         select
-          id, name, type, short_type, create_time
+        id, name, type, short_type, kind, create_time
         from t_battery_material
         where del_flag = 0
         <if test="name != null and name != ''">
-            and name = #{name}
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
         order by create_time desc
         limit #{offset}, #{size}
@@ -44,41 +45,31 @@
         from t_battery_material
         where del_flag = 0
         <if test="name != null and name != ''">
-            and name = #{name}
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <select id="selectBySearch" resultType="com.xiliulou.electricity.vo.SearchVo">
+        select
+        id, name
+        from t_battery_material
+        where del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
     </select>
 
     <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="BatteryMaterialMap">
+    <select id="selectAllFromDB" resultMap="BatteryMaterialMap">
         select
-        id, name, type, short_type, del_flag, tenant_id, create_time, update_time
-        from t_battery_material
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="name != null and name != ''">
-                and name = #{name}
-            </if>
-            <if test="type != null and type != ''">
-                and type = #{type}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-        </where>
+        id, name, type, short_type, kind
+        from t_battery_material where del_flag =0
     </select>
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_battery_material(name, type, short_type, del_flag, create_time, update_time)
-        values (#{name}, #{type}, #{shortType},#{delFlag},  #{createTime}, #{updateTime})
+        insert into t_battery_material(name, type, short_type, kind, del_flag, create_time, update_time)
+        values (#{name}, #{type}, #{shortType}, #{kind}, #{delFlag},  #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -93,6 +84,9 @@
             </if>
             <if test="shortType != null and shortType != ''">
                 short_type = #{shortType},
+            </if>
+            <if test="kind != null">
+                kind = #{kind},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},

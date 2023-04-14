@@ -2,10 +2,8 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMaterialQuery;
 import com.xiliulou.electricity.service.BatteryMaterialService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -65,6 +63,29 @@ public class JsonAdminBatteryMaterialController extends BaseController {
     }
 
     /**
+     * 分页总数
+     */
+    @GetMapping("/admin/battery/material/search")
+    public R search(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                    @RequestParam(value = "name", required = false) String name) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        BatteryMaterialQuery query = BatteryMaterialQuery.builder()
+                .size(size)
+                .offset(offset)
+                .name(name)
+                .build();
+        return R.ok(batteryMaterialService.selectBySearch(query));
+    }
+
+    /**
      * 新增
      */
     @PostMapping("/admin/battery/material")
@@ -99,7 +120,7 @@ public class JsonAdminBatteryMaterialController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return R.ok(batteryMaterialService.modify(batteryMaterialQuery));
+        return R.ok();
     }
 
     /**
