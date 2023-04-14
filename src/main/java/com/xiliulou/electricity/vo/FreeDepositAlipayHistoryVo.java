@@ -34,6 +34,10 @@ public class FreeDepositAlipayHistoryVo {
     
     private Integer type;
     
+    private Integer status;
+    
+    private String remark;
+    
     private Long createTime;
     
     private Integer tenantId;
