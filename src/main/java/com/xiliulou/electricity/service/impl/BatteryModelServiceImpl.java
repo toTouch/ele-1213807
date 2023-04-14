@@ -182,8 +182,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Triple.of(true, null, null);
         }
 
-        if (batteryModel.getBatteryModel() <= 16) {
-            return Triple.of(false, "", "默认型号不允许删除");
+        if (Objects.equals(batteryModel.getType(),BatteryModel.TYPE_SYSTEM)) {
+            return Triple.of(false, "", "系统默认型号不允许删除");
         }
 
         this.deleteById(id);
