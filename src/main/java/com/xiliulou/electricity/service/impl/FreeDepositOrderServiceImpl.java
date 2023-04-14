@@ -342,7 +342,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setPayAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()));
         freeDepositAlipayHistory.setAlipayAmount(payTransAmt);
         freeDepositAlipayHistory.setType(freeDepositOrder.getType());
-        freeDepositAlipayHistory.setPayStatus(pxzAuthToPayRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositAlipayHistory.setPayStatus(FreeDepositAlipayHistory.PAY_STATUS_INIT);
         freeDepositAlipayHistory.setRemark(remark);
         freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
@@ -896,8 +896,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phone(freeBatteryDepositQuery.getPhoneNumber())
                 .realName(freeBatteryDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .payStatus(FreeDepositOrder.AUTH_INIT)
+                .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -1013,8 +1012,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phone(freeCarDepositQuery.getPhoneNumber())
                 .realName(freeCarDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .payStatus(FreeDepositOrder.AUTH_INIT)
+                .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(carDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -1137,8 +1135,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phone(freeCarBatteryDepositQuery.getPhoneNumber())
                 .realName(freeCarBatteryDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .payStatus(FreeDepositOrder.AUTH_INIT)
+                .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().add(carDepositOrder.getPayAmount()).doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)

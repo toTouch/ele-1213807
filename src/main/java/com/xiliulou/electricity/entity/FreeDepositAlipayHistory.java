@@ -63,4 +63,17 @@ public class FreeDepositAlipayHistory {
     
     public static final Integer DEL_DEL = 1;
     
+    /**
+     * 授权免押状态 -1:初始化;0:交易成功；1:交易处理中；2:交易失败；4:交易关闭
+     */
+    public static final Integer PAY_STATUS_INIT = -1;
+    
+    public static final Integer PAY_STATUS_DEAL_SUCCESS = 0;
+    
+    public static final Integer PAY_STATUS_DEALING = 1;
+    
+    public static final Integer PAY_STATUS_DEAL_FAIL = 2;
+    
+    public static final Integer PAY_STATUS_DEAL_CLOSE = 4;
+    
 }
