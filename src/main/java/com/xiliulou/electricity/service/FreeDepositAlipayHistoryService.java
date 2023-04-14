@@ -68,4 +68,6 @@ public interface FreeDepositAlipayHistoryService {
     R queryCount(FreeDepositAlipayHistoryQuery query);
     
     FreeDepositAlipayHistory queryByOrderId(String orderId);
+    
+    Integer updateByOrderId(FreeDepositAlipayHistory freeDepositAlipayHistory);
 }

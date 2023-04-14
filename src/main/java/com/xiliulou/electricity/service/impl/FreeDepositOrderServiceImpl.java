@@ -230,7 +230,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt) {
+    public Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt, String remark) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             log.error("FREE DEPOSIT ERROR! not found user!");
@@ -342,6 +342,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setPayAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()));
         freeDepositAlipayHistory.setAlipayAmount(payTransAmt);
         freeDepositAlipayHistory.setType(freeDepositOrder.getType());
+        freeDepositAlipayHistory.setPayStatus(pxzAuthToPayRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositAlipayHistory.setRemark(remark);
         freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
         freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
@@ -399,6 +401,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositOrderUpdate.setPayStatus(pxzAuthToPayOrderQueryRspPxzCommonRsp.getData().getOrderStatus());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
+    
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setPayStatus(pxzAuthToPayOrderQueryRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
 
         return Triple.of(true, "", pxzAuthToPayOrderQueryRspPxzCommonRsp.getData());
     }

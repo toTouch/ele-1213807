@@ -55,6 +55,10 @@ public class FreeDepositAlipayHistory {
     
     private Integer tenantId;
     
+    private Integer payStatus;
+    
+    private String remark;
+    
     public static final Integer DEL_NORMAL = 0;
     
     public static final Integer DEL_DEL = 1;

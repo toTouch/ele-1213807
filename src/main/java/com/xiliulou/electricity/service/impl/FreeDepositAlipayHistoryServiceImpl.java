@@ -117,4 +117,9 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
     public FreeDepositAlipayHistory queryByOrderId(String orderId) {
         return freeDepositAlipayHistoryMapper.queryByOrderId(orderId);
     }
+    
+    @Override
+    public Integer updateByOrderId(FreeDepositAlipayHistory freeDepositAlipayHistory) {
+        return freeDepositAlipayHistoryMapper.updateByOrderId(freeDepositAlipayHistory);
+    }
 }
