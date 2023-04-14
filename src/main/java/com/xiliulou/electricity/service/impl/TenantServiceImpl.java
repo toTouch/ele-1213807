@@ -100,7 +100,7 @@ public class TenantServiceImpl implements TenantService {
         tenantMapper.insert(tenant);
 
         //保存租户默认电池型号
-        batteryModelService.batchInsertDefaultBatteryModel(BatteryModelServiceImpl.generateDefaultBatteryModel(TenantContextHolder.getTenantId()));
+        batteryModelService.batchInsertDefaultBatteryModel(BatteryModelServiceImpl.generateDefaultBatteryModel(tenant.getId()));
 
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
