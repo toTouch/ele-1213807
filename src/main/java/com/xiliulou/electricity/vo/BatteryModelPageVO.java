@@ -33,6 +33,11 @@ public class BatteryModelPageVO {
     private String batteryVShort;
 
     /**
+     * 1--系统 1--自定义
+     */
+    private Integer type;
+
+    /**
      * 创建时间
      */
     private Long createTime;
