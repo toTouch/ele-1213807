@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.BatteryMaterialQuery;
 import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.BatteryMaterialSearchVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,7 +59,7 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
     }
 
     @Override
-    public List<SearchVo> selectBySearch(BatteryMaterialQuery query) {
+    public List<BatteryMaterialSearchVO> selectBySearch(BatteryMaterialQuery query) {
         return this.batteryMaterialMapper.selectBySearch(query);
     }
 

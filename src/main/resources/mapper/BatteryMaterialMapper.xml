@@ -49,9 +49,9 @@
         </if>
     </select>
 
-    <select id="selectBySearch" resultType="com.xiliulou.electricity.vo.SearchVo">
+    <select id="selectBySearch" resultType="com.xiliulou.electricity.vo.BatteryMaterialSearchVO">
         select
-        id, name
+        id, name, short_type
         from t_battery_material
         where del_flag = 0
         <if test="name != null and name != ''">

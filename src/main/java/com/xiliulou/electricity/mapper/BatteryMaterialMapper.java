@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.BatteryMaterial;
 import java.util.List;
 
 import com.xiliulou.electricity.query.BatteryMaterialQuery;
+import com.xiliulou.electricity.vo.BatteryMaterialSearchVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -58,5 +59,5 @@ public interface BatteryMaterialMapper extends BaseMapper<BatteryMaterial> {
 
     Integer checkExistByName(@Param("name") String name);
 
-    List<SearchVo> selectBySearch(BatteryMaterialQuery query);
+    List<BatteryMaterialSearchVO> selectBySearch(BatteryMaterialQuery query);
 }

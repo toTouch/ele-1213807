@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMaterial;
 import com.xiliulou.electricity.query.BatteryMaterialQuery;
+import com.xiliulou.electricity.vo.BatteryMaterialSearchVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -61,5 +62,5 @@ public interface BatteryMaterialService {
 
     Triple<Boolean, String, Object> delete(Long id);
 
-    List<SearchVo> selectBySearch(BatteryMaterialQuery query);
+    List<BatteryMaterialSearchVO> selectBySearch(BatteryMaterialQuery query);
 }
