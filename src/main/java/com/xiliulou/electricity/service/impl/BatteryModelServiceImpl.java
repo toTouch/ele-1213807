@@ -381,7 +381,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
      */
     private String transformBatteryType(BatteryModel batteryModel) {
         String batteryType = "";
-        if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryVShort())) {
+        if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils.isBlank(batteryModel.getBatteryVShort())) {
             return batteryType;
         }
 
@@ -390,17 +390,22 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return batteryType;
         }
 
-        Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getShortType, BatteryMaterial::getName));
+        Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName));
 
         String[] split = batteryModel.getBatteryVShort().split(SEPARATE);
-        if(ArrayUtils.isEmpty(split)|| split.length<2){
+        if (ArrayUtils.isEmpty(split) || split.length < 2) {
             return batteryType;
         }
 
-        String materialName=materialMap.getOrDefault(split[1],"UNKNOWNAME");
+        String temp = batteryModel.getBatteryType();
+        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1), temp.lastIndexOf(SEPARATOR));
+
+        String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
 
         StringBuilder builder = new StringBuilder(split[0]);
-        return builder.append(materialName).append(split[2]).append("串").toString();
+        batteryType = builder.append(materialName).append(split[2]).append("串").toString();
+
+        return batteryType;
     }
 
     private String transformBatteryType(BatteryModelPageVO batteryModel) {
@@ -417,11 +422,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getShortType, BatteryMaterial::getName));
 
         String[] split = batteryModel.getBatteryVShort().split(SEPARATE);
-        if(ArrayUtils.isEmpty(split)|| split.length<2){
+        if (ArrayUtils.isEmpty(split) || split.length < 2) {
             return batteryType;
         }
 
-        String materialName=materialMap.getOrDefault(split[1],"UNKNOWNAME");
+        String materialName = materialMap.getOrDefault(split[1], "UNKNOWNAME");
 
         StringBuilder builder = new StringBuilder(split[0]);
         return builder.append(materialName).append(split[2]).append("串").toString();
