@@ -16,7 +16,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMaterialMap">
         select
-          id, name, type, short_type, kind, del_flag, tenant_id, create_time, update_time
+          id, name, type, short_type, kind, create_time, update_time
         from t_battery_material
         where id = #{id}
     </select>

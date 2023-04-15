@@ -48,7 +48,7 @@
         <if test="tenantId != null">
             and tbm.tenant_id = #{tenantId}
         </if>
-        order by tbm.battery_model desc
+        order by tbm.battery_model
         limit #{offset}, #{size}
     </select>
 
