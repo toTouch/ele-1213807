@@ -97,7 +97,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
 
-        batteryModels.parallelStream().forEach(item -> item.setBatteryType(transformBatteryType(item)));
+        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
+        if (CollectionUtils.isEmpty(batteryMaterials)) {
+            return Collections.emptyList();
+        }
+
+        batteryModels.stream().forEach(item -> item.setBatteryType(transformBatteryType(item, batteryMaterials)));
         return batteryModels;
     }
 
@@ -119,10 +124,15 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
 
-        return batteryModels.parallelStream().map(item -> {
+        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
+        if (CollectionUtils.isEmpty(batteryMaterials)) {
+            return Collections.emptyList();
+        }
+
+        return batteryModels.stream().map(item -> {
             BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
             BeanUtils.copyProperties(item, batteryTypeVO);
-            batteryTypeVO.setBatteryTypeName(transformBatteryType(item));
+            batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
             return batteryTypeVO;
         }).collect(Collectors.toList());
     }
@@ -168,7 +178,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
         //生成电池型号
         String batteryType = generateBatteryType(batteryModelQuery, batteryMaterial);
-        if(batteryTypeList.contains(batteryType)){
+        if (batteryTypeList.contains(batteryType)) {
             return Triple.of(false, "100347", "电池型号已存在");
         }
 
@@ -283,7 +293,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
 
-        return batteryModels.parallelStream().map(item -> {
+        return batteryModels.stream().map(item -> {
             BatteryModelVO batteryModelVO = new BatteryModelVO();
             BeanUtils.copyProperties(item, batteryModelVO);
             return batteryModelVO;
@@ -383,14 +393,9 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     /**
      * 型号名称转换为中文
      */
-    private String transformBatteryType(BatteryModel batteryModel) {
+    private String transformBatteryType(BatteryModel batteryModel, List<BatteryMaterial> batteryMaterials) {
         String batteryType = "";
         if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils.isBlank(batteryModel.getBatteryVShort())) {
-            return batteryType;
-        }
-
-        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
-        if (CollectionUtils.isEmpty(batteryMaterials)) {
             return batteryType;
         }
 
@@ -411,14 +416,9 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         return batteryType;
     }
 
-    private String transformBatteryType(BatteryModelPageVO batteryModel) {
+    private String transformBatteryType(BatteryModelPageVO batteryModel, List<BatteryMaterial> batteryMaterials) {
         String batteryType = "";
         if (Objects.isNull(batteryModel) || StringUtils.isBlank(batteryModel.getBatteryType()) || StringUtils.isBlank(batteryModel.getBatteryVShort())) {
-            return batteryType;
-        }
-
-        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
-        if (CollectionUtils.isEmpty(batteryMaterials)) {
             return batteryType;
         }
 
