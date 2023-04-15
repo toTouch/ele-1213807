@@ -150,6 +150,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     public Triple<Boolean, String, Object> save(BatteryModelQuery batteryModelQuery) {
         List<BatteryModel> batteryModels = queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         Integer maxBatteryModel = batteryModels.stream().sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed()).map(BatteryModel::getBatteryModel).findFirst().orElse(0);
+        List<String> batteryTypeList = batteryModels.stream().sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed()).map(BatteryModel::getBatteryType).collect(Collectors.toList());
 
         //电池型号数量
         if (batteryModels.size() > 50) {
@@ -167,6 +168,9 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
         //生成电池型号
         String batteryType = generateBatteryType(batteryModelQuery, batteryMaterial);
+        if(batteryTypeList.contains(batteryType)){
+            return Triple.of(false, "100347", "电池型号已存在");
+        }
 
         //生成短电池型号
         String batteryShortType = generateBatteryShortType(batteryModelQuery, batteryMaterial);
@@ -297,7 +301,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return "";
         }
 
-        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryModel, BatteryModel::getBatteryType)).getOrDefault(batteryModel, "");
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryModel, BatteryModel::getBatteryType, (item1, item2) -> item2)).getOrDefault(batteryModel, "");
     }
 
     /**
@@ -311,7 +315,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return NumberConstant.ZERO;
         }
 
-        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel)).getOrDefault(type, NumberConstant.ZERO);
+        return batteryModels.stream().collect(Collectors.toMap(BatteryModel::getBatteryType, BatteryModel::getBatteryModel, (item1, item2) -> item2)).getOrDefault(type, NumberConstant.ZERO);
     }
 
     @Override
@@ -338,7 +342,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
             //获取材料体系
             char material = batteryChars[2];
-            Map<Integer, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getKind, BatteryMaterial::getType));
+            Map<Integer, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getKind, BatteryMaterial::getType, (item1, item2) -> item2));
 
             modelTypeName.append(materialMap.getOrDefault((int) material, "UNKNOW_TYPE")).append(SEPARATOR);
             modelTypeName.append(split(batteryChars, 9, 11));
@@ -390,7 +394,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return batteryType;
         }
 
-        Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName, (String item1, String item2) -> item2));
+        Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName, (item1, item2) -> item2));
 
         String[] split = batteryModel.getBatteryVShort().split(SEPARATE);
         if (ArrayUtils.isEmpty(split) || split.length < 2) {
