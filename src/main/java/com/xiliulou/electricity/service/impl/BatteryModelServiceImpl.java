@@ -398,12 +398,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         }
 
         String temp = batteryModel.getBatteryType();
-        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1), temp.lastIndexOf(SEPARATOR));
+        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1) + 1, temp.lastIndexOf(SEPARATOR));
 
         String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
 
-        StringBuilder builder = new StringBuilder(split[0]);
-        batteryType = builder.append(materialName).append(split[2]).append("串").toString();
+        batteryType = split[0] + SEPARATE + materialName + SEPARATE + split[2] + "串";
 
         return batteryType;
     }
@@ -427,12 +426,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         }
 
         String temp = batteryModel.getBatteryType();
-        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1), temp.lastIndexOf(SEPARATOR));
+        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1) + 1, temp.lastIndexOf(SEPARATOR));
 
         String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
 
-        StringBuilder builder = new StringBuilder(split[0]);
-        batteryType = builder.append(materialName).append(split[2]).append("串").toString();
+        batteryType = split[0] + SEPARATE + materialName + SEPARATE + split[2] + "串";
 
         return batteryType;
     }
