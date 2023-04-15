@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.vo.BatteryModelPageVO;
 import com.xiliulou.electricity.vo.BatteryModelVO;
+import com.xiliulou.electricity.vo.BatteryTypeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -79,4 +80,6 @@ public interface BatteryModelService {
     String analysisBatteryTypeByBatteryName(String batteryName);
 
     List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query);
+
+    List<BatteryTypeVO> selectBatteryTypeAll();
 }
