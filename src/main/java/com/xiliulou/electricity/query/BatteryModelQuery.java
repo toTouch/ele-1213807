@@ -6,9 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 /**
  * @author zzlong
@@ -28,28 +29,31 @@ public class BatteryModelQuery {
 
     private String batteryType;
 
-    @NotNull(message = "id不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
     private Long id;
 
-    @NotNull(message = "电池材质不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "电池材质不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Long mid;
 
     /**
      * 电池电压
      */
-    @NotNull(message = "电池电压不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "电池电压不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 0, max = 380, message = "电池电压不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer standardV;
 
     /**
      * 默认充电电压
      */
-    @NotNull(message = "默认充电电压电压不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "默认充电电压不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 0, max = 380, message = "默认充电电压不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private Double chargeV;
 
     /**
      * 电池串数
      */
-    @NotNull(message = "电池串数不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "电池串数不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @Positive(message = "电池串数不合法!", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer number;
 
 }

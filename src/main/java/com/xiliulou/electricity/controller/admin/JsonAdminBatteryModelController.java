@@ -95,7 +95,7 @@ public class JsonAdminBatteryModelController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             log.warn("ELE ERROR! add batteryMaterial no authority!");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -114,7 +114,7 @@ public class JsonAdminBatteryModelController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             log.warn("ELE ERROR! add batteryMaterial no authority!");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -133,7 +133,7 @@ public class JsonAdminBatteryModelController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!SecurityUtils.isAdmin() || !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             log.warn("ELE ERROR! add batteryMaterial no authority!");
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
