@@ -352,9 +352,9 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
             //获取材料体系
             char material = batteryChars[2];
-            Map<Integer, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getKind, BatteryMaterial::getType, (item1, item2) -> item2));
+            Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(item -> String.valueOf(item.getKind()), BatteryMaterial::getType, (item1, item2) -> item2));
 
-            modelTypeName.append(materialMap.getOrDefault((int) material, "UNKNOW_TYPE")).append(SEPARATOR);
+            modelTypeName.append(materialMap.getOrDefault(material, "UNKNOW_TYPE")).append(SEPARATOR);
             modelTypeName.append(split(batteryChars, 9, 11));
             return modelTypeName.toString();
         } catch (Exception e) {
