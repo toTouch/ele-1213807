@@ -102,7 +102,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
 
-        batteryModels.stream().forEach(item -> item.setBatteryType(transformBatteryType(item, batteryMaterials)));
+        batteryModels.forEach(item -> item.setBatteryType(transformBatteryType(item, batteryMaterials)));
         return batteryModels;
     }
 
@@ -399,19 +399,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return batteryType;
         }
 
-        Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName, (item1, item2) -> item2));
-
-        String[] split = batteryModel.getBatteryVShort().split(SEPARATE);
-        if (ArrayUtils.isEmpty(split) || split.length < 2) {
-            return batteryType;
-        }
-
-        String temp = batteryModel.getBatteryType();
-        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1) + 1, temp.lastIndexOf(SEPARATOR));
-
-        String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
-
-        batteryType = split[0] + SEPARATE + materialName + SEPARATE + split[2] + "串";
+        batteryType = acquireBatteryType(batteryModel.getBatteryType(), batteryModel.getBatteryVShort(), batteryMaterials);
 
         return batteryType;
     }
@@ -422,28 +410,30 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return batteryType;
         }
 
+        batteryType = acquireBatteryType(batteryModel.getBatteryType(), batteryModel.getBatteryVShort(), batteryMaterials);
+
+        return batteryType;
+    }
+
+    private String acquireBatteryType(String batteryType, String batteryVShort, List<BatteryMaterial> batteryMaterials) {
         Map<String, String> materialMap = batteryMaterials.stream().collect(Collectors.toMap(BatteryMaterial::getType, BatteryMaterial::getName, (String item1, String item2) -> item2));
 
-        String[] split = batteryModel.getBatteryVShort().split(SEPARATE);
+        String[] split = batteryVShort.split(SEPARATE);
         if (ArrayUtils.isEmpty(split) || split.length < 2) {
             return batteryType;
         }
 
-        String temp = batteryModel.getBatteryType();
-        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryModel.getBatteryType().indexOf(SEPARATOR) + 1) + 1, temp.lastIndexOf(SEPARATOR));
+        String temp = batteryType;
+        String typeName = temp.substring(temp.indexOf(SEPARATOR, batteryType.indexOf(SEPARATOR) + 1) + 1, temp.lastIndexOf(SEPARATOR));
 
         String materialName = materialMap.getOrDefault(typeName, "UNKNOWNAME");
 
-        batteryType = split[0] + SEPARATE + materialName + SEPARATE + split[2] + "串";
-
-        return batteryType;
+        return split[0] + SEPARATE + materialName + SEPARATE + split[2] + "串";
     }
 
     /**
      * 生成系统默认电池型号
      *
-     * @param tenantId
-     * @return
      */
     public static List<BatteryModel> generateDefaultBatteryModel(Integer tenantId) {
         List<BatteryModel> list = new ArrayList<>();
