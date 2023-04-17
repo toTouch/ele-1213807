@@ -364,7 +364,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return;
         }
 
-        oldFranchiseeInsurances.parallelStream().peek(item -> {
+        oldFranchiseeInsurances.stream().peek(item -> {
             item.setId(null);
             item.setName(item.getName() + "(迁)");
             item.setFranchiseeId(newFranchisee.getId());

@@ -633,7 +633,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //根据新加盟商更新数据
-        oldElectricityMemberCards.parallelStream().peek(item -> {
+        oldElectricityMemberCards.stream().peek(item -> {
             item.setId(null);
             item.setName(item.getName() + "(迁)");
             item.setModelType(newFranchisee.getModelType());
