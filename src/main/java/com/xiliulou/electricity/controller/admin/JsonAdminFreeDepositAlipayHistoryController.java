@@ -32,7 +32,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) String endTime) {
+            @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size) || size > 50 || size < 0) {
             size = 50L;
         }
@@ -63,7 +63,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) String endTime) {
+            @RequestParam(value = "endTime", required = false) Long endTime) {
         
         FreeDepositAlipayHistoryQuery query = new FreeDepositAlipayHistoryQuery();
         query.setOrderId(orderId);

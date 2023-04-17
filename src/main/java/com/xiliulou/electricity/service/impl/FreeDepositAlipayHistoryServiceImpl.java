@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FreeDepositAlipayHistory;
 import com.xiliulou.electricity.mapper.FreeDepositAlipayHistoryMapper;
 import com.xiliulou.electricity.query.FreeDepositAlipayHistoryQuery;
@@ -101,18 +102,21 @@ public class FreeDepositAlipayHistoryServiceImpl implements FreeDepositAlipayHis
         return this.freeDepositAlipayHistoryMapper.deleteById(id) > 0;
     }
     
+    @Slave
     @Override
     public R queryList(FreeDepositAlipayHistoryQuery query) {
         List<FreeDepositAlipayHistoryVo> voList = freeDepositAlipayHistoryMapper.queryList(query);
         return R.ok(voList);
     }
     
+    @Slave
     @Override
     public R queryCount(FreeDepositAlipayHistoryQuery query) {
         Long count = freeDepositAlipayHistoryMapper.queryCount(query);
         return R.ok(count);
     }
     
+    @Slave
     @Override
     public FreeDepositAlipayHistory queryByOrderId(String orderId) {
         return freeDepositAlipayHistoryMapper.queryByOrderId(orderId);
