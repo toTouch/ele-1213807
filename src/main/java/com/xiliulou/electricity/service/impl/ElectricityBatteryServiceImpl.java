@@ -160,7 +160,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         Pair<Boolean, String> result = callBatteryPlatSaveSn(Collections.singletonList(query.getSn()), query.getIsNeedSync());
         if (!result.getKey()) {
-            return R.fail("200001", result.getRight());
+            return R.fail("200005", result.getRight());
         }
 
         ElectricityBattery saveBattery = new ElectricityBattery();
@@ -295,7 +295,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (!eleQuery.getSn().equalsIgnoreCase(electricityBatteryDb.getSn())) {
             Pair<Boolean, String> result = callBatteryPlatModify(eleQuery.getSn(), electricityBatteryDb.getSn(), eleQuery.getIsNeedSync());
             if (!result.getKey()) {
-                return R.fail("200001", result.getRight());
+                return R.fail("200005", result.getRight());
             }
         }
 
@@ -484,7 +484,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         Pair<Boolean, String> result = callBatteryPlatDeleteSn(Collections.singletonList(electricityBattery.getSn()), isNeedSync);
         if (!result.getKey()) {
-            return R.fail("200001", result.getRight());
+            return R.fail("200005", result.getRight());
         }
 
         int raws = electricitybatterymapper.deleteById(id, TenantContextHolder.getTenantId());

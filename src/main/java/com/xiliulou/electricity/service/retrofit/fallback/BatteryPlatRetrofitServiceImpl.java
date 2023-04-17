@@ -19,13 +19,13 @@ public class BatteryPlatRetrofitServiceImpl implements BatteryPlatRetrofitServic
 
     @Override
     public R batchSave(Map<String, String> headers, BatteryBatchOperateQuery request) {
-        return R.fail("200001","服务调用出错");    }
+        return R.fail("200005","服务调用出错");    }
 
     @Override
     public R batchDelete(Map<String, String> headers, BatteryBatchOperateQuery request) {
-        return R.fail("200001","服务调用出错");    }
+        return R.fail("200005","服务调用出错");    }
 
     @Override
     public R modifyBatterySn(Map<String, String> headers, BatteryModifyQuery request) {
-        return R.fail("200001","服务调用出错");    }
+        return R.fail("200005","服务调用出错");    }
 }
