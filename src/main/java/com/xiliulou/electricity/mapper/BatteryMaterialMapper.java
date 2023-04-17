@@ -57,7 +57,9 @@ public interface BatteryMaterialMapper extends BaseMapper<BatteryMaterial> {
 
     Integer selectByPageCount(BatteryMaterialQuery query);
 
-    Integer checkExistByName(@Param("name") String name);
+    Integer checkExistByType(@Param("type") String type);
+
+    Integer checkExistByKind(@Param("kind") Integer kind);
 
     List<BatteryMaterialSearchVO> selectBySearch(BatteryMaterialQuery query);
 }

@@ -10,7 +10,6 @@ import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.BatteryMaterialSearchVO;
-import com.xiliulou.electricity.vo.SearchVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -64,16 +63,27 @@ public class BatteryMaterialServiceImpl implements BatteryMaterialService {
     }
 
     @Override
-    public Integer checkExistByName(String name) {
-        return this.batteryMaterialMapper.checkExistByName(name);
+    public Integer checkExistByType(String type) {
+        return this.batteryMaterialMapper.checkExistByType(type);
+    }
+
+    @Override
+    public Integer checkExistByKind(Integer kind) {
+        return this.batteryMaterialMapper.checkExistByKind(kind);
     }
 
     @Override
     public Triple<Boolean, String, Object> save(BatteryMaterialQuery batteryMaterialQuery) {
-        Integer result = this.checkExistByName(batteryMaterialQuery.getName());
+        Integer result = this.checkExistByType(batteryMaterialQuery.getType());
         if (Objects.nonNull(result)) {
-            return Triple.of(false, "100343", "电池材质已存在");
+            return Triple.of(false, "100343", "电池材质类型已存在");
         }
+
+        Integer result2 = this.checkExistByKind(batteryMaterialQuery.getKind());
+        if (Objects.nonNull(result2)) {
+            return Triple.of(false, "100343", "电池材料体系已存在");
+        }
+
 
         BatteryMaterial batteryMaterial = new BatteryMaterial();
         BeanUtils.copyProperties(batteryMaterialQuery, batteryMaterial);

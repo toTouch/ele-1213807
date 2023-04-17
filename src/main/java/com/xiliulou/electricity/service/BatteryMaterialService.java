@@ -58,7 +58,9 @@ public interface BatteryMaterialService {
 
     Triple<Boolean, String, Object> save(BatteryMaterialQuery batteryMaterialQuery);
 
-    Integer checkExistByName(String name);
+    Integer checkExistByType(String name);
+
+    Integer checkExistByKind(Integer kind);
 
     Triple<Boolean, String, Object> delete(Long id);
 

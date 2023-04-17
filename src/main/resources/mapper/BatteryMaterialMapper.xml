@@ -22,8 +22,12 @@
     </select>
 
 
-    <select id="checkExistByName" resultType="Integer">
-        select 1 from t_battery_material where del_flag=0 and name = #{name} LIMIT 1
+    <select id="checkExistByType" resultType="Integer">
+        select 1 from t_battery_material where del_flag=0 and type = #{type} LIMIT 1
+    </select>
+
+    <select id="checkExistByKind" resultType="Integer">
+        select 1 from t_battery_material where del_flag=0 and kind = #{kind} LIMIT 1
     </select>
 
     <!--查询指定行数据-->
