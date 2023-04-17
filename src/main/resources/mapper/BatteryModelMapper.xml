@@ -48,7 +48,7 @@
         <if test="tenantId != null">
             and tbm.tenant_id = #{tenantId}
         </if>
-        order by tbm.create_time,id
+        order by tbm.create_time,id desc
         limit #{offset}, #{size}
     </select>
 
