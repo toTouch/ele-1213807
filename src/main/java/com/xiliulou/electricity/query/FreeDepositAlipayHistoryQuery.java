@@ -27,7 +27,7 @@ public class FreeDepositAlipayHistoryQuery {
     
     private Long beginTime;
     
-    private String endTime;
+    private Long endTime;
     
     private Integer tenantId;
 }
