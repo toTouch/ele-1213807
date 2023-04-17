@@ -146,7 +146,7 @@ public class JsonAdminBatteryModelController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return R.ok(batteryModelService.delete(id));
+        return returnTripleResult(batteryModelService.delete(id));
     }
 
 

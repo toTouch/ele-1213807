@@ -101,7 +101,7 @@ public class JsonAdminBatteryMaterialController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return R.ok(batteryMaterialService.save(batteryMaterialQuery));
+        return returnTripleResult(batteryMaterialService.save(batteryMaterialQuery));
     }
 
     /**
@@ -139,7 +139,7 @@ public class JsonAdminBatteryMaterialController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return R.ok(batteryMaterialService.delete(id));
+        return returnTripleResult(batteryMaterialService.delete(id));
     }
 
 }
