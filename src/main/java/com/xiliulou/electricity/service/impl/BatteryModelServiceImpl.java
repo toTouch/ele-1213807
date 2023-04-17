@@ -163,7 +163,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         List<String> batteryTypeList = batteryModels.stream().sorted(Comparator.comparing(BatteryModel::getBatteryModel).reversed()).map(BatteryModel::getBatteryType).collect(Collectors.toList());
 
         //电池型号数量
-        if (batteryModels.size() > 50) {
+        if (batteryModels.size() >= 50) {
             return Triple.of(false, "100342", "电池型号超出限制，请联系管理员");
         }
 
