@@ -140,7 +140,7 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
                 || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, TAKE_BATTERY_MODE)
                 || Objects.equals(command, CUPBOARD_OPERATING_RECORD) || Objects.equals(command, OTA_OPERATE) || Objects
                 .equals(command, OTA_OPERATE_RSP)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
@@ -394,6 +394,11 @@ public class ElectricityIotConstant {
     
     public static final String READ_OTHER_SETTING_PARAM_TEMPLATE = "read_other_setting_param_template";
     
+    /**
+     * 同步电池型号
+     */
+    public static final String TAKE_BATTERY_MODE = "take_battery_mode";
+    
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -513,6 +518,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAMS_READ_RSP, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_MULTI_PARAM_SETTING, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
+        COMMAND_HANDLER_MAPS.put(TAKE_BATTERY_MODE, NORMAL_BATTERY_MULTI_SETTING_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_BATTERY_SNAPSHOT,NORMAL_BATTERY_SNAPSHOT_HANDLER);
     
         COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
