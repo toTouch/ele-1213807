@@ -572,11 +572,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return;
         }
-        
+
         //过滤没有电池的格挡
         List<ElectricityCabinetBox> notHaveBatteryBoxs = electricityCabinetBoxes.stream()
                 .filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
+            List<String> emptyCellNo = notHaveBatteryBoxs.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList());
+            log.error("ELE BATTERY REPORT ERROR! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
             return;
         }
         
