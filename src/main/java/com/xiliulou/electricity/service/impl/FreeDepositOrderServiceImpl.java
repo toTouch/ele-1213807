@@ -325,7 +325,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setPayStatus(pxzAuthToPayRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEALING);
         freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getTransAmt() - payTransAmt.doubleValue());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
@@ -342,7 +342,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositAlipayHistory.setPayAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()));
         freeDepositAlipayHistory.setAlipayAmount(payTransAmt);
         freeDepositAlipayHistory.setType(freeDepositOrder.getDepositType());
-        freeDepositAlipayHistory.setPayStatus(FreeDepositAlipayHistory.PAY_STATUS_INIT);
+        freeDepositAlipayHistory.setPayStatus(FreeDepositAlipayHistory.PAY_STATUS_DEALING);
         freeDepositAlipayHistory.setRemark(remark);
         freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
