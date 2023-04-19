@@ -15,9 +15,7 @@ import com.xiliulou.electricity.service.BatteryModelService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.vo.BatteryModelPageVO;
-import com.xiliulou.electricity.vo.BatteryModelVO;
-import com.xiliulou.electricity.vo.BatteryTypeVO;
+import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -53,6 +51,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     private RedisService redisService;
     @Autowired
     private BatteryMaterialService materialService;
+    @Autowired
+    private BatteryMaterialService batteryMaterialService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -282,22 +282,40 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
     @Slave
     @Override
-    public List<BatteryModelVO> selectBatteryModels(Integer tenantId) {
+    public BatteryModelAndMaterialVO selectBatteryModels(Integer tenantId) {
         Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
-            return Collections.emptyList();
+            return null;
         }
 
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
         if (CollectionUtils.isEmpty(batteryModels)) {
-            return Collections.emptyList();
+            return null;
         }
 
-        return batteryModels.stream().map(item -> {
+        List<BatteryModelVO> modelVOS = batteryModels.stream().map(item -> {
             BatteryModelVO batteryModelVO = new BatteryModelVO();
             BeanUtils.copyProperties(item, batteryModelVO);
             return batteryModelVO;
         }).collect(Collectors.toList());
+
+
+        List<BatteryMaterial> batteryMaterials = batteryMaterialService.selectAllFromCache();
+        if (CollectionUtils.isEmpty(batteryMaterials)) {
+            return null;
+        }
+
+        List<BatteryMaterialVO> materialVOS = batteryMaterials.stream().map(item -> {
+            BatteryMaterialVO batteryMaterialVO = new BatteryMaterialVO();
+            BeanUtils.copyProperties(item, batteryMaterialVO);
+            return batteryMaterialVO;
+        }).collect(Collectors.toList());
+
+
+        BatteryModelAndMaterialVO batteryModelAndMaterialVO = new BatteryModelAndMaterialVO();
+        batteryModelAndMaterialVO.setBatteryModels(modelVOS);
+        batteryModelAndMaterialVO.setBatteryMaterials(materialVOS);
+        return batteryModelAndMaterialVO;
     }
 
     /**
@@ -433,7 +451,6 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
     /**
      * 生成系统默认电池型号
-     *
      */
     public static List<BatteryModel> generateDefaultBatteryModel(Integer tenantId) {
         List<BatteryModel> list = new ArrayList<>();

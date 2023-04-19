@@ -2,8 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.vo.BatteryModelAndMaterialVO;
 import com.xiliulou.electricity.vo.BatteryModelPageVO;
-import com.xiliulou.electricity.vo.BatteryModelVO;
 import com.xiliulou.electricity.vo.BatteryTypeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -57,7 +57,7 @@ public interface BatteryModelService {
      */
     Integer deleteById(Long id);
 
-    List<BatteryModelVO> selectBatteryModels(Integer tenantId);
+    BatteryModelAndMaterialVO selectBatteryModels(Integer tenantId);
 
     List<BatteryModelPageVO> selectByPage(BatteryModelQuery query);
 

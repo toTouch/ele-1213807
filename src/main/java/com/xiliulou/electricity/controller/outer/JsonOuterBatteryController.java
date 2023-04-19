@@ -39,10 +39,10 @@ public class JsonOuterBatteryController {
 
 
     /**
-     * 电池型号
+     * 电池型号&电池材质
      */
     @GetMapping("/outer/battery/model/{tenantId}")
-    public R batteryModels(@PathVariable("tenantId") Integer tenantId ) {
+    public R batteryModels(@PathVariable("tenantId") Integer tenantId) {
         return R.ok(batteryModelService.selectBatteryModels(tenantId));
     }
 
