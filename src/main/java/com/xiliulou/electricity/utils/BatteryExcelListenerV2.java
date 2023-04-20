@@ -3,22 +3,18 @@ package com.xiliulou.electricity.utils;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.exception.InnerRemoteCallException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.impl.ElectricityBatteryServiceImpl;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -151,7 +147,7 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
             R r = batteryPlatRetrofitService.batchSave(headers, query);
             if (!r.isSuccess()) {
                 log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
-                throw new CustomBusinessException("远程调用异常");
+                throw new InnerRemoteCallException("远程调用异常");
             }
             electricityBatteryService.insertBatch(saveList);
         }
