@@ -34,7 +34,7 @@ public class FreeDepositAlipayHistoryVo {
     
     private Integer type;
     
-    private Integer status;
+    private Integer payStatus;
     
     private String remark;
     
