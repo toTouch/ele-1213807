@@ -31,4 +31,6 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
     List<Franchisee> selectListByQuery(FranchiseeQuery franchiseeQuery);
 
     int editFranchisee(Franchisee updateFranchisee);
+    
+    Integer checkBatteryModelIsUse(@Param("batteryModel") Integer batteryModel, @Param("tenantId") Integer tenantId);
 }

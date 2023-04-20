@@ -70,4 +70,6 @@ public interface FranchiseeService {
     int update(Franchisee franchisee);
 
     Triple<Boolean, String, Object> moveFranchisee();
+    
+    Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId);
 }

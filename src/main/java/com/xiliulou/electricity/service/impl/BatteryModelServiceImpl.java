@@ -12,6 +12,7 @@ import com.xiliulou.electricity.mapper.BatteryModelMapper;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.service.BatteryMaterialService;
 import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -53,6 +54,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     private BatteryMaterialService materialService;
     @Autowired
     private BatteryMaterialService batteryMaterialService;
+    @Autowired
+    private FranchiseeService franchiseeService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -223,6 +226,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
         if (Objects.equals(batteryModel.getType(), BatteryModel.TYPE_SYSTEM)) {
             return Triple.of(false, "", "系统默认型号不允许删除");
+        }
+    
+        Integer result=franchiseeService.checkBatteryModelIsUse(batteryModel.getBatteryModel(),TenantContextHolder.getTenantId());
+        if(Objects.nonNull(result)){
+            return Triple.of(false, "", "电池型号已绑定加盟商不允许删除");
         }
 
         this.deleteById(id);
