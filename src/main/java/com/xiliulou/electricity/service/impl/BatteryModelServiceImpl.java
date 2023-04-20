@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -357,15 +358,17 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     @Override
     public String analysisBatteryTypeByBatteryName(String batteryName) {
         String type = "";
-
+log.error("=========1=============={}",batteryName );
         try {
             //获取系统定义的电池材质
             List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
             if (CollectionUtils.isEmpty(batteryMaterials)) {
+                log.error("=========2=============={}", JsonUtil.toJson(batteryMaterials));
                 return type;
             }
 
             if (StringUtils.isBlank(batteryName) || batteryName.length() < 11) {
+                log.error("==========3============={}",batteryName );
                 return type;
             }
 
@@ -383,11 +386,13 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             //如果电池编码对应的材质不存在，返回空
             String materialName = materialMap.get(String.valueOf(material));
             if(StringUtils.isBlank(materialName)){
+                log.error("==========4============={},{}",materialName ,String.valueOf(material));
                 return type;
             }
 
             modelTypeName.append(materialName).append(SEPARATOR);
             modelTypeName.append(split(batteryChars, 9, 11));
+            log.error("=============5=========={}", modelTypeName.toString());
             return modelTypeName.toString();
         } catch (Exception e) {
             log.error("ELE ERROR!battery type analysis fail,batteryName={}", batteryName, e);
