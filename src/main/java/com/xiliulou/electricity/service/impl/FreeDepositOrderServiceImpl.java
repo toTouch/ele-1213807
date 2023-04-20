@@ -404,7 +404,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     
         FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
         freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
-        freeDepositAlipayHistory.setPayStatus(pxzAuthToPayOrderQueryRspPxzCommonRsp.getData().getOrderStatus());
+        freeDepositAlipayHistory.setPayStatus(freeDepositOrderUpdate.getPayStatus());
         freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
         freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
 

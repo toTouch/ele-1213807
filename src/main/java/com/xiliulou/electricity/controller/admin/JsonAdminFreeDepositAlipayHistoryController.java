@@ -27,7 +27,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
     @GetMapping("/admin/freeDepositAlipayHistory/list")
     public R queryList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "name", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
@@ -58,7 +58,7 @@ public class JsonAdminFreeDepositAlipayHistoryController {
     
     @GetMapping("/admin/freeDepositAlipayHistory/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "name", required = false) String userName,
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "idCard", required = false) String idCard,
             @RequestParam(value = "type", required = false) Integer type,
