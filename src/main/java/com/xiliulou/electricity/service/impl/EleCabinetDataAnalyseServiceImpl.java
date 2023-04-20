@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.google.api.client.util.Lists;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.entity.*;
@@ -15,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -75,29 +76,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
     @Override
     public List<EleCabinetDataAnalyseVO> selectFailurePage(ElectricityCabinetQuery cabinetQuery) {
-        //故障编码
-        List<Integer> failureList = new ArrayList<>();
-
-        //从clickhouse查询所有有故障柜机
-        List<Integer> cabinetFailureIds = eleWarnMsgService.selectEidByCabinetFailureList(failureList);
-        List<Integer> cellFailureIds = eleWarnMsgService.selectEidByCellFailureList(failureList);
-
-        Set<Integer> totalEid = new HashSet<>();
-        totalEid.addAll(cabinetFailureIds);
-        totalEid.addAll(cellFailureIds);
-        if (CollectionUtils.isEmpty(totalEid)) {
-            return Collections.emptyList();
-        }
-
-        cabinetQuery.setEleIdList(Lists.newArrayList(totalEid));
-
-        //分页查询MySQL柜机数据
-        List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selecteleCabinetVOByQuery(cabinetQuery);
-        if (CollectionUtils.isEmpty(electricityCabinetList)) {
-            return Collections.emptyList();
-        }
-
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList);
+        return null;
     }
 
     @Override
@@ -127,23 +106,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
     @Override
     public Integer selectFailurePageCount(ElectricityCabinetQuery cabinetQuery) {
-        //故障编码
-        List<Integer> failureList = new ArrayList<>();
-
-        //从clickhouse查询所有有故障柜机
-        List<Integer> cabinetFailureIds = eleWarnMsgService.selectEidByCabinetFailureList(failureList);
-        List<Integer> cellFailureIds = eleWarnMsgService.selectEidByCellFailureList(failureList);
-
-        Set<Integer> totalEid = new HashSet<>();
-        totalEid.addAll(cabinetFailureIds);
-        totalEid.addAll(cellFailureIds);
-        if (CollectionUtils.isEmpty(totalEid)) {
-            return 0;
-        }
-
-        cabinetQuery.setEleIdList(Lists.newArrayList(totalEid));
-
-        return eleCabinetService.selectOfflinePageCount(cabinetQuery);
+        return 0;
     }
 
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList) {
