@@ -32,4 +32,16 @@ public interface CommonConstant {
      * 满仓消息队列名称
      */
     String  FULL_BATTERY_DELY_QUEUE="full_battery_dely_queue";
+
+    String INNER_HEADER_APP = "APP";
+
+    String INNER_HEADER_TIME = "TIME";
+
+    String INNER_HEADER_INNER_TOKEN = "INNER-TOKEN";
+
+    String INNER_TENANT_ID = "TENANT-CODE";
+
+    String APP_SAAS = "SAAS";
+
+    String APP_SAAS_AES_KEY = "123abc*@saasxab$";
 }

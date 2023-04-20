@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -414,6 +415,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
+    @Slave
     public Franchisee queryByUid(Long uid) {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid, uid).eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL));
     }
