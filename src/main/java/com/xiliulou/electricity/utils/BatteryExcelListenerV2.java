@@ -147,7 +147,7 @@ public class BatteryExcelListenerV2 extends AnalysisEventListener<BatteryExcelQu
             R r = batteryPlatRetrofitService.batchSave(headers, query);
             if (!r.isSuccess()) {
                 log.error("CALL BATTERY ERROR! msg={},uid={}", r.getErrMsg(), SecurityUtils.getUid());
-                throw new InnerRemoteCallException("远程调用异常");
+                throw new InnerRemoteCallException(r.getErrMsg());
             }
             electricityBatteryService.insertBatch(saveList);
         }
