@@ -8,7 +8,7 @@
     </sql>
     
     <select id="checkBatteryModelIsUse" resultType="Integer">
-        SELECT 1 FROM t_franchisee WHERE del_flag=0 and model_battery_deposit like like concat('%model":',#{batteryModel,jdbcType=VARCHAR},'%') AND tenant_id = #{tenantId} LIMIT 1
+        SELECT 1 FROM t_franchisee WHERE del_flag=0 and model_battery_deposit like concat('%model":',#{batteryModel,jdbcType=VARCHAR},'%') AND tenant_id = #{tenantId} LIMIT 1
     </select>
 
     <!--列表查询-->
