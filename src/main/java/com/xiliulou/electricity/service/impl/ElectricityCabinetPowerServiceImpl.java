@@ -1,40 +1,35 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.format.DateParser;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPowerMapper;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
-import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
-import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetPowerExcelVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetPowerVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetSumPowerVo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Transactional;
-import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * 换电柜电量表(ElectricityCabinetPower)表服务实现类
@@ -56,6 +51,12 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
     @Override
     public Integer insertOrUpdate(ElectricityCabinetPower electricityCabinetPower) {
         return this.electricityCabinetPowerMapper.insertOrUpdate(electricityCabinetPower);
+    }
+
+    @Slave
+    @Override
+    public ElectricityCabinetPower selectByEid(Integer id) {
+        return this.electricityCabinetPowerMapper.selectByEid(id);
     }
 
     @Override

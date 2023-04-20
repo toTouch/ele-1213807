@@ -17,12 +17,10 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
@@ -2276,19 +2274,57 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok();
     }
-    
-    private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
+
+    @Slave
+    @Override
+    public Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectOfflinePageCount(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectLockCellByQuery(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectLockCellByQuery(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public Integer selectLockPageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectLockPageCount(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectPowerPage(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectPowerPageCount(cabinetQuery);
+    }
+
+    @Override
+    public boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
     }
-    
-    private boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
+
+    @Override
+    public boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
     
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
-    
+
+    @Override
+    public boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
+        return Objects.nonNull(electricityCabinetBox.getPower())
+                && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
+    }
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -3583,7 +3619,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(homepageElectricityExchangeFrequencyVo);
     }
-    
+
+    @Slave
     @Override
     public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         
@@ -3798,6 +3835,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(s);
     }
 
+    @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
         List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper
@@ -3809,6 +3847,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinets);
     }
 
+    @Slave
     @Override
     public List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query) {
         List<ElectricityCabinet> list = electricityCabinetMapper.superAdminSelectByQuery(query);
@@ -3823,17 +3862,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
-    
+
+    @Slave
     @Override
     public R queryName(Integer tenantId, Integer id) {
         return R.ok(electricityCabinetMapper.queryName(tenantId, id));
     }
 
+    @Slave
     @Override
-    public R selectByQuery(ElectricityCabinetQuery query) {
-        return R.ok(electricityCabinetMapper.selectByQuery(query));
+    public List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.eleCabinetSearch(query);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            Collections.emptyList();
+        }
+
+        return electricityCabinets;
     }
 
+    @Slave
+    @Override
+    public List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectByQuery(query);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            Collections.emptyList();
+        }
+
+        return electricityCabinets;
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selecteleCabinetVOByQuery(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selecteleCabinetVOByQuery(cabinetQuery);
+    }
+
+    @Slave
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));
@@ -3860,7 +3924,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }).collect(Collectors.toList());
     }
-    
+
+    @Slave
     @Override
     public R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList) {
         List<ElectricityCabinetBatchOperateVo> electricityCabinetList = electricityCabinetMapper

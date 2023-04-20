@@ -8,6 +8,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.AppMalfunctionConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -155,6 +156,18 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Override
     public R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery) {
         return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgByElectricityCabinet(eleWarnMsgQuery));
+    }
+
+    @Override
+    @DS(value = "clickhouse")
+    public List<Integer> selectEidByCabinetFailureList(List<Integer> failureList) {
+        return eleWarnMsgMapper.selectEidByCabinetFailureList(failureList);
+    }
+
+    @Override
+    @DS(value = "clickhouse")
+    public List<Integer> selectEidByCellFailureList(List<Integer> failureList) {
+        return eleWarnMsgMapper.selectEidByCellFailureList(failureList);
     }
 
     @Override

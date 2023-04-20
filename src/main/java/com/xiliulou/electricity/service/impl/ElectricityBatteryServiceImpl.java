@@ -391,7 +391,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public ElectricityBattery queryByUid(Long uid) {
         return baseMapper.queryByUid(uid);
     }
-    
+
+    @Slave
     @Override
     public ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn) {
         return electricitybatterymapper.selectOne(

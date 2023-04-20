@@ -64,4 +64,7 @@ public interface EleWarnMsgService {
     void queryElectricityName(List<Object> object);
 
     Triple<Boolean, String, Object> submitExportTask(EleWarnMsgExcelQuery warnMsgQuery);
+
+    List<Integer> selectEidByCellFailureList(List<Integer> failureList);
+    List<Integer> selectEidByCabinetFailureList(List<Integer> failureList);
 }

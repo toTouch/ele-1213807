@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -153,8 +154,12 @@ public interface ElectricityCabinetService {
     R acquireIdcardFileSign();
 
     R queryName(Integer tenant,Integer id);
-    
-    R selectByQuery(ElectricityCabinetQuery query);
+
+    List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query);
+
+    List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query);
+
+    List<EleCabinetDataAnalyseVO> selecteleCabinetVOByQuery(ElectricityCabinetQuery cabinetQuery);
 
     R superAdminQueryName(Integer id);
 
@@ -176,4 +181,20 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
     
     R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
+
+    boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox);
+
+    boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox);
+
+    boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged);
+
+    Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery);
+
+    List<EleCabinetDataAnalyseVO> selectLockCellByQuery(ElectricityCabinetQuery cabinetQuery);
+
+    Integer selectLockPageCount(ElectricityCabinetQuery cabinetQuery);
+
+    List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery);
+
+    Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery);
 }

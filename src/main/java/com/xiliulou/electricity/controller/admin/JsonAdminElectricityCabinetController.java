@@ -11,10 +11,8 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
-import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
@@ -29,17 +27,11 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.*;
 
 /**
@@ -751,38 +743,27 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                                @RequestParam("eleId") Integer eleId) {
         return eleOnlineLogService.queryOnlineLogCount(status, eleId);
     }
-    
 
-    @GetMapping("/admin/electricityCabinet/queryName")
-    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId,
-            @RequestParam(value = "name", required = false) String name) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+    /**
+     * 列表页搜索接口
+     * @return
+     */
+    @GetMapping("/admin/electricityCabinet/search")
+    public R search(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                    @RequestParam(value = "name", required = false) String name) {
+
+        if (size < 0 || size > 50) {
+            size = 20;
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)|| Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
-            }
-
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
-                return R.ok(Collections.EMPTY_LIST);
-            }
+        if (offset < 0) {
+            offset = 0;
         }
 
-        ElectricityCabinetQuery query = new ElectricityCabinetQuery();
-        query.setId(eleId);
-        query.setName(name);
-        query.setEleIdList(eleIdList);
-        query.setTenantId(TenantContextHolder.getTenantId());
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
+                .name(name).tenantId(TenantContextHolder.getTenantId()).build();
 
-        return electricityCabinetService.selectByQuery(query);
+        return R.ok(electricityCabinetService.eleCabinetSearch(cabinetQuery));
     }
 
     @GetMapping("/admin/electricityCabinet/superAdminQueryName")

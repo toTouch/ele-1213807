@@ -80,4 +80,10 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);
 
     ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId);
+
+    List<ElectricityCabinetOrder> selectTodayExchangeOrder(Integer id, long todayStartTimeStamp, long todayEndTimeStamp,Integer tenantId);
+
+    Long selectMonthExchangeCount(Integer id, long todayStartTimeStamp, long todayEndTimeStamp,Integer tenantId);
+
+    Long selectMonthExchangeUser(Integer id, long agoStartTime, long currentTimeMillis, Integer tenantId);
 }

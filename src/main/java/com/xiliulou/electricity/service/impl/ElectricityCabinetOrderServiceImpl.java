@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -15,12 +14,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -31,7 +29,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1751,6 +1748,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId) {
         return electricityCabinetOrderMapper.selectLatestByUid(uid, tenantId);
+    }
+
+    @Slave
+    @Override
+    public List<ElectricityCabinetOrder> selectTodayExchangeOrder(Integer eid, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectTodayExchangeOrder(eid, todayStartTimeStamp, todayEndTimeStamp, tenantId);
+    }
+
+    @Slave
+    @Override
+    public Long selectMonthExchangeCount(Integer eid, long todayStartTimeStamp, long todayEndTimeStamp,Integer tenantId) {
+        return electricityCabinetOrderMapper.selectMonthExchangeCount(eid, todayStartTimeStamp, todayEndTimeStamp,tenantId);
+    }
+
+    @Slave
+    @Override
+    public Long selectMonthExchangeUser(Integer eid, long agoStartTime, long currentTimeMillis, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectMonthExchangeUser( eid,  agoStartTime,  currentTimeMillis,  tenantId);
     }
 
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {

@@ -41,7 +41,7 @@
                 #{id}
             </foreach>
         </if>
-        order by create_time desc
+        order by id desc
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -347,20 +347,328 @@
         </if>
     </select>
     
-    <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+    <select id="eleCabinetSearch" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select id,name from t_electricity_cabinet
         where del_flag=0
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
         </if>
-        <if test="id != null">
-            and id =#{id}
-        </if>
         <if test="name != null and '' != name">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
+        order by id
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByQuery" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+        select id, name,sn, address, usable_status, online_status, model_id, version, fully_charged, update_time, store_id
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and usable_status = #{usableStatus}
+        </if>
+        <if test="id != null">
+            and id =#{query.id}
+        </if>
+        <if test="onlineStatus != null">
+            and online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selecteleCabinetVOByQuery" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
+        select
+        <if test="franchiseeId != null ">
+            ts.franchisee_id as franchisee_id,
+        </if>
+        tec.id,
+        tec.name,
+        tec.sn,
+        tec.address,
+        tec.usable_status,
+        tec.online_status,
+        tec.model_id,
+        tec.version,
+        tec.fully_charged,
+        tec.update_time,
+        tec.tenant_id,
+        tec.store_id
+        from t_electricity_cabinet tec
+        <if test="franchiseeId != null ">
+            left join t_store ts on tec.store_id=ts.id
+        </if>
+        where tec.del_flag=0
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tec.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and ts.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        <if test="eleIdList!=null and eleIdList!=''">
+            and tec.id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by tec.id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectLockCellByQuery" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
+        select
+        <if test="franchiseeId != null ">
+            ts.franchisee_id as franchisee_id,
+        </if>
+        tec.id,
+        tec.name,
+        tec.sn,
+        tec.address,
+        tec.usable_status,
+        tec.online_status,
+        tec.model_id,
+        tec.version,
+        tec.fully_charged,
+        tec.update_time,
+        tec.tenant_id,
+        tec.store_id
+        from t_electricity_cabinet tec
+        <if test="franchiseeId != null ">
+            left join t_store ts on tec.store_id=ts.id
+        </if>
+        left join t_electricity_cabinet_box ecb on ecb.electricity_cabinet_id =tec.id
+        where tec.del_flag=0
+        <if test="usableStatusCell != null">
+            and ecb.usable_status = #{usableStatusCell}
+        </if>
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tec.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and ts.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        order by tec.id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectPowerPage" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
+        select
+        <if test="franchiseeId != null ">
+            ts.franchisee_id as franchisee_id,
+        </if>
+        tec.id,
+        tec.name,
+        tec.sn,
+        tec.address,
+        tec.usable_status,
+        tec.online_status,
+        tec.model_id,
+        tec.version,
+        tec.fully_charged,
+        tec.update_time,
+        tec.tenant_id,
+        tec.store_id
+        from t_electricity_cabinet_box ecb
+        LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
+        <if test="franchiseeId != null ">
+            left join t_store ts on tec.store_id=ts.id
+        </if>
+        where tec.del_flag=0
+        <if test="lowChargeRate != null">
+            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+        </if>
+        <if test="fullChargeRate != null">
+            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+        </if>
+        <if test="usableStatusCell != null">
+            and ecb.usable_status = #{usableStatusCell}
+        </if>
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tec.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and ts.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        order by id desc
+        GROUP BY
+        ecb.electricity_cabinet_id
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectPowerPageCount" resultType="int">
+        select count(1) from (
+        select
+        tec.id,
+        ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) AS full_charge_rate
+        from t_electricity_cabinet_box ecb
+        LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
+        <if test="franchiseeId != null ">
+            left join t_store ts on tec.store_id=ts.id
+        </if>
+        where tec.del_flag=0
+        <if test="lowChargeRate != null">
+            and ecb.full_charge_rate &lt;= #{lowChargeRate}
+        </if>
+        <if test="fullChargeRate != null">
+            and ecb.full_charge_rate &gt;= #{fullChargeRate}
+        </if>
+        <if test="usableStatusCell != null">
+            and ecb.usable_status = #{usableStatusCell}
+        </if>
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tec.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and ts.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        GROUP BY
+        ecb.electricity_cabinet_id
+        )
+    </select>
+
+    <select id="selectLockPageCount" resultType="int">
+        select
+        count(1)
+        from t_electricity_cabinet tec
+        <if test="franchiseeId != null ">
+            left join t_store ts on tec.store_id=ts.id
+        </if>
+        left join t_electricity_cabinet_box ecb on ecb.electricity_cabinet_id =tec.id
+        where tec.del_flag=0
+        <if test="usableStatusCell != null">
+            and ecb.usable_status = #{usableStatusCell}
+        </if>
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tec.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and ts.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectOfflinePageCount" resultType="int">
+        select
+        count(1)
+        from t_electricity_cabinet tec
+        <if test="franchiseeId != null ">
+            left join t_store ts on tec.store_id=ts.id
+        </if>
+        where tec.del_flag=0
+        <if test="name != null and name != ''">
+            and tec.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="address != null and address != ''">
+            and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="usableStatus != null">
+            and tec.usable_status = #{usableStatus}
+        </if>
+        <if test="onlineStatus != null">
+            and tec.online_status = #{onlineStatus}
+        </if>
+        <if test="tenantId != null ">
+            and tec.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and ts.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null ">
+            and tec.store_id = #{storeId}
+        </if>
+        <if test="eleIdList!=null and eleIdList!=''">
+            and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
@@ -377,7 +685,6 @@
             and store_id =#{storeId}
         </if>
     </select>
-
 
 	<select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
 		select id, name,longitude, latitude, online_status
