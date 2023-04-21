@@ -306,7 +306,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address)
                 .fullChargeRate(0.75).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
 
-        return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
+        return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }
 
     @GetMapping(value = "/admin/eleCabinet/fullPower/count")

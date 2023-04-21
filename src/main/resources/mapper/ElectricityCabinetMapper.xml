@@ -549,9 +549,9 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
-        order by id desc
         GROUP BY
         ecb.electricity_cabinet_id
+        order by id desc
         limit #{offset}, #{size}
     </select>
 
@@ -598,7 +598,7 @@
         </if>
         GROUP BY
         ecb.electricity_cabinet_id
-        )
+        ) a
     </select>
 
     <select id="selectLockPageCount" resultType="int">
