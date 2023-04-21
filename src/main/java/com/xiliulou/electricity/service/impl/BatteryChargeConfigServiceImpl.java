@@ -1,24 +1,21 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
 import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.mapper.BatteryChargeConfigMapper;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
 import com.xiliulou.electricity.service.BatteryChargeConfigService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.BatteryChargeConfigVO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (BatteryChargeConfig)表服务实现类
@@ -29,9 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service("batteryChargeConfigService")
 @Slf4j
 public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigService {
+    
     @Autowired
     private BatteryChargeConfigMapper batteryChargeConfigMapper;
-
+    
     /**
      * 通过ID查询单条数据从DB
      *
@@ -42,7 +40,7 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     public BatteryChargeConfig selectByIdFromDB(Long id) {
         return this.batteryChargeConfigMapper.selectById(id);
     }
-
+    
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -53,8 +51,8 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     public BatteryChargeConfig selectByIdFromCache(Long id) {
         return null;
     }
-
-
+    
+    
     /**
      * 查询多条数据
      *
@@ -66,7 +64,7 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     public List<BatteryChargeConfig> selectByPage(int offset, int limit) {
         return this.batteryChargeConfigMapper.selectByPage(offset, limit);
     }
-
+    
     /**
      * 新增数据
      */
@@ -78,7 +76,7 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
         this.batteryChargeConfigMapper.insertOne(batteryChargeConfig);
         return batteryChargeConfig;
     }
-
+    
     /**
      * 修改数据
      */
@@ -88,9 +86,9 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
         BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
         BeanUtils.copyProperties(batteryChargeConfigQuery, batteryChargeConfig);
         return this.batteryChargeConfigMapper.update(batteryChargeConfig);
-
+        
     }
-
+    
     /**
      * 通过主键删除数据
      *
@@ -102,25 +100,29 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     public Boolean deleteById(Long id) {
         return this.batteryChargeConfigMapper.deleteById(id) > 0;
     }
-
+    
     @Override
     public BatteryChargeConfigVO selectByElectricityCabinetId(BatteryChargeConfigQuery query) {
         BatteryChargeConfigVO batteryChargeConfigVO = new BatteryChargeConfigVO();
-
+        
         BatteryChargeConfig batteryChargeConfig = this.batteryChargeConfigMapper.selectByQuery(query);
         
         if (Objects.isNull(batteryChargeConfig)) {
             return batteryChargeConfigVO;
         }
         BeanUtils.copyProperties(batteryChargeConfig, batteryChargeConfigVO);
-        batteryChargeConfigVO.setConfigList(JsonUtil.fromJsonArray(batteryChargeConfig.getConfig(), BatteryMultiConfigDTO.class));
-
+        
+        if (StringUtils.isNotBlank(batteryChargeConfig.getConfig())) {
+            batteryChargeConfigVO.setConfigList(
+                    JsonUtil.fromJsonArray(batteryChargeConfig.getConfig(), BatteryMultiConfigDTO.class));
+        }
+        
         return batteryChargeConfigVO;
     }
-
+    
     @Override
     public int insertOrUpdate(BatteryChargeConfigQuery query) {
-
+        
         BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
         BeanUtils.copyProperties(query, batteryChargeConfig);
         batteryChargeConfig.setConfig(JsonUtil.toJson(query.getConfigList()));
