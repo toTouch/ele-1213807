@@ -16,11 +16,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.vo.BatteryMaterialVO;
-import com.xiliulou.electricity.vo.BatteryModelAndMaterialVO;
-import com.xiliulou.electricity.vo.BatteryModelPageVO;
-import com.xiliulou.electricity.vo.BatteryModelVO;
-import com.xiliulou.electricity.vo.BatteryTypeVO;
+import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,16 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -85,18 +77,22 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     }
     
     @Override
-    public synchronized List<BatteryModel> queryByTenantIdFromCache(Integer tenantId) {
-        List<BatteryModel> cacheBatteryModelList = redisService
-                .getWithList(CacheConstant.CACHE_BATTERY_MODEL + tenantId, BatteryModel.class);
+    public List<BatteryModel> queryByTenantIdFromCache(Integer tenantId) {
+        List<BatteryModel> cacheBatteryModelList = redisService.getWithList(CacheConstant.CACHE_BATTERY_MODEL + tenantId, BatteryModel.class);
         if (CollectionUtils.isNotEmpty(cacheBatteryModelList)) {
             return cacheBatteryModelList;
         }
-        
+
+        return this.selectByTenantIdFromDB(tenantId);
+    }
+
+    @Klock(name = "selectBatteryModelByTenantIdFromDB", keys = {"battery_model:#tenantId"}, waitTime = 3, customLockTimeoutStrategy = "queryByTenantIdFromDB")
+    public List<BatteryModel> selectByTenantIdFromDB(Integer tenantId) {
         List<BatteryModel> batteryModelList = this.queryByTenantIdFromDB(tenantId);
         if (CollectionUtils.isEmpty(batteryModelList)) {
             return Collections.emptyList();
         }
-        
+
         redisService.saveWithList(CacheConstant.CACHE_BATTERY_MODEL + tenantId, batteryModelList);
         return batteryModelList;
     }
