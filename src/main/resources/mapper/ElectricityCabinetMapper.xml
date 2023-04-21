@@ -512,6 +512,7 @@
         tec.fully_charged,
         tec.update_time,
         tec.tenant_id,
+        ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) full_charge_rate,
         tec.store_id
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
@@ -520,10 +521,10 @@
         </if>
         where tec.del_flag=0
         <if test="lowChargeRate != null">
-            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and full_charge_rate &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and full_charge_rate &gt;= #{fullChargeRate}
         </if>
         <if test="usableStatusCell != null">
             and ecb.usable_status = #{usableStatusCell}
@@ -567,10 +568,10 @@
         </if>
         where tec.del_flag=0
         <if test="lowChargeRate != null">
-            and ecb.full_charge_rate &lt;= #{lowChargeRate}
+            and full_charge_rate &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and ecb.full_charge_rate &gt;= #{fullChargeRate}
+            and full_charge_rate &gt;= #{fullChargeRate}
         </if>
         <if test="usableStatusCell != null">
             and ecb.usable_status = #{usableStatusCell}
