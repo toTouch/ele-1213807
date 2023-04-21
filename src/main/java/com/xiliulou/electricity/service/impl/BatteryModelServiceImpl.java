@@ -402,7 +402,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
         StringBuilder builder = new StringBuilder();
         return builder.append(batteryModelQuery.getStandardV()).append(V).append(batteryMaterial.getShortType())
-                .append(SEPARATE).append(batteryModelQuery.getNumber()).toString();
+                .append(SEPARATE).append(String.format("%02d", batteryModelQuery.getNumber())).toString();
     }
 
     private String generateBatteryType(BatteryModelQuery batteryModelQuery, BatteryMaterial batteryMaterial) {
