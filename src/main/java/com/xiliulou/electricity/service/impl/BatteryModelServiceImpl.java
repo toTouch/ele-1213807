@@ -85,7 +85,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     }
     
     @Override
-    public List<BatteryModel> queryByTenantIdFromCache(Integer tenantId) {
+    public synchronized List<BatteryModel> queryByTenantIdFromCache(Integer tenantId) {
         List<BatteryModel> cacheBatteryModelList = redisService
                 .getWithList(CacheConstant.CACHE_BATTERY_MODEL + tenantId, BatteryModel.class);
         if (CollectionUtils.isNotEmpty(cacheBatteryModelList)) {
@@ -224,9 +224,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         batteryModel.setCreateTime(System.currentTimeMillis());
         batteryModel.setUpdateTime(System.currentTimeMillis());
         this.insert(batteryModel);
-        
-        redisService.delete(CacheConstant.CACHE_BATTERY_MODEL + TenantContextHolder.getTenantId());
-        
+
         return Triple.of(true, null, null);
     }
     
