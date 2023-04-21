@@ -512,7 +512,6 @@
         tec.fully_charged,
         tec.update_time,
         tec.tenant_id,
-        ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) full_charge_rate,
         tec.store_id
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
@@ -521,10 +520,10 @@
         </if>
         where tec.del_flag=0
         <if test="lowChargeRate != null">
-            and full_charge_rate &lt;= #{lowChargeRate}
+            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and full_charge_rate &gt;= #{fullChargeRate}
+            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         <if test="usableStatusCell != null">
             and ecb.usable_status = #{usableStatusCell}
@@ -552,15 +551,14 @@
         </if>
         GROUP BY
         ecb.electricity_cabinet_id
-        order by id desc
+        order by tec.id desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectPowerPageCount" resultType="int">
         select count(1) from (
         select
-        tec.id,
-        ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) AS full_charge_rate
+        tec.id
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
         <if test="franchiseeId != null ">
@@ -568,10 +566,10 @@
         </if>
         where tec.del_flag=0
         <if test="lowChargeRate != null">
-            and full_charge_rate &lt;= #{lowChargeRate}
+            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and full_charge_rate &gt;= #{fullChargeRate}
+            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         <if test="usableStatusCell != null">
             and ecb.usable_status = #{usableStatusCell}
@@ -635,8 +633,6 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
-        order by id desc
-        limit #{offset}, #{size}
     </select>
 
     <select id="selectOfflinePageCount" resultType="int">
