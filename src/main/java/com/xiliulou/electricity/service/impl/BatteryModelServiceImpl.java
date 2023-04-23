@@ -150,7 +150,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             BeanUtils.copyProperties(item, batteryTypeVO);
             batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
             return batteryTypeVO;
-        }).sorted(Comparator.comparing(BatteryTypeVO::getBatteryType)).collect(Collectors.toList());
+        }).sorted(Comparator.comparing(BatteryTypeVO::getBatteryModel)).collect(Collectors.toList());
     }
     
     /**
@@ -166,7 +166,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         
         List<BatteryModel> list = batteryModels.stream()
                 .filter(item -> Objects.equals(item.getType(), BatteryModel.TYPE_CUSTOMIZE))
-                .sorted(Comparator.comparing(BatteryModel::getBatteryType))
+                .sorted(Comparator.comparing(BatteryModel::getBatteryModel))
                 .collect(Collectors.toList());
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
