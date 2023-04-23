@@ -505,7 +505,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b1.setBatteryModel(1);
         b1.setBatteryType("B_12V_TERNARY_LITHIUM_03");
         b1.setBatteryV(12.6);
-        b1.setBatteryVShort("12V/T/3");
+        b1.setBatteryVShort("12V/T/03");
         b1.setMid(2L);
         b1.setTenantId(tenantId);
         b1.setType(BatteryModel.TYPE_SYSTEM);
@@ -517,7 +517,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b2.setBatteryModel(2);
         b2.setBatteryType("B_12V_IRON_LITHIUM_03");
         b2.setBatteryV(14.6);
-        b2.setBatteryVShort("12V/I/3");
+        b2.setBatteryVShort("12V/I/03");
         b2.setMid(1L);
         b2.setTenantId(tenantId);
         b2.setType(BatteryModel.TYPE_SYSTEM);
@@ -529,7 +529,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b3.setBatteryModel(3);
         b3.setBatteryType("B_24V_TERNARY_LITHIUM_07");
         b3.setBatteryV(29.4);
-        b3.setBatteryVShort("24V/T/7");
+        b3.setBatteryVShort("24V/T/07");
         b3.setMid(2L);
         b3.setTenantId(tenantId);
         b3.setType(BatteryModel.TYPE_SYSTEM);
@@ -541,7 +541,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b4.setBatteryModel(4);
         b4.setBatteryType("B_24V_IRON_LITHIUM_08");
         b4.setBatteryV(29.2);
-        b4.setBatteryVShort("24V/I/8");
+        b4.setBatteryVShort("24V/I/08");
         b4.setMid(1L);
         b4.setTenantId(tenantId);
         b4.setType(BatteryModel.TYPE_SYSTEM);
