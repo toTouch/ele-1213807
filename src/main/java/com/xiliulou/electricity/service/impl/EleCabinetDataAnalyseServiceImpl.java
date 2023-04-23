@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * @author zzlong
@@ -86,7 +88,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return Collections.emptyList();
         }
 
-        return buildEleCabinetDataAnalyseVOs(electricityCabinetList);
+        return buildEleCabinetDataAnalyseVOs(electricityCabinetList.stream().sorted(Comparator.comparing(EleCabinetDataAnalyseVO::getId)).collect(Collectors.toList()));
     }
 
     @Override

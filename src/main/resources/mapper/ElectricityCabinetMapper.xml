@@ -499,22 +499,22 @@
     <select id="selectPowerPage" resultType="com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO">
         select
         <if test="franchiseeId != null ">
-            ts.franchisee_id as franchisee_id,
+            any_value(ts.franchisee_id) as franchisee_id,
         </if>
-        tec.id,
-        tec.name,
-        tec.sn,
-        tec.address,
-        tec.usable_status,
-        tec.online_status,
-        tec.model_id,
-        tec.version,
-        tec.fully_charged,
-        tec.update_time,
-        tec.tenant_id,
-        tec.store_id,
-        tec.del_flag,
-        ecb.power
+        any_value(tec.id) AS id,
+        any_value(tec.name) AS name,
+        any_value(tec.sn) AS sn,
+        any_value(tec.address) AS address,
+        any_value(tec.usable_status) AS usable_status,
+        any_value(tec.online_status) AS online_status,
+        any_value(tec.model_id) AS model_id,
+        any_value(tec.version) AS version,
+        any_value(tec.fully_charged) AS fully_charged,
+        any_value(tec.update_time) AS update_time,
+        any_value(tec.tenant_id) AS tenant_id,
+        any_value(tec.store_id) AS store_id,
+        any_value(tec.del_flag) AS del_flag,
+        any_value(ecb.power) AS power
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
         <if test="franchiseeId != null ">
@@ -545,12 +545,12 @@
         </if>
         GROUP BY
         ecb.electricity_cabinet_id
-        having tec.del_flag=0
+        having del_flag=0
         <if test="lowChargeRate != null">
-            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         limit #{offset}, #{size}
     </select>
@@ -558,7 +558,10 @@
     <select id="selectPowerPageCount" resultType="int">
         select count(1) from (
         select
-        tec.id
+        any_value(tec.id) id,
+        any_value(tec.fully_charged) fully_charged,
+        any_value(tec.del_flag) del_flag,
+        any_value(ecb.power) power
         from t_electricity_cabinet_box ecb
         LEFT JOIN t_electricity_cabinet tec ON ecb.electricity_cabinet_id = tec.id
         <if test="franchiseeId != null ">
@@ -592,12 +595,12 @@
         </if>
         GROUP BY
         ecb.electricity_cabinet_id
-        having tec.del_flag=0
+        having del_flag=0
         <if test="lowChargeRate != null">
-            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and ( ecb.power >= tec.fully_charged ) / count( ecb.electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         ) a
     </select>
