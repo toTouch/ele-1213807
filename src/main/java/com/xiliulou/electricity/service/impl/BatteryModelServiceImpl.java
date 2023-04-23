@@ -625,7 +625,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         b11.setBatteryModel(11);
         b11.setBatteryType("B_48V_IRON_LITHIUM_15");
         b11.setBatteryV(54.8);
-        b11.setBatteryVShort("48/I/15");
+        b11.setBatteryVShort("48V/I/15");
         b11.setMid(1L);
         b11.setTenantId(tenantId);
         b11.setType(BatteryModel.TYPE_SYSTEM);
