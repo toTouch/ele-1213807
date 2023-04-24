@@ -657,9 +657,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
-            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_BIND_USER_UN_LOCK);
-            carLockCtrlHistory.setType(
+            carLockCtrlHistory.setStatus(
                     result ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_BIND_USER_UN_LOCK);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
@@ -751,9 +751,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
-            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
             carLockCtrlHistory
-                    .setType(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());

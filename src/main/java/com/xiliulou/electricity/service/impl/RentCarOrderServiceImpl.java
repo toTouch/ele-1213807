@@ -356,9 +356,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
             carLockCtrlHistory.setPhone(userInfo.getPhone());
-            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
-            carLockCtrlHistory
-                    .setType(boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setStatus(
+                    boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());

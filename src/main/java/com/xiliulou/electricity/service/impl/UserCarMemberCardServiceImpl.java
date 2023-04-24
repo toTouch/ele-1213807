@@ -298,9 +298,9 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     carLockCtrlHistory.setUid(item.getUid());
                     carLockCtrlHistory.setName(item.getName());
                     carLockCtrlHistory.setPhone(item.getPhone());
-                    carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
-                    carLockCtrlHistory.setType(
+                    carLockCtrlHistory.setStatus(
                             result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                    carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
                     carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
                     carLockCtrlHistory.setCarModel(electricityCar.getModel());
                     carLockCtrlHistory.setCarId(electricityCar.getId().longValue());

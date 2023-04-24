@@ -261,9 +261,9 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
             carLockCtrlHistory.setUid(carRefundUserInfo.getUid());
             carLockCtrlHistory.setName(carRefundUserInfo.getName());
             carLockCtrlHistory.setPhone(carRefundUserInfo.getPhone());
-            carLockCtrlHistory.setStatus(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
             carLockCtrlHistory
-                    .setType(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                    .setStatus(result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_UN_BIND_USER_LOCK);
             carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
             carLockCtrlHistory.setCarModel(electricityCar.getModel());
             carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
