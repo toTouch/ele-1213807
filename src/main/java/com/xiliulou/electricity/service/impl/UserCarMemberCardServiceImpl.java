@@ -290,7 +290,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     return;
                 }
                 ElectricityConfig electricityConfig = electricityConfigService
-                        .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+                        .queryFromCacheByTenantId(item.getTenantId());
                 if (Objects.nonNull(electricityConfig) && Objects
                         .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
                     boolean result = electricityCarService.retryCarLockCtrl(item.getSn(), ElectricityCar.TYPE_LOCK, 3);
