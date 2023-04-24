@@ -224,8 +224,8 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         }
     
         //缓存车辆锁状态  同步给客户进行通知  前端超时15S
-        redisService.setNx(CacheConstant.CACHE_CAR_LOCK_STATUS + uid,
-                String.valueOf(query.getLockType()), 17000L, false);
+        redisService.set(CacheConstant.CACHE_CAR_LOCK_STATUS + uid, String.valueOf(query.getLockType()));
+        redisService.expire(CacheConstant.CACHE_CAR_LOCK_STATUS + uid, 17000L, false);
         return Triple.of(true, null, null);
     }
     
@@ -252,6 +252,9 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         }
     
         String status = redisService.get(CacheConstant.CACHE_CAR_LOCK_STATUS + uid);
+        if (Objects.isNull(status)) {
+            return Triple.of(true, "", "001");
+        }
     
         R<Jt808DeviceInfoVo> result = jt808RetrofitService
                 .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
