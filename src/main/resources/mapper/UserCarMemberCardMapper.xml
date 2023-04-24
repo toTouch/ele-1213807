@@ -150,7 +150,7 @@
     
     <select id="carMemberCardExpireBreakPower"
         resultType="com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery">
-        select uc.cid, uc.sn, ui.tenant_id, ui.uid, ui.name, ui.phone
+        select uc.sn, ui.tenant_id, ui.uid, ui.name, ui.phone
         from t_user_info ui
          inner join  t_user_car_member_card ucmc on ui.uid = ucmc.uid
          inner join  t_user_car uc on ucmc.uid = uc.uid

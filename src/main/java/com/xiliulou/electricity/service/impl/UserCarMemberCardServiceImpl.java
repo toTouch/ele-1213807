@@ -279,7 +279,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
             }
             
             query.parallelStream().forEach(item -> {
-                if (StrUtil.isEmpty(item.getSn()) || Objects.isNull(item.getCid())) {
+                if (StrUtil.isEmpty(item.getSn())) {
                     log.error("EXPIRE BREAK POWER ERROR! illegal parameter result={}", item);
                     return;
                 }
