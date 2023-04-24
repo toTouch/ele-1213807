@@ -319,7 +319,7 @@
             and tenant_id = #{tenantId}
         </if>
         <if test="address != null and address != ''">
-            and address like concat('%',#{address},'%')
+            and ( address like concat('%',#{address},'%') or `name` like concat('%',#{address},'%') )
         </if>
         order by distance asc
         limit #{offset}, #{size}
