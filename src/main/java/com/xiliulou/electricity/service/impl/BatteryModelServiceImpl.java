@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.klock.annotation.Klock;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +46,9 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     private static final String SEPARATOR = "_";
     
     private static final String SEPARATE = "/";
+
+    @Autowired
+    private ApplicationContext applicationContext;
     
     @Resource
     private BatteryModelMapper batteryModelMapper;
@@ -83,10 +87,11 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return cacheBatteryModelList;
         }
 
-        return this.selectByTenantIdFromDB(tenantId);
+        return applicationContext.getBean(BatteryModelService.class).selectByTenantIdFromDB(tenantId);
     }
 
-    @Klock(name = "selectBatteryModelByTenantIdFromDB", keys = {"battery_model:#tenantId"}, waitTime = 3, customLockTimeoutStrategy = "queryByTenantIdFromDB")
+    @Override
+    @Klock(name = "selectBatteryModelByTenantIdFromDB", keys = {"#tenantId"}, waitTime = 3, customLockTimeoutStrategy = "queryByTenantIdFromDB")
     public List<BatteryModel> selectByTenantIdFromDB(Integer tenantId) {
         List<BatteryModel> batteryModelList = this.queryByTenantIdFromDB(tenantId);
         if (CollectionUtils.isEmpty(batteryModelList)) {

@@ -32,7 +32,7 @@ public interface BatteryModelService {
 
     List<BatteryModel> queryByTenantIdFromDB(Integer tenantId);
 
-
+    List<BatteryModel> selectByTenantIdFromDB(Integer tenantId);
     /**
      * 新增数据
      *
