@@ -41,7 +41,7 @@
     
     <select id="queryElectricityBatteryBox" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
-        id, electricity_cabinet_id, cell_no, sn, usable_status,ecb.power,
+        id, electricity_cabinet_id, cell_no, sn, usable_status,power,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
         update_time, del_flag,tenant_id,temperature,battery_type,charge_v
         from t_electricity_cabinet_box
