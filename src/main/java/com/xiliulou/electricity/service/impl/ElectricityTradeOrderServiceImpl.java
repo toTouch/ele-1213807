@@ -911,7 +911,7 @@ public class ElectricityTradeOrderServiceImpl extends
             //用户是否有绑定了车
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
             ElectricityConfig electricityConfig = electricityConfigService
-                    .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
             if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
                     && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
