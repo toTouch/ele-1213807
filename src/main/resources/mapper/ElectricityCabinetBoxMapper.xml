@@ -23,7 +23,7 @@
     
     <select id="selectBoxList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
         select
-        ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,ecb.power,
+        ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,
         ecb.status,ecb.is_lock,ecb.is_fan,ecb.temperature,ecb.is_heat,ecb.is_light, ecb.create_time,
         ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,
         bop.lock_reason,bop.remark,bop.lock_status_change_time,empty_grid_start_time
@@ -41,7 +41,7 @@
     
     <select id="queryElectricityBatteryBox" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
-        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        id, electricity_cabinet_id, cell_no, sn, usable_status,ecb.power,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
         update_time, del_flag,tenant_id,temperature,battery_type,charge_v
         from t_electricity_cabinet_box
