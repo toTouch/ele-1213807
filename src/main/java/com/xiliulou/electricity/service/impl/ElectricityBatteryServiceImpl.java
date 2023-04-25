@@ -911,7 +911,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      *
      * @return
      */
-    @Override
+    @Deprecated
     public Triple<Boolean, String, Object> selectUserLatestBatteryType() {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(
                 TenantContextHolder.getTenantId());
