@@ -1105,15 +1105,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
-                .filter(item -> StringUtils.isNotBlank(item.getSn()))
-                .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed())
+                .filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
                 .collect(Collectors.toList());
         if (ObjectUtil.isEmpty(usableBoxes)) {
             return Triple.of(false, null, "换电柜暂无满电电池");
         }
 
+
+
         //如果存在多个电量满电且相同的电池，取充电器电压最高的
-        Double maxPower = usableBoxes.get(0).getPower();
+        List<ElectricityCabinetBox> collect = usableBoxes.stream().sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
+        Double maxPower = collect.get(0).getPower();
         List<ElectricityCabinetBox> fullBatteryList = usableBoxes.stream()
                 .filter(item -> Objects.equals(item.getPower(), maxPower))
                 .filter(item -> Objects.nonNull(item.getChargeV()))
