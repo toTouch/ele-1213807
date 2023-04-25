@@ -139,6 +139,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Autowired
     UserCouponService userCouponService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -1662,7 +1665,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //免押电池型号与前端传过来的型号是否一致
-        if (Objects.nonNull(query.getModel()) && !Objects.equals(BatteryConstant.acquireBatteryShort(query.getModel()), eleDepositOrder.getBatteryType())) {
+        if (Objects.nonNull(query.getModel()) && !Objects.equals(batteryModelService.acquireBatteryShort(query.getModel(), userInfo.getTenantId()), eleDepositOrder.getBatteryType())) {
             log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},orderId={},model={}", uid, userBatteryDeposit.getOrderId(), query.getModel());
             return Triple.of(false, "100416", "电池型号不一致");
         }
@@ -2006,7 +2009,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             }
 
             //免押电池型号与前端传过来的型号是否一致
-            if (Objects.nonNull(query.getModel()) && !Objects.equals(BatteryConstant.acquireBatteryShort(query.getModel()), eleDepositOrder.getBatteryType())) {
+            if (Objects.nonNull(query.getModel()) && !Objects.equals(batteryModelService.acquireBatteryShort(query.getModel(),userInfo.getTenantId()), eleDepositOrder.getBatteryType())) {
                 log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},orderId={},model={}", uid, userBatteryDeposit.getOrderId(), query.getModel());
                 return Triple.of(false, "100416", "电池型号不一致");
             }
@@ -2196,7 +2199,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //免押电池型号与前端传过来的型号是否一致
-        if (Objects.nonNull(query.getModel()) && !Objects.equals(BatteryConstant.acquireBatteryShort(query.getModel()), userBattery.getBatteryType())) {
+        if (Objects.nonNull(query.getModel()) && !Objects.equals(batteryModelService.acquireBatteryShort(query.getModel(),userInfo.getTenantId()), userBattery.getBatteryType())) {
             log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},batteryType={},model={}", uid, userBattery.getBatteryType(), query.getModel());
             return Triple.of(false, "100416", "电池型号不一致");
         }
@@ -2657,7 +2660,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //电池型号
-        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(freeBatteryDepositQuery.getModel()) : null;
+        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ?
+                batteryModelService.acquireBatteryShort(freeBatteryDepositQuery.getModel(),userInfo.getTenantId()) : null;
 
         //生成押金独立订单
         String depositOrderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
@@ -2717,7 +2721,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //电池型号
-        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(freeCarBatteryDepositQuery.getModel()) : null;
+        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ?
+                batteryModelService.acquireBatteryShort(freeCarBatteryDepositQuery.getModel(),userInfo.getTenantId()) : null;
 
         //生成押金独立订单
         EleDepositOrder eleDepositOrder = EleDepositOrder.builder().orderId(orderId).uid(userInfo.getUid())

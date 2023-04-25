@@ -12,6 +12,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -934,6 +935,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
     }
 
+    @Slave
     @Override
     public void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response) {
         rentBatteryOrderQuery.setOffset(0L);

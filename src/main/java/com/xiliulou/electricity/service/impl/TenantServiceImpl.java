@@ -62,6 +62,8 @@ public class TenantServiceImpl implements TenantService {
     private PermissionTemplateService permissionTemplateService;
     @Autowired
     private FreeDepositDataService freeDepositDataService;
+    @Autowired
+    private BatteryModelService batteryModelService;
 
 
     /**
@@ -97,6 +99,8 @@ public class TenantServiceImpl implements TenantService {
         tenant.setExpireTime(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
         tenantMapper.insert(tenant);
 
+        //保存租户默认电池型号
+        batteryModelService.batchInsertDefaultBatteryModel(BatteryModelServiceImpl.generateDefaultBatteryModel(tenant.getId()));
 
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
@@ -130,7 +134,6 @@ public class TenantServiceImpl implements TenantService {
             roleService.insert(item);
         });
 
-
         //新增用户
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
@@ -148,7 +151,6 @@ public class TenantServiceImpl implements TenantService {
             return result;
         }
 
-
         //获取角色默认权限
         List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
         //保存角色默认权限
@@ -157,39 +159,6 @@ public class TenantServiceImpl implements TenantService {
                 rolePermissionService.insert(e);
             });
         }
-
-
-
-/*        //5.角色赋予权限
-        List<RolePermission> operateRolePermission = permissionConfig.getOperator().parallelStream().map(item -> {
-            RolePermission operatorRP = new RolePermission();
-            operatorRP.setPId(item);
-            operatorRP.setRoleId(operateRole.getId());
-            return operatorRP;
-        }).collect(Collectors.toList());
-
-        ArrayList<RolePermission> rolePermissionList = new ArrayList<>(operateRolePermission);
-
-        List<RolePermission> franchiseeRolePermission = permissionConfig.getAlliance().parallelStream().map(item -> {
-            RolePermission allianceRP = new RolePermission();
-            allianceRP.setPId(item);
-            allianceRP.setRoleId(franchiseeRole.getId());
-            return allianceRP;
-        }).collect(Collectors.toList());
-        rolePermissionList.addAll(franchiseeRolePermission);
-
-        List<RolePermission> storeRolePermission = permissionConfig.getShop().parallelStream().map(item -> {
-            RolePermission shopRP = new RolePermission();
-            shopRP.setPId(item);
-            shopRP.setRoleId(storeRole.getId());
-            return shopRP;
-        }).collect(Collectors.toList());
-        rolePermissionList.addAll(storeRolePermission);
-
-        rolePermissionList.parallelStream().forEach(e -> {
-            rolePermissionService.insert(e);
-        });*/
-
 
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());

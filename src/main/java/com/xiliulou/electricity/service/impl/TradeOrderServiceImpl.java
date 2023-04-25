@@ -121,6 +121,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
     @Autowired
     StoreService storeService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R createOrder(UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request) {
@@ -246,7 +249,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
                 .modelType(franchisee.getModelType()).build();
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(unionTradeOrderAdd.getModel()));
+            eleDepositOrder.setBatteryType(batteryModelService.acquireBatteryShort(unionTradeOrderAdd.getModel(),tenantId));
         }
         eleDepositOrderService.insert(eleDepositOrder);
 
@@ -408,7 +411,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         if (generateDepositOrderResult.getLeft() && Objects.nonNull(generateDepositOrderResult.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(integratedPaymentAdd.getModel()));
+                eleDepositOrder.setBatteryType(batteryModelService.acquireBatteryShort(integratedPaymentAdd.getModel(),tenantId));
             }
             eleDepositOrderService.insert(eleDepositOrder);
 

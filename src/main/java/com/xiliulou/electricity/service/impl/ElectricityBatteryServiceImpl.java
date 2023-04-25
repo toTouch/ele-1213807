@@ -113,6 +113,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     BatteryGeoService geoService;
 
     @Autowired
+    BatteryModelService batteryModelService;
+
+
+    @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
 
     @Autowired
@@ -896,6 +900,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.isUserBindBattery(uid, tenantId);
     }
 
+
     @Override
     public Integer insertBatch(List<ElectricityBattery> saveList) {
         return electricitybatterymapper.insertBatch(saveList);
@@ -906,7 +911,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      *
      * @return
      */
-    @Override
+    @Deprecated
     public Triple<Boolean, String, Object> selectUserLatestBatteryType() {
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(
                 TenantContextHolder.getTenantId());

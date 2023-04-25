@@ -2056,6 +2056,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         this.updateByUid(updateUserInfo);
     }
 
+    @Slave
     @Override
     public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
         userInfoQuery.setOffset(0L);

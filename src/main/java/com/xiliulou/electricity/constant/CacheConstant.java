@@ -358,6 +358,11 @@ public interface CacheConstant {
     
     String CACHE_SCAN_INTO_ACTIVITY_LOCK = "CACHE_SCAN_INTO_ACTIVITY_LOCK:";
     /**
+     * 电池型号缓存
+     */
+    String CACHE_BATTERY_MODEL = "battery_model:";
+    String CACHE_BATTERY_MATERIAL = "battery_material:";
+    /**
      * 分帐配置缓存
      */
     String CACHE_DIVISION_ACCOUNT_CONFIG = "division_account_config:";

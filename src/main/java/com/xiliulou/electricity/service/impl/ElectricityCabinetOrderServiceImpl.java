@@ -647,8 +647,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return R.ok();
     }
 
-    @Override
     @Slave
+    @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
 
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
@@ -711,6 +711,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
     }
 
+    @Slave
     @Override
     public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
         electricityCabinetOrderQuery.setOffset(0L);
