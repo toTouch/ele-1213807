@@ -931,7 +931,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 carLockCtrlHistory.setCarSn(electricityCar.getSn());
                 carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
                 carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
-                carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
     
