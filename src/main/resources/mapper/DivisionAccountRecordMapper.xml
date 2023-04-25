@@ -34,7 +34,7 @@
         select
           id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time
         from t_division_account_record
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
@@ -105,7 +105,7 @@
                 and create_time &lt;=#{endTime}
             </if>
         </where>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <select id="selectStatisticByPage" resultType="com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO">
@@ -121,7 +121,7 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="int">

@@ -54,7 +54,7 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
 
