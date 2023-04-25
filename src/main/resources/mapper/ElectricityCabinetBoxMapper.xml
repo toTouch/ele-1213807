@@ -23,7 +23,7 @@
     
     <select id="selectBoxList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
         select
-        ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,
+        ecb.id, ecb.electricity_cabinet_id, ecb.cell_no, ecb.sn, ecb.usable_status,ecb.power,
         ecb.status,ecb.is_lock,ecb.is_fan,ecb.temperature,ecb.is_heat,ecb.is_light, ecb.create_time,
         ecb.update_time, ecb.del_flag,ecb.tenant_id,ecb.temperature,ecb.battery_type,ecb.charge_v,ecb.charge_a,ecb.version,ecb.lock_type,
         bop.lock_reason,bop.remark,bop.lock_status_change_time,empty_grid_start_time

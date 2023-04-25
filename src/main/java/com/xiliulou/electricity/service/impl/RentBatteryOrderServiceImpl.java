@@ -1101,21 +1101,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     private Triple<Boolean, String, Object> acquireFullBattery(ElectricityCabinet electricityCabinet, String batteryType) {
         List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, batteryType, electricityCabinet.getFullyCharged());
         if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
-            return Triple.of(false, null, "换电柜暂无满电电池");
+            return Triple.of(false, "", "换电柜暂无满电电池");
         }
 
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxList.stream()
                 .filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects.nonNull(item.getPower()))
+                .sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed())
                 .collect(Collectors.toList());
         if (ObjectUtil.isEmpty(usableBoxes)) {
-            return Triple.of(false, null, "换电柜暂无满电电池");
+            return Triple.of(false, "", "换电柜暂无满电电池");
         }
 
-
-
         //如果存在多个电量满电且相同的电池，取充电器电压最高的
-        List<ElectricityCabinetBox> collect = usableBoxes.stream().sorted(Comparator.comparing(ElectricityCabinetBox::getPower).reversed()).collect(Collectors.toList());
-        Double maxPower = collect.get(0).getPower();
+        Double maxPower = usableBoxes.get(0).getPower();
         List<ElectricityCabinetBox> fullBatteryList = usableBoxes.stream()
                 .filter(item -> Objects.equals(item.getPower(), maxPower))
                 .filter(item -> Objects.nonNull(item.getChargeV()))
