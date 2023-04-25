@@ -379,13 +379,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //获取满电电池
-            Triple<Boolean, String, Object> selectFullBatteryResult = selectFullBattery(electricityCabinet, batteryType);
-            if (Boolean.FALSE.equals(selectFullBatteryResult.getLeft())) {
+            Triple<Boolean, String, Object> acquireFullBatteryResult = acquireFullBattery(electricityCabinet, batteryType);
+            if (Boolean.FALSE.equals(acquireFullBatteryResult.getLeft())) {
                 eleLockFlag = Boolean.FALSE;
-                return R.fail(selectFullBatteryResult.getMiddle(), (String) selectFullBatteryResult.getRight());
+                return R.fail(acquireFullBatteryResult.getMiddle(), (String) acquireFullBatteryResult.getRight());
             }
 
-            ElectricityCabinetBox eleCabinetBox = (ElectricityCabinetBox) selectFullBatteryResult.getRight();
+            ElectricityCabinetBox eleCabinetBox = (ElectricityCabinetBox) acquireFullBatteryResult.getRight();
             if (Objects.isNull(eleCabinetBox)) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! eleCabinetBoxis null,eid={}", electricityCabinet.getId());
@@ -440,11 +440,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderId);
+
+        } catch (Exception e) {
+            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("RENTBATTERY ERROR! create order error,uid={}", user.getUid(), e);
         } finally {
             if (!eleLockFlag) {
                 redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             }
         }
+
+        return R.ok();
     }
 
     @Override
@@ -1092,7 +1098,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok(map);
     }
 
-    private Triple<Boolean, String, Object> selectFullBattery(ElectricityCabinet electricityCabinet, String batteryType) {
+    private Triple<Boolean, String, Object> acquireFullBattery(ElectricityCabinet electricityCabinet, String batteryType) {
         List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, null, batteryType, electricityCabinet.getFullyCharged());
         if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
             return Triple.of(false, null, "换电柜暂无满电电池");
