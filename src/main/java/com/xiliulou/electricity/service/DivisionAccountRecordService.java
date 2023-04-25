@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
 import com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO;
 import com.xiliulou.electricity.vo.DivisionAccountRecordVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -60,4 +61,6 @@ public interface DivisionAccountRecordService {
     void handleBatteryMembercardDivisionAccount(ElectricityMemberCardOrder electricityMemberCardOrder);
 
     void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder);
+    
+    Triple<Boolean, String, Object> divisionAccountCompensation(String orderId, Integer type);
 }

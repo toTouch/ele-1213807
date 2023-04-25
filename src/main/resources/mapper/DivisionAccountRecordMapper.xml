@@ -28,6 +28,14 @@
         from t_division_account_record
         where id = #{id}
     </select>
+    
+    
+    <select id="selectByOrderId" resultMap="DivisionAccountRecordMap">
+        select
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time
+        from t_division_account_record
+        where order_no = #{orderId}
+    </select>
 
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="DivisionAccountRecordMap">

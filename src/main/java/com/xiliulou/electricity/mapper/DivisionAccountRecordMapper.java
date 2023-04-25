@@ -74,4 +74,6 @@ public interface DivisionAccountRecordMapper extends BaseMapper<DivisionAccountR
     List<DivisionAccountRecordStatisticVO> selectStatisticByPage(DivisionAccountRecordQuery query);
 
     Integer selectStatisticByPageCount(DivisionAccountRecordQuery query);
+    
+    DivisionAccountRecord selectByOrderId(@Param("orderId") String orderId);
 }
