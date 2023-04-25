@@ -36,7 +36,6 @@ public class DivisionAccountConfigQuery {
      * 分帐配置名称
      */
     @NotBlank(message = "分帐配置名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 0, max = 50, message = "分帐配置名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
 
     /**
