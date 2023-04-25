@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.google.api.client.util.Lists;
 import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +30,7 @@ public class BatteryChargeConfigVO {
     /**
      * 电池充电配置
      */
-    private List<BatteryMultiConfigDTO> configList;
+    private List<BatteryMultiConfigDTO> configList= Lists.newArrayList();
     /**
      * 柜机id
      */

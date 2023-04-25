@@ -76,6 +76,9 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     UserBatteryService userBatteryService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
         return R.ok(queryListByStatus(insuranceOrderQuery));
@@ -315,7 +318,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
 
         String batteryType = null;
         if (Objects.nonNull(model)) {
-            batteryType = BatteryConstant.acquireBatteryShort(model);
+            batteryType = batteryModelService.acquireBatteryShort(model,tenantId);
         }
         return R.ok(franchiseeInsuranceService.queryByFranchiseeId(franchiseeId, batteryType, tenantId));
 

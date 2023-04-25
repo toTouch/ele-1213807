@@ -508,6 +508,6 @@ public class JsonAdminStoreController extends BaseController {
             offset = 0L;
         }
         
-        return storeService.storeSearch(size, offset, name);
+        return storeService.storeSearch(size, offset, name, TenantContextHolder.getTenantId());
     }
 }

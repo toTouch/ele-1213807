@@ -91,4 +91,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
             @Param("franchiseeIds") List<Long> franchiseeIds,@Param("tenantId")Integer tenantId);
 
     Integer isUserBindBattery(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+
+    Integer insertBatch(@Param("list") List<ElectricityBattery> saveList);
+
 }

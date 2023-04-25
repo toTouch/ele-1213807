@@ -49,16 +49,6 @@ public class JsonUserElectricityCabinetBatteryController extends BaseController 
         return R.ok(electricityBatteryService.queryInfoByUid(uid));
     }
 
-    /**
-     * 迁移用户所属加盟商  获取用户电池型号
-     * @return
-     */
-    @GetMapping("user/battery/batteryType")
-    public R batteryType() {
-        return returnTripleResult(electricityBatteryService.selectUserLatestBatteryType());
-    }
-
-
     @GetMapping(value = "/user/battery/attr/list")
     public R attrList(@RequestParam("beginTime") Long beginTime,
                       @RequestParam("endTime") Long endTime) {
