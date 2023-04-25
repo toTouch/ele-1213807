@@ -9,6 +9,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
@@ -459,6 +460,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
+    @Slave
     public Franchisee queryByUid(Long uid) {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid, uid).eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL));
     }
@@ -721,13 +723,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         });
         return result;
     }
-    
+
     @Slave
     @Override
     public Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId) {
         return this.franchiseeMapper.checkBatteryModelIsUse(batteryModel, tenantId);
     }
-    
+
     /**
      * 用户迁移加盟商
      *

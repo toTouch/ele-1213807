@@ -8,13 +8,13 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.service.BatteryGeoService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BatteryExcelListener;
+import com.xiliulou.electricity.utils.BatteryExcelListenerV2;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
@@ -53,6 +53,10 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
 
     @Autowired
     BatteryGeoService batteryGeoService;
+    @Autowired
+    BatteryPlatRetrofitService batteryPlatRetrofitService;
+    @Autowired
+    TenantService tenantService;
 
     /**
      * 新增电池
@@ -61,7 +65,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      * @return
      */
     @PostMapping(value = "/admin/battery")
-    public R save(@RequestBody @Validated ElectricityBattery electricityBattery) {
+    public R save(@RequestBody @Validated EleBatteryQuery electricityBattery) {
 
         return electricityBatteryService.saveElectricityBattery(electricityBattery);
     }
@@ -74,12 +78,12 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PutMapping(value = "/admin/battery")
     @Log(title = "修改电池")
-    public R update(@RequestBody @Validated ElectricityBattery electricityBattery) {
-        if (Objects.isNull(electricityBattery.getId())) {
+    public R update(@RequestBody @Validated EleBatteryQuery query) {
+        if (Objects.isNull(query.getId())) {
             return R.fail("请求参数错误!");
         }
 
-        return electricityBatteryService.updateForAdmin(electricityBattery);
+        return electricityBatteryService.updateForAdmin(query);
     }
 
     /**
@@ -90,8 +94,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @DeleteMapping(value = "/admin/battery/{id}")
     @Log(title = "删除电池")
-    public R delete(@PathVariable("id") Long id) {
-        return electricityBatteryService.deleteElectricityBattery(id);
+    public R delete(@PathVariable("id") Long id, @RequestParam(value = "isNeedSync", required = false) Integer isNeedSync) {
+        return electricityBatteryService.deleteElectricityBattery(id, isNeedSync);
     }
 
     @GetMapping("/admin/battery/info")
@@ -172,7 +176,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @GetMapping(value = "/admin/battery/bind/page")
     public R batteryBindPage(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-            @RequestParam(value = "franchiseeId") Long franchiseeId) {
+                             @RequestParam(value = "franchiseeId") Long franchiseeId) {
         return electricityBatteryService.queryBindListByPage(offset, size, franchiseeId);
     }
 
@@ -195,13 +199,13 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
                         @RequestParam(value = "power", required = false) Double power,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
-    
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -209,7 +213,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
@@ -237,9 +241,9 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @GetMapping(value = "/admin/battery/pageByFranchisee")
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
+                              @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+                              @RequestParam(value = "sn", required = false) String sn,
+                              @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -279,8 +283,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "sn", required = false) String sn,
-            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
+                                    @RequestParam(value = "sn", required = false) String sn,
+                                    @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -291,7 +295,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -303,7 +307,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-        
+
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
@@ -360,6 +364,24 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     }
 
     /**
+     * 同步电池服务平台的接口
+     *
+     * @param file
+     * @return
+     */
+    @PostMapping("/admin/battery/excel/v2")
+    @Transactional(rollbackFor = Exception.class)
+    public R uploadV2(@RequestParam("file") MultipartFile file) {
+        try {
+            EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
+                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode())).sheet().doRead();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return R.ok();
+    }
+
+    /**
      * 电池总览
      *
      * @param
@@ -369,15 +391,15 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @Deprecated
     @GetMapping("/admin/battery/queryBatteryOverview")
     public R queryBatteryOverview(@RequestParam(value = "businessStatus", required = false) Integer businessStatus,
-            @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
-            @RequestParam(value = "sn", required = false) String sn) {
+                                  @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+                                  @RequestParam(value = "sn", required = false) String sn) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -424,14 +446,14 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             return R.ok(Collections.emptyList());
         }
 
-       return returnTripleResult(electricityBatteryService.queryBatteryMapList(offset, size,franchiseeIds));
+        return returnTripleResult(electricityBatteryService.queryBatteryMapList(offset, size, franchiseeIds));
 
     }
 
     @GetMapping("/admin/battery/location/map")
     public R queryBatteryMap(@RequestParam(value = "lat") Double lat, @RequestParam(value = "lon") Double lon,
-            @RequestParam(value = "size", required = false, defaultValue = "10000") Long size,
-            @RequestParam(value = "length", required = false, defaultValue = "5") Integer length) {
+                             @RequestParam(value = "size", required = false, defaultValue = "10000") Long size,
+                             @RequestParam(value = "length", required = false, defaultValue = "5") Integer length) {
         return returnTripleResult(batteryGeoService.queryBatteryMap(lat, lon, size, length));
     }
 
@@ -449,7 +471,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
@@ -468,7 +490,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
 
         return electricityBatteryService.batteryStatistical(electricityBatteryQuery);
     }
-    
+
     /**
      * 根据电池名字获取电池详情
      *
@@ -477,7 +499,7 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @GetMapping("/admin/battery/selectByBatteryName")
     public R batteryInfo(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
-            @RequestParam(value = "batteryName") String batteryName) {
+                         @RequestParam(value = "batteryName") String batteryName) {
         ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(batteryName).offset(offset)
                 .size(size).tenantId(TenantContextHolder.getTenantId()).build();
 
