@@ -96,7 +96,7 @@ public class JsonAdminDivisionAccountRecordController {
     /**
      * 分帐记录统计
      */
-    @GetMapping("/admin/division/account/record/page")
+    @GetMapping("/admin/division/account/statistic/page")
     public R statisticPage(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "membercardName", required = false) String membercardName,
                   @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -131,7 +131,7 @@ public class JsonAdminDivisionAccountRecordController {
     }
 
 
-    @GetMapping("/admin/division/account/record/count")
+    @GetMapping("/admin/division/account/statistic/count")
     public R statisticPageCount(@RequestParam(value = "membercardName", required = false) String membercardName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
