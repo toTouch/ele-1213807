@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.DivisionAccountConfigMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.DivisionAccountConfig" id="DivisionAccountConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="hierarchy" column="hierarchy" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="operatorRate" column="operator_rate" jdbcType="NUMERIC"/>
+        <result property="franchiseeRate" column="franchisee_rate" jdbcType="NUMERIC"/>
+        <result property="storeRate" column="store_rate" jdbcType="NUMERIC"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="DivisionAccountConfigMap">
+        select
+          id, name, hierarchy, franchisee_id, store_id, operator_rate, franchisee_rate, store_rate, status, type, tenant_id, del_flag, create_time, update_time
+        from t_division_account_config
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="DivisionAccountConfigMap">
+        select
+          id, name, hierarchy, franchisee_id, store_id, operator_rate, franchisee_rate, store_rate, status, type, tenant_id, del_flag, create_time, update_time
+        from t_division_account_config
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="hierarchy != null">
+            and hierarchy = #{hierarchy}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="franchiseeRate != null">
+            and franchisee_rate = #{franchiseeRate}
+        </if>
+        <if test="storeRate != null">
+            and store_rate = #{storeRate}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="createTime != null">
+            and create_time = #{createTime}
+        </if>
+        <if test="updateTime != null">
+            and update_time = #{updateTime}
+        </if>
+        limit #{offset}, #{limit}
+    </select>
+
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(1)
+        from t_division_account_config
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="hierarchy != null">
+            and hierarchy = #{hierarchy}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="franchiseeRate != null">
+            and franchisee_rate = #{franchiseeRate}
+        </if>
+        <if test="storeRate != null">
+            and store_rate = #{storeRate}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="createTime != null">
+            and create_time = #{createTime}
+        </if>
+        <if test="updateTime != null">
+            and update_time = #{updateTime}
+        </if>
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="DivisionAccountConfigMap">
+        select
+        id, name, hierarchy, franchisee_id, store_id, operator_rate, franchisee_rate, store_rate, status, type, tenant_id, del_flag,
+        create_time, update_time
+        from t_division_account_config
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="hierarchy != null">
+                and hierarchy = #{hierarchy}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeRate != null">
+                and franchisee_rate = #{franchiseeRate}
+            </if>
+            <if test="storeRate != null">
+                and store_rate = #{storeRate}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_division_account_config(name, hierarchy, franchisee_id, store_id, operator_rate, franchisee_rate, store_rate, status, type, tenant_id, del_flag, create_time, update_time)
+        values (#{name}, #{hierarchy}, #{franchiseeId}, #{storeId}, #{operatorRate}, #{franchiseeRate}, #{storeRate}, #{status}, #{type}, #{tenantId}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_division_account_config
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="hierarchy != null">
+                hierarchy = #{hierarchy},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="operatorRate != null">
+                operator_rate = #{operatorRate},
+            </if>
+            <if test="franchiseeRate != null">
+                franchisee_rate = #{franchiseeRate},
+            </if>
+            <if test="storeRate != null">
+                store_rate = #{storeRate},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_division_account_config where id = #{id}
+    </delete>
+
+</mapper>

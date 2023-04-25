@@ -155,6 +155,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
 
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
+
     /**
      * 创建月卡订单
      *
@@ -329,10 +332,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 refId = electricityCabinet.getId().longValue();
             }
         }
-
-//        if (Objects.isNull(franchiseeId)) {
-//            return R.fail("ELECTRICITY.0038", "未找到加盟商");
-//        }
 
         //查找计算优惠券
         //满减折扣劵
@@ -1808,6 +1807,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         baseMapper.insert(electricityMemberCardOrder);
 
+        divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
 
         UserBatteryMemberCard userBatteryMemberCardAddAndUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardAddAndUpdate.setUid(userInfo.getUid());
@@ -2229,6 +2229,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
+
+        divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
 
         Double oldCardDay = 0.0;
         if (userBatteryMemberCard.getMemberCardExpireTime() - now > 0) {

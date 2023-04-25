@@ -41,12 +41,6 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     public R payMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
         return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
     }
-
-//    @GetMapping("user/memberCardOrder/list")
-//    public R queryUserList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-//                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-//        return electricityMemberCardOrderService.queryUserList(offset, size, queryStartTime, queryEndTime);
-//    }
     
     @GetMapping("user/memberCardOrder/list")
     public R queryUserList(@RequestParam("offset") long offset, @RequestParam("size") long size,

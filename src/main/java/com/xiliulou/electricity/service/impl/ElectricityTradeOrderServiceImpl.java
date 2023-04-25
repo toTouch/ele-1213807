@@ -41,43 +41,7 @@ import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
-import com.xiliulou.electricity.service.CarDepositOrderService;
-import com.xiliulou.electricity.service.CarMemberCardOrderService;
-import com.xiliulou.electricity.service.ChannelActivityHistoryService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.EnableMemberCardRecordService;
-import com.xiliulou.electricity.service.FranchiseeAmountService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InsuranceOrderService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.OldUserActivityService;
-import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.ShippingManagerService;
-import com.xiliulou.electricity.service.StoreAmountService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserAmountService;
-import com.xiliulou.electricity.service.UserBatteryDepositService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserCarService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -185,6 +149,8 @@ public class ElectricityTradeOrderServiceImpl extends
     ElectricityCarService electricityCarService;
     @Autowired
     ShippingManagerService shippingManagerService;
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
@@ -279,21 +245,7 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//
-//        }
-
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
 
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
@@ -454,6 +406,8 @@ public class ElectricityTradeOrderServiceImpl extends
 
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
     
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
                     .queryByUid(electricityMemberCardOrder.getUid());
@@ -946,8 +900,9 @@ public class ElectricityTradeOrderServiceImpl extends
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
-        }
 
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
+        }
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
