@@ -45,12 +45,6 @@
         <if test="storeId != null">
             and store_id = #{storeId}
         </if>
-        <if test="franchiseeRate != null">
-            and franchisee_rate = #{franchiseeRate}
-        </if>
-        <if test="storeRate != null">
-            and store_rate = #{storeRate}
-        </if>
         <if test="status != null">
             and status = #{status}
         </if>
@@ -59,12 +53,6 @@
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
-        </if>
-        <if test="createTime != null">
-            and create_time = #{createTime}
-        </if>
-        <if test="updateTime != null">
-            and update_time = #{updateTime}
         </if>
         limit #{offset}, #{limit}
     </select>
@@ -87,12 +75,6 @@
         <if test="storeId != null">
             and store_id = #{storeId}
         </if>
-        <if test="franchiseeRate != null">
-            and franchisee_rate = #{franchiseeRate}
-        </if>
-        <if test="storeRate != null">
-            and store_rate = #{storeRate}
-        </if>
         <if test="status != null">
             and status = #{status}
         </if>
@@ -101,12 +83,6 @@
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
-        </if>
-        <if test="createTime != null">
-            and create_time = #{createTime}
-        </if>
-        <if test="updateTime != null">
-            and update_time = #{updateTime}
         </if>
     </select>
 
