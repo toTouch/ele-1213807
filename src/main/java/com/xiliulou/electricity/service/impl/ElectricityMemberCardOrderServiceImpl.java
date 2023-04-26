@@ -154,6 +154,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     /**
      * 创建月卡订单
@@ -222,6 +225,18 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("100241", "当前套餐暂停中，请先启用套餐");
+        }
+    
+        //是否强制购买保险
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+            long now = System.currentTimeMillis();
+            if (Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
+                return R.fail("100309", "未购买保险或保险已过期");
+            }
         }
 
         Long now = System.currentTimeMillis();
