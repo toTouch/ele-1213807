@@ -620,6 +620,30 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             updateElectricityCar.setUserName(userInfo.getName());
             updateElectricityCar.setUpdateTime(System.currentTimeMillis());
             electricityCarService.update(updateElectricityCar);
+    
+            //ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+            //ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+        
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
+            }
         
             return null;
         });
