@@ -10,6 +10,7 @@ import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class DivisionAccountConfigQuery {
      * 分帐配置名称
      */
     @NotBlank(message = "分帐配置名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @Size(min = 1, max = 50, message = "分帐配置名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
 
     /**

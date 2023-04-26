@@ -254,26 +254,32 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "ELECTRICITY.0018", "门店不存在");
         }
 
+        //校验套餐
+        Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCard(query);
+        if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
+            return verifyBatteryMemberCardResult;
+        }
+
+        //校验车辆型号
+        Triple<Boolean, String, Object> verifyCarModelResult = verifyCarModel(query);
+        if (Boolean.FALSE.equals(verifyCarModelResult.getLeft())) {
+            return verifyCarModelResult;
+        }
+
+
+
         DivisionAccountConfig divisionAccountConfig = buildDivisionAccountConfig(query);
         DivisionAccountConfig accountConfig = this.insert(divisionAccountConfig);
 
         if (Objects.equals(query.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
-            //校验套餐
-            Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCard(query);
-            if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
-                return verifyBatteryMemberCardResult;
-            }
+
 
             List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList = buildDivisionAccountBatteryMembercardList(query, accountConfig);
             divisionAccountBatteryMembercardService.batchInsert(divisionAccountBatteryMembercardList);
         }
 
         if (Objects.equals(query.getType(), DivisionAccountConfig.TYPE_CAR)) {
-            //校验车辆型号
-            Triple<Boolean, String, Object> verifyCarModelResult = verifyCarModel(query);
-            if (Boolean.FALSE.equals(verifyCarModelResult.getLeft())) {
-                return verifyCarModelResult;
-            }
+
 
             List<DivisionAccountCarModel> divisionAccountCarModelList = buildDivisionAccountCarModelList(query, accountConfig);
             divisionAccountCarModelService.batchInsert(divisionAccountCarModelList);
