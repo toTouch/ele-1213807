@@ -66,4 +66,8 @@ public interface DivisionAccountBatteryMembercardService {
     List<Long> selectByDivisionAccountConfigId(Long id);
 
     Long selectByBatteryMembercardId(Long membercardId);
+
+    List<Long> selectByTenantId(Integer tenantId);
+
+    Integer deleteByDivisionAccountId(Long id);
 }

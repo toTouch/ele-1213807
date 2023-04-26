@@ -66,4 +66,8 @@ public interface DivisionAccountCarModelService {
     List<Long> selectByDivisionAccountConfigId(Long id);
 
     Long selectByCarModelId(Long carModelId);
+
+    List<Long> selectByTenantId(Integer tenantId);
+
+    Integer deleteByDivisionAccountId(Long id);
 }

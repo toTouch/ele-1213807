@@ -70,4 +70,8 @@ public interface DivisionAccountCarModelMapper extends BaseMapper<DivisionAccoun
     List<Long> selectByDivisionAccountConfigId(@Param("id") Long id);
 
     Long selectByCarModelId(@Param("carModelId") Long carModelId);
+
+    List<Long> selectByTenantId(@Param("tenantId") Integer tenantId);
+
+    Integer deleteByDivisionAccountId(@Param("divisionAccountId") Long divisionAccountId);
 }

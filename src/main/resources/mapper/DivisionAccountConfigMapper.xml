@@ -24,7 +24,7 @@
         select
           id, name, hierarchy, franchisee_id, store_id, operator_rate, franchisee_rate, store_rate, status, type, tenant_id, del_flag, create_time, update_time
         from t_division_account_config
-        where id = #{id}
+        where del_flag=0 and id = #{id}
     </select>
 
     <!--查询指定行数据-->

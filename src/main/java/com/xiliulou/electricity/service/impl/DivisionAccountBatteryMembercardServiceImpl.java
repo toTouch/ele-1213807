@@ -72,6 +72,17 @@ public class DivisionAccountBatteryMembercardServiceImpl implements DivisionAcco
         return this.divisionAccountBatteryMembercardMapper.selectByBatteryMembercardId(membercardId);
     }
 
+    @Slave
+    @Override
+    public List<Long> selectByTenantId(Integer tenantId) {
+        return this.divisionAccountBatteryMembercardMapper.selectByTenantId(tenantId);
+    }
+
+    @Override
+    public Integer deleteByDivisionAccountId(Long id) {
+        return  this.divisionAccountBatteryMembercardMapper.deleteByDivisionAccountId(id);
+    }
+
     /**
      * 新增数据
      *

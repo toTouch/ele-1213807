@@ -72,6 +72,17 @@ public class DivisionAccountCarModelServiceImpl implements DivisionAccountCarMod
         return this.divisionAccountCarModelMapper.selectByCarModelId(carModelId);
     }
 
+    @Slave
+    @Override
+    public List<Long> selectByTenantId(Integer tenantId) {
+        return this.divisionAccountCarModelMapper.selectByTenantId(tenantId);
+    }
+
+    @Override
+    public Integer deleteByDivisionAccountId(Long id) {
+        return this.divisionAccountCarModelMapper.deleteByDivisionAccountId(id);
+    }
+
     /**
      * 新增数据
      *
