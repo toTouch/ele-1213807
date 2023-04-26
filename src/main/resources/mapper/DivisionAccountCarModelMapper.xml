@@ -30,8 +30,8 @@
     <select id="selectByCarModelId" resultType="long">
         select
            division_account_id
-        from t_division_account_car_model
-        where  car_model_id= #{carModelId}
+        from t_division_account_car_model dacm left join t_division_account_config dac on dac.id=dacm.division_account_id
+        where  car_model_id= #{carModelId} and dac.status=0 and dac.del_flag=0 order by dacm.id limit 1
     </select>
 
     <select id="selectByTenantId" resultType="long">

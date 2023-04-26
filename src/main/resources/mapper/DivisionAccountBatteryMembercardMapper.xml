@@ -31,8 +31,8 @@
     <select id="selectByBatteryMembercardId" resultType="long">
         select
           division_account_id
-        from t_division_account_battery_membercard
-        where battery_membercard_id = #{membercardId} order by id limit 1
+        from t_division_account_battery_membercard dab left join t_division_account_config dac on dac.id=dab.division_account_id
+        where battery_membercard_id = #{membercardId} and dac.status=0 and dac.del_flag=0 order by dab.id limit 1
     </select>
 
     <select id="selectByTenantId" resultType="long">
