@@ -156,8 +156,9 @@
     </select>
 
     <select id="selectStatisticByPageCount" resultType="int">
+select count(1) from (
         select
-        count(1)
+        division_account_config_id
         from t_division_account_record
         where tenant_id = #{tenantId}
         <if test="membercardName != null and membercardName != ''">
@@ -170,6 +171,7 @@
             and create_time &lt;=#{endTime}
         </if>
         group by division_account_config_id
+        ) a
     </select>
 
     <!--新增所有列-->

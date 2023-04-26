@@ -171,6 +171,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             Store store = storeService.queryByIdFromCache(divisionAccountConfig.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
 
+            item.setDivisionAccountConfigName(divisionAccountConfig.getName());
+
         }).collect(Collectors.toList());
     }
 
