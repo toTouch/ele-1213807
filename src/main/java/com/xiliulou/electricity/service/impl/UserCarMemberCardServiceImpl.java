@@ -20,6 +20,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
+import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -258,22 +259,11 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         }
         
         int offset = 0;
-        int size = 300;
-        long firstTime = 0;
-        long lastTime = System.currentTimeMillis();
-        
-        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME);
-        if (StrUtil.isNotBlank(firstTimeStr)) {
-            firstTime = Long.parseLong(firstTimeStr);
-        }
-    
-        redisService
-                .set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME, String.valueOf(lastTime),
-                        CacheConstant.CACHE_EXPIRE_MONTH, TimeUnit.MILLISECONDS);
+        int size = 100;
         
         while (true) {
             List<CarMemberCardExpireBreakPowerQuery> query = this.userCarMemberCardMapper
-                    .carMemberCardExpireBreakPower(offset, size, firstTime, lastTime);
+                    .carMemberCardExpireBreakPower(offset, size);
             if (CollectionUtils.isEmpty(query)) {
                 break;
             }
@@ -289,10 +279,27 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     log.error("EXPIRE BREAK POWER ERROR! electricityCar not find, sn={}", item.getSn());
                     return;
                 }
+    
+                //查询车辆锁状态
+                R<Jt808DeviceInfoVo> carInfoResult = null;
+                for (int i = 0; i < 3; i++) {
+                    carInfoResult = jt808RetrofitService
+                            .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
+                    if (Objects.isNull(carInfoResult)) {
+                        continue;
+                    }
+        
+                    if (carInfoResult.isSuccess()) {
+                        break;
+                    }
+                    log.error("EXPIRE BREAK POWER ERROR! query car info error! sn={}", electricityCar.getSn());
+                }
+    
                 ElectricityConfig electricityConfig = electricityConfigService
                         .queryFromCacheByTenantId(item.getTenantId());
-                if (Objects.nonNull(electricityConfig) && Objects
-                        .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                if (Objects.nonNull(electricityConfig) && Objects.nonNull(carInfoResult) && Objects
+                        .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                        && Objects.equals(carInfoResult.getData().getDoorStatus(), ElectricityCar.TYPE_UN_LOCK)) {
                     boolean result = electricityCarService.retryCarLockCtrl(item.getSn(), ElectricityCar.TYPE_LOCK, 3);
                     CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
                     carLockCtrlHistory.setUid(item.getUid());
