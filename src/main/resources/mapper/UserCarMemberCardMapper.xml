@@ -155,7 +155,7 @@
          inner join  t_user_car_member_card ucmc on ui.uid = ucmc.uid
          inner join  t_user_car uc on ucmc.uid = uc.uid
          where uc.sn is not null
-          and ui.del_flag = 0
+          and ui.del_flag = 0 and ucmc.member_card_expire_time &lt; #{now}
          limit #{offset}, #{size}
     </select>
 

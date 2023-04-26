@@ -261,10 +261,11 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         
         int offset = 0;
         int size = 100;
+        long now = System.currentTimeMillis();
         
         while (true) {
             List<CarMemberCardExpireBreakPowerQuery> query = this.userCarMemberCardMapper
-                    .carMemberCardExpireBreakPower(offset, size);
+                    .carMemberCardExpireBreakPower(offset, size, now);
             if (CollectionUtils.isEmpty(query)) {
                 break;
             }
