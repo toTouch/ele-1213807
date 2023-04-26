@@ -216,11 +216,11 @@ public class Jt808CarServiceImpl implements Jt808CarService {
         
         if (StrUtil.isBlank(electricityCar.getSn())) {
             log.error("USER CONTROL CAR ERROR! not found electricityCar, uid={}", uid);
-            return Triple.of(false, "", "车辆sn码为空");
+            return Triple.of(false, "100007", "未找到车辆");
         }
     
         if (!electricityCarService.carLockCtrl(electricityCar.getSn(), query.getLockType())) {
-            return Triple.of(false, "", "请求失败");
+            return Triple.of(false, "100030", "操作车辆请求失败");
         }
     
         //缓存车辆锁状态  同步给客户进行通知  前端超时15S
