@@ -85,7 +85,7 @@
                 is_open_car_battery_bind = #{isOpenCarBatteryBind},
             </if>
             <if test="isOpenCarControl != null">
-                is_open_car_control = #{isOpenCarControl}
+                is_open_car_control = #{isOpenCarControl},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
