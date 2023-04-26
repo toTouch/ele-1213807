@@ -328,7 +328,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             divisionAccountConfigVO.setCarModels(carModels);
         }
 
-        return Triple.of(true, null, divisionAccountConfig);
+        return Triple.of(true, null, divisionAccountConfigVO);
     }
 
     private List<String> assignMembercardName(DivisionAccountConfig item) {

@@ -36,7 +36,7 @@
 
     <select id="selectByTenantId" resultType="long">
         select
-           dac.division_account_id
+           dacm.car_model_id
         from t_division_account_config dac left join t_division_account_car_model dacm on dac.id=dacm.division_account_id
         where  dac.tenant_id= #{tenantId}  and dac.status=0 and dac.del_flag=0
     </select>
