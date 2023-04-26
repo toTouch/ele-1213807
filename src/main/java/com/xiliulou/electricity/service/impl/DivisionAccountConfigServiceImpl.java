@@ -298,7 +298,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         DivisionAccountConfigVO divisionAccountConfigVO = new DivisionAccountConfigVO();
         BeanUtils.copyProperties(divisionAccountConfig, divisionAccountConfigVO);
 
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(divisionAccountConfig.getId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(divisionAccountConfig.getFranchiseeId());
         divisionAccountConfigVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
         Store store = storeService.queryByIdFromCache(divisionAccountConfig.getStoreId());
