@@ -251,6 +251,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     }
     
     @Override
+    //TODO 优化 车辆锁状态要记录在本地 不能和车辆通讯查车辆的锁状态
     public void expireBreakPowerHandel() {
         if (!redisService
                 .setNx(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LOCK, "ok", 120000L, false)) {
