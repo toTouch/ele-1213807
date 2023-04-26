@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -26,11 +28,11 @@ public class DivisionAccountRecordVO {
     /**
      * 套餐价格
      */
-    private Double price;
+    private BigDecimal price;
     /**
      * 支付金额
      */
-    private Double payAmount;
+    private BigDecimal payAmount;
     /**
      * 支付时间
      */
@@ -38,15 +40,15 @@ public class DivisionAccountRecordVO {
     /**
      * 运营商收益
      */
-    private Double operatorIncome;
+    private BigDecimal operatorIncome;
     /**
      * 加盟商收益
      */
-    private Double franchiseeIncome;
+    private BigDecimal franchiseeIncome;
     /**
      * 门店收益
      */
-    private Double storeIncome;
+    private BigDecimal storeIncome;
 
     private Integer status;
 

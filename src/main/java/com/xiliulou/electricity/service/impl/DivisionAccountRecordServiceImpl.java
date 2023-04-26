@@ -193,11 +193,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
             BigDecimal userPayAmount = batteryMemberCardOrder.getPayAmount();
             BigDecimal operatorIncome = userPayAmount
-                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getOperatorRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getOperatorRate(), new MathContext(2, RoundingMode.DOWN));
+                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getOperatorRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getOperatorRate().divide(BigDecimal.valueOf(100)), new MathContext(2, RoundingMode.DOWN));
             BigDecimal franchiseeIncome = userPayAmount
-                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getFranchiseeRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getFranchiseeRate(), new MathContext(2, RoundingMode.DOWN));
+                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getFranchiseeRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getFranchiseeRate().divide(BigDecimal.valueOf(100)), new MathContext(2, RoundingMode.DOWN));
             BigDecimal storeIncome = userPayAmount
-                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getStoreRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getStoreRate(), new MathContext(2, RoundingMode.DOWN));
+                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getStoreRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getStoreRate().divide(BigDecimal.valueOf(100)), new MathContext(2, RoundingMode.DOWN));
 
             //保存分帐记录
             DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
@@ -232,11 +232,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
             BigDecimal userPayAmount = carMemberCardOrder.getPayAmount();
             BigDecimal operatorIncome = userPayAmount
-                    .multiply(divisionAccountConfig.getOperatorRate(), new MathContext(2, RoundingMode.DOWN));
+                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getOperatorRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getOperatorRate().divide(BigDecimal.valueOf(100)), new MathContext(2, RoundingMode.DOWN));
             BigDecimal franchiseeIncome = userPayAmount
-                    .multiply(divisionAccountConfig.getFranchiseeRate(), new MathContext(2, RoundingMode.DOWN));
+                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getFranchiseeRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getFranchiseeRate().divide(BigDecimal.valueOf(100)), new MathContext(2, RoundingMode.DOWN));
             BigDecimal storeIncome = userPayAmount
-                    .multiply(divisionAccountConfig.getStoreRate(), new MathContext(2, RoundingMode.DOWN));
+                    .multiply(BigDecimal.ZERO.compareTo(divisionAccountConfig.getStoreRate()) == 0 ? BigDecimal.ONE : divisionAccountConfig.getStoreRate().divide(BigDecimal.valueOf(100)), new MathContext(2, RoundingMode.DOWN));
 
             //保存分帐记录
             DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
