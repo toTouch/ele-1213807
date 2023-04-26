@@ -249,9 +249,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
         }
 
-        Store store = storeService.queryByIdFromCache(query.getStoreId());
-        if (Objects.isNull(store)) {
-            return Triple.of(false, "ELECTRICITY.0018", "门店不存在");
+        if (Objects.equals(query.getHierarchy(), DivisionAccountConfig.HIERARCHY_THREE)) {
+            Store store = storeService.queryByIdFromCache(query.getStoreId());
+            if (Objects.isNull(store)) {
+                return Triple.of(false, "ELECTRICITY.0018", "门店不存在");
+            }
         }
 
         //校验套餐
