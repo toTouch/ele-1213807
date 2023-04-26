@@ -209,7 +209,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "100480", "分帐配置不存在");
         }
 
-        if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
+        if (Objects.equals(divisionAccountConfigQuery.getStatus(), DivisionAccountConfig.STATUS_ENABLE) && Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
             //获取当前租户已启用的分帐套餐
             List<Long> enableMemberCardIds = divisionAccountBatteryMembercardService.selectByTenantId(TenantContextHolder.getTenantId());
 
@@ -222,7 +222,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             }
         }
 
-        if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {
+        if (Objects.equals(divisionAccountConfigQuery.getStatus(), DivisionAccountConfig.STATUS_ENABLE) && Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {
             //获取租户已启用的分帐车辆型号
             List<Long> enableCarModels = divisionAccountCarModelService.selectByTenantId(TenantContextHolder.getTenantId());
 
