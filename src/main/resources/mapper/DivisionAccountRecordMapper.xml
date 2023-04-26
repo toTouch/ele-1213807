@@ -118,8 +118,9 @@
 
     <select id="selectStatisticByPage" resultType="com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO">
         select
-        division_account_config_id,any_value(tenant_id) as tenant_id,sum(operator_income) operator_income,sum(franchisee_income) franchisee_income,sum(store_income) store_income
-        from t_division_account_record group by division_account_config_id having tenant_id = #{tenantId}
+        division_account_config_id,sum(operator_income) operator_income,sum(franchisee_income) franchisee_income,sum(store_income) store_income
+        from t_division_account_record
+        where tenant_id = #{tenantId}
         <if test="membercardName != null and membercardName != ''">
             and membercard_name = #{membercardName}
         </if>
@@ -129,6 +130,7 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
+        group by division_account_config_id
         limit #{offset}, #{size}
     </select>
 
@@ -153,10 +155,10 @@
     </select>
 
     <select id="selectStatisticByPageCount" resultType="int">
-        select count(1)  from (
         select
-        tenant_id
-        from t_division_account_record group by division_account_config_id having tenant_id = #{tenantId}
+        count(1)
+        from t_division_account_record
+        where tenant_id = #{tenantId}
         <if test="membercardName != null and membercardName != ''">
             and membercard_name = #{membercardName}
         </if>
@@ -166,7 +168,7 @@
         <if test="endTime != null">
             and create_time &lt;=#{endTime}
         </if>
-        ) a
+        group by division_account_config_id
     </select>
 
     <!--新增所有列-->

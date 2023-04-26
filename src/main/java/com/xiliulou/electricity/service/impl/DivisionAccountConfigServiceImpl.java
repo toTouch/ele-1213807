@@ -297,6 +297,21 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Objects.isNull(divisionAccountConfig) || !Objects.equals(divisionAccountConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100480", "分帐配置不存在");
         }
+
+        DivisionAccountConfigVO divisionAccountConfigVO = new DivisionAccountConfigVO();
+        BeanUtils.copyProperties( divisionAccountConfig,divisionAccountConfigVO);
+
+        if(Objects.equals(divisionAccountConfig.getType() , DivisionAccountConfig.TYPE_BATTERY)){
+            List<Long> memberCardIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+            divisionAccountConfigVO.setMembercardIds(memberCardIds);
+        }
+
+        if(Objects.equals(divisionAccountConfig.getType() , DivisionAccountConfig.TYPE_CAR)){
+            List<Long> carModelIds = divisionAccountCarModelService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+            divisionAccountConfigVO.setMembercardIds(carModelIds);
+        }
+
+
         return Triple.of(true, null, divisionAccountConfig);
     }
 

@@ -44,7 +44,7 @@ public class DivisionAccountConfigQuery {
      * 分帐层级
      */
     @NotNull(message = "分帐层级不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 1, max = 2, message = "分帐层级不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 2, max = 3, message = "分帐层级不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer hierarchy;
     /**
      * 加盟商id
