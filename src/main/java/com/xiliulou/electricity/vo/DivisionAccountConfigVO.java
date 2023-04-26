@@ -49,8 +49,8 @@ public class DivisionAccountConfigVO {
 
     private List<Long> membercardIds;
 
+    private Long createTime;
+
     private Long updateTime;
-
-
 
 }
