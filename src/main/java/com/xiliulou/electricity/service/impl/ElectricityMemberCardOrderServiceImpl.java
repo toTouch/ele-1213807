@@ -249,7 +249,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
                 //用户是否没有保险信息或已过期（是进入）
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-                if (Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                if (Objects.isNull(insuranceUserInfo) || Objects
+                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
                     log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
                     return R.fail("100309", "未购买保险或保险已过期");
                 }
