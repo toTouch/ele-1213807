@@ -1701,8 +1701,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public boolean checkDepositOrderIsRefund(String orderId) {
-        EleRefundOrder eleRefundOrder = this.eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS, EleRefundOrder.STATUS_REFUND));
+    public boolean checkDepositOrderIsRefund(String orderId, Integer refundOrderType) {
+        EleRefundOrder eleRefundOrder = this.eleRefundOrderMapper.selectOne(
+                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId)
+                        .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_SUCCESS, EleRefundOrder.STATUS_REFUND)
+                        .eq(EleRefundOrder::getRefundOrderType, refundOrderType));
         if (!Objects.isNull(eleRefundOrder)) {
             return Boolean.TRUE;
         }

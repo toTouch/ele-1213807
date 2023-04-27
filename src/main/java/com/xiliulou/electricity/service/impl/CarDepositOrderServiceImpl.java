@@ -138,7 +138,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             }
 
             //是否已退押金
-            carDepositOrderVO.setRefundDeposit(eleRefundOrderService.checkDepositOrderIsRefund(item.getOrderId()));
+            carDepositOrderVO.setRefundDeposit(eleRefundOrderService
+                    .checkDepositOrderIsRefund(item.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
 
             return carDepositOrderVO;
         }).collect(Collectors.toList());
