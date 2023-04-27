@@ -54,6 +54,7 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
+        order by create_time desc
         limit #{offset}, #{size}
     </select>
 
