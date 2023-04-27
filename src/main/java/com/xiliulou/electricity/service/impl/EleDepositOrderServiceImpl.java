@@ -9,7 +9,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -122,6 +121,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     UserCarMemberCardService userCarMemberCardService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
     
     @Autowired
     FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
@@ -211,7 +213,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         BigDecimal payAmount = (BigDecimal) depositPair.getRight();
 
-        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : null;
+        String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? batteryModelService.acquireBatteryShort(model,tenantId) : null;
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, user.getUid());
 
@@ -659,8 +661,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
             Long refundTime = eleRefundOrderService.queryRefundTime(payDepositOrderVO.getOrderId());
             payDepositOrderVO.setRefundTime(refundTime);
-    
-            payDepositOrderVO.setModel(BatteryConstant.acquireBattery(payDepositOrderVO.getBatteryType()));
+
+            payDepositOrderVO.setModel(batteryModelService.acquireBatteryModel(payDepositOrderVO.getBatteryType(),TenantContextHolder.getTenantId()));
         }
 
         return R.ok(payDepositOrderVOList);
@@ -703,7 +705,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBattery)) {
             log.error("ELE DEPOSIT ERROR! not found userBattery,uid={}", user.getUid());
-            return R.fail("100247", "用户信息不存在");
+            return R.ok(null);
         }
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
@@ -714,7 +716,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         String batteryType = userBattery.getBatteryType();
         if (Objects.nonNull(batteryType)) {
-            Integer acquireBattery = BatteryConstant.acquireBattery(batteryType);
+            Integer acquireBattery = batteryModelService.acquireBatteryModel(batteryType,TenantContextHolder.getTenantId());
             map.put("batteryType", Objects.isNull(acquireBattery) ? null : String.valueOf(acquireBattery));
         } else {
             map.put("batteryType", null);
@@ -1626,7 +1628,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         String batteryType = Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ?
-                BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()) : null;
+                batteryModelService.acquireBatteryShort(batteryDepositAdd.getModel(),TenantContextHolder.getTenantId()) : null;
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT, userInfo.getUid());
 
@@ -1778,7 +1780,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .tenantId(userInfo.getTenantId())
                 .franchiseeId(franchisee.getId())
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
-                .batteryType(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? BatteryConstant.acquireBatteryShort(model) : null)
+                .batteryType(Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) ? batteryModelService.acquireBatteryShort(model, TenantContextHolder.getTenantId()) : null)
                 .storeId(null)
                 .modelType(franchisee.getModelType()).build();
 

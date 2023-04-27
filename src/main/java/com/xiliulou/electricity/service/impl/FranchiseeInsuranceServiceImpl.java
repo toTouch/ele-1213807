@@ -1,33 +1,24 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
-import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InsuranceInstructionService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -37,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +54,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     FranchiseeService franchiseeService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
 
     @Override
     public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
@@ -114,7 +107,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
         if (Objects.nonNull(franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) && !franchiseeInsuranceAddAndUpdate.getBatteryTypeList().isEmpty()) {
             for (String batteryType : franchiseeInsuranceAddAndUpdate.getBatteryTypeList()) {
-                franchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(batteryType)));
+                franchiseeInsurance.setBatteryType(batteryModelService.acquireBatteryShort(Integer.valueOf(batteryType),tenantId));
                 int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
                         .eq(FranchiseeInsurance::getTenantId, tenantId)
                         .eq(FranchiseeInsurance::getBatteryType, batteryType)
@@ -159,7 +152,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         newFranchiseeInsurance.setUpdateTime(System.currentTimeMillis());
         newFranchiseeInsurance.setTenantId(tenantId);
         if (StringUtils.isNotEmpty(franchiseeInsuranceAddAndUpdate.getBatteryType())) {
-            newFranchiseeInsurance.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(franchiseeInsuranceAddAndUpdate.getBatteryType())));
+            newFranchiseeInsurance.setBatteryType(batteryModelService.acquireBatteryShort(Integer.valueOf(franchiseeInsuranceAddAndUpdate.getBatteryType()), TenantContextHolder.getTenantId()));
         }
         Integer update = baseMapper.update(newFranchiseeInsurance);
 
@@ -288,7 +281,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         if (Objects.nonNull(franchiseeInsuranceVoList)) {
             for (FranchiseeInsuranceVo franchiseeInsuranceVo : franchiseeInsuranceVoList) {
                 if (StringUtils.isNotEmpty(franchiseeInsuranceVo.getBatteryType())) {
-                    franchiseeInsuranceVo.setBatteryType(BatteryConstant.acquireBattery(franchiseeInsuranceVo.getBatteryType()).toString());
+
+                    franchiseeInsuranceVo.setBatteryType(batteryModelService.acquireBatteryModel(franchiseeInsuranceVo.getBatteryType(),tenantId).toString());
                 }
             }
         }
@@ -345,7 +339,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
             int existCount = baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>()
                     .eq(FranchiseeInsurance::getTenantId, tenantId)
-                    .eq(FranchiseeInsurance::getBatteryType, BatteryConstant.acquireBatteryShort(modelBatteryDeposit.getModel()))
+                    .eq(FranchiseeInsurance::getBatteryType, batteryModelService.acquireBatteryShort(modelBatteryDeposit.getModel(), tenantId))
                     .eq(FranchiseeInsurance::getFranchiseeId, franchiseeId)
                     .eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL));
             if (existCount == 0) {
@@ -370,11 +364,11 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return;
         }
 
-        oldFranchiseeInsurances.parallelStream().peek(item -> {
+        oldFranchiseeInsurances.stream().peek(item -> {
             item.setId(null);
             item.setName(item.getName() + "(迁)");
             item.setFranchiseeId(newFranchisee.getId());
-            item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
+            item.setBatteryType(batteryModelService.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel(),TenantContextHolder.getTenantId()));
             item.setCreateTime(System.currentTimeMillis());
             item.setUpdateTime(System.currentTimeMillis());
         }).collect(Collectors.toList());

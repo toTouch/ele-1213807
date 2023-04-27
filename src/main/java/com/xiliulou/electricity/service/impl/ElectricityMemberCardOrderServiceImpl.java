@@ -17,9 +17,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -154,6 +152,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
 
     /**
      * 创建月卡订单
@@ -705,6 +706,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     }
 
+    @Slave
     @Override
     public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
 
@@ -2748,7 +2750,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Integer modelType = franchisee.getModelType();
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-            Integer model = BatteryConstant.acquireBattery(userBattery.getBatteryType());
+            Integer model = batteryModelService.acquireBatteryModel(userBattery.getBatteryType(), userInfo.getTenantId());
             List<ModelBatteryDeposit> list = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : list) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {

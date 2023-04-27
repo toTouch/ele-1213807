@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
@@ -77,6 +75,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
     /**
      * 新增卡包
      *
@@ -106,7 +107,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setTenantId(tenantId);
         electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
         if (StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
-            electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
+            electricityMemberCard.setBatteryType(batteryModelService.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType()), tenantId));
         }
 
         Integer insert = baseMapper.insert(electricityMemberCard);
@@ -153,7 +154,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         if (StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
-            electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
+            electricityMemberCard.setBatteryType(batteryModelService.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType()),tenantId));
         }
 
         Integer update = baseMapper.update(electricityMemberCard);
@@ -225,7 +226,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             BeanUtils.copyProperties(electricityMemberCard, electricityMemberCardVO);
 
             if (StringUtils.isNotEmpty(electricityMemberCardVO.getBatteryType())) {
-                electricityMemberCardVO.setBatteryType(BatteryConstant.acquireBattery(electricityMemberCardVO.getBatteryType()).toString());
+                electricityMemberCardVO.setBatteryType(batteryModelService.acquireBatteryModel(electricityMemberCardVO.getBatteryType(),tenantId).toString());
             }
 
             if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
@@ -415,7 +416,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         //多电池型号查询套餐
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, BatteryConstant.acquireBatteryShort(model), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, batteryModelService.acquireBatteryShort(model,userInfo.getTenantId()), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         } else {
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }
@@ -632,11 +633,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //根据新加盟商更新数据
-        oldElectricityMemberCards.parallelStream().peek(item -> {
+        oldElectricityMemberCards.stream().peek(item -> {
             item.setId(null);
             item.setName(item.getName() + "(迁)");
             item.setModelType(newFranchisee.getModelType());
-            item.setBatteryType(BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel()));
+            item.setBatteryType(batteryModelService.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel(), TenantContextHolder.getTenantId()));
             item.setFranchiseeId(franchiseeMoveInfo.getToFranchiseeId());
             item.setCreateTime(System.currentTimeMillis());
             item.setUpdateTime(System.currentTimeMillis());

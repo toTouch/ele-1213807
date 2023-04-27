@@ -218,6 +218,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     BatteryGeoService batteryGeoService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
     
     /**
      * 通过ID查询单条数据从缓存
@@ -2871,9 +2874,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Double fullyCharged = electricityCabinet.getFullyCharged();
         
-        //        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
-                .queryAllBoxByElectricityCabinetId(electricityCabinetId);
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
             
@@ -2885,15 +2886,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (!Objects.isNull(electricityBattery)) {
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
-                    electricityCabinetBoxVO.setExchange(
-                            electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES
-                                    : ElectricityCabinetBoxVO.EXCHANGE_NO);
-                    //                    if (Objects.nonNull(electricityBattery.getModel())) {
-                    //                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
-                    //                    }
+                    electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES: ElectricityCabinetBoxVO.EXCHANGE_NO);
+
                     if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())) {
-                        electricityCabinetBoxVO.setBatteryType(
-                                BatteryConstant.acquireBattery(electricityCabinetBoxVO.getBatteryType()).toString());
+                        electricityCabinetBoxVO.setBatteryType(batteryModelService.acquireBatteryModel(electricityCabinetBoxVO.getBatteryType(),electricityCabinet.getTenantId()).toString());
                     }
                 }
                 
@@ -2902,9 +2898,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             //排序
             if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
-                resultList = electricityCabinetBoxVOList.stream()
-                        .sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo())))
-                        .collect(Collectors.toList());
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
             }
             
         }
