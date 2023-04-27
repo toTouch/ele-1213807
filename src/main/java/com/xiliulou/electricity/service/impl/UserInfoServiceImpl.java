@@ -148,6 +148,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
+    
+    @Autowired
+    CarRefundOrderService carRefundOrderService;
 
 
     /**
@@ -1808,6 +1811,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(electricityCar)) {
             log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
             return R.fail("100261", "用户未绑定车辆");
+        }
+    
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", uid);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+    
+        Integer count = carRefundOrderService
+                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
+                        userCarDeposit.getOrderId());
+        if (Objects.nonNull(count) && count > 0) {
+            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", uid);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         
         ElectricityCar updateElectricityCar = new ElectricityCar();
