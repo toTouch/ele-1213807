@@ -239,7 +239,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //是否开启购买保险（是进入）
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects
-                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
+                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
             //保险是否强制购买（是进入）
             FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
                     .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
