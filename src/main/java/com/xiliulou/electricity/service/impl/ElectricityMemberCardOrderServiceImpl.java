@@ -156,6 +156,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     ChannelActivityHistoryService channelActivityHistoryService;
     
     @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+    
+    @Autowired
     InsuranceUserInfoService insuranceUserInfoService;
 
     /**
@@ -227,13 +230,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("100241", "当前套餐暂停中，请先启用套餐");
         }
     
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBattery)) {
+            log.error("ELECTRICITY  ERROR! not found userBattery,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+    
         //是否强制购买保险
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
+                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
+                            userInfo.getTenantId());
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
             long now = System.currentTimeMillis();
-            if (Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime() < now) {
+            if (Objects.nonNull(franchiseeInsurance) && Objects.isNull(insuranceUserInfo) && Objects
+                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)
+                    && insuranceUserInfo.getInsuranceExpireTime() < now) {
                 log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
                 return R.fail("100309", "未购买保险或保险已过期");
             }
