@@ -236,20 +236,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
     
-        //是否强制购买保险
+        //是否开启购买保险（是进入）
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.nonNull(electricityConfig) && Objects
                 .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
+            //保险是否强制购买（是进入）
             FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
                     .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
                             userInfo.getTenantId());
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
             long now = System.currentTimeMillis();
-            if (Objects.nonNull(franchiseeInsurance) && Objects.isNull(insuranceUserInfo) && Objects
-                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)
-                    && insuranceUserInfo.getInsuranceExpireTime() < now) {
-                log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
-                return R.fail("100309", "未购买保险或保险已过期");
+            if (Objects.nonNull(franchiseeInsurance) && Objects
+                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+                //用户是否没有保险信息或已过期（是进入）
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
+                    return R.fail("100309", "未购买保险或保险已过期");
+                }
             }
         }
 
