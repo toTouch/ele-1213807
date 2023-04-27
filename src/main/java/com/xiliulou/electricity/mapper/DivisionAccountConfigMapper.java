@@ -1,13 +1,12 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.DivisionAccountConfig;
+import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
+import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
-import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * (DivisionAccountConfig)表数据库访问层
@@ -67,6 +66,9 @@ public interface DivisionAccountConfigMapper extends BaseMapper<DivisionAccountC
     int deleteById(Long id);
 
 
+    List<DivisionAccountConfigRefVO> selectDivisionAccountConfigRefInfo(DivisionAccountConfigQuery query);
 
+    List<DivisionAccountConfigRefVO> selectDivisionAccountConfigDetail(@Param("refId") Long refId, @Param("type") Integer type, @Param("storeId") Long storeId, @Param("franchinseeId") Long franchinseeId, @Param("tenantId") Integer tenantId);
 
+    DivisionAccountConfigRefVO selectDivisionConfigByRefId(@Param("refId") Long refId, @Param("storeId") Long storeId, @Param("franchinseeId") Long franchinseeId, @Param("tenantId") Integer tenantId);
 }

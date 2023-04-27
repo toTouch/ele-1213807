@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.DivisionAccountConfig;
 import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.query.DivisionAccountConfigStatusQuery;
+import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -72,6 +73,10 @@ public interface DivisionAccountConfigService {
     Triple<Boolean, String, Object> save(DivisionAccountConfigQuery divisionAccountConfigQuery);
 
     Triple<Boolean, String, Object> selectInfoById(Long id);
+
+    List<DivisionAccountConfigRefVO> selectDivisionAccountConfigRefInfo(DivisionAccountConfigQuery query);
+
+    DivisionAccountConfigRefVO selectDivisionConfigByRefId(Long membercardId, Long storeId, Long franchinseeId, Integer tenantId);
 
     Triple<Boolean, String, Object> updateStatus(DivisionAccountConfigStatusQuery divisionAccountConfigQuery);
 }

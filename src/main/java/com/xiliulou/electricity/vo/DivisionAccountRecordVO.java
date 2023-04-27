@@ -51,6 +51,10 @@ public class DivisionAccountRecordVO {
     private BigDecimal storeIncome;
 
     private Integer status;
+    /**
+     * 套餐来源
+     */
+    private Integer source;
 
     private Long createTime;
 

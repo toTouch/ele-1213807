@@ -16,6 +16,7 @@
         <result property="storeIncome" column="store_income" jdbcType="NUMERIC"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="source" column="source" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -24,7 +25,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         where id = #{id}
     </select>
@@ -32,7 +33,7 @@
     
     <select id="selectByOrderId" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         where order_no = #{orderId}
     </select>
@@ -40,7 +41,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         limit #{offset}, #{size}
     </select>
@@ -49,7 +50,7 @@
     <select id="queryAll" resultMap="DivisionAccountRecordMap">
         select
         id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income,
-        franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time
+        franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         <where>
             <if test="id != null">
@@ -97,7 +98,7 @@
     <select id="selectByPage" resultMap="DivisionAccountRecordMap">
         select
         id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income,
-        franchisee_income, store_income,status, create_time
+        franchisee_income, store_income,status, source, create_time
         from t_division_account_record
         <where>
             <if test="membercardName != null and membercardName != ''">
@@ -222,6 +223,9 @@ select count(1) from (
             </if>
             <if test="status != null">
                 status = #{status},
+            </if>
+            <if test="source != null">
+                source = #{source},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},

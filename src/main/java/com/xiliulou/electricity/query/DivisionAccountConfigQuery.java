@@ -55,9 +55,7 @@ public class DivisionAccountConfigQuery {
      * 门店id
      */
     private Long storeId;
-    /**
-     *
-     */
+
     @NotNull(message = "运营商收益率不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal operatorRate;
     /**
@@ -65,6 +63,10 @@ public class DivisionAccountConfigQuery {
      */
     @NotNull(message = "加盟商收益率不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal franchiseeRate;
+
+    private BigDecimal operatorRateOther;
+
+    private BigDecimal franchiseeRateOther;
     /**
      * 门店收益率
      */
@@ -85,5 +87,7 @@ public class DivisionAccountConfigQuery {
     private List<Long> carModels;
 
     private Integer isAll;
+
+    private Long refId;
 
 }

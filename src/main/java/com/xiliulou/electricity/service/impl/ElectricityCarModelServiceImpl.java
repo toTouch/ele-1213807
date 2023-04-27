@@ -373,7 +373,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public ElectricityCarModel queryByNameAndStoreId(String name, Long storeId) {
         return electricityCarModelMapper.queryByNameAndStoreId(name, storeId);
     }
-    
+
+    @Slave
+    @Override
+    public List<Long> selectByStoreIds(List<Long> storeIds) {
+        return electricityCarModelMapper.selectByStoreIds(storeIds);
+    }
+
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());

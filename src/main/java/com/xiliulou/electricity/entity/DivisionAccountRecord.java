@@ -64,6 +64,10 @@ public class DivisionAccountRecord {
 
     private Integer status;
     /**
+     * 套餐来源
+     */
+    private Integer source;
+    /**
      * 是否删除（0-正常，1-删除）
      */
     private Integer delFlag;

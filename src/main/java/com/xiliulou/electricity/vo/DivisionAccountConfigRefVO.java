@@ -1,19 +1,16 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2023-04-23-18:20
+ * @date 2023-04-27-16:13
  */
 @Data
-public class DivisionAccountConfigVO {
+public class DivisionAccountConfigRefVO {
 
     private Long id;
     /**
@@ -28,17 +25,25 @@ public class DivisionAccountConfigVO {
      * 加盟商id
      */
     private Long franchiseeId;
-    private String  franchiseeName;
     /**
      * 门店id
      */
     private Long storeId;
-    private String storeName;
-
+    /**
+     *
+     */
     private BigDecimal operatorRate;
+
     private BigDecimal operatorRateOther;
+    /**
+     * 加盟商收益率
+     */
     private BigDecimal franchiseeRate;
+
     private BigDecimal franchiseeRateOther;
+    /**
+     * 门店收益率
+     */
     private BigDecimal storeRate;
     /**
      * 状态（0-启用，1-禁用）
@@ -49,14 +54,6 @@ public class DivisionAccountConfigVO {
      */
     private Integer type;
 
-    private List<String> membercardNames;
-
-    private List<ElectricityMemberCard> memberCards;
-
-    private List<ElectricityCarModel> carModels;
-
-    private Long createTime;
-
-    private Long updateTime;
+    private Long refId;
 
 }

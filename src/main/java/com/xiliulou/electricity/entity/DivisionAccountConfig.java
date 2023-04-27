@@ -46,10 +46,14 @@ public class DivisionAccountConfig {
      *
      */
     private BigDecimal operatorRate;
+
+    private BigDecimal operatorRateOther;
     /**
      * 加盟商收益率
      */
     private BigDecimal franchiseeRate;
+
+    private BigDecimal franchiseeRateOther;
     /**
      * 门店收益率
      */

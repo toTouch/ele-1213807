@@ -26,9 +26,9 @@ public class DivisionAccountBatteryMembercard {
      */
     private Long divisionAccountId;
     /**
-     * 电池套餐id
+     * 套餐id
      */
-    private Long batteryMembercardId;
+    private Long refId;
 
     private Integer tenantId;
     /**

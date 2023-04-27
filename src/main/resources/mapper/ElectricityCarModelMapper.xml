@@ -199,4 +199,12 @@
         <include refid="selectElectricityCarModel"/>
         where name = #{name} and store_id = #{storeId} and del_flag = 0
     </select>
+
+    <select id="selectByStoreIds" resultType="long">
+        select id from t_electricity_car_model
+        where del_flag = 0 and
+        <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

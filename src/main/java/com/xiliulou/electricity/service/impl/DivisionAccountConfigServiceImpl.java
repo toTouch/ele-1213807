@@ -8,10 +8,10 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.DivisionAccountConfigMapper;
 import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.query.DivisionAccountConfigStatusQuery;
-import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -48,8 +48,6 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     private ElectricityCarModelService carModelService;
     @Autowired
     private DivisionAccountBatteryMembercardService divisionAccountBatteryMembercardService;
-    @Autowired
-    private DivisionAccountCarModelService divisionAccountCarModelService;
 
 
     /**
@@ -170,15 +168,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         divisionAccountConfigUpdate.setId(id);
         divisionAccountConfigUpdate.setDelFlag(DivisionAccountConfig.DEL_DEL);
         divisionAccountConfigUpdate.setUpdateTime(System.currentTimeMillis());
-        this.divisionAccountConfigMapper.update(divisionAccountConfigUpdate);
+        this.update(divisionAccountConfigUpdate);
 
-        if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
-            divisionAccountBatteryMembercardService.deleteByDivisionAccountId(id);
-        }
-
-        if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {
-            divisionAccountCarModelService.deleteByDivisionAccountId(id);
-        }
+        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(id);
 
         return Triple.of(true, null, null);
     }
@@ -196,6 +188,8 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         divisionAccountConfigUpdate.setFranchiseeRate(divisionAccountConfigQuery.getFranchiseeRate());
         divisionAccountConfigUpdate.setOperatorRate(divisionAccountConfigQuery.getOperatorRate());
         divisionAccountConfigUpdate.setStoreRate(divisionAccountConfigQuery.getStoreRate());
+        divisionAccountConfigUpdate.setOperatorRateOther(divisionAccountConfigQuery.getOperatorRateOther());
+        divisionAccountConfigUpdate.setFranchiseeRateOther(divisionAccountConfigQuery.getFranchiseeRateOther());
         divisionAccountConfigUpdate.setUpdateTime(System.currentTimeMillis());
 
         this.update(divisionAccountConfigUpdate);
@@ -209,29 +203,32 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "100480", "分帐配置不存在");
         }
 
-        if (Objects.equals(divisionAccountConfigQuery.getStatus(), DivisionAccountConfig.STATUS_ENABLE) && Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
-            //获取当前租户已启用的分帐套餐
-            List<Long> enableMemberCardIds = divisionAccountBatteryMembercardService.selectByTenantId(TenantContextHolder.getTenantId());
+//        if (DivisionAccountConfig.STATUS_ENABLE.equals(divisionAccountConfigQuery.getStatus()) && Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
+        if (DivisionAccountConfig.STATUS_ENABLE.equals(divisionAccountConfigQuery.getStatus())) {
+            if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfig.getHierarchy())) {
+                //已启用的分帐配置
+                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigDetail(null, divisionAccountConfig.getType(), null, divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
+                if (CollectionUtils.isNotEmpty(divisionAccountConfigRefVOS)) {
+                    List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
 
-            //获取当前分帐配置所绑定的分帐套餐
-            List<Long> currentMemberCardIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+                    //当前分帐配置绑定的套餐
+                    List<Long> currentRefIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+                    if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, currentRefIds))) {
+                        return Triple.of(false, "", "套餐分帐配置已存在");
+                    }
+                }
+            } else {
+                //已启用的分帐配置
+                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigDetail(null, divisionAccountConfig.getType(), divisionAccountConfig.getStoreId(), divisionAccountConfig.getFranchiseeId(), divisionAccountConfig.getTenantId());
+                if (CollectionUtils.isNotEmpty(divisionAccountConfigRefVOS)) {
+                    List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
 
-            Collection<Long> intersection = CollectionUtils.intersection(enableMemberCardIds, currentMemberCardIds);
-            if (CollectionUtils.isNotEmpty(intersection)) {
-                return Triple.of(false, "", "分帐套餐不允许重复");
-            }
-        }
-
-        if (Objects.equals(divisionAccountConfigQuery.getStatus(), DivisionAccountConfig.STATUS_ENABLE) && Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {
-            //获取租户已启用的分帐车辆型号
-            List<Long> enableCarModels = divisionAccountCarModelService.selectByTenantId(TenantContextHolder.getTenantId());
-
-            //获取当前分帐配置所绑定的分帐车辆型号
-            List<Long> currentCarModels = divisionAccountCarModelService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
-
-            Collection<Long> intersection = CollectionUtils.intersection(enableCarModels, currentCarModels);
-            if (CollectionUtils.isNotEmpty(intersection)) {
-                return Triple.of(false, "", "分帐车辆型号不允许重复");
+                    //当前分帐配置绑定的套餐
+                    List<Long> currentRefIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+                    if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, currentRefIds))) {
+                        return Triple.of(false, "", "套餐分帐配置已存在");
+                    }
+                }
             }
         }
 
@@ -247,6 +244,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(DivisionAccountConfigQuery query) {
+        query.setTenantId(TenantContextHolder.getTenantId());
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
@@ -259,29 +257,216 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             }
         }
 
-        //校验套餐
-        Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCard(query);
-        if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
-            return verifyBatteryMemberCardResult;
-        }
-
-        //校验车辆型号
-        Triple<Boolean, String, Object> verifyCarModelResult = verifyCarModel(query);
-        if (Boolean.FALSE.equals(verifyCarModelResult.getLeft())) {
-            return verifyCarModelResult;
+        Triple<Boolean, String, Object> verifySaveParams = verifySaveParams(query);
+        if (Boolean.FALSE.equals(verifySaveParams.getLeft())) {
+            return verifySaveParams;
         }
 
         DivisionAccountConfig divisionAccountConfig = buildDivisionAccountConfig(query);
         DivisionAccountConfig accountConfig = this.insert(divisionAccountConfig);
 
         if (Objects.equals(query.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
-            List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList = buildDivisionAccountBatteryMembercardList(query, accountConfig);
-            divisionAccountBatteryMembercardService.batchInsert(divisionAccountBatteryMembercardList);
+            List<DivisionAccountBatteryMembercard> divisionAccountRefIdList = buildDivisionAccountBatteryMembercardList(query, accountConfig);
+            divisionAccountBatteryMembercardService.batchInsert(divisionAccountRefIdList);
         }
 
         if (Objects.equals(query.getType(), DivisionAccountConfig.TYPE_CAR)) {
-            List<DivisionAccountCarModel> divisionAccountCarModelList = buildDivisionAccountCarModelList(query, accountConfig);
-            divisionAccountCarModelService.batchInsert(divisionAccountCarModelList);
+            List<DivisionAccountBatteryMembercard> divisionAccountRefIdList = buildDivisionAccountCarModelList(query, accountConfig);
+            divisionAccountBatteryMembercardService.batchInsert(divisionAccountRefIdList);
+        }
+
+        return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> verifySaveParams(DivisionAccountConfigQuery query) {
+        if (Objects.equals(query.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
+            if (DivisionAccountConfig.HIERARCHY_TWO.equals(query.getHierarchy())) {
+                //已启用的分帐配置
+                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigDetail(null, query.getType(), null, query.getFranchiseeId(), TenantContextHolder.getTenantId());
+                if (CollectionUtils.isEmpty(divisionAccountConfigRefVOS)) {
+                    //若全部套餐
+                    if (Objects.nonNull(query.getIsAll())) {
+                        List<ElectricityMemberCard> electricityMemberCards = memberCardService.selectByFranchiseeId(query.getFranchiseeId(), TenantContextHolder.getTenantId());
+                        if (CollectionUtils.isEmpty(electricityMemberCards)) {
+                            return Triple.of(false, "100481", "加盟商没有可用换电套餐");
+                        }
+
+                        List<Long> membercardIds = electricityMemberCards.stream().map(item -> item.getId().longValue()).collect(Collectors.toList());
+                        query.setMembercards(membercardIds);
+                    } else {
+                        //若部分套餐
+                        for (Long membercard : query.getMembercards()) {
+                            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
+                            if (Objects.isNull(electricityMemberCard)) {
+                                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                            }
+                        }
+                    }
+                } else {
+                    //若全部套餐
+                    if (Objects.nonNull(query.getIsAll())) {
+                        return Triple.of(false, "", "分帐套餐不允许重复");
+                    } else {
+                        //若部分套餐
+                        for (Long membercard : query.getMembercards()) {
+                            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
+                            if (Objects.isNull(electricityMemberCard)) {
+                                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                            }
+                        }
+
+                        //已启用套餐
+                        List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, query.getMembercards()))) {
+                            return Triple.of(false, "", "套餐分帐配置已存在");
+                        }
+                    }
+                }
+            } else {
+                //已启用的分帐配置
+                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigDetail(null, query.getType(), query.getStoreId(), query.getFranchiseeId(), TenantContextHolder.getTenantId());
+                if (CollectionUtils.isEmpty(divisionAccountConfigRefVOS)) {
+                    //若全部套餐
+                    if (Objects.nonNull(query.getIsAll())) {
+                        List<ElectricityMemberCard> electricityMemberCards = memberCardService.selectByFranchiseeId(query.getFranchiseeId(), TenantContextHolder.getTenantId());
+                        if (CollectionUtils.isEmpty(electricityMemberCards)) {
+                            return Triple.of(false, "100481", "加盟商没有可用换电套餐");
+                        }
+
+                        List<Long> membercardIds = electricityMemberCards.stream().map(item -> item.getId().longValue()).collect(Collectors.toList());
+                        query.setMembercards(membercardIds);
+                    } else {
+                        //若部分套餐
+                        for (Long membercard : query.getMembercards()) {
+                            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
+                            if (Objects.isNull(electricityMemberCard)) {
+                                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                            }
+                        }
+                    }
+                } else {
+                    //若全部套餐
+                    if (Objects.nonNull(query.getIsAll())) {
+                        return Triple.of(false, "", "分帐套餐不允许重复");
+                    } else {
+                        //若部分套餐
+                        for (Long membercard : query.getMembercards()) {
+                            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
+                            if (Objects.isNull(electricityMemberCard)) {
+                                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                            }
+                        }
+
+                        //已启用套餐
+                        List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, query.getMembercards()))) {
+                            return Triple.of(false, "", "套餐分帐配置已存在");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (Objects.equals(query.getType(), DivisionAccountConfig.TYPE_CAR)) {
+            if (DivisionAccountConfig.HIERARCHY_TWO.equals(query.getHierarchy())) {//分帐层级为2级  车辆型号默认为加盟商下所有型号
+                //已启用的分帐配置
+                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigDetail(null, query.getType(), null, query.getFranchiseeId(), TenantContextHolder.getTenantId());
+                if (CollectionUtils.isEmpty(divisionAccountConfigRefVOS)) {
+                    List<Store> stores = storeService.selectByFranchiseeId(query.getFranchiseeId());
+                    if (CollectionUtils.isEmpty(stores)) {
+                        return Triple.of(false, "", "加盟商下没有可用门店");
+                    }
+
+                    List<Long> storeIds = stores.stream().map(Store::getId).collect(Collectors.toList());
+                    List<Long> carModelIds = carModelService.selectByStoreIds(storeIds);
+                    if (CollectionUtils.isEmpty(carModelIds)) {
+                        return Triple.of(false, "", "加盟商所属门店下没有可用车辆型号");
+                    }
+
+                    for (Long carModelId : carModelIds) {
+                        ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModelId.intValue());
+                        if (Objects.isNull(electricityCarModel)) {
+                            return Triple.of(false, "", "车辆型号不存在");
+                        }
+                    }
+
+                    query.setCarModels(carModelIds);
+                } else {
+                    List<Store> stores = storeService.selectByFranchiseeId(query.getFranchiseeId());
+                    if (CollectionUtils.isEmpty(stores)) {
+                        return Triple.of(false, "", "加盟商下没有可用门店");
+                    }
+
+                    List<Long> storeIds = stores.stream().map(Store::getId).collect(Collectors.toList());
+                    List<Long> carModelIds = carModelService.selectByStoreIds(storeIds);
+                    if (CollectionUtils.isEmpty(carModelIds)) {
+                        return Triple.of(false, "", "加盟商所属门店下没有可用车辆型号");
+                    }
+
+                    for (Long carModelId : carModelIds) {
+                        ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModelId.intValue());
+                        if (Objects.isNull(electricityCarModel)) {
+                            return Triple.of(false, "", "车辆型号不存在");
+                        }
+                    }
+
+                    //已启用套餐
+                    List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, query.getMembercards()))) {
+                        return Triple.of(false, "", "车辆型号分帐配置已存在");
+                    }
+
+                    query.setCarModels(carModelIds);
+                }
+            } else {
+                //已启用的分帐配置
+                List<DivisionAccountConfigRefVO> divisionAccountConfigRefVOS = divisionAccountConfigMapper.selectDivisionAccountConfigDetail(null, query.getType(), query.getStoreId(), query.getFranchiseeId(), TenantContextHolder.getTenantId());
+                if (CollectionUtils.isEmpty(divisionAccountConfigRefVOS)) {
+                    //若全部套餐
+                    if (Objects.nonNull(query.getIsAll())) {
+                        //获取门店下所有车辆型号
+                        List<Long> carModelIds = carModelService.selectByStoreIds(Collections.singletonList(query.getStoreId()));
+                        if (CollectionUtils.isNotEmpty(carModelIds)) {
+                            return Triple.of(false, "", "门店下无可分帐车辆型号");
+                        }
+
+                        for (Long carModelId : carModelIds) {
+                            ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModelId.intValue());
+                            if (Objects.isNull(electricityCarModel)) {
+                                return Triple.of(false, "", "车辆型号不存在");
+                            }
+                        }
+
+                        query.setCarModels(carModelIds);
+                    } else {
+                        //若部分套餐
+                        for (Long carModelId : query.getCarModels()) {
+                            ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModelId.intValue());
+                            if (Objects.isNull(electricityCarModel)) {
+                                return Triple.of(false, "", "车辆型号不存在");
+                            }
+                        }
+                    }
+                } else {
+                    //若全部套餐
+                    if (Objects.nonNull(query.getIsAll())) {
+                        return Triple.of(false, "", "分帐套餐不允许重复");
+                    } else {
+                        //若部分套餐
+                        for (Long carModelId : query.getCarModels()) {
+                            ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModelId.intValue());
+                            if (Objects.isNull(electricityCarModel)) {
+                                return Triple.of(false, "", "车辆型号不存在");
+                            }
+                        }
+
+                        List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+                        if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, query.getMembercards()))) {
+                            return Triple.of(false, "", "车辆型号分帐配置已存在");
+                        }
+                    }
+                }
+            }
         }
 
         return Triple.of(true, null, null);
@@ -317,7 +502,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         }
 
         if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {
-            List<Long> carModelIds = divisionAccountCarModelService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
+            List<Long> carModelIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
             if (CollectionUtils.isEmpty(carModelIds)) {
                 return Triple.of(true, null, divisionAccountConfig);
             }
@@ -329,6 +514,18 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         }
 
         return Triple.of(true, null, divisionAccountConfigVO);
+    }
+
+    @Slave
+    @Override
+    public List<DivisionAccountConfigRefVO> selectDivisionAccountConfigRefInfo(DivisionAccountConfigQuery query) {
+        return this.divisionAccountConfigMapper.selectDivisionAccountConfigRefInfo(query);
+    }
+
+    @Slave
+    @Override
+    public DivisionAccountConfigRefVO selectDivisionConfigByRefId(Long membercardId, Long storeId, Long franchinseeId, Integer tenantId) {
+        return this.divisionAccountConfigMapper.selectDivisionConfigByRefId(membercardId, storeId, franchinseeId, tenantId);
     }
 
     private List<String> assignMembercardName(DivisionAccountConfig item) {
@@ -350,7 +547,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         }
 
         if (Objects.equals(item.getType(), DivisionAccountConfig.TYPE_CAR)) {
-            List<Long> carModelIds = divisionAccountCarModelService.selectByDivisionAccountConfigId(item.getId());
+            List<Long> carModelIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(item.getId());
             if (CollectionUtils.isEmpty(carModelIds)) {
                 return list;
             }
@@ -372,9 +569,12 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         }
 
         //获取当前租户已启用的分帐套餐
-        List<Long> enableMemberCardIds = divisionAccountBatteryMembercardService.selectByTenantId(TenantContextHolder.getTenantId());
+        query.setStatus(DivisionAccountConfig.STATUS_ENABLE);
+        List<DivisionAccountConfigRefVO> enableConfigRefVOS = selectDivisionAccountConfigRefInfo(query);
+
+        //若全部套餐
         if (Objects.nonNull(query.getIsAll())) {
-            if (CollectionUtils.isNotEmpty(enableMemberCardIds)) {
+            if (CollectionUtils.isNotEmpty(enableConfigRefVOS)) {
                 return Triple.of(false, "", "分帐套餐不允许重复");
             }
 
@@ -387,18 +587,26 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             query.setMembercards(membercardIds);
 
             return Triple.of(true, null, null);
-        }
-
-        for (Long membercard : query.getMembercards()) {
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
-            if (Objects.isNull(electricityMemberCard)) {
-                return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+        } else {
+            //若部分套餐
+            for (Long membercard : query.getMembercards()) {
+                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
+                if (Objects.isNull(electricityMemberCard)) {
+                    return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+                }
             }
-        }
 
-        Collection<Long> intersection = CollectionUtils.intersection(enableMemberCardIds, query.getMembercards());
-        if (CollectionUtils.isNotEmpty(intersection)) {
-            return Triple.of(false, "", "分帐套餐不允许重复");
+            if (CollectionUtils.isNotEmpty(enableConfigRefVOS)) {
+                List<Long> exitesMembercardIds = enableConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(exitesMembercardIds)) {
+                    return Triple.of(true, null, null);
+                }
+
+                Collection<Long> intersection = CollectionUtils.intersection(exitesMembercardIds, query.getMembercards());
+                if (CollectionUtils.isNotEmpty(intersection)) {
+                    return Triple.of(false, "", "分帐套餐不允许重复");
+                }
+            }
         }
 
         return Triple.of(true, null, null);
@@ -409,35 +617,55 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(true, null, null);
         }
 
-        //获取租户已启用的分帐车辆型号
-        List<Long> enableCarModels = divisionAccountCarModelService.selectByTenantId(TenantContextHolder.getTenantId());
-        if (Objects.nonNull(query.getIsAll())) {
-            if (CollectionUtils.isNotEmpty(enableCarModels)) {
+        //获取当前租户已启用的分帐套餐
+        query.setStatus(DivisionAccountConfig.STATUS_ENABLE);
+        List<DivisionAccountConfigRefVO> enableConfigRefVOS = selectDivisionAccountConfigRefInfo(query);
+
+        //分帐层级为2级  车辆型号默认为加盟商下所有型号
+        if (Objects.equals(DivisionAccountConfig.HIERARCHY_TWO, query.getHierarchy())) {
+            List<Store> stores = storeService.selectByFranchiseeId(query.getFranchiseeId());
+            if (CollectionUtils.isEmpty(stores)) {
+                return Triple.of(false, "", "加盟商下没有可用门店");
+            }
+
+            List<Long> storeIds = stores.stream().map(Store::getId).collect(Collectors.toList());
+            List<Long> carModelIds = carModelService.selectByStoreIds(storeIds);
+            query.setCarModels(carModelIds);
+            if (CollectionUtils.isEmpty(carModelIds)) {
+                return Triple.of(false, "", "加盟商所属门店下没有可用车辆型号");
+            }
+
+            if (CollectionUtils.isEmpty(enableConfigRefVOS)) {
+                return Triple.of(true, null, null);
+            }
+
+            List<Long> exitCarModelIds = enableConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+            Collection<Long> intersection = CollectionUtils.intersection(carModelIds, exitCarModelIds);
+            if (CollectionUtils.isNotEmpty(intersection)) {
                 return Triple.of(false, "", "分帐车辆型号不允许重复");
             }
-
-            ElectricityCarModelQuery carModelQuery = ElectricityCarModelQuery.builder().storeId(query.getStoreId()).delFlag(ElectricityCarModel.DEL_NORMAL).build();
-            List<ElectricityCarModel> electricityCarModels = carModelService.selectByQuery(carModelQuery);
-            if (CollectionUtils.isEmpty(electricityCarModels)) {
-                return Triple.of(false, "100482", "门店没有可用车辆型号");
-            }
-
-            List<Long> carModelIds = electricityCarModels.stream().map(item -> item.getId().longValue()).collect(Collectors.toList());
-            query.setCarModels(carModelIds);
-
-            return Triple.of(true, null, null);
         }
 
-        for (Long carModel : query.getCarModels()) {
-            ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModel.intValue());
-            if (Objects.isNull(electricityCarModel)) {
-                return Triple.of(false, "100258", "未找到车辆型号");
-            }
-        }
+        //分帐层级为3级  车辆型号根据门店判断
+        if (Objects.equals(DivisionAccountConfig.HIERARCHY_THREE, query.getHierarchy())) {
+            if (Objects.nonNull(query.getIsAll())) {
+                if (CollectionUtils.isNotEmpty(enableConfigRefVOS)) {
+                    return Triple.of(false, "", "分帐车辆型号不允许重复");
+                }
 
-        Collection<Long> intersection = CollectionUtils.intersection(query.getCarModels(), enableCarModels);
-        if (CollectionUtils.isNotEmpty(intersection)) {
-            return Triple.of(false, "", "分帐车辆型号不允许重复");
+                //获取门店下的所有车辆型号
+                List<Long> carModelIds = carModelService.selectByStoreIds(Collections.singletonList(query.getStoreId()));
+                if (CollectionUtils.isEmpty(carModelIds)) {
+                    return Triple.of(false, "", "门店下没有可用车辆型号");
+                }
+
+            } else {
+                List<Long> exitCarModelIds = enableConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
+                Collection<Long> intersection = CollectionUtils.intersection(query.getCarModels(), exitCarModelIds);
+                if (CollectionUtils.isNotEmpty(intersection)) {
+                    return Triple.of(false, "", "分帐车辆型号不允许重复");
+                }
+            }
         }
 
         return Triple.of(true, null, null);
@@ -455,12 +683,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         return divisionAccountConfig;
     }
 
-
     private List<DivisionAccountBatteryMembercard> buildDivisionAccountBatteryMembercardList(DivisionAccountConfigQuery query, DivisionAccountConfig accountConfig) {
         List<DivisionAccountBatteryMembercard> list = Lists.newArrayList();
         for (Long membercard : query.getMembercards()) {
             DivisionAccountBatteryMembercard divisionAccountBatteryMembercard = new DivisionAccountBatteryMembercard();
-            divisionAccountBatteryMembercard.setBatteryMembercardId(membercard);
+            divisionAccountBatteryMembercard.setRefId(membercard);
             divisionAccountBatteryMembercard.setDivisionAccountId(accountConfig.getId());
             divisionAccountBatteryMembercard.setTenantId(accountConfig.getTenantId());
             divisionAccountBatteryMembercard.setDelFlag(DivisionAccountBatteryMembercard.DEL_NORMAL);
@@ -473,18 +700,18 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         return list;
     }
 
-    private List<DivisionAccountCarModel> buildDivisionAccountCarModelList(DivisionAccountConfigQuery query, DivisionAccountConfig accountConfig) {
-        List<DivisionAccountCarModel> list = Lists.newArrayList();
+    private List<DivisionAccountBatteryMembercard> buildDivisionAccountCarModelList(DivisionAccountConfigQuery query, DivisionAccountConfig accountConfig) {
+        List<DivisionAccountBatteryMembercard> list = Lists.newArrayList();
         for (Long carModel : query.getCarModels()) {
-            DivisionAccountCarModel divisionAccountCarModel = new DivisionAccountCarModel();
-            divisionAccountCarModel.setCarModelId(carModel);
-            divisionAccountCarModel.setDivisionAccountId(accountConfig.getId());
-            divisionAccountCarModel.setTenantId(accountConfig.getTenantId());
-            divisionAccountCarModel.setDelFlag(DivisionAccountBatteryMembercard.DEL_NORMAL);
-            divisionAccountCarModel.setCreateTime(System.currentTimeMillis());
-            divisionAccountCarModel.setUpdateTime(System.currentTimeMillis());
+            DivisionAccountBatteryMembercard divisionAccountBatteryMembercard = new DivisionAccountBatteryMembercard();
+            divisionAccountBatteryMembercard.setRefId(carModel);
+            divisionAccountBatteryMembercard.setDivisionAccountId(accountConfig.getId());
+            divisionAccountBatteryMembercard.setTenantId(accountConfig.getTenantId());
+            divisionAccountBatteryMembercard.setDelFlag(DivisionAccountBatteryMembercard.DEL_NORMAL);
+            divisionAccountBatteryMembercard.setCreateTime(System.currentTimeMillis());
+            divisionAccountBatteryMembercard.setUpdateTime(System.currentTimeMillis());
 
-            list.add(divisionAccountCarModel);
+            list.add(divisionAccountBatteryMembercard);
         }
 
         return list;
