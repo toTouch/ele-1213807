@@ -128,6 +128,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
     
+    @Autowired
+    FreeDepositOrderService freeDepositOrderService;
+    
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, orderNo));
@@ -469,6 +472,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
+    
+                FreeDepositOrder freeDepositOrder = freeDepositOrderService
+                        .selectByOrderId(eleDepositOrder.getOrderId());
+                //如果车电一起免押，解绑用户车辆信息
+                if (Objects.nonNull(freeDepositOrder) && Objects
+                        .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+        
+                    userCarService.deleteByUid(userInfo.getUid());
+        
+                    userCarDepositService.logicDeleteByUid(userInfo.getUid());
+        
+                    userCarMemberCardService.deleteByUid(userInfo.getUid());
+                }
+    
                 userInfoService.updateByUid(updateUserInfo);
     
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
@@ -1381,9 +1399,28 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             DbUtils.dbOperateSuccessThen(insert, () -> {
 
                 UserInfo updateUserInfo = new UserInfo();
-                updateUserInfo.setUid(userInfo.getId());
+                updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
+    
+                FreeDepositOrder freeDepositOrder = freeDepositOrderService
+                        .selectByOrderId(eleDepositOrder.getOrderId());
+                //车辆电池一起免押，退押金解绑用户电池信息
+                if (Objects.nonNull(freeDepositOrder) && Objects
+                        .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+        
+                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+        
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                    userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                    userBatteryService.deleteByUid(userInfo.getUid());
+        
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService
+                            .queryByUidFromCache(userInfo.getUid());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    }
+                }
                 userInfoService.updateByUid(updateUserInfo);
 
                 userCarDepositService.logicDeleteByUid(userInfo.getId());
@@ -1993,6 +2030,24 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
+    
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carDepositOrder.getOrderId());
+            //车辆电池一起免押，退押金解绑用户电池信息
+            if (Objects.nonNull(freeDepositOrder) && Objects
+                    .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+        
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+        
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                userBatteryService.deleteByUid(userInfo.getUid());
+        
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+            }
+    
             userInfoService.updateByUid(updateUserInfo);
     
             userCarService.deleteByUid(userInfo.getUid());

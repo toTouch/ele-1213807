@@ -87,6 +87,21 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     
     @Autowired
     FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+    
+    @Autowired
+    FreeDepositOrderService freeDepositOrderService;
+    
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+    
+    @Autowired
+    UserBatteryService userBatteryService;
+    
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -429,6 +444,50 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
+    
+        //零元直接退
+        if (BigDecimal.valueOf(0).compareTo(refundAmount) == 0) {
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+        
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
+            //车辆电池一起免押，退押金解绑用户电池信息
+            if (Objects.nonNull(freeDepositOrder) && Objects
+                    .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                userBatteryService.deleteByUid(userInfo.getUid());
+            
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+            }
+        
+            userInfoService.updateByUid(updateUserInfo);
+        
+            userCarService.deleteByUid(userInfo.getUid());
+        
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+        
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+        
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+            //退押金成功通知前端
+            return Triple.of(true, "", "SUCCESS");
+        }
+    
+    
+    
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款
