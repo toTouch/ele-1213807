@@ -763,7 +763,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         List<UserCarDepositOrderVo> voList = carDepositOrderMapper
                 .payDepositOrderList(SecurityUtils.getUid(), TenantContextHolder.getTenantId(), offset, size);
         Optional.ofNullable(voList).orElse(new ArrayList<>()).parallelStream().forEachOrdered(item -> {
-            Long refundTime = eleRefundOrderService.queryRefundTime(item.getOrderId());
+            Long refundTime = eleRefundOrderService
+                    .queryRefundTime(item.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
             item.setRefundTime(refundTime);
         });
         return R.ok(voList);

@@ -253,7 +253,7 @@
     </select>
 
     <select id="queryRefundTime" resultType="long">
-        select update_time from t_ele_refund_order where order_id=#{orderId} and status=4;
+        select update_time from t_ele_refund_order where order_id=#{orderId} and refund_order_type = #{refundOrderType} and status=4;
     </select>
 
 

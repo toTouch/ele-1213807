@@ -659,7 +659,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         for (PayDepositOrderVO payDepositOrderVO : payDepositOrderVOList) {
-            Long refundTime = eleRefundOrderService.queryRefundTime(payDepositOrderVO.getOrderId());
+            Long refundTime = eleRefundOrderService
+                    .queryRefundTime(payDepositOrderVO.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             payDepositOrderVO.setRefundTime(refundTime);
 
             payDepositOrderVO.setModel(batteryModelService.acquireBatteryModel(payDepositOrderVO.getBatteryType(),TenantContextHolder.getTenantId()));

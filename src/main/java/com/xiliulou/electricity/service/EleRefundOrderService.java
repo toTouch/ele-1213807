@@ -95,8 +95,8 @@ public interface EleRefundOrderService {
     
     BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
             List<Long> franchiseeIds, Integer payType);
-
-    Long queryRefundTime(String orderId);
+    
+    Long queryRefundTime(String orderId, Integer refundOrderType);
 
     Triple<Boolean,String,Object> batteryFreeDepositRefund(String errMsg, Long uid);
 

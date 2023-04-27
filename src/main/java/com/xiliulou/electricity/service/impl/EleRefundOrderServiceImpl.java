@@ -1691,8 +1691,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public Long queryRefundTime(String orderId) {
-        return eleRefundOrderMapper.queryRefundTime(orderId);
+    public Long queryRefundTime(String orderId, Integer refundOrderType) {
+        return eleRefundOrderMapper.queryRefundTime(orderId, refundOrderType);
     }
 
     public String generateOrderId(Long uid) {
