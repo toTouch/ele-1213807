@@ -3277,7 +3277,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             BigDecimal todayRefundDeposit = todayPayRefundDeposit.add(todayFreeRefundDeposit);
             BigDecimal todayPayDeposit = qeury.getTodayOnlineBatteryDeposit().add(qeury.getTodayOfflineBatteryDeposit())
                     .add(qeury.getTodayOnlineCarDeposit()).add(qeury.getTodayOfflineCarRefundDeposit());
-            BigDecimal todayFreeDeposit = qeury.getTodayFreeBatteryDeposit().add(qeury.getFreeCarDeposit());
+            BigDecimal todayFreeDeposit = qeury.getTodayFreeBatteryDeposit().add(qeury.getTodayFreeCarDeposit());
             BigDecimal todayDeposit = todayPayDeposit.add(todayFreeDeposit);
             BigDecimal sumDepositTurnover = batteryDepositSum.add(carDepositSum);
     
