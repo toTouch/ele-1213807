@@ -514,7 +514,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
     
     private BigDecimal getRefundAmount(EleDepositOrder eleDepositOrder) {
-        if (!Objects.equals(eleDepositOrder.getDepositType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
             return eleDepositOrder.getPayAmount();
         }
         
