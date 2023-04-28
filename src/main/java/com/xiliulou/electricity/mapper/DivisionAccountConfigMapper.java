@@ -68,7 +68,7 @@ public interface DivisionAccountConfigMapper extends BaseMapper<DivisionAccountC
 
     List<DivisionAccountConfigRefVO> selectDivisionAccountConfigRefInfo(DivisionAccountConfigQuery query);
 
-    List<DivisionAccountConfigRefVO> selectDivisionAccountConfigDetail(@Param("refId") Long refId, @Param("type") Integer type, @Param("storeId") Long storeId, @Param("franchinseeId") Long franchinseeId, @Param("tenantId") Integer tenantId);
+    List<DivisionAccountConfigRefVO> selectDivisionAccountConfigDetail(@Param("refId") Long refId, @Param("type") Integer type, @Param("storeId") Long storeId, @Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
     DivisionAccountConfigRefVO selectDivisionConfigByRefId(@Param("refId") Long refId, @Param("storeId") Long storeId, @Param("franchinseeId") Long franchinseeId, @Param("tenantId") Integer tenantId);
 }
