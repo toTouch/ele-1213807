@@ -64,4 +64,6 @@ public interface ElectricityCarModelService {
     ElectricityCarModel queryByNameAndStoreId(String name, Long storeId);
 
     List<Long> selectByStoreIds(List<Long> storeIds);
+
+    List<ElectricityCarModel> selectListByFranchiseeId(Long franchiseeId);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -378,6 +379,24 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     public List<Long> selectByStoreIds(List<Long> storeIds) {
         return electricityCarModelMapper.selectByStoreIds(storeIds);
+    }
+
+    @Slave
+    @Override
+    public List<ElectricityCarModel> selectListByFranchiseeId(Long franchiseeId) {
+        List<Store> stores = storeService.selectByFranchiseeId(franchiseeId);
+        if (CollectionUtils.isEmpty(stores)) {
+            return Collections.emptyList();
+        }
+
+        Integer tenantId=TenantContextHolder.getTenantId();
+        List<Long> storeIds = stores.stream().filter(item -> Objects.equals(item.getTenantId(), tenantId)).map(Store::getId).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(storeIds)) {
+            return Collections.emptyList();
+        }
+
+        return electricityCarModelMapper.selectList(new LambdaQueryWrapper<ElectricityCarModel>()
+                .eq(ElectricityCarModel::getDelFlag, ElectricityCarModel.DEL_NORMAL).in(ElectricityCarModel::getStoreId, storeIds));
     }
 
     @Override
