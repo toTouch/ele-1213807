@@ -254,7 +254,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_INIT)) {
             log.error("FREE DEPOSIT ERROR! freeDepositOrder already AuthToPay,orderId={}", orderId);
-            return Triple.of(false, "100412", "免押订单已授权支付");
+            return Triple.of(false, "100412", "免押订单已进行代扣，请勿重复操作");
         }
     
         if (Objects.isNull(payTransAmt)) {
