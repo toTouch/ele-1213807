@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -147,6 +148,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Resource
+    EleRefundOrderMapper eleRefundOrderMapper;
 
     /**
      * 通过ID查询单条数据从DB
@@ -2480,8 +2484,20 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 UserInfo updateUserInfo = new UserInfo();
 
+                EleRefundOrder carRefundOrder = eleRefundOrderMapper.selectOne(
+                        new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
+                                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                                .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+
                 //如果车电一起免押，解绑用户车辆信息
-                if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                if (Objects.isNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                    EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
+                    carRefundOrderUpdate.setId(carRefundOrder.getId());
+                    carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                    carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    eleRefundOrderService.update(carRefundOrderUpdate);
+
                     updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
 
                     userCarService.deleteByUid(freeDepositOrder.getUid());
@@ -2558,8 +2574,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 UserInfo updateUserInfo = new UserInfo();
 
+                EleRefundOrder batteryRefundOrder = eleRefundOrderMapper.selectOne(
+                        new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
+                                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
+                                .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
                 //车辆电池一起免押，退押金解绑用户电池信息
-                if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                if (Objects.isNull(batteryRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                    EleRefundOrder batteryRefundOrderUpdate = new EleRefundOrder();
+                    batteryRefundOrderUpdate.setId(batteryRefundOrder.getId());
+                    batteryRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                    batteryRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    eleRefundOrderService.update(batteryRefundOrderUpdate);
 
                     updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
 
