@@ -446,8 +446,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
+        EleRefundOrder carRefundOrder = null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-            EleRefundOrder carRefundOrder = eleRefundOrderMapper.selectOne(
+            carRefundOrder = eleRefundOrderMapper.selectOne(
                     new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
                             .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                             .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
@@ -547,12 +548,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             UserInfo updateUserInfo = new UserInfo();
 
             //如果车电一起免押，解绑用户车辆信息
-            if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-                EleRefundOrder carRefundOrder = eleRefundOrderMapper.selectOne(
-                        new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
-                                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
-                                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
-                                .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+            if (Objects.nonNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
 
                 EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
                 carRefundOrderUpdate.setId(carRefundOrder.getId());
@@ -764,9 +760,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
-
+        EleRefundOrder batteryRefundOrder= null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-            EleRefundOrder batteryRefundOrder = eleRefundOrderMapper.selectOne(
+            batteryRefundOrder = eleRefundOrderMapper.selectOne(
                     new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
                             .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                             .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
@@ -861,13 +857,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-            if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            log.info("测试进来了   2" + Objects.nonNull(batteryRefundOrder));
+            log.info("测试进来了   3" + Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY));
+            if (Objects.nonNull(batteryRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
                 log.info("测试进来了   1");
-                EleRefundOrder batteryRefundOrder = eleRefundOrderMapper.selectOne(
-                        new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
-                                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
-                                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
-                                .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
 
                 EleRefundOrder batteryRefundOrderUpdate = new EleRefundOrder();
                 batteryRefundOrderUpdate.setId(batteryRefundOrder.getId());
