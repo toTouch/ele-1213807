@@ -2107,7 +2107,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         
             BigDecimal eleRefundAmount =
-                    refundAmount.doubleValue() < 0 ? userBatteryDeposit.getBatteryDeposit().subtract(refundAmount)
+                    refundAmount.doubleValue() < 0 ? userBatteryDeposit.getBatteryDeposit().add(refundAmount)
                             : userBatteryDeposit.getBatteryDeposit();
             //生成退款订单
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
