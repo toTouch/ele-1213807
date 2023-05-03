@@ -2491,7 +2491,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                                 .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
 
                 //如果车电一起免押，解绑用户车辆信息
-                if (Objects.isNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                if (Objects.nonNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
                     EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
                     carRefundOrderUpdate.setId(carRefundOrder.getId());
                     carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
@@ -2580,7 +2580,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                                 .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
                                 .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
                 //车辆电池一起免押，退押金解绑用户电池信息
-                if (Objects.isNull(batteryRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                if (Objects.nonNull(batteryRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
                     EleRefundOrder batteryRefundOrderUpdate = new EleRefundOrder();
                     batteryRefundOrderUpdate.setId(batteryRefundOrder.getId());
                     batteryRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
