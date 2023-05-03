@@ -763,7 +763,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
                             .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                             .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
-                            .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
+                            .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
             if (Objects.isNull(batteryRefundOrder)) {
                 log.error("FREE REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", eleRefundOrder.getOrderId(), userInfo.getUid());
                 return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
