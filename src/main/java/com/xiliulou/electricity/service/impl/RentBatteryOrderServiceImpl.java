@@ -299,7 +299,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
 
             //是否有正在退款中的退款
-            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId());
+            Integer refundCount = eleRefundOrderService.queryCountByOrderId(userBatteryDeposit.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             if (refundCount > 0) {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! deposit is being refunded,uid={}", user.getUid());

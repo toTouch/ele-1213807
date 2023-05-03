@@ -65,7 +65,7 @@ public interface EleRefundOrderService {
 
     Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery);
 
-    Integer queryCountByOrderId(String orderId);
+    Integer queryCountByOrderId(String orderId, Integer refundOrderType);
 
     Integer queryIsRefundingCountByOrderId(String orderId);
 

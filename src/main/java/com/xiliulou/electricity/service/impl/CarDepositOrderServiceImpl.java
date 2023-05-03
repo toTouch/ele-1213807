@@ -424,7 +424,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
             log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
@@ -624,7 +624,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
             log.error("ELE CAR REFUND ERROR! have refunding order,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
@@ -755,7 +755,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
             log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
