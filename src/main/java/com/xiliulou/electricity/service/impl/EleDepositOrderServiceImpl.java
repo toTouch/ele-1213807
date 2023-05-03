@@ -482,7 +482,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         
             BigDecimal carRefundAmount =
-                    refundAmount.doubleValue() < 0 ? carDepositOrder.getPayAmount().subtract(refundAmount)
+                    refundAmount.doubleValue() < 0 ? carDepositOrder.getPayAmount().add(refundAmount)
                             : carDepositOrder.getPayAmount();
         
             EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
@@ -679,7 +679,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
 
-        return Triple.of(true, "", null);
+        return Triple.of(true, "", eleDepositOrder);
     }
 
     @Override
