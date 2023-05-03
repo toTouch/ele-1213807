@@ -760,7 +760,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder batteryRefundOrder = null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             batteryRefundOrder = eleRefundOrderMapper.selectOne(
-                    new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, eleRefundOrder.getOrderId())
+                    new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
                             .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                             .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
                             .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
