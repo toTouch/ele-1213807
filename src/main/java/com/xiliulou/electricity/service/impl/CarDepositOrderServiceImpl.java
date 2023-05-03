@@ -365,6 +365,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Deprecated
     public Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -430,7 +431,8 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
     
         //获取退还金额
-        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        BigDecimal refundAmount =
+                getRefundAmount(eleDepositOrder).doubleValue() < 0 ? BigDecimal.ZERO : getRefundAmount(eleDepositOrder);
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
 

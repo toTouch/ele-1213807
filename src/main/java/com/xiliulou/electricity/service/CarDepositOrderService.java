@@ -72,7 +72,8 @@ public interface CarDepositOrderService {
     Triple<Boolean,String,Object> payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
 
     Triple<Boolean, String, Object> selectRentCarDeposit();
-
+    
+    @Deprecated
     Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request);
 
     CarDepositOrder selectByOrderId(String orderNo);

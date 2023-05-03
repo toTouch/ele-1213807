@@ -447,45 +447,76 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
     
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
         BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.valueOf(0) : refundAmount;
     
+        UserInfo updateUserInfo = new UserInfo();
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid());
     
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(orderId)
-                .payAmount(payAmount).refundAmount(refundAmount)
+                .refundOrderNo(orderId).payAmount(payAmount).refundAmount(eleRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
                 .memberCardOweNumber(memberCardOweNumber).build();
-
+    
+        //如果车电一起免押，
+        if (Objects.nonNull(freeDepositOrder) && Objects
+                .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+            if (Objects.isNull(userCarDeposit)) {
+                log.error("CAR REFUND DEPOSIT ERROR! not found userCarDeposit! uid={}", user.getUid());
+                return R.fail("ELECTRICITY.0001", "未找到用户信息");
+            }
+        
+            //查找缴纳押金订单
+            CarDepositOrder carDepositOrder = carDepositOrderService.selectByOrderId(userCarDeposit.getOrderId());
+            if (Objects.isNull(carDepositOrder)) {
+                log.error("CAR REFUND DEPOSIT ERROR! not found eleDepositOrder! uid={},orderId={}", user.getUid(),
+                        userCarDeposit.getOrderId());
+                return R.fail("ELECTRICITY.0015", "未找到订单");
+            }
+        
+            BigDecimal carRefundAmount =
+                    refundAmount.doubleValue() < 0 ? carDepositOrder.getPayAmount().subtract(refundAmount)
+                            : carDepositOrder.getPayAmount();
+        
+            EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+                    .refundOrderNo(orderId).payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
+                    .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId())
+                    .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
+        
+            //解绑用户车辆信息
+            if (refundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            
+                userCarService.deleteByUid(userInfo.getUid());
+            
+                userCarDepositService.logicDeleteByUid(userInfo.getUid());
+            
+                userCarMemberCardService.deleteByUid(userInfo.getUid());
+            }
+        
+            eleRefundOrderService.insert(carRefundOrder);
+        }
+        
+        
         //退款零元
-        if (refundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
 
             if (Objects.nonNull(result)) {
-                UserInfo updateUserInfo = new UserInfo();
+    
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
-    
-                FreeDepositOrder freeDepositOrder = freeDepositOrderService
-                        .selectByOrderId(eleDepositOrder.getOrderId());
-                //如果车电一起免押，解绑用户车辆信息
-                if (Objects.nonNull(freeDepositOrder) && Objects
-                        .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-        
-                    userCarService.deleteByUid(userInfo.getUid());
-        
-                    userCarDepositService.logicDeleteByUid(userInfo.getUid());
-        
-                    userCarMemberCardService.deleteByUid(userInfo.getUid());
-                }
     
                 userInfoService.updateByUid(updateUserInfo);
     
@@ -523,9 +554,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
                 .queryByOrderId(carDepositOrder.getOrderId());
         if (Objects.nonNull(freeDepositAlipayHistory)) {
-            BigDecimal subtractAmount = carDepositOrder.getPayAmount()
+            refundAmount = carDepositOrder.getPayAmount()
                     .subtract(freeDepositAlipayHistory.getAlipayAmount());
-            refundAmount = subtractAmount.doubleValue() < 0 ? BigDecimal.ZERO : subtractAmount;
         }
         
         return refundAmount;
@@ -540,9 +570,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
                 .queryByOrderId(eleDepositOrder.getOrderId());
         if (Objects.nonNull(freeDepositAlipayHistory)) {
-            BigDecimal subtractAmount = eleDepositOrder.getPayAmount()
+            refundAmount = eleDepositOrder.getPayAmount()
                     .subtract(freeDepositAlipayHistory.getAlipayAmount());
-            refundAmount = subtractAmount.doubleValue() < 0 ? BigDecimal.ZERO : subtractAmount;
         }
         
         return refundAmount;
@@ -1389,7 +1418,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
-        BigDecimal refundAmount = getRefundAmount(eleDepositOrder);
+        BigDecimal refundAmount =
+                getRefundAmount(eleDepositOrder).doubleValue() < 0 ? BigDecimal.ZERO : getRefundAmount(eleDepositOrder);
+        UserInfo updateUserInfo = new UserInfo();
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
+        
 
         //退款零元
         if (refundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -1397,14 +1431,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             int insert = eleDepositOrderMapper.insert(eleDepositOrder);
 
             DbUtils.dbOperateSuccessThen(insert, () -> {
-
-                UserInfo updateUserInfo = new UserInfo();
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
     
-                FreeDepositOrder freeDepositOrder = freeDepositOrderService
-                        .selectByOrderId(eleDepositOrder.getOrderId());
                 //车辆电池一起免押，退押金解绑用户电池信息
                 if (Objects.nonNull(freeDepositOrder) && Objects
                         .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
@@ -1421,6 +1451,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                         insuranceUserInfoService.deleteById(insuranceUserInfo);
                     }
                 }
+    
                 userInfoService.updateByUid(updateUserInfo);
 
                 userCarDepositService.logicDeleteByUid(userInfo.getId());
@@ -1439,8 +1470,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
-    
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
 
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -2010,43 +2039,108 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
         String success = null;
-        BigDecimal payAmount = carDepositOrder.getPayAmount();
+        UserInfo updateUserInfo = new UserInfo();
         BigDecimal refundAmount = getRefundAmount(carDepositOrder);
+        BigDecimal carRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
+        FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carDepositOrder.getOrderId());
     
         //生成退款订单
-        EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
-                .refundOrderNo(orderId).payAmount(userCarDeposit.getCarDeposit()).refundAmount(refundAmount)
+        EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
+                .refundOrderNo(orderId).payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
     
-        //零元直接退
-        if (BigDecimal.valueOf(0).compareTo(refundAmount) == 0) {
-            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-    
-            UserInfo updateUserInfo = new UserInfo();
-            updateUserInfo.setUid(userInfo.getUid());
-            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-    
-            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carDepositOrder.getOrderId());
-            //车辆电池一起免押，退押金解绑用户电池信息
-            if (Objects.nonNull(freeDepositOrder) && Objects
-                    .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+        //车辆电池一起免押，退押金解绑用户电池信息
+        if (Objects.nonNull(freeDepositOrder) && Objects
+                .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
         
+            //判断是否缴纳押金
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(userBatteryDeposit) || !Objects
+                    .equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", user.getUid());
+                return R.fail("ELECTRICITY.0042", "未缴纳押金");
+            }
+        
+            if (Objects.equals(userBatteryDeposit.getOrderId(), "-1")) {
+                return R.fail("ELECTRICITY.00115", "请线下退押");
+            }
+        
+            //查找缴纳押金订单
+            EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>()
+                    .eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
+            if (Objects.isNull(eleDepositOrder)) {
+                log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", user.getUid());
+                return R.fail("ELECTRICITY.0015", "未找到订单");
+            }
+        
+            UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService
+                    .selectByUidFromCache(userInfo.getUid());
+            Integer memberCardOweNumber = null;
+            //Integer packageOwe = null;
+            if (Objects.nonNull(userBatteryMemberCard)) {
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
+                        UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
+                    log.error("returnDeposit  ERROR! disable member card is reviewing userId={}", user.getUid());
+                    return R.fail("ELECTRICITY.100003", "停卡正在审核中");
+                }
+            
+                if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
+                        UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+                    log.error("returnDeposit  ERROR! member card is disable userId={}", user.getUid());
+                    return R.fail("ELECTRICITY.100004", "月卡已暂停");
+                }
+            
+                ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService
+                        .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+                if (Objects.nonNull(bindElectricityMemberCard)) {
+                    if (!Objects.equals(bindElectricityMemberCard.getLimitCount(),
+                            ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects
+                            .nonNull(userBatteryMemberCard.getRemainingNumber())
+                            && userBatteryMemberCard.getRemainingNumber() < 0) {
+                        memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber());
+                        //packageOwe = UserBatteryMemberCard.MEMBER_CARD_OWE;
+                    }
+                }
+            }
+        
+            BigDecimal eleRefundAmount =
+                    refundAmount.doubleValue() < 0 ? userBatteryDeposit.getBatteryDeposit().subtract(refundAmount)
+                            : userBatteryDeposit.getBatteryDeposit();
+            //生成退款订单
+            EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+                    .refundOrderNo(orderId).payAmount(userBatteryDeposit.getBatteryDeposit())
+                    .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_INIT)
+                    .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                    .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).build();
+        
+            if (eleRefundAmount.doubleValue() <= 0) {
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-        
+            
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                 userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
                 userBatteryService.deleteByUid(userInfo.getUid());
-        
+            
                 InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
                 if (Objects.nonNull(insuranceUserInfo)) {
                     insuranceUserInfoService.deleteById(insuranceUserInfo);
                 }
             }
+        
+            eleRefundOrderService.insert(eleRefundOrder);
+        }
+        
+    
+        //零元直接退
+        if (BigDecimal.valueOf(0).compareTo(carRefundAmount) == 0) {
+            carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            carRefundOrder.setUpdateTime(System.currentTimeMillis());
+            
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
     
             userInfoService.updateByUid(updateUserInfo);
     
@@ -2062,7 +2156,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             success = "SUCCESS";
         }
     
-        eleRefundOrderService.insert(eleRefundOrder);
+        eleRefundOrderService.insert(carRefundOrder);
         
         //等到后台同意退款
         return R.ok(success);
