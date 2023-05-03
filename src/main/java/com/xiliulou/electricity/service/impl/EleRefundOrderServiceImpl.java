@@ -421,8 +421,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo)
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
-                        //.in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
-                        .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
+                        .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+                        //.in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("FREE REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
             return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
@@ -452,8 +452,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
                             .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                             .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
-                            //.in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
-                            .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
+                            .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+                            //.in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
 //            if (Objects.isNull(carRefundOrder)) {
 //                log.error("FREE REFUND ORDER ERROR! carRefundOrder is null,refoundOrderNo={},uid={}", refundOrderNo, uid);
 //                return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
