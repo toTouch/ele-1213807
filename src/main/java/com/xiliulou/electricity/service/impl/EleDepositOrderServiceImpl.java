@@ -485,7 +485,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     refundAmount.doubleValue() < 0 ? carDepositOrder.getPayAmount().add(refundAmount)
                             : carDepositOrder.getPayAmount();
         
-            EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
+            EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(userCarDeposit.getOrderId())
                     .refundOrderNo(orderId).payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
                     .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId())
