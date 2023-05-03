@@ -2486,7 +2486,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 EleRefundOrder carRefundOrder = eleRefundOrderMapper.selectOne(
                         new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
-                                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                                .eq(EleRefundOrder::getTenantId, eleRefundOrder.getTenantId())
                                 .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                                 .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
 
@@ -2576,7 +2576,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 EleRefundOrder batteryRefundOrder = eleRefundOrderMapper.selectOne(
                         new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
-                                .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                                .eq(EleRefundOrder::getTenantId, eleRefundOrder.getTenantId())
                                 .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
                                 .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
                 //车辆电池一起免押，退押金解绑用户电池信息
