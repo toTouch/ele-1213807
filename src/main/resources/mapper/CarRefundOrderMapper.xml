@@ -219,7 +219,7 @@
     <select id="queryStatusByLastCreateTime" resultType="integer">
         select status
         from t_car_refund_order
-        where uid = #{uid} and tenant_id = #{tenantId} and car_sn = #{sn} and deposit_order_id = #{depositOrderId}
+        where uid = #{uid} and tenant_id = #{tenantId} and car_sn = #{sn} and deposit_order_id = #{depositOrderId} and status = 1
         order by create_time desc
         limit 1
     </select>
