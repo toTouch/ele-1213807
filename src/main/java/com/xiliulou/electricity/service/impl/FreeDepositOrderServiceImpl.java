@@ -698,9 +698,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-                return Triple.of(true, null, "同步成功");
-            }
+//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+//                return Triple.of(true, null, "同步成功");
+//            }
 
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
