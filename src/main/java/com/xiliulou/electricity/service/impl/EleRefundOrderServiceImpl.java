@@ -772,7 +772,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 //                log.error("FREE REFUND ORDER ERROR! eleRefundOrder is null,refoundOrderNo={},uid={}", eleRefundOrder.getOrderId(), userInfo.getUid());
 //                return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
 //            }
-            log.info("测试进来了   0" + batteryRefundOrder);
+
             if (Objects.nonNull(batteryRefundOrder) && Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
                 EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
                 carRefundOrderUpdate.setId(batteryRefundOrder.getId());
@@ -858,10 +858,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-            log.info("测试进来了   2" + Objects.nonNull(batteryRefundOrder));
-            log.info("测试进来了   3" + Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY));
             if (Objects.nonNull(batteryRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-                log.info("测试进来了   1");
 
                 EleRefundOrder batteryRefundOrderUpdate = new EleRefundOrder();
                 batteryRefundOrderUpdate.setId(batteryRefundOrder.getId());
