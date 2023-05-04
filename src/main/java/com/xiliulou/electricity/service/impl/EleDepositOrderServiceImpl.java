@@ -2117,6 +2117,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).build();
         
             if (eleRefundAmount.doubleValue() <= 0) {
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
             
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
