@@ -287,7 +287,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
-                && !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
+                && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("FREE DEPOSIT ERROR! user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
