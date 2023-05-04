@@ -204,6 +204,10 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 BigDecimal franchiseeIncome = BigDecimal.ZERO;
                 BigDecimal storeIncome = BigDecimal.ZERO;
 
+                BigDecimal operatorRate = divisionAccountConfigRefVO.getOperatorRate();
+                BigDecimal franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRate();
+                BigDecimal storeRate = divisionAccountConfigRefVO.getStoreRate();
+
                 //二级分帐
                 if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfigRefVO.getHierarchy())) {
                     operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
@@ -215,11 +219,14 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                         franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
                         storeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getStoreRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getStoreRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
                     } else {//非扫码 加盟商、运营商分帐
+                        operatorRate = divisionAccountConfigRefVO.getOperatorRateOther();
+                        franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRateOther();
+
                         operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRateOther()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRateOther().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
                         franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRateOther()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRateOther().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
                     }
                 } else {
-                    log.error("ELE ERROR! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
+                    log.warn("ELE WARN! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
                 }
 
                 //保存分帐记录
@@ -233,6 +240,9 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setOperatorIncome(operatorIncome);
                 divisionAccountRecord.setFranchiseeIncome(franchiseeIncome);
                 divisionAccountRecord.setStoreIncome(storeIncome);
+                divisionAccountRecord.setOperatorRate(operatorRate);
+                divisionAccountRecord.setFranchiseeRate(franchiseeRate);
+                divisionAccountRecord.setStoreRate(storeRate);
                 divisionAccountRecord.setTenantId(batteryMemberCardOrder.getTenantId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
@@ -260,6 +270,10 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 BigDecimal franchiseeIncome = BigDecimal.ZERO;
                 BigDecimal storeIncome = BigDecimal.ZERO;
 
+                BigDecimal operatorRate = divisionAccountConfigRefVO.getOperatorRate();
+                BigDecimal franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRate();
+                BigDecimal storeRate = divisionAccountConfigRefVO.getStoreRate();
+
                 //二级分帐
                 if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfigRefVO.getHierarchy())) {
                     operatorIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getOperatorRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getOperatorRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
@@ -269,7 +283,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                     franchiseeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getFranchiseeRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getFranchiseeRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
                     storeIncome = userPayAmount.multiply(BigDecimal.ZERO.compareTo(divisionAccountConfigRefVO.getStoreRate()) == 0 ? BigDecimal.ZERO : divisionAccountConfigRefVO.getStoreRate().divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN)), new MathContext(2, RoundingMode.DOWN));
                 } else {
-                    log.error("ELE ERROR! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
+                    log.warn("ELE WARN! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
                 }
 
                 //保存分帐记录
@@ -283,6 +297,9 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setOperatorIncome(operatorIncome);
                 divisionAccountRecord.setFranchiseeIncome(franchiseeIncome);
                 divisionAccountRecord.setStoreIncome(storeIncome);
+                divisionAccountRecord.setOperatorRate(operatorRate);
+                divisionAccountRecord.setFranchiseeRate(franchiseeRate);
+                divisionAccountRecord.setStoreRate(storeRate);
                 divisionAccountRecord.setTenantId(carMemberCardOrder.getTenantId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);

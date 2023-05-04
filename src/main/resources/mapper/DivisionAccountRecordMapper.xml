@@ -14,6 +14,9 @@
         <result property="operatorIncome" column="operator_income" jdbcType="NUMERIC"/>
         <result property="franchiseeIncome" column="franchisee_income" jdbcType="NUMERIC"/>
         <result property="storeIncome" column="store_income" jdbcType="NUMERIC"/>
+        <result property="operatorRate" column="operator_rate" jdbcType="NUMERIC"/>
+        <result property="franchiseeRate" column="franchisee_rate" jdbcType="NUMERIC"/>
+        <result property="storeRate" column="store_rate" jdbcType="NUMERIC"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="source" column="source" jdbcType="INTEGER"/>
@@ -25,7 +28,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         where id = #{id}
     </select>
@@ -33,7 +36,7 @@
     
     <select id="selectByOrderId" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         where order_no = #{orderId}
     </select>
@@ -41,7 +44,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="DivisionAccountRecordMap">
         select
-          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, source, del_flag, create_time, update_time
+          id, division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, source, del_flag, create_time, update_time
         from t_division_account_record
         limit #{offset}, #{size}
     </select>
@@ -177,8 +180,8 @@ select count(1) from (
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_division_account_record(division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, tenant_id, status, del_flag, create_time, update_time)
-        values (#{divisionAccountConfigId}, #{membercardName},#{uid},#{orderNo}, #{price}, #{payAmount}, #{payTime}, #{operatorIncome}, #{franchiseeIncome}, #{storeIncome}, #{tenantId}, #{status}, #{delFlag}, #{createTime}, #{updateTime})
+        insert into t_division_account_record(division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, del_flag, create_time, update_time)
+        values (#{divisionAccountConfigId}, #{membercardName},#{uid},#{orderNo}, #{price}, #{payAmount}, #{payTime}, #{operatorIncome}, #{franchiseeIncome}, #{storeIncome}, #{operatorRate}, #{franchiseeRate}, #{storeRate}, #{tenantId}, #{status}, #{delFlag}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->

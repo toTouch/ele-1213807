@@ -86,8 +86,6 @@ public class DivisionAccountConfigQuery {
 
     private List<Long> carModels;
 
-    private Integer isAll;
-
     private Long refId;
 
 }

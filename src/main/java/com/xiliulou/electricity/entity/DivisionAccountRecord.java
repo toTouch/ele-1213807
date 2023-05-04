@@ -60,6 +60,18 @@ public class DivisionAccountRecord {
      */
     private BigDecimal storeIncome;
 
+    private BigDecimal operatorRate;
+
+    /**
+     * 加盟商收益率
+     */
+    private BigDecimal franchiseeRate;
+
+    /**
+     * 门店收益率
+     */
+    private BigDecimal storeRate;
+
     private Integer tenantId;
 
     private Integer status;
