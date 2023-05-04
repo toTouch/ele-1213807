@@ -90,6 +90,14 @@
         </if>
     </select>
 
+    <select id="selectDivisionAccountConfigExit" resultType="Integer">
+        select 1 from t_division_account_config where del_flag=0 and name = #{name} and tenant_id=#{tenantId} LIMIT 1
+    </select>
+
+    <select id="selectDivisionAccountConfigByName" resultMap="DivisionAccountConfigMap">
+        select id, name from t_division_account_config where del_flag=0 and name = #{name} and tenant_id=#{tenantId} order by id LIMIT 1
+    </select>
+
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="DivisionAccountConfigMap">
         select
@@ -280,10 +288,10 @@
                 franchisee_rate = #{franchiseeRate},
             </if>
             <if test="operatorRateOther != null">
-                operator_rate = #{operatorRateOther},
+                operator_rate_other = #{operatorRateOther},
             </if>
             <if test="franchiseeRateOther != null">
-                franchisee_rate = #{franchiseeRateOther},
+                franchisee_rate_other = #{franchiseeRateOther},
             </if>
             <if test="storeRate != null">
                 store_rate = #{storeRate},

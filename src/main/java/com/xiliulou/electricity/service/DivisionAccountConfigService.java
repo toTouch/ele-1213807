@@ -42,6 +42,8 @@ public interface DivisionAccountConfigService {
 
     Integer selectByPageCount(DivisionAccountConfigQuery query);
 
+    Integer selectDivisionAccountConfigExit(String name, Integer tenantId);
+
     /**
      * 新增数据
      *

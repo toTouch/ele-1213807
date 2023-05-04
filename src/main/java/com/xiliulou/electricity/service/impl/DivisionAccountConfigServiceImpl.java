@@ -116,6 +116,12 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         return this.divisionAccountConfigMapper.selectByPageCount(query);
     }
 
+    @Slave
+    @Override
+    public Integer selectDivisionAccountConfigExit(String name, Integer tenantId) {
+        return this.divisionAccountConfigMapper.selectDivisionAccountConfigExit(name, tenantId);
+    }
+
     /**
      * 新增数据
      *
@@ -181,6 +187,12 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> modify(DivisionAccountConfigQuery divisionAccountConfigQuery) {
+
+        DivisionAccountConfig accountConfigByName = this.divisionAccountConfigMapper.selectDivisionAccountConfigByName(divisionAccountConfigQuery.getName(), TenantContextHolder.getTenantId());
+        if (Objects.nonNull(accountConfigByName) && !Objects.equals(accountConfigByName.getId(), divisionAccountConfigQuery.getId())) {
+            return Triple.of(false, "", "分帐配置名称已存在");
+        }
+
         DivisionAccountConfig divisionAccountConfig = this.queryByIdFromCache(divisionAccountConfigQuery.getId());
         if (Objects.isNull(divisionAccountConfig) || !Objects.equals(divisionAccountConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100480", "分帐配置不存在");
@@ -271,6 +283,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(DivisionAccountConfigQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
+        Integer exitResult = this.divisionAccountConfigMapper.selectDivisionAccountConfigExit(query.getName(), TenantContextHolder.getTenantId());
+        if(Objects.nonNull(exitResult)){
+            return Triple.of(false, "", "分帐配置名称已存在");
+        }
+
         Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
