@@ -492,7 +492,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
         
             //解绑用户车辆信息
-            if (refundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             
