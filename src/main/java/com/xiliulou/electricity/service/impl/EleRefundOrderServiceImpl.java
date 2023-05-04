@@ -1222,7 +1222,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return batteryDepositPreCheckResult;
         }
 
-        EleDepositOrder eleDepositOrder = (EleDepositOrder)batteryDepositPreCheckResult.getRight();
+        EleDepositOrder eleDepositOrder = null;
+        if(Boolean.TRUE.equals(!batteryDepositPreCheckResult.getLeft())){
+            eleDepositOrder = (EleDepositOrder)batteryDepositPreCheckResult.getRight();
+        }
     
         //获取订单代扣信息计算返还金额
         BigDecimal refundAmount = carDepositOrder.getPayAmount();
@@ -1296,7 +1299,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userCarMemberCardService.deleteByUid(uid);
             userInfoService.unBindUserFranchiseeId(uid);
             //车辆电池一起免押，退押金解绑用户电池信息
-            if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            if (Objects.nonNull(eleDepositOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
                 eleRefundAmount = refundAmount.doubleValue() > 0? eleDepositOrder.getPayAmount() : eleDepositOrder.getPayAmount().add(refundAmount);
 
                 EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
