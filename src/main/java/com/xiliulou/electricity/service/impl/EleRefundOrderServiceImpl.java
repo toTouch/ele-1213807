@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -1796,12 +1797,50 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public R queryList(EleRefundQuery eleRefundQuery) {
-        return R.ok(eleRefundOrderMapper.queryList(eleRefundQuery));
+        List<EleRefundOrderVO> eleRefundOrderVOS = eleRefundOrderMapper.queryList(eleRefundQuery);
+        if(CollectionUtils.isEmpty(eleRefundOrderVOS)) {
+            return R.ok(new ArrayList<>());
+        }
+
+        eleRefundOrderVOS.forEach(item -> {
+            if(!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+
+            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
+            if(Objects.isNull(freeDepositAlipayHistory)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+
+            item.setIsFreeDepositAliPay(true);
+        });
+        return R.ok();
     }
 
     @Override
     public List<EleRefundOrderVO> selectCarRefundPageList(EleRefundQuery eleRefundQuery) {
-        return eleRefundOrderMapper.selectCarRefundPageList(eleRefundQuery);
+        List<EleRefundOrderVO> eleRefundOrderVOS = eleRefundOrderMapper.selectCarRefundPageList(eleRefundQuery);
+        if(CollectionUtils.isEmpty(eleRefundOrderVOS)) {
+            return new ArrayList<>();
+        }
+
+        eleRefundOrderVOS.forEach(item -> {
+            if(!Objects.equals(item.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+
+            FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(item.getOrderId());
+            if(Objects.isNull(freeDepositAlipayHistory)) {
+                item.setIsFreeDepositAliPay(false);
+                return;
+            }
+
+            item.setIsFreeDepositAliPay(true);
+        });
+        return eleRefundOrderVOS;
     }
 
     @Override
