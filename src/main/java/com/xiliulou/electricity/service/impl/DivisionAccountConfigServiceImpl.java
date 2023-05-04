@@ -613,7 +613,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             List<ElectricityMemberCard> memberCards = new ArrayList<>();
             memberCardIds.forEach(item -> memberCards.add(memberCardService.queryByCache(item.intValue())));
 
-            divisionAccountConfigVO.setMemberCards(memberCards);
+            divisionAccountConfigVO.setMemberCardList(memberCards);
         }
 
         if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {
@@ -625,7 +625,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             List<ElectricityCarModel> carModels = new ArrayList<>();
             carModelIds.forEach(item -> carModels.add(carModelService.queryByIdFromCache(item.intValue())));
 
-            divisionAccountConfigVO.setCarModels(carModels);
+            divisionAccountConfigVO.setCarModelList(carModels);
         }
 
         return Triple.of(true, null, divisionAccountConfigVO);

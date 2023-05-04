@@ -51,9 +51,9 @@ public class DivisionAccountConfigVO {
 
     private List<String> membercardNames;
 
-    private List<ElectricityMemberCard> memberCards;
+    private List<ElectricityMemberCard> memberCardList;
 
-    private List<ElectricityCarModel> carModels;
+    private List<ElectricityCarModel> carModelList;
 
     private Long createTime;
 
