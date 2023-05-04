@@ -1223,7 +1223,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         EleDepositOrder eleDepositOrder = null;
-        if(Boolean.TRUE.equals(!batteryDepositPreCheckResult.getLeft())){
+        if(Boolean.TRUE.equals(batteryDepositPreCheckResult.getLeft())){
             eleDepositOrder = (EleDepositOrder)batteryDepositPreCheckResult.getRight();
         }
     
