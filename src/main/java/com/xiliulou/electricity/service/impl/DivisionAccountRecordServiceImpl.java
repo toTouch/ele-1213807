@@ -193,7 +193,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                     storeId = Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : null;
                 }
 
-                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(batteryMemberCardOrder.getId(), storeId, batteryMemberCardOrder.getFranchiseeId(), batteryMemberCardOrder.getTenantId());
+                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(batteryMemberCardOrder.getMemberCardId().longValue(), storeId, batteryMemberCardOrder.getFranchiseeId(), batteryMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
                     log.error("ELE ERROR! batteryMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
                     return;
