@@ -232,7 +232,7 @@ public class JsonAdminElectricityCarModelController {
     }
 
     @GetMapping(value = "/admin/electricityCarModel/all/{franchiseeId}")
-    public R selectListByFranchiseeId(@PathVariable(value = "franschiseeId") Long franchiseeId) {
+    public R selectListByFranchiseeId(@PathVariable(value = "franchiseeId") Long franchiseeId) {
         return R.ok(electricityCarModelService.selectListByFranchiseeId(franchiseeId));
     }
 }
