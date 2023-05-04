@@ -250,7 +250,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
                 divisionAccountRecordMapper.insert(divisionAccountRecord);
             } catch (Exception e) {
-                log.error("ELE ERROR! batteryMemberCardOrder division account error,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
+                log.error("ELE ERROR! batteryMemberCardOrder division account error,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid(), e);
             }
         });
     }
@@ -307,7 +307,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
                 divisionAccountRecordMapper.insert(divisionAccountRecord);
             } catch (Exception e) {
-                log.error("ELE ERROR! carMemberCardOrder division account error,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
+                log.error("ELE ERROR! carMemberCardOrder division account error,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid(), e);
             }
         });
     }
