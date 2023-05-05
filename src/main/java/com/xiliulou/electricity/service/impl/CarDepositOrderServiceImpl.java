@@ -9,16 +9,14 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
+import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.CarDepositOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.electricity.vo.UserCarDepositOrderVo;
-import com.xiliulou.electricity.vo.UserCarDepositVO;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -29,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -52,6 +51,8 @@ import org.springframework.util.CollectionUtils;
 public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     @Autowired
     private CarDepositOrderMapper carDepositOrderMapper;
+    @Resource
+    private EleDepositOrderMapper eleDepositOrderMapper;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -831,7 +832,30 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         });
         return R.ok(voList);
     }
-    
+
+    @Override
+    public BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long time, Integer rentCarDeposit, List<Long> finalFranchiseeIds) {
+        BigDecimal result = carDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, time, rentCarDeposit, finalFranchiseeIds);
+
+        List<CarBatteryFreeDepositAlipayVo> carBatteryFreeDepositAlipayVos = this.eleDepositOrderMapper.queryCarBatteryFreeDepositAlipay(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
+        BigDecimal eleAlipayAmount = BigDecimal.valueOf(0);
+        BigDecimal totalAlipayAmount = BigDecimal.valueOf(0);
+        if(!CollectionUtils.isEmpty(carBatteryFreeDepositAlipayVos)) {
+            carBatteryFreeDepositAlipayVos.forEach(item ->{
+                if(item.getPayAmount().compareTo(item.getAlipayAmount()) < 0) {
+                    eleAlipayAmount.add(item.getPayAmount());
+                } else {
+                    eleAlipayAmount.add(item.getAlipayAmount());
+                }
+
+                totalAlipayAmount.add(item.getAlipayAmount());
+            });
+        }
+
+        result = result.add(totalAlipayAmount).subtract(eleAlipayAmount);
+        return result;
+    }
+
     @Override
     public CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
         return carDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);

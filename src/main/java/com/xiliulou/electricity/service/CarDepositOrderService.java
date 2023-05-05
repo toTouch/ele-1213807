@@ -94,4 +94,6 @@ public interface CarDepositOrderService {
     CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
     
     R payDepositOrderList(Long offset, Long size);
+
+    BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long time, Integer rentCarDeposit, List<Long> finalFranchiseeIds);
 }

@@ -85,4 +85,6 @@ public interface EleDepositOrderService {
     //R adminPayCarDeposit(RentCarDepositAdd rentCarDepositAdd);
     
     R refundCarDeposit();
+
+    BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long todayStartTime, Integer electricityDeposit, List<Long> finalFranchiseeIds);
 }

@@ -21,10 +21,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
-import com.xiliulou.electricity.vo.EleDepositOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.electricity.vo.PayDepositOrderVO;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -2168,7 +2165,25 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //等到后台同意退款
         return R.ok(success);
     }
-    
+
+    @Override
+    public BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long todayStartTime, Integer electricityDeposit, List<Long> finalFranchiseeIds) {
+        BigDecimal result = Optional.of(this.eleDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, todayStartTime, electricityDeposit, finalFranchiseeIds)).orElse(BigDecimal.ZERO);
+
+        List<CarBatteryFreeDepositAlipayVo> carBatteryFreeDepositAlipayVos = this.eleDepositOrderMapper.queryCarBatteryFreeDepositAlipay(tenantId, todayStartTime, electricityDeposit, finalFranchiseeIds);
+        if(!CollectionUtils.isEmpty(carBatteryFreeDepositAlipayVos)) {
+            carBatteryFreeDepositAlipayVos.forEach(item ->{
+                if(item.getPayAmount().compareTo(item.getAlipayAmount()) < 0) {
+                    result.add(item.getPayAmount());
+                } else {
+                    result.add(item.getAlipayAmount());
+                }
+            });
+        }
+
+        return result;
+    }
+
     /**
      * 根据型号计算押金
      *

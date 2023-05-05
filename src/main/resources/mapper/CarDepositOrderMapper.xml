@@ -270,6 +270,25 @@
         </if>
     </select>
 
+    <select id="queryFreeDepositAlipayTurnOver" resultType="decimal">
+        select sum(nullif(fdah.alipay_amount, 0))
+        from t_car_deposit_order cdo
+        left join t_free_deposit_alipay_history fdah on cdo.order_id = fdah.order_id
+        where cdo.status=1 and cdo.pay_type = 2 and fdah.type = 2
+        <if test="tenantId != null">
+            and cdo.tenant_id = #{tenantId}
+        </if>
+        <if test="todayStartTime != null">
+            and cdo.create_time &gt;=#{todayStartTime}
+        </if>
+        <if test="franchiseeIds != null">
+            and cdo.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
     <select id="queryDepositTurnOverAnalysisByDepositType"            resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_car_deposit_order

@@ -186,4 +186,12 @@ public class HomePageDepositQuery {
      * 总营业额
      */
     private BigDecimal sumDepositTurnover;
+    /**
+     * 电池代扣
+     */
+    private BigDecimal batteryFreeDepositAlipay;
+    /**
+     * 车辆代扣
+     */
+    private BigDecimal carFreeDepositAlipay;
 }

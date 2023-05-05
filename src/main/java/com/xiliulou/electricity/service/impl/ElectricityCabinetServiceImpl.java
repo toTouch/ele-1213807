@@ -3128,6 +3128,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
+
+        //代扣记录
+        CompletableFuture<Void> depositFreeAlipay = CompletableFuture.runAsync(() -> {
+            BigDecimal eleFreeDepositAlipay = eleDepositOrderService.queryFreeDepositAlipayTurnOver(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
+            BigDecimal carFreeDepositAlipay = carDepositOrderService.queryFreeDepositAlipayTurnOver(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+
+            qeury.setBatteryFreeDepositAlipay(eleFreeDepositAlipay);
+            qeury.setCarFreeDepositAlipay(carFreeDepositAlipay);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
     
         //        //退电池押金
         //        CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
@@ -3162,6 +3174,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
+
     
         //历史退电池押金
         CompletableFuture<Void> refundBatteryDepositHistory = CompletableFuture.runAsync(() -> {
@@ -3239,7 +3252,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit, batteryDepositToDay,
-                        carDepositToDay, refundBatteryDepositHistory, refundCarDepositHistory);
+                        carDepositToDay, refundBatteryDepositHistory, refundCarDepositHistory,depositFreeAlipay);
         HomePageDepositVo vo = new HomePageDepositVo();
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
@@ -3256,12 +3269,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     .subtract(qeury.getHistoryOnlineRefundBatteryDeposit())
                     .subtract(qeury.getHistoryOfflineRefundBatteryDeposit());
             BigDecimal freeBatteryDeposit = qeury.getFreeBatteryDeposit()
-                    .subtract(qeury.getHistoryFreeRefundBatteryDeposit());
+                    .subtract(qeury.getHistoryFreeRefundBatteryDeposit())
+                    .subtract(qeury.getBatteryFreeDepositAlipay());
             BigDecimal batteryDepositSum = payBatteryDeposit.add(freeBatteryDeposit);
             BigDecimal payCarDeposit = qeury.getOnlineCarDeposit().add(qeury.getOfflineCarDeposit())
                     .subtract(qeury.getHistoryOnlineRefundCarDeposit())
                     .subtract(qeury.getHistoryOfflineRefundCarDeposit());
-            BigDecimal freeCarDeposit = qeury.getFreeCarDeposit().subtract(qeury.getHistoryFreeRefundCarDeposit());
+            BigDecimal freeCarDeposit = qeury.getFreeCarDeposit()
+                    .subtract(qeury.getHistoryFreeRefundCarDeposit())
+                    .subtract(qeury.getCarFreeDepositAlipay());
             BigDecimal carDepositSum = payCarDeposit.add(freeCarDeposit);
             BigDecimal todayPayRefundDeposit = qeury.getTodayOnlineRefundDeposit()
                     .add(qeury.getTodayOfflineBatteryDeposit()).add(qeury.getTodayOnlineCarRefundDeposit())

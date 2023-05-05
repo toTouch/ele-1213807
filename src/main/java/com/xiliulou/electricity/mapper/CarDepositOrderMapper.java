@@ -80,4 +80,9 @@ public interface CarDepositOrderMapper extends BaseMapper<CarDepositOrder> {
     
     CarDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId,
             @Param("tenantId") Integer tenantId);
+
+    BigDecimal queryFreeDepositAlipayTurnOver(@Param("tenantId")Integer tenantId,
+                                              @Param("todayStartTime")Long todayStartTime,
+                                              @Param("rentCarDeposit")Integer rentCarDeposit,
+                                              @Param("finalFranchiseeIds")List<Long> finalFranchiseeIds);
 }

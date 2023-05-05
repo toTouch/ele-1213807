@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.vo.CarBatteryFreeDepositAlipayVo;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.PayDepositOrderVO;
@@ -50,4 +51,13 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     BigDecimal querySumDepositTurnOverAnalysis(@Param("tenantId") Integer tenantId,  @Param("franchiseeIds") List<Long> franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
+    BigDecimal queryFreeDepositAlipayTurnOver(@Param("tenantId")Integer tenantId,
+                                              @Param("todayStartTime")Long todayStartTime,
+                                              @Param("electricityDeposit")Integer electricityDeposit,
+                                              @Param("finalFranchiseeIds")List<Long> finalFranchiseeIds);
+
+    List<CarBatteryFreeDepositAlipayVo> queryCarBatteryFreeDepositAlipay(@Param("tenantId")Integer tenantId,
+                                                                         @Param("todayStartTime")Long todayStartTime,
+                                                                         @Param("electricityDeposit")Integer electricityDeposit,
+                                                                         @Param("finalFranchiseeIds")List<Long> finalFranchiseeIds);
 }
