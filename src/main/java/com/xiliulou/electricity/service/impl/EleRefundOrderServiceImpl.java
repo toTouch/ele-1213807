@@ -472,7 +472,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
         eleRefundOrderUpdate.setId(eleRefundOrder.getId());
-        eleRefundOrderUpdate.setRefundAmount(refundAmount);
+        //eleRefundOrderUpdate.setRefundAmount(refundAmount);
         eleRefundOrderUpdate.setErrMsg(errMsg);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 
