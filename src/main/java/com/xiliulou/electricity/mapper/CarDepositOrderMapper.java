@@ -83,6 +83,6 @@ public interface CarDepositOrderMapper extends BaseMapper<CarDepositOrder> {
 
     BigDecimal queryFreeDepositAlipayTurnOver(@Param("tenantId")Integer tenantId,
                                               @Param("todayStartTime")Long todayStartTime,
-                                              @Param("rentCarDeposit")Integer rentCarDeposit,
+                                              @Param("depositType")Integer depositType,
                                               @Param("finalFranchiseeIds")List<Long> finalFranchiseeIds);
 }

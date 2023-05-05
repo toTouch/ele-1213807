@@ -53,11 +53,11 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     BigDecimal queryFreeDepositAlipayTurnOver(@Param("tenantId")Integer tenantId,
                                               @Param("todayStartTime")Long todayStartTime,
-                                              @Param("electricityDeposit")Integer electricityDeposit,
+                                              @Param("depositType")Integer depositType,
                                               @Param("finalFranchiseeIds")List<Long> finalFranchiseeIds);
 
     List<CarBatteryFreeDepositAlipayVo> queryCarBatteryFreeDepositAlipay(@Param("tenantId")Integer tenantId,
                                                                          @Param("todayStartTime")Long todayStartTime,
-                                                                         @Param("electricityDeposit")Integer electricityDeposit,
+                                                                         @Param("depositType")Integer depositType,
                                                                          @Param("finalFranchiseeIds")List<Long> finalFranchiseeIds);
 }
