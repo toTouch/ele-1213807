@@ -259,7 +259,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     public void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder) {
         divisionAccountExecutorService.execute(() -> {
             try {
-                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carMemberCardOrder.getId(), carMemberCardOrder.getStoreId(), carMemberCardOrder.getFranchiseeId(), carMemberCardOrder.getTenantId());
+                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carMemberCardOrder.getCarModelId(), carMemberCardOrder.getStoreId(), carMemberCardOrder.getFranchiseeId(), carMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
                     log.error("ELE ERROR! carMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
                     return;
