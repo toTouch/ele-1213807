@@ -502,7 +502,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //解绑用户车辆信息
             if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 carRefund = true;
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             
                 userCarService.deleteByUid(userInfo.getUid());
