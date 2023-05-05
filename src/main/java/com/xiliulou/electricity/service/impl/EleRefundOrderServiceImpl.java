@@ -978,6 +978,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
+        EleRefundOrder refundOrder = eleRefundOrderMapper.selectOne(
+                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, userBatteryDeposit.getOrderId())
+                        .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                        .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
+
+        if(Objects.nonNull(refundOrder)) {
+            log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
+            return Triple.of(false, "100030", "不能重复退押金");
+        }
+
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
         if (Objects.isNull(freeDepositOrder)) {
             log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
@@ -1212,6 +1222,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.isNull(freeDepositOrder)) {
             log.error("REFUND ORDER ERROR! not found freeDepositOrder,uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "100403", "免押订单不存在");
+        }
+
+        EleRefundOrder refundOrder = eleRefundOrderMapper.selectOne(
+                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, userCarDeposit.getOrderId())
+                        .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
+                        .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
+
+        if(Objects.nonNull(refundOrder)) {
+            log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userCarDeposit.getOrderId());
+            return Triple.of(false, "100030", "不能重复退押金");
         }
 
         //如果车电一起免押，检查用户是否归还电池

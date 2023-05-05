@@ -286,11 +286,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
     
         //车辆经纬度
-        CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
-        if (Objects.nonNull(carAttr)) {
-            userCarMemberCardVO.setLongitude(carAttr.getLongitude());
-            userCarMemberCardVO.setLatitude(carAttr.getLatitude());
-            userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+        if(Objects.nonNull(userCar)){
+            CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
+            if (Objects.nonNull(carAttr)) {
+                userCarMemberCardVO.setLongitude(carAttr.getLongitude());
+                userCarMemberCardVO.setLatitude(carAttr.getLatitude());
+                userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+            }
         }
         return Triple.of(true, "", userCarMemberCardVO);
     }
