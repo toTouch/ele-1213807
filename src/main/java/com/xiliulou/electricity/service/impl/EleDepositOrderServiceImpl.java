@@ -2297,13 +2297,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         List<CarBatteryFreeDepositAlipayVo> carBatteryFreeDepositAlipayVos = this.eleDepositOrderMapper.queryCarBatteryFreeDepositAlipay(tenantId, todayStartTime, electricityDeposit, finalFranchiseeIds);
         if(!CollectionUtils.isEmpty(carBatteryFreeDepositAlipayVos)) {
-            carBatteryFreeDepositAlipayVos.forEach(item ->{
+            for (CarBatteryFreeDepositAlipayVo item : carBatteryFreeDepositAlipayVos){
                 if(item.getPayAmount().compareTo(item.getAlipayAmount()) < 0) {
-                    result.add(item.getPayAmount());
+                    result = result.add(item.getPayAmount());
                 } else {
-                    result.add(item.getAlipayAmount());
+                    result = result.add(item.getAlipayAmount());
                 }
-            });
+            }
         }
 
         return result;

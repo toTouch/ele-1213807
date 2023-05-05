@@ -841,15 +841,15 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         BigDecimal eleAlipayAmount = BigDecimal.valueOf(0);
         BigDecimal totalAlipayAmount = BigDecimal.valueOf(0);
         if(!CollectionUtils.isEmpty(carBatteryFreeDepositAlipayVos)) {
-            carBatteryFreeDepositAlipayVos.forEach(item ->{
+            for(CarBatteryFreeDepositAlipayVo item : carBatteryFreeDepositAlipayVos) {
                 if(item.getPayAmount().compareTo(item.getAlipayAmount()) < 0) {
-                    eleAlipayAmount.add(item.getPayAmount());
+                    eleAlipayAmount = eleAlipayAmount.add(item.getPayAmount());
                 } else {
-                    eleAlipayAmount.add(item.getAlipayAmount());
+                    eleAlipayAmount = eleAlipayAmount.add(item.getAlipayAmount());
                 }
 
-                totalAlipayAmount.add(item.getAlipayAmount());
-            });
+                totalAlipayAmount = totalAlipayAmount.add(item.getAlipayAmount());
+            }
         }
 
         result = result.add(totalAlipayAmount).subtract(eleAlipayAmount);
