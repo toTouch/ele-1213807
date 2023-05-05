@@ -525,7 +525,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     joinShareActivityRecordService.update(joinShareActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
                     if (Objects.nonNull(oldJoinShareActivityHistory)) {
                         oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
                         oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -545,7 +545,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), user.getUid());
                     if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
                         oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
                         oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
