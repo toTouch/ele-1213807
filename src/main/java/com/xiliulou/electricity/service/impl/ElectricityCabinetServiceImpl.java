@@ -221,6 +221,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     BatteryModelService batteryModelService;
+
     
     /**
      * 通过ID查询单条数据从缓存
@@ -3856,17 +3857,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList) {
-        List<ElectricityCabinetBatchOperateVo> electricityCabinetList = electricityCabinetMapper
-                .batchOperateList(size, offset, name, eleIdList, TenantContextHolder.getTenantId());
-        if (ObjectUtil.isEmpty(electricityCabinetList)) {
+    public R batchOperateList(ElectricityCabinetQuery query) {
+        List<ElectricityCabinetBatchOperateVo> list = electricityCabinetMapper.batchOperateList(query);
+        if (ObjectUtil.isEmpty(list)) {
             return R.ok(new ArrayList<>());
         }
         
-        return R.ok(electricityCabinetList);
+        return R.ok(list);
     }
-    
-    
+
+    @Override
+    public R cabinetSearch(Long size, Long offset, String name , Integer tenantId) {
+        List<SearchVo> voList = electricityCabinetMapper.cabinetSearch(size, offset, name, tenantId);
+        return R.ok(voList);
+    }
+
+
     /**
      * 通过云端下发命令更新换电标准
      */

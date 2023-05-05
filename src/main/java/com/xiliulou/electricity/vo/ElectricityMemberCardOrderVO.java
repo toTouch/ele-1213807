@@ -18,4 +18,10 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     private Integer cardPayCount;
 
     private OldUserActivityVO  oldUserActivityVO;
+
+    /**
+     * 交易方式 0--线上 1--线下
+     */
+    private Integer payType;
+
 }

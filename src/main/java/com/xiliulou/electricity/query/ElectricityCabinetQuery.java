@@ -59,4 +59,15 @@ public class ElectricityCabinetQuery {
 
     private Long franchiseeId;
 
+    /**
+     *电柜型号id
+     */
+    private String modelId;
+
+    /**
+     * 柜机编号
+     */
+    private String sn;
+
+
 }

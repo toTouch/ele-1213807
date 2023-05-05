@@ -59,7 +59,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
-                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+                                          @RequestParam(value = "payType",required = false) Integer payType) {
 
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -103,6 +104,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .franchiseeId(franchiseeId)
                 .cardPayCount(payCount)
 		        .userName(userName)
+                .payType(payType)
 		        .franchiseeIds(franchiseeIds).build();
 
         return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
@@ -125,7 +127,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
 		                @RequestParam(value = "userName", required = false) String userName,
-                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "payType",required = false) Integer payType) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -159,6 +162,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .franchiseeId(franchiseeId)
                 .cardPayCount(payCount)
 		        .userName(userName)
+                .payType(payType)
 		        .franchiseeIds(franchiseeIds).build();
 
         return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);

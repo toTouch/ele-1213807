@@ -21,4 +21,6 @@ public class ElectricityCabinetBatchOperateVo {
     private String deviceName;
     
     private Integer onlineStatus;
+
+    private String modelName;
 }

@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -64,7 +65,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
     
-    List<ElectricityCabinetBatchOperateVo> batchOperateList(@Param("size") Long size, @Param("offset") Long offset,
-            @Param("name") String name, @Param("eleIdList") List<Integer> eleIdList,
-            @Param("tenantId") Integer tenantId);
+    List<ElectricityCabinetBatchOperateVo> batchOperateList(ElectricityCabinetQuery query);
+
+    List<SearchVo> cabinetSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name,
+                               @Param("tenantId") Integer tenantId);
 }

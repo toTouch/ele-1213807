@@ -402,22 +402,42 @@
     
     <select id="batchOperateList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo">
         select
-        id, name, sn, product_key, device_name, online_status
+        id, name, sn, product_key, device_name, online_status,model
         from t_electricity_cabinet
         where del_flag=0
         <if test="name != null and name != ''">
-            and name like concat('%',#{name, jdbcType=VARCHAR},'%')
+            and tec.name like concat('%',#{name, jdbcType=VARCHAR},'%')
         </if>
         <if test="tenantId != null ">
-            and tenant_id = #{tenantId}
+            and tec.tenant_id = #{tenantId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
-            and id in
+            and tec.id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
+        <if test="modelId != null and modelId != ''">
+            and modelId = #{modelId}
+        </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn, jdbcType=VARCHAR},'%')
+        </if>
         order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="cabinetSearch" resultType="com.xiliulou.electricity.vo.SearchVo">
+        select id, name
+        from t_electricity_cabinet_model
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id
         limit #{offset}, #{size}
     </select>
 
