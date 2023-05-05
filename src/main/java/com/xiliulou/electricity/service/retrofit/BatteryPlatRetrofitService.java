@@ -20,7 +20,7 @@ import java.util.Map;
  * @author : eclair
  * @date : 2022/12/29 09:36
  */
-@RetrofitClient(serviceId = "xiliulou-battery-service", fallback = BatteryPlatRetrofitServiceImpl.class)
+@RetrofitClient(serviceId = "xiliulou-bms-service", fallback = BatteryPlatRetrofitServiceImpl.class)
 public interface BatteryPlatRetrofitService {
 
     @POST("/battery/inner/battery/batch/save")
