@@ -985,7 +985,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if(Objects.nonNull(refundOrder)) {
             log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
-            return Triple.of(false, "100030", "不能重复退押金");
+            return Triple.of(false, "100031", "不能重复退押金");
         }
 
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(userBatteryDeposit.getOrderId());
@@ -1231,7 +1231,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if(Objects.nonNull(refundOrder)) {
             log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userCarDeposit.getOrderId());
-            return Triple.of(false, "100030", "不能重复退押金");
+            return Triple.of(false, "100031", "不能重复退押金");
         }
 
         //如果车电一起免押，检查用户是否归还电池
