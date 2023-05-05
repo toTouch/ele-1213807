@@ -22,6 +22,11 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzCommonRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.request.PxzFreeDepositUnfreezeRequest;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzCommonRsp;
+import com.xiliulou.pay.deposit.paixiaozu.pojo.rsp.PxzDepositUnfreezeRsp;
+import com.xiliulou.pay.deposit.paixiaozu.service.PxzDepositService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -127,6 +132,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
+    @Autowired
+    PxzDepositService pxzDepositService;
+    @Autowired
+    PxzConfigService pxzConfigService;
     
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -450,7 +459,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
         UserInfo updateUserInfo = new UserInfo();
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid());
-    
+        boolean eleRefund = false;
+        boolean carRefund = false;
+
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
@@ -490,6 +501,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
             //解绑用户车辆信息
             if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+                carRefund = true;
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             
@@ -506,11 +518,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
         //退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            eleRefund = true;
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
 
             if (Objects.nonNull(result)) {
-    
+
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -533,13 +546,67 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 }
             }
 
-            return R.ok("SUCCESS");
+            //return R.ok("SUCCESS");
         }
 
-        eleRefundOrderService.insert(eleRefundOrder);
+        if(!eleRefund){
+            eleRefundOrderService.insert(eleRefundOrder);
+        }
+
+        if(Objects.nonNull(freeDepositOrder) && carRefund && eleRefund) {
+            freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
+        }
 
         //等到后台同意退款
-        return R.ok(packageOwe);
+        return R.ok(eleRefund? "SUCCESS" : packageOwe);
+    }
+
+    private void freeDepositOrderThaw(UserBatteryDeposit userBatteryDeposit , FreeDepositOrder freeDepositOrder){
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(userBatteryDeposit.getTenantId());
+        if(Objects.isNull(pxzConfig)) {
+            log.error("CAR REFUND DEPOSIT ERROR! pxzConfig is null, tenantid={}", userBatteryDeposit.getTenantId());
+            return;
+        }
+        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(userBatteryDeposit.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+
+        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+        queryRequest.setRemark("车辆免押解冻");
+        queryRequest.setTransId(userBatteryDeposit.getOrderId());
+        query.setData(queryRequest);
+
+        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzDepositUnfreezeRspPxzCommonRsp = null;
+        try {
+            pxzDepositUnfreezeRspPxzCommonRsp = pxzDepositService.unfreezeDeposit(query);
+        } catch (Exception e) {
+            log.error("Pxz ERROR! unFreeDepositOrderQuery fail! uid={},orderId={}", userBatteryDeposit.getUid(), userBatteryDeposit.getOrderId(), e);
+        }
+
+        if (Objects.isNull(pxzDepositUnfreezeRspPxzCommonRsp)) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", userBatteryDeposit.getUid(), userBatteryDeposit.getOrderId());
+            return;
+        }
+
+        if (!pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
+            return;
+        }
+        if(Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
+            //更新免押订单状态
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositOrderService.update(freeDepositOrderUpdate);
+        }
+
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
     }
     
     private BigDecimal getRefundAmount(CarDepositOrder carDepositOrder) {
@@ -2039,6 +2106,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         UserInfo updateUserInfo = new UserInfo();
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carDepositOrder.getOrderId());
         BigDecimal refundAmount  = null;
+
+        boolean eleRefund = false;
+        boolean carRefund = false;
         //生成退款订单
 
         //车辆电池一起免押，退押金解绑用户电池信息
@@ -2049,7 +2119,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryDeposit) || !Objects
                     .equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", user.getUid());
+                log.error("CAR REFUND DEPOSIT ERROR! not pay deposit,uid={} ", user.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
         
@@ -2061,7 +2131,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>()
                     .eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
             if (Objects.isNull(eleDepositOrder)) {
-                log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", user.getUid());
+                log.error("CAR REFUND DEPOSIT ERROR! not found eleDepositOrder! userId={}", user.getUid());
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
         
@@ -2072,13 +2142,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             if (Objects.nonNull(userBatteryMemberCard)) {
                 if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
                         UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                    log.error("returnDeposit  ERROR! disable member card is reviewing userId={}", user.getUid());
+                    log.error("CAR REFUND DEPOSIT ERROR! disable member card is reviewing userId={}", user.getUid());
                     return R.fail("ELECTRICITY.100003", "停卡正在审核中");
                 }
             
                 if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(),
                         UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                    log.error("returnDeposit  ERROR! member card is disable userId={}", user.getUid());
+                    log.error("CAR REFUND DEPOSIT ERROR! member card is disable userId={}", user.getUid());
                     return R.fail("ELECTRICITY.100004", "月卡已暂停");
                 }
             
@@ -2105,6 +2175,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).build();
         
             if (eleRefundAmount.doubleValue() <= 0) {
+                eleRefund = true;
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
             
@@ -2139,6 +2210,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
         //零元直接退
         if (BigDecimal.valueOf(0).compareTo(carRefundAmount) == 0) {
+            carRefund = true;
             carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             carRefundOrder.setUpdateTime(System.currentTimeMillis());
             
@@ -2161,9 +2233,62 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
     
         eleRefundOrderService.insert(carRefundOrder);
+
+        //解冻
+        if(Objects.nonNull(freeDepositOrder) && carRefund && eleRefund) {
+            freeDepositOrderThaw(userCarDeposit, freeDepositOrder);
+        }
         
         //等到后台同意退款
         return R.ok(success);
+    }
+
+    private void freeDepositOrderThaw(UserCarDeposit userCarDeposit, FreeDepositOrder freeDepositOrder){
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(userCarDeposit.getTenantId());
+        if(Objects.isNull(pxzConfig)) {
+            log.error("CAR REFUND DEPOSIT ERROR! pxzConfig is null, tenantid={}", userCarDeposit.getTenantId());
+            return;
+        }
+        PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
+        query.setAesSecret(pxzConfig.getAesKey());
+        query.setDateTime(System.currentTimeMillis());
+        query.setSessionId(userCarDeposit.getOrderId());
+        query.setMerchantCode(pxzConfig.getMerchantCode());
+
+        PxzFreeDepositUnfreezeRequest queryRequest = new PxzFreeDepositUnfreezeRequest();
+        queryRequest.setRemark("车辆免押解冻");
+        queryRequest.setTransId(userCarDeposit.getOrderId());
+        query.setData(queryRequest);
+
+        PxzCommonRsp<PxzDepositUnfreezeRsp> pxzDepositUnfreezeRspPxzCommonRsp = null;
+        try {
+            pxzDepositUnfreezeRspPxzCommonRsp = pxzDepositService.unfreezeDeposit(query);
+        } catch (Exception e) {
+            log.error("Pxz ERROR! unFreeDepositOrderQuery fail! uid={},orderId={}", userCarDeposit.getUid(), userCarDeposit.getOrderId(), e);
+        }
+
+        if (Objects.isNull(pxzDepositUnfreezeRspPxzCommonRsp)) {
+            log.error("Pxz ERROR! freeDepositOrderQuery fail! pxzQueryOrderRsp is null! uid={},orderId={}", userCarDeposit.getUid(), userCarDeposit.getOrderId());
+            return;
+        }
+
+        if (!pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
+            return;
+        }
+        if(Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
+            //更新免押订单状态
+            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            freeDepositOrderService.update(freeDepositOrderUpdate);
+        }
+
+        FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
+        freeDepositOrderUpdate.setId(freeDepositOrder.getId());
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        freeDepositOrderService.update(freeDepositOrderUpdate);
     }
 
     @Override
