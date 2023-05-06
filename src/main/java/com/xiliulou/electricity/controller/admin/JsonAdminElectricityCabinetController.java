@@ -176,7 +176,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "sn",required = false) String sn,
-                        @RequestParam(value = "modelId",required = false) String modelId) {
+                        @RequestParam(value = "modelId",required = false) Integer modelId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -863,7 +863,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     public R batchOperateList(@RequestParam("size") Long size,
                               @RequestParam("offset") Long offset,
                               @RequestParam(value = "name", required = false) String name,
-                              @RequestParam(value = "modelId", required = false) String modelId,
+                              @RequestParam(value = "modelId", required = false) Integer modelId,
                               @RequestParam(value = "sn", required = false) String sn) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
