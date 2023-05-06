@@ -101,6 +101,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 车电关联
      */
     private Integer isOpenCarBatteryBind;
+
+    /**
+     * 是否启用0元退押审核
+     */
+    private Integer isZeroDepositAuditEnabled;
 }
 
 
