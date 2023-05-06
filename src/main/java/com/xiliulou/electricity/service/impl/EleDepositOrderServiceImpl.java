@@ -554,6 +554,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if(Objects.nonNull(freeDepositOrder) && carRefund && eleRefund) {
+            log.error("测试进来了-----------------");
             freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
         }
 
@@ -593,18 +594,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (!pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
             return;
         }
-        if(Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
-            //更新免押订单状态
-            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
-            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            freeDepositOrderService.update(freeDepositOrderUpdate);
-        }
 
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         freeDepositOrderService.update(freeDepositOrderUpdate);
     }
@@ -2236,6 +2229,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //解冻
         if(Objects.nonNull(freeDepositOrder) && carRefund && eleRefund) {
+            log.error("测试 --------------------进来了");
             freeDepositOrderThaw(userCarDeposit, freeDepositOrder);
         }
         
@@ -2275,18 +2269,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (!pxzDepositUnfreezeRspPxzCommonRsp.isSuccess()) {
             return;
         }
-        if(Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
-            //更新免押订单状态
-            FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
-            freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-            freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
-            freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            freeDepositOrderService.update(freeDepositOrderUpdate);
-        }
+
 
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         freeDepositOrderService.update(freeDepositOrderUpdate);
     }
