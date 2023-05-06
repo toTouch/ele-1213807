@@ -242,6 +242,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return null;
         }
+
         //放入缓存
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + id, electricityCabinet);
         return electricityCabinet;
@@ -3860,9 +3861,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R batchOperateList(ElectricityCabinetQuery query) {
         List<ElectricityCabinetBatchOperateVo> list = electricityCabinetMapper.batchOperateList(query);
         if (ObjectUtil.isEmpty(list)) {
-            return R.ok(new ArrayList<>());
+            return R.ok(Collections.emptyList());
         }
-        
+
+        list.parallelStream().peek(item -> {
+            ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(item.getModelId());
+            item.setModelName(electricityCabinetModel.getName());
+        }).collect(Collectors.toList());
+
+
         return R.ok(list);
     }
 
