@@ -553,7 +553,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             eleRefundOrderService.insert(eleRefundOrder);
         }
 
-        if(Objects.nonNull(freeDepositOrder) && carRefund && eleRefund) {
+        if(Objects.nonNull(freeDepositOrder)
+                && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund)
+                || (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
             log.error("测试进来了-----------------");
             freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
         }
@@ -2228,10 +2230,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         eleRefundOrderService.insert(carRefundOrder);
 
         //解冻
-        if(Objects.nonNull(freeDepositOrder) && carRefund && eleRefund) {
+        if(Objects.nonNull(freeDepositOrder)
+                && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund)
+                || (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR) && carRefund))) {
             log.error("测试 --------------------进来了");
             freeDepositOrderThaw(userCarDeposit, freeDepositOrder);
         }
+
+
         
         //等到后台同意退款
         return R.ok(success);
