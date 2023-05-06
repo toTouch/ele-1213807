@@ -2204,7 +2204,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
     
         //零元直接退
-        if (BigDecimal.valueOf(0).compareTo(carRefundAmount) == 0) {
+        if (carRefundAmount.doubleValue() <= 0) {
             carRefund = true;
             carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             carRefundOrder.setUpdateTime(System.currentTimeMillis());
