@@ -978,12 +978,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
-        EleRefundOrder refundOrder = eleRefundOrderMapper.selectOne(
+        List<EleRefundOrder> refundOrders = eleRefundOrderMapper.selectList(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userBatteryDeposit.getOrderId())
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
 
-        if(Objects.nonNull(refundOrder)) {
+        if(!CollectionUtils.isEmpty(refundOrders)) {
             log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userBatteryDeposit.getOrderId());
             return Triple.of(false, "100031", "不能重复退押金");
         }
@@ -1224,12 +1224,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100403", "免押订单不存在");
         }
 
-        EleRefundOrder refundOrder = eleRefundOrderMapper.selectOne(
+        List<EleRefundOrder> refundOrders = eleRefundOrderMapper.selectList(
                 new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userCarDeposit.getOrderId())
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
 
-        if(Objects.nonNull(refundOrder)) {
+        if(!CollectionUtils.isEmpty(refundOrders)) {
             log.error("REFUND ORDER ERROR! Refund in progress ,uid={},orderId={}", uid, userCarDeposit.getOrderId());
             return Triple.of(false, "100031", "不能重复退押金");
         }
