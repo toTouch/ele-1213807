@@ -997,6 +997,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //如果车电一起免押，检查用户是否归还车辆
         EleDepositOrder carDepositOrder = null;
+        UserCarDeposit userCarDeposit = null;
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             if(Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)){
                 log.error("REFUND ORDER ERROR! user not return car,uid={}", userInfo.getUid());
@@ -1009,7 +1010,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
 
 
-            UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
+            userCarDeposit = userCarDepositService.selectByUidFromCache(uid);
             if (Objects.isNull(userCarDeposit)) {
                 log.error("ELE CAR REFUND ERROR! not found userCarDeposit! uid={}", uid);
                 return Triple.of(false, "ELECTRICITY.0001", "未找到用户信息");
@@ -1117,12 +1118,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     
             if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
 
-                carRefundAmount = refundAmount.doubleValue() > 0 ? carDepositOrder.getPayAmount()
-                        :carDepositOrder.getPayAmount().add(refundAmount);
+                carRefundAmount = refundAmount.doubleValue() > 0 ? userCarDeposit.getCarDeposit()
+                        :userCarDeposit.getCarDeposit().add(refundAmount);
         
                 EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
                         .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
-                        .payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
+                        .payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
                         .status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).tenantId(carDepositOrder.getTenantId())
                         .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
@@ -1162,9 +1163,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderService.insert(eleRefundOrder);
     
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            carRefundAmount = refundAmount.doubleValue() > 0 ? userCarDeposit.getCarDeposit()
+                    :userCarDeposit.getCarDeposit().add(refundAmount);
+
             EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
-                    .payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount).status(EleRefundOrder.STATUS_REFUND)
+                    .payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount).status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .tenantId(eleDepositOrder.getTenantId())
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
