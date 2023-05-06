@@ -408,8 +408,8 @@
         <if test="name != null and name != ''">
             and name like concat('%',#{name, jdbcType=VARCHAR},'%')
         </if>
-        <if test="query.tenantId != null ">
-            and tenant_id = #{query.tenantId}
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and id in
