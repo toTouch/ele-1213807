@@ -565,7 +565,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     private void freeDepositOrderThaw(UserBatteryDeposit userBatteryDeposit , FreeDepositOrder freeDepositOrder){
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(userBatteryDeposit.getTenantId());
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
         if(Objects.isNull(pxzConfig)) {
             log.error("CAR REFUND DEPOSIT ERROR! pxzConfig is null, tenantid={}", userBatteryDeposit.getTenantId());
             return;
@@ -2244,7 +2244,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     private void freeDepositOrderThaw(UserCarDeposit userCarDeposit, FreeDepositOrder freeDepositOrder){
-        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(userCarDeposit.getTenantId());
+        PxzConfig pxzConfig = pxzConfigService.queryByTenantIdFromCache(freeDepositOrder.getTenantId());
         if(Objects.isNull(pxzConfig)) {
             log.error("CAR REFUND DEPOSIT ERROR! pxzConfig is null, tenantid={}", userCarDeposit.getTenantId());
             return;
