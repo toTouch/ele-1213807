@@ -1375,6 +1375,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderService.insert(eleRefundOrder);
 
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            log.error("------------------>  sadhsdhfds");
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             BigDecimal eleRefundAmount = freeDepositAlipay.doubleValue() > userBatteryDeposit.getBatteryDeposit().doubleValue() ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit().subtract(freeDepositAlipay);
             EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
