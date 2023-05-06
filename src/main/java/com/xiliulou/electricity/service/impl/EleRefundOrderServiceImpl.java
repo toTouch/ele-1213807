@@ -1373,10 +1373,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderService.insert(eleRefundOrder);
 
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            eleRefundAmount = refundAmount.doubleValue() > 0? eleDepositOrder.getPayAmount() : eleDepositOrder.getPayAmount().add(refundAmount);
             EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
                     .orderId(eleDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
-                    .payAmount(eleDepositOrder.getPayAmount()).refundAmount(eleRefundAmount)
+                    .payAmount(eleDepositOrder.getPayAmount())
+                    .refundAmount(eleRefundAmount)
                     .status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
