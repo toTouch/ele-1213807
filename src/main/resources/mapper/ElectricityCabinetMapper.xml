@@ -408,8 +408,8 @@
         <if test="name != null and name != ''">
             and tec.name like concat('%',#{name, jdbcType=VARCHAR},'%')
         </if>
-        <if test="tenantId != null ">
-            and tec.tenant_id = #{tenantId}
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
         </if>
         <if test="eleIdList!=null and eleIdList!=''">
             and tec.id in
@@ -418,10 +418,10 @@
             </foreach>
         </if>
         <if test="modelId != null and modelId != ''">
-            and modelId = #{modelId}
+            and model_id = #{modelId}
         </if>
         <if test="sn != null and sn != ''">
-            and tec.sn like concat('%',#{sn, jdbcType=VARCHAR},'%')
+            and sn like concat('%',#{sn, jdbcType=VARCHAR},'%')
         </if>
         order by create_time desc
         limit #{offset}, #{size}
