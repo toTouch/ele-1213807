@@ -30,6 +30,20 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
     @Autowired
     private DivisionAccountConfigService divisionAccountConfigService;
 
+    @GetMapping("/admin/division/account/config/search")
+    public R configSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                         @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 20) {
+            size = 20L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        return R.ok(divisionAccountConfigService.configSearch(size, offset, name, TenantContextHolder.getTenantId()));
+    }
+
     /**
      * 分页列表
      */

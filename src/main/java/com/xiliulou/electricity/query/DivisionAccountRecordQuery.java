@@ -23,6 +23,16 @@ public class DivisionAccountRecordQuery {
     private Integer tenantId;
 
     /**
+     * 分帐配置id
+     */
+    private Long divisionAccountConfigId;
+
+    /**
+     * 套餐来源
+     */
+    private Integer source;
+
+    /**
      * 套餐名称
      */
     private String membercardName;

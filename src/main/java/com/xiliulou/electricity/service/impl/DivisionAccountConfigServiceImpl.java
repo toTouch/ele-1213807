@@ -13,6 +13,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -52,6 +53,16 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     @Autowired
     private DivisionAccountBatteryMembercardService divisionAccountBatteryMembercardService;
 
+    @Slave
+    @Override
+    public List<SearchVo> configSearch(Long size, Long offset, String name, Integer tenantId) {
+        List<SearchVo> searchVos = divisionAccountConfigMapper.configSearch(size, offset, name, tenantId);
+        if (CollectionUtils.isEmpty(searchVos)) {
+            return Collections.emptyList();
+        }
+
+        return searchVos;
+    }
 
     /**
      * 通过ID查询单条数据从DB

@@ -3,9 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
-import com.xiliulou.electricity.service.DivisionAccountConfigService;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -14,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,6 +35,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
     @GetMapping("/admin/division/account/record/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "membercardName", required = false) String membercardName,
+                  @RequestParam(value = "source", required = false) Integer source,
+                  @RequestParam(value = "divisionAccountConfigId", required = false) Long divisionAccountConfigId,
                   @RequestParam(value = "beginTime", required = false) Long beginTime,
                   @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -62,6 +61,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
                 .membercardName(membercardName)
+                .divisionAccountConfigId(divisionAccountConfigId)
+                .source(source)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .build();
@@ -74,6 +75,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
      */
     @GetMapping("/admin/division/account/record/count")
     public R pageCount(@RequestParam(value = "membercardName", required = false) String membercardName,
+                       @RequestParam(value = "source", required = false) Integer source,
+                       @RequestParam(value = "divisionAccountConfigId", required = false) Long divisionAccountConfigId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -89,6 +92,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
         DivisionAccountRecordQuery query = DivisionAccountRecordQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .membercardName(membercardName)
+                .divisionAccountConfigId(divisionAccountConfigId)
+                .source(source)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .build();
@@ -101,9 +106,10 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
      */
     @GetMapping("/admin/division/account/statistic/page")
     public R statisticPage(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                  @RequestParam(value = "membercardName", required = false) String membercardName,
-                  @RequestParam(value = "beginTime", required = false) Long beginTime,
-                  @RequestParam(value = "endTime", required = false) Long endTime) {
+                           @RequestParam(value = "membercardName", required = false) String membercardName,
+                           @RequestParam(value = "divisionAccountConfigId", required = false) Long divisionAccountConfigId,
+                           @RequestParam(value = "beginTime", required = false) Long beginTime,
+                           @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -136,8 +142,9 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
 
     @GetMapping("/admin/division/account/statistic/count")
     public R statisticPageCount(@RequestParam(value = "membercardName", required = false) String membercardName,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                                @RequestParam(value = "divisionAccountConfigId", required = false) Long divisionAccountConfigId,
+                                @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                @RequestParam(value = "endTime", required = false) Long endTime) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

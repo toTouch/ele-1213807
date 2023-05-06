@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.query.DivisionAccountConfigStatusQuery;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -72,7 +73,7 @@ public interface DivisionAccountConfigService {
 
     Triple<Boolean, String, Object> modify(DivisionAccountConfigQuery divisionAccountConfigQuery);
 
-    Triple<Boolean, String, Object> save(DivisionAccountConfigQuery divisionAccountConfigQuery);
+    Triple<Boolean, String, Object> save(DivisionAccountConfigQuery divisionAccountConfigQue);
 
     Triple<Boolean, String, Object> selectInfoById(Long id);
 
@@ -81,4 +82,6 @@ public interface DivisionAccountConfigService {
     DivisionAccountConfigRefVO selectDivisionConfigByRefId(Long membercardId, Long storeId, Long franchinseeId, Integer tenantId);
 
     Triple<Boolean, String, Object> updateStatus(DivisionAccountConfigStatusQuery divisionAccountConfigQuery);
+
+    List<SearchVo> configSearch(Long size, Long offset, String name, Integer tenantId);
 }

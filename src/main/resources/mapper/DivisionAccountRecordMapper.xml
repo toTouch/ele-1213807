@@ -107,6 +107,12 @@
             <if test="membercardName != null and membercardName != ''">
                 and membercard_name = #{membercardName}
             </if>
+            <if test="source != null">
+                and source = #{source}
+            </if>
+            <if test="divisionAccountConfigId != null">
+                and division_account_config_id = #{divisionAccountConfigId}
+            </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
@@ -129,6 +135,9 @@
         <if test="membercardName != null and membercardName != ''">
             and membercard_name = #{membercardName}
         </if>
+        <if test="divisionAccountConfigId != null">
+            and division_account_config_id = #{divisionAccountConfigId}
+        </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}
         </if>
@@ -147,6 +156,12 @@
             <if test="membercardName != null and membercardName != ''">
                 and membercard_name = #{membercardName}
             </if>
+            <if test="source != null">
+                and source = #{source}
+            </if>
+            <if test="divisionAccountConfigId != null">
+                and division_account_config_id = #{divisionAccountConfigId}
+            </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
@@ -160,13 +175,16 @@
     </select>
 
     <select id="selectStatisticByPageCount" resultType="int">
-select count(1) from (
+        select count(1) from (
         select
         division_account_config_id
         from t_division_account_record
         where tenant_id = #{tenantId}
         <if test="membercardName != null and membercardName != ''">
             and membercard_name = #{membercardName}
+        </if>
+        <if test="divisionAccountConfigId != null">
+            and division_account_config_id = #{divisionAccountConfigId}
         </if>
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}

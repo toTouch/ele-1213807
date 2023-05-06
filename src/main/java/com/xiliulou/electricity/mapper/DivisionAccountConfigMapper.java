@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.DivisionAccountConfig;
 import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -75,4 +76,6 @@ public interface DivisionAccountConfigMapper extends BaseMapper<DivisionAccountC
     Integer selectDivisionAccountConfigExit(@Param("name") String name, @Param("tenantId") Integer tenantId);
 
     DivisionAccountConfig selectDivisionAccountConfigByName(@Param("name") String name, @Param("tenantId") Integer tenantId);
+
+    List<SearchVo> configSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("tenantId") Integer tenantId);
 }
