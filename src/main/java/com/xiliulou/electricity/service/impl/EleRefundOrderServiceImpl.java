@@ -979,7 +979,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         EleRefundOrder refundOrder = eleRefundOrderMapper.selectOne(
-                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, userBatteryDeposit.getOrderId())
+                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userBatteryDeposit.getOrderId())
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
 
@@ -1225,7 +1225,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         EleRefundOrder refundOrder = eleRefundOrderMapper.selectOne(
-                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, userCarDeposit.getOrderId())
+                new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, userCarDeposit.getOrderId())
                         .eq(EleRefundOrder::getTenantId, TenantContextHolder.getTenantId())
                         .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
 
