@@ -1386,6 +1386,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .tenantId(userBatteryDeposit.getTenantId())
+                    .refundOrderType(EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
                     .build();
             eleRefundOrderService.insert(insertEleRefundOrder);
         }
