@@ -1249,16 +1249,22 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
     
         //获取订单代扣信息计算返还金额
-        BigDecimal refundAmount = carDepositOrder.getPayAmount();
-        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
-                .queryByOrderId(userCarDeposit.getOrderId());
+
+        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService.queryByOrderId(userCarDeposit.getOrderId());
+        BigDecimal freeDepositAlipay = BigDecimal.ZERO;
         if (Objects.nonNull(freeDepositAlipayHistory)) {
-             refundAmount = carDepositOrder.getPayAmount()
-                    .subtract(freeDepositAlipayHistory.getAlipayAmount());
+            freeDepositAlipay = freeDepositAlipayHistory.getAlipayAmount();
         }
 
-        BigDecimal carRefundAmount = refundAmount.doubleValue() < 0 ? BigDecimal.ZERO : refundAmount;
-        BigDecimal eleRefundAmount = BigDecimal.ZERO;
+        BigDecimal refundAmount = BigDecimal.ZERO;
+        if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
+            refundAmount = freeDepositAlipay.doubleValue() > userBatteryDeposit.getBatteryDeposit().doubleValue() ?
+                    userBatteryDeposit.getBatteryDeposit().subtract(freeDepositAlipay).add(carDepositOrder.getPayAmount())
+                    : carDepositOrder.getPayAmount();
+        }else {
+            refundAmount = carDepositOrder.getPayAmount().subtract(freeDepositAlipay);
+        }
 
         PxzCommonRequest<PxzFreeDepositUnfreezeRequest> query = new PxzCommonRequest<>();
         query.setAesSecret(pxzConfig.getAesKey());
@@ -1299,7 +1305,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                     .orderId(carDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
-                    .payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
+                    .payAmount(carDepositOrder.getPayAmount()).refundAmount(refundAmount)
                     .status(EleRefundOrder.STATUS_SUCCESS)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
@@ -1322,7 +1328,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //车辆电池一起免押，退押金解绑用户电池信息
             if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
                 UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-                eleRefundAmount = refundAmount.doubleValue() > 0? userBatteryDeposit.getBatteryDeposit() : userBatteryDeposit.getBatteryDeposit().add(refundAmount);
+                BigDecimal eleRefundAmount = freeDepositAlipay.doubleValue() > userBatteryDeposit.getBatteryDeposit().doubleValue() ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit().subtract(freeDepositAlipay);
 
                 EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
                         .orderId(userBatteryDeposit.getOrderId())
@@ -1370,7 +1376,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
-            eleRefundAmount = refundAmount.doubleValue() > 0? userBatteryDeposit.getBatteryDeposit() : userBatteryDeposit.getBatteryDeposit().add(refundAmount);
+            BigDecimal eleRefundAmount = freeDepositAlipay.doubleValue() > userBatteryDeposit.getBatteryDeposit().doubleValue() ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit().subtract(freeDepositAlipay);
             EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
                     .orderId(userBatteryDeposit.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
