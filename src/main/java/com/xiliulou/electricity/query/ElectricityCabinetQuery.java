@@ -62,7 +62,7 @@ public class ElectricityCabinetQuery {
     /**
      *电柜型号id
      */
-    private String modelId;
+    private Integer modelId;
 
     /**
      * 柜机编号
