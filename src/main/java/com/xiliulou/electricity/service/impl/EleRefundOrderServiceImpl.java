@@ -1164,7 +1164,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
             EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
-                    .payAmount(carRefundAmount).refundAmount(carRefundAmount).status(EleRefundOrder.STATUS_SUCCESS)
+                    .payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount).status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .tenantId(eleDepositOrder.getTenantId())
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
