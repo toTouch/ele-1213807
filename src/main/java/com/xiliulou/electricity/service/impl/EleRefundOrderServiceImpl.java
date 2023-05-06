@@ -1294,6 +1294,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Triple.of(false, "100402", pxzDepositUnfreezeRspPxzCommonRsp.getRespDesc());
         }
 
+        Integer tenantId = carDepositOrder.getTenantId();
+
         if(Objects.equals(pxzDepositUnfreezeRspPxzCommonRsp.getData().getAuthStatus(),FreeDepositOrder.AUTH_UN_FROZEN)){
             //更新免押订单状态
             FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
@@ -1309,7 +1311,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .status(EleRefundOrder.STATUS_SUCCESS)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
-                    .tenantId(carDepositOrder.getTenantId())
+                    .tenantId(tenantId)
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                     .build();
             eleRefundOrderService.insert(eleRefundOrder);
@@ -1337,7 +1339,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .status(EleRefundOrder.STATUS_SUCCESS)
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
-                        .tenantId(userBatteryDeposit.getTenantId())
+                        .tenantId(tenantId)
                         .build();
                 eleRefundOrderService.insert(insertEleRefundOrder);
 
@@ -1369,13 +1371,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .status(EleRefundOrder.STATUS_REFUND)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
-                .tenantId(carDepositOrder.getTenantId())
+                .tenantId(tenantId)
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
 
         if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-            log.error("------------------>  sadhsdhfds");
             UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
             BigDecimal eleRefundAmount = freeDepositAlipay.doubleValue() > userBatteryDeposit.getBatteryDeposit().doubleValue() ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit().subtract(freeDepositAlipay);
             EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
@@ -1386,7 +1387,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
-                    .tenantId(userBatteryDeposit.getTenantId())
+                    .tenantId(tenantId)
                     .refundOrderType(EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
                     .build();
             eleRefundOrderService.insert(insertEleRefundOrder);
