@@ -460,39 +460,38 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //退款零元
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            Integer tenantId = TenantContextHolder.getTenantId();
-            if (Objects.nonNull(tenantId)) {
-                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-                if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
-                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                    EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
+            Integer tenantId = user.getTenantId();
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
 
-                    if (Objects.nonNull(result)) {
-                        UserInfo updateUserInfo = new UserInfo();
-                        updateUserInfo.setUid(userInfo.getUid());
-                        updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                        userInfoService.updateByUid(updateUserInfo);
+                if (Objects.nonNull(result)) {
+                    UserInfo updateUserInfo = new UserInfo();
+                    updateUserInfo.setUid(userInfo.getUid());
+                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                    updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                    userInfoService.updateByUid(updateUserInfo);
 
-                        userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
 //                      userBatteryDepositService.deleteByUid(userInfo.getUid());
-                        userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                    userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
 
-                        userBatteryService.deleteByUid(userInfo.getUid());
+                    userBatteryService.deleteByUid(userInfo.getUid());
 
-                        //退押金解绑用户所属加盟商
-                        userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+                    //退押金解绑用户所属加盟商
+                    userInfoService.unBindUserFranchiseeId(userInfo.getUid());
 
-                        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-                        if (Objects.nonNull(insuranceUserInfo)) {
-                            insuranceUserInfoService.deleteById(insuranceUserInfo);
-                        }
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
                     }
-
-                    return R.ok("SUCCESS");
                 }
+
+                return R.ok("SUCCESS");
             }
+
 
         }
 
@@ -1952,33 +1951,32 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     
         //零元直接退
         if (BigDecimal.valueOf(0).compareTo(carDepositOrder.getPayAmount()) == 0) {
-            Integer tenantId = TenantContextHolder.getTenantId();
-            if (Objects.nonNull(tenantId)) {
-                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-                if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
+            Integer tenantId = user.getTenantId();
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
 
-                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                    eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                eleRefundOrder.setUpdateTime(System.currentTimeMillis());
 
-                    UserInfo updateUserInfo = new UserInfo();
-                    updateUserInfo.setUid(userInfo.getUid());
-                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-                    updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                    userInfoService.updateByUid(updateUserInfo);
+                UserInfo updateUserInfo = new UserInfo();
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                userInfoService.updateByUid(updateUserInfo);
 
-                    userCarService.deleteByUid(userInfo.getUid());
+                userCarService.deleteByUid(userInfo.getUid());
 
-                    userCarDepositService.logicDeleteByUid(userInfo.getUid());
+                userCarDepositService.logicDeleteByUid(userInfo.getUid());
 
-                    userCarMemberCardService.deleteByUid(userInfo.getUid());
+                userCarMemberCardService.deleteByUid(userInfo.getUid());
 
-                    //退押金解绑用户所属加盟商
-                    userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-                    //退押金成功通知前端
-                    success = "SUCCESS";
+                //退押金解绑用户所属加盟商
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+                //退押金成功通知前端
+                success = "SUCCESS";
 
-                }
             }
+
 
         }
     

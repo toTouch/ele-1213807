@@ -21,11 +21,12 @@
         <result property="isMoveFranchisee" column="is_move_franchisee" jdbcType="INTEGER"/>
         <result property="freeDepositType" column="free_deposit_type" jdbcType="INTEGER"/>
         <result property="isOpenInsurance" column="is_open_insurance" jdbcType="INTEGER"/>
+        <result property="isZeroDepositAuditEnabled" column="is_zero_deposit_audit_enabled" jdbcType="INTEGER"/>
     </resultMap>
     
     <!-- 基础字段 -->
     <sql id="selectElectricityConfig">
-       	select   id, name, create_time, update_time, order_time, is_manual_review, tenant_id, is_withdraw, is_check_battery, is_open_door_lock, is_battery_review, disable_member_card, is_low_battery_exchange, low_battery_exchange_model, is_enable_self_open, is_enable_return_box_check, move_franchisee_detail, is_move_franchisee, is_open_insurance,free_deposit_type        from t_electricity_config
+       	select   id, name, create_time, update_time, order_time, is_manual_review, tenant_id, is_withdraw, is_check_battery, is_open_door_lock, is_battery_review, disable_member_card, is_low_battery_exchange, low_battery_exchange_model, is_enable_self_open, is_enable_return_box_check, move_franchisee_detail, is_move_franchisee, is_open_insurance,free_deposit_type,is_zero_deposit_audit_enabled        from t_electricity_config
     </sql>
     
     <!--通过主键修改数据-->
@@ -84,7 +85,7 @@
                 is_open_car_battery_bind = #{isOpenCarBatteryBind},
             </if>
             <if test="isZeroDepositAuditEnabled != null">
-                isZeroDepositAuditEnabled = #{isZeroDepositAuditEnabled},
+                is_zero_deposit_audit_enabled = #{isZeroDepositAuditEnabled},
             </if>
             franchisee_move_info = #{franchiseeMoveInfo}
         </set>
