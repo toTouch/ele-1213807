@@ -402,7 +402,7 @@
     
     <select id="batchOperateList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo">
         select
-        id, name, sn, product_key, device_name, online_status,modelId
+        id, name, sn, product_key, device_name, online_status,model_id as modelId
         from t_electricity_cabinet
         where del_flag=0
         <if test="name != null and name != ''">
