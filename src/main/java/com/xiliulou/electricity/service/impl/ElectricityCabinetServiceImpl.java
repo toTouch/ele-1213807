@@ -3869,7 +3869,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             item.setModelName(electricityCabinetModel.getName());
         }).collect(Collectors.toList());
 
-
         return R.ok(list);
     }
 

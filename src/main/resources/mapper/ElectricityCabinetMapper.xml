@@ -70,6 +70,12 @@
 		<if test="query.endTime != null">
 			and create_time &lt;=#{query.endTime}
 		</if>
+        <if test="query.sn != null and query.sn != ''">
+            and sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.modelId != null">
+            and model_id = #{query.modelId}
+        </if>
 		<if test="query.eleIdList!=null and query.eleIdList!=''">
 			and id in
 			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">

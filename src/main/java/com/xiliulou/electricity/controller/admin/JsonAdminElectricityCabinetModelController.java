@@ -92,7 +92,7 @@ public class JsonAdminElectricityCabinetModelController {
 	}
 
 	/**
-	 * 柜机search
+	 * 柜机型号search
 	 * @param size
 	 * @param offset
 	 * @param name
