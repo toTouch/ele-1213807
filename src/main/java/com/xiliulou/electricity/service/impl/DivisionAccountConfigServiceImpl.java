@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.DivisionAccountConfigMapper;
 import com.xiliulou.electricity.query.DivisionAccountConfigQuery;
@@ -11,6 +14,7 @@ import com.xiliulou.electricity.query.DivisionAccountConfigStatusQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigVO;
 import com.xiliulou.electricity.vo.SearchVo;
@@ -21,8 +25,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -225,7 +231,18 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Objects.equals(divisionAccountConfigQuery.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
             List<DivisionAccountBatteryMembercard> divisionAccountRefIdList = buildDivisionAccountBatteryMembercardList(divisionAccountConfigQuery, divisionAccountConfig);
             divisionAccountBatteryMembercardService.batchInsert(divisionAccountRefIdList);
+
         }
+
+        List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordList =Lists.newArrayList();
+        //层级
+        if(Objects.equals(divisionAccountConfigQuery.getType(),DivisionAccountConfig.TYPE_BATTERY)){
+            divisionAccountOperationRecordList = buildDivisionAccountOperationRecordMembercardList(divisionAccountConfigQuery);
+        }
+        if(Objects.equals(divisionAccountConfigQuery.getType(),DivisionAccountConfig.TYPE_CAR)){
+            divisionAccountOperationRecordList = bulidEleDivisionAccountOperationRecordList(divisionAccountConfigQuery);
+        }
+
 
         if (Objects.equals(divisionAccountConfigQuery.getType(), DivisionAccountConfig.TYPE_CAR)) {
             List<DivisionAccountBatteryMembercard> divisionAccountRefIdList = buildDivisionAccountCarModelList(divisionAccountConfigQuery, divisionAccountConfig);
@@ -243,6 +260,19 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         divisionAccountConfigUpdate.setUpdateTime(System.currentTimeMillis());
 
         this.update(divisionAccountConfigUpdate);
+
+        DivisionAccountOperationRecord divisionAccountOperationRecord = new DivisionAccountOperationRecord();
+        divisionAccountOperationRecord.setName(divisionAccountConfigQuery.getName())
+                .setCabinetOperatorRate(divisionAccountConfigQuery.getOperatorRate())
+                .setCabinetFranchiseeRate(divisionAccountConfigQuery.getFranchiseeRate())
+                .setCabinetStoreRate(divisionAccountConfigQuery.getStoreRate())
+                .setNonCabOperatorRate(divisionAccountConfigQuery.getOperatorRateOther())
+                .setNonCabFranchiseeRate(divisionAccountConfigQuery.getFranchiseeRateOther())
+                .setUid(SecurityUtils.getUid())
+                .setTenantId(divisionAccountConfig.getTenantId())
+                .setCreateTime(System.currentTimeMillis())
+                .setUpdateTime(System.currentTimeMillis())
+                .setAccountMemberCard(JSONUtil.toJsonStr(divisionAccountOperationRecordList));
         return Triple.of(true, null, null);
     }
 
@@ -295,7 +325,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     public Triple<Boolean, String, Object> save(DivisionAccountConfigQuery query) {
         query.setTenantId(TenantContextHolder.getTenantId());
         Integer exitResult = this.divisionAccountConfigMapper.selectDivisionAccountConfigExit(query.getName(), TenantContextHolder.getTenantId());
-        if(Objects.nonNull(exitResult)){
+        if (Objects.nonNull(exitResult)) {
             return Triple.of(false, "", "分帐配置名称已存在");
         }
 
@@ -536,6 +566,34 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             list.add(divisionAccountBatteryMembercard);
         }
 
+        return list;
+    }
+
+    private List<EleDivisionAccountOperationRecordDTO> bulidEleDivisionAccountOperationRecordList(DivisionAccountConfigQuery query) {
+        List<EleDivisionAccountOperationRecordDTO> list = Lists.newArrayList();
+        for (Long carModel : query.getCarModels()) {
+            EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
+            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(carModel.intValue());
+            eleDivisionAccountOperationRecordDTO.setId(carModel.intValue());
+            if (Objects.nonNull(electricityMemberCard)){
+                eleDivisionAccountOperationRecordDTO.setName(electricityMemberCard.getName());
+            }
+            list.add(eleDivisionAccountOperationRecordDTO);
+        }
+        return list;
+    }
+
+    private List<EleDivisionAccountOperationRecordDTO> buildDivisionAccountOperationRecordMembercardList(DivisionAccountConfigQuery query){
+        List<EleDivisionAccountOperationRecordDTO> list = Lists.newArrayList();
+        for(Long membercard : query.getMembercards()){
+            EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
+            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercard.intValue());
+            eleDivisionAccountOperationRecordDTO.setId(membercard.intValue());
+            if (Objects.nonNull(electricityMemberCard)){
+                eleDivisionAccountOperationRecordDTO.setName(electricityMemberCard.getName());
+            }
+            list.add(eleDivisionAccountOperationRecordDTO);
+        }
         return list;
     }
 
