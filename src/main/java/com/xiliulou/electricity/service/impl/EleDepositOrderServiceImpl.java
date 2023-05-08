@@ -502,7 +502,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //解绑用户车辆信息
             if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
                 carRefund = true;
-                carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
             
                 userCarService.deleteByUid(userInfo.getUid());
@@ -519,7 +519,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleRefund = true;
-            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
             EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
 
             if (Objects.nonNull(result)) {
@@ -556,7 +556,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if(Objects.nonNull(freeDepositOrder)
                 && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund)
                 || (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_BATTERY) && eleRefund))) {
-            log.error("测试进来了-----------------");
             freeDepositOrderThaw(userBatteryDeposit, freeDepositOrder);
         }
 
@@ -599,7 +598,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         freeDepositOrderService.update(freeDepositOrderUpdate);
     }
@@ -2171,7 +2170,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         
             if (eleRefundAmount.doubleValue() <= 0) {
                 eleRefund = true;
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
             
                 userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
@@ -2206,7 +2205,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //零元直接退
         if (carRefundAmount.doubleValue() <= 0) {
             carRefund = true;
-            carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
             carRefundOrder.setUpdateTime(System.currentTimeMillis());
             
             updateUserInfo.setUid(userInfo.getUid());
@@ -2233,7 +2232,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if(Objects.nonNull(freeDepositOrder)
                 && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund)
                 || (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR) && carRefund))) {
-            log.error("测试 --------------------进来了");
             freeDepositOrderThaw(userCarDeposit, freeDepositOrder);
         }
 
@@ -2279,7 +2277,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FROZEN);
+        freeDepositOrderUpdate.setAuthStatus(FreeDepositOrder.AUTH_UN_FREEZING);
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         freeDepositOrderService.update(freeDepositOrderUpdate);
     }
