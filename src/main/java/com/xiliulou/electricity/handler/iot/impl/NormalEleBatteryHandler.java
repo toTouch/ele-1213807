@@ -583,8 +583,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
         
         //柜机仓内电池已满
-        log.info("ELE BATTERY REPORT INFO! push battery full message,electricityCabinetId={}",
-                electricityCabinet.getId());
         messageDelayQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE,
                 buildDelyQueueMessage(electricityCabinet), 5 * 60);
     }

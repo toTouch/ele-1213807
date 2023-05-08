@@ -34,9 +34,8 @@ public class MessageDelayQueueListener implements DisposableBean {
     
     
     @EventListener({WebServerInitializedEvent.class})
-    public void pollDelyQueue(){
+    public void pullDelyQueue(){
         
-        log.info("DELY QUEUE LISTENER INFO! start poll delay queue message!");
         delayQueueListenerThread.execute(()->{
             while (Boolean.FALSE.equals(shutdown)){
                 try {
