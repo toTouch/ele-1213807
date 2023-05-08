@@ -274,7 +274,7 @@
         from t_store
         where del_flag=0
         <if test="name != null and name != ''">
-            and name = #{name}
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}

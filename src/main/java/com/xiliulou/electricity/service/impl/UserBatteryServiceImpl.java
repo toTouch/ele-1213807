@@ -6,16 +6,13 @@ import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.mapper.UserBatteryMapper;
 import com.xiliulou.electricity.service.UserBatteryService;
 import com.xiliulou.electricity.utils.DbUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UserBattery)表服务实现类
@@ -125,5 +122,10 @@ public class UserBatteryServiceImpl implements UserBatteryService {
             return null;
         });
         return delete;
+    }
+
+    @Override
+    public List<UserBattery> selectBatteryTypeByFranchiseeId(Long id) {
+        return this.userBatteryMapper.selectBatteryTypeByFranchiseeId(id);
     }
 }

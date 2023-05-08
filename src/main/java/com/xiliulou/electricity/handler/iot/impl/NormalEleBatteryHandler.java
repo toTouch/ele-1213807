@@ -80,7 +80,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
     @Autowired
     BatteryModelService batteryModelService;
-    
+
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
     
     
@@ -442,17 +442,15 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         /*
          * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
-        if (Objects.nonNull(electricityBattery.getPower()) && Objects.equals(electricityBattery.getPhysicsStatus(),
-                ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) && Objects.nonNull(power)
-                //                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
-                && (electricityBattery.getPower() - (power * 100)) >= 50) {
+        if (Objects.nonNull(electricityBattery.getPower())
+                && Objects.nonNull(power)
+                && (Math.abs(electricityBattery.getPower() - (power * 100))) >= 50) {
 
             //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过50，则power仍设置为原来的值
             power = electricityBattery.getPower() / 100.0;
-            
-            log.warn(
-                    "ELE BATTERY REPORT WARN! battery power is changing too much,reportPower={},originalPower={},sessionId={}，sn={}",
-                    eleBatteryVO.getPower(), power, sessionId,electricityBattery.getSn());
+
+            log.warn("ELE BATTERY REPORT WARN! battery power is changing too much,sn={},originalPower={},sessionId={}",
+                    electricityBattery.getSn(), electricityBattery.getPower(), sessionId);
             return power;
         }
         
