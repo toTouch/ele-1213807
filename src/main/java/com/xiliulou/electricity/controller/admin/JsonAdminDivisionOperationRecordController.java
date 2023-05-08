@@ -81,6 +81,21 @@ public class JsonAdminDivisionOperationRecordController {
         return  R.ok(divisionAccountOperationRecordService.queryList(divisionAccountOperationRecord));
     }
 
+
+    /**
+     * 对分账的操作总记录数
+     * @param name
+     * @param cabinetOperatorRate
+     * @param cabinetFranchiseeRate
+     * @param cabinetStoreRate
+     * @param nonCabOperatorRate
+     * @param nonCabFranchiseeRate
+     * @param tenantId
+     * @param accountMemberCard
+     * @param createTime
+     * @param updateTime
+     * @return
+     */
     @GetMapping(value = "/admin/division/account/record/count")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "cabinetOperatorRate", required = false) BigDecimal cabinetOperatorRate,
