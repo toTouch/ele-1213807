@@ -1,28 +1,35 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 
-/**
- * (DivisionAccountOperationRecord)ʵ����
- *
- * @author zyb
- * @since 2023-05-08 13:38:49
- */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_division_account_operation_record")
-@Accessors(chain = true)
-public class DivisionAccountOperationRecord {
+public class DivisionAccountOperationRecordVO {
+    /**
+     * 用户绑定的用户名
+     */
+    private String userName;
+
+    /**
+     * 分账配置id
+     */
+    private Integer divisionAccountId;
+
+    /**
+     * 分账层级
+     */
+    private Integer hierarchy;
+
+    /**
+     * 分账状态
+     */
+    private Integer status;
+
+    /**
+     * 分账类型
+     */
+    private Integer type;
 
     private Long size;
 
@@ -31,11 +38,6 @@ public class DivisionAccountOperationRecord {
      * id
      */
     private Long id;
-
-    /**
-     * 分账配置id
-     */
-    private Integer divisionAccountId;
 
     /**
      * 修改人id
@@ -81,8 +83,4 @@ public class DivisionAccountOperationRecord {
      * json格式的分账套餐
      */
     private String accountMemberCard;
-
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
 }

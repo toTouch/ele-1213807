@@ -6,6 +6,7 @@
                id="DivisionAccountOperationRecordMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="divisionAccountId" column="divisionAccountId" jdbcType="INTEGER"/>
         <result property="name" column="NAME" jdbcType="VARCHAR"/>
         <result property="cabinetOperatorRate" column="cabinet_operator_rate" jdbcType="NUMERIC"/>
         <result property="cabinetFranchiseeRate" column="cabinet_franchisee_rate" jdbcType="NUMERIC"/>
@@ -22,6 +23,7 @@
     <select id="queryById" resultMap="DivisionAccountOperationRecordMap">
         select id,
                uid,
+               division_account_id,
                NAME,
                cabinet_operator_rate,
                cabinet_franchisee_rate,
@@ -40,6 +42,7 @@
     <select id="queryAllByLimit" resultMap="DivisionAccountOperationRecordMap">
         select id,
                uid,
+               division_account_id,
                NAME,
                cabinet_operator_rate,
                cabinet_franchisee_rate,
@@ -56,7 +59,7 @@
     <!--ͨ��ʵ����Ϊɸѡ������ѯ-->
     <select id="queryAll" resultMap="DivisionAccountOperationRecordMap">
         select
-        id, uid, NAME, cabinet_operator_rate, cabinet_franchisee_rate, cabinet_store_rate, non_cab_operator_rate,
+        id, uid, division_account_id, NAME, cabinet_operator_rate, cabinet_franchisee_rate, cabinet_store_rate, non_cab_operator_rate,
         non_cab_franchisee_rate, tenant_id, create_time, update_time, account_member_card
         from t_division_account_operation_record
         <where>
@@ -65,6 +68,9 @@
             </if>
             <if test="uid != null">
                 and uid = #{uid}
+            </if>
+            <if test="divisionAccountId != null">
+                and division_account_id = #{divisionAccountId}
             </if>
             <if test=" name != null and name != ''">
                 and NAME = #{name}
@@ -101,11 +107,11 @@
 
     <!--����������-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_division_account_operation_record(uid,NAME, cabinet_operator_rate, cabinet_franchisee_rate,
+        insert into t_division_account_operation_record(uid,division_account_id,NAME,cabinet_operator_rate, cabinet_franchisee_rate,
                                                         cabinet_store_rate, non_cab_operator_rate,
                                                         non_cab_franchisee_rate, tenant_id, create_time, update_time,
                                                         account_member_card)
-        values (#{uid},#{name}, #{cabinetOperatorRate}, #{cabinetFranchiseeRate}, #{cabinetStoreRate}, #{nonCabOperatorRate},
+        values (#{uid},#{divisionAccountId},#{name}, #{cabinetOperatorRate}, #{cabinetFranchiseeRate}, #{cabinetStoreRate}, #{nonCabOperatorRate},
                 #{nonCabFranchiseeRate}, #{tenantId}, #{createTime}, #{updateTime}, #{accountMemberCard})
     </insert>
 
@@ -115,6 +121,9 @@
         <set>
             <if test="uid != null and uid != ''">
                 uid = #{uid},
+            </if>
+            <if test="divisionAccountId != null and divisionAccountId != ''">
+                and division_account_id = #{divisionAccountId}
             </if>
             <if test="name != null and name != ''">
                 NAME = #{name},
@@ -157,10 +166,11 @@
         where id = #{id}
     </delete>
 
-    <!--查询指定行数据-->
+    <!--查询数据列表-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.DivisionAccountOperationRecord">
         select id,
         uid,
+        division_account_id,
         NAME,
         cabinet_operator_rate,
         cabinet_franchisee_rate,
@@ -175,6 +185,9 @@
         where
         <if test="query.tenantId != null">
             tenant_id = #{query.tenantId},
+        </if>
+        <if test="divisionAccountId != null">
+            and division_account_id = #{divisionAccountId}
         </if>
         <if test="query.name != null and query.name != ''">
             and tenant_id = #{query.tenantId}
@@ -192,12 +205,49 @@
             and non_cab_operator_rate = #{query.nonCabOperatorRate}
         </if>
         <if test="query.nonCabFranchiseeRate != null">
+            and non_cab_franchisee_rate = #{query.nonCabFranchiseeRate}
+        </if>
+        <if test="query.createTime != null">
+            and create_time = #{query.createTime}
+        </if>
+        order by create_time desc
+        limit #{offset}, #{size}
+
+    </select>
+
+    <!--查询数据总数-->
+    <select id="queryCount" resultType="int">
+        select
+        count(1)
+        from t_division_account_operation_record
+        where
+        <if test="tenantId != null">
+            tenant_id = #{tenantId},
+        </if>
+        <if test="divisionAccountId != null">
+            and division_account_id = #{divisionAccountId}
+        </if>
+        <if test="name != null and name != ''">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="cabinetOperatorRate != null">
+            and cabinet_operator_rate = #{cabinetOperatorRate}
+        </if>
+        <if test="cabinetFranchiseeRate != null">
+            and cabinet_franchisee_rate = #{cabinetFranchiseeRate}
+        </if>
+        <if test="cabinetStoreRate != null">
+            and cabinet_store_rate = #{cabinetStoreRate}
+        </if>
+        <if test="nonCabOperatorRate != null">
+            and non_cab_operator_rate = #{nonCabOperatorRate}
+        </if>
+        <if test="nonCabFranchiseeRate != null">
             and non_cab_franchisee_rate = #{nonCabFranchiseeRate}
         </if>
         <if test="query.createTime != null">
             and create_time = #{createTime}
         </if>
-
     </select>
 
 </mapper>

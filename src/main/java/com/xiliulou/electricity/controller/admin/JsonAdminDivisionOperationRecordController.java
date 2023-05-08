@@ -81,5 +81,38 @@ public class JsonAdminDivisionOperationRecordController {
         return  R.ok(divisionAccountOperationRecordService.queryList(divisionAccountOperationRecord));
     }
 
+    @GetMapping(value = "/admin/division/account/record/count")
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "cabinetOperatorRate", required = false) BigDecimal cabinetOperatorRate,
+                        @RequestParam(value = "cabinetFranchiseeRate", required = false) BigDecimal cabinetFranchiseeRate,
+                        @RequestParam(value = "cabinetStoreRate", required = false) BigDecimal cabinetStoreRate,
+                        @RequestParam(value = "nonCabOperatorRate", required = false) BigDecimal nonCabOperatorRate,
+                        @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
+                        @RequestParam(value = "tenantId") Integer tenantId,
+                        @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
+                        @RequestParam(value = "createTime", required = false) Long createTime,
+                        @RequestParam(value = "updateTime", required = false) Long updateTime){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        DivisionAccountOperationRecord divisionAccountOperationRecord = DivisionAccountOperationRecord.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .name(name)
+                .cabinetOperatorRate(cabinetOperatorRate)
+                .cabinetFranchiseeRate(cabinetFranchiseeRate)
+                .cabinetStoreRate(cabinetStoreRate)
+                .nonCabFranchiseeRate(nonCabFranchiseeRate)
+                .nonCabOperatorRate(nonCabOperatorRate)
+                .createTime(createTime)
+                .updateTime(updateTime)
+                .accountMemberCard(accountMemberCard).build();
+
+        return  R.ok(divisionAccountOperationRecordService.queryCount(divisionAccountOperationRecord));
+    }
 
 }

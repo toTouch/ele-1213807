@@ -263,6 +263,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
         DivisionAccountOperationRecord divisionAccountOperationRecord = new DivisionAccountOperationRecord();
         divisionAccountOperationRecord.setName(divisionAccountConfigQuery.getName())
+                .setDivisionAccountId(divisionAccountConfigQuery.getId().intValue())
                 .setCabinetOperatorRate(divisionAccountConfigQuery.getOperatorRate())
                 .setCabinetFranchiseeRate(divisionAccountConfigQuery.getFranchiseeRate())
                 .setCabinetStoreRate(divisionAccountConfigQuery.getStoreRate())

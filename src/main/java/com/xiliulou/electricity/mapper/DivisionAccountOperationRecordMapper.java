@@ -72,4 +72,6 @@ public interface DivisionAccountOperationRecordMapper extends BaseMapper<Divisio
      */
     List <DivisionAccountOperationRecord> queryList(@Param("query") DivisionAccountOperationRecord accountOperationRecord);
 
+    Integer queryCount (DivisionAccountOperationRecord operationRecord);
+
 }

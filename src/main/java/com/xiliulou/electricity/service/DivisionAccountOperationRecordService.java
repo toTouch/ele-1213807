@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.DivisionAccountOperationRecord;
+import com.xiliulou.electricity.vo.DivisionAccountOperationRecordVO;
 
 import java.util.List;
 
@@ -62,6 +63,9 @@ public interface DivisionAccountOperationRecordService {
      */
     Boolean deleteById(Long id);
 
-    R queryList (DivisionAccountOperationRecord divisionAccountOperationRecord);
+    List<DivisionAccountOperationRecordVO> queryList (DivisionAccountOperationRecord divisionAccountOperationRecord);
+
+
+    Integer queryCount(DivisionAccountOperationRecord operationRecord);
 
 }
