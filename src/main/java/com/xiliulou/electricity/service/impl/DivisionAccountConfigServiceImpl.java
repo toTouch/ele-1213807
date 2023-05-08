@@ -395,7 +395,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
 
         //已启用套餐
         List<Long> enableRefIds = divisionAccountConfigRefVOS.stream().map(DivisionAccountConfigRefVO::getRefId).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, query.getMembercards()))) {
+        if (CollectionUtils.isNotEmpty(CollectionUtils.intersection(enableRefIds, query.getCarModels()))) {
             return Triple.of(false, "", "车辆型号分帐配置已存在");
         }
 
