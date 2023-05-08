@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
@@ -22,17 +23,17 @@ import java.util.List;
 public interface ElectricityBatteryService extends IService<ElectricityBattery> {
 
 
-    R saveElectricityBattery(ElectricityBattery electricityBattery);
+    R saveElectricityBattery(EleBatteryQuery electricityBattery);
 
     Integer update(ElectricityBattery electricityBattery);
     
-    R updateForAdmin(ElectricityBattery electricityBattery);
+    R updateForAdmin(EleBatteryQuery electricityBattery);
 
     R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
     R queryById(Long electricityBatteryId);
 
-    R deleteElectricityBattery(Long id);
+    R deleteElectricityBattery(Long id, Integer isNeedSync);
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
@@ -90,12 +91,11 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     Integer isFranchiseeBindBattery(Long id,Integer tenantId);
 
-    Triple<Boolean, String, Object> selectUserLatestBatteryType();
-
     Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn);
 
     Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds);
 
-
     Integer isUserBindBattery(Long uid, Integer tenantId);
+
+    Integer insertBatch(List<ElectricityBattery> saveList);
 }

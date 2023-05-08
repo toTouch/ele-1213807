@@ -75,4 +75,6 @@ public interface FranchiseeService {
     Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryType);
 
     List<SearchVo> search(FranchiseeQuery franchiseeQuery);
+
+    Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId);
 }

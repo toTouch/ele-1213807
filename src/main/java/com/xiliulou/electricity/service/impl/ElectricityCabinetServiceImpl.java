@@ -217,6 +217,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     BatteryGeoService batteryGeoService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
     
     /**
      * 通过ID查询单条数据从缓存
@@ -493,13 +496,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Slave
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
         if (ObjectUtil.isEmpty(electricityCabinetList)) {
             return R.ok();
         }
+    
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
 
@@ -629,7 +632,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @return
      */
     @Override
-    @DS("slave_1")
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
                 .showInfoByDistance(electricityCabinetQuery);
@@ -723,7 +725,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
      * @param electricityCabinetQuery
      * @return
      */
-    @Slave
     @Override
     public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper
@@ -2266,12 +2267,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             batteryGeoService.insertOrUpdate(batteryGeo);
         }
         
-        //电池上报是否有其他信息
-        if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
-            BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
-            batteryOtherProperties.setBatteryName(batteryName);
-            batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
-        }
+        //电池上报是否有其他信息,只处理电量
+//        if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
+//            BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
+//            batteryOtherProperties.setBatteryName(batteryName);
+//            batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+//        }
         
         return R.ok();
     }
@@ -2875,9 +2876,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         Double fullyCharged = electricityCabinet.getFullyCharged();
         
-        //        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
-                .queryAllBoxByElectricityCabinetId(electricityCabinetId);
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
             
@@ -2889,15 +2888,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (!Objects.isNull(electricityBattery)) {
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
-                    electricityCabinetBoxVO.setExchange(
-                            electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES
-                                    : ElectricityCabinetBoxVO.EXCHANGE_NO);
-                    //                    if (Objects.nonNull(electricityBattery.getModel())) {
-                    //                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
-                    //                    }
+                    electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES: ElectricityCabinetBoxVO.EXCHANGE_NO);
+
                     if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())) {
-                        electricityCabinetBoxVO.setBatteryType(
-                                BatteryConstant.acquireBattery(electricityCabinetBoxVO.getBatteryType()).toString());
+                        electricityCabinetBoxVO.setBatteryType(batteryModelService.acquireBatteryModel(electricityCabinetBoxVO.getBatteryType(),electricityCabinet.getTenantId()).toString());
                     }
                 }
                 
@@ -2906,9 +2900,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             //排序
             if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
-                resultList = electricityCabinetBoxVOList.stream()
-                        .sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo())))
-                        .collect(Collectors.toList());
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
             }
             
         }
@@ -3864,7 +3856,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }).collect(Collectors.toList());
     }
-
+    
+    @Override
+    public R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList) {
+        List<ElectricityCabinetBatchOperateVo> electricityCabinetList = electricityCabinetMapper
+                .batchOperateList(size, offset, name, eleIdList, TenantContextHolder.getTenantId());
+        if (ObjectUtil.isEmpty(electricityCabinetList)) {
+            return R.ok(new ArrayList<>());
+        }
+        
+        return R.ok(electricityCabinetList);
+    }
+    
+    
     /**
      * 通过云端下发命令更新换电标准
      */

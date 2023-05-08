@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserRoleMapper;
@@ -50,7 +51,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 	
 
 	@Override
-	@DS("slave_1")
+	@Slave
 	public List<Role> queryByUid(Long uid) {
 		List<UserRole> userRoles = this.userRoleMapper.selectList(new LambdaQueryWrapper<UserRole>().eq(UserRole::getUid, uid));
 		if (!DataUtil.collectionIsUsable(userRoles)) {
@@ -69,7 +70,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 	}
 
 	@Override
-	@DS("slave_1")
+	@Slave
 	public boolean existsRole(Long id) {
 		Integer count = userRoleMapper.selectCount(new LambdaQueryWrapper<UserRole>().eq(UserRole::getRoleId, id));
 		return count != null && count > 0;

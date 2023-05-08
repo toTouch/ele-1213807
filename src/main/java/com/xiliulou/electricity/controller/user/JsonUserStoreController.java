@@ -111,8 +111,7 @@ public class JsonUserStoreController {
                 .offset(offset)
                 .lon(lon).lat(lat)
                 .franchiseeId(franchiseeId)
-                .tenantId(TenantContextHolder.getTenantId())
-                .address(address).build();
+                .tenantId(TenantContextHolder.getTenantId()).address(address).build();
 
         return R.ok(storeService.selectByAddress(storeQuery));
     }

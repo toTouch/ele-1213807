@@ -14,6 +14,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -358,7 +359,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
         List<User> userList = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime, tenantId);
         if (CollectionUtils.isEmpty(userList)) {

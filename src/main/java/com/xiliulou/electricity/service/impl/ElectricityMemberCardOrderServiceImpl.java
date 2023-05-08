@@ -17,8 +17,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
-import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.BatteryConstant;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -153,6 +152,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+    
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
+
+    @Autowired
+    BatteryModelService batteryModelService;
 
     /**
      * 创建月卡订单
@@ -221,6 +229,34 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("100241", "当前套餐暂停中，请先启用套餐");
+        }
+    
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBattery)) {
+            log.error("ELECTRICITY  ERROR! not found userBattery,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+    
+        //是否开启购买保险（是进入）
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            //保险是否强制购买（是进入）
+            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
+                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
+                            userInfo.getTenantId());
+            long now = System.currentTimeMillis();
+            if (Objects.nonNull(franchiseeInsurance) && Objects
+                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+                //用户是否没有保险信息或已过期（是进入）
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(insuranceUserInfo) || Objects
+                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
+                    return R.fail("100309", "未购买保险或保险已过期");
+                }
+            }
         }
 
         Long now = System.currentTimeMillis();
@@ -657,7 +693,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
         if (CollectionUtils.isEmpty(electricityMemberCardOrderVOList)) {
@@ -704,6 +740,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     }
 
+    @Slave
     @Override
     public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
 
@@ -2747,7 +2784,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Integer modelType = franchisee.getModelType();
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-            Integer model = BatteryConstant.acquireBattery(userBattery.getBatteryType());
+            Integer model = batteryModelService.acquireBatteryModel(userBattery.getBatteryType(), userInfo.getTenantId());
             List<ModelBatteryDeposit> list = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : list) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {

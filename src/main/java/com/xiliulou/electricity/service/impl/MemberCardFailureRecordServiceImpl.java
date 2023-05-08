@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
  */
 @Service("memberCardFailureRecordService")
 @Slf4j
+@Deprecated
 public class MemberCardFailureRecordServiceImpl implements MemberCardFailureRecordService {
 
 
@@ -298,35 +299,7 @@ public class MemberCardFailureRecordServiceImpl implements MemberCardFailureReco
     @Override
     public R queryFailureMemberCard(Long uid, Integer offset, Integer size) {
 
-        List<MemberCardFailureRecord> memberCardFailureRecordList = memberCardFailureRecordMapper.queryFailureMemberCard(uid, TenantContextHolder.getTenantId(), offset, size);
-        if (CollectionUtils.isEmpty(memberCardFailureRecordList)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
-        List<MemberCardFailureRecordVO> failureRecords = memberCardFailureRecordList.parallelStream().map(item -> {
-            MemberCardFailureRecordVO memberCardFailureRecordVO = new MemberCardFailureRecordVO();
-            BeanUtils.copyProperties(item, memberCardFailureRecordVO);
-            //换电失效套餐
-            if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY, item.getType())) {
-
-                if (StringUtils.isNotBlank(item.getBatteryType())) {
-                    Integer batteryType = BatteryConstant.acquireBattery(item.getBatteryType());
-                    memberCardFailureRecordVO.setBatteryType(batteryType.toString());
-                }
-            }
-
-
-            //租车失效套餐
-            if (Objects.equals(MemberCardFailureRecord.FAILURE_TYPE_FOR_RENT_CAR, item.getType())) {
-                Store store = storeService.queryByIdFromCache(item.getStoreId());
-                if (Objects.nonNull(store)) {
-                    memberCardFailureRecordVO.setStoreName(store.getName());
-                }
-            }
-
-            return memberCardFailureRecordVO;
-        }).collect(Collectors.toList());
-        return R.ok(failureRecords);
+        return R.ok();
     }
 
     @Override

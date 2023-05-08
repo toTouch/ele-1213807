@@ -852,4 +852,39 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     public R getUploadCabinetFileSign() {
         return electricityCabinetService.acquireIdcardFileSign();
     }
+    
+    @GetMapping(value = "/admin/electricityCabinet/batchOperate/list")
+    public R batchOperateList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "name", required = false) String name) {
+        if (Objects.isNull(size) || size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELE ERROR! not found user");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+        
+        return electricityCabinetService.batchOperateList(size, offset, name, eleIdList);
+    }
 }

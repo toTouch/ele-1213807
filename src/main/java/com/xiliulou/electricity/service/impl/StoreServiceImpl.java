@@ -367,7 +367,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
         if (CollectionUtils.isEmpty(storeVOList)) {
@@ -491,6 +491,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Slave
     public Store queryByUid(Long uid) {
         return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid, uid).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
@@ -685,8 +686,8 @@ public class StoreServiceImpl implements StoreService {
     }
     
     @Override
-    public R storeSearch(Long size, Long offset, String name) {
-        List<SearchVo> voList = storeMapper.storeSearch(size, offset, name);
+    public R storeSearch(Long size, Long offset, String name , Integer tenantId) {
+        List<SearchVo> voList = storeMapper.storeSearch(size, offset, name , tenantId);
         return R.ok(voList);
     }
     

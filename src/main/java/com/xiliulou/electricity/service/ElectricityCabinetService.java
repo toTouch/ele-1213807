@@ -177,4 +177,6 @@ public interface ElectricityCabinetService {
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
 
     CabinetBatteryVO batteryStatistics(Long id);
+
+    R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
 }
