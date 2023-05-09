@@ -559,13 +559,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 item.setId(e.getId());
                 
                 if (result) {
-//                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                     item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(true, item);
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                 } else {
-//                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                     item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(false, item);
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
