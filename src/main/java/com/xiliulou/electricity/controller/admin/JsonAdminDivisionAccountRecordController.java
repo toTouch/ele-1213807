@@ -131,6 +131,7 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
                 .size(size)
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
+                .divisionAccountConfigId(divisionAccountConfigId)
                 .membercardName(membercardName)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -157,6 +158,7 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
 
         DivisionAccountRecordQuery query = DivisionAccountRecordQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
+                .divisionAccountConfigId(divisionAccountConfigId)
                 .membercardName(membercardName)
                 .beginTime(beginTime)
                 .endTime(endTime)

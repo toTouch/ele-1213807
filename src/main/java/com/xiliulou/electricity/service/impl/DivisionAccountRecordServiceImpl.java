@@ -243,6 +243,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setOperatorRate(operatorRate);
                 divisionAccountRecord.setFranchiseeRate(franchiseeRate);
                 divisionAccountRecord.setStoreRate(storeRate);
+                divisionAccountRecord.setSource(batteryMemberCardOrder.getSource());
                 divisionAccountRecord.setTenantId(batteryMemberCardOrder.getTenantId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
