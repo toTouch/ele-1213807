@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.DivisionAccountOperationRecord;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.DivisionAccountOperationRecordQuery;
 import com.xiliulou.electricity.service.DivisionAccountOperationRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -26,26 +27,11 @@ public class JsonAdminDivisionOperationRecordController {
     /**
      * 对分账的操作记录
      *
-     * @param name
-     * @param cabinetOperatorRate
-     * @param cabinetFranchiseeRate
-     * @param cabinetStoreRate
-     * @param nonCabOperatorRate
-     * @param nonCabFranchiseeRate
-     * @param accountMemberCard
      * @return
      */
-    @GetMapping(value = "/admin/division/account/record/list")
+    @GetMapping(value = "/admin/division/account/operation/list")
     public R insertDivisionAccountRecord(@RequestParam("size") long size, @RequestParam("offset") long offset,
                                          @RequestParam(value = "name", required = false) String name,
-                                         @RequestParam(value = "cabinetOperatorRate", required = false) BigDecimal cabinetOperatorRate,
-                                         @RequestParam(value = "cabinetFranchiseeRate", required = false) BigDecimal cabinetFranchiseeRate,
-                                         @RequestParam(value = "cabinetStoreRate", required = false) BigDecimal cabinetStoreRate,
-                                         @RequestParam(value = "nonCabOperatorRate", required = false) BigDecimal nonCabOperatorRate,
-                                         @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
-                                         @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
-                                         @RequestParam(value = "createTime", required = false) Long createTime,
-                                         @RequestParam(value = "updateTime", required = false) Long updateTime,
                                          @RequestParam(value = "divisionAccountId") Integer divisionAccountId) {
 
         if (size < 0 || size > 50) {
@@ -63,21 +49,13 @@ public class JsonAdminDivisionOperationRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        DivisionAccountOperationRecord divisionAccountOperationRecord = DivisionAccountOperationRecord.builder()
+        DivisionAccountOperationRecordQuery divisionAccountOperationRecord = DivisionAccountOperationRecordQuery.builder()
                 .size(size)
                 .offset(offset)
-                .tenantId(TenantContextHolder.getTenantId())
                 .name(name)
-                .cabinetOperatorRate(cabinetOperatorRate)
-                .cabinetFranchiseeRate(cabinetFranchiseeRate)
-                .cabinetStoreRate(cabinetStoreRate)
-                .nonCabFranchiseeRate(nonCabFranchiseeRate)
-                .nonCabOperatorRate(nonCabOperatorRate)
                 .tenantId(TenantContextHolder.getTenantId())
-                .createTime(createTime)
-                .updateTime(updateTime)
                 .divisionAccountId(divisionAccountId)
-                .accountMemberCard(accountMemberCard).build();
+                .build();
 
         return  R.ok(divisionAccountOperationRecordService.queryList(divisionAccountOperationRecord));
     }
@@ -85,27 +63,12 @@ public class JsonAdminDivisionOperationRecordController {
 
     /**
      * 对分账的操作总记录数
-     * @param name
-     * @param cabinetOperatorRate
-     * @param cabinetFranchiseeRate
-     * @param cabinetStoreRate
-     * @param nonCabOperatorRate
-     * @param nonCabFranchiseeRate
-     * @param accountMemberCard
-     * @param createTime
-     * @param updateTime
+     *
      * @return
      */
-    @GetMapping(value = "/admin/division/account/record/queryCount")
+    @GetMapping(value = "/admin/division/account/operation/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "cabinetOperatorRate", required = false) BigDecimal cabinetOperatorRate,
-                        @RequestParam(value = "cabinetFranchiseeRate", required = false) BigDecimal cabinetFranchiseeRate,
-                        @RequestParam(value = "cabinetStoreRate", required = false) BigDecimal cabinetStoreRate,
-                        @RequestParam(value = "nonCabOperatorRate", required = false) BigDecimal nonCabOperatorRate,
-                        @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
                         @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
-                        @RequestParam(value = "createTime", required = false) Long createTime,
-                        @RequestParam(value = "updateTime", required = false) Long updateTime,
                         @RequestParam(value = "divisionAccountId") Integer divisionAccountId){
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -115,19 +78,12 @@ public class JsonAdminDivisionOperationRecordController {
         if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        DivisionAccountOperationRecord divisionAccountOperationRecord = DivisionAccountOperationRecord.builder()
+        DivisionAccountOperationRecordQuery divisionAccountOperationRecord = DivisionAccountOperationRecordQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .name(name)
-                .cabinetOperatorRate(cabinetOperatorRate)
-                .cabinetFranchiseeRate(cabinetFranchiseeRate)
-                .cabinetStoreRate(cabinetStoreRate)
-                .nonCabFranchiseeRate(nonCabFranchiseeRate)
-                .nonCabOperatorRate(nonCabOperatorRate)
                 .tenantId(TenantContextHolder.getTenantId())
-                .createTime(createTime)
-                .updateTime(updateTime)
                 .divisionAccountId(divisionAccountId)
-                .accountMemberCard(accountMemberCard).build();
+                .build();
 
         return  R.ok(divisionAccountOperationRecordService.queryCount(divisionAccountOperationRecord));
     }

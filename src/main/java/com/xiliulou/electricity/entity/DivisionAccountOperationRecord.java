@@ -24,9 +24,6 @@ import java.math.BigDecimal;
 @Accessors(chain = true)
 public class DivisionAccountOperationRecord {
 
-    private Long size;
-
-    private Long offset;
     /**
      * id
      */

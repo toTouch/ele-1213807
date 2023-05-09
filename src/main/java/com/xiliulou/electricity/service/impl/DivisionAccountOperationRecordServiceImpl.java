@@ -1,32 +1,31 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
-import com.xiliulou.core.web.R;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
 import com.xiliulou.electricity.entity.DivisionAccountConfig;
 import com.xiliulou.electricity.entity.DivisionAccountOperationRecord;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.DivisionAccountOperationRecordMapper;
+import com.xiliulou.electricity.query.DivisionAccountOperationRecordQuery;
 import com.xiliulou.electricity.service.DivisionAccountConfigService;
 import com.xiliulou.electricity.service.DivisionAccountOperationRecordService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.vo.DivisionAccountOperationRecordVO;
-import com.xiliulou.electricity.vo.UserInfoVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (DivisionAccountOperationRecord)�����ʵ����
@@ -46,47 +45,25 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
     @Autowired
     private DivisionAccountConfigService divisionAccountConfigService;
 
-    /**
-     * ͨ��ID��ѯ�������ݴ�DB
-     *
-     * @param id ����
-     * @return ʵ������
-     */
+    @Autowired
+    private FranchiseeService franchiseeService;
+
     @Override
     public DivisionAccountOperationRecord queryByIdFromDB(Long id) {
         return this.divisionAccountOperationRecordMapper.queryById(id);
     }
 
-    /**
-     * ͨ��ID��ѯ�������ݴӻ���
-     *
-     * @param id ����
-     * @return ʵ������
-     */
     @Override
     public DivisionAccountOperationRecord queryByIdFromCache(Long id) {
         return null;
     }
 
 
-    /**
-     * ��ѯ��������
-     *
-     * @param offset ��ѯ��ʼλ��
-     * @param limit  ��ѯ����
-     * @return �����б�
-     */
     @Override
     public List<DivisionAccountOperationRecord> queryAllByLimit(int offset, int limit) {
         return this.divisionAccountOperationRecordMapper.queryAllByLimit(offset, limit);
     }
 
-    /**
-     * ��������
-     *
-     * @param divisionAccountOperationRecord ʵ������
-     * @return ʵ������
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DivisionAccountOperationRecord insert(DivisionAccountOperationRecord divisionAccountOperationRecord) {
@@ -94,33 +71,21 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
         return divisionAccountOperationRecord;
     }
 
-    /**
-     * �޸�����
-     *
-     * @param divisionAccountOperationRecord ʵ������
-     * @return ʵ������
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(DivisionAccountOperationRecord divisionAccountOperationRecord) {
         return this.divisionAccountOperationRecordMapper.update(divisionAccountOperationRecord);
-
     }
 
-    /**
-     * ͨ������ɾ������
-     *
-     * @param id ����
-     * @return �Ƿ�ɹ�
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.divisionAccountOperationRecordMapper.deleteById(id) > 0;
     }
 
+    @Slave
     @Override
-    public List<DivisionAccountOperationRecordVO> queryList(DivisionAccountOperationRecord divisionAccountOperationRecord) {
+    public List<DivisionAccountOperationRecordVO> queryList(DivisionAccountOperationRecordQuery divisionAccountOperationRecord) {
 
         List<DivisionAccountOperationRecord> divisionAccountOperationRecords = divisionAccountOperationRecordMapper.queryList(divisionAccountOperationRecord);
         if (CollectionUtils.isEmpty(divisionAccountOperationRecords)) {
@@ -128,25 +93,48 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
         }
 
         return divisionAccountOperationRecords.parallelStream().map(item -> {
-            DivisionAccountOperationRecordVO divisionAccountOperationRecordVO = new DivisionAccountOperationRecordVO();
-            BeanUtils.copyProperties(item, divisionAccountOperationRecordVO);
+            DivisionAccountOperationRecordVO recordVO = new DivisionAccountOperationRecordVO();
+            recordVO.setId(item.getId());
+            recordVO.setName(item.getName());
+            recordVO.setOperatorRate(item.getCabinetOperatorRate());
+            recordVO.setOperatorRateOther(item.getNonCabOperatorRate());
+            recordVO.setFranchiseeRate(item.getCabinetFranchiseeRate());
+            recordVO.setFranchiseeRateOther(item.getNonCabFranchiseeRate());
+            recordVO.setStoreRate(item.getCabinetStoreRate());
+            recordVO.setCreateTime(item.getCreateTime());
+            recordVO.setUpdateTime(item.getUpdateTime());
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            divisionAccountOperationRecordVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getUserName() : "");
-
+            recordVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
 
             DivisionAccountConfig divisionAccountConfig = divisionAccountConfigService.queryByIdFromCache(item.getDivisionAccountId().longValue());
-            divisionAccountOperationRecordVO.setHierarchy(divisionAccountConfig.getHierarchy());
-            divisionAccountOperationRecordVO.setStatus(divisionAccountConfig.getStatus());
-            divisionAccountOperationRecordVO.setType(divisionAccountConfig.getType());
-            return divisionAccountOperationRecordVO;
+            recordVO.setHierarchy(Objects.nonNull(divisionAccountConfig) ? divisionAccountConfig.getHierarchy() : -1);
+            recordVO.setStatus(Objects.nonNull(divisionAccountConfig) ? divisionAccountConfig.getStatus() : -1);
+            recordVO.setType(Objects.nonNull(divisionAccountConfig) ? divisionAccountConfig.getType() : -1);
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(Objects.nonNull(divisionAccountConfig) ? divisionAccountConfig.getFranchiseeId() : 0L);
+            recordVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+
+            if (StringUtils.isBlank(item.getAccountMemberCard())) {
+                return recordVO;
+            }
+
+            List<EleDivisionAccountOperationRecordDTO> list = JsonUtil.fromJsonArray(item.getAccountMemberCard(), EleDivisionAccountOperationRecordDTO.class);
+            if (CollectionUtils.isEmpty(list)) {
+                return recordVO;
+            }
+
+            List<String> membercardNames = list.stream().map(EleDivisionAccountOperationRecordDTO::getName).collect(Collectors.toList());
+            recordVO.setMembercardNames(membercardNames);
+
+            return recordVO;
         }).collect(Collectors.toList());
     }
 
 
-    @Override
     @Slave
-    public Integer queryCount(DivisionAccountOperationRecord operationRecord) {
-        return this.divisionAccountOperationRecordMapper.queryCount(operationRecord);
+    @Override
+    public Integer queryCount(DivisionAccountOperationRecordQuery divisionAccountOperationRecord) {
+        return this.divisionAccountOperationRecordMapper.queryCount(divisionAccountOperationRecord);
     }
 }

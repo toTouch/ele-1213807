@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.DivisionAccountOperationRecord;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.query.DivisionAccountOperationRecordQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -70,8 +71,8 @@ public interface DivisionAccountOperationRecordMapper extends BaseMapper<Divisio
     /**
      * @return 对象列表
      */
-    List <DivisionAccountOperationRecord> queryList(@Param("query") DivisionAccountOperationRecord accountOperationRecord);
+    List <DivisionAccountOperationRecord> queryList(DivisionAccountOperationRecordQuery divisionAccountOperationRecord);
 
-    Integer queryCount (DivisionAccountOperationRecord operationRecord);
+    Integer queryCount (DivisionAccountOperationRecordQuery divisionAccountOperationRecord);
 
 }

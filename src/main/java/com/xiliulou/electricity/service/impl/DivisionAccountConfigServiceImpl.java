@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
@@ -58,6 +59,8 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
     private ElectricityCarModelService carModelService;
     @Autowired
     private DivisionAccountBatteryMembercardService divisionAccountBatteryMembercardService;
+    @Autowired
+    private DivisionAccountOperationRecordService divisionAccountOperationRecordService;
 
     @Slave
     @Override
@@ -227,26 +230,20 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Boolean.FALSE.equals(verifyCarModelResult.getLeft())) {
             return verifyCarModelResult;
         }
+
+        List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordList =Lists.newArrayList();
+
         //保存
         if (Objects.equals(divisionAccountConfigQuery.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
             List<DivisionAccountBatteryMembercard> divisionAccountRefIdList = buildDivisionAccountBatteryMembercardList(divisionAccountConfigQuery, divisionAccountConfig);
             divisionAccountBatteryMembercardService.batchInsert(divisionAccountRefIdList);
-
-        }
-
-        List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordList =Lists.newArrayList();
-        //层级
-        if(Objects.equals(divisionAccountConfigQuery.getType(),DivisionAccountConfig.TYPE_BATTERY)){
             divisionAccountOperationRecordList = buildDivisionAccountOperationRecordMembercardList(divisionAccountConfigQuery);
         }
-        if(Objects.equals(divisionAccountConfigQuery.getType(),DivisionAccountConfig.TYPE_CAR)){
-            divisionAccountOperationRecordList = bulidEleDivisionAccountOperationRecordList(divisionAccountConfigQuery);
-        }
-
 
         if (Objects.equals(divisionAccountConfigQuery.getType(), DivisionAccountConfig.TYPE_CAR)) {
             List<DivisionAccountBatteryMembercard> divisionAccountRefIdList = buildDivisionAccountCarModelList(divisionAccountConfigQuery, divisionAccountConfig);
             divisionAccountBatteryMembercardService.batchInsert(divisionAccountRefIdList);
+            divisionAccountOperationRecordList = bulidEleDivisionAccountOperationRecordList(divisionAccountConfigQuery);
         }
 
         DivisionAccountConfig divisionAccountConfigUpdate = new DivisionAccountConfig();
@@ -273,7 +270,8 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
                 .setTenantId(divisionAccountConfig.getTenantId())
                 .setCreateTime(System.currentTimeMillis())
                 .setUpdateTime(System.currentTimeMillis())
-                .setAccountMemberCard(JSONUtil.toJsonStr(divisionAccountOperationRecordList));
+                .setAccountMemberCard(JsonUtil.toJson(divisionAccountOperationRecordList));
+        divisionAccountOperationRecordService.insert(divisionAccountOperationRecord);
         return Triple.of(true, null, null);
     }
 

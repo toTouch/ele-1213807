@@ -171,7 +171,7 @@
         select id,
         uid,
         division_account_id,
-        NAME,
+        name,
         cabinet_operator_rate,
         cabinet_franchisee_rate,
         cabinet_store_rate,
@@ -183,35 +183,14 @@
         account_member_card
         from t_division_account_operation_record
         where
-        <if test="query.tenantId != null">
-            tenant_id = #{query.tenantId}
+        <if test="tenantId != null">
+            tenant_id = #{tenantId}
         </if>
-        <if test="query.divisionAccountId != null">
-            and division_account_id = #{query.divisionAccountId}
+        <if test="divisionAccountId != null">
+            and division_account_id = #{divisionAccountId}
         </if>
-        <if test="query.name != null and query.name != ''">
-            and tenant_id = #{query.tenantId}
-        </if>
-        <if test="query.cabinetOperatorRate != null">
-            and cabinet_operator_rate = #{query.cabinetOperatorRate}
-        </if>
-        <if test="query.cabinetFranchiseeRate != null">
-            and cabinet_franchisee_rate = #{query.cabinetFranchiseeRate}
-        </if>
-        <if test="query.cabinetStoreRate != null">
-            and cabinet_store_rate = #{query.cabinetStoreRate}
-        </if>
-        <if test="query.nonCabOperatorRate != null">
-            and non_cab_operator_rate = #{query.nonCabOperatorRate}
-        </if>
-        <if test="query.nonCabFranchiseeRate != null">
-            and non_cab_franchisee_rate = #{query.nonCabFranchiseeRate}
-        </if>
-        <if test="query.createTime != null">
-            and create_time = #{query.createTime}
-        </if>
-        order by create_time desc
-        limit #{query.offset},#{query.size}
+        order by id desc
+        limit #{offset},#{size}
     </select>
 
     <!--查询数据总数-->
@@ -243,9 +222,6 @@
         </if>
         <if test="nonCabFranchiseeRate != null">
             and non_cab_franchisee_rate = #{nonCabFranchiseeRate}
-        </if>
-        <if test="query.createTime != null">
-            and create_time = #{createTime}
         </if>
     </select>
 
