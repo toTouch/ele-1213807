@@ -208,21 +208,6 @@
         <if test="name != null and name != ''">
             and tenant_id = #{tenantId}
         </if>
-        <if test="cabinetOperatorRate != null">
-            and cabinet_operator_rate = #{cabinetOperatorRate}
-        </if>
-        <if test="cabinetFranchiseeRate != null">
-            and cabinet_franchisee_rate = #{cabinetFranchiseeRate}
-        </if>
-        <if test="cabinetStoreRate != null">
-            and cabinet_store_rate = #{cabinetStoreRate}
-        </if>
-        <if test="nonCabOperatorRate != null">
-            and non_cab_operator_rate = #{nonCabOperatorRate}
-        </if>
-        <if test="nonCabFranchiseeRate != null">
-            and non_cab_franchisee_rate = #{nonCabFranchiseeRate}
-        </if>
     </select>
 
 </mapper>
