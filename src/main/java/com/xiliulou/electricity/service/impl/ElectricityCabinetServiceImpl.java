@@ -2759,8 +2759,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
-        if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(
-                electricityCabinet)) {
+        if ((!isOnline && isCupboardAttrIsOnline(electricityCabinet)) || (isOnline && !isCupboardAttrIsOnline(
+                electricityCabinet))) {
             ElectricityCabinet update = new ElectricityCabinet();
             update.setId(electricityCabinet.getId());
             update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS
