@@ -97,7 +97,7 @@ public class JsonAdminDivisionOperationRecordController {
      * @param updateTime
      * @return
      */
-    @GetMapping(value = "/admin/division/account/record/count")
+    @GetMapping(value = "/admin/division/account/record/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "cabinetOperatorRate", required = false) BigDecimal cabinetOperatorRate,
                         @RequestParam(value = "cabinetFranchiseeRate", required = false) BigDecimal cabinetFranchiseeRate,
