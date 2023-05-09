@@ -572,11 +572,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         List<EleDivisionAccountOperationRecordDTO> list = Lists.newArrayList();
         for (Long carModel : query.getCarModels()) {
             EleDivisionAccountOperationRecordDTO eleDivisionAccountOperationRecordDTO = new EleDivisionAccountOperationRecordDTO();
-            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(carModel.intValue());
+
+            ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(carModel.intValue());
             eleDivisionAccountOperationRecordDTO.setId(carModel.intValue());
-            if (Objects.nonNull(electricityMemberCard)){
-                eleDivisionAccountOperationRecordDTO.setName(electricityMemberCard.getName());
-            }
+            eleDivisionAccountOperationRecordDTO.setName(Objects.nonNull(electricityCarModel)?electricityCarModel.getName():"");
+
             list.add(eleDivisionAccountOperationRecordDTO);
         }
         return list;
