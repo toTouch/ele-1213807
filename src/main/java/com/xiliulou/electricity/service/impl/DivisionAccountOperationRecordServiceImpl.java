@@ -3,16 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.EleDivisionAccountOperationRecordDTO;
-import com.xiliulou.electricity.entity.DivisionAccountConfig;
-import com.xiliulou.electricity.entity.DivisionAccountOperationRecord;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.DivisionAccountOperationRecordMapper;
 import com.xiliulou.electricity.query.DivisionAccountOperationRecordQuery;
-import com.xiliulou.electricity.service.DivisionAccountConfigService;
-import com.xiliulou.electricity.service.DivisionAccountOperationRecordService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.DivisionAccountOperationRecordVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -40,7 +34,7 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
     private DivisionAccountOperationRecordMapper divisionAccountOperationRecordMapper;
 
     @Autowired
-    private UserInfoService userInfoService;
+    private UserService userService;
 
     @Autowired
     private DivisionAccountConfigService divisionAccountConfigService;
@@ -104,8 +98,8 @@ public class DivisionAccountOperationRecordServiceImpl implements DivisionAccoun
             recordVO.setCreateTime(item.getCreateTime());
             recordVO.setUpdateTime(item.getUpdateTime());
 
-            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
-            recordVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
+            User user = userService.queryByUidFromCache(item.getUid());
+            recordVO.setUserName(Objects.nonNull(user) ? user.getName() : "");
 
             DivisionAccountConfig divisionAccountConfig = divisionAccountConfigService.queryByIdFromCache(item.getDivisionAccountId().longValue());
             recordVO.setHierarchy(Objects.nonNull(divisionAccountConfig) ? divisionAccountConfig.getHierarchy() : -1);
