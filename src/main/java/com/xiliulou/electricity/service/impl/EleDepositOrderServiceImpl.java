@@ -2284,7 +2284,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long todayStartTime, Integer electricityDeposit, List<Long> finalFranchiseeIds) {
-        BigDecimal result = Optional.of(this.eleDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, todayStartTime, electricityDeposit, finalFranchiseeIds)).orElse(BigDecimal.ZERO);
+        BigDecimal result = Optional.ofNullable(this.eleDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, todayStartTime, electricityDeposit, finalFranchiseeIds)).orElse(BigDecimal.ZERO);
 
         List<CarBatteryFreeDepositAlipayVo> carBatteryFreeDepositAlipayVos = this.eleDepositOrderMapper.queryCarBatteryFreeDepositAlipay(tenantId, todayStartTime, electricityDeposit, finalFranchiseeIds);
         if(!CollectionUtils.isEmpty(carBatteryFreeDepositAlipayVos)) {
