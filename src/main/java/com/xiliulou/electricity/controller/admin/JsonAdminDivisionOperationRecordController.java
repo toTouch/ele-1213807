@@ -32,7 +32,6 @@ public class JsonAdminDivisionOperationRecordController {
      * @param cabinetStoreRate
      * @param nonCabOperatorRate
      * @param nonCabFranchiseeRate
-     * @param tenantId
      * @param accountMemberCard
      * @return
      */
@@ -90,7 +89,6 @@ public class JsonAdminDivisionOperationRecordController {
      * @param cabinetStoreRate
      * @param nonCabOperatorRate
      * @param nonCabFranchiseeRate
-     * @param tenantId
      * @param accountMemberCard
      * @param createTime
      * @param updateTime
