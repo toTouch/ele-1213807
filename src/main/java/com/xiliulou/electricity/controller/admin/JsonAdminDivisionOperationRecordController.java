@@ -74,6 +74,7 @@ public class JsonAdminDivisionOperationRecordController {
                 .cabinetStoreRate(cabinetStoreRate)
                 .nonCabFranchiseeRate(nonCabFranchiseeRate)
                 .nonCabOperatorRate(nonCabOperatorRate)
+                .tenantId(tenantId)
                 .createTime(createTime)
                 .updateTime(updateTime)
                 .accountMemberCard(accountMemberCard).build();
@@ -123,6 +124,7 @@ public class JsonAdminDivisionOperationRecordController {
                 .cabinetStoreRate(cabinetStoreRate)
                 .nonCabFranchiseeRate(nonCabFranchiseeRate)
                 .nonCabOperatorRate(nonCabOperatorRate)
+                .tenantId(tenantId)
                 .createTime(createTime)
                 .updateTime(updateTime)
                 .accountMemberCard(accountMemberCard).build();
