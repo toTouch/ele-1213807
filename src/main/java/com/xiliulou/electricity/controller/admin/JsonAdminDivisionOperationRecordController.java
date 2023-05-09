@@ -44,7 +44,6 @@ public class JsonAdminDivisionOperationRecordController {
                                          @RequestParam(value = "cabinetStoreRate", required = false) BigDecimal cabinetStoreRate,
                                          @RequestParam(value = "nonCabOperatorRate", required = false) BigDecimal nonCabOperatorRate,
                                          @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
-                                         @RequestParam(value = "tenantId") Integer tenantId,
                                          @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
                                          @RequestParam(value = "createTime", required = false) Long createTime,
                                          @RequestParam(value = "updateTime", required = false) Long updateTime) {
@@ -74,7 +73,7 @@ public class JsonAdminDivisionOperationRecordController {
                 .cabinetStoreRate(cabinetStoreRate)
                 .nonCabFranchiseeRate(nonCabFranchiseeRate)
                 .nonCabOperatorRate(nonCabOperatorRate)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
                 .createTime(createTime)
                 .updateTime(updateTime)
                 .accountMemberCard(accountMemberCard).build();
@@ -104,7 +103,6 @@ public class JsonAdminDivisionOperationRecordController {
                         @RequestParam(value = "cabinetStoreRate", required = false) BigDecimal cabinetStoreRate,
                         @RequestParam(value = "nonCabOperatorRate", required = false) BigDecimal nonCabOperatorRate,
                         @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
-                        @RequestParam(value = "tenantId") Integer tenantId,
                         @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
                         @RequestParam(value = "createTime", required = false) Long createTime,
                         @RequestParam(value = "updateTime", required = false) Long updateTime){
@@ -124,7 +122,7 @@ public class JsonAdminDivisionOperationRecordController {
                 .cabinetStoreRate(cabinetStoreRate)
                 .nonCabFranchiseeRate(nonCabFranchiseeRate)
                 .nonCabOperatorRate(nonCabOperatorRate)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
                 .createTime(createTime)
                 .updateTime(updateTime)
                 .accountMemberCard(accountMemberCard).build();
