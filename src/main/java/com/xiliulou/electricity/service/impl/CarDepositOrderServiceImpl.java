@@ -835,7 +835,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     public BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long time, Integer rentCarDeposit, List<Long> finalFranchiseeIds) {
-        BigDecimal result = carDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, time, rentCarDeposit, finalFranchiseeIds);
+        BigDecimal result = Optional.ofNullable(carDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, time, rentCarDeposit, finalFranchiseeIds)).orElse(BigDecimal.ZERO);
 
         List<CarBatteryFreeDepositAlipayVo> carBatteryFreeDepositAlipayVos = this.eleDepositOrderMapper.queryCarBatteryFreeDepositAlipay(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
         BigDecimal eleAlipayAmount = BigDecimal.valueOf(0);
