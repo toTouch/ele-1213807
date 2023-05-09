@@ -184,7 +184,7 @@
         from t_division_account_operation_record
         where
         <if test="query.tenantId != null">
-            tenant_id = #{query.tenantId},
+            tenant_id = #{query.tenantId}
         </if>
         <if test="query.divisionAccountId != null">
             and division_account_id = #{query.divisionAccountId}
@@ -211,8 +211,7 @@
             and create_time = #{query.createTime}
         </if>
         order by create_time desc
-        limit #{query.offset}, #{query.size}
-
+        limit #{query.offset},#{query.size}
     </select>
 
     <!--查询数据总数-->
@@ -222,7 +221,7 @@
         from t_division_account_operation_record
         where
         <if test="tenantId != null">
-            tenant_id = #{tenantId},
+            tenant_id = #{tenantId}
         </if>
         <if test="divisionAccountId != null">
             and division_account_id = #{divisionAccountId}
