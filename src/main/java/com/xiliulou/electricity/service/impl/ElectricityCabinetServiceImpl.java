@@ -2777,7 +2777,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public int idempotentUpdateCupboard(ElectricityCabinet electricityCabinet,
             ElectricityCabinet updateElectricityCabinet) {
-        Integer update = update(electricityCabinet);
+        Integer update = update(updateElectricityCabinet);
         if (update > 0) {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
