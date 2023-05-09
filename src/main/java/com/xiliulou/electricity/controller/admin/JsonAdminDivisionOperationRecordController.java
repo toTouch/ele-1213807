@@ -45,7 +45,8 @@ public class JsonAdminDivisionOperationRecordController {
                                          @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
                                          @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
                                          @RequestParam(value = "createTime", required = false) Long createTime,
-                                         @RequestParam(value = "updateTime", required = false) Long updateTime) {
+                                         @RequestParam(value = "updateTime", required = false) Long updateTime,
+                                         @RequestParam(value = "divisionAccountId") Integer divisionAccountId) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -75,6 +76,7 @@ public class JsonAdminDivisionOperationRecordController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .createTime(createTime)
                 .updateTime(updateTime)
+                .divisionAccountId(divisionAccountId)
                 .accountMemberCard(accountMemberCard).build();
 
         return  R.ok(divisionAccountOperationRecordService.queryList(divisionAccountOperationRecord));
@@ -103,7 +105,8 @@ public class JsonAdminDivisionOperationRecordController {
                         @RequestParam(value = "nonCabFranchiseeRate", required = false) BigDecimal nonCabFranchiseeRate,
                         @RequestParam(value = "accountMemberCard", required = false) String accountMemberCard,
                         @RequestParam(value = "createTime", required = false) Long createTime,
-                        @RequestParam(value = "updateTime", required = false) Long updateTime){
+                        @RequestParam(value = "updateTime", required = false) Long updateTime,
+                        @RequestParam(value = "divisionAccountId") Integer divisionAccountId){
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -123,6 +126,7 @@ public class JsonAdminDivisionOperationRecordController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .createTime(createTime)
                 .updateTime(updateTime)
+                .divisionAccountId(divisionAccountId)
                 .accountMemberCard(accountMemberCard).build();
 
         return  R.ok(divisionAccountOperationRecordService.queryCount(divisionAccountOperationRecord));
