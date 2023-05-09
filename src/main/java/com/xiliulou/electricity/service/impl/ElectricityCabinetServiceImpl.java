@@ -3171,7 +3171,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             qeury.setTodayOfflineRefundDeposit(todayOfflineRefundDeposit);
             qeury.setTodayFreeRefundDeposit(todayFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundBatteryDeposit error!", e);
             return null;
         });
 
@@ -3192,7 +3192,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             qeury.setHistoryOfflineRefundBatteryDeposit(historyOfflineRefundDeposit);
             qeury.setHistoryFreeRefundBatteryDeposit(historyFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundBatteryDepositHistory error!", e);
             return null;
         });
 
@@ -3225,7 +3225,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             qeury.setTodayOfflineCarRefundDeposit(todayOfflineRefundDeposit);
             qeury.setTodayFreeCarRefundDeposit(todayFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundCarDeposit error!", e);
             return null;
         });
     
@@ -3245,7 +3245,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             qeury.setHistoryOfflineRefundCarDeposit(historyOfflineRefundDeposit);
             qeury.setHistoryFreeRefundCarDeposit(historyFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundCarDepositHistory error!", e);
             return null;
         });
         
@@ -3342,7 +3342,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Integer authenticationUserCount = userInfoService.queryAuthenticationUserCount(tenantId);
             homepageOverviewDetailVo.setAuthenticationUserCount(authenticationUserCount);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query authenticationUser error!", e);
             return null;
         });
         
