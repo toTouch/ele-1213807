@@ -3137,7 +3137,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             qeury.setBatteryFreeDepositAlipay(eleFreeDepositAlipay);
             qeury.setCarFreeDepositAlipay(carFreeDepositAlipay);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query depositFreeAlipay error!", e);
             return null;
         });
     
