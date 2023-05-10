@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FaceRecognizeDataQuery;
 import com.xiliulou.electricity.service.FaceRecognizeDataService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -149,7 +150,7 @@ public class JsonAdminFaceRecognizeDataController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!SecurityUtils.isAdmin()) {
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
