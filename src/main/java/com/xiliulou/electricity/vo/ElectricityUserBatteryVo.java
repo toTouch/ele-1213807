@@ -47,4 +47,7 @@ public class ElectricityUserBatteryVo {
     private Double latitude;
 
 
+    private Long updateTime;
+
+
 }

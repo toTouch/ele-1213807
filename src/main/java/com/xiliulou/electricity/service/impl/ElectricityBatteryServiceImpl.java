@@ -507,6 +507,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         userBatteryVo.setLatitude(result.getRight().getLatitude());
         userBatteryVo.setLongitude(result.getRight().getLongitude());
         userBatteryVo.setPower(Double.valueOf(result.getRight().getSoc()));
+        userBatteryVo.setUpdateTime(result.getRight().getUpdateTime());
         return Triple.of(true, null, userBatteryVo);
     }
 
