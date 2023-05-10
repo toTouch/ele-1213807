@@ -42,7 +42,7 @@ public interface BatteryPlatRetrofitService {
     @POST("/battery/inner/battery/info")
     R<BatteryInfoDto> queryBatteryInfo(@HeaderMap Map<String, String> headers, @Body BatteryInfoQuery batteryInfoQuery);
 
-    @POST("/battery/inner/location/track")
+    @POST("/battery/inner/battery/location/track")
     R<List<BatteryTrackDto>> queryBatteryTrack(@HeaderMap Map<String, String> headers, @Body BatteryLocationTrackQuery batteryLocationTrackQuery);
 
 
