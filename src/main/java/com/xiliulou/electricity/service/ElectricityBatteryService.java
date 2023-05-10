@@ -62,7 +62,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void insert(ElectricityBattery electricityBattery);
 
-    ElectricityBatteryVO queryInfoByUid(Long uid);
+    Triple<Boolean, String, Object> queryInfoByUid(Long uid, Integer isNeedLocation);
 
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
@@ -100,4 +100,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer isUserBindBattery(Long uid, Integer tenantId);
 
     Integer insertBatch(List<ElectricityBattery> saveList);
+
+    ElectricityBattery queryUserAttrBySnFromDb(String sn);
+
+    Triple<Boolean, String, Object> queryBatteryLocationTrack(Long uid, Long beginTime, Long endTime);
 }

@@ -679,4 +679,17 @@
 
         </foreach>
     </insert>
+
+    <select id="querySnByUid" resultType="java.lang.String">
+        select sn
+        FROM t_electricity_battery
+        WHERE uid = #{uid}
+        and del_flag = 0
+    </select>
+
+    <select id="queryUserAttrBySn" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select sn,uid,tenant_id
+        from t_electricity_battery
+        where sn = #{sn}
+    </select>
 </mapper>

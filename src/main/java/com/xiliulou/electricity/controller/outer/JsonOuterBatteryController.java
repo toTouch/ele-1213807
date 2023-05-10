@@ -33,6 +33,7 @@ public class JsonOuterBatteryController {
      * @return
      */
     @PostMapping(value = "/outer/battery/info/report")
+    @Deprecated
     public R batteryReport(@RequestBody BatteryReportQuery batteryReportQuery) {
         return electricityCabinetService.batteryReport(batteryReportQuery);
     }

@@ -96,8 +96,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        log.info("tenantId is -->{}", tenantId);
-
         if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
             throw new AuthenticationServiceException("操作频繁！请稍后再试！");
         }

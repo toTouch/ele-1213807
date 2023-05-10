@@ -9,4 +9,5 @@ public interface MqConstant {
      * 运维通知topic
      */
     String TOPIC_MAINTENANCE_NOTIFY = "MAINTENANCE_NOTIFY";
+    String TOPIC_BATTERY_POWER = "battery_power_topic";
 }
