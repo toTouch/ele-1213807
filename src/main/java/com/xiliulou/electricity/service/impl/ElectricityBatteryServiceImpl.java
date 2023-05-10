@@ -495,9 +495,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
 
         Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery);
-        if (!result.getLeft() || Objects.isNull(result.getRight())) {
+        if (!result.getLeft()) {
             log.error("CALL BATTERY ERROR! uid={},msg={}", uid, result.getMiddle());
             return Triple.of(false, "200005", result.getRight());
+        }
+
+        if (Objects.isNull(result.getRight())) {
+            log.error("BATTERY ERROR! not found bms'battery! uid={}", uid);
+            return Triple.of(false, "200006", "该电池未录入电池服务平台");
         }
 
         ElectricityUserBatteryVo userBatteryVo = new ElectricityUserBatteryVo();
