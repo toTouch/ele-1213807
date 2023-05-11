@@ -146,4 +146,9 @@ public class OtherSettingParamTemplateRequestDTO {
     private Integer enableBatteryBMSExceptionCheck;
     
     private List<BatteryMultiConfigDTO> settingParamTemplate;
+
+    /**
+     * 充电策略最大电流
+     */
+    private Integer defaultChargeStorageMaxA;
 }

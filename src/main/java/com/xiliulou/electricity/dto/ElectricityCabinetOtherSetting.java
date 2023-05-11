@@ -128,4 +128,8 @@ public class ElectricityCabinetOtherSetting {
      */
     private Integer enableBatteryBMSExceptionCheck;
 
+    /**
+     * 充电策略最大电流
+     */
+    private Integer defaultChargeStorageMaxA;
 }
