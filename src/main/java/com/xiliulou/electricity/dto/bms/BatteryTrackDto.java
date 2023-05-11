@@ -1,5 +1,9 @@
 package com.xiliulou.electricity.dto.bms;
 
+
+import lombok.Data;
+
+@Data
 public class BatteryTrackDto {
 
     /**
