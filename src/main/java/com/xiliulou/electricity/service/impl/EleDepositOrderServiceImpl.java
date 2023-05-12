@@ -560,7 +560,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //等到后台同意退款
-        return R.ok(eleRefund? "SUCCESS" : packageOwe);
+        return R.ok(packageOwe);
     }
 
     private void freeDepositOrderThaw(UserBatteryDeposit userBatteryDeposit , FreeDepositOrder freeDepositOrder){
@@ -2223,7 +2223,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //            //退押金解绑用户所属加盟商
 //            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
             //退押金成功通知前端
-            success = "SUCCESS";
+            //success = "SUCCESS";
         }
     
         eleRefundOrderService.insert(carRefundOrder);
