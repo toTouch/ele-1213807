@@ -500,16 +500,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
         
             //解绑用户车辆信息
-            if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0 ) {
                 carRefund = true;
                 carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
-//                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-//
-//                userCarService.deleteByUid(userInfo.getUid());
-//
-//                userCarDepositService.logicDeleteByUid(userInfo.getUid());
-//
-//                userCarMemberCardService.deleteByUid(userInfo.getUid());
+                if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
+                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+
+                    userCarService.deleteByUid(userInfo.getUid());
+
+                    userCarDepositService.logicDeleteByUid(userInfo.getUid());
+
+                    userCarMemberCardService.deleteByUid(userInfo.getUid());
+                }
+
             }
         
             eleRefundOrderService.insert(carRefundOrder);
@@ -522,31 +525,30 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
             EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
 
-//            if (Objects.nonNull(result)) {
-//
-//                updateUserInfo.setUid(userInfo.getUid());
-//                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-//                updateUserInfo.setUpdateTime(System.currentTimeMillis());
-//
-//                userInfoService.updateByUid(updateUserInfo);
-//
-//                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-//
-////                userBatteryDepositService.deleteByUid(userInfo.getUid());
-//                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-//
-//                userBatteryService.deleteByUid(userInfo.getUid());
-//
-//                //退押金解绑用户所属加盟商
-//                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-//
-//                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-//                if (Objects.nonNull(insuranceUserInfo)) {
-//                    insuranceUserInfoService.deleteById(insuranceUserInfo);
-//                }
-//           }
+            if (Objects.nonNull(result) && !Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
 
-            //return R.ok("SUCCESS");
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+
+                userInfoService.updateByUid(updateUserInfo);
+
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+
+//                userBatteryDepositService.deleteByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+
+                userBatteryService.deleteByUid(userInfo.getUid());
+
+                //退押金解绑用户所属加盟商
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+                return R.ok("SUCCESS");
+           }
         }
 
         if(!eleRefund){
@@ -2171,16 +2173,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             if (eleRefundAmount.doubleValue() <= 0) {
                 eleRefund = true;
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
- //               updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-            
-//                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-//                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-//                userBatteryService.deleteByUid(userInfo.getUid());
-//
-//                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-//                if (Objects.nonNull(insuranceUserInfo)) {
-//                    insuranceUserInfoService.deleteById(insuranceUserInfo);
-//                }
+
+                if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                    userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                    userBatteryService.deleteByUid(userInfo.getUid());
+
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    }
+                }
+
             }
         
             eleRefundOrderService.insert(eleRefundOrder);
@@ -2208,22 +2214,24 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
             carRefundOrder.setUpdateTime(System.currentTimeMillis());
             
-//            updateUserInfo.setUid(userInfo.getUid());
-//            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-//            updateUserInfo.setUpdateTime(System.currentTimeMillis());
-//
-//            userInfoService.updateByUid(updateUserInfo);
-//
-//            userCarService.deleteByUid(userInfo.getUid());
-//
-//            userCarDepositService.logicDeleteByUid(userInfo.getUid());
-//
-//            userCarMemberCardService.deleteByUid(userInfo.getUid());
-//
-//            //退押金解绑用户所属加盟商
-//            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
-            //退押金成功通知前端
-            //success = "SUCCESS";
+            if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
+                updateUserInfo.setUid(userInfo.getUid());
+                updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+
+                userInfoService.updateByUid(updateUserInfo);
+
+                userCarService.deleteByUid(userInfo.getUid());
+
+                userCarDepositService.logicDeleteByUid(userInfo.getUid());
+
+                userCarMemberCardService.deleteByUid(userInfo.getUid());
+
+                //退押金解绑用户所属加盟商
+                userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+                //退押金成功通知前端
+                success = "SUCCESS";
+            }
         }
     
         eleRefundOrderService.insert(carRefundOrder);
