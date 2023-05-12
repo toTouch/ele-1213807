@@ -260,8 +260,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
-                    + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
-            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
                     + electricityCabinet.getDeviceName());
         }
         return update;
@@ -437,9 +435,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             
-            //，key变化 先删除老的，以免老的删不掉
-            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
-                    + oldElectricityCabinet.getDeviceName() + oldElectricityCabinet.getTenantId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                     + oldElectricityCabinet.getDeviceName());
 
@@ -480,11 +475,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
         int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
-            
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
-            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
-                    + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()
                     + electricityCabinet.getDeviceName());
 
@@ -954,15 +946,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService
                 .saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         
-        //，key变化 先删除老的，以免老的删不掉
-        redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
-                + oldElectricityCabinet.getDeviceName() + oldElectricityCabinet.getTenantId());
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                 + oldElectricityCabinet.getDeviceName());
-        //更新缓存
-        redisService.saveWithHash(
-                CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet
-                        .getDeviceName() + electricityCabinet.getTenantId(), electricityCabinet);
         return R.ok();
     }
     
