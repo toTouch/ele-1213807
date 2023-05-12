@@ -266,6 +266,11 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         return electricityCabinetService.queryCount(electricityCabinetQuery);
     }
 
+    @PutMapping("/admin/cabinet/onLineStatus/{id}")
+    public R updateOnlineStatus(@PathVariable("id") Long id) {
+        return R.ok(electricityCabinetService.updateOnlineStatus(id));
+    }
+
     /**
      * 查询空仓、有电池数量
      */

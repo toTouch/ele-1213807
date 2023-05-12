@@ -17,10 +17,8 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
@@ -587,6 +585,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed())
                 .collect(Collectors.toList());
         return R.ok(electricityCabinetList);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> updateOnlineStatus(Long id) {
+        ElectricityCabinet electricityCabinet = this.queryByIdFromCache(id.intValue());
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(TenantContextHolder.getTenantId(), electricityCabinet.getTenantId())) {
+            return Triple.of(false, "100003", "柜机不存在");
+        }
+
+        ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+
+        if (deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName())) {
+            checkCupboardStatusAndUpdateDiff(true, electricityCabinetUpdate);
+        } else {
+            checkCupboardStatusAndUpdateDiff(false, electricityCabinetUpdate);
+        }
+
+        return Triple.of(true, null, null);
     }
 
     @Slave
@@ -2708,6 +2724,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             update.setId(electricityCabinet.getId());
             update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS
                     : ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            update.setUpdateTime(System.currentTimeMillis());
             idempotentUpdateCupboard(electricityCabinet, update);
         }
     }
@@ -2719,7 +2736,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public int idempotentUpdateCupboard(ElectricityCabinet electricityCabinet,
             ElectricityCabinet updateElectricityCabinet) {
-        Integer update = update(electricityCabinet);
+        Integer update = update(updateElectricityCabinet);
         if (update > 0) {
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()

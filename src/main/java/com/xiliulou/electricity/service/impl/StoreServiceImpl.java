@@ -746,14 +746,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
 
-    private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
-        if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {
-            ElectricityCabinet update = new ElectricityCabinet();
-            update.setId(electricityCabinet.getId());
-            update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS : ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
-            electricityCabinetService.idempotentUpdateCupboard(electricityCabinet, update);
-        }
-    }
+
 
     private List<StoreTag> buildStoreTags(Store store, StoreAddAndUpdate storeAddAndUpdate) {
         List<StoreTag> list = new ArrayList<>();

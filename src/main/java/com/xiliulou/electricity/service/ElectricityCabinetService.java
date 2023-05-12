@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
@@ -179,4 +178,6 @@ public interface ElectricityCabinetService {
     CabinetBatteryVO batteryStatistics(Long id);
 
     R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
+
+    Triple<Boolean, String, Object> updateOnlineStatus(Long id);
 }
