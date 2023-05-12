@@ -78,7 +78,11 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
             return;
         }
 
-        long uid = electricityBattery.getUid();
+        Long uid = electricityBattery.getUid();
+        if(Objects.isNull(uid)) {
+            return;
+        }
+
         Integer tenantId = electricityBattery.getTenantId();
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(electricityBattery.getUid(), electricityBattery.getTenantId());
