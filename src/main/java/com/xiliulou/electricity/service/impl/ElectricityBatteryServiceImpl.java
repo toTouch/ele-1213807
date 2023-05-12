@@ -282,7 +282,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Triple<Boolean, String, List<BatteryTrackDto>> result = callBatteryServiceQueryBatteryTrack(query);
         if (!result.getLeft() || Objects.isNull(result.getRight())) {
             log.error("CALL BATTERY ERROR! uid={},msg={}", uid, result.getMiddle());
-            return Triple.of(false, "200005", result.getRight());
+            return Triple.of(false, "200005", result.getMiddle());
         }
 
 
@@ -497,7 +497,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery);
         if (!result.getLeft()) {
             log.error("CALL BATTERY ERROR! uid={},msg={}", uid, result.getMiddle());
-            return Triple.of(false, "200005", result.getRight());
+            return Triple.of(false, "200005", result.getMiddle());
         }
 
         if (Objects.isNull(result.getRight())) {
