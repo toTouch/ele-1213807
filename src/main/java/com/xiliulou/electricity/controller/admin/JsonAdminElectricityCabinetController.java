@@ -403,14 +403,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         if (!Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
-
-        //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(),
-                electricityCabinet.getDeviceName());
-        if (!eleResult) {
-            log.error("ELE ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
-            return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }
         
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
