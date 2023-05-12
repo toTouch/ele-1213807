@@ -503,7 +503,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0 ) {
                 carRefund = true;
                 carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
+
                 if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
+                    carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                     updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
 
                     userCarService.deleteByUid(userInfo.getUid());
@@ -523,9 +525,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleRefund = true;
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
-            EleRefundOrder result = eleRefundOrderService.insert(eleRefundOrder);
 
-            if (Objects.nonNull(result) && !Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                eleRefundOrderService.insert(eleRefundOrder);
 
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
@@ -551,9 +554,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
            }
         }
 
-        if(!eleRefund){
-            eleRefundOrderService.insert(eleRefundOrder);
-        }
+        eleRefundOrderService.insert(eleRefundOrder);
 
         if(Objects.nonNull(freeDepositOrder)
                 && ((Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY) && carRefund && eleRefund)
@@ -2175,6 +2176,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
                 if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                     updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
 
                     userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
@@ -2215,6 +2217,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             carRefundOrder.setUpdateTime(System.currentTimeMillis());
             
             if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
+                carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                carRefundOrder.setUpdateTime(System.currentTimeMillis());
+
                 updateUserInfo.setUid(userInfo.getUid());
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
