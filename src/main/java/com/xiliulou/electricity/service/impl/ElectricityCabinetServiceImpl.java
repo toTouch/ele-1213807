@@ -497,12 +497,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Override
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
-        
+
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
         if (ObjectUtil.isEmpty(electricityCabinetList)) {
             return R.ok();
         }
-    
+
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
 
@@ -526,14 +526,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         }
                     }
                 }
-                
+
                 //查找型号名称
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService
                         .queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
                 }
-                
+
                 //查满仓空仓数
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
                 int electricityBatteryTotal = 0;
@@ -542,30 +542,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
                         .queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-                    
+
                     //空仓
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery)
                             .count();
-                    
+
                     //禁用的仓门
                     batteryInElectricity = (int) electricityCabinetBoxList.stream().filter(this::isBatteryInElectricity)
                             .count();
-                    
+
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream()
                             .filter(this::isElectricityBattery).count();
                 }
 
-                
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+
                 ElectricityCabinet item = new ElectricityCabinet();
                 item.setUpdateTime(System.currentTimeMillis());
                 item.setId(e.getId());
 
+                if (result) {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
+                    checkCupboardStatusAndUpdateDiff(true, item);
+                } else {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
+                    checkCupboardStatusAndUpdateDiff(false, item);
+                }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
                 e.setBatteryInElectricity(batteryInElectricity);
-                
+
                 //是否锁住
                 int isLock = 0;
                 String LockResult = redisService.get(CacheConstant.UNLOCK_CABINET_CACHE + e.getId());
