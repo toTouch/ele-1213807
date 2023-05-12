@@ -54,6 +54,5 @@ public interface UserBatteryService {
      */
     Integer deleteByUid(Long uid);
 
-
-    
+    List<UserBattery> selectBatteryTypeByFranchiseeId(Long id);
 }

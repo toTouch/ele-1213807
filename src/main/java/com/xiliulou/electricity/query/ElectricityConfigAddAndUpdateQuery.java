@@ -101,6 +101,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 车电关联
      */
     private Integer isOpenCarBatteryBind;
+    
+    /**
+     * 车辆控制  0--开  1--关
+     */
+    private Integer isOpenCarControl;
 }
 
 

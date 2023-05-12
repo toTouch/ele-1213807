@@ -869,16 +869,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
     }
 
-    @Override
-    public boolean checkBatteryIsExchange(String batteryName, Double fullyCharged) {
-        ElectricityBattery electricityBattery = this.queryBySnFromDb(batteryName);
-        if (Objects.isNull(electricityBattery)) {
-            return Boolean.FALSE;
-        }
-
-        return electricityBattery.getPower() >= fullyCharged ? Boolean.TRUE : Boolean.FALSE;
-    }
-
     /**
      * 检查是否有电池绑定加盟商
      *

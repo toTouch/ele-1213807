@@ -6,41 +6,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.CarDepositOrder;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
-import com.xiliulou.electricity.entity.CommonPayOrder;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.EnableMemberCardRecord;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.UserBattery;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
+import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
@@ -188,6 +160,12 @@ public class ElectricityTradeOrderServiceImpl extends
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -929,12 +907,32 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
-
-            //用户是否有绑定了车辆
+    
+            //用户是否有绑定了车
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            if (Objects.nonNull(electricityCar) && Objects
-                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
-                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
     
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());

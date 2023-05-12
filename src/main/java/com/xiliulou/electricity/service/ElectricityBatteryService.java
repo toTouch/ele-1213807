@@ -88,8 +88,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
     
     List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
-    
-    boolean checkBatteryIsExchange(String batteryName, Double fullyCharged);
 
     Integer isFranchiseeBindBattery(Long id,Integer tenantId);
 
