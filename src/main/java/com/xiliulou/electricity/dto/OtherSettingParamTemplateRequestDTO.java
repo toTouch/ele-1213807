@@ -151,4 +151,5 @@ public class OtherSettingParamTemplateRequestDTO {
      * 充电策略最大电流
      */
     private Integer defaultChargeStorageMaxA;
+    private Integer aOpenChargeStrategy;
 }
