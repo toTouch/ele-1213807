@@ -22,7 +22,6 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
@@ -506,7 +505,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
-                
+
+                Store store = storeService.queryByIdFromCache(Long.valueOf(e.getStoreId()));
+                e.setStoreName(Objects.isNull(store) ? "" : store.getName());
+
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -593,6 +595,35 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed())
                 .collect(Collectors.toList());
         return R.ok(electricityCabinetList);
+    }
+
+    @Slave
+    @Override
+    public CabinetBatteryVO batteryStatistics(Long eid) {
+        ElectricityCabinet cabinet = this.queryByIdFromCache(eid.intValue());
+        if (Objects.isNull(cabinet)) {
+            return null;
+        }
+
+        Double fullyCharged = cabinet.getFullyCharged();
+
+        List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(eid.intValue());
+        if (CollectionUtils.isEmpty(cabinetBoxList)) {
+            return null;
+        }
+
+        CabinetBatteryVO cabinetBatteryVO = new CabinetBatteryVO();
+        //空仓
+        long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+        //有电池仓门
+        long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+        //可换电数量
+        long exchangeableNumber = cabinetBoxList.stream().filter(item -> isExchangeable(item, fullyCharged)).count();
+
+        cabinetBatteryVO.setEmptyCellNumber(emptyCellNumber);
+        cabinetBatteryVO.setHaveBatteryNumber(haveBatteryNumber);
+        cabinetBatteryVO.setExchangeableNumber(exchangeableNumber);
+        return cabinetBatteryVO;
     }
 
     /**
@@ -788,10 +819,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
         Integer totalCount = ids.size();
         return totalCount;
-    }
-    
-    private boolean checkBatteryIsExchange(String batteryName, Double fullyCharged) {
-        return electricityBatteryService.checkBatteryIsExchange(batteryName, fullyCharged);
     }
     
     public Triple<Boolean, String, Object> queryFullyElectricityBatteryByExchangeOrder(Integer id, String batteryType,
@@ -1714,55 +1741,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService
                         .queryAllBoxByElectricityCabinetId(e.getId());
                 if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
-                    //可换电
-                    List<ElectricityCabinetBox> fullBatteryBoxs = electricityCabinetBoxes.parallelStream()
-                            .filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects
-                                    .equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE,
-                                            item.getUsableStatus()) && electricityBatteryService
-                                    .checkBatteryIsExchange(item.getSn(), e.getFullyCharged()))
-                            .collect(Collectors.toList());
+
+                    ElectricityCabinet eleCabinet = this.queryByIdFromCache(e.getId());
+                    if (Objects.isNull(eleCabinet)) {
+                        return;
+                    }
+
                     //空仓
-                    List<ElectricityCabinetBox> emptyBoxs = electricityCabinetBoxes.parallelStream()
-                            .filter(item -> StringUtils.isBlank(item.getSn()) && Objects
-                                    .equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE,
-                                            item.getUsableStatus())).collect(Collectors.toList());
-                    
-                    //有电池
-                    List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.parallelStream()
-                            .filter(item -> StringUtils.isNotBlank(item.getSn()) && Objects
-                                    .equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE,
-                                            item.getUsableStatus())).collect(Collectors.toList());
-                    
-                    e.setNoElectricityBattery(emptyBoxs.size());
-                    e.setFullyElectricityBattery(fullBatteryBoxs.size());
-                    e.setElectricityBatteryTotal(haveBatteryBoxs.size());
+                    Long emptyCellNumber = electricityCabinetBoxes.stream().filter(this::isNoElectricityBattery).count();
+                    //有电池仓门
+                    Long haveBatteryNumber = electricityCabinetBoxes.stream().filter(this::isBatteryInElectricity).count();
+                    //可换电数量
+                    Long exchangeableNumber = electricityCabinetBoxes.stream()
+                            .filter(item -> isExchangeable(item, eleCabinet.getFullyCharged())).count();
+
+                    e.setNoElectricityBattery(emptyCellNumber.intValue());
+                    e.setFullyElectricityBattery(exchangeableNumber.intValue());
+                    e.setElectricityBatteryTotal(haveBatteryNumber.intValue());
                 }
-                
-                //
-                //                //查满仓空仓数
-                //                int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
-                //                //查满仓空仓数
-                //                int electricityBatteryTotal = 0;
-                //                int noElectricityBattery = 0;
-                //                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
-                //                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-                //                    //空仓
-                //                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
-                //                    //电池总数
-                //                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
-                //                }
-                //
-                //                e.setElectricityBatteryTotal(electricityBatteryTotal);
-                //                e.setNoElectricityBattery(noElectricityBattery);
-                //                e.setFullyElectricityBattery(fullyElectricityBattery);
-                
-                //                //动态查询在线状态
-                //                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
-                //                if (result) {
-                //                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
-                //                } else {
-                //                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
-                //                }
+
                 //电柜不在线也返回，可离线换电
                 if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
                     electricityCabinetVOs.add(e);
@@ -2290,6 +2287,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+    }
+
+    private boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
+        return Objects.nonNull(electricityCabinetBox.getPower())
+                && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
     }
     
     public Long getTime(Long time) {

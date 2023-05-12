@@ -337,7 +337,6 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
     @Log(title = "电池绑定/解绑加盟商")
     public R bindElectricityBattery(
             @RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery) {
-        //        return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
         return electricityBatteryService.bindFranchisee(bindElectricityBatteryQuery);
     }
 

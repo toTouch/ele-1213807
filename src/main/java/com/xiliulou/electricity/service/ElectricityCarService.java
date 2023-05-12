@@ -56,7 +56,7 @@ public interface ElectricityCarService {
     
     Integer updateLockTypeByIds(List<Long> tempIds, Integer typeLock);
     
-    Boolean carLockCtrl(ElectricityCar electricityCar, Integer lockType);
+    Boolean carLockCtrl(String str, Integer lockType);
     
     R positionReport(CarPositionReportQuery carPositionReportQuery);
     
@@ -75,4 +75,6 @@ public interface ElectricityCarService {
     R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset);
     
     R electricityCarMove(ElectricityCarMoveQuery electricityCarMoveQuery);
+    
+    Boolean retryCarLockCtrl(String str, Integer lockType, Integer retryCount);
 }
