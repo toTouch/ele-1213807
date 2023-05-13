@@ -597,8 +597,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
 
         if (deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName())) {
+            electricityCabinetUpdate.setOnlineStatus(electricityCabinet.getOnlineStatus());
             checkCupboardStatusAndUpdateDiff(true, electricityCabinetUpdate);
         } else {
+            electricityCabinetUpdate.setOnlineStatus(electricityCabinet.getOnlineStatus());
             checkCupboardStatusAndUpdateDiff(false, electricityCabinetUpdate);
         }
 
