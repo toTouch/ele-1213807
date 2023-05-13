@@ -443,11 +443,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             return power;
         }
 
+        int maxPowerDiff = Objects.isNull(eleCommonConfig.getPowerChangeDiff()) ? 99 : eleCommonConfig.getPowerChangeDiff();
+
         /*
          * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
         if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power)
-                && (electricityBattery.getPower() - (power * 100)) > eleCommonConfig.getPowerChangeDiff()) {
+                && (electricityBattery.getPower() - (power * 100)) > maxPowerDiff) {
 
             //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过PowerChangeDiff，则power仍设置为原来的值
             power = electricityBattery.getPower() / 100.0;
