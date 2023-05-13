@@ -18,7 +18,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.config.EleCabinetDistanceConfig;
+import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -180,7 +180,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StorageConfig storageConfig;
 
     @Autowired
-    EleCabinetDistanceConfig eleCabinetDistanceConfig;
+    EleCommonConfig eleCommonConfig;
     
     @Autowired
     private ElectricityCabinetServerService electricityCabinetServerService;
@@ -724,7 +724,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R showInfoByDistanceV2(ElectricityCabinetQuery electricityCabinetQuery) {
         if (Objects.isNull(electricityCabinetQuery.getDistance()) || electricityCabinetQuery.getDistance() > 50000D) {
-            electricityCabinetQuery.setDistance(eleCabinetDistanceConfig.getShowDistance());
+            electricityCabinetQuery.setDistance(eleCommonConfig.getShowDistance());
         }
 
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
