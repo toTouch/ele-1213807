@@ -129,6 +129,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             //在线状态修改
             ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+            newElectricityCabinet.setProductKey(electricityCabinet.getProductKey());
+            newElectricityCabinet.setDeviceName(electricityCabinet.getDeviceName());
             newElectricityCabinet.setId(electricityCabinet.getId());
             newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
             newElectricityCabinet.setUpdateTime(DateUtils.parseMillsDateStrToTimestamp(receiverMessage.getTime()));
