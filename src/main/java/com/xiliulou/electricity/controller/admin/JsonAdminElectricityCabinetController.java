@@ -268,7 +268,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
 
     @PutMapping("/admin/cabinet/onLineStatus/{id}")
     public R updateOnlineStatus(@PathVariable("id") Long id) {
-        return R.ok(electricityCabinetService.updateOnlineStatus(id));
+        return returnTripleResult(electricityCabinetService.updateOnlineStatus(id));
     }
 
     /**
