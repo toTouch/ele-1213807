@@ -753,10 +753,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //获取柜机图片
-                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
-                if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
-                    e.setPictureUrl(electricityCabinetPicture.get(0));
-                }
+//                List<String> electricityCabinetPicture = getElectricityCabinetPicture(e.getId().longValue());
+//                if (!CollectionUtils.isEmpty(electricityCabinetPicture)) {
+//                    e.setPictureUrl(electricityCabinetPicture.get(0));
+//                }
 
                 //查满仓空仓数
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
