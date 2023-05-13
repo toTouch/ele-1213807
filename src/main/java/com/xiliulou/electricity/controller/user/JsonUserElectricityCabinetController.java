@@ -82,7 +82,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 
 		ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
 				.name(name)
-				.distance(30000D)
+				.distance(distance)
 				.lon(lon)
 				.lat(lat)
 				.franchiseeId(franchiseeId)
