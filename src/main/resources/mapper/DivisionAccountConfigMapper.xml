@@ -26,7 +26,7 @@
         select
           id, name, hierarchy, franchisee_id, store_id, operator_rate, franchisee_rate, operator_rate_other, franchisee_rate_other, store_rate, status, type, tenant_id, del_flag, create_time, update_time
         from t_division_account_config
-        where del_flag=0 and id = #{id}
+        where id = #{id}
     </select>
 
     <!--查询指定行数据-->
@@ -57,7 +57,7 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        order by create_time desc
+        order by id desc
         limit #{offset}, #{size}
     </select>
 

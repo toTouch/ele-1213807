@@ -145,6 +145,7 @@
             and create_time &lt;=#{endTime}
         </if>
         group by division_account_config_id
+        order by division_account_config_id
         limit #{offset}, #{size}
     </select>
 

@@ -97,13 +97,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             DivisionAccountRecordVO divisionAccountRecordVO = new DivisionAccountRecordVO();
             BeanUtils.copyProperties(item, divisionAccountRecordVO);
 
-            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromDb(item.getUid());
             divisionAccountRecordVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
 
-            DivisionAccountConfig accountConfig = divisionAccountConfigService
-                    .queryByIdFromCache(item.getDivisionAccountConfigId());
-            divisionAccountRecordVO
-                    .setDivisionAccountConfigName(Objects.nonNull(accountConfig) ? accountConfig.getName() : "");
+            DivisionAccountConfig accountConfig = divisionAccountConfigService.queryByIdFromDB(item.getDivisionAccountConfigId());
+            divisionAccountRecordVO.setDivisionAccountConfigName(Objects.nonNull(accountConfig) ? accountConfig.getName() : "");
             return divisionAccountRecordVO;
         }).collect(Collectors.toList());
     }
@@ -160,7 +158,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         }
 
         return list.stream().peek(item -> {
-            DivisionAccountConfig divisionAccountConfig = divisionAccountConfigService.selectById(item.getDivisionAccountConfigId());
+            DivisionAccountConfig divisionAccountConfig = divisionAccountConfigService.queryByIdFromDB(item.getDivisionAccountConfigId());
             if (Objects.isNull(divisionAccountConfig)) {
                 return;
             }

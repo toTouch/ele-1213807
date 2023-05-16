@@ -26,8 +26,6 @@ public interface DivisionAccountConfigService {
      */
     DivisionAccountConfig queryByIdFromDB(Long id);
 
-    DivisionAccountConfig selectById(Long id);
-
     /**
      * 通过ID查询单条数据从缓存
      *
