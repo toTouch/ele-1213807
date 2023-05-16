@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -423,5 +424,11 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     
         this.baseMapper.batchInsert(oldFranchiseeInsurances);
 
+    }
+
+    @Slave
+    @Override
+    public R selectInsuranceListByCondition( Integer status, Integer type, Integer tenantId, Long franchiseeId, String batterType) {
+        return R.ok(franchiseeInsuranceMapper.queryInsuranceList( status, type, tenantId, franchiseeId, batterType));
     }
 }

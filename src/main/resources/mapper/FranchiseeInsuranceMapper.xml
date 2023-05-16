@@ -109,4 +109,23 @@
         </foreach>
     </insert>
 
+    <select id="queryInsuranceList" resultType="com.xiliulou.electricity.vo.FranchiseeInsuranceVo">
+        select tf.id,tf.franchisee_id,tf.cid,tf.name,tf.premium,tf.forehead,tf.valid_days,tf.insurance_type,tf.status,tf.is_constraint,tf.del_flag,tf.create_time,tf.update_time,tf.tenant_id,
+        tf.battery_type,tf.create_time,tf.update_time
+        from t_franchisee_insurance tf
+        where tf.del_flag=0
+        <if test="status != null">
+            AND tf.status = #{status}
+        </if>
+        <if test="insuranceType != null">
+            AND tf.insurance_type = #{insuranceType}
+        </if>
+        <if test="tenantId != null ">
+            and tf.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and tf.franchisee_id = #{franchiseeId}
+        </if>
+            and battery_type = #{batterType}
+    </select>
 </mapper>
