@@ -232,16 +232,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //判断用户电池服务费
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-//        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-//            long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-//            BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-//            if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
-//                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
-//            }
-//        }
 
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-
 
         long cardDays = 0;
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
@@ -563,6 +555,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 }
             }
+
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
     
             //如果后台有记录那么一定是用户没购买过套餐时添加，如果为INIT就修改
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(user.getUid());

@@ -85,6 +85,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         return this.divisionAccountConfigMapper.queryById(id);
     }
 
+    @Override
+    public DivisionAccountConfig selectById(Long id) {
+        return this.divisionAccountConfigMapper.selectById(id);
+    }
+
     /**
      * 通过ID查询单条数据从缓存
      *

@@ -596,11 +596,6 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
-
 
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;

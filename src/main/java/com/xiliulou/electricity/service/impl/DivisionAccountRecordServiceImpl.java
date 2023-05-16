@@ -71,6 +71,9 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Autowired
     private ElectricityCabinetService eleCabinetService;
 
+    @Autowired
+    private ElectricityCarModelService eleCarModelService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -157,8 +160,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         }
 
         return list.stream().peek(item -> {
-            DivisionAccountConfig divisionAccountConfig = divisionAccountConfigService
-                    .queryByIdFromCache(item.getDivisionAccountConfigId());
+            DivisionAccountConfig divisionAccountConfig = divisionAccountConfigService.selectById(item.getDivisionAccountConfigId());
             if (Objects.isNull(divisionAccountConfig)) {
                 return;
             }
@@ -287,9 +289,11 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                     log.warn("ELE WARN! not found division account hierarchy,id={}", divisionAccountConfigRefVO.getId());
                 }
 
+                ElectricityCarModel carModel = eleCarModelService.queryByIdFromCache(carMemberCardOrder.getCarModelId().intValue());
+
                 //保存分帐记录
                 DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
-                divisionAccountRecord.setMembercardName(carMemberCardOrder.getCardName());
+                divisionAccountRecord.setMembercardName(Objects.nonNull(carModel)?carModel.getName():"");
                 divisionAccountRecord.setUid(carMemberCardOrder.getUid());
                 divisionAccountRecord.setOrderNo(carMemberCardOrder.getOrderId());
                 divisionAccountRecord.setPayAmount(carMemberCardOrder.getPayAmount());
