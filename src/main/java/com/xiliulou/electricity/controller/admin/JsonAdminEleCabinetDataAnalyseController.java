@@ -283,7 +283,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
      *
      * @return
      */
-    @GetMapping(value = "/admin/eleCabinet/fullPower/count")
+    @GetMapping(value = "/admin/eleCabinet/average/count")
     public R averageStatistics(@RequestParam(value = "eid") Integer eid) {
         return R.ok(eleCabinetDataAnalyseService.averageStatistics(eid));
     }
