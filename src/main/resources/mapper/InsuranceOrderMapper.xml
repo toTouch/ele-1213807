@@ -81,6 +81,9 @@
             <if test="query.status != null">
                 and tio.status = #{query.status}
             </if>
+            <if test="query.payType != null">
+                and tio.pay_type = #{query.payType}
+            </if>
             <if test="query.franchiseeName != null and '' != query.franchiseeName">
                 and franchisee_id in (select id from t_franchisee where name like
                 concat('%',#{query.franchiseeName},'%'))

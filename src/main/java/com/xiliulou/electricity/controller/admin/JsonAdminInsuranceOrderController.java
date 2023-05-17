@@ -110,7 +110,8 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "userName", required = false) String userName) {
+                       @RequestParam(value = "userName", required = false) String userName,
+                        @RequestParam(value = "payType", required = false) Integer payType) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -142,7 +143,8 @@ public class JsonAdminInsuranceOrderController {
                 .franchiseeName(franchiseeName)
                 .tenantId(tenantId)
                 .phone(phone)
-                .userName(userName).build();
+                .userName(userName)
+                .payType(payType).build();
 
 
         return insuranceOrderService.queryCount(insuranceOrderQuery);
