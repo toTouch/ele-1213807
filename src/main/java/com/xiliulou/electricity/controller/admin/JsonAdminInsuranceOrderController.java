@@ -51,7 +51,8 @@ public class JsonAdminInsuranceOrderController {
                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "userName", required = false) String userName) {
+                       @RequestParam(value = "userName", required = false) String userName,
+                       @RequestParam(value = "payType", required = false) Integer payType) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -93,7 +94,8 @@ public class JsonAdminInsuranceOrderController {
                 .status(status)
                 .userName(userName)
                 .offset(offset)
-                .size(size).build();
+                .size(size)
+                .payType(payType).build();
 
 
         return insuranceOrderService.queryList(insuranceOrderQuery);

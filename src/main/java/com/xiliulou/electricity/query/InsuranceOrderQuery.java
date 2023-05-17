@@ -38,4 +38,6 @@ public class InsuranceOrderQuery {
     private Integer isUse;
 
     private Long uid;
+
+    private Integer payType;
 }

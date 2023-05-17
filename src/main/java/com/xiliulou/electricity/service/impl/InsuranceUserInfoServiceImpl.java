@@ -520,9 +520,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(insuranceUserInfo) || Objects.equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE) || insuranceUserInfo.getInsuranceExpireTime() < System.currentTimeMillis()) {
+        if (Objects.isNull(insuranceUserInfo) ) {
             log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", uid);
-            return R.fail("100309", "未购买保险或保险已过期");
+            return R.fail("100309", "用户不存在保险");
         }
 
         //查询保险
