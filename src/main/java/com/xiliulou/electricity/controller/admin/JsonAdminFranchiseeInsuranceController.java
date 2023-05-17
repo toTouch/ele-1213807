@@ -16,6 +16,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -185,7 +186,9 @@ public class JsonAdminFranchiseeInsuranceController {
             log.error("ELE ERROR! not found franchisee,franchiseeId={}", franchiseeId);
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
-
+        if (!StringUtils.isEmpty(batteryType)) {
+            batteryType = null;
+        }
         return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, InsuranceOrder.BATTERY_INSURANCE_TYPE, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
     }
 
