@@ -84,7 +84,7 @@ public class JsonAdminInsuranceUserInfoController {
         return insuranceUserInfoService.updateInsuranceStatus(uid, insuranceStatus);
     }
 
-    @PutMapping(value = "/admin/insuranceUserInfo/addUserInsurance")
+    @PostMapping(value = "/admin/insuranceUserInfo/addUserInsurance")
     @Log(title = "新增用户保险信息")
     public R addUserInsuranceInfo(@RequestBody InsuranceUserInfo order){
         return insuranceUserInfoService.insertUserInsurance(order);
