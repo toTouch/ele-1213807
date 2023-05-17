@@ -126,6 +126,13 @@
         <if test="franchiseeId != null ">
             and tf.franchisee_id = #{franchiseeId}
         </if>
-            and battery_type = #{batterType}
+        <choose>
+            <when test="batteryType == null or batteryType == ''">
+                and battery_type is null
+            </when>
+            <otherwise>
+                and battery_type = #{batteryType}
+            </otherwise>
+        </choose>
     </select>
 </mapper>

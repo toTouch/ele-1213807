@@ -186,9 +186,7 @@ public class JsonAdminFranchiseeInsuranceController {
             log.error("ELE ERROR! not found franchisee,franchiseeId={}", franchiseeId);
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
-        if (!StringUtils.isEmpty(batteryType)) {
-            batteryType = null;
-        }
+
         return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, InsuranceOrder.BATTERY_INSURANCE_TYPE, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
     }
 
