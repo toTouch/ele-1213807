@@ -177,7 +177,7 @@ public class JsonAdminFranchiseeInsuranceController {
      * @param franchiseeId,batteryType
      * @return
      */
-    @GetMapping("admin/franchiseeInsurance/list")
+    @GetMapping("admin/franchiseeInsurance/Insurancelist")
     public R getFranchiseeInsurancePage(  @RequestParam(value = "franchiseeId") Long franchiseeId,@RequestParam(value = "model") String batteryType) {
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
