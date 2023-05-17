@@ -59,6 +59,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    CityService cityService;
+
     @Override
     public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
 
@@ -429,6 +432,16 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Slave
     @Override
     public R selectInsuranceListByCondition( Integer status, Integer type, Integer tenantId, Long franchiseeId, String batterType) {
-        return R.ok(franchiseeInsuranceMapper.queryInsuranceList( status, type, tenantId, franchiseeId, batterType));
+        List<FranchiseeInsuranceVo> franchiseeInsuranceVos = franchiseeInsuranceMapper.queryInsuranceList(status, type, tenantId, franchiseeId, batterType);
+        if(CollectionUtils.isEmpty(franchiseeInsuranceVos)){
+            return R.ok(franchiseeInsuranceVos);
+        }
+        franchiseeInsuranceVos.parallelStream().forEach(vo ->{
+            City city = cityService.queryByIdFromDB(vo.getCid());
+            if (Objects.nonNull(city) && Objects.nonNull(city.getName())) {
+                vo.setCityName(city.getName());
+            }
+        });
+        return R.ok(franchiseeInsuranceVos);
     }
 }
