@@ -223,7 +223,7 @@ public class CouponServiceImpl implements CouponService {
     
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
         if(!CollectionUtils.isEmpty(userCoupons)){
-            return Triple.of(false,"","删除失败，优惠券已有用户领取未使用！");
+            return Triple.of(false,"","删除失败，优惠券已有用户领取");
         }
     
         couponMapper.deleteById(id,TenantContextHolder.getTenantId());
