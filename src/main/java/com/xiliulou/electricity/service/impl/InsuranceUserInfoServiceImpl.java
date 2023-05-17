@@ -387,7 +387,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
                 .isUse(InsuranceOrder.NOT_USE)
                 .payAmount(franchiseeInsurance.getPremium())
                 .forehead(franchiseeInsurance.getForehead())
-                .payType(InsuranceOrder.ONLINE_PAY_TYPE)
+                .payType(InsuranceOrder.OFFLINE_PAY_TYPE)
                 .phone(userInfo.getPhone())
                 .status(InsuranceOrder.STATUS_SUCCESS)
                 .tenantId(tenantId)
