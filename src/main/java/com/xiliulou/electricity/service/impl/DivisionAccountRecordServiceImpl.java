@@ -187,13 +187,13 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         divisionAccountExecutorService.execute(() -> {
 
             try {
-                Long storeId = null;
-                if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(batteryMemberCardOrder.getSource()) && Objects.nonNull(batteryMemberCardOrder.getRefId())) {
-                    ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(batteryMemberCardOrder.getRefId().intValue());
-                    storeId = Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : null;
-                }
+//                Long storeId = null;
+//                if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(batteryMemberCardOrder.getSource()) && Objects.nonNull(batteryMemberCardOrder.getRefId())) {
+//                    ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(batteryMemberCardOrder.getRefId().intValue());
+//                    storeId = Objects.nonNull(electricityCabinet) ? electricityCabinet.getStoreId() : null;
+//                }
 
-                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(batteryMemberCardOrder.getMemberCardId().longValue(), storeId, batteryMemberCardOrder.getFranchiseeId(), batteryMemberCardOrder.getTenantId());
+                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(batteryMemberCardOrder.getMemberCardId().longValue(), null, batteryMemberCardOrder.getFranchiseeId(), batteryMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
                     log.error("ELE ERROR! batteryMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
                     return;
