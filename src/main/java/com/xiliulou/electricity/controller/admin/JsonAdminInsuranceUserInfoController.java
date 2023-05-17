@@ -92,8 +92,8 @@ public class JsonAdminInsuranceUserInfoController {
 
     @PutMapping(value = "/admin/insuranceUserInfo/editUserInsurance")
     @Log(title = "修改用户保险信息")
-    public R editUserInsuranceInfo(@RequestBody InsuranceUserInfo order,@RequestParam("insuranceStatus") Integer insuranceStatus){
-        return insuranceUserInfoService.editUserInsuranceInfo(order,insuranceStatus);
+    public R editUserInsuranceInfo(@RequestBody InsuranceUserInfo order){
+        return insuranceUserInfoService.editUserInsuranceInfo(order);
     }
     @PutMapping(value = "/admin/insuranceUserInfo/renewalUserInsurance")
     @Log(title = "续费用户保险")

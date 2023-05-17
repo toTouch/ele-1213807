@@ -39,7 +39,7 @@ public interface InsuranceUserInfoService {
 
     R insertUserInsurance(InsuranceUserInfo insuranceOrder);
 
-    R editUserInsuranceInfo(InsuranceUserInfo order,Integer insuranceStatus);
+    R editUserInsuranceInfo(InsuranceUserInfo order);
 
     R renewalUserInsurance(InsuranceUserInfo insuranceOrder);
 

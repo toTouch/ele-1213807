@@ -426,12 +426,16 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R editUserInsuranceInfo(InsuranceUserInfo order,Integer insuranceStatus){
-        if (Objects.isNull(order) || Objects.isNull(insuranceStatus) || (!Objects.equals(InsuranceUserInfo.IS_USE, insuranceStatus) && !Objects.equals(InsuranceUserInfo.NOT_USE, insuranceStatus))) {
+    public R editUserInsuranceInfo(InsuranceUserInfo order){
+        if (Objects.isNull(order)) {
             log.error("INSERT USER INSURANCEORDER ERROR! PARAM IS NULL");
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        Integer insuranceStatus = order.getIsUse();
+        if( !Objects.equals(InsuranceUserInfo.IS_USE, insuranceStatus) && !Objects.equals(InsuranceUserInfo.NOT_USE, insuranceStatus)){
+            log.error("INSERT USER INSURANCEORDER ERROR! INSURANCESTATUS IS ILLEGAL");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
         Long uid = order.getUid();
         Long insuranceExpireTime = order.getInsuranceExpireTime();
         BigDecimal premium = order.getPremium();
