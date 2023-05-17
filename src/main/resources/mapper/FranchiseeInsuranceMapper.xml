@@ -128,10 +128,10 @@
         </if>
         <choose>
             <when test="batteryType == null or batteryType == ''">
-                and battery_type is null
+                and tf.battery_type is null
             </when>
             <otherwise>
-                and battery_type = #{batteryType}
+                and tf.battery_type = #{batteryType}
             </otherwise>
         </choose>
     </select>

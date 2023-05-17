@@ -30,6 +30,6 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
 
     Integer batchInsert(List<FranchiseeInsurance> franchiseeInsuranceList);
 
-    List<FranchiseeInsuranceVo> queryInsuranceList( @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("batterType") String batterType);
+    List<FranchiseeInsuranceVo> queryInsuranceList( @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("batteryType") String batteryType);
     
 }
