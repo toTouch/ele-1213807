@@ -5,8 +5,10 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
+import com.xiliulou.electricity.vo.EleCabinetOrderAnalyseVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,11 +79,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     }
 
     @Override
-    public List<EleCabinetDataAnalyseVO> selectFailurePage(ElectricityCabinetQuery cabinetQuery) {
-        return null;
-    }
-
-    @Override
     public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
         List<EleCabinetDataAnalyseVO> electricityCabinetList = eleCabinetService.selectPowerPage(cabinetQuery);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
@@ -107,8 +104,54 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
     }
 
     @Override
-    public Integer selectFailurePageCount(ElectricityCabinetQuery cabinetQuery) {
-        return 0;
+    public EleCabinetOrderAnalyseVO averageStatistics(Integer eid) {
+        EleCabinetOrderAnalyseVO result = new EleCabinetOrderAnalyseVO();
+
+        ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return result;
+        }
+
+        //获取本月订单
+        List<ElectricityCabinetOrder> electricityCabinetOrders = eleCabinetOrderService.selectMonthExchangeOrders(electricityCabinet.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), electricityCabinet.getTenantId());
+        if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
+            return result;
+        }
+
+        //日均换电次数
+        result.setAverageExchangeNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+        //本月换电总人数
+        long peopleNumber = electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count();
+
+        //日均活跃度
+        result.setAverageExchangeNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+
+        return result;
+    }
+
+    @Override
+    public EleCabinetOrderAnalyseVO todayStatistics(Integer eid) {
+        EleCabinetOrderAnalyseVO result = new EleCabinetOrderAnalyseVO();
+
+        ElectricityCabinet electricityCabinet = eleCabinetService.queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return result;
+        }
+
+        //今日换电订单
+        List<ElectricityCabinetOrder> electricityCabinetOrders = eleCabinetOrderService.selectTodayExchangeOrder(electricityCabinet.getId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), electricityCabinet.getTenantId());
+        if (CollectionUtils.isEmpty(electricityCabinetOrders)) {
+            return result;
+        }
+
+        //今日换电数量
+        result.setExchangeNumber(electricityCabinetOrders.size());
+
+        //今日活跃度
+        result.setPeopleNumber((int) electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
+
+        return result;
     }
 
     private List<EleCabinetDataAnalyseVO> buildEleCabinetDataAnalyseVOs(List<EleCabinetDataAnalyseVO> electricityCabinetList) {
@@ -156,7 +199,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
             long openFanNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getIsFan(), ElectricityCabinetBox.OPEN_FAN)).count();
 
-            long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn())).filter(battery -> Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING)).count();
+            long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn())).filter(battery -> Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING)).count();
 
             item.setFullBatteryNumber((int) fullBatteryNumber);
             item.setChargeBatteryNumber((int) chargeCellNumber);
@@ -169,30 +212,31 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return null;
         });
 
-        CompletableFuture<Void> acquireOrderInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-            //日均换电次数
-            Long monthExchangeCount = eleCabinetOrderService.selectMonthExchangeCount(item.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), item.getTenantId());
-            item.setAverageExchangeNumber(BigDecimal.valueOf(monthExchangeCount).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-
-            //日均活跃度
-            Long monthExchangeUser = eleCabinetOrderService.selectMonthExchangeUser(item.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), item.getTenantId());
-            item.setAveragePeopleNumber(BigDecimal.valueOf(monthExchangeUser).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-
-            List<ElectricityCabinetOrder> todayEleCabinetOrders = eleCabinetOrderService.selectTodayExchangeOrder(item.getId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), item.getTenantId());
-            if (CollectionUtils.isEmpty(todayEleCabinetOrders)) {
-                return;
-            }
-
-            //今日换电数量
-            item.setExchangeNumber(todayEleCabinetOrders.size());
-            //今日活跃度
-            item.setPeopleNumber((int) todayEleCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
-        }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
-            log.error("ELE ERROR! acquire eleCabinet order info fail", e);
-            return null;
-        });
-
-        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, acquireOrderInfo);
+//        CompletableFuture<Void> acquireOrderInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
+//            //日均换电次数
+//            Long monthExchangeCount = eleCabinetOrderService.selectMonthExchangeOrders(item.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), item.getTenantId());
+//            item.setAverageExchangeNumber(BigDecimal.valueOf(monthExchangeCount).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+//
+//            //日均活跃度
+//            Long monthExchangeUser = eleCabinetOrderService.selectMonthExchangeUser(item.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), item.getTenantId());
+//            item.setAveragePeopleNumber(BigDecimal.valueOf(monthExchangeUser).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+//
+//            List<ElectricityCabinetOrder> todayEleCabinetOrders = eleCabinetOrderService.selectTodayExchangeOrder(item.getId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), item.getTenantId());
+//            if (CollectionUtils.isEmpty(todayEleCabinetOrders)) {
+//                return;
+//            }
+//
+//            //今日换电数量
+//            item.setExchangeNumber(todayEleCabinetOrders.size());
+//            //今日活跃度
+//            item.setPeopleNumber((int) todayEleCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
+//        }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
+//            log.error("ELE ERROR! acquire eleCabinet order info fail", e);
+//            return null;
+//        });
+//
+//        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, acquireOrderInfo);
+        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
 
         return electricityCabinetList;
     }

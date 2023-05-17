@@ -105,26 +105,6 @@ public class EleCabinetDataAnalyseVO {
     private Integer fanOpenNumber;
 
     /**
-     * 日均换电次数
-     */
-    private Double averageExchangeNumber;
-
-    /**
-     * 日均活跃度
-     */
-    private Double averagePeopleNumber;
-
-    /**
-     * 今日换电数
-     */
-    private Integer exchangeNumber;
-
-    /**
-     * 今日活跃人数
-     */
-    private Integer peopleNumber;
-
-    /**
      * 电表读数
      */
     private Double powerConsumption;

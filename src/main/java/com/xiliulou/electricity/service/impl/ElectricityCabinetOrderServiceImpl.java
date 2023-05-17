@@ -1759,14 +1759,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Slave
     @Override
-    public Long selectMonthExchangeCount(Integer eid, long todayStartTimeStamp, long todayEndTimeStamp,Integer tenantId) {
-        return electricityCabinetOrderMapper.selectMonthExchangeCount(eid, todayStartTimeStamp, todayEndTimeStamp,tenantId);
-    }
-
-    @Slave
-    @Override
-    public Long selectMonthExchangeUser(Integer eid, long agoStartTime, long currentTimeMillis, Integer tenantId) {
-        return electricityCabinetOrderMapper.selectMonthExchangeUser( eid,  agoStartTime,  currentTimeMillis,  tenantId);
+    public List<ElectricityCabinetOrder> selectMonthExchangeOrders(Integer eid, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId) {
+        return electricityCabinetOrderMapper.selectMonthExchangeOrders(eid, todayStartTimeStamp, todayEndTimeStamp,tenantId);
     }
 
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {

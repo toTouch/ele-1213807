@@ -44,7 +44,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
 
     List<ElectricityCabinetOrder> selectTodayExchangeOrder(@Param("eid") Integer eid, @Param("todayStartTimeStamp") long todayStartTimeStamp, @Param("todayEndTimeStamp") long todayEndTimeStamp, @Param("tenantId") Integer tenantId);
 
-    Long selectMonthExchangeCount(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
+    List<ElectricityCabinetOrder> selectMonthExchangeOrders(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
 
-    Long selectMonthExchangeUser(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
 }

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
+import com.xiliulou.electricity.vo.EleCabinetOrderAnalyseVO;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -16,9 +18,9 @@ public interface EleCabinetDataAnalyseService {
 
     List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery);
 
-    List<EleCabinetDataAnalyseVO> selectFailurePage(ElectricityCabinetQuery cabinetQuery);
-
     Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery);
 
-    Integer selectFailurePageCount(ElectricityCabinetQuery cabinetQuery);
+    EleCabinetOrderAnalyseVO averageStatistics(Integer eid);
+
+    EleCabinetOrderAnalyseVO todayStatistics(Integer eid);
 }

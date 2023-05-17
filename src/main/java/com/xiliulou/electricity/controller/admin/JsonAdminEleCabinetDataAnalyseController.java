@@ -181,55 +181,6 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         return R.ok(eleCabinetDataAnalyseService.selectLockPageCount(cabinetQuery));
     }
 
-
-    /**
-     * 故障列表
-     */
-    @GetMapping(value = "/admin/eleCabinet/failure/page")
-    public R failurePage(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                         @RequestParam(value = "name", required = false) String name,
-                         @RequestParam(value = "sn", required = false) String sn,
-                         @RequestParam(value = "address", required = false) String address,
-                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                         @RequestParam(value = "storeId", required = false) Long storeId) {
-
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
-        }
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
-
-        return R.ok(eleCabinetDataAnalyseService.selectFailurePage(cabinetQuery));
-    }
-
-    @GetMapping(value = "/admin/eleCabinet/failure/count")
-    public R failurePageCount(@RequestParam(value = "name", required = false) String name,
-                              @RequestParam(value = "sn", required = false) String sn,
-                              @RequestParam(value = "address", required = false) String address,
-                              @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                              @RequestParam(value = "storeId", required = false) Long storeId) {
-
-        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
-        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
-            return returnTripleResult(verifyUserPermissionResult);
-        }
-
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
-                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
-
-        return R.ok(eleCabinetDataAnalyseService.selectFailurePageCount(cabinetQuery));
-    }
-
     /**
      * 少电列表
      */
@@ -326,6 +277,27 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
     }
+
+    /**
+     * 日均换电次数
+     *
+     * @return
+     */
+    @GetMapping(value = "/admin/eleCabinet/fullPower/count")
+    public R averageStatistics(@RequestParam(value = "eid") Integer eid) {
+        return R.ok(eleCabinetDataAnalyseService.averageStatistics(eid));
+    }
+
+    /**
+     * 今日换电次数
+     *
+     * @return
+     */
+    @GetMapping(value = "/admin/eleCabinet/today/statistics")
+    public R todayStatistics(@RequestParam(value = "eid") Integer eid) {
+        return R.ok(eleCabinetDataAnalyseService.todayStatistics(eid));
+    }
+
 
     private Triple<Boolean, String, Object> verifyUserPermission() {
         TokenUser user = SecurityUtils.getUserInfo();
