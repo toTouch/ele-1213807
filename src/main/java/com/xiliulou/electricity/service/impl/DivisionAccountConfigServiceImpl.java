@@ -218,8 +218,6 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "100480", "分帐配置不存在");
         }
 
-        //删除原来的配置
-        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(divisionAccountConfigQuery.getId());
         //校验
         Triple<Boolean, String, Object> verifyBatteryMembercardResult = verifyBatteryMembercardParams(divisionAccountConfigQuery);
         if (Boolean.FALSE.equals(verifyBatteryMembercardResult.getLeft())) {
@@ -230,6 +228,9 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         if (Boolean.FALSE.equals(verifyCarModelResult.getLeft())) {
             return verifyCarModelResult;
         }
+
+        //删除原来的配置
+        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(divisionAccountConfigQuery.getId());
 
         List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordList =Lists.newArrayList();
 
