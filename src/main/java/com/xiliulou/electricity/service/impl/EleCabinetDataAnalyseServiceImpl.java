@@ -160,9 +160,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
 
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
-
             EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.queryByIdFromDB(item.getId().longValue());
             item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
 
@@ -174,6 +171,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(Objects.nonNull(store) ? store.getFranchiseeId() : 0);
+            item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
         }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
             log.error("ELE ERROR! acquire eleCabinet basic info fail", e);
