@@ -12,20 +12,20 @@ public class EleCabinetOrderAnalyseVO {
     /**
      * 日均换电次数
      */
-    private Double averageExchangeNumber;
+    private Double averageExchangeNumber = 0d;
 
     /**
      * 日均活跃度
      */
-    private Double averagePeopleNumber;
+    private Double averagePeopleNumber = 0d;
 
     /**
      * 今日换电数
      */
-    private Integer exchangeNumber;
+    private Integer exchangeNumber = 0;
 
     /**
      * 今日活跃人数
      */
-    private Integer peopleNumber;
+    private Integer peopleNumber = 0;
 }
