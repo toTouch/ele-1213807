@@ -55,8 +55,8 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
 
     @Slave
     @Override
-    public ElectricityCabinetPower selectByEid(Integer id) {
-        return this.electricityCabinetPowerMapper.selectByEid(id);
+    public ElectricityCabinetPower selectLatestByEid(Integer id) {
+        return this.electricityCabinetPowerMapper.selectLatestByEid(id);
     }
 
     @Override

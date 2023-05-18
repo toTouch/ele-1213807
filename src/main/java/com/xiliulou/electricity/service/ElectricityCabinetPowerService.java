@@ -21,5 +21,5 @@ public interface ElectricityCabinetPowerService {
 
   void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery, HttpServletResponse response);
 
-  ElectricityCabinetPower selectByEid(Integer id);
+  ElectricityCabinetPower selectLatestByEid(Integer id);
 }

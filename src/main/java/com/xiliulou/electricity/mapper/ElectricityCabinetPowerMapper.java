@@ -31,5 +31,5 @@ public interface ElectricityCabinetPowerMapper  extends BaseMapper<ElectricityCa
 
     ElectricityCabinetPowerVo queryLatestPower(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
 
-    ElectricityCabinetPower selectByEid(@Param("eid") Integer eid);
+    ElectricityCabinetPower selectLatestByEid(@Param("eid") Integer eid);
 }
