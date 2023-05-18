@@ -15,6 +15,14 @@ public class EleCabinetDataAnalyseVO {
      */
     private Integer id;
     /**
+     * 物联网productKey
+     */
+    private String productKey;
+    /**
+     * 物联网deviceName
+     */
+    private String deviceName;
+    /**
      * 换电柜名称
      */
     private String name;
@@ -50,10 +58,6 @@ public class EleCabinetDataAnalyseVO {
      * 版本
      */
     private String version;
-    /**
-     * 二维码
-     */
-    private String QRCode;
     /**
      * 加盟商
      */
@@ -108,11 +112,6 @@ public class EleCabinetDataAnalyseVO {
      * 电表读数
      */
     private Double powerConsumption;
-
-    /**
-     * 创建时间
-     */
-    private Long createTime;
     /**
      * 更新时间
      */
@@ -120,7 +119,6 @@ public class EleCabinetDataAnalyseVO {
     /**
      * 服务到期时间
      */
-    private Long serviceEndTime;
+    private Long serverEndTime;
 
-    private Integer tenantId;
 }

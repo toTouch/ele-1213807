@@ -54,10 +54,10 @@
     </select>
 
 
-    <select id="selectByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetPower">
+    <select id="selectLatestByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetPower">
         select
         id, eid , same_day_power, sum_power , `date`, create_time, update_time
-        from t_electricity_cabinet_power where eid = #{eid}
+        from t_electricity_cabinet_power where eid = #{eid} order by id desc limit 1
     </select>
 
 

@@ -21,6 +21,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -160,20 +163,20 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
 
-            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
-            item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
-
             EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.queryByIdFromDB(item.getId().longValue());
             item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
 
             ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
-            item.setServiceEndTime(eleCabinetServer.getServerEndTime());
+            item.setServerEndTime(Objects.nonNull(eleCabinetServer) ? eleCabinetServer.getServerEndTime() : System.currentTimeMillis());
 
-            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectByEid(item.getId());
-            item.setPowerConsumption(eleCabinetPower.getSumPower());
+            ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectLatestByEid(item.getId());
+            item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ? eleCabinetPower.getSumPower() : 0);
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(Objects.nonNull(store) ? store.getFranchiseeId() : 0);
+            item.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
         }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
             log.error("ELE ERROR! acquire eleCabinet basic info fail", e);
@@ -236,7 +239,13 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 //        });
 //
 //        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, acquireOrderInfo);
-        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
+        CompletableFuture<Void> future = CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
+
+        try {
+            future.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("ELE ERROR! acquire result fail", e);
+        }
 
         return electricityCabinetList;
     }
