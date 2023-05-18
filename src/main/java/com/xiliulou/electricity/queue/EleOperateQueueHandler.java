@@ -707,6 +707,7 @@ public class EleOperateQueueHandler {
 
         //删除柜机被锁缓存
         redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
+        handleCallBatteryChangeSoc(electricityBattery);
     }
 
     //检测还电池
@@ -786,7 +787,6 @@ public class EleOperateQueueHandler {
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
 
-            handleCallBatteryChangeSoc(electricityBattery);
             //删除柜机被锁缓存
             redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
         }
