@@ -928,6 +928,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .updateTime(System.currentTimeMillis()).build();
             enableMemberCardRecordService.insert(enableMemberCardRecord);
 
+            //启用套餐需要更新停卡记录的真实停卡天数  不然自动启用套餐定时任务会扫描出来
+            EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
+            eleDisableMemberCardRecordUpdate.setId(eleDisableMemberCardRecord.getId());
+            eleDisableMemberCardRecordUpdate.setRealDays(cardDays.intValue());
+            eleDisableMemberCardRecordService.updateBYId(eleDisableMemberCardRecordUpdate);
+
             memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(serviceFeeUserInfo.getUid());
@@ -1480,13 +1486,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
     
             //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
-            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
-                EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
-                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
-                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
-            }
+//            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
+            //启用套餐需要更新停卡记录的真实停卡天数   不然自动启用套餐的定时任务会扫描出来
+            EleDisableMemberCardRecord updateDisableMemberCardRecord = new EleDisableMemberCardRecord();
+            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+            updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+//            }
 
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
