@@ -32,6 +32,58 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     private EleCabinetDataAnalyseService eleCabinetDataAnalyseService;
 
     /**
+     * 全部柜机列表
+     */
+    @GetMapping("/admin/eleCabinet/all/page")
+    public R allPage(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                     @RequestParam(value = "name", required = false) String name,
+                     @RequestParam(value = "sn", required = false) String sn,
+                     @RequestParam(value = "address", required = false) String address,
+                     @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                     @RequestParam(value = "storeId", required = false) Long storeId) {
+
+        if (size < 0 || size > 50) {
+            size = 10;
+        }
+
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
+        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
+            return returnTripleResult(verifyUserPermissionResult);
+        }
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
+                .sn(sn).address(address).franchiseeId(franchiseeId).storeId(storeId).name(name)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(eleCabinetDataAnalyseService.selectOfflineByPage(cabinetQuery));
+    }
+
+    /**
+     * 全部柜机列表总数
+     */
+    @GetMapping(value = "/admin/eleCabinet/all/count")
+    public R allPageCount(@RequestParam(value = "name", required = false) String name,
+                          @RequestParam(value = "sn", required = false) String sn,
+                          @RequestParam(value = "address", required = false) String address,
+                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                          @RequestParam(value = "storeId", required = false) Long storeId) {
+
+        Triple<Boolean, String, Object> verifyUserPermissionResult = verifyUserPermission();
+        if (Boolean.FALSE.equals(verifyUserPermissionResult.getLeft())) {
+            return returnTripleResult(verifyUserPermissionResult);
+        }
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
+                .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(eleCabinetDataAnalyseService.selectOfflinePageCount(cabinetQuery));
+    }
+
+    /**
      * 离线列表
      */
     @GetMapping("/admin/eleCabinet/offline/page")
