@@ -59,10 +59,6 @@ public class EleCabinetDataAnalyseVO {
      */
     private String version;
     /**
-     * 二维码
-     */
-    private String QRCode;
-    /**
      * 加盟商
      */
     private String franchiseeName;
@@ -116,11 +112,6 @@ public class EleCabinetDataAnalyseVO {
      * 电表读数
      */
     private Double powerConsumption;
-
-    /**
-     * 创建时间
-     */
-    private Long createTime;
     /**
      * 更新时间
      */
@@ -128,7 +119,6 @@ public class EleCabinetDataAnalyseVO {
     /**
      * 服务到期时间
      */
-    private Long serviceEndTime;
+    private Long serverEndTime;
 
-    private Integer tenantId;
 }
