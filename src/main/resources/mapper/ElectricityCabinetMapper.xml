@@ -420,6 +420,9 @@
         <if test="address != null and address != ''">
             and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
         </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
         <if test="usableStatus != null">
             and tec.usable_status = #{usableStatus}
         </if>
@@ -477,6 +480,9 @@
         <if test="address != null and address != ''">
             and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
         </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
         <if test="usableStatus != null">
             and tec.usable_status = #{usableStatus}
         </if>
@@ -531,6 +537,9 @@
         <if test="address != null and address != ''">
             and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
         </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
         <if test="usableStatus != null">
             and tec.usable_status = #{usableStatus}
         </if>
@@ -578,6 +587,9 @@
         <if test="address != null and address != ''">
             and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
         </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
         <if test="usableStatus != null">
             and tec.usable_status = #{usableStatus}
         </if>
@@ -623,6 +635,9 @@
         <if test="address != null and address != ''">
             and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
         </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+        </if>
         <if test="usableStatus != null">
             and tec.usable_status = #{usableStatus}
         </if>
@@ -653,6 +668,9 @@
         </if>
         <if test="address != null and address != ''">
             and tec.address like concat('%',#{address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="sn != null and sn != ''">
+            and tec.sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
         </if>
         <if test="usableStatus != null">
             and tec.usable_status = #{usableStatus}
