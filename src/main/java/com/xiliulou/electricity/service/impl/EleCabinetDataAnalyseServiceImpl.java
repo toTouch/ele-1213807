@@ -21,6 +21,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
@@ -236,7 +239,13 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 //        });
 //
 //        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, acquireOrderInfo);
-        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
+        CompletableFuture<Void> future = CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
+
+        try {
+            future.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("ELE ERROR! acquire result fail", e);
+        }
 
         return electricityCabinetList;
     }
