@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BatteryStatisticalVo;
@@ -97,4 +98,12 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     String querySnByUid(@Param("uid") Long uid);
 
     ElectricityBattery queryUserAttrBySn(@Param("sn") String sn);
+
+    List<ElectricityBattery> queryBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                       @Param("offset") Long offset, @Param("size") Long size);
+    Integer queryBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
+
+    List<ElectricityBattery> queryOverdueBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                              @Param("offset") Long offset, @Param("size") Long size);
+    Integer queryOverdueBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 }

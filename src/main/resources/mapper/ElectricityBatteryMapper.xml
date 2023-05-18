@@ -692,4 +692,127 @@
         from t_electricity_battery
         where sn = #{sn}
     </select>
+
+    <select id="queryBatteryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select id,sn,longitude,latitude,power,voltage,capacity,model,status,electricity_cabinet_id,electricity_cabinet_name,
+        user_name,create_time,update_time,del_flag,charge_status,health_status,tenant_id,borrow_expire_time,report_type,
+        iot_card_number,exchange_count,uid,franchisee_id,physics_status,business_status
+        from t_electricity_battery
+        where del_flag = 0 and tenant_id = #{query.tenantId}
+        <if test="query.sn != null and query.sn !=''">
+            and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.physicsStatus != null">
+            and physics_status =#{query.physicsStatus}
+        </if>
+        <if test="query.businessStatus != null">
+            and business_status =#{query.businessStatus}
+        </if>
+        <choose>
+            <when test="query.queryType == 3">
+                and franchisee_id is null
+            </when>
+            <when test="query.queryType != 3 and query.franchiseeId != null">
+                and franchisee_id =#{query.franchiseeId}
+            </when>
+        </choose>
+
+        <if test="query.electricityCabinetId != null">
+            and electricity_cabinet_id =#{query.electricityCabinetId}
+        </if>
+
+        <choose>
+            <when test="query.queryType == 4">
+                and franchisee_id is null
+            </when>
+            <when test="query.queryType != 4 and query.uid != null">
+                and uid =#{query.uid}
+            </when>
+        </choose>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="queryBatteryCount" resultType="java.lang.Integer">
+        select  count(1)
+        from t_electricity_battery
+        where del_flag = 0 and tenant_id = #{query.tenantId}
+        <if test="query.sn != null and query.sn !=''">
+            and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.physicsStatus != null">
+            and physics_status =#{query.physicsStatus}
+        </if>
+        <if test="query.businessStatus != null">
+            and business_status =#{query.businessStatus}
+        </if>
+        <choose>
+            <when test="query.queryType == 3">
+                and franchisee_id is null
+            </when>
+            <when test="query.queryType != 3 and query.franchiseeId != null">
+                and franchisee_id =#{query.franchiseeId}
+            </when>
+        </choose>
+
+        <if test="query.electricityCabinetId != null">
+            and electricity_cabinet_id =#{query.electricityCabinetId}
+        </if>
+
+        <choose>
+            <when test="query.queryType == 4">
+                and franchisee_id is null
+            </when>
+            <when test="query.queryType != 4 and query.uid != null">
+                and uid =#{query.uid}
+            </when>
+        </choose>
+
+    </select>
+
+
+    <select id="queryOverdueBatteryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
+        teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,teb.report_type,
+        teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status
+         from t_electricity_battery teb  left join t_user_battery_member_card temc on teb.uid=temc.uid
+        where teb.del_flag = 0 and tenant_id = #{query.tenantId} and teb.uid is not null
+        <if test="query.businessStatus != null">
+            and teb.business_status =#{query.businessStatus}
+        </if>
+        <if test="query.sn != null and query.sn !=''">
+            and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.electricityCabinetId != null">
+            and teb.electricity_cabinet_id =#{query.electricityCabinetId}
+        </if>
+        <if test="query.franchiseeId != null">
+            and teb.franchisee_id =#{query.franchiseeId}
+        </if>
+        <if test="query.currentTimeMillis != null">
+            and temc.member_card_expire_time <![CDATA[ < ]]> #{query.currentTimeMillis}
+        </if>
+        order by teb.create_time desc
+        limit #{offset}, #{size}
+    </select>
+    <select id="queryOverdueBatteryCount" resultType="java.lang.Integer">
+        select  count(1)
+        from t_electricity_battery teb  left join t_user_battery_member_card temc on teb.uid=temc.uid
+        where teb.del_flag = 0 and tenant_id = #{query.tenantId} and teb.uid is not null
+        <if test="query.businessStatus != null">
+            and teb.business_status =#{query.businessStatus}
+        </if>
+        <if test="query.sn != null and query.sn !=''">
+            and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.electricityCabinetId != null">
+            and teb.electricity_cabinet_id =#{query.electricityCabinetId}
+        </if>
+        <if test="query.franchiseeId != null">
+            and teb.franchisee_id =#{query.franchiseeId}
+        </if>
+        <if test="query.currentTimeMillis != null">
+            and temc.member_card_expire_time <![CDATA[ < ]]> #{query.currentTimeMillis}
+        </if>
+
+    </select>
 </mapper>
