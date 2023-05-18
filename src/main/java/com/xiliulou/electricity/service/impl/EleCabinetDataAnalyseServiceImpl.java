@@ -167,10 +167,10 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
 
             ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());
-            item.setServiceEndTime(eleCabinetServer.getServerEndTime());
+            item.setServiceEndTime(Objects.nonNull(eleCabinetServer) ?eleCabinetServer.getServerEndTime():System.currentTimeMillis());
 
             ElectricityCabinetPower eleCabinetPower = eleCabinetPowerService.selectByEid(item.getId());
-            item.setPowerConsumption(eleCabinetPower.getSumPower());
+            item.setPowerConsumption(Objects.nonNull(eleCabinetPower) ?eleCabinetPower.getSumPower():0);
 
             Store store = storeService.queryByIdFromCache(item.getStoreId());
             item.setStoreName(Objects.nonNull(store) ? store.getName() : "");
