@@ -189,6 +189,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                           @RequestParam(value = "name", required = false) String name,
                           @RequestParam(value = "sn", required = false) String sn,
                           @RequestParam(value = "address", required = false) String address,
+                          @RequestParam(value = "lowChargeRate") Double lowChargeRate,
                           @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                           @RequestParam(value = "storeId", required = false) Long storeId) {
 
@@ -206,7 +207,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn)
-                .address(address).lowChargeRate(0.25)
+                .address(address).lowChargeRate(lowChargeRate)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
@@ -216,6 +217,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     public R lowPowerPageCount(@RequestParam(value = "name", required = false) String name,
                                @RequestParam(value = "sn", required = false) String sn,
                                @RequestParam(value = "address", required = false) String address,
+                               @RequestParam(value = "lowChargeRate") Double lowChargeRate,
                                @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                @RequestParam(value = "storeId", required = false) Long storeId) {
 
@@ -224,7 +226,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
             return returnTripleResult(verifyUserPermissionResult);
         }
 
-        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(0.25)
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address).lowChargeRate(lowChargeRate)
                 .franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
@@ -238,6 +240,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
                            @RequestParam(value = "name", required = false) String name,
                            @RequestParam(value = "sn", required = false) String sn,
                            @RequestParam(value = "address", required = false) String address,
+                           @RequestParam(value = "fullChargeRate") Double fullChargeRate,
                            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                            @RequestParam(value = "storeId", required = false) Long storeId) {
 
@@ -255,7 +258,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset).sn(sn).address(address)
-                .fullChargeRate(0.75).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPage(cabinetQuery));
     }
@@ -264,6 +267,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
     public R fullPowerPageCount(@RequestParam(value = "name", required = false) String name,
                                 @RequestParam(value = "sn", required = false) String sn,
                                 @RequestParam(value = "address", required = false) String address,
+                                @RequestParam(value = "fullChargeRate") Double fullChargeRate,
                                 @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                 @RequestParam(value = "storeId", required = false) Long storeId) {
 
@@ -273,7 +277,7 @@ public class JsonAdminEleCabinetDataAnalyseController extends BaseController {
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().sn(sn).address(address)
-                .fullChargeRate(0.75).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .fullChargeRate(fullChargeRate).franchiseeId(franchiseeId).storeId(storeId).name(name).tenantId(TenantContextHolder.getTenantId()).build();
 
         return R.ok(eleCabinetDataAnalyseService.selectPowerPageCount(cabinetQuery));
     }
