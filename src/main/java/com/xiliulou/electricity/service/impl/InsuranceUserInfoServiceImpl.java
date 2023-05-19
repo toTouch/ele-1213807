@@ -571,7 +571,11 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         updateOrAddInsuranceUserInfo.setIsUse(InsuranceUserInfo.NOT_USE);
         updateOrAddInsuranceUserInfo.setInsuranceOrderId(orderId);
         updateOrAddInsuranceUserInfo.setInsuranceId(franchiseeInsurance.getId());
-        updateOrAddInsuranceUserInfo.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime()+franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+        if(Objects.equals(InsuranceUserInfo.IS_USE,insuranceUserInfo.getIsUse())){
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(System.currentTimeMillis()+franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+        }else{
+            updateOrAddInsuranceUserInfo.setInsuranceExpireTime(insuranceUserInfo.getInsuranceExpireTime()+franchiseeInsurance.getValidDays() * ((24 * 60 * 60 * 1000L)));
+        }
         updateOrAddInsuranceUserInfo.setTenantId(tenantId);
         updateOrAddInsuranceUserInfo.setForehead(franchiseeInsurance.getForehead());
         updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
