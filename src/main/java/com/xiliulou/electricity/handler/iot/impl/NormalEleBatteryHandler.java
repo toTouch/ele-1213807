@@ -177,7 +177,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         
         //保存电池电压电流&充电器电压电流
-//        this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
+        this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
         
         //获取电池电量
         Double power = getBatteryPower(eleBatteryVO, electricityBattery, electricityCabinet, sessionId);
