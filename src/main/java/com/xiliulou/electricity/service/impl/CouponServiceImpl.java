@@ -182,7 +182,7 @@ public class CouponServiceImpl implements CouponService {
     public R update(Coupon coupon) {
         Coupon oldCoupon = queryByIdFromCache(coupon.getId());
         if (Objects.isNull(oldCoupon)) {
-            log.error("update Coupon  ERROR! not found coupon ! couponId:{} ", coupon.getId());
+            log.error("update Coupon  ERROR! not found coupon ! couponId={} ", coupon.getId());
             return R.fail("ELECTRICITY.00104", "找不到优惠券");
         }
 
@@ -217,17 +217,21 @@ public class CouponServiceImpl implements CouponService {
     public R queryCount(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryCount(couponQuery));
     }
-    
+
     @Override
     public Triple<Boolean, String, Object> deleteById(Long id) {
-    
+
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
-        if(!CollectionUtils.isEmpty(userCoupons)){
-            return Triple.of(false,"","删除失败，优惠券已有用户领取");
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+            return Triple.of(false, "", "删除失败，优惠券已有用户领取");
         }
-    
-        couponMapper.deleteById(id,TenantContextHolder.getTenantId());
-    
-        return Triple.of(true,"","删除成功！");
+
+        Coupon couponUpdate = new Coupon();
+        couponUpdate.setId(id.intValue());
+        couponUpdate.setDelFlag(Coupon.DEL_DEL);
+        couponUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(couponUpdate);
+
+        return Triple.of(true, "", "删除成功！");
     }
 }

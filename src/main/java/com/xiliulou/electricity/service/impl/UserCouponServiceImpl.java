@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
@@ -408,10 +409,13 @@ public class UserCouponServiceImpl implements UserCouponService {
         Integer count = userCouponMapper.queryCount(userCouponQuery);
         return R.ok(count);
     }
-    
+
+    @Slave
     @Override
     public List<UserCoupon> selectCouponUserCountById(Long id) {
         return userCouponMapper.selectList(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getCouponId, id)
-                        .eq(UserCoupon::getDelFlag, UserCoupon.DEL_NORMAL).eq(UserCoupon::getTenantId,TenantContextHolder.getTenantId()));
+                .eq(UserCoupon::getDelFlag, UserCoupon.DEL_NORMAL)
+                .eq(UserCoupon::getTenantId, TenantContextHolder.getTenantId())
+                .in(UserCoupon::getStatus, UserCoupon.STATUS_USED, UserCoupon.STATUS_EXPIRED, UserCoupon.STATUS_DESTRUCTION));
     }
 }
