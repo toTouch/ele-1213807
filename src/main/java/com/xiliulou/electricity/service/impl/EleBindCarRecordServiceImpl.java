@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleBindCarRecordMapper;
 import com.xiliulou.electricity.query.EleBindCarRecordQuery;
@@ -29,11 +30,13 @@ public class EleBindCarRecordServiceImpl extends ServiceImpl<EleBindCarRecordMap
         eleBindCarRecordMapper.insert(eleBindCarRecord);
     }
 
+    @Slave
     @Override
     public R queryList(EleBindCarRecordQuery eleBindCarRecordQuery) {
         return R.ok(eleBindCarRecordMapper.queryList(eleBindCarRecordQuery));
     }
 
+    @Slave
     @Override
     public R queryCount(EleBindCarRecordQuery eleBindCarRecordQuery) {
         return R.ok(eleBindCarRecordMapper.queryCount(eleBindCarRecordQuery));

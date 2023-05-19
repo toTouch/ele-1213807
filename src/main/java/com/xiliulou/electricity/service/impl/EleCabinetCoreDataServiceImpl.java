@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper;
 import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
@@ -37,6 +38,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
         return eleCabinetCoreDataMapper.selectListByQuery(eleCabinetCoreDataQuery);
     }
 
+    @Slave
     @Override
     public EleCabinetCoreData selectByEleCabinetId(Integer id) {
         return eleCabinetCoreDataMapper.selectById(id, TenantContextHolder.getTenantId());

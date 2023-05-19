@@ -263,6 +263,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         return R.ok(list);
     }
 
+    @Slave
     @Override
     public R queryCount(ElectricityCarModelQuery electricityCarModelQuery) {
         return R.ok(electricityCarModelMapper.queryCount(electricityCarModelQuery));
@@ -346,7 +347,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
         return carModelVO;
     }
-    
+
+    @Slave
     @Override
     public R queryPull(Long size, Long offset, Long franchiseeId, String name) {
         return R.ok(electricityCarModelMapper
@@ -373,7 +375,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public ElectricityCarModel queryByNameAndStoreId(String name, Long storeId) {
         return electricityCarModelMapper.queryByNameAndStoreId(name, storeId);
     }
-    
+
+    @Slave
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
@@ -403,6 +404,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         return userCouponMapper.updateStatus(userCoupon);
     }
 
+    @Slave
     @Override
     public R queryCount(UserCouponQuery userCouponQuery) {
         Integer count = userCouponMapper.queryCount(userCouponQuery);

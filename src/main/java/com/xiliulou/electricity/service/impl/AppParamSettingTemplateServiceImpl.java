@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.AppParamSettingTemplate;
 import com.xiliulou.electricity.mapper.AppParamSettingTemplateMapper;
 import com.xiliulou.electricity.query.AppParamSettingTemplateQuery;
@@ -101,14 +102,16 @@ public class AppParamSettingTemplateServiceImpl implements AppParamSettingTempla
     public Boolean deleteById(Long id) {
         return this.appParamSettingTemplateMapper.deleteById(id) > 0;
     }
-    
+
+    @Slave
     @Override
     public R queryList(Long size, Long offset) {
         List<AppParamSettingTemplate> queryList = this.appParamSettingTemplateMapper
                 .queryList(size, offset, TenantContextHolder.getTenantId());
         return R.ok(queryList);
     }
-    
+
+    @Slave
     @Override
     public Long queryCount() {
         return this.appParamSettingTemplateMapper.queryCount(TenantContextHolder.getTenantId());

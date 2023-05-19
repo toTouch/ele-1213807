@@ -454,6 +454,7 @@ public class StoreServiceImpl implements StoreService {
         return R.ok();
     }
 
+    @Slave
     @Override
     public Integer homeOne(List<Long> storeIdList, Integer tenantId) {
         return storeMapper.homeOne(storeIdList, tenantId);
@@ -516,6 +517,7 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.queryCountGroupByCityId(tenantId, pid);
     }
 
+    @Slave
     @Override
     public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
         return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
@@ -577,6 +579,7 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
+    @Slave
     @Override
     public Integer queryCountForHomePage(StoreQuery storeQuery) {
         return storeMapper.queryCount(storeQuery);

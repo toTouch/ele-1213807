@@ -205,11 +205,6 @@ public class JsonAdminFranchiseeController extends BaseController {
 
     }
 
-/*	//分配电池
-	@PostMapping(value = "/admin/franchisee/bindElectricityBattery")
-	public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery) {
-		return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
-	}*/
 
     //查询电池
     @GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
@@ -316,7 +311,6 @@ public class JsonAdminFranchiseeController extends BaseController {
 
         return franchiseeAmountService.queryCount(franchiseeAccountQuery);
     }
-
 
 	/**
 	 * 加盟商分账金额列表

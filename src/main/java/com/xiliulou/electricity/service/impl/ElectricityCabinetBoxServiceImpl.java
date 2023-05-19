@@ -122,6 +122,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
      * @param electricityCabinetBoxQuery
      * @return
      */
+    @Slave
     @Override
     public R selectBoxList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.selectBoxList(electricityCabinetBoxQuery);
@@ -225,6 +226,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
     }
 
+    @Slave
     @Override
     public R queryBoxCount(Integer electricityCabinet, Integer tenantId) {
         return R.ok(electricityCabinetBoxMapper.queryBoxCount(electricityCabinet,tenantId));

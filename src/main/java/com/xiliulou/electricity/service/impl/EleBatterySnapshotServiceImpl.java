@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.EleBatterySnapshot;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleBatterySnapshotMapper;
@@ -102,7 +103,8 @@ public class EleBatterySnapshotServiceImpl implements EleBatterySnapshotService 
     public Boolean deleteById(Long id) {
         return this.eleBatterySnapshotMapper.deleteById(id) > 0;
     }
-    
+
+    @Slave
     @Override
     public Pair<Boolean, Object> queryBatterySnapshot(Integer eId, Integer size, Integer offset, Long startTime,
             Long endTime) {

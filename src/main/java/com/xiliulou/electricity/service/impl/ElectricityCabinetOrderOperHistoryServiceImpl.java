@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
@@ -61,6 +62,7 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
         return R.ok(electricityCabinetOrderOperHistoryMapper.insertOffLineEleExchangeOperateHistory(offLineElectricityCabinetOrderOperHistory));
     }
 
+    @Slave
     @Override
     public R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
         List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
@@ -113,6 +115,7 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
         return R.ok(TYPE_STATUS_NEW);
     }
 
+    @Slave
     @Override
     public R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
         return R.ok(electricityCabinetOrderOperHistoryMapper.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery));

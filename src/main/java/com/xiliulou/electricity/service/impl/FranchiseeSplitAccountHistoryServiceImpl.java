@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.mapper.FranchiseeSplitAccountHistoryMapper;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
@@ -37,11 +38,13 @@ public class FranchiseeSplitAccountHistoryServiceImpl implements FranchiseeSplit
         return franchiseeSplitAccountHistory;
     }
 
+    @Slave
     @Override
     public R queryList(FranchiseeAccountQuery franchiseeAccountQuery) {
         return R.ok(franchiseeSplitAccountHistoryMapper.queryList(franchiseeAccountQuery));
     }
 
+    @Slave
     @Override
     public R queryCount(FranchiseeAccountQuery franchiseeAccountQuery) {
         return R.ok(franchiseeSplitAccountHistoryMapper.queryCount(franchiseeAccountQuery));

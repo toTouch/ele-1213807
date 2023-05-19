@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -275,6 +276,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
+    @Slave
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
@@ -289,6 +291,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.ok(franchiseeInsuranceVoList);
     }
 
+    @Slave
     @Override
     public R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         return R.ok(baseMapper.queryCount(status, type, tenantId, franchiseeId, null));

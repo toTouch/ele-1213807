@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Faq;
 import com.xiliulou.electricity.mapper.FaqMapper;
@@ -77,6 +78,7 @@ public class FaqServiceImpl implements FaqService {
         return this.faqMapper.delete(id, tenantId) > 0;
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryList(Integer size, Integer offset) {
 
@@ -133,6 +135,7 @@ public class FaqServiceImpl implements FaqService {
         return Triple.of(true, null, null);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryCount() {
 

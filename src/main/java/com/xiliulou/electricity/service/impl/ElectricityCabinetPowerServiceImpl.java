@@ -8,6 +8,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPowerMapper;
@@ -93,6 +94,7 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
         return R.ok(electricityCabinetSumPowerVo);
     }
 
+    @Slave
     @Override
     public void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery,
         HttpServletResponse response) {

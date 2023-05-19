@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
 import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
@@ -124,7 +125,8 @@ public class ElectricityCabinetServerOperRecordServiceImpl implements Electricit
     public Boolean deleteById(Long id) {
         return this.electricityCabinetServerOperRecordMapper.deleteById(id) > 0;
     }
-    
+
+    @Slave
     @Override
     public R queryList(String createUserName, Long eleServerId, Long offset, Long size) {
         List<ElectricityCabinetServerOperRecordVo> data = electricityCabinetServerOperRecordMapper

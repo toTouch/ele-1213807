@@ -1197,6 +1197,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok(rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery));
     }
 
+    @Slave
     @Override
     public Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery) {
         return rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery);

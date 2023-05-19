@@ -674,11 +674,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                         }
                     }
                 }
-    
-                //                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
-                //                if (Objects.nonNull(userInfo)) {
-                //                    e.setUName(userInfo.getName());
-                //                }
+
             });
         }
 
@@ -691,21 +687,25 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
     }
 
+    @Slave
     @Override
     public Integer homepageExchangeOrderSumCount(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery) {
         return electricityCabinetOrderMapper.homepageExchangeOrderSumCount(homepageElectricityExchangeFrequencyQuery);
     }
 
+    @Slave
     @Override
     public List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery) {
         return electricityCabinetOrderMapper.homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
     }
 
+    @Slave
     @Override
     public List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequencyCount(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery) {
         return electricityCabinetOrderMapper.homepageExchangeFrequencyCount(homepageElectricityExchangeFrequencyQuery);
     }
 
+    @Slave
     @Override
     public Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
@@ -878,6 +878,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
     }
 
+    @Slave
     @Override
     public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
         Integer countTotal = homeOneCount(first, now, eleIdList, tenantId);
@@ -888,6 +889,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal), BigDecimal.ROUND_HALF_EVEN);
     }
 
+    @Slave
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId) {
         return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList, tenantId);

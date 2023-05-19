@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.nacos.common.utils.Objects;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FaceRecognizeUserRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FaceRecognizeUserRecordMapper;
@@ -63,6 +64,7 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<FaceRecognizeUserRecordVO> selectByPage(FaceRecognizeUserRecordQuery query) {
         List<FaceRecognizeUserRecordVO> faceRecognizeUserRecords = this.faceRecognizeUserRecordMapper.selectByPage(query);
@@ -73,6 +75,7 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
         return faceRecognizeUserRecords;
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(FaceRecognizeUserRecordQuery query) {
         return this.faceRecognizeUserRecordMapper.selectByPageCount(query);

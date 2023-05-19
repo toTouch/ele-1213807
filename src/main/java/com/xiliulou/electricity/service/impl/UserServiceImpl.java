@@ -750,6 +750,7 @@ public class UserServiceImpl implements UserService {
         return Pair.of(true, this.userMapper.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
     }
 
+    @Slave
     @Override
     public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
         return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);

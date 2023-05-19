@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
@@ -668,11 +669,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         return "其它";
     }
 
+    @Slave
     @Override
     public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> finalFranchiseeIds) {
         return Optional.ofNullable(carMemberCardOrderMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carMemberCardOrderMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);

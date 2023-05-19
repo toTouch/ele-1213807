@@ -2178,7 +2178,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok(electricityCabinetVO);
     }
-    
+
+    @Slave
     @Override
     public List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList, Integer tenantId) {
         return electricityCabinetMapper.queryNameList(size, offset, eleIdList, tenantId);
@@ -2429,7 +2430,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetVO.setIsLock(isLock);
         return R.ok(electricityCabinetVO);
     }
-    
+
+    @Slave
     @Override
     public R queryCabinetBelongFranchisee(Integer id) {
         return franchiseeService.queryByCabinetId(id, TenantContextHolder.getTenantId());
@@ -2673,17 +2675,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(franchisee);
     }
-    
+
+    @Slave
     @Override
     public Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery) {
         return electricityCabinetMapper.queryCount(electricityCabinetQuery);
     }
-    
+
+    @Slave
     @Override
     public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
         return electricityCabinetMapper.queryCountByStoreIds(tenantId, storeIds);
     }
-    
+
+    @Slave
     @Override
     public Integer queryCountByStoreIdsAndStatus(Integer tenantId, List<Long> storeIds, Integer status) {
         return electricityCabinetMapper.queryCountByStoreIdsAndStatus(tenantId, storeIds, status);
@@ -2713,7 +2718,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok();
     }
-    
+
+    @Slave
     @Override
     public R queryAllElectricityCabinet(ElectricityCabinetQuery electricityCabinetQuery) {
         return R.ok(electricityCabinetMapper.queryList(electricityCabinetQuery));
@@ -2912,18 +2918,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-/*        //购买租车月卡
-        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-            BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId,
-                    null, finalFranchiseeIds);
-            BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(
-                    tenantId, todayStartTime, finalFranchiseeIds);
-            homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
-            homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });*/
         //租车套餐
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal carMemberCardTurnover = carMemberCardOrderService
@@ -3013,16 +3007,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //        //缴纳租车押金
-        //        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-        //            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-        //            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-        //            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
-        //            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
-        //        }, executorService).exceptionally(e -> {
-        //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-        //            return null;
-        //        });
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
             BigDecimal carDepositTurnover = carDepositOrderService
@@ -3052,15 +3036,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-/*        //退租车押金
-        CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,
-                    EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds);
-            homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });*/
 
         //退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
@@ -3213,15 +3188,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //        //购买租车月卡
-        //        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-        //            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
-        //            homePageTurnOverAnalysisVo.setCarMemberCardAnalysis(carMemberCardTurnover);
-        //        }, executorService).exceptionally(e -> {
-        //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-        //            return null;
-        //        });
-
         //购买租车套餐
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = carMemberCardOrderService
@@ -3253,14 +3219,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-/*        //租车押金
-        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds, beginTime, endTime);
-            homePageTurnOverAnalysisVo.setCarDepositAnalysis(carDepositTurnOver);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });*/
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = carDepositOrderService
@@ -3418,30 +3376,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
         }
 
-//        CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
-//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-//                    .tenantId(tenantId).eleIdList(finalEleIdList)
-//                    .status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
-//            Integer orderSuccessCount = electricityCabinetOrderService
-//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-//            homePageElectricityOrderVo.setOrderSuccessCount(orderSuccessCount);
-//        }, executorService).exceptionally(e -> {
-//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-//            return null;
-//        });
-//
-//        //换电总订单统计
-//        CompletableFuture<Void> electricitySunOrderCount = CompletableFuture.runAsync(() -> {
-//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-//                    .tenantId(tenantId).eleIdList(finalEleIdList).build();
-//            Integer orderSumCount = electricityCabinetOrderService
-//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-//            homePageElectricityOrderVo.setSumOrderCount(orderSumCount);
-//        }, executorService).exceptionally(e -> {
-//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-//            return null;
-//        });
-        
         //换电柜在线总数统计
         List<Long> finalStores = stores;
         CompletableFuture<Void> electricityOnlineCabinetCount = CompletableFuture.runAsync(() -> {
@@ -3462,11 +3396,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
             return null;
         });
-        
-        //等待所有线程停止
-//        CompletableFuture<Void> resultFuture = CompletableFuture
-//                .allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount,
-//                        electricityOfflineCabinetCount);
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(electricityOnlineCabinetCount, electricityOfflineCabinetCount);
         try {
@@ -3752,6 +3682,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(s);
     }
 
+    @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
         List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper
@@ -3763,6 +3694,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinets);
     }
 
+    @Slave
     @Override
     public List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query) {
         List<ElectricityCabinet> list = electricityCabinetMapper.superAdminSelectByQuery(query);
@@ -3783,6 +3715,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetMapper.queryName(tenantId, id));
     }
 
+    @Slave
     @Override
     public R selectByQuery(ElectricityCabinetQuery query) {
         return R.ok(electricityCabinetMapper.selectByQuery(query));

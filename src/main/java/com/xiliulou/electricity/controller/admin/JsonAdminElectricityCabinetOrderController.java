@@ -275,7 +275,6 @@ public class JsonAdminElectricityCabinetOrderController {
                 throw new CustomBusinessException("查不到订单");
             }
         }
-        
 
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .orderId(orderId)

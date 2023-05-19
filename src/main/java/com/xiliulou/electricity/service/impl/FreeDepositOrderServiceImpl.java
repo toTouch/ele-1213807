@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -163,6 +164,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query) {
         List<FreeDepositOrder> freeDepositOrders = this.freeDepositOrderMapper.selectByPage(query);
@@ -173,6 +175,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return freeDepositOrders;
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(FreeDepositOrderQuery query) {
         return this.freeDepositOrderMapper.selectByPageCount(query);

@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -723,11 +724,13 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         return Triple.of(true, "", "操作成功");
     }
 
+    @Slave
     @Override
     public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> finalFranchiseeIds) {
         return Optional.ofNullable(carDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, finalFranchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, finalFranchiseeIds, beginTime, endTime);

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.Province;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -13,6 +14,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -58,6 +60,8 @@ public class DataScreenServiceImpl implements DataScreenService {
     ProvinceService provinceService;
     @Autowired
     UserCouponService userCouponService;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
@@ -92,7 +96,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         //租电数量统计
         CompletableFuture<Void> rentBatteryCount = CompletableFuture.runAsync(() -> {
             RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder().tenantId(tenantId).build();
-            Integer count = rentBatteryOrderService.queryCountForScreenStatistic(rentBatteryOrderQuery);
+                       Integer count = rentBatteryOrderService.queryCountForScreenStatistic(rentBatteryOrderQuery);
             orderStatisticsVo.setRentBatteryCount(count);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query rentBattery Order Count error!", e);
@@ -101,7 +105,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //近七天换电订单统计
         CompletableFuture<Void> weekElectricityOrderStatistic = CompletableFuture.runAsync(() -> {
-            List<WeekOrderStatisticVo> weekOrderStatisticVos = dataScreenMapper.queryWeekElectricityOrderStatistic(tenantId, beginTime);
+            List<WeekOrderStatisticVo> weekOrderStatisticVos = applicationContext.getBean(DataScreenService.class).queryWeekElectricityOrderStatistic(tenantId, beginTime);
             orderStatisticsVo.setWeekOrderStatisticVos(weekOrderStatisticVos);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query weekElectricity Order Count error!", e);
@@ -110,7 +114,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //近七天购卡数量统计
         CompletableFuture<Void> weekMemberCardStatistic = CompletableFuture.runAsync(() -> {
-            List<WeekOrderStatisticVo> weekOrderStatisticVoList = dataScreenMapper.queryWeekMemberCardStatistic(tenantId, beginTime);
+            List<WeekOrderStatisticVo> weekOrderStatisticVoList = applicationContext.getBean(DataScreenService.class).queryWeekMemberCardStatistic(tenantId, beginTime);
             orderStatisticsVo.setWeekMemberCardStatisticVos(weekOrderStatisticVoList);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query weekMemberCard Order Count error!", e);
@@ -119,7 +123,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //近七天租电池数量统计
         CompletableFuture<Void> weekRentBatteryStatistic = CompletableFuture.runAsync(() -> {
-            List<WeekOrderStatisticVo> weekOrderStatisticVoList = dataScreenMapper.queryWeekRentBatteryStatistic(tenantId, beginTime);
+            List<WeekOrderStatisticVo> weekOrderStatisticVoList = applicationContext.getBean(DataScreenService.class).queryWeekRentBatteryStatistic(tenantId, beginTime);
             orderStatisticsVo.setWeekRentBatteryStatisticVos(weekOrderStatisticVoList);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query WeekRentBattery Order Count error!", e);
@@ -285,6 +289,25 @@ public class DataScreenServiceImpl implements DataScreenService {
         return R.ok(dataBrowsingVo);
     }
 
+    @Slave
+    @Override
+    public List<WeekOrderStatisticVo> queryWeekElectricityOrderStatistic(Integer tenantId, Long beginTime) {
+        return dataScreenMapper.queryWeekElectricityOrderStatistic(tenantId, beginTime);
+    }
+
+    @Slave
+    @Override
+    public List<WeekOrderStatisticVo> queryWeekMemberCardStatistic(Integer tenantId, Long beginTime) {
+        return dataScreenMapper.queryWeekMemberCardStatistic(tenantId, beginTime);
+    }
+
+    @Slave
+    @Override
+    public List<WeekOrderStatisticVo> queryWeekRentBatteryStatistic(Integer tenantId, Long beginTime) {
+        return dataScreenMapper.queryWeekRentBatteryStatistic(tenantId, beginTime);
+    }
+
+    @Slave
     @Override
     public R queryMapProvince(Integer tenantId) {
         //查询不同省份的门店数量
@@ -308,6 +331,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         return R.ok(mapVoList);
     }
 
+    @Slave
     @Override
     public R queryMapCity(Integer tenantId, Integer pid) {
         Province province = provinceService.queryByIdFromDB(pid);
@@ -336,6 +360,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         return R.ok(mapVoList);
     }
 
+    @Slave
     @Override
     public R queryCoupon(Integer tenantId) {
         CouponStatisticVo couponStatisticVo = new CouponStatisticVo();
