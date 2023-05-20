@@ -151,7 +151,6 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         return result;
     }
 
-    @Slave
     @Override
     public InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId) {
         InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoMapper.queryByUidAndTenantId(uid, tenantId);
