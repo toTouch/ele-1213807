@@ -114,6 +114,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<CarDepositOrderVO> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         List<CarDepositOrder> carDepositOrders = this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
@@ -142,6 +143,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }).collect(Collectors.toList());
     }
 
+    @Slave
     @Override
     public Integer selectPageCount(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         return this.carDepositOrderMapper.selectPageCount(rentCarDepositOrderQuery);

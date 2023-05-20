@@ -126,6 +126,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrder;
     }
 
+    @Slave
     @Override
     public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
         List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
@@ -1192,6 +1193,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return Triple.of(true, usableBoxes.get(maxChargeVIndex).getCellNo(), null);
     }
 
+    @Slave
     @Override
     public R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery) {
         return R.ok(rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery));

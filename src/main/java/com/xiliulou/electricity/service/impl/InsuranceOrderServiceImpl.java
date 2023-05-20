@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -79,11 +80,13 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Slave
     @Override
     public R queryList(InsuranceOrderQuery insuranceOrderQuery) {
         return R.ok(queryListByStatus(insuranceOrderQuery));
     }
 
+    @Slave
     @Override
     public R queryCount(InsuranceOrderQuery insuranceOrderQuery) {
         return R.ok(insuranceOrderMapper.queryCount(insuranceOrderQuery));

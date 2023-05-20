@@ -6,6 +6,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
@@ -146,7 +147,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
         return R.ok(voList);
 	}
 
-
+	@Slave
 	@Override
 	public R queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
         ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService
@@ -163,6 +164,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
         return R.ok(voList);
 	}
 
+	@Slave
 	@Override
 	public R queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
         ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService

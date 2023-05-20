@@ -137,6 +137,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<CarMemberCardOrderVO> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
         List<CarMemberCardOrderVO> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);

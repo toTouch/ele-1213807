@@ -5,6 +5,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
@@ -125,6 +126,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
         return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
 	}
 
+	@Slave
 	@Override
 	public R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService
@@ -155,7 +157,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
 	}
-	
+
+	@Slave
 	@Override
 	public R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService
@@ -170,7 +173,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		Long count = joinShareActivityHistoryMapper.queryCount(jsonShareActivityHistoryQuery);
 		return R.ok(count);
 	}
-	
+
+	@Slave
 	@Override
 	public void queryExportExcel(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery,
 			HttpServletResponse response) {
