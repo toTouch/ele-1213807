@@ -765,7 +765,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
 
-            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
+//            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
             if (CollectionUtils.isEmpty(cabinetBoxList)) {
                 return null;
             }
@@ -781,10 +782,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             e.setNoElectricityBattery((int) emptyCellNumber);
             e.setFullyElectricityBattery((int) exchangeableNumber);
 
-
-            ElectricityCabinet item = new ElectricityCabinet();
-            item.setUpdateTime(System.currentTimeMillis());
-            item.setId(e.getId());
 
             //电柜不在线也返回，可离线换电
             if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
