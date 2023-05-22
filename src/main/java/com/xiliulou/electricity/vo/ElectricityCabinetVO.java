@@ -139,6 +139,7 @@ public class ElectricityCabinetVO {
 
     //门店id
     private Integer storeId;
+    private String storeName;
 
     /**
      * 满电标准

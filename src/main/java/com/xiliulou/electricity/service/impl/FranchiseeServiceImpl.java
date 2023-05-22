@@ -32,34 +32,14 @@ import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
-import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.FranchiseeAmountService;
-import com.xiliulou.electricity.service.FranchiseeInsuranceService;
-import com.xiliulou.electricity.service.FranchiseeMoveRecordService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.InsuranceInstructionService;
-import com.xiliulou.electricity.service.InsuranceUserInfoService;
-import com.xiliulou.electricity.service.RegionService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserBatteryService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -152,6 +132,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Slave
+    @Override
+    public List<SearchVo> search(FranchiseeQuery franchiseeQuery) {
+        List<SearchVo>  list=franchiseeMapper.search(franchiseeQuery);
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.emptyList();
+        }
+
+        return list;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -722,6 +712,31 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return null;
         });
         return result;
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
+        Franchisee franchisee = this.queryByIdFromCache(id);
+        if (Objects.isNull(franchisee)) {
+            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            return Triple.of(true, null, null);
+        }
+
+        List<UserBattery> userBatteryList = userBatteryService.selectBatteryTypeByFranchiseeId(franchisee.getId());
+        if (CollectionUtils.isEmpty(userBatteryList)) {
+            return Triple.of(true, null, null);
+        }
+
+        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
+        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
+        if (batteryList.contains(batteryType)) {
+            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
+        }
+
+        return Triple.of(true, null, null);
     }
 
     @Slave

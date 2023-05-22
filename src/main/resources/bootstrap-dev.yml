@@ -2,13 +2,16 @@ server:
   port: 9991
   servlet:
     context-path: /electricityCabinet
+  undertow:
+    threads:
+      worker: 50
 spring:
   application:
     name: @artifactId@
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS-HOST:xiliulou-nacos}:80
+        server-addr: ${NACOS-HOST:xiliulou-nacos}:8848
       config:
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
         file-extension: yml

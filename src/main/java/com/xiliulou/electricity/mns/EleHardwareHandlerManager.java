@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.service.EleOnlineLogService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.feishu.config.FeishuConfig;
 import com.xiliulou.feishu.entity.query.FeishuBotSendMsgQuery;
 import com.xiliulou.feishu.entity.query.msg.FeishuMsgPostQuery;
@@ -127,10 +129,13 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             //在线状态修改
             ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+            newElectricityCabinet.setProductKey(electricityCabinet.getProductKey());
+            newElectricityCabinet.setDeviceName(electricityCabinet.getDeviceName());
             newElectricityCabinet.setId(electricityCabinet.getId());
             newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
+            newElectricityCabinet.setUpdateTime(DateUtils.parseMillsDateStrToTimestamp(receiverMessage.getTime()));
 
-            EleOnlineLog eleOnlineLog=new EleOnlineLog();
+            EleOnlineLog eleOnlineLog = new EleOnlineLog();
             eleOnlineLog.setElectricityId(electricityCabinet.getId());
             eleOnlineLog.setClientIp(receiverMessage.getClientIp());
             eleOnlineLog.setStatus(receiverMessage.getStatus());
@@ -139,9 +144,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             eleOnlineLog.setMsg(receiverMessage.getStatus());
             eleOnlineLogService.insert(eleOnlineLog);
 
-            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
+            if (electricityCabinet.getUpdateTime() <= newElectricityCabinet.getUpdateTime()) {
+                electricityCabinetService.update(newElectricityCabinet);
             }
 
             feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
@@ -153,11 +157,10 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     }
 
 
-
-    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time){
+    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time) {
         //租户不发上下线通知
         List<Integer> tenantIdList = tenantConfig.getDisableRobotMessageForTenantId();
-        if (Objects.nonNull(tenantIdList) && tenantIdList.contains(electricityCabinet.getTenantId())){
+        if (Objects.nonNull(tenantIdList) && tenantIdList.contains(electricityCabinet.getTenantId())) {
             return;
         }
 

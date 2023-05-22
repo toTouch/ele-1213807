@@ -146,4 +146,9 @@ public class OtherSettingParamTemplateRequestDTO {
     private Integer enableBatteryBMSExceptionCheck;
     
     private List<BatteryMultiConfigDTO> settingParamTemplate;
+
+    /**
+     * 是否轮循设参
+     */
+    private Integer isWheelCycleParameter;
 }
