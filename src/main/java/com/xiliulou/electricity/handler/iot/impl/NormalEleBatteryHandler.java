@@ -581,7 +581,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                 .filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
             List<String> emptyCellNo = notHaveBatteryBoxs.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList());
-            log.error("ELE BATTERY REPORT ERROR! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
+            log.info("ELE BATTERY REPORT INFO! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
             return;
         }
         
