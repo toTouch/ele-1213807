@@ -120,6 +120,11 @@
         where id = #{id}
     </update>
 
+    <update id="deductionCapacityByTenantId">
+        update t_face_recognize_data set face_recognize_capacity = face_recognize_capacity - 1, update_time = #{updateTime}
+        where tenant_id = #{tenantId}
+    </update>
+
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_face_recognize_data where id = #{id}
