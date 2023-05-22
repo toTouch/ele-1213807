@@ -23,17 +23,22 @@ public class JsonAdminElectricityBatteryDataController {
      * 获取全部电池的分页数据
      */
     @GetMapping(value = "/admin/batteryData/allBattery/page")
-    public R getAllBatteryPageData(   @RequestParam("offset") long offset,
-                                      @RequestParam("size") long size) {
-        return electricityBatteryDataService.selectAllBatteryPageData(offset, size);
+    public R getAllBatteryPageData( @RequestParam("offset") long offset,
+                                    @RequestParam("size") long size,
+                                    @RequestParam(value = "sn", required =  false) String sn,
+                                    @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
+                                    @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
+        return electricityBatteryDataService.selectAllBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId);
     }
 
     /**
      * 获取全部电池的数据总数
      */
     @GetMapping(value = "/admin/batteryData/allBattery/count")
-    public R getAllBatteryDataCount() {
-        return electricityBatteryDataService.selectAllBatteryDataCount();
+    public R getAllBatteryDataCount( @RequestParam(value = "sn", required =  false) String sn,
+                                     @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
+                                     @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
+        return electricityBatteryDataService.selectAllBatteryDataCount(sn, franchiseeId, electricityCabinetId);
     }
 
     /**

@@ -51,7 +51,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
     @Slave
-    public R selectAllBatteryPageData(long offset, long size) {
+    public R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -80,6 +80,9 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
+                .sn(sn)
+                .franchiseeId(franchiseeId)
+                .electricityCabinetId(electricityCabinetId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
@@ -88,7 +91,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         }
         electricityBatteries.parallelStream().peek(item->{
             Long uid = item.getUid();
-            Long franchiseeId = item.getFranchiseeId();
+            Long fid = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
                 if (Objects.nonNull(userInfo)) {
@@ -108,9 +111,12 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
     }
 
     @Override
-    public R selectAllBatteryDataCount() {
+    public R selectAllBatteryDataCount( String sn, Long franchiseeId, Integer electricityCabinetId)  {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
+                .sn(sn)
+                .franchiseeId(franchiseeId)
+                .electricityCabinetId(electricityCabinetId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
