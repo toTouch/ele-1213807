@@ -59,6 +59,14 @@
         </where>
     </select>
 
+    <select id="selectBatteryTypeByFranchiseeId" resultMap="UserBatteryMap">
+    SELECT	any_value ( tub.uid ) as uid,	any_value ( tub.battery_type ) as battery_type
+    FROM	t_user_battery tub	LEFT JOIN t_user_info tui ON tub.uid = tui.uid
+    WHERE	tui.franchisee_id = #{franchiseeId}
+	AND tui.del_flag = 0
+    GROUP BY	tub.battery_type
+    </select>
+
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_user_battery(uid, init_battery_sn, now_battery_sn, battery_type, del_flag, create_time, update_time)

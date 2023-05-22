@@ -56,4 +56,6 @@ public interface UserBatteryMapper extends BaseMapper<UserBattery> {
     int deleteByUid(@Param("uid") Long uid);
 
     int insertOrUpdate(UserBattery userBattery);
+
+    List<UserBattery> selectBatteryTypeByFranchiseeId(@Param("franchiseeId")Long franchiseeId);
 }

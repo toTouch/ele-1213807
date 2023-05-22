@@ -37,14 +37,17 @@ public class ElectricityBattery {
     /**
      * 电池电量
      */
+    @Deprecated
     private Double power;
     /**
      * 电压
      */
+    @Deprecated
     private Integer voltage;
     /**
      * 电池容量,单位(mah)
      */
+    @Deprecated
     private Integer capacity;
     /**
      * 电池状态 0：在仓，1：在库，2：租借，3：异常取走，4游离
@@ -72,19 +75,23 @@ public class ElectricityBattery {
     /**
      * 0：正常 1：故障
      */
+    @Deprecated
     private Integer healthStatus;
     /**
      * 0--空闲 1--正在开机 2--充电中 3--充满电 4--限额充电 -1 未充电
      */
+    @Deprecated
     private Integer chargeStatus;
 
     /**
      * 地址经度
      */
+    @Deprecated
     private Double longitude;
     /**
      * 地址纬度
      */
+    @Deprecated
     private Double latitude;
 
     //租户id
@@ -156,4 +163,5 @@ public class ElectricityBattery {
     public static final Integer REPORT_TYPE_ELECTRICITY_CABINET = 0;
     //电池上报
     public static final Integer REPORT_TYPE_ELECTRICITY_BATTERY = 1;
+
 }

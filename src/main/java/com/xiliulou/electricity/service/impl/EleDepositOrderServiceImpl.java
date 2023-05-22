@@ -693,6 +693,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
                 map.put("time", String.valueOf(System.currentTimeMillis()));
                 map.put("franchiseeName", Objects.nonNull(franchisee) ? franchisee.getName() : "");
+                map.put("franchiseeId", String.valueOf(Objects.nonNull(franchisee) ? franchisee.getId() : ""));
             } else {
                 //是否退款
                 Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(userBatteryDeposit.getOrderId());
@@ -720,6 +721,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //                map.put("time", this.queryByOrderId(userBatteryDeposit.getOrderId()).getUpdateTime().toString());
 
                 map.put("franchiseeName", franchisee.getName());
+                map.put("franchiseeId", String.valueOf(franchisee.getId()));
                 map.put("rentBatteryStatus", userInfo.getBatteryRentStatus().toString());
                 map.put("depositType", Objects.isNull(userBatteryDeposit.getDepositType()) ? null
                         : String.valueOf(userBatteryDeposit.getDepositType()));

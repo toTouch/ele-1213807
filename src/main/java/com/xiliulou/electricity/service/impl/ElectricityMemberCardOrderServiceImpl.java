@@ -152,6 +152,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    FranchiseeInsuranceService franchiseeInsuranceService;
+    
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     @Autowired
     BatteryModelService batteryModelService;
@@ -227,6 +233,34 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR! not pay deposit! uid={} ", user.getUid());
             return R.fail("100241", "当前套餐暂停中，请先启用套餐");
         }
+    
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBattery)) {
+            log.error("ELECTRICITY  ERROR! not found userBattery,uid={} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+    
+        //是否开启购买保险（是进入）
+//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+//        if (Objects.nonNull(electricityConfig) && Objects
+//                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+//            //保险是否强制购买（是进入）
+//            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
+//                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
+//                            userInfo.getTenantId());
+//            long now = System.currentTimeMillis();
+//            if (Objects.nonNull(franchiseeInsurance) && Objects
+//                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+//                //用户是否没有保险信息或已过期（是进入）
+//                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+//                if (Objects.isNull(insuranceUserInfo) || Objects
+//                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+//                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
+//                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
+//                    return R.fail("100309", "未购买保险或保险已过期");
+//                }
+//            }
+//        }
 
         Long now = System.currentTimeMillis();
 
