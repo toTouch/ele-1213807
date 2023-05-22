@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -218,19 +219,22 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             return Triple.of(false, "100480", "分帐配置不存在");
         }
 
+        //删除原来的配置
+        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(divisionAccountConfigQuery.getId());
+
         //校验
         Triple<Boolean, String, Object> verifyBatteryMembercardResult = verifyBatteryMembercardParams(divisionAccountConfigQuery);
         if (Boolean.FALSE.equals(verifyBatteryMembercardResult.getLeft())) {
-            return verifyBatteryMembercardResult;
+//            return verifyBatteryMembercardResult;
+            throw new CustomBusinessException((String) verifyBatteryMembercardResult.getRight());
         }
 
         Triple<Boolean, String, Object> verifyCarModelResult = verifyCarModelParams(divisionAccountConfigQuery);
         if (Boolean.FALSE.equals(verifyCarModelResult.getLeft())) {
-            return verifyCarModelResult;
+//            return verifyCarModelResult;
+            throw new CustomBusinessException((String) verifyCarModelResult.getRight());
         }
 
-        //删除原来的配置
-        divisionAccountBatteryMembercardService.deleteByDivisionAccountId(divisionAccountConfigQuery.getId());
 
         List<EleDivisionAccountOperationRecordDTO> divisionAccountOperationRecordList =Lists.newArrayList();
 
