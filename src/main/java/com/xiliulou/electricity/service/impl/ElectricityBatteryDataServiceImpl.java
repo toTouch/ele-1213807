@@ -6,14 +6,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
-import com.xiliulou.electricity.service.ElectricityBatteryDataService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -46,6 +42,12 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Autowired
     BatteryPlatRetrofitService batteryPlatRetrofitService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
+
+    @Autowired
+    UserInfoService userInfoService;
 
     @Override
     @Slave
@@ -81,7 +83,27 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-
+        if(CollectionUtils.isEmpty(electricityBatteries)){
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        electricityBatteries.parallelStream().peek(item->{
+            Long uid = item.getUid();
+            Long franchiseeId = item.getFranchiseeId();
+            if (Objects.nonNull(uid)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    item.setName(userInfo.getName());
+                    item.setUserName(userInfo.getUserName());
+                    item.setPhone(userInfo.getPhone());
+                }
+            }
+            if (Objects.nonNull(franchiseeId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    item.setFranchiseeName(franchisee.getName());
+                }
+            }
+        });
         return R.ok(queryDataFromBMS(electricityBatteries));
     }
 
@@ -131,7 +153,27 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-
+        if(CollectionUtils.isEmpty(electricityBatteries)){
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        electricityBatteries.parallelStream().peek(item->{
+            Long uid = item.getUid();
+            Long fId = item.getFranchiseeId();
+            if (Objects.nonNull(uid)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    item.setName(userInfo.getName());
+                    item.setUserName(userInfo.getUserName());
+                    item.setPhone(userInfo.getPhone());
+                }
+            }
+            if (Objects.nonNull(franchiseeId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    item.setFranchiseeName(franchisee.getName());
+                }
+            }
+        });
         return R.ok(queryDataFromBMS(electricityBatteries));
 
     }
@@ -185,7 +227,27 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-
+        if(CollectionUtils.isEmpty(electricityBatteries)){
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        electricityBatteries.parallelStream().peek(item->{
+            Long uid = item.getUid();
+            Long fId = item.getFranchiseeId();
+            if (Objects.nonNull(uid)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    item.setName(userInfo.getName());
+                    item.setUserName(userInfo.getUserName());
+                    item.setPhone(userInfo.getPhone());
+                }
+            }
+            if (Objects.nonNull(franchiseeId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    item.setFranchiseeName(franchisee.getName());
+                }
+            }
+        });
         return R.ok(queryDataFromBMS(electricityBatteries));
 
     }
@@ -238,7 +300,27 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .franchiseeId(franchiseeId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-
+        if(CollectionUtils.isEmpty(electricityBatteries)){
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        electricityBatteries.parallelStream().peek(item->{
+            Long uid = item.getUid();
+            Long fId = item.getFranchiseeId();
+            if (Objects.nonNull(uid)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    item.setName(userInfo.getName());
+                    item.setUserName(userInfo.getUserName());
+                    item.setPhone(userInfo.getPhone());
+                }
+            }
+            if (Objects.nonNull(franchiseeId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    item.setFranchiseeName(franchisee.getName());
+                }
+            }
+        });
         return R.ok(queryDataFromBMS(electricityBatteries));
 
     }
@@ -293,7 +375,27 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-
+        if(CollectionUtils.isEmpty(electricityBatteries)){
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        electricityBatteries.parallelStream().peek(item->{
+            Long uid = item.getUid();
+            Long fId = item.getFranchiseeId();
+            if (Objects.nonNull(uid)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    item.setName(userInfo.getName());
+                    item.setUserName(userInfo.getUserName());
+                    item.setPhone(userInfo.getPhone());
+                }
+            }
+            if (Objects.nonNull(franchiseeId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    item.setFranchiseeName(franchisee.getName());
+                }
+            }
+        });
         return R.ok(queryDataFromBMS(electricityBatteries));
 
     }
@@ -350,7 +452,27 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
-
+        if(CollectionUtils.isEmpty(electricityBatteries)){
+            return R.ok(new ArrayList<EleBatteryDataVO>());
+        }
+        electricityBatteries.parallelStream().peek(item->{
+            Long uid = item.getUid();
+            Long fId = item.getFranchiseeId();
+            if (Objects.nonNull(uid)) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+                if (Objects.nonNull(userInfo)) {
+                    item.setName(userInfo.getName());
+                    item.setUserName(userInfo.getUserName());
+                    item.setPhone(userInfo.getPhone());
+                }
+            }
+            if (Objects.nonNull(franchiseeId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+                if (Objects.nonNull(franchisee)) {
+                    item.setFranchiseeName(franchisee.getName());
+                }
+            }
+        });
         return R.ok(queryDataFromBMS(electricityBatteries));
 
     }

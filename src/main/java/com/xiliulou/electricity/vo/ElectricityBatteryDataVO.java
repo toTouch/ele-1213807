@@ -28,7 +28,7 @@ public class ElectricityBatteryDataVO {
      * 电池容量,单位(mah)
      */
     
-    private Integer capacity;
+    private Integer dbCapacity;
     /**
      * 电池状态 0：在仓，1：在库，2：租借，3：异常取走，4游离
      */
@@ -148,4 +148,12 @@ public class ElectricityBatteryDataVO {
      * 仓门号
      */
     private String cellNo;
+
+    private String franchiseeName;
+
+    private String phone;
+
+    private String name;
+
+    private String userName;
 }
