@@ -18,12 +18,12 @@ import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityBatteryDataVO;
 import com.xiliulou.electricity.vo.api.EleBatteryDataVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +49,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     @Override
     @Slave
-    public R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectAllBatteryPageData(long offset, long size) {
         if (size < 0 || size > 50) {
             size = 10;
         }
@@ -78,23 +78,17 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .franchiseeId(franchiseeId)
-                .electricityCabinetId(electricityCabinetId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
-        List<ElectricityBattery> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
 
         return R.ok(queryDataFromBMS(electricityBatteries));
     }
 
     @Override
-    public R selectAllBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId) {
+    public R selectAllBatteryDataCount() {
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
-                .sn(sn)
-                .franchiseeId(franchiseeId)
-                .electricityCabinetId(electricityCabinetId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_ALL).build();
 
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
@@ -136,7 +130,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .electricityCabinetId(electricityCabinetId)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_INCABINET).build();
-        List<ElectricityBattery> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
 
         return R.ok(queryDataFromBMS(electricityBatteries));
 
@@ -190,7 +184,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .electricityCabinetId(electricityCabinetId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
-        List<ElectricityBattery> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
 
         return R.ok(queryDataFromBMS(electricityBatteries));
 
@@ -243,7 +237,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_LEASED).build();
-        List<ElectricityBattery> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
 
         return R.ok(queryDataFromBMS(electricityBatteries));
 
@@ -298,7 +292,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
-        List<ElectricityBattery> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
 
         return R.ok(queryDataFromBMS(electricityBatteries));
 
@@ -355,7 +349,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
-        List<ElectricityBattery> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
 
         return R.ok(queryDataFromBMS(electricityBatteries));
 
@@ -410,7 +404,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     }
 
-    public List<EleBatteryDataVO> queryDataFromBMS(List<ElectricityBattery> electricityBatteries){
+    public List<EleBatteryDataVO> queryDataFromBMS(List<ElectricityBatteryDataVO> electricityBatteries){
         try {
 
             if (CollectionUtils.isEmpty(electricityBatteries)) {
@@ -421,15 +415,15 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
             for(int i=0;i<eleBatteryDataVOS.size();i++){
                 EleBatteryDataVO vo=new EleBatteryDataVO();
-                vo.setElectricityBattery(electricityBatteries.get(i));
+                vo.setElectricityBatteryDataVO(electricityBatteries.get(i));
                 eleBatteryDataVOS.add(vo);
             }
 
             eleBatteryDataVOS.parallelStream().forEach(item ->{
-                ElectricityBattery electricityBattery = item.getElectricityBattery();
-                if (!Objects.isNull(electricityBattery) && !Objects.isNull(electricityBattery.getSn())) {
+                ElectricityBatteryDataVO electricityBatteryDataVO = item.getElectricityBatteryDataVO();
+                if (!Objects.isNull(electricityBatteryDataVO) && !Objects.isNull(electricityBatteryDataVO.getSn())) {
                     BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
-                    batteryInfoQuery.setSn(electricityBattery.getSn());
+                    batteryInfoQuery.setSn(electricityBatteryDataVO.getSn());
                     item.setBatteryInfoDto(callBatteryServiceQueryBatteryInfo(batteryInfoQuery));
                 }
             });

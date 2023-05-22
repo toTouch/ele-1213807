@@ -9,9 +9,9 @@ import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 
 public interface ElectricityBatteryDataService extends IService<ElectricityBattery> {
 
-    R selectAllBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId);
+    R selectAllBatteryPageData(long offset, long size);
 
-    R selectAllBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId);
+    R selectAllBatteryDataCount();
 
     R  selectInCabinetBatteryPageData(long offset, long size, String sn, Long franchiseeId, Integer electricityCabinetId);
 

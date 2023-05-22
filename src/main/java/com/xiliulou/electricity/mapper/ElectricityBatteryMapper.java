@@ -6,12 +6,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.vo.BatteryStatisticalVo;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryLocationVO;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
-import org.apache.commons.lang3.tuple.Triple;
+import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -99,11 +94,11 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBattery queryUserAttrBySn(@Param("sn") String sn);
 
-    List<ElectricityBattery> queryBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
-                                       @Param("offset") Long offset, @Param("size") Long size);
+    List<ElectricityBatteryDataVO> queryBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                                    @Param("offset") Long offset, @Param("size") Long size);
     Integer queryBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 
-    List<ElectricityBattery> queryOverdueBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+    List<ElectricityBatteryDataVO> queryOverdueBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
                                               @Param("offset") Long offset, @Param("size") Long size);
     Integer queryOverdueBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 }
