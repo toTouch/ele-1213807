@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.WechatWithdrawalCertificateMapper">
+    
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
+        select
+            id,
+            tenant_id,
+            certificate_value,
+            upload_time
+        from
+            t_wechat_withdrawal_certificate
+        where tenant_id = #{tenantId};
+    
+    </select>
+    
+    <update id="updateByTenantId">
+        update t_wechat_withdrawal_certificate
+        <set>
+            <if test="certificateValue != null">
+                certificate_value = #{certificateValue},
+            </if>
+            <if test="uploadTime != null">
+                upload_time = #{uploadTime},
+            </if>
+        </set>
+        where tenant_id = #{tenantId}
+    </update>
+    
+    <select id="listCertificateInTenantIds" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
+        select
+            tenant_id,
+            certificate_value,
+        from
+            t_wechat_withdrawal_certificate
+        <where>
+            <if test="tenantIds != null and tenantIds.size > 0">
+                and tenant_id in
+                <foreach collection="tenantIds" item="tenantId" index="index" open="(" close=")" separator=",">
+                    #{tenantId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

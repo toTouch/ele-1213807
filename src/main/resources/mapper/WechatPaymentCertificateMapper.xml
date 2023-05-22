@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.WechatPaymentCertificateMapper">
+    
+    
+    <select id="selectByTenantId" resultType="com.xiliulou.electricity.entity.WechatPaymentCertificate">
+        select
+        id,
+        tenant_id,
+        certificate_content,
+        upload_time
+        from
+        t_wechat_payment_certificate
+        where tenant_id = #{tenantId};
+        
+    </select>
+    
+    <update id="updateByTenantId">
+        update t_wechat_payment_certificate
+        <set>
+            <if test="certificateContent != null and certificateContent != ''">
+                certificate_content = #{certificateContent},
+            </if>
+            <if test="uploadTime != null">
+                upload_time = #{uploadTime},
+            </if>
+        </set>
+        where tenant_id = #{tenantId}
+    </update>
+</mapper>
