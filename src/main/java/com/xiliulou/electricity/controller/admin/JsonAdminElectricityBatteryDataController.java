@@ -45,7 +45,7 @@ public class JsonAdminElectricityBatteryDataController {
                                           @RequestParam(value = "sn", required =  false) String sn,
                                           @RequestParam(value = "franchiseeId", required =  false) Long franchiseeId,
                                           @RequestParam(value = "electricityCabinetId", required =  false) Integer electricityCabinetId) {
-        return R.ok(electricityBatteryDataService.selectInCabinetBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId));
+        return electricityBatteryDataService.selectInCabinetBatteryPageData(offset, size, sn, franchiseeId, electricityCabinetId);
     }
 
     /**
