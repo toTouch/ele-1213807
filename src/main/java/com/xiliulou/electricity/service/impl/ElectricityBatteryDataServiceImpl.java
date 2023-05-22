@@ -89,7 +89,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().peek(item->{
+        electricityBatteries.parallelStream().forEach(item->{
             Long uid = item.getUid();
             Long fid = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
@@ -162,7 +162,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().peek(item->{
+        electricityBatteries.parallelStream().forEach(item->{
             Long uid = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
@@ -236,7 +236,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().peek(item->{
+        electricityBatteries.parallelStream().forEach(item->{
             Long uid = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
@@ -309,7 +309,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().peek(item->{
+        electricityBatteries.parallelStream().forEach(item->{
             Long uid = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
@@ -384,7 +384,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().peek(item->{
+        electricityBatteries.parallelStream().forEach(item->{
             Long uid = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
@@ -461,7 +461,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
-        electricityBatteries.parallelStream().peek(item->{
+        electricityBatteries.parallelStream().forEach(item->{
             Long uid = item.getUid();
             Long fId = item.getFranchiseeId();
             if (Objects.nonNull(uid)) {
