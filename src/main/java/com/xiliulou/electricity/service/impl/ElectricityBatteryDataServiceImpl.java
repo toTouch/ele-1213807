@@ -100,8 +100,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setPhone(userInfo.getPhone());
                 }
             }
-            if (Objects.nonNull(franchiseeId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(fid)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(fid);
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
@@ -173,8 +173,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setPhone(userInfo.getPhone());
                 }
             }
-            if (Objects.nonNull(franchiseeId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(fId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
@@ -247,8 +247,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setPhone(userInfo.getPhone());
                 }
             }
-            if (Objects.nonNull(franchiseeId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(fId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
@@ -320,8 +320,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setPhone(userInfo.getPhone());
                 }
             }
-            if (Objects.nonNull(franchiseeId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(fId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
@@ -395,8 +395,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setPhone(userInfo.getPhone());
                 }
             }
-            if (Objects.nonNull(franchiseeId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(fId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
@@ -472,8 +472,8 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                     item.setPhone(userInfo.getPhone());
                 }
             }
-            if (Objects.nonNull(franchiseeId)) {
-                Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            if (Objects.nonNull(fId)) {
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(fId);
                 if (Objects.nonNull(franchisee)) {
                     item.setFranchiseeName(franchisee.getName());
                 }
