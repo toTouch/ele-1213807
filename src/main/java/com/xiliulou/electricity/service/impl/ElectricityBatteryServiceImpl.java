@@ -43,7 +43,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜电池表(ElectricityBattery)表服务实现类
@@ -396,46 +396,37 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     @Slave
     public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery,
-                offset, size);
-        if (ObjectUtil.isEmpty(electricityBatteryList)) {
+        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
+        if (CollectionUtils.isEmpty(electricityBatteryList)) {
             return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
 
-        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
-
-        /*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
-        if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
-            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-        }*/
-
-        for (ElectricityBattery electricityBattery : electricityBatteryList) {
-
+        List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.parallelStream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
-            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+            BeanUtil.copyProperties(item, electricityBatteryVO);
 
-            if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)
-                    && Objects.nonNull(electricityBattery.getUid())) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
-                if (Objects.nonNull(userInfo)) {
-                    electricityBatteryVO.setUserName(userInfo.getName());
+            if (Objects.equals(item.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.nonNull(item.getUid())) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                electricityBatteryVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
+            }
+
+            if (Objects.equals(item.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+                electricityBatteryVO.setElectricityCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
+            } else {
+                //不在仓电池电量从BMS平台获取
+                BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
+                batteryInfoQuery.setSn(item.getSn());
+                Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery);
+
+                if (Boolean.TRUE.equals(result.getLeft()) && Objects.nonNull(result.getRight())) {
+                    electricityBatteryVO.setPower(Objects.nonNull(result.getRight().getSoc()) ? result.getRight().getSoc() : 0.0);
                 }
             }
 
-            if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
-                    && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
-                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
-                        electricityBattery.getElectricityCabinetId());
-                if (Objects.nonNull(electricityCabinet)) {
-                    electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
-                }
-            }
+            return electricityBatteryVO;
+        }).collect(Collectors.toList());
 
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityBattery.getFranchiseeId());
-            electricityBatteryVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
-
-            electricityBatteryVOList.add(electricityBatteryVO);
-        }
         return R.ok(electricityBatteryVOList);
     }
 
