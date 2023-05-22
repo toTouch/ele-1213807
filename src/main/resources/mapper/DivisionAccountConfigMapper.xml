@@ -101,13 +101,14 @@
     <select id="configSearch" resultType="com.xiliulou.electricity.vo.SearchVo">
         select id, name
         from t_division_account_config
-        where
-        <if test="name != null and name != ''">
-            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="tenantId != null">
-            and tenant_id = #{tenantId}
-        </if>
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
         order by id
         limit #{offset}, #{size}
     </select>
