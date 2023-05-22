@@ -64,9 +64,7 @@ public class JsonAdminInsuranceUserInfoController {
         if (Objects.isNull(insuranceUserInfoVo)) {
             return R.ok();
         }
-        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis()) {
-            return R.ok();
-        }
+
         return R.ok(insuranceUserInfoVo);
     }
 
