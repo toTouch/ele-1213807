@@ -413,7 +413,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
             List<EleBatteryDataVO> eleBatteryDataVOS=new ArrayList<>(electricityBatteries.size());
 
-            for(int i=0;i<eleBatteryDataVOS.size();i++){
+            for(int i=0;i<electricityBatteries.size();i++){
                 EleBatteryDataVO vo=new EleBatteryDataVO();
                 vo.setElectricityBatteryDataVO(electricityBatteries.get(i));
                 eleBatteryDataVOS.add(vo);
