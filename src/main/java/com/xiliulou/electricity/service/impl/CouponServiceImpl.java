@@ -4,15 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.query.CouponQuery;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -45,6 +40,10 @@ public class CouponServiceImpl implements CouponService {
     RedisService redisService;
     @Autowired
     private ShareActivityRuleService shareActivityRuleService;
+    @Autowired
+    private OldUserActivityService oldUserActivityService;
+    @Autowired
+    private NewUserActivityService newUserActivityService;
 
 
     /**
@@ -236,7 +235,17 @@ public class CouponServiceImpl implements CouponService {
 
         ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
         if (Objects.nonNull(shareActivityRule)) {
-            return Triple.of(false, "", "删除失败，优惠券已绑定活动");
+            return Triple.of(false, "", "删除失败，优惠券已绑定邀请好友活动");
+        }
+
+        OldUserActivity oldUserActivity = oldUserActivityService.selectByCouponId(id);
+        if(Objects.nonNull(oldUserActivity)){
+            return Triple.of(false, "", "删除失败，优惠券已绑定套餐活动");
+        }
+
+        NewUserActivity newUserActivity=newUserActivityService.selectByCouponId(id);
+        if(Objects.nonNull(newUserActivity)){
+            return Triple.of(false, "", "删除失败，优惠券已绑定新用户活动");
         }
 
         Coupon couponUpdate = new Coupon();
