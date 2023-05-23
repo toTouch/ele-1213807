@@ -47,7 +47,7 @@
     </select>
 
     <select id="selectByCouponId" resultType="com.xiliulou.electricity.entity.OldUserActivity">
-        id, name, type, status
+        select id, name, type, status
         from t_old_user_activity
         where del_flg=0 and coupon_id=#{couponId} order by id limit 1
     </select>
