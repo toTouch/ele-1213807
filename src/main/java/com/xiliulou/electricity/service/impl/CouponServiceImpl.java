@@ -5,11 +5,13 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -41,6 +43,8 @@ public class CouponServiceImpl implements CouponService {
     private UserCouponService userCouponService;
     @Autowired
     RedisService redisService;
+    @Autowired
+    private ShareActivityRuleService shareActivityRuleService;
 
 
     /**
@@ -220,10 +224,19 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Triple<Boolean, String, Object> deleteById(Long id) {
+        Coupon coupon = this.queryByIdFromCache(id.intValue());
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
 
         List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
         if (!CollectionUtils.isEmpty(userCoupons)) {
             return Triple.of(false, "", "删除失败，优惠券已有用户领取");
+        }
+
+        ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
+        if (Objects.nonNull(shareActivityRule)) {
+            return Triple.of(false, "", "删除失败，优惠券已绑定活动");
         }
 
         Coupon couponUpdate = new Coupon();
