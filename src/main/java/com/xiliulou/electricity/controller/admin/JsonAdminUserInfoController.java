@@ -128,7 +128,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardExpireType(memberCardExpireType)
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
-                .franchiseeIds(franchiseeIds).userCreateBeginTime(userCreateBeginTime)
+                .franchiseeIds(franchiseeIds)
+                .userCreateBeginTime(userCreateBeginTime)
                 .userCreateEndTime(userCreateEndTime)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
@@ -257,7 +258,8 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryDepositStatus(batteryDepositStatus)
                 .cardPayCount(cardPayCount)
                 .memberCardExpireType(memberCardExpireType)
-                .franchiseeIds(franchiseeIds).userCreateBeginTime(userCreateTimeBegin)
+                .franchiseeIds(franchiseeIds)
+                .userCreateBeginTime(userCreateTimeBegin)
                 .userCreateEndTime(userCreateTimeEnd)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 

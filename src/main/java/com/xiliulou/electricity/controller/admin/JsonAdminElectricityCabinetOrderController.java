@@ -69,20 +69,6 @@ public class JsonAdminElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                return R.ok(new ArrayList<>());
-//            }
-//        }
-
         List<Integer> eleIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
@@ -184,19 +170,6 @@ public class JsonAdminElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                return R.ok();
-//            }
-//        }
-
         List<Integer> eleIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
@@ -275,7 +248,12 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "status", required = false) String status,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
-                            @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
+                            @RequestParam(value = "endTime", required = false) Long endTime,
+                            @RequestParam(value = "source", required = false) Integer source,
+                            @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+                            @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+                            HttpServletResponse response) {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 33) {
@@ -302,9 +280,12 @@ public class JsonAdminElectricityCabinetOrderController {
                 throw new CustomBusinessException("查不到订单");
             }
         }
-        
 
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+                .source(source)
+                .paymentMethod(paymentMethod)
+                .electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo)
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
