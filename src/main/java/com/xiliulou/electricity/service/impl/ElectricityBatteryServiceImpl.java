@@ -311,8 +311,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
 
-    private Triple<Boolean, String, BatteryInfoDto> callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery) {
-        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+    private Triple<Boolean, String, BatteryInfoDto> callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery,Integer tenantId) {
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             return Triple.of(false, "租户信息不能为空", null);
         }
@@ -401,6 +401,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
 
+        Integer tenantId=TenantContextHolder.getTenantId();
+
         List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.parallelStream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
             BeanUtil.copyProperties(item, electricityBatteryVO);
@@ -417,7 +419,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 //不在仓电池电量从BMS平台获取
                 BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
                 batteryInfoQuery.setSn(item.getSn());
-                Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery);
+                Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery, tenantId);
 
                 if (Boolean.TRUE.equals(result.getLeft()) && Objects.nonNull(result.getRight())) {
                     electricityBatteryVO.setPower(Objects.nonNull(result.getRight().getSoc()) ? result.getRight().getSoc() : 0.0);
@@ -482,11 +484,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         //为空也需要查询路径，兼容旧版本
         if (Objects.isNull(isNeedLocation) || Objects.equals(isNeedLocation, BatteryInfoQuery.NEED)) {
             batteryInfoQuery.setNeedLocation(BatteryInfoQuery.NEED);
-
         }
 
-        Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery);
-        if (!result.getLeft()) {
+        Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery, TenantContextHolder.getTenantId());
+        if (Boolean.FALSE.equals(result.getLeft())) {
             log.error("CALL BATTERY ERROR! uid={},msg={}", uid, result.getMiddle());
             return Triple.of(false, "200005", result.getMiddle());
         }
