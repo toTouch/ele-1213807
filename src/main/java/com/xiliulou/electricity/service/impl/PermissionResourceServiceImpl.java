@@ -340,7 +340,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		ArrayList<PermissionResource> result = Lists.newArrayList();
 
 		if (DataUtil.collectionIsUsable(permissionIds)) {
-			permissionIds.forEach(e -> {
+			permissionIds.parallelStream().forEach(e -> {
 				PermissionResource permissionResource = queryByIdFromCache(e);
 				if (Objects.nonNull(permissionResource)) {
 					result.add(permissionResource);
