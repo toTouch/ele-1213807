@@ -128,4 +128,8 @@ public class ElectricityCabinetOtherSetting {
      */
     private Integer enableBatteryBMSExceptionCheck;
 
+    /**
+     * 是否轮循设参
+     */
+    private Integer isWheelCycleParameter;
 }

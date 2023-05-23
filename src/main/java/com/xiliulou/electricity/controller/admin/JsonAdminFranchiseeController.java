@@ -23,7 +23,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -49,12 +48,29 @@ public class JsonAdminFranchiseeController extends BaseController {
     @Autowired
     UserDataScopeService userDataScopeService;
 
+    @GetMapping("/admin/franchisee/search")
+    public R search(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                         @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 20) {
+            size = 20L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(franchiseeService.search(franchiseeQuery));
+    }
+
     //新增加盟商
     @PostMapping(value = "/admin/franchisee")
     public R save(@RequestBody @Validated(value = CreateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-//        if (verifyBatteryDeposit(franchiseeAddAndUpdate)) {
-//            return R.fail("ELECTRICITY.0007", "不合法的参数");
-//        }
 
         return franchiseeService.save(franchiseeAddAndUpdate);
     }
@@ -63,9 +79,6 @@ public class JsonAdminFranchiseeController extends BaseController {
     @PutMapping(value = "/admin/franchisee")
 	@Log(title = "修改加盟商")
 	public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-//        if (verifyBatteryDeposit(franchiseeAddAndUpdate)) {
-//            return R.fail("ELECTRICITY.0007", "不合法的参数");
-//        }
 
         return franchiseeService.edit(franchiseeAddAndUpdate);
     }
@@ -202,6 +215,14 @@ public class JsonAdminFranchiseeController extends BaseController {
     @GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Long id) {
         return franchiseeService.getElectricityBatteryList(id);
+    }
+
+    /**
+     * 删除电池型号校验
+     */
+    @GetMapping(value = "/admin/franchisee/checkBatteryType")
+    public R checkBatteryType(@RequestParam("id") Long id, @RequestParam("batteryType") Integer batteryType) {
+        return returnTripleResult(franchiseeService.checkBatteryType(id, batteryType));
     }
 
     //分账设置
@@ -363,31 +384,6 @@ public class JsonAdminFranchiseeController extends BaseController {
         }
 
         return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
-    }
-
-    /**
-     * 校验押金是否小于0.01
-     * @param franchiseeAddAndUpdate
-     * @return
-     */
-    private boolean verifyBatteryDeposit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-
-        //不分型号
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)
-                && BigDecimal.valueOf(0.01).compareTo(franchiseeAddAndUpdate.getBatteryDeposit()) == NumberConstant.ONE) {
-            return Boolean.TRUE;
-        }
-
-        //分型号
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.NEW_MODEL_TYPE) && CollectionUtils.isNotEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
-            for (ModelBatteryDeposit modelBatteryDeposit : franchiseeAddAndUpdate.getModelBatteryDepositList()) {
-                if (BigDecimal.valueOf(0.01).compareTo(modelBatteryDeposit.getBatteryDeposit()) == NumberConstant.ONE) {
-                    return Boolean.TRUE;
-                }
-            }
-        }
-
-        return Boolean.FALSE;
     }
 
 }

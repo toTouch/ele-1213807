@@ -34,4 +34,6 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
     List<CarModelPullVo> queryPull(@Param("size") Long size, @Param("offset") Long offset,
             @Param("franchiseeId") Long franchiseeId, @Param("name") String name,
             @Param("tenantId") Integer tenantId);
+    
+    ElectricityCarModel queryByNameAndStoreId(@Param("name") String name, @Param("storeId") Long storeId);
 }

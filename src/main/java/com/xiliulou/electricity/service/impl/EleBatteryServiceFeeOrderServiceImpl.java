@@ -7,7 +7,9 @@ import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryModelService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
@@ -37,6 +39,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    BatteryModelService batteryModelService;
 
 
     @Override
@@ -69,7 +73,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
+                Integer model = batteryModelService.acquireBatteryModel(eleBatteryServiceFeeOrderVo.getBatteryType(), tenantId);
                 eleBatteryServiceFeeOrderVo.setModel(model);
             }
 
@@ -87,7 +91,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
+                Integer model = batteryModelService.acquireBatteryModel(eleBatteryServiceFeeOrderVo.getBatteryType(), batteryServiceFeeQuery.getTenantId());
                 eleBatteryServiceFeeOrderVo.setModel(model);
             }
 

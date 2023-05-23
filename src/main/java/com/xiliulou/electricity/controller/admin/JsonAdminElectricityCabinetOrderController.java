@@ -52,7 +52,8 @@ public class JsonAdminElectricityCabinetOrderController {
                        @RequestParam(value = "source", required = false) Integer source,
                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                       @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "uid", required = false) Long uid) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -62,26 +63,11 @@ public class JsonAdminElectricityCabinetOrderController {
             offset = 0L;
         }
 
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                return R.ok(new ArrayList<>());
-//            }
-//        }
 
         List<Integer> eleIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -108,8 +94,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(eleIdList)
                 .source(source)
-                .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
@@ -126,7 +111,8 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "source", required = false) Integer source,
                             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "uid", required = false) Long uid) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -158,8 +144,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(null)
                 .source(source)
-                .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
@@ -174,7 +159,8 @@ public class JsonAdminElectricityCabinetOrderController {
                         @RequestParam(value = "source", required = false) Integer source,
                         @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                        @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "uid", required = false) Long uid) {
 
 
         //用户区分
@@ -183,19 +169,6 @@ public class JsonAdminElectricityCabinetOrderController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                return R.ok();
-//            }
-//        }
 
         List<Integer> eleIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -220,8 +193,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(eleIdList)
                 .source(source)
-                .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
@@ -235,7 +207,8 @@ public class JsonAdminElectricityCabinetOrderController {
                              @RequestParam(value = "source", required = false) Integer source,
                              @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
                              @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-                             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+            @RequestParam(value = "uid", required = false) Long uid) {
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -257,8 +230,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(null)
                 .source(source)
-                .electricityCabinetName(electricityCabinetName)
-                .oldCellNo(oldCellNo)
+                .electricityCabinetName(electricityCabinetName).oldCellNo(oldCellNo).uid(uid)
                 .tenantId(null).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
@@ -275,6 +247,7 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "status", required = false) String status,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "uid", required = false) Long uid,
                             @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
@@ -310,7 +283,7 @@ public class JsonAdminElectricityCabinetOrderController {
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .eleIdList(eleIdList)
+                .eleIdList(eleIdList).uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }

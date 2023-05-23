@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.BatteryMaterialMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.BatteryMaterial" id="BatteryMaterialMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="shortType" column="short_type" jdbcType="VARCHAR"/>
+        <result property="kind" column="kind" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BatteryMaterialMap">
+        select
+          id, name, type, short_type, kind, create_time, update_time
+        from t_battery_material
+        where id = #{id}
+    </select>
+
+
+    <select id="checkExistByType" resultType="Integer">
+        select 1 from t_battery_material where del_flag=0 and type = #{type} LIMIT 1
+    </select>
+
+    <select id="checkExistByKind" resultType="Integer">
+        select 1 from t_battery_material where del_flag=0 and kind = #{kind} LIMIT 1
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="BatteryMaterialMap">
+        select
+        id, name, type, short_type, kind, create_time
+        from t_battery_material
+        where del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(1)
+        from t_battery_material
+        where del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <select id="selectBySearch" resultType="com.xiliulou.electricity.vo.BatteryMaterialSearchVO">
+        select
+        id, name, short_type
+        from t_battery_material
+        where del_flag = 0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectAllFromDB" resultMap="BatteryMaterialMap">
+        select
+        id, name, type, short_type, kind
+        from t_battery_material where del_flag =0
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_battery_material(name, type, short_type, kind, del_flag, create_time, update_time)
+        values (#{name}, #{type}, #{shortType}, #{kind}, #{delFlag},  #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_battery_material
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="type != null and type != ''">
+                type = #{type},
+            </if>
+            <if test="shortType != null and shortType != ''">
+                short_type = #{shortType},
+            </if>
+            <if test="kind != null">
+                kind = #{kind},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_battery_material where id = #{id}
+    </delete>
+
+</mapper>

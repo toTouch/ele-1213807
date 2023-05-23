@@ -63,6 +63,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeId != null">
+            and tecm.store_id = #{query.storeId}
+        </if>
     </select>
 
     <!--查询指定行数据-->
@@ -190,5 +193,10 @@
                 and name like concat('%', #{name}, '%')
             </if>
         </where>
+    </select>
+    
+    <select id="queryByNameAndStoreId" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
+        <include refid="selectElectricityCarModel"/>
+        where name = #{name} and store_id = #{storeId} and del_flag = 0
     </select>
 </mapper>

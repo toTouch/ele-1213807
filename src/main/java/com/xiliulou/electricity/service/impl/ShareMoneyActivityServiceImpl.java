@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ChannelActivity;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
@@ -13,6 +14,7 @@ import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
+import com.xiliulou.electricity.service.ChannelActivityService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -56,6 +58,9 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
     @Resource
     ShareActivityMapper shareActivityMapper;
+    
+    @Autowired
+    ChannelActivityService channelActivityService;
 
 
     /**
@@ -277,6 +282,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         Map<String, Integer> map = new HashMap<>();
         map.put("shareMoneyActivity", 0);
         map.put("shareActivity", 0);
+        map.put("channelActivity", 0);
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -315,6 +321,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         if (Objects.isNull(shareActivity)) {
 //            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
             map.put("shareActivity", 1);
+        }
+    
+        //渠道活动
+        ChannelActivity usableActivity = channelActivityService.findUsableActivity(tenantId);
+        if (Objects.isNull(usableActivity)) {
+            map.put("channelActivity", 1);
         }
         return R.ok(map);
     }

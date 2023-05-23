@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -75,7 +76,23 @@ public class JsonAdminJoinShareActivityHistoryController {
                 .startTime(beginTime).endTime(endTime).build();
         return joinShareActivityHistoryService.queryCount(jsonShareActivityHistoryQuery);
     }
-
+    
+    
+    @GetMapping(value = "/admin/joinShareActivityHistory/exportExcel")
+    public void joinActivityExportExcel(@RequestParam("id") Long id,
+            @RequestParam(value = "joinName", required = false) String joinName,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "status", required = false) Integer status, HttpServletResponse response) {
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
+                .tenantId(tenantId).id(id).joinName(joinName).status(status).startTime(beginTime).endTime(endTime)
+                .build();
+        joinShareActivityHistoryService.queryExportExcel(jsonShareActivityHistoryQuery, response);
+    }
 }
 
 

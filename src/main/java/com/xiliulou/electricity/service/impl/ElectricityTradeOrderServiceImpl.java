@@ -12,6 +12,44 @@ import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.service.CarDepositOrderService;
+import com.xiliulou.electricity.service.CarMemberCardOrderService;
+import com.xiliulou.electricity.service.ChannelActivityHistoryService;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
+import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.EnableMemberCardRecordService;
+import com.xiliulou.electricity.service.FranchiseeAmountService;
+import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.InsuranceOrderService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.OldUserActivityService;
+import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.ShippingManagerService;
+import com.xiliulou.electricity.service.StoreAmountService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.service.UserBatteryDepositService;
+import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.UserBatteryService;
+import com.xiliulou.electricity.service.UserCarDepositService;
+import com.xiliulou.electricity.service.UserCarMemberCardService;
+import com.xiliulou.electricity.service.UserCarService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -117,6 +155,17 @@ public class ElectricityTradeOrderServiceImpl extends
     CarMemberCardOrderService carMemberCardOrderService;
     @Autowired
     ElectricityCarService electricityCarService;
+    @Autowired
+    ShippingManagerService shippingManagerService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -383,6 +432,17 @@ public class ElectricityTradeOrderServiceImpl extends
 
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
+    
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
+                    .queryByUid(electricityMemberCardOrder.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
+            }
 
         } else {
             if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
@@ -415,6 +475,10 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderUpdate.setPayCount(payCount + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }
@@ -516,6 +580,11 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleDepositOrderService.update(eleDepositOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+
         return Pair.of(result, null);
     }
 
@@ -668,6 +737,11 @@ public class ElectricityTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+
         return Pair.of(result, null);
     }
 
@@ -762,6 +836,11 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleDepositOrderService.update(eleDepositOrderUpdate);
+
+        //小程序虚拟发货
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+
         return Pair.of(result, null);
     }
 
@@ -828,12 +907,42 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
-
-            //用户是否有绑定了车辆
+    
+            //用户是否有绑定了车
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            if (Objects.nonNull(electricityCar) && Objects
-                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
-                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
+            }
+    
+            ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+            if (Objects.nonNull(channelActivityHistory) && Objects
+                    .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+                ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+                updateChannelActivityHistory.setId(channelActivityHistory.getId());
+                updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+                updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+                channelActivityHistoryService.update(updateChannelActivityHistory);
             }
         }
 
@@ -852,6 +961,10 @@ public class ElectricityTradeOrderServiceImpl extends
         updateCarMemberCardOrder.setStatus(memberOrderStatus);
         updateCarMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         carMemberCardOrderService.update(updateCarMemberCardOrder);
+
+        //小程序虚拟发货
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
 
@@ -947,6 +1060,11 @@ public class ElectricityTradeOrderServiceImpl extends
         updateInsuranceOrder.setUpdateTime(System.currentTimeMillis());
         updateInsuranceOrder.setStatus(insuranceOrderStatus);
         insuranceOrderService.updateOrderStatusById(updateInsuranceOrder);
+
+        //小程序虚拟发货
+        shippingManagerService
+                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+
         return Pair.of(result, null);
     }
 

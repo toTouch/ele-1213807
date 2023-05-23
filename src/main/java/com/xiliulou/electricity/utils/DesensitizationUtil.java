@@ -114,5 +114,17 @@ public class DesensitizationUtil {
 		}
 		return StringUtils.left(cardNum, 6).concat(StringUtils.removeStart(StringUtils.leftPad(StringUtils.right(cardNum, 4), StringUtils.length(cardNum), "*"), "******"));
 	}
-
+    
+    /**
+     * 手机号脱敏 138****8888
+     *
+     * @param
+     * @return
+     */
+    public static String phoneDesensitization(String phone) {
+        if (StringUtils.isBlank(phone)) {
+            return "";
+        }
+        return phone.replaceAll("(\\d{3})\\d{4}(\\d{4})", "$1****$2");
+    }
 }

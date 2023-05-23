@@ -8,11 +8,29 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
+import com.xiliulou.electricity.entity.FranchiseeMoveRecord;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import com.xiliulou.electricity.entity.Region;
+import com.xiliulou.electricity.entity.Role;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.UserDataScope;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -21,6 +39,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -29,11 +48,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -105,7 +129,19 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
 
+    @Slave
+    @Override
+    public List<SearchVo> search(FranchiseeQuery franchiseeQuery) {
+        List<SearchVo>  list=franchiseeMapper.search(franchiseeQuery);
+        if(CollectionUtils.isEmpty(list)){
+            return Collections.emptyList();
+        }
+
+        return list;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -414,6 +450,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
+    @Slave
     public Franchisee queryByUid(Long uid) {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid, uid).eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL));
     }
@@ -677,6 +714,37 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return result;
     }
 
+    @Override
+    public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
+        Franchisee franchisee = this.queryByIdFromCache(id);
+        if (Objects.isNull(franchisee)) {
+            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            return Triple.of(true, null, null);
+        }
+
+        List<UserBattery> userBatteryList = userBatteryService.selectBatteryTypeByFranchiseeId(franchisee.getId());
+        if (CollectionUtils.isEmpty(userBatteryList)) {
+            return Triple.of(true, null, null);
+        }
+
+        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
+        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
+        if (batteryList.contains(batteryType)) {
+            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
+        }
+
+        return Triple.of(true, null, null);
+    }
+
+    @Slave
+    @Override
+    public Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId) {
+        return this.franchiseeMapper.checkBatteryModelIsUse(batteryModel, tenantId);
+    }
+
     /**
      * 用户迁移加盟商
      *
@@ -749,7 +817,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(false, "100355", "加盟商电池型号信息不存在");
         }
 
-        String batteryType = BatteryConstant.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel());
+        String batteryType = batteryModelService.acquireBatteryShort(franchiseeMoveInfo.getBatteryModel(),TenantContextHolder.getTenantId());
 
         //获取用户绑定的保险
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUid(userInfo.getUid(), TenantContextHolder.getTenantId());

@@ -28,6 +28,8 @@ public interface ElectricityCarModelService {
      * @return 实例对象
      */
       ElectricityCarModel queryByIdFromCache(Integer id);
+    
+    Integer insert(ElectricityCarModel electricityCarModel);
 
     R save(ElectricityCarModelQuery electricityCarModelQuery);
 
@@ -58,4 +60,6 @@ public interface ElectricityCarModelService {
     R queryPull(Long size, Long offset, Long franchiseeId, String name);
 
     Triple<Boolean, String, Object> acquireUserCarModelInfo();
+    
+    ElectricityCarModel queryByNameAndStoreId(String name, Long storeId);
 }

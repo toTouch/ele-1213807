@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderExcelQuery;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
@@ -39,4 +40,7 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 			@Param("tenantId") Integer tenantId);
 	
 	Long queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+	
+	List<ElectricityCabinetOrderExcelQuery> queryExportExcel(
+			JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 }
