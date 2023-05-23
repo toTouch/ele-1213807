@@ -710,7 +710,7 @@
         </if>
         <choose>
             <when test="query.queryType == 3">
-                and teb.franchisee_id is null
+                and (teb.franchisee_id is null or teb.franchisee_id=0)
             </when>
             <when test="query.queryType != 3 and query.franchiseeId != null">
                 and teb.franchisee_id =#{query.franchiseeId}
@@ -747,7 +747,7 @@
         </if>
         <choose>
             <when test="query.queryType == 3">
-                and teb.franchisee_id is null
+                and (teb.franchisee_id is null or teb.franchisee_id=0)
             </when>
             <when test="query.queryType != 3 and query.franchiseeId != null">
                 and teb.franchisee_id =#{query.franchiseeId}
