@@ -416,6 +416,6 @@ public class UserCouponServiceImpl implements UserCouponService {
         return userCouponMapper.selectList(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getCouponId, id)
                 .eq(UserCoupon::getDelFlag, UserCoupon.DEL_NORMAL)
                 .eq(UserCoupon::getTenantId, TenantContextHolder.getTenantId())
-                .in(UserCoupon::getStatus, UserCoupon.STATUS_USED, UserCoupon.STATUS_EXPIRED, UserCoupon.STATUS_DESTRUCTION));
+                .eq(UserCoupon::getStatus, UserCoupon.STATUS_UNUSED));
     }
 }
