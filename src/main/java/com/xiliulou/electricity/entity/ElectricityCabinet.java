@@ -91,7 +91,7 @@ public class ElectricityCabinet {
      */
     private Long createTime;
     /**
-     * 更新时间
+     * 更新时间（兼用在线时间）
      */
     private Long updateTime;
     /**

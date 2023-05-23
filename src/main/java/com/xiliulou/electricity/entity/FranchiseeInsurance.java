@@ -100,6 +100,10 @@ public class FranchiseeInsurance {
     public static final Integer STATUS_UN_USABLE = 1;
     //可用状态
     public static final Integer STATUS_USABLE = 0;
+    
+    public static final Integer CONSTRAINT_NOT_FORCE = 0;
+    
+    public static final Integer CONSTRAINT_FORCE = 1;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

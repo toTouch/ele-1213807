@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务接口
  *
@@ -50,4 +52,7 @@ public interface JoinShareMoneyActivityHistoryService {
 	void updateExpired(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
     
     FinalJoinShareMoneyActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId);
+    
+    void queryExportExcel(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery,
+            HttpServletResponse response);
 }

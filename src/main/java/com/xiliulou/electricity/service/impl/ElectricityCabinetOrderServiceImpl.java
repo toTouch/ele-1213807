@@ -14,6 +14,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -646,6 +647,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return R.ok();
     }
 
+    @Slave
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
 
@@ -672,11 +674,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                         }
                     }
                 }
-
-                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
-                if (Objects.nonNull(userInfo)) {
-                    e.setUName(userInfo.getName());
-                }
+    
+                //                UserInfo userInfo = userInfoService.queryByUidFromCache(e.getUid());
+                //                if (Objects.nonNull(userInfo)) {
+                //                    e.setUName(userInfo.getName());
+                //                }
             });
         }
 
@@ -684,6 +686,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
+    @Slave
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
     }
@@ -708,6 +711,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
     }
 
+    @Slave
     @Override
     public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
         electricityCabinetOrderQuery.setOffset(0L);

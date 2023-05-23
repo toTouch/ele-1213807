@@ -274,7 +274,10 @@
         from t_store
         where del_flag=0
         <if test="name != null and name != ''">
-            and name = #{name}
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
         </if>
         order by id
         limit #{offset}, #{size}
@@ -319,7 +322,7 @@
             and tenant_id = #{tenantId}
         </if>
         <if test="address != null and address != ''">
-            and address like concat('%',#{address},'%')
+            and ( address like concat('%',#{address},'%') or `name` like concat('%',#{address},'%') )
         </if>
         order by distance asc
         limit #{offset}, #{size}

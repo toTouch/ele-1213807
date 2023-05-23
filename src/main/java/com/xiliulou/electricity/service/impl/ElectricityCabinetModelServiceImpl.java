@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -153,7 +154,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         return R.ok(electricityCabinetModelMapper.queryList(electricityCabinetModelQuery));
     }

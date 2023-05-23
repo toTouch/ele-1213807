@@ -38,7 +38,7 @@ public class JsonAppElectricityController extends BaseController {
     ElectricityCabinetService electricityCabinetService;
 
     @GetMapping("/outer/oss/config")
-    public R getOssConfig(){
+    public R getOssConfig() {
         Map<String, Object> result = new HashMap<>(3);
         result.put("appId", CommonConstant.APP_ID);
         result.put("ossAccessKeyId", storageConfig.getAccessKeyId());

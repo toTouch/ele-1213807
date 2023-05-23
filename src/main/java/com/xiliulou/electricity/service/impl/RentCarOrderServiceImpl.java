@@ -97,6 +97,12 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
+    
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -329,9 +335,48 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
     
         //用户是否有绑定了车辆
+        //        ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+        //        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        //        if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+        //                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+        //                && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+        //            electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+        //        }
+    
         ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-        if (Objects.nonNull(electricityCar) && Objects.equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
-            electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+        ElectricityConfig electricityConfig = electricityConfigService
+                .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+            boolean boo = electricityCarService
+                    .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+    
+            CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+            carLockCtrlHistory.setUid(userInfo.getUid());
+            carLockCtrlHistory.setName(userInfo.getName());
+            carLockCtrlHistory.setPhone(userInfo.getPhone());
+            carLockCtrlHistory.setStatus(
+                    boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+            carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+            carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+            carLockCtrlHistory.setCarModel(electricityCar.getModel());
+            carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+            carLockCtrlHistory.setCarSn(electricityCar.getSn());
+            carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+            carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
+            carLockCtrlHistoryService.insert(carLockCtrlHistory);
+        }
+    
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
+        if (Objects.nonNull(channelActivityHistory) && Objects
+                .equals(channelActivityHistory.getStatus(), ChannelActivityHistory.STATUS_INIT)) {
+            ChannelActivityHistory updateChannelActivityHistory = new ChannelActivityHistory();
+            updateChannelActivityHistory.setId(channelActivityHistory.getId());
+            updateChannelActivityHistory.setStatus(ChannelActivityHistory.STATUS_SUCCESS);
+            updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
+            channelActivityHistoryService.update(updateChannelActivityHistory);
         }
 
         return Triple.of(true, "", "操作成功!");
@@ -575,6 +620,30 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
             updateElectricityCar.setUserName(userInfo.getName());
             updateElectricityCar.setUpdateTime(System.currentTimeMillis());
             electricityCarService.update(updateElectricityCar);
+    
+            //ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
+            //ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+        
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_BIND_USER_UN_LOCK);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
+            }
         
             return null;
         });

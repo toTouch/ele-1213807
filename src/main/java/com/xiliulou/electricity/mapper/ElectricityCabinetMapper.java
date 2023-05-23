@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
 import org.apache.ibatis.annotations.Param;
@@ -62,4 +63,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<Integer> selectEidByStoreId(@Param("tenantId") Integer tenantId, @Param("storeId") Long storeId);
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
+    
+    List<ElectricityCabinetBatchOperateVo> batchOperateList(@Param("size") Long size, @Param("offset") Long offset,
+            @Param("name") String name, @Param("eleIdList") List<Integer> eleIdList,
+            @Param("tenantId") Integer tenantId);
 }

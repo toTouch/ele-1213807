@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -86,8 +87,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id, electricityCarModel);
         return electricityCarModel;
     }
-
-
+    
+    @Override
+    public Integer insert(ElectricityCarModel electricityCarModel) {
+        return electricityCarModelMapper.insert(electricityCarModel);
+    }
+    
+    
     @Override
     @Transactional
     public R save(ElectricityCarModelQuery query) {
@@ -228,7 +234,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     }
 
     @Override
-    @DS("slave_1")
+    @Slave
     public R queryList(ElectricityCarModelQuery electricityCarModelQuery) {
         List<ElectricityCarModelVO> electricityCarModelVOS = electricityCarModelMapper.queryList(electricityCarModelQuery);
         if (CollectionUtils.isEmpty(electricityCarModelVOS)) {
@@ -362,7 +368,12 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
         return Triple.of(true, "", null);
     }
-
+    
+    @Override
+    public ElectricityCarModel queryByNameAndStoreId(String name, Long storeId) {
+        return electricityCarModelMapper.queryByNameAndStoreId(name, storeId);
+    }
+    
     @Override
     public R selectByStoreId(ElectricityCarModelQuery electricityCarModelQuery) {
         electricityCarModelQuery.setTenantId(TenantContextHolder.getTenantId());

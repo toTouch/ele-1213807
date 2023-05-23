@@ -52,6 +52,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     @Autowired
     UserBatteryService userBatteryService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
         return serviceFeeUserInfoMapper.insert(serviceFeeUserInfo);
@@ -130,7 +133,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
             if (Objects.nonNull(userBattery)) {
                 eleBatteryServiceFeeVO.setBatteryType(userBattery.getBatteryType());
-                eleBatteryServiceFeeVO.setModel(BatteryConstant.acquireBattery(userBattery.getBatteryType()));
+                eleBatteryServiceFeeVO.setModel(batteryModelService.acquireBatteryModel(userBattery.getBatteryType(),userInfo.getTenantId()));
             }
         }
 

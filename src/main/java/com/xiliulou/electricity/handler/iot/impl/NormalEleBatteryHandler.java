@@ -8,6 +8,7 @@ import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.TimeUtils;
+import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -59,6 +60,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     
     @Autowired
     StoreService storeService;
+
+    @Autowired
+    EleCommonConfig eleCommonConfig;
     
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
@@ -77,7 +81,10 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     
     @Autowired
     BatteryTrackRecordService batteryTrackRecordService;
-    
+
+    @Autowired
+    BatteryModelService batteryModelService;
+
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
     
     
@@ -257,7 +264,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         //获取电池型号
         if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
-            String batteryModel = parseBatteryNameAcquireBatteryModel(eleBatteryVO.getBatteryName());
+            String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
             battery.setModel(batteryModel);
         }
         
@@ -285,7 +292,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         //获取电池型号
         if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
-            String batteryModel = parseBatteryNameAcquireBatteryModel(eleBatteryVO.getBatteryName());
+            String batteryModel = batteryModelService.analysisBatteryTypeByBatteryName(eleBatteryVO.getBatteryName());
             electricityCabinetBox.setBatteryType(batteryModel);
         }
         
@@ -435,24 +442,23 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                     eleBatteryVO.getPower(), sessionId);
             return power;
         }
-        
+
+        int maxPowerDiff = Objects.isNull(eleCommonConfig.getPowerChangeDiff()) ? 99 : eleCommonConfig.getPowerChangeDiff();
+
         /*
          * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
-        if (Objects.nonNull(electricityBattery.getPower()) && Objects.equals(electricityBattery.getPhysicsStatus(),
-                ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) && Objects.nonNull(power)
-                //                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
-                && (Math.abs(electricityBattery.getPower() - (power * 100))) >= 50) {
+        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power)
+                && (electricityBattery.getPower() - (power * 100)) > maxPowerDiff) {
 
-            //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过50，则power仍设置为原来的值
+            //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过PowerChangeDiff，则power仍设置为原来的值
             power = electricityBattery.getPower() / 100.0;
-            
-            log.warn(
-                    "ELE BATTERY REPORT WARN! battery power is changing too much,reportPower={},originalPower={},sessionId={}",
-                    eleBatteryVO.getPower(), power, sessionId);
+
+            log.warn("ELE BATTERY REPORT WARN! battery power is changing too much,sn={},originalPower={},sessionId={}",
+                    electricityBattery.getSn(), electricityBattery.getPower(), sessionId);
             return power;
         }
-        
+
         return power;
     }
     
@@ -569,11 +575,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return;
         }
-        
+
         //过滤没有电池的格挡
         List<ElectricityCabinetBox> notHaveBatteryBoxs = electricityCabinetBoxes.stream()
                 .filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
+            List<String> emptyCellNo = notHaveBatteryBoxs.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList());
+            log.error("ELE BATTERY REPORT ERROR! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
             return;
         }
         
@@ -593,37 +601,37 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         return message;
     }
     
-    public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
-        if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
-            return "";
-        }
-        
-        StringBuilder modelName = new StringBuilder("B_");
-        char[] batteryChars = batteryName.toCharArray();
-        
-        //获取电压
-        String chargeV = split(batteryChars, 4, 6);
-        modelName.append(chargeV).append("V").append("_");
-        
-        //获取材料体系
-        char material = batteryChars[2];
-        if (material == '1') {
-            modelName.append(IRON_LITHIUM).append("_");
-        } else {
-            modelName.append(TERNARY_LITHIUM).append("_");
-        }
-        
-        modelName.append(split(batteryChars, 9, 11));
-        return modelName.toString();
-    }
-    
-    private static String split(char[] strArray, int beginIndex, int endIndex) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = beginIndex; i < endIndex; i++) {
-            stringBuilder.append(strArray[i]);
-        }
-        return stringBuilder.toString();
-    }
+//    public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
+//        if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
+//            return "";
+//        }
+//
+//        StringBuilder modelName = new StringBuilder("B_");
+//        char[] batteryChars = batteryName.toCharArray();
+//
+//        //获取电压
+//        String chargeV = split(batteryChars, 4, 6);
+//        modelName.append(chargeV).append("V").append("_");
+//
+//        //获取材料体系
+//        char material = batteryChars[2];
+//        if (material == '1') {
+//            modelName.append(IRON_LITHIUM).append("_");
+//        } else {
+//            modelName.append(TERNARY_LITHIUM).append("_");
+//        }
+//
+//        modelName.append(split(batteryChars, 9, 11));
+//        return modelName.toString();
+//    }
+//
+//    private static String split(char[] strArray, int beginIndex, int endIndex) {
+//        StringBuilder stringBuilder = new StringBuilder();
+//        for (int i = beginIndex; i < endIndex; i++) {
+//            stringBuilder.append(strArray[i]);
+//        }
+//        return stringBuilder.toString();
+//    }
     
     
     @Data
