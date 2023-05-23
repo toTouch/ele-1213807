@@ -1521,13 +1521,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     
             //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
 //            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
-            //启用套餐需要更新停卡记录的真实停卡天数   不然自动启用套餐的定时任务会扫描出来
-            EleDisableMemberCardRecord updateDisableMemberCardRecord = new EleDisableMemberCardRecord();
-            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-            updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
-            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
-//            }
+            if (Objects.nonNull(eleDisableMemberCardRecord)) {
+                //启用套餐需要更新停卡记录的真实停卡天数   不然自动启用套餐的定时任务会扫描出来
+                EleDisableMemberCardRecord updateDisableMemberCardRecord = new EleDisableMemberCardRecord();
+                updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+                updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+                updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+                eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+            }
 
             EnableMemberCardRecord enableMemberCardRecord = EnableMemberCardRecord.builder()
                     .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
@@ -1715,9 +1716,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), user.getTenantId());
 
             //若是限制时间停卡  清除服务费启用套餐时需要更新停卡记录中的实际停卡天数
-            if(Objects.nonNull(eleDisableMemberCardRecord) && Objects.equals(eleDisableMemberCardRecord.getDisableCardTimeType(),EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME)){
-                
-                
+            if(Objects.nonNull(eleDisableMemberCardRecord)){
+
                 EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
                 updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
                 updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
