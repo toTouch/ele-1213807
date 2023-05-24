@@ -73,6 +73,15 @@ public class EleRefundOrderVO {
     private Integer payType;
     
     //private Integer refundOrderType;
+    private Boolean isFreeDepositAliPay;
+
+    public Boolean getIsFreeDepositAliPay(){
+        return this.isFreeDepositAliPay;
+    }
+
+    public void setIsFreeDepositAliPay(Boolean isFreeDepositAliPay) {
+        this.isFreeDepositAliPay = isFreeDepositAliPay;
+    }
 
     public Long getId() {
         return id;
@@ -193,4 +202,5 @@ public class EleRefundOrderVO {
     //    public void setRefundOrderType(Integer refundOrderType) {
     //        this.refundOrderType = refundOrderType;
     //    }
+
 }

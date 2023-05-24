@@ -47,6 +47,7 @@ public class JsonUserRentCarDepositOrderController extends BaseController {
      * @return
      */
     @PostMapping("/user/rentCarDeposit/refund")
+    @Deprecated
     public R refundRentCarDeposit(HttpServletRequest request) {
         return returnTripleResult(carDepositOrderService.refundRentCarDeposit(request));
     }

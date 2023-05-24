@@ -3013,8 +3013,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        HomePageDepositVo homePageDepositVo = new HomePageDepositVo();
+    
+        HomePageDepositQuery qeury = new HomePageDepositQuery();
 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
@@ -3024,7 +3024,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(homePageDepositVo);
+                return R.ok(qeury);
             }
         }
 
@@ -3033,18 +3033,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //缴纳电池押金
         List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = eleDepositOrderService
+            BigDecimal onlineBatteryDepositTurnover = eleDepositOrderService
                     .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
-                            finalFranchiseeIds);
-            BigDecimal todayBatteryDeposit = eleDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
-                            finalFranchiseeIds);
-            homePageDepositVo.setBatteryDeposit(batteryDepositTurnover);
-            homePageDepositVo.setTodayBatteryDeposit(todayBatteryDeposit);
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal offlineBatteryDepositTurnover = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal freeBatteryDepositTurnover = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            qeury.setOnlineBatteryDeposit(onlineBatteryDepositTurnover);
+            qeury.setOfflineBatteryDeposit(offlineBatteryDepositTurnover);
+            qeury.setFreeBatteryDeposit(freeBatteryDepositTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
+    
+        //今日电池押金
+        CompletableFuture<Void> batteryDepositToDay = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            qeury.setTodayOfflineBatteryDeposit(todayOfflineBatteryDeposit);
+            qeury.setTodayOnlineBatteryDeposit(todayOnlineBatteryDeposit);
+            qeury.setTodayFreeBatteryDeposit(todayFreeBatteryDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+        
+        
 
         //        //缴纳租车押金
         //        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
@@ -3056,32 +3083,116 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
         //            return null;
         //        });
+    
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal carDepositTurnover = carDepositOrderService
+            BigDecimal onlineCarDepositTurnover = carDepositOrderService
                     .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
-                            finalFranchiseeIds);
-            BigDecimal todayCarDeposit = carDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
-                            finalFranchiseeIds);
-            homePageDepositVo.setCarDeposit(carDepositTurnover);
-            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
+                            finalFranchiseeIds, CarDepositOrder.ONLINE_PAYTYPE);
+            BigDecimal offlineCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.OFFLINE_PAYTYPE);
+            BigDecimal freeCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
+            //            BigDecimal todayCarDeposit = carDepositOrderService
+            //                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+            //                            finalFranchiseeIds);
+            //            homePageDepositVo.setCarDeposit(carDepositTurnover);
+            //            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
+    
+            qeury.setOnlineCarDeposit(onlineCarDepositTurnover);
+            qeury.setOfflineCarDeposit(offlineCarDepositTurnover);
+            qeury.setFreeCarDeposit(freeCarDepositTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
-        
-        //退电池押金
-        CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal todayRefundDeposit = refundOrderService
-                    .queryTurnOverByTime(tenantId, todayStartTime, null, finalFranchiseeIds);
-            BigDecimal historyRefundDeposit = refundOrderService
-                    .queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER,
-                            finalFranchiseeIds);
-            homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
-            homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
+    
+        //今日租车押金
+        CompletableFuture<Void> carDepositToDay = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.ONLINE_PAYTYPE);
+            BigDecimal todayOfflineCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.OFFLINE_PAYTYPE);
+            BigDecimal todayFreeCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
+    
+            qeury.setTodayOnlineCarDeposit(todayOnlineCarDeposit);
+            qeury.setTodayOfflineCarDeposit(todayOfflineCarDeposit);
+            qeury.setTodayFreeCarDeposit(todayFreeCarDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //代扣记录
+        CompletableFuture<Void> depositFreeAlipay = CompletableFuture.runAsync(() -> {
+            BigDecimal eleFreeDepositAlipay = eleDepositOrderService.queryFreeDepositAlipayTurnOver(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
+            BigDecimal carFreeDepositAlipay = carDepositOrderService.queryFreeDepositAlipayTurnOver(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+
+            qeury.setBatteryFreeDepositAlipay(eleFreeDepositAlipay);
+            qeury.setCarFreeDepositAlipay(carFreeDepositAlipay);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query depositFreeAlipay error!", e);
+            return null;
+        });
+    
+        //        //退电池押金
+        //        CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
+        //            BigDecimal todayRefundDeposit = refundOrderService
+        //                    .queryTurnOverByTime(tenantId, todayStartTime, null, finalFranchiseeIds);
+        //            BigDecimal historyRefundDeposit = refundOrderService
+        //                    .queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER,
+        //                            finalFranchiseeIds);
+        //            homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
+        //            homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
+        //        }, executorService).exceptionally(e -> {
+        //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+        //            return null;
+        //        });
+    
+        //今日退电池押金
+        CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            qeury.setTodayOnlineRefundDeposit(todayOnlineRefundDeposit);
+            qeury.setTodayOfflineRefundDeposit(todayOfflineRefundDeposit);
+            qeury.setTodayFreeRefundDeposit(todayFreeRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query refundBatteryDeposit error!", e);
+            return null;
+        });
+
+    
+        //历史退电池押金
+        CompletableFuture<Void> refundBatteryDepositHistory = CompletableFuture.runAsync(() -> {
+            BigDecimal historyOnlineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds,
+                            EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyOfflineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds,
+                            EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyFreeRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds,
+                            EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            qeury.setHistoryOnlineRefundBatteryDeposit(historyOnlineRefundDeposit);
+            qeury.setHistoryOfflineRefundBatteryDeposit(historyOfflineRefundDeposit);
+            qeury.setHistoryFreeRefundBatteryDeposit(historyFreeRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query refundBatteryDepositHistory error!", e);
             return null;
         });
 
@@ -3094,36 +3205,110 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });*/
-
-        //退租车押金
+    
+        //今日退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService
-                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
-                            finalFranchiseeIds);
-            homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
+            BigDecimal todayOnlineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, todayStartTime,
+                            EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds,
+                            EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, todayStartTime,
+                            EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds,
+                            EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, todayStartTime,
+                            EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds,
+                            EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            qeury.setTodayOnlineCarRefundDeposit(todayOnlineRefundDeposit);
+            qeury.setTodayOfflineCarRefundDeposit(todayOfflineRefundDeposit);
+            qeury.setTodayFreeCarRefundDeposit(todayFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundCarDeposit error!", e);
+            return null;
+        });
+    
+        //历史退租车押金
+        CompletableFuture<Void> refundCarDepositHistory = CompletableFuture.runAsync(() -> {
+            BigDecimal historyOnlineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyOfflineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyFreeRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+    
+            qeury.setHistoryOnlineRefundCarDeposit(historyOnlineRefundDeposit);
+            qeury.setHistoryOfflineRefundCarDeposit(historyOfflineRefundDeposit);
+            qeury.setHistoryFreeRefundCarDeposit(historyFreeRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query refundCarDepositHistory error!", e);
             return null;
         });
         
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit);
+                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit, batteryDepositToDay,
+                        carDepositToDay, refundBatteryDepositHistory, refundCarDepositHistory,depositFreeAlipay);
+        HomePageDepositVo vo = new HomePageDepositVo();
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
-            homePageDepositVo.setBatteryDeposit(
-                    homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
-            homePageDepositVo.setCarDeposit(
-                    homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
-            homePageDepositVo.setSumDepositTurnover(
-                    homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
-            homePageDepositVo.setTodayPayDeposit(
-                    homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
+            //            homePageDepositVo.setBatteryDeposit(
+            //                    homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
+            //            homePageDepositVo.setCarDeposit(
+            //                    homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
+            //            homePageDepositVo.setSumDepositTurnover(
+            //                    homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
+            //            homePageDepositVo.setTodayPayDeposit(
+            //                    homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
+    
+            BigDecimal payBatteryDeposit = qeury.getOnlineBatteryDeposit().add(qeury.getOfflineBatteryDeposit())
+                    .subtract(qeury.getHistoryOnlineRefundBatteryDeposit())
+                    .subtract(qeury.getHistoryOfflineRefundBatteryDeposit());
+            BigDecimal freeBatteryDeposit = qeury.getFreeBatteryDeposit()
+                    .subtract(qeury.getHistoryFreeRefundBatteryDeposit())
+                    .subtract(qeury.getBatteryFreeDepositAlipay());
+            BigDecimal batteryDepositSum = payBatteryDeposit.add(freeBatteryDeposit);
+            BigDecimal payCarDeposit = qeury.getOnlineCarDeposit().add(qeury.getOfflineCarDeposit())
+                    .subtract(qeury.getHistoryOnlineRefundCarDeposit())
+                    .subtract(qeury.getHistoryOfflineRefundCarDeposit());
+            BigDecimal freeCarDeposit = qeury.getFreeCarDeposit()
+                    .subtract(qeury.getHistoryFreeRefundCarDeposit())
+                    .subtract(qeury.getCarFreeDepositAlipay());
+            BigDecimal carDepositSum = payCarDeposit.add(freeCarDeposit);
+            BigDecimal todayPayRefundDeposit = qeury.getTodayOnlineRefundDeposit()
+                    .add(qeury.getTodayOfflineBatteryDeposit()).add(qeury.getTodayOnlineCarRefundDeposit())
+                    .add(qeury.getTodayOfflineCarRefundDeposit());
+            BigDecimal todayFreeRefundDeposit = qeury.getTodayFreeRefundDeposit()
+                    .add(qeury.getTodayFreeCarRefundDeposit());
+            BigDecimal todayRefundDeposit = todayPayRefundDeposit.add(todayFreeRefundDeposit);
+            BigDecimal todayPayDeposit = qeury.getTodayOnlineBatteryDeposit().add(qeury.getTodayOfflineBatteryDeposit())
+                    .add(qeury.getTodayOnlineCarDeposit()).add(qeury.getTodayOfflineCarRefundDeposit());
+            BigDecimal todayFreeDeposit = qeury.getTodayFreeBatteryDeposit().add(qeury.getTodayFreeCarDeposit());
+            BigDecimal todayDeposit = todayPayDeposit.add(todayFreeDeposit);
+            BigDecimal sumDepositTurnover = batteryDepositSum.add(carDepositSum);
+    
+            vo.setPayBatteryDeposit(payBatteryDeposit);
+            vo.setFreeBatteryDeposit(freeBatteryDeposit);
+            vo.setBatteryDeposit(batteryDepositSum);
+            vo.setPayCarDeposit(payCarDeposit);
+            vo.setFreeCarDeposit(freeCarDeposit);
+            vo.setCarDeposit(carDepositSum);
+            vo.setTodayPayRefundDeposit(todayPayRefundDeposit);
+            vo.setTodayFreeRefundDeposit(todayFreeRefundDeposit);
+            vo.setTodayRefundDeposit(todayRefundDeposit);
+            vo.setTodayPayDeposit(todayPayDeposit);
+            vo.setTodayFreeDeposit(todayFreeDeposit);
+            vo.setTodayDeposit(todayDeposit);
+            vo.setSumDepositTurnover(sumDepositTurnover);
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-        
-        return R.ok(homePageDepositVo);
+    
+        return R.ok(vo);
     }
     
     @Override
@@ -3157,7 +3342,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Integer authenticationUserCount = userInfoService.queryAuthenticationUserCount(tenantId);
             homepageOverviewDetailVo.setAuthenticationUserCount(authenticationUserCount);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query authenticationUser error!", e);
             return null;
         });
         
