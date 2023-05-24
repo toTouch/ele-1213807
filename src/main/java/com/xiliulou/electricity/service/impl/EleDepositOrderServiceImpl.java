@@ -465,7 +465,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid());
         boolean eleRefund = false;
         boolean carRefund = false;
-
+        Integer tenantId = user.getTenantId();
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
@@ -505,20 +506,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
             //解绑用户车辆信息
             if (carRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0 ) {
-                carRefund = true;
-                carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
+                if (Objects.isNull(electricityConfig) ||  Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
+                    carRefund = true;
+                    carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-                if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
-                    carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+                    if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
+                        carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                        updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
 
-                    userCarService.deleteByUid(userInfo.getUid());
+                        userCarService.deleteByUid(userInfo.getUid());
 
-                    userCarDepositService.logicDeleteByUid(userInfo.getUid());
+                        userCarDepositService.logicDeleteByUid(userInfo.getUid());
 
-                    userCarMemberCardService.deleteByUid(userInfo.getUid());
+                        userCarMemberCardService.deleteByUid(userInfo.getUid());
+                    }
                 }
-
             }
 
             eleRefundOrderService.insert(carRefundOrder);
@@ -527,23 +529,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //退款零元
         if (eleRefundAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            Integer tenantId = user.getTenantId();
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
-            eleRefund = true;
-            eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-            if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                eleRefundOrderService.insert(eleRefundOrder);
+            if (Objects.isNull(electricityConfig) ||  Objects.equals(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT, electricityConfig.getIsZeroDepositAuditEnabled())) {
+                eleRefund = true;
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-                updateUserInfo.setUid(userInfo.getUid());
-                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
-                updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                    eleRefundOrderService.insert(eleRefundOrder);
 
-                userInfoService.updateByUid(updateUserInfo);
+                    updateUserInfo.setUid(userInfo.getUid());
+                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                    updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
-                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                    userInfoService.updateByUid(updateUserInfo);
+
+                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
 //                      userBatteryDepositService.deleteByUid(userInfo.getUid());
                     userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
@@ -553,13 +554,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     //退押金解绑用户所属加盟商
                     userInfoService.unBindUserFranchiseeId(userInfo.getUid());
 
-                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
-                if (Objects.nonNull(insuranceUserInfo)) {
-                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(user.getUid());
+                    if (Objects.nonNull(insuranceUserInfo)) {
+                        insuranceUserInfoService.deleteById(insuranceUserInfo);
+                    }
+                    return R.ok("SUCCESS");
                 }
-                return R.ok("SUCCESS");
-           }
-        }
+            }
 
 
         }
@@ -2111,6 +2112,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
         String success = null;
         UserInfo updateUserInfo = new UserInfo();
+        Integer tenantId = user.getTenantId();
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(carDepositOrder.getOrderId());
         BigDecimal refundAmount  = null;
 
@@ -2182,20 +2185,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).build();
 
             if (eleRefundAmount.doubleValue() <= 0) {
-                eleRefund = true;
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
+                if (Objects.isNull(electricityConfig) ||  Objects.equals(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT,electricityConfig.getIsZeroDepositAuditEnabled())) {
+                    eleRefund = true;
+                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-                if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
-                    eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                    updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                    if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+                        eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                        updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
 
-                    userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
-                    userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
-                    userBatteryService.deleteByUid(userInfo.getUid());
+                        userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                        userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                        userBatteryService.deleteByUid(userInfo.getUid());
 
-                    InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-                    if (Objects.nonNull(insuranceUserInfo)) {
-                        insuranceUserInfoService.deleteById(insuranceUserInfo);
+                        InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                        if (Objects.nonNull(insuranceUserInfo)) {
+                            insuranceUserInfoService.deleteById(insuranceUserInfo);
+                        }
                     }
                 }
 
@@ -2222,9 +2227,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //零元直接退
         if (carRefundAmount.doubleValue() <= 0) {
-            Integer tenantId = user.getTenantId();
-            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-            if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsZeroDepositAuditEnabled(), ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT)) {
+
+            if (Objects.isNull(electricityConfig) || Objects.equals(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT,electricityConfig.getIsZeroDepositAuditEnabled())) {
 
                 carRefund = true;
                 carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
