@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.vo;
-import com.xiliulou.electricity.entity.Coupon;
+
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import lombok.Data;
+
 import java.util.List;
 
 /**
@@ -54,7 +56,10 @@ public class ShareActivityVO {
      * 活动类型，分为 1--自营，2--代理
      */
     private Integer type;
-
+    /**
+     * 领取方式 0--阶梯，1--循环
+     */
+    private Integer receiveType;
     /**
      * 小时
      */
@@ -81,6 +86,10 @@ public class ShareActivityVO {
     private Integer availableCount;
 
 
+    /**
+     * 领券套餐
+     */
+    private List<ElectricityMemberCard> memberCards;
 
 
 

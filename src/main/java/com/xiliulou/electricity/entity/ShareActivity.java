@@ -35,6 +35,10 @@ public class ShareActivity {
      */
     private Integer type;
     /**
+     * 领取方式 0--阶梯，1--循环
+     */
+    private Integer receiveType;
+    /**
     * 活动说明
     */
     private String description;
@@ -95,5 +99,7 @@ public class ShareActivity {
     //下架
     public static final Integer STATUS_OFF = 2;
 
-
+    //领取方式 0--阶梯，1--循环
+    public static final Integer RECEIVE_TYPE_LADDER=0;
+    public static final Integer RECEIVE_TYPE_CYCLE=1;
 }

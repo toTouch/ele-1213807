@@ -3,6 +3,7 @@ package com.xiliulou.electricity.query;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -43,6 +44,11 @@ public class ShareActivityAddAndUpdateQuery {
      */
     private Integer type;
     /**
+     * 领取方式 0--阶梯，1--循环
+     */
+    @NotNull(message = "领取方式不能为空!", groups = {CreateGroup.class})
+    private Integer receiveType;
+    /**
     * 活动说明
     */
     private String description;
@@ -75,9 +81,11 @@ public class ShareActivityAddAndUpdateQuery {
      */
     private Integer franchiseeId;
 
-
-
-
+    /**
+     * 可发放优惠券的套餐
+     */
+    @NotEmpty(message = "领券套餐不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
+    private List<Long> membercardIds;
 
 }
 

@@ -3,41 +3,28 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
-import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.ShareActivityService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.ElectricityCabinetFileService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.electricity.vo.CouponVO;
+import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -47,6 +34,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 活动表(TActivity)表服务实现类
@@ -100,6 +88,15 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	JoinShareActivityHistoryService joinShareActivityHistoryService;
 
+	@Autowired
+	ShareActivityMemberCardService shareActivityMemberCardService;
+
+	@Autowired
+	ElectricityMemberCardService electricityMemberCardService;
+
+	@Autowired
+	ShareActivityOperateRecordService shareActivityOperateRecordService;
+
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -134,23 +131,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-		//创建账号
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("Coupon  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
-		//查询该租户是否有邀请活动，有则不能添加
-//		int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-//				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
-//		if (count > 0) {
-//			return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
-//		}
-		
 		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
 			int count = shareActivityMapper.selectCount(
 					new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId)
@@ -192,6 +178,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				}
 			}
 
+			//保存可发优惠券的套餐
+			List<ShareActivityMemberCard> shareActivityMemberCards = buildShareActivityMemberCard(shareActivity, shareActivityAddAndUpdateQuery.getMembercardIds());
+			if (CollectionUtils.isNotEmpty(shareActivityMemberCards)) {
+				shareActivityMemberCardService.batchInsert(shareActivityMemberCards);
+			}
+
+			shareActivityOperateRecordService.insert(buildShareActivityOperateRecord(shareActivity.getId().longValue(),shareActivity.getName(),shareActivityAddAndUpdateQuery.getMembercardIds()));
 			return null;
 		});
 
@@ -199,6 +192,30 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.ok(shareActivity.getId());
 		}
 		return R.fail("ELECTRICITY.0086", "操作失败");
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Triple<Boolean, String, Object> updateShareActivity(ShareActivityQuery shareActivityQuery) {
+		ShareActivity shareActivityUpdate=new ShareActivity();
+		shareActivityUpdate.setId(shareActivityQuery.getId());
+		shareActivityUpdate.setName(shareActivityQuery.getName());
+
+		DbUtils.dbOperateSuccessThenHandleCache(shareActivityMapper.updateById(shareActivityUpdate), i -> {
+			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + shareActivityUpdate.getId());
+
+			//删除绑定的套餐
+			shareActivityMemberCardService.deleteByActivityId(shareActivityQuery.getId());
+
+			List<ShareActivityMemberCard> shareActivityMemberCards = buildShareActivityMemberCard(shareActivityUpdate, shareActivityQuery.getMembercardIds());
+			if (CollectionUtils.isNotEmpty(shareActivityMemberCards)) {
+				shareActivityMemberCardService.batchInsert(shareActivityMemberCards);
+			}
+
+			shareActivityOperateRecordService.insert(buildShareActivityOperateRecord(shareActivityQuery.getId().longValue(),shareActivityQuery.getName(),shareActivityQuery.getMembercardIds()));
+		});
+
+		return Triple.of(true,"","");
 	}
 
 	/**
@@ -416,7 +433,25 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		getUserCouponVOList(shareActivityVO, user);
 
 		return R.ok(shareActivityVO);
+	}
 
+	@Override
+	public Triple<Boolean, String, Object> shareActivityDetail(Integer id) {
+		ShareActivity shareActivity = this.queryByIdFromCache(id);
+		if (Objects.isNull(shareActivity) || Objects.equals(shareActivity.getTenantId(), TenantContextHolder.getTenantId())) {
+			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
+		}
+
+		ShareActivityVO shareActivityVO = new ShareActivityVO();
+		BeanUtil.copyProperties(shareActivity, shareActivityVO);
+
+		List<ShareActivityMemberCard> shareActivityMemberCardList = shareActivityMemberCardService.selectByActivityId(shareActivity.getId());
+		if (CollectionUtils.isNotEmpty(shareActivityMemberCardList)) {
+			List<ElectricityMemberCard> memberCards = shareActivityMemberCardList.parallelStream().map(item -> electricityMemberCardService.queryByCache(item.getMemberCardId().intValue())).collect(Collectors.toList());
+			shareActivityVO.setMemberCards(memberCards);
+		}
+
+		return Triple.of(true, "", shareActivityVO);
 	}
 
 	@Override
@@ -425,5 +460,32 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				.eq(ShareActivity::getId, activityId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 	}
 
+	private List<ShareActivityMemberCard> buildShareActivityMemberCard(ShareActivity shareActivity, List<Long> membercardIds) {
+		List<ShareActivityMemberCard> list = Lists.newArrayList();
+
+		for (Long membercardId : membercardIds) {
+			ShareActivityMemberCard shareActivityMemberCard = new ShareActivityMemberCard();
+			shareActivityMemberCard.setActivityId(shareActivity.getId().longValue());
+			shareActivityMemberCard.setMemberCardId(membercardId);
+			shareActivityMemberCard.setTenantId(TenantContextHolder.getTenantId());
+			shareActivityMemberCard.setCreateTime(System.currentTimeMillis());
+			shareActivityMemberCard.setUpdateTime(System.currentTimeMillis());
+			list.add(shareActivityMemberCard);
+		}
+
+		return list;
+	}
+
+	private ShareActivityOperateRecord buildShareActivityOperateRecord(Long id, String name, List<Long> membercardIds) {
+		ShareActivityOperateRecord shareActivityOperateRecord = new ShareActivityOperateRecord();
+		shareActivityOperateRecord.setUid(SecurityUtils.getUid());
+		shareActivityOperateRecord.setShareActivityId(id);
+		shareActivityOperateRecord.setName(name);
+		shareActivityOperateRecord.setMemberCard(JsonUtil.toJson(membercardIds));
+		shareActivityOperateRecord.setTenantId(TenantContextHolder.getTenantId());
+		shareActivityOperateRecord.setCreateTime(System.currentTimeMillis());
+		shareActivityOperateRecord.setUpdateTime(System.currentTimeMillis());
+		return shareActivityOperateRecord;
+	}
 }
 
