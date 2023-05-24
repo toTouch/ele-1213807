@@ -611,6 +611,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Triple.of(true, null, null);
     }
 
+    @Override
+    public Triple<Boolean, String, Object> updateAddress(ElectricityCabinetAddressQuery eleCabinetAddressQuery) {
+        ElectricityCabinet electricityCabinet = this.queryByIdFromCache(eleCabinetAddressQuery.getId());
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+        electricityCabinetUpdate.setId(electricityCabinet.getId());
+        electricityCabinetUpdate.setAddress(eleCabinetAddressQuery.getAddress());
+        electricityCabinetUpdate.setLatitude(eleCabinetAddressQuery.getLatitude());
+        electricityCabinetUpdate.setLongitude(eleCabinetAddressQuery.getLongitude());
+        this.electricityCabinetMapper.updateById(electricityCabinetUpdate);
+        return Triple.of(true, null, null);
+    }
+
     @Slave
     @Override
     public CabinetBatteryVO batteryStatistics(Long eid) {
