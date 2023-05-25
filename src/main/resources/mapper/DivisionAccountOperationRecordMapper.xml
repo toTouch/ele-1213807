@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.DivisionAccountOperationRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.DivisionAccountOperationRecord"
+               id="DivisionAccountOperationRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="divisionAccountId" column="divisionAccountId" jdbcType="INTEGER"/>
+        <result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="cabinetOperatorRate" column="cabinet_operator_rate" jdbcType="NUMERIC"/>
+        <result property="cabinetFranchiseeRate" column="cabinet_franchisee_rate" jdbcType="NUMERIC"/>
+        <result property="cabinetStoreRate" column="cabinet_store_rate" jdbcType="NUMERIC"/>
+        <result property="nonCabOperatorRate" column="non_cab_operator_rate" jdbcType="NUMERIC"/>
+        <result property="nonCabFranchiseeRate" column="non_cab_franchisee_rate" jdbcType="NUMERIC"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="accountMemberCard" column="account_member_card" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--��ѯ����-->
+    <select id="queryById" resultMap="DivisionAccountOperationRecordMap">
+        select id,
+               uid,
+               division_account_id,
+               NAME,
+               cabinet_operator_rate,
+               cabinet_franchisee_rate,
+               cabinet_store_rate,
+               non_cab_operator_rate,
+               non_cab_franchisee_rate,
+               tenant_id,
+               create_time,
+               update_time,
+               account_member_card
+        from t_division_account_operation_record
+        where id = #{id}
+    </select>
+
+    <!--��ѯָ��������-->
+    <select id="queryAllByLimit" resultMap="DivisionAccountOperationRecordMap">
+        select id,
+               uid,
+               division_account_id,
+               NAME,
+               cabinet_operator_rate,
+               cabinet_franchisee_rate,
+               cabinet_store_rate,
+               non_cab_operator_rate,
+               non_cab_franchisee_rate,
+               tenant_id,
+               create_time,
+               update_time,
+               account_member_card
+        from t_division_account_operation_record limit #{offset}, #{limit}
+    </select>
+
+    <!--ͨ��ʵ����Ϊɸѡ������ѯ-->
+    <select id="queryAll" resultMap="DivisionAccountOperationRecordMap">
+        select
+        id, uid, division_account_id, NAME, cabinet_operator_rate, cabinet_franchisee_rate, cabinet_store_rate, non_cab_operator_rate,
+        non_cab_franchisee_rate, tenant_id, create_time, update_time, account_member_card
+        from t_division_account_operation_record
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="divisionAccountId != null">
+                and division_account_id = #{divisionAccountId}
+            </if>
+            <if test=" name != null and name != ''">
+                and NAME = #{name}
+             </if>
+            <if test="cabinetOperatorRate != null">
+                and cabinet_operator_rate = #{cabinetOperatorRate}
+            </if>
+            <if test="cabinetFranchiseeRate != null">
+                and cabinet_franchisee_rate = #{cabinetFranchiseeRate}
+            </if>
+            <if test="cabinetStoreRate != null">
+                and cabinet_store_rate = #{cabinetStoreRate}
+            </if>
+            <if test="nonCabOperatorRate != null">
+                and non_cab_operator_rate = #{nonCabOperatorRate}
+            </if>
+            <if test="nonCabFranchiseeRate != null">
+                and non_cab_franchisee_rate = #{nonCabFranchiseeRate}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="accountMemberCard != null and accountMemberCard != ''">
+                and account_member_card = #{accountMemberCard}
+            </if>
+        </where>
+    </select>
+
+    <!--����������-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_division_account_operation_record(uid,division_account_id,NAME,cabinet_operator_rate, cabinet_franchisee_rate,
+                                                        cabinet_store_rate, non_cab_operator_rate,
+                                                        non_cab_franchisee_rate, tenant_id, create_time, update_time,
+                                                        account_member_card)
+        values (#{uid},#{divisionAccountId},#{name}, #{cabinetOperatorRate}, #{cabinetFranchiseeRate}, #{cabinetStoreRate}, #{nonCabOperatorRate},
+                #{nonCabFranchiseeRate}, #{tenantId}, #{createTime}, #{updateTime}, #{accountMemberCard})
+    </insert>
+
+    <!--ͨ�������޸�����-->
+    <update id="update">
+        update t_division_account_operation_record
+        <set>
+            <if test="uid != null and uid != ''">
+                uid = #{uid},
+            </if>
+            <if test="divisionAccountId != null and divisionAccountId != ''">
+                and division_account_id = #{divisionAccountId}
+            </if>
+            <if test="name != null and name != ''">
+                NAME = #{name},
+            </if>
+            <if test="cabinetOperatorRate != null">
+                cabinet_operator_rate = #{cabinetOperatorRate},
+            </if>
+            <if test="cabinetFranchiseeRate != null">
+                cabinet_franchisee_rate = #{cabinetFranchiseeRate},
+            </if>
+            <if test="cabinetStoreRate != null">
+                cabinet_store_rate = #{cabinetStoreRate},
+            </if>
+            <if test="nonCabOperatorRate != null">
+                non_cab_operator_rate = #{nonCabOperatorRate},
+            </if>
+            <if test="nonCabFranchiseeRate != null">
+                non_cab_franchisee_rate = #{nonCabFranchiseeRate},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="accountMemberCard != null and accountMemberCard != ''">
+                account_member_card = #{accountMemberCard},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--ͨ������ɾ��-->
+    <delete id="deleteById">
+        delete
+        from t_division_account_operation_record
+        where id = #{id}
+    </delete>
+
+    <!--查询数据列表-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.DivisionAccountOperationRecord">
+        select id,
+        uid,
+        division_account_id,
+        name,
+        cabinet_operator_rate,
+        cabinet_franchisee_rate,
+        cabinet_store_rate,
+        non_cab_operator_rate,
+        non_cab_franchisee_rate,
+        tenant_id,
+        create_time,
+        update_time,
+        account_member_card
+        from t_division_account_operation_record
+        where
+        <if test="tenantId != null">
+            tenant_id = #{tenantId}
+        </if>
+        <if test="divisionAccountId != null">
+            and division_account_id = #{divisionAccountId}
+        </if>
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+
+    <!--查询数据总数-->
+    <select id="queryCount" resultType="int">
+        select
+        count(1)
+        from t_division_account_operation_record
+        where
+        <if test="tenantId != null">
+            tenant_id = #{tenantId}
+        </if>
+        <if test="divisionAccountId != null">
+            and division_account_id = #{divisionAccountId}
+        </if>
+        <if test="name != null and name != ''">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
+</mapper>

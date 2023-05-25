@@ -162,6 +162,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
+
     /**
      * 创建月卡订单
      *
@@ -263,16 +266,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //判断用户电池服务费
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-//        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-//            long cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-//            BigDecimal userMemberCardExpireServiceFee = checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-//            if (BigDecimal.valueOf(0).compareTo(userMemberCardExpireServiceFee) != 0) {
-//                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userMemberCardExpireServiceFee);
-//            }
-//        }
 
         BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-
 
         long cardDays = 0;
         if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
@@ -364,10 +359,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 refId = electricityCabinet.getId().longValue();
             }
         }
-
-//        if (Objects.isNull(franchiseeId)) {
-//            return R.fail("ELECTRICITY.0038", "未找到加盟商");
-//        }
 
         //查找计算优惠券
         //满减折扣劵
@@ -598,6 +589,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 }
             }
+
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
     
             //如果后台有记录那么一定是用户没购买过套餐时添加，如果为INIT就修改
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(user.getUid());
@@ -1844,6 +1838,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         baseMapper.insert(electricityMemberCardOrder);
 
+        divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
 
         UserBatteryMemberCard userBatteryMemberCardAddAndUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardAddAndUpdate.setUid(userInfo.getUid());
@@ -2265,6 +2260,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
         }
+
+        divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
 
         Double oldCardDay = 0.0;
         if (userBatteryMemberCard.getMemberCardExpireTime() - now > 0) {

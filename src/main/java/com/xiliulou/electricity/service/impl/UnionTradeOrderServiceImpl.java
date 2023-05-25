@@ -151,6 +151,9 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     ShippingManagerService shippingManagerService;
 
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -575,11 +578,6 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
-
 
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
@@ -688,6 +686,9 @@ public class UnionTradeOrderServiceImpl extends
 
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
+
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
 
             //被邀请新买月卡用户
             //是否是新用户
@@ -964,6 +965,9 @@ public class UnionTradeOrderServiceImpl extends
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
+
+            //租车套餐分帐
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         }
 
         CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();

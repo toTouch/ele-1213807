@@ -367,4 +367,8 @@ public interface CacheConstant {
      * 车辆锁状态
      */
     String CACHE_CAR_LOCK_STATUS = "cache_car_lock_status:";
+    /**
+     * 分帐配置缓存
+     */
+    String CACHE_DIVISION_ACCOUNT_CONFIG = "division_account_config:";
 }

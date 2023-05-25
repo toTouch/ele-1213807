@@ -157,13 +157,15 @@ public class ElectricityTradeOrderServiceImpl extends
     ElectricityCarService electricityCarService;
     @Autowired
     ShippingManagerService shippingManagerService;
-    
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
+
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
-    
+
     @Autowired
     ElectricityConfigService electricityConfigService;
-    
+
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
 
@@ -257,21 +259,7 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//
-//        }
-
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
 
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
@@ -432,7 +420,9 @@ public class ElectricityTradeOrderServiceImpl extends
 
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
-    
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
+
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
                     .queryByUid(electricityMemberCardOrder.getUid());
             if (Objects.nonNull(channelActivityHistory) && Objects
@@ -907,7 +897,7 @@ public class ElectricityTradeOrderServiceImpl extends
             updateUserCarMemberCard.setUpdateTime(System.currentTimeMillis());
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
-    
+
             //用户是否有绑定了车
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
             ElectricityConfig electricityConfig = electricityConfigService
@@ -917,7 +907,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
                 boolean boo = electricityCarService
                         .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-    
+
                 CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
                 carLockCtrlHistory.setUid(userInfo.getUid());
                 carLockCtrlHistory.setName(userInfo.getName());
@@ -944,8 +934,9 @@ public class ElectricityTradeOrderServiceImpl extends
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
-        }
 
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
+        }
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
