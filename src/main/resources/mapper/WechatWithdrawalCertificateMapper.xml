@@ -29,8 +29,10 @@
     
     <select id="listCertificateInTenantIds" resultType="com.xiliulou.electricity.entity.WechatWithdrawalCertificate">
         select
+            id,
             tenant_id,
             certificate_value,
+            upload_time
         from
             t_wechat_withdrawal_certificate
         <where>
