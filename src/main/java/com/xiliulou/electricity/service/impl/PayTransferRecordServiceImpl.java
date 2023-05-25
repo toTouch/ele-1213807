@@ -69,6 +69,7 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 		//由租户id查询提现证书信息
 		List<Integer> tenantIds = payTransferRecordList.stream().map(PayTransferRecord::getTenantId)
 				.collect(Collectors.toList());
+		log.info("handlerTransferPayQuery, tenantIds={}", tenantIds);
 		Map<Integer, byte[]> map = wechatWithdrawalCertificateService.listCertificateInTenantIds(tenantIds);
 	
 		for (PayTransferRecord payTransferRecord : payTransferRecordList) {

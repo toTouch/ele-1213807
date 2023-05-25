@@ -72,6 +72,9 @@ public class WechatWithdrawalCertificateServiceImpl implements WechatWithdrawalC
     
     @Override
     public Map<Integer, byte[]> listCertificateInTenantIds(List<Integer> tenantIds) {
+        if (CollectionUtils.isEmpty(tenantIds)) {
+            return null;
+        }
         List<WechatWithdrawalCertificate> wechatWithdrawalCertificates = wechatWithdrawalCertificateMapper
                 .listCertificateInTenantIds(tenantIds);
         if (CollectionUtils.isEmpty(wechatWithdrawalCertificates)) {
