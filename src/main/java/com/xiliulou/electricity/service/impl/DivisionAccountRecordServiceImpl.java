@@ -186,6 +186,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     public void handleBatteryMembercardDivisionAccount(ElectricityMemberCardOrder batteryMemberCardOrder) {
         divisionAccountExecutorService.execute(() -> {
 
+            log.info("DIVISION ACCOUNT INFO!batteryMemberCardOrder,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
+
             try {
 //                Long storeId = null;
 //                if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(batteryMemberCardOrder.getSource()) && Objects.nonNull(batteryMemberCardOrder.getRefId())) {
@@ -259,6 +261,9 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     @Override
     public void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder) {
         divisionAccountExecutorService.execute(() -> {
+
+            log.info("DIVISION ACCOUNT INFO!carMemberCardOrder,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
+
             try {
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carMemberCardOrder.getCarModelId(), null, carMemberCardOrder.getFranchiseeId(), carMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
