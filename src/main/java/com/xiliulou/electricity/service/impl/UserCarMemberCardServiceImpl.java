@@ -291,6 +291,13 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     if (carInfoResult.isSuccess()) {
                         break;
                     }
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (Exception e) {
+                        log.error("EXPIRE BREAK POWER ERROR! thread interrupt,sn={},uid={}", electricityCar.getSn(), item.getUid(), e);
+                    }
+
                     log.error("EXPIRE BREAK POWER ERROR! query car info error,sn={},uid={}", electricityCar.getSn(), item.getUid());
                 }
 
