@@ -765,32 +765,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
 
-            //查满仓空仓数
-            Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
-
-            //查满仓空仓数
-            int electricityBatteryTotal = 0;
-            int noElectricityBattery = 0;
-            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
-                    .queryBoxByElectricityCabinetId(e.getId());
-            if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-
-                //空仓
-                noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery)
-                        .count();
-
-                //电池总数
-                electricityBatteryTotal = (int) electricityCabinetBoxList.stream()
-                        .filter(this::isElectricityBattery).count();
+            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
+//            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+            if (CollectionUtils.isEmpty(cabinetBoxList)) {
+                return null;
             }
 
-            e.setElectricityBatteryTotal(electricityBatteryTotal);
-            e.setNoElectricityBattery(noElectricityBattery);
-            e.setFullyElectricityBattery(fullyElectricityBattery);
+            //空仓
+            long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+            //有电池仓门
+            long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+            //可换电数量
+            long exchangeableNumber = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).count();
 
-            ElectricityCabinet item = new ElectricityCabinet();
-            item.setUpdateTime(System.currentTimeMillis());
-            item.setId(e.getId());
+            e.setElectricityBatteryTotal((int) haveBatteryNumber);
+            e.setNoElectricityBattery((int) emptyCellNumber);
+            e.setFullyElectricityBattery((int) exchangeableNumber);
+
 
             //电柜不在线也返回，可离线换电
             if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {

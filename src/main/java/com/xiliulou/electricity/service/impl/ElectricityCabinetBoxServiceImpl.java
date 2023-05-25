@@ -153,11 +153,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return R.ok();
     }
 
-    @Override
     @Slave
+    @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+    }
+
+    @Override
+    public List<ElectricityCabinetBox> selectEleBoxAttrByEid(Integer id) {
+        return electricityCabinetBoxMapper.selectEleBoxAttrByEid(id);
     }
 
     @Override

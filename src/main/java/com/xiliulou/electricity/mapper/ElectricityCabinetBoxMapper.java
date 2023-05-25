@@ -46,4 +46,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     Integer queryBoxCount(@Param("id") Integer id, @Param("tenantId") Integer tenantId);
     
     int selectUsableEmptyCellNumber(@Param("eid") Integer eid, @Param("tenantId") Integer tenantId);
+
+    List<ElectricityCabinetBox> selectEleBoxAttrByEid(@Param("eid") Integer eid);
 }
