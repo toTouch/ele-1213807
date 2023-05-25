@@ -376,7 +376,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     joinShareActivityRecordService.update(joinShareActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), electricityMemberCardOrder.getUid());
                     if (Objects.nonNull(oldJoinShareActivityHistory)) {
                         oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
                         oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -396,7 +396,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), electricityMemberCardOrder.getUid());
                     if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
                         oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
                         oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -712,6 +712,23 @@ public class ElectricityTradeOrderServiceImpl extends
             }
 
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+
+            Long now = System.currentTimeMillis();
+            //判断用户是否产生电池服务费
+            Long cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+
+            //不足一天按一天计算
+            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1L;
+            }
+            //启用套餐时需要更新停卡记录中的实际停卡天数
+            EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+            updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
         }
 
         //交易订单

@@ -61,4 +61,6 @@ public interface FaceRecognizeDataService {
 
 
     Triple<Boolean,String,Object> recharge(FaceRecognizeDataQuery faceRecognizeDataQuery);
+
+    Integer deductionCapacityByTenantId(FaceRecognizeData faceRecognizeDataUpdate);
 }

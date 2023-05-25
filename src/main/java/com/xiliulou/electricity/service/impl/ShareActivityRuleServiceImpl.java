@@ -44,7 +44,10 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
                 .eq(ShareActivityRule::getDelFlag, ShareActivityRule.DEL_NORMAL));
     }
 
-
+    @Override
+    public ShareActivityRule selectByCouponId(Long id) {
+        return shareActivityRuleMapper.selectByCouponId(id);
+    }
 
     @Override
     public void updateByActivity(Integer id) {

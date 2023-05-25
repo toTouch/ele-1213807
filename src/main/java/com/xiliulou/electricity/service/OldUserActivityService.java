@@ -50,4 +50,6 @@ public interface OldUserActivityService {
 
 
 	void handleActivityExpired();
+
+    OldUserActivity selectByCouponId(Long id);
 }

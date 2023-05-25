@@ -117,6 +117,9 @@ public class ElectricityCabinet {
     //断网
     public static final Integer ELECTRICITY_CABINET_OFFLINE_STATUS = 1;
 
+    public static final Integer STATUS_ONLINE = 0;
+    public static final Integer STATUS_OFFLINE = 1;
+
     public static final String IOT_STATUS_ONLINE = "online";
     public static final String IOT_STATUS_OFFLINE = "offline";
     public static final String USER_UPLOAD_EXCEPTION_STATUS = "offline";
