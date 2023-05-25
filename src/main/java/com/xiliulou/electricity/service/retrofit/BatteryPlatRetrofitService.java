@@ -8,10 +8,7 @@ import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.service.retrofit.fallback.BatteryPlatRetrofitServiceImpl;
 import com.xiliulou.electricity.service.retrofit.fallback.Jt808RetrofitFallBackImpl;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.battery.BatteryBatchOperateQuery;
-import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
-import com.xiliulou.electricity.web.query.battery.BatteryLocationTrackQuery;
-import com.xiliulou.electricity.web.query.battery.BatteryModifyQuery;
+import com.xiliulou.electricity.web.query.battery.*;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import retrofit2.http.Body;
@@ -44,6 +41,8 @@ public interface BatteryPlatRetrofitService {
 
     @POST("/battery/inner/battery/location/track")
     R<List<BatteryTrackDto>> queryBatteryTrack(@HeaderMap Map<String, String> headers, @Body BatteryLocationTrackQuery batteryLocationTrackQuery);
+    @POST("/battery/inner/battery/change/soc")
+    R changeBatterySoc(@HeaderMap Map<String, String> headers, @Body BatteryChangeSocQuery batteryChangeSocQuery);
 
 
 }
