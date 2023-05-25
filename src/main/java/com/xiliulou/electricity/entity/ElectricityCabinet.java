@@ -105,6 +105,16 @@ public class ElectricityCabinet {
     //门店id
     private Long storeId;
 
+    /**
+     * 换电方式 1：有屏，2：无屏，3：单片机
+     */
+    private Integer exchangeType;
+
+    //换电方式 1：有屏，2：无屏，3：单片机
+    public static final Integer EXCHANGE_TYPE_SCREEN = 1;
+    public static final Integer EXCHANGE_TYPE_NO_SCREEN = 2;
+    public static final Integer EXCHANGE_TYPE_MICROCOMPUTER = 3;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

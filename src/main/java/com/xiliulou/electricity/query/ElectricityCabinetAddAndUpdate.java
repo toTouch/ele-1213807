@@ -117,6 +117,12 @@ public class ElectricityCabinetAddAndUpdate {
     @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
     private Integer storeId;
 
+    /**
+     * 换电方式 1：有屏，2：无屏，3：单片机
+     */
+    @NotNull(message = "换电方式不能为空!", groups = {CreateGroup.class})
+    private Integer exchangeType;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

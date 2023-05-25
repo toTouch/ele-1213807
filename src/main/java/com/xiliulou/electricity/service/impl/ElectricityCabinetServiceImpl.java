@@ -1766,6 +1766,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setFranchiseeName(franchisee.getName());
             electricityCabinetVO.setFranchiseeId(franchisee.getId());
         }
+
+        if (deviceIsOnline(productKey, deviceName)) {
+            electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+            checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
+        } else {
+            electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
+        }
         
         return R.ok(electricityCabinetVO);
         
