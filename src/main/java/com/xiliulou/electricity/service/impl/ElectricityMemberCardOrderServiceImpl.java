@@ -595,7 +595,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     //返现
                     userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
-
                 }
             }
     

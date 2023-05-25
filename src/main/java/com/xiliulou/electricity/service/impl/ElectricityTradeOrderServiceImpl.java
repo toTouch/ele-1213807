@@ -423,11 +423,8 @@ public class ElectricityTradeOrderServiceImpl extends
 
                         //返现
                         userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
-
                     }
-
                 }
-
             }
 
             //月卡分账

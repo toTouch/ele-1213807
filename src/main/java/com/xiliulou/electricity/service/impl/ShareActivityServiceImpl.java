@@ -145,7 +145,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
 			}
 		}
-		
+
+		if(Objects.equals( shareActivityAddAndUpdateQuery.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE) && shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList().size()>1){
+			return R.fail("", "活动规则不合法！");
+		}
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
@@ -397,7 +400,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("order  ERROR! not found user ");
+			log.error("ACTIVITY ERROR!not found user");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -407,13 +410,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+			log.error("ACTIVITY ERROR!not found userInfo,uid={}", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
 		//未实名认证
 		if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-			log.error("order  ERROR! user not auth,uid={} ", user.getUid());
+			log.error("ACTIVITY ERROR!user not auth,uid={}", user.getUid());
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
@@ -421,18 +424,81 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
 				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 		if (Objects.isNull(shareActivity)) {
-			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+			log.error("ACTIVITY ERROR!not found Activity,tenantId={},uid={}", tenantId, user.getUid());
 			return R.ok();
 		}
-
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
 		BeanUtil.copyProperties(shareActivity, shareActivityVO);
 
-		//优惠券
-		getUserCouponVOList(shareActivityVO, user);
+		if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {
+			acquireUserCouponInfo(shareActivityVO,user.getUid());
+		} else {
+			getUserCouponVOList(shareActivityVO, user);
+		}
 
 		return R.ok(shareActivityVO);
+	}
+
+	private void acquireUserCouponInfo(ShareActivityVO shareActivityVO, Long uid) {
+		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivityVO.getId());
+		if (CollectionUtils.isEmpty(shareActivityRuleList)) {
+			return;
+		}
+
+		//循环领取的领取规则有且仅有一个
+		ShareActivityRule shareActivityRule = shareActivityRuleList.get(0);
+
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(uid, shareActivityVO.getId());
+		if (Objects.isNull(shareActivityRecord)) {
+			return;
+		}
+
+		//邀请好友数
+		shareActivityVO.setCount(shareActivityRecord.getCount());
+		//可用邀请好友数
+		shareActivityVO.setAvailableCount(shareActivityRecord.getAvailableCount());
+
+		//领券次数
+		int couponCount = 0;
+		Coupon coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
+		if (Objects.nonNull(coupon)) {
+			List<UserCoupon> userCoupons = userCouponService.selectListByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), uid);
+			if (Objects.nonNull(userCoupons)) {
+				couponCount = userCoupons.size();
+			}
+		}
+
+		List<CouponVO> couponVOList = new ArrayList<>();
+
+		//不可领取
+		if (Objects.isNull(shareActivityRecord.getAvailableCount()) || Objects.isNull(shareActivityRule.getTriggerCount())
+				|| shareActivityRecord.getAvailableCount() <= 0 || shareActivityRule.getTriggerCount() <= 0
+				|| shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
+
+			CouponVO couponVO = new CouponVO();
+			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
+			couponVO.setCoupon(coupon);
+			couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+			couponVOList.add(couponVO);
+
+			shareActivityVO.setCouponCount(couponCount);
+			shareActivityVO.setCouponVOList(couponVOList);
+			return;
+		}
+
+		//可领取
+		for (int i = 0; i < shareActivityRecord.getAvailableCount() / shareActivityRule.getTriggerCount(); i++) {
+			CouponVO couponVO = new CouponVO();
+			couponVO.setCoupon(coupon);
+			couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
+			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
+
+			couponVOList.add(couponVO);
+		}
+
+		shareActivityVO.setCouponCount(couponCount);
+		shareActivityVO.setCouponVOList(couponVOList);
 	}
 
 	@Override
