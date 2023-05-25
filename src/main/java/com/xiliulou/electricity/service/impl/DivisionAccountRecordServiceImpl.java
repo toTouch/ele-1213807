@@ -195,7 +195,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
 
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(batteryMemberCardOrder.getMemberCardId().longValue(), null, batteryMemberCardOrder.getFranchiseeId(), batteryMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.error("ELE ERROR! batteryMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
+                    log.info("ELE INFO! batteryMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid());
                     return;
                 }
 
@@ -262,7 +262,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
             try {
                 DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carMemberCardOrder.getCarModelId(), null, carMemberCardOrder.getFranchiseeId(), carMemberCardOrder.getTenantId());
                 if (Objects.isNull(divisionAccountConfigRefVO)) {
-                    log.error("ELE ERROR! carMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
+                    log.info("ELE INFO! carMemberCardOrder division account fail,not found divisionAccountConfig,orderId={},uid={}", carMemberCardOrder.getOrderId(), carMemberCardOrder.getUid());
                     return;
                 }
 
