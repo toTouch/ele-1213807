@@ -18,7 +18,6 @@ import lombok.experimental.Accessors;
 @TableName("t_battery_track_record")
 public class BatteryTrackRecord {
     
-    private Long id;
     /**
     * 电池sn
     */
@@ -86,4 +85,18 @@ public class BatteryTrackRecord {
      * 离线换电放入
      */
     public static final Integer TYPE_OFFLINE_EXCHANGE_IN = 7;
+
+    /**
+     * 用户id
+     */
+    private Long uid;
+    /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
+     * 用户姓名
+     */
+    private String name;
 }

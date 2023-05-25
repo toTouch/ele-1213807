@@ -172,7 +172,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
         
         //这里处理电池轨迹
-        handleBatteryTrackRecord(electricityCabinetOrder, electricityCabinet);
+        handleBatteryTrackRecord(electricityCabinetOrder, electricityCabinet,userInfo);
         
         //操作记录
         List<OperateMsgVo> operateMsgVoList = offlineEleOrderVo.getMsg();
@@ -259,7 +259,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
     }
     
     private void handleBatteryTrackRecord(ElectricityCabinetOrder electricityCabinetOrder,
-            ElectricityCabinet electricityCabinet) {
+            ElectricityCabinet electricityCabinet,UserInfo userInfo) {
         if (StrUtil.isEmpty(electricityCabinetOrder.getOldElectricityBatterySn()) || StrUtil.isEmpty(
                 electricityCabinetOrder.getNewElectricityBatterySn())) {
             return;
@@ -269,7 +269,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                         electricityCabinetOrder.getNewElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getNewCellNo())
                 .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_OUT).setCreateTime(electricityCabinetOrder.getUpdateTime())
-                .setOrderId(electricityCabinetOrder.getOrderId());
+                .setOrderId(electricityCabinetOrder.getOrderId()).setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.insert(outBatteryTrackRecord);
         
         BatteryTrackRecord inBatteryTrackRecord = new BatteryTrackRecord().setSn(

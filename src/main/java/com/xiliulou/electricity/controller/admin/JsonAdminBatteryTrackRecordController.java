@@ -40,11 +40,11 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         if (offset < 0) {
             offset = 0;
         }
-        
-        if ((endTime - startTime) > TimeUnit.HOURS.toMillis(48)) {
-            return R.fail("时间跨度不可以大于两天");
+        double days = (Double.valueOf(endTime - startTime)) / 1000 / 3600 / 24;
+        if (days > 92) {
+            return R.fail("时间跨度不可以大于3个月");
         }
-        
+
         if (StrUtil.isEmpty(sn)) {
             return R.fail("电池编号不可以为空");
         }
