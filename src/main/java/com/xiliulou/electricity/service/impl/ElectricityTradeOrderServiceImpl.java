@@ -714,21 +714,21 @@ public class ElectricityTradeOrderServiceImpl extends
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
 
-            Long now = System.currentTimeMillis();
-            //判断用户是否产生电池服务费
-            Long cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-
-            //不足一天按一天计算
-            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1L;
-            }
-            //启用套餐时需要更新停卡记录中的实际停卡天数
-            EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
-            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
-            updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
-            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
-            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
+//            Long now = System.currentTimeMillis();
+//            //判断用户是否产生电池服务费
+//            Long cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+//
+//            //不足一天按一天计算
+//            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+//            if (time < 24) {
+//                cardDays = 1L;
+//            }
+//            //启用套餐时需要更新停卡记录中的实际停卡天数
+//            EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+//            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+//            updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+//            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+//            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
         }
 
         //交易订单
