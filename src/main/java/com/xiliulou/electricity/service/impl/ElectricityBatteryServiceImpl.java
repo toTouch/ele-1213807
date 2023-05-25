@@ -407,6 +407,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
             BeanUtil.copyProperties(item, electricityBatteryVO);
 
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(item.getFranchiseeId());
+            electricityBatteryVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+
             if (Objects.equals(item.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.nonNull(item.getUid())) {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
                 electricityBatteryVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
