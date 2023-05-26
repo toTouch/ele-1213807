@@ -84,7 +84,6 @@ public class ShareActivityAddAndUpdateQuery {
     /**
      * 可发放优惠券的套餐
      */
-    @NotEmpty(message = "领券套餐不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private List<Long> membercardIds;
 
 }
