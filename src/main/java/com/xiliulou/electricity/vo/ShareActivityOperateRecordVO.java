@@ -34,7 +34,7 @@ public class ShareActivityOperateRecordVO {
      * 活动套餐
      */
     private String memberCard;
-    private List<String> memberCardNames;
+    private List<String> membercardNames;
 
     /**
      * 创建时间

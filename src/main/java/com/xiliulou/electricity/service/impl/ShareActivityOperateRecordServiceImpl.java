@@ -91,7 +91,7 @@ public class ShareActivityOperateRecordServiceImpl implements ShareActivityOpera
 
                     if (CollectionUtils.isNotEmpty(membercardList)) {
                         List<String> names = membercardList.stream().map(ElectricityMemberCard::getName).collect(Collectors.toList());
-                        shareActivityOperateRecordVO.setMemberCardNames(names);
+                        shareActivityOperateRecordVO.setMembercardNames(names);
                     }
                 }
             }
