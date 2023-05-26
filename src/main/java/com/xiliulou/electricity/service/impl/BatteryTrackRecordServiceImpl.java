@@ -39,14 +39,13 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
 
     
     /**
-     * 新增数据
+     * 电池记录存放到队列
      *
      * @param batteryTrackRecord 实例对象
      * @return 实例对象
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public BatteryTrackRecord insert(BatteryTrackRecord batteryTrackRecord) {
+    public BatteryTrackRecord putBatteryTrackQueue(BatteryTrackRecord batteryTrackRecord) {
         batteryTrackRecordBatchSaveQueueService.putQueue(batteryTrackRecord);
         return batteryTrackRecord;
     }

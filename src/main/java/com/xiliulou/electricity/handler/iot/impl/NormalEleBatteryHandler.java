@@ -215,7 +215,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         //电池被取走
         if (StringUtils.isEmpty(nowBatteryName) && StringUtils.isNotEmpty(boxBatteryName)) {
-            batteryTrackRecordService.insert(
+            batteryTrackRecordService.putBatteryTrackQueue(
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
@@ -223,7 +223,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         //电池被放入
         if (StringUtils.isNotEmpty(nowBatteryName) && StringUtils.isEmpty(boxBatteryName)) {
-            batteryTrackRecordService.insert(
+            batteryTrackRecordService.putBatteryTrackQueue(
                     new BatteryTrackRecord().setSn(nowBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_IN)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
@@ -232,12 +232,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //电池名称改变
         if (StringUtils.isNotEmpty(nowBatteryName) && StringUtils.isNotEmpty(boxBatteryName) && !nowBatteryName.trim()
                 .equals(boxBatteryName)) {
-            batteryTrackRecordService.insert(
+            batteryTrackRecordService.putBatteryTrackQueue(
                     new BatteryTrackRecord().setSn(nowBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_IN)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));
             
-            batteryTrackRecordService.insert(
+            batteryTrackRecordService.putBatteryTrackQueue(
                     new BatteryTrackRecord().setSn(boxBatteryName).setEId(Long.valueOf(electricityCabinet.getId()))
                             .setEName(electricityCabinet.getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                             .setCreateTime(eleBatteryVO.getReportTime()).setENo(Integer.parseInt(eleBox.getCellNo())));

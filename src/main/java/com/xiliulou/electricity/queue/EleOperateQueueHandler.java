@@ -639,11 +639,11 @@ public class EleOperateQueueHandler {
         //查找用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            batteryTrackRecordService.insert(batteryTrackRecord);
+            batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
             return;
         }
         batteryTrackRecord.setUid(rentBatteryOrder.getUid()).setPhone(userInfo.getPhone()).setName(userInfo.getName());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
 
         //更新用户租赁状态
         UserInfo updateUserInfo = new UserInfo();
@@ -707,7 +707,7 @@ public class EleOperateQueueHandler {
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
                 .setType(BatteryTrackRecord.TYPE_RETURN_IN).setCreateTime(rentBatteryOrder.getUpdateTime())
                 .setOrderId(rentBatteryOrder.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
 
         //查找用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());

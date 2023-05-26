@@ -233,7 +233,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
                 .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
     }
 
     private void handlePlaceBatteryInfo(ExchangeOrderRsp exchangeOrderRsp,
@@ -283,7 +283,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getPlaceCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
                 .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
     }
 
 

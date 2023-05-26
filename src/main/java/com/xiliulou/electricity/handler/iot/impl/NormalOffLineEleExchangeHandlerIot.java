@@ -270,14 +270,14 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getNewCellNo())
                 .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_OUT).setCreateTime(electricityCabinetOrder.getUpdateTime())
                 .setOrderId(electricityCabinetOrder.getOrderId()).setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
-        batteryTrackRecordService.insert(outBatteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(outBatteryTrackRecord);
         
         BatteryTrackRecord inBatteryTrackRecord = new BatteryTrackRecord().setSn(
                         electricityCabinetOrder.getOldElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getOldCellNo())
                 .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_IN).setCreateTime(electricityCabinetOrder.getCreateTime())
                 .setOrderId(electricityCabinetOrder.getOrderId());
-        batteryTrackRecordService.insert(inBatteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(inBatteryTrackRecord);
     }
     
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {

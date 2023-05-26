@@ -19,7 +19,7 @@ public interface BatteryTrackRecordService {
      * @param batteryTrackRecord 实例对象
      * @return 实例对象
      */
-    BatteryTrackRecord insert(BatteryTrackRecord batteryTrackRecord);
+    BatteryTrackRecord putBatteryTrackQueue(BatteryTrackRecord batteryTrackRecord);
 
     Pair<Boolean, Object> queryTrackRecord(String sn, Integer size, Integer offset, Long startTime, Long endTime);
 
