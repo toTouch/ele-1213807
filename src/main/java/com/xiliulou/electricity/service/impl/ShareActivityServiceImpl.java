@@ -504,7 +504,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	public Triple<Boolean, String, Object> shareActivityDetail(Integer id) {
 		ShareActivity shareActivity = this.queryByIdFromCache(id);
-		if (Objects.isNull(shareActivity) || Objects.equals(shareActivity.getTenantId(), TenantContextHolder.getTenantId())) {
+		if (Objects.isNull(shareActivity) || !Objects.equals(shareActivity.getTenantId(), TenantContextHolder.getTenantId())) {
 			return Triple.of(false, "ELECTRICITY.0069", "未找到活动");
 		}
 
