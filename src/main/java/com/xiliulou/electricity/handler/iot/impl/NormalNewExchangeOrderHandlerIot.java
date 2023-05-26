@@ -232,7 +232,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getTakeBatteryName())
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
-                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
+                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId())
+                .setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
     }
 
