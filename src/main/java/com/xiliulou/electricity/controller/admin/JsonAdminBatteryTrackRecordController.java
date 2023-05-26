@@ -79,15 +79,15 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         return returnPairResult(batterySnapshotService.queryBatterySnapshot(eId, size, offset, startTime, endTime));
     }
     @GetMapping("/admin/battery/page11111")
-    public R getBatterySnapshot(){
+    public R getBatterySnapshot(@RequestParam("threadCount") Integer threadCount, @RequestParam("count") Integer count){
         Random rand = new Random();
-        for (int j=0;j<8;j++){
+        for (int j=0;j<threadCount;j++){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    for (int i=0;i<100;i++){
+                    for (int i=0;i<count;i++){
                         batteryTrackRecordService.putBatteryTrackQueue(
-                                new BatteryTrackRecord().setSn("Thread"+Thread.currentThread().getId()+"-rand"+rand.nextInt(800)).setEId(Long.valueOf(Thread.currentThread().getId()))
+                                new BatteryTrackRecord().setSn(""+Thread.currentThread().getId()+"-rand"+rand.nextInt(threadCount*count)+i).setEId(Long.valueOf(Thread.currentThread().getId()))
                                         .setEName(Thread.currentThread().getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
                                         .setCreateTime(TimeUtils.convertToStandardFormatTime(System.currentTimeMillis())).setENo(i));
                     }
