@@ -25,6 +25,7 @@ public class ShareActivityQuery {
     private Long offset;
     private String name;
     private List<Integer> typeList;
+    private Long uid;
     /**
      * 加盟商Id
      */
