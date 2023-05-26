@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -631,7 +632,7 @@ public class EleOperateQueueHandler {
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
                         electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
-                .setType(BatteryTrackRecord.TYPE_RENT_OUT).setCreateTime(rentBatteryOrder.getUpdateTime())
+                .setType(BatteryTrackRecord.TYPE_RENT_OUT).setCreateTime(TimeUtils.convertToStandardFormatTime(rentBatteryOrder.getUpdateTime()))
                 .setOrderId(rentBatteryOrder.getOrderId());
 
 
@@ -705,7 +706,7 @@ public class EleOperateQueueHandler {
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
                         electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
-                .setType(BatteryTrackRecord.TYPE_RETURN_IN).setCreateTime(rentBatteryOrder.getUpdateTime())
+                .setType(BatteryTrackRecord.TYPE_RETURN_IN).setCreateTime(TimeUtils.convertToStandardFormatTime(rentBatteryOrder.getUpdateTime()))
                 .setOrderId(rentBatteryOrder.getOrderId());
         batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
 

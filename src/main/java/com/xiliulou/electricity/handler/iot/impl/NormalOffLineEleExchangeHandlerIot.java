@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -268,14 +269,14 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         BatteryTrackRecord outBatteryTrackRecord = new BatteryTrackRecord().setSn(
                         electricityCabinetOrder.getNewElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getNewCellNo())
-                .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_OUT).setCreateTime(electricityCabinetOrder.getUpdateTime())
+                .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_OUT).setCreateTime(TimeUtils.convertToStandardFormatTime(electricityCabinetOrder.getUpdateTime()))
                 .setOrderId(electricityCabinetOrder.getOrderId()).setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
         batteryTrackRecordService.putBatteryTrackQueue(outBatteryTrackRecord);
         
         BatteryTrackRecord inBatteryTrackRecord = new BatteryTrackRecord().setSn(
                         electricityCabinetOrder.getOldElectricityBatterySn()).setEId(Long.valueOf(electricityCabinet.getId()))
                 .setEName(electricityCabinet.getName()).setENo(electricityCabinetOrder.getOldCellNo())
-                .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_IN).setCreateTime(electricityCabinetOrder.getCreateTime())
+                .setType(BatteryTrackRecord.TYPE_OFFLINE_EXCHANGE_IN).setCreateTime(TimeUtils.convertToStandardFormatTime(electricityCabinetOrder.getCreateTime()))
                 .setOrderId(electricityCabinetOrder.getOrderId());
         batteryTrackRecordService.putBatteryTrackQueue(inBatteryTrackRecord);
     }

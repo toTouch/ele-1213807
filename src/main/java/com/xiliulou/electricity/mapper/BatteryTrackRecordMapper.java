@@ -16,7 +16,7 @@ public interface BatteryTrackRecordMapper extends BaseMapper<BatteryTrackRecord>
 
     
     List<BatteryTrackRecord> queryTrackRecordByCondition(@Param("sn") String sn, @Param("size") Integer size,
-            @Param("offset") Integer offset, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+            @Param("offset") Integer offset, @Param("startTime") String startTime, @Param("endTime") String endTime);
 
     int insertBatch(List<BatteryTrackRecord> tempSaveBatteryTrackRecordList);
 }

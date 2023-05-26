@@ -45,7 +45,7 @@ public class BatteryTrackRecord {
     /**
     * 创建时间
     */
-    private Long createTime;
+    private String createTime;
     
     /**
      * 电池入仓

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -62,9 +63,9 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
         if (Objects.isNull(electricityBattery)) {
             return Pair.of(true, null);
         }
-        
-        
-        return Pair.of(true,batteryTrackRecordMapper.queryTrackRecordByCondition(sn,size,offset,startTime,endTime));
+
+
+        return Pair.of(true,batteryTrackRecordMapper.queryTrackRecordByCondition(sn,size,offset, TimeUtils.convertToStandardFormatTime(startTime),TimeUtils.convertToStandardFormatTime(endTime)));
     }
 
     @Override
