@@ -2,7 +2,9 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.service.BatteryTrackRecordService;
 import com.xiliulou.electricity.service.EleBatterySnapshotService;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -75,6 +78,23 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         }
         return returnPairResult(batterySnapshotService.queryBatterySnapshot(eId, size, offset, startTime, endTime));
     }
-
+    @GetMapping("/admin/battery/test/press")
+    public String getBatterySnapshot(){
+        Random rand = new Random();
+        for (int j=0;j<8;j++){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i=0;i<100;i++){
+                        batteryTrackRecordService.putBatteryTrackQueue(
+                                new BatteryTrackRecord().setSn("Thread"+Thread.currentThread().getId()+"-rand"+rand.nextInt(800)).setEId(Long.valueOf(Thread.currentThread().getId()))
+                                        .setEName(Thread.currentThread().getName()).setType(BatteryTrackRecord.TYPE_PHYSICS_OUT)
+                                        .setCreateTime(TimeUtils.convertToStandardFormatTime(System.currentTimeMillis())).setENo(i));
+                    }
+                }
+            }).start();
+        }
+        return "111";
+    }
 
 }
