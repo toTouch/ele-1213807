@@ -10,10 +10,7 @@ import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +79,7 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         return returnPairResult(batterySnapshotService.queryBatterySnapshot(eId, size, offset, startTime, endTime));
     }
     @GetMapping("/admin/battery/test/command")
-    public R executeCommand(ReceiverMessage receiverMessage){
+    public R executeCommand(@RequestBody ReceiverMessage receiverMessage){
         hardwareHandlerManager.chooseCommandHandlerProcessReceiveMessage(receiverMessage);
         return R.ok();
     }
