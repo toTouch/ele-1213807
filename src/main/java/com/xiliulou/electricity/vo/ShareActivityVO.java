@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.ShareActivityRule;
+import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import lombok.Data;
 
 import java.util.List;
@@ -89,6 +91,8 @@ public class ShareActivityVO {
      */
     private Integer availableCount;
 
+
+    List<ShareActivityRule> shareActivityRuleQueryList;
 
     /**
      * 领券套餐

@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -515,6 +516,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		if (CollectionUtils.isNotEmpty(shareActivityMemberCardList)) {
 			List<ElectricityMemberCard> memberCards = shareActivityMemberCardList.parallelStream().map(item -> electricityMemberCardService.queryByCache(item.getMemberCardId().intValue())).collect(Collectors.toList());
 			shareActivityVO.setMemberCards(memberCards);
+		}
+
+		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());
+		if (CollectionUtils.isNotEmpty(shareActivityRuleList)) {
+			shareActivityVO.setShareActivityRuleQueryList(shareActivityRuleList);
 		}
 
 		return Triple.of(true, "", shareActivityVO);
