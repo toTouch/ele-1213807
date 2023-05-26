@@ -78,8 +78,8 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         }
         return returnPairResult(batterySnapshotService.queryBatterySnapshot(eId, size, offset, startTime, endTime));
     }
-    @GetMapping("/admin/battery/test/press")
-    public String getBatterySnapshot(){
+    @GetMapping("/admin/battery/page11111")
+    public R getBatterySnapshot(){
         Random rand = new Random();
         for (int j=0;j<8;j++){
             new Thread(new Runnable() {
@@ -94,7 +94,7 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
                 }
             }).start();
         }
-        return "111";
+        return R.ok();
     }
 
 }
