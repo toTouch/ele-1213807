@@ -81,7 +81,7 @@ public class JsonAdminBatteryTrackRecordController extends BaseController {
         }
         return returnPairResult(batterySnapshotService.queryBatterySnapshot(eId, size, offset, startTime, endTime));
     }
-    @PostMapping("/admin/battery/test/command")
+    @GetMapping("/admin/battery/test/command")
     public R executeCommand(@RequestParam("payload") String payload){
         ReceiverMessage receiverMessage = JsonUtil.fromJson(payload, ReceiverMessage.class);
         receiverMessage.setOriginContent(payload);
