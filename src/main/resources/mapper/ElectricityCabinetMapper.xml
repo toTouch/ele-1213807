@@ -568,7 +568,7 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and (count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate} or power is null)
         </if>
         <if test="fullChargeRate != null">
             and count( power &gt;= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
@@ -618,7 +618,7 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and (count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate} or power is null)
         </if>
         <if test="fullChargeRate != null">
             and count( power &gt;= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
