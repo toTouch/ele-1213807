@@ -32,6 +32,7 @@ public class JsonAdminShareActivityOperateRecordController extends BaseControlle
     @GetMapping(value = "/admin/shareActivityOperate/list")
     public R page(@RequestParam("size") long size,
                   @RequestParam("offset") long offset,
+                  @RequestParam("shareActivityId") int shareActivityId,
                   @RequestParam(value = "name", required = false) String name) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -49,6 +50,7 @@ public class JsonAdminShareActivityOperateRecordController extends BaseControlle
         ShareActivityQuery query = ShareActivityQuery.builder()
                 .offset(offset)
                 .size(size)
+                .id(shareActivityId)
                 .name(name)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
@@ -57,7 +59,8 @@ public class JsonAdminShareActivityOperateRecordController extends BaseControlle
 
     //列表查询
     @GetMapping(value = "/admin/shareActivityOperate/count")
-    public R count(@RequestParam(value = "name", required = false) String name) {
+    public R count(@RequestParam("shareActivityId") int shareActivityId,
+                   @RequestParam(value = "name", required = false) String name) {
 
         Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
         if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
@@ -65,6 +68,7 @@ public class JsonAdminShareActivityOperateRecordController extends BaseControlle
         }
 
         ShareActivityQuery query = ShareActivityQuery.builder()
+                .id(shareActivityId)
                 .name(name)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 

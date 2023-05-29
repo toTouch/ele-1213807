@@ -32,6 +32,9 @@
         update_time
         from t_share_activity_operate_record
         <where>
+            <if test="id != null">
+                and share_activity_id = #{id}
+            </if>
             <if test="uid != null">
                 and uid = #{uid}
             </if>
@@ -53,6 +56,9 @@
         count(1)
         from t_share_activity_operate_record
         <where>
+            <if test="id != null">
+                and share_activity_id = #{id}
+            </if>
             <if test="uid != null">
                 and uid = #{uid}
             </if>
