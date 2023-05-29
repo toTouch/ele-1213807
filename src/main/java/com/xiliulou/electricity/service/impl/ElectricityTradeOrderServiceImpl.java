@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
@@ -377,7 +378,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
                     //是否购买的是活动指定的套餐
                     List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
-                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCard.getId().longValue())) {
+                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
                         //修改邀请状态
                         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
                         joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
@@ -393,6 +394,8 @@ public class ElectricityTradeOrderServiceImpl extends
 
                         //给邀请人增加邀请成功人数
                         shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+                    }else{
+                        log.info("SHARE ACTIVITY INFO!invite fail,membercardId={},memberCardIds={}",electricityMemberCardOrder.getMemberCardId(), JsonUtil.toJson(memberCardIds));
                     }
                 }
 

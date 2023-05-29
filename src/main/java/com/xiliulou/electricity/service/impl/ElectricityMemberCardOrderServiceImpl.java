@@ -549,7 +549,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (Objects.nonNull(joinShareActivityRecord)) {
                     //是否购买的是活动指定的套餐
                     List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
-                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCard.getId().longValue())) {
+                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
                         //修改邀请状态
                         joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
                         joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
@@ -565,6 +565,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                         //给邀请人增加邀请成功人数
                         shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+                    }else{
+                        log.info("SHARE ACTIVITY INFO!invite fail,membercardId={},memberCardIds={}",electricityMemberCardOrder.getMemberCardId(),JsonUtil.toJson(memberCardIds));
                     }
                 }
 
