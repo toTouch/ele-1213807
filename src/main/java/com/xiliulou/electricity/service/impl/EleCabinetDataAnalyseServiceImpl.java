@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.entity.*;
@@ -128,7 +129,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         long peopleNumber = electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count();
 
         //日均活跃度
-        result.setAverageExchangeNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), new MathContext(1, RoundingMode.HALF_UP)).doubleValue());
+        result.setAveragePeopleNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), new MathContext(1, RoundingMode.HALF_UP)).doubleValue());
 
         return result;
     }
@@ -192,9 +193,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
                 return;
             }
 
-            long exchangeableNumber = cabinetBoxList.stream().filter(e -> eleCabinetService.isExchangeable(e, fullyCharged)).count();
+            long exchangeableNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())&& StrUtil.contains(e.getSn(),"UNKNOW")&&eleCabinetService.isExchangeable(e, fullyCharged)).count();
 
-            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
+            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())&& StrUtil.contains(e.getSn(),"UNKNOW")&&Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
 
             long emptyCellNumber = cabinetBoxList.stream().filter(eleCabinetService::isNoElectricityBattery).count();
 

@@ -506,6 +506,8 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        GROUP BY
+        ecb.electricity_cabinet_id
         order by tec.id desc
         limit #{offset}, #{size}
     </select>
@@ -566,10 +568,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and count( power &gt;= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         limit #{offset}, #{size}
     </select>
@@ -606,9 +608,6 @@
         <if test="onlineStatus != null">
             and tec.online_status = #{onlineStatus}
         </if>
-        <if test="tenantId != null ">
-            and tec.tenant_id = #{tenantId}
-        </if>
         <if test="franchiseeId != null ">
             and ts.franchisee_id = #{franchiseeId}
         </if>
@@ -619,10 +618,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
+            and count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate}
         </if>
         <if test="fullChargeRate != null">
-            and ( power >= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and count( power &gt;= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         ) a
     </select>
@@ -663,6 +662,8 @@
         <if test="storeId != null ">
             and tec.store_id = #{storeId}
         </if>
+        GROUP BY
+        ecb.electricity_cabinet_id
     </select>
 
     <select id="selectOfflinePageCount" resultType="int">
