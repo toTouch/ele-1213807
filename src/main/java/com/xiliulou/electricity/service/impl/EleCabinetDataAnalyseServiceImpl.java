@@ -122,13 +122,13 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         }
 
         //日均换电次数
-        result.setAverageExchangeNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30), new MathContext(2, RoundingMode.HALF_UP)).doubleValue());
+        result.setAverageExchangeNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30), new MathContext(1, RoundingMode.HALF_UP)).doubleValue());
 
         //本月换电总人数
         long peopleNumber = electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count();
 
         //日均活跃度
-        result.setAverageExchangeNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), new MathContext(2, RoundingMode.HALF_UP)).doubleValue());
+        result.setAverageExchangeNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), new MathContext(1, RoundingMode.HALF_UP)).doubleValue());
 
         return result;
     }
@@ -187,14 +187,14 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
             Double fullyCharged = item.getFullyCharged();
 
-            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(item.getId());
+            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(item.getId());
             if (CollectionUtils.isEmpty(cabinetBoxList)) {
                 return;
             }
 
             long exchangeableNumber = cabinetBoxList.stream().filter(e -> eleCabinetService.isExchangeable(e, fullyCharged)).count();
 
-            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getPower(), Double.valueOf(100))).count();
+            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
 
             long emptyCellNumber = cabinetBoxList.stream().filter(eleCabinetService::isNoElectricityBattery).count();
 
@@ -215,30 +215,6 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             return null;
         });
 
-//        CompletableFuture<Void> acquireOrderInfo = CompletableFuture.runAsync(() -> electricityCabinetList.forEach(item -> {
-//            //日均换电次数
-//            Long monthExchangeCount = eleCabinetOrderService.selectMonthExchangeOrders(item.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), item.getTenantId());
-//            item.setAverageExchangeNumber(BigDecimal.valueOf(monthExchangeCount).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-//
-//            //日均活跃度
-//            Long monthExchangeUser = eleCabinetOrderService.selectMonthExchangeUser(item.getId(), DateUtils.get30AgoStartTime(), System.currentTimeMillis(), item.getTenantId());
-//            item.setAveragePeopleNumber(BigDecimal.valueOf(monthExchangeUser).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
-//
-//            List<ElectricityCabinetOrder> todayEleCabinetOrders = eleCabinetOrderService.selectTodayExchangeOrder(item.getId(), DateUtils.getTodayStartTimeStamp(), DateUtils.getTodayEndTimeStamp(), item.getTenantId());
-//            if (CollectionUtils.isEmpty(todayEleCabinetOrders)) {
-//                return;
-//            }
-//
-//            //今日换电数量
-//            item.setExchangeNumber(todayEleCabinetOrders.size());
-//            //今日活跃度
-//            item.setPeopleNumber((int) todayEleCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count());
-//        }), DATA_ANALYSE_THREAD_POOL).exceptionally(e -> {
-//            log.error("ELE ERROR! acquire eleCabinet order info fail", e);
-//            return null;
-//        });
-//
-//        CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo, acquireOrderInfo);
         CompletableFuture<Void> future = CompletableFuture.allOf(acquireBasicInfo, acquireCellInfo);
 
         try {
