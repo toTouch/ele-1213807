@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -120,13 +122,13 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
         }
 
         //日均换电次数
-        result.setAverageExchangeNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        result.setAverageExchangeNumber(BigDecimal.valueOf(electricityCabinetOrders.size()).divide(BigDecimal.valueOf(30), new MathContext(2, RoundingMode.HALF_UP)).doubleValue());
 
         //本月换电总人数
         long peopleNumber = electricityCabinetOrders.stream().map(ElectricityCabinetOrder::getUid).distinct().count();
 
         //日均活跃度
-        result.setAverageExchangeNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue());
+        result.setAverageExchangeNumber(BigDecimal.valueOf(peopleNumber).divide(BigDecimal.valueOf(30), new MathContext(2, RoundingMode.HALF_UP)).doubleValue());
 
         return result;
     }
