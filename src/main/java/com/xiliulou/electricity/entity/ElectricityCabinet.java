@@ -91,7 +91,7 @@ public class ElectricityCabinet {
      */
     private Long createTime;
     /**
-     * 更新时间
+     * 更新时间（兼用在线时间）
      */
     private Long updateTime;
     /**
@@ -105,6 +105,16 @@ public class ElectricityCabinet {
     //门店id
     private Long storeId;
 
+    /**
+     * 换电方式 1：有屏，2：无屏，3：单片机
+     */
+    private Integer exchangeType;
+
+    //换电方式 1：有屏，2：无屏，3：单片机
+    public static final Integer EXCHANGE_TYPE_SCREEN = 1;
+    public static final Integer EXCHANGE_TYPE_NO_SCREEN = 2;
+    public static final Integer EXCHANGE_TYPE_MICROCOMPUTER = 3;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
@@ -116,6 +126,9 @@ public class ElectricityCabinet {
     public static final Integer ELECTRICITY_CABINET_ONLINE_STATUS = 0;
     //断网
     public static final Integer ELECTRICITY_CABINET_OFFLINE_STATUS = 1;
+
+    public static final Integer STATUS_ONLINE = 0;
+    public static final Integer STATUS_OFFLINE = 1;
 
     public static final String IOT_STATUS_ONLINE = "online";
     public static final String IOT_STATUS_OFFLINE = "offline";

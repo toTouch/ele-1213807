@@ -194,6 +194,11 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
     }
 
     @Override
+    public Integer deductionCapacityByTenantId(FaceRecognizeData faceRecognizeDataUpdate) {
+        return this.faceRecognizeDataMapper.deductionCapacityByTenantId(faceRecognizeDataUpdate);
+    }
+
+    @Override
     public Integer updateById(FaceRecognizeData faceRecognizeDataUpdate) {
         return this.faceRecognizeDataMapper.update(faceRecognizeDataUpdate);
     }

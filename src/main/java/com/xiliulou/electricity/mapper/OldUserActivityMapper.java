@@ -30,4 +30,6 @@ public interface OldUserActivityMapper extends BaseMapper<OldUserActivity>{
 
 	@Select(" select * from t_old_user_activity where time_type=1 and end_time < #{currentTime} and status = 1 and del_flg = 0 limit #{offset},#{size}")
 	List<OldUserActivity> getExpiredActivity(@Param("currentTime") Long currentTime, @Param("offset") Integer offset, @Param("size") Integer size);
+
+    OldUserActivity selectByCouponId(@Param("couponId") Long couponId);
 }

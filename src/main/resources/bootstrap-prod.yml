@@ -2,6 +2,9 @@ server:
   port: 9991
   servlet:
     context-path: /electricityCabinet
+  undertow:
+    threads:
+      worker: 50
 spring:
   application:
     name: @artifactId@

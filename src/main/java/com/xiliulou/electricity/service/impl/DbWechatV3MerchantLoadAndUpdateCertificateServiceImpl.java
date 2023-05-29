@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.entity.WechatPaymentCertificate;
+import com.xiliulou.electricity.mapper.WechatPaymentCertificateMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.pay.weixinv3.service.WechatV3CommonService;
@@ -45,7 +47,9 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
 
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
-
+    
+    @Autowired
+    private WechatPaymentCertificateMapper wechatPaymentCertificateMapper;
 
     LoadingCache<Integer, HashMap<BigInteger, X509Certificate>> wechatCertificateCache = null;
 
@@ -77,15 +81,12 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
 
     @Override
     public PrivateKey getMerchantCertificatePrivateKey(Integer tenantId) {
-        try {
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-            if(Objects.isNull(electricityPayParams)){
-                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
-            }
-            return WechatCertificateUtils.getPrivateKey(electricityPayParams.getWechatMerchantPrivateKeyPath());
-        } catch (Exception e) {
-            throw new RuntimeException("获取私钥失败！tenantId=" + tenantId, e);
+        WechatPaymentCertificate certificate =  wechatPaymentCertificateMapper
+                .selectByTenantId(tenantId);
+        if (Objects.isNull(certificate)) {
+            throw new AuthenticationServiceException("未能查找到appId和appSecret！");
         }
+        return WechatCertificateUtils.transferCertificateContent(certificate.getCertificateContent());
     }
 
     @Override

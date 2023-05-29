@@ -20,6 +20,16 @@ public class EleCommonConfig {
     private Integer batteryReportCheck;
 
     /**
+     * 小程序首页柜机列表距离值
+     */
+    private Double showDistance;
+
+    /**
+     * 电池上报电量变化diff值
+     */
+    private Integer powerChangeDiff;
+
+    /**
      * 开启电量上报检测
      */
     public static final Integer OPEN_BATTERY_REPORT_CHECK = 0;

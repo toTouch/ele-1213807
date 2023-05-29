@@ -266,6 +266,19 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         return electricityCabinetService.queryCount(electricityCabinetQuery);
     }
 
+    @PutMapping("/admin/cabinet/onLineStatus/{id}")
+    public R updateOnlineStatus(@PathVariable("id") Long id) {
+        return returnTripleResult(electricityCabinetService.updateOnlineStatus(id));
+    }
+
+    /**
+     * 查询空仓、有电池数量
+     */
+    @GetMapping("/admin/cabinet/battery/statistics/{id}")
+    public R batteryStatistics(@PathVariable("id") Long id) {
+        return R.ok(electricityCabinetService.batteryStatistics(id));
+    }
+
     //禁启用换电柜
     @PutMapping(value = "/admin/electricityCabinet/updateStatus")
     @Log(title = "禁/启用换电柜")
@@ -394,14 +407,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
 
         if (!Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
-        }
-
-        //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(),
-                electricityCabinet.getDeviceName());
-        if (!eleResult) {
-            log.error("ELE ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
-            return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
         
         //发送命令

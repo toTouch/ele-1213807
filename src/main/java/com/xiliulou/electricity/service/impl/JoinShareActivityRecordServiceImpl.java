@@ -8,14 +8,13 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务实现类
@@ -127,7 +126,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
             joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
 
             //修改被替换掉的历史记录状态
-            JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareActivityRecord.getId());
+            JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(oldJoinShareActivityRecord.getId(), user.getUid());
             if (Objects.nonNull(oldJoinShareActivityHistory)) {
                 oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
                 oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());

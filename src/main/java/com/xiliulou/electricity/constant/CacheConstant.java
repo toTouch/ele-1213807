@@ -362,4 +362,13 @@ public interface CacheConstant {
      */
     String CACHE_BATTERY_MODEL = "battery_model:";
     String CACHE_BATTERY_MATERIAL = "battery_material:";
+
+    /**
+     * 车辆锁状态
+     */
+    String CACHE_CAR_LOCK_STATUS = "cache_car_lock_status:";
+    /**
+     * 分帐配置缓存
+     */
+    String CACHE_DIVISION_ACCOUNT_CONFIG = "division_account_config:";
 }

@@ -1,14 +1,13 @@
 package com.xiliulou.electricity.service.impl;
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
+
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.sun.xml.bind.v2.TODO;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderExcelQuery;
@@ -17,30 +16,23 @@ import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareActivityHistoryVO;
-import com.xiliulou.electricity.vo.UserInfoExcelVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.beans.SimpleBeanInfo;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 参与邀请活动记录(JoinShareActivityHistory)表服务实现类
@@ -100,11 +92,20 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		return this.joinShareActivityHistoryMapper.updateById(joinShareActivityHistory);
 
 	}
+//TODO 111
+//	@Slave
+//	@Override
+//	public JoinShareActivityHistory queryByRecordIdAndStatus(Long id) {
+//		return joinShareActivityHistoryMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityHistory>()
+//				.eq(JoinShareActivityHistory::getRecordId,id).eq(JoinShareActivityHistory::getStatus,JoinShareActivityHistory.STATUS_INIT));
+//	}
 
+	@Slave
 	@Override
-	public JoinShareActivityHistory queryByRecordIdAndStatus(Long id) {
+	public JoinShareActivityHistory queryByRecordIdAndJoinUid(Long rid, Long joinId) {
 		return joinShareActivityHistoryMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityHistory>()
-				.eq(JoinShareActivityHistory::getRecordId,id).eq(JoinShareActivityHistory::getStatus,JoinShareActivityHistory.STATUS_INIT));
+				.eq(JoinShareActivityHistory::getRecordId, rid).eq(JoinShareActivityHistory::getJoinUid, joinId)
+				.eq(JoinShareActivityHistory::getStatus, JoinShareActivityHistory.STATUS_INIT));
 	}
 
 	@Override

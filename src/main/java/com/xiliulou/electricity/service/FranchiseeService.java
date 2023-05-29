@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -70,6 +71,10 @@ public interface FranchiseeService {
     int update(Franchisee franchisee);
 
     Triple<Boolean, String, Object> moveFranchisee();
-    
+
+    Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryType);
+
+    List<SearchVo> search(FranchiseeQuery franchiseeQuery);
+
     Integer checkBatteryModelIsUse(Integer batteryModel, Integer tenantId);
 }

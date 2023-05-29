@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,6 +18,17 @@ import java.util.Date;
  */
 public class DateUtils {
 
+    static DateTimeFormatter MILLS_FORMAT_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+    /**
+     * 解析毫秒的时间字符串
+     * @param date
+     * @return
+     */
+    public static long parseMillsDateStrToTimestamp(String date) {
+        LocalDateTime datetime = LocalDateTime.parse(date, MILLS_FORMAT_DATE);
+        return datetime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+    }
     public static long getTodayStartTimeStamp() {
         return LocalDateTime.of(LocalDate.now(), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
     }

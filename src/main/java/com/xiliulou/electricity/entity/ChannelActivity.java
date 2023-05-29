@@ -60,4 +60,10 @@ public class ChannelActivity {
     public static final Integer STATUS_START_USING = 0;
     
     public static final Integer STATUS_FORBIDDEN = 1;
+
+    public static final Integer VALID_DAY_LIMIT = 0;
+    public static final Integer VALID_DAY_NOT_LIMIT = 1;
+
+
+    public static final Integer BIND_ACTIVITY_TYPE_NONE = 0;
 }

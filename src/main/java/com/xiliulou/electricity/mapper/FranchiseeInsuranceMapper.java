@@ -29,4 +29,5 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
     FranchiseeInsurance queryByFranchiseeIdAndBatteryType(@Param("franchiseeId") Long franchiseeId, @Param("batteryType") String batteryType, @Param("tenantId") Integer tenantId);
 
     Integer batchInsert(List<FranchiseeInsurance> franchiseeInsuranceList);
+    
 }

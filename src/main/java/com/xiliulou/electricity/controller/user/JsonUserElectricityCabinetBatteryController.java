@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: XILIULOU
@@ -40,13 +41,13 @@ public class JsonUserElectricityCabinetBatteryController extends BaseController 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @GetMapping("user/battery")
-    public R getSelfBattery() {
+    public R getSelfBattery(@RequestParam(value = "isNeedLocation", required = false) Integer isNeedLocation) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
 
-        return R.ok(electricityBatteryService.queryInfoByUid(uid));
+        return returnTripleResult(electricityBatteryService.queryInfoByUid(uid, isNeedLocation));
     }
 
     @GetMapping(value = "/user/battery/attr/list")
@@ -60,24 +61,11 @@ public class JsonUserElectricityCabinetBatteryController extends BaseController 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        if (Objects.isNull(electricityBattery)){
-            log.error("query  ERROR! not found Battery! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
+        if (endTime - beginTime > TimeUnit.HOURS.toMillis(10)) {
+            return R.failMsg("时间跨度不可以超过10小时");
         }
 
-        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
-        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
-        String begin = formatter.format(beginLocalDateTime);
-        String end = formatter.format(endLocalDateTime);
+        return returnTripleResult(electricityBatteryService.queryBatteryLocationTrack(user.getUid(), beginTime, endTime));
 
-        if (StringUtils.isEmpty(electricityBattery.getSn())){
-            log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
-        }
-
-        //给加的搜索，没什么意义
-        String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.query(BatteryAttr.class, sql, electricityBattery.getSn().trim(), begin, end));
     }
 }

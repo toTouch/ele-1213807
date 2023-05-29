@@ -18,7 +18,7 @@ import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
+import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * (UserCarMemberCard)表服务实现类
@@ -64,6 +63,12 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     
     @Autowired
     private ElectricityCarService electricityCarService;
+    
+    @Autowired
+    private ElectricityConfigService electricityConfigService;
+    
+    @Autowired
+    private CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -243,6 +248,7 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
     }
     
     @Override
+    //TODO 优化 车辆锁状态要记录在本地 不能和车辆通讯查车辆的锁状态
     public void expireBreakPowerHandel() {
         if (!redisService
                 .setNx(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LOCK, "ok", 120000L, false)) {
@@ -251,37 +257,68 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
         }
         
         int offset = 0;
-        int size = 300;
-        long firstTime = 0;
-        long lastTime = System.currentTimeMillis();
-        
-        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME);
-        if (StrUtil.isNotBlank(firstTimeStr)) {
-            firstTime = Long.parseLong(firstTimeStr);
-        }
-    
-        redisService
-                .set(CacheConstant.CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_BREAK_POWER_LAST_TIME, String.valueOf(lastTime),
-                        CacheConstant.CACHE_EXPIRE_MONTH, TimeUnit.MILLISECONDS);
+        int size = 100;
+        long now = System.currentTimeMillis();
         
         while (true) {
             List<CarMemberCardExpireBreakPowerQuery> query = this.userCarMemberCardMapper
-                    .carMemberCardExpireBreakPower(offset, size, firstTime, lastTime);
+                    .carMemberCardExpireBreakPower(offset, size, now);
             if (CollectionUtils.isEmpty(query)) {
                 break;
             }
             
             query.parallelStream().forEach(item -> {
-                if (StrUtil.isEmpty(item.getSn()) || Objects.isNull(item.getCid())) {
+                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(item.getTenantId());
+                if (!Objects.equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
+                    return;
+                }
+
+                ElectricityCar electricityCar = electricityCarService.selectBySn(item.getSn(), item.getTenantId());
+                if (Objects.isNull(electricityCar)) {
+                    log.error("EXPIRE BREAK POWER ERROR! electricityCar not find, sn={},uid={}", item.getSn(), item.getUid());
                     return;
                 }
     
-                R<Jt808DeviceInfoVo> result = jt808RetrofitService.controlDevice(
-                        new Jt808DeviceControlRequest(IdUtil.randomUUID(), item.getSn(), ElectricityCar.TYPE_LOCK));
-                if (result.isSuccess()) {
-                    electricityCarService.updateLockTypeByIds(Arrays.asList(item.getCid()), ElectricityCar.TYPE_LOCK);
-                } else {
-                    log.error("Jt808 error! controlDevice error! carSN={},result={}", item.getSn(), result);
+                //查询车辆锁状态
+                R<Jt808DeviceInfoVo> carInfoResult = null;
+                for (int i = 0; i < 3; i++) {
+                    carInfoResult = jt808RetrofitService
+                            .getInfo(new Jt808GetInfoRequest(IdUtil.randomUUID(), electricityCar.getSn()));
+                    if (Objects.isNull(carInfoResult)) {
+                        continue;
+                    }
+        
+                    if (carInfoResult.isSuccess()) {
+                        break;
+                    }
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (Exception e) {
+                        log.error("EXPIRE BREAK POWER ERROR! thread interrupt,sn={},uid={}", electricityCar.getSn(), item.getUid(), e);
+                    }
+
+                    log.error("EXPIRE BREAK POWER ERROR! query car info error,sn={},uid={}", electricityCar.getSn(), item.getUid());
+                }
+
+                if (Objects.nonNull(carInfoResult) && Objects.nonNull(carInfoResult.getData())
+                        && Objects.equals(carInfoResult.getData().getDoorStatus(), ElectricityCar.TYPE_UN_LOCK)) {
+                    boolean result = electricityCarService.retryCarLockCtrl(item.getSn(), ElectricityCar.TYPE_LOCK, 3);
+                    CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                    carLockCtrlHistory.setUid(item.getUid());
+                    carLockCtrlHistory.setName(item.getName());
+                    carLockCtrlHistory.setPhone(item.getPhone());
+                    carLockCtrlHistory.setStatus(
+                            result ? CarLockCtrlHistory.STATUS_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_LOCK_FAIL);
+                    carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_LOCK);
+                    carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                    carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                    carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                    carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                    carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                    carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                    carLockCtrlHistory.setTenantId(item.getTenantId());
+                    carLockCtrlHistoryService.insert(carLockCtrlHistory);
                 }
             });
             

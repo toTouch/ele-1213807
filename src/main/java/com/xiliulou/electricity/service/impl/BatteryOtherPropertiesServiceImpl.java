@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -88,6 +89,7 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 	}
 
 	@Override
+	@Slave
 	public BatteryOtherProperties selectByBatteryName(String sn) {
 		return batteryOtherPropertiesMapper.selectOne(new LambdaQueryWrapper<BatteryOtherProperties>()
 				.eq(BatteryOtherProperties::getBatteryName,sn).eq(BatteryOtherProperties::getDelFlag,BatteryOtherProperties.DEL_NORMAL));
