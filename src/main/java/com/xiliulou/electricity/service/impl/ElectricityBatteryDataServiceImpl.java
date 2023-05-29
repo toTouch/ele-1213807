@@ -457,7 +457,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryOverdueBatteryList(electricityBatteryQuery, offset, size);
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -494,7 +494,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_OVERDUE)
                 .currentTimeMillis(System.currentTimeMillis()).build();
-        return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
+        return R.ok(electricitybatterymapper.queryOverdueBatteryCount(electricityBatteryQuery));
     }
 
     /**
