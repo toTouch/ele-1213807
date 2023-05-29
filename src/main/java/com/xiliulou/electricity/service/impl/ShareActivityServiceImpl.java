@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -447,21 +446,25 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return;
 		}
 
+		//邀请好友数
+		int count = 0;
+		//可用邀请好友数
+		int availableCount = 0;
+		//领券次数
+		int couponCount = 0;
+
 		//循环领取的领取规则有且仅有一个
 		ShareActivityRule shareActivityRule = shareActivityRuleList.get(0);
 
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(uid, shareActivityVO.getId());
-		if (Objects.isNull(shareActivityRecord)) {
-			return;
+		if (Objects.nonNull(shareActivityRecord)) {
+			count = shareActivityRecord.getCount();
+			availableCount = shareActivityRecord.getAvailableCount();
 		}
 
-		//邀请好友数
-		shareActivityVO.setCount(shareActivityRecord.getCount());
-		//可用邀请好友数
-		shareActivityVO.setAvailableCount(shareActivityRecord.getAvailableCount());
+		shareActivityVO.setCount(count);
+		shareActivityVO.setAvailableCount(availableCount);
 
-		//领券次数
-		int couponCount = 0;
 		Coupon coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
 		if (Objects.nonNull(coupon)) {
 			List<UserCoupon> userCoupons = userCouponService.selectListByActivityIdAndCouponId(shareActivityVO.getId(), shareActivityRule.getId(), coupon.getId(), uid);
@@ -473,7 +476,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<CouponVO> couponVOList = new ArrayList<>();
 
 		//不可领取
-		if (Objects.isNull(shareActivityRecord.getAvailableCount()) || Objects.isNull(shareActivityRule.getTriggerCount())
+		if (Objects.isNull(shareActivityRecord) || Objects.isNull(shareActivityRecord.getAvailableCount()) || Objects.isNull(shareActivityRule.getTriggerCount())
 				|| shareActivityRecord.getAvailableCount() <= 0 || shareActivityRule.getTriggerCount() <= 0
 				|| shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
 
