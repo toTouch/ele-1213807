@@ -1,21 +1,16 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -717,8 +712,8 @@ public class UnionTradeOrderServiceImpl extends
 
                         //给邀请人增加邀请成功人数
                         shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
-                    }else{
-                        log.info("SHARE ACTIVITY INFO!invite fail,membercardId={},memberCardIds={}",electricityMemberCardOrder.getMemberCardId(),JsonUtil.toJson(memberCardIds));
+                    } else {
+                        log.info("SHARE ACTIVITY INFO!invite fail,activityId={},membercardId={},memberCardIds={}", joinShareActivityRecord.getActivityId(), electricityMemberCardOrder.getMemberCardId(), JsonUtil.toJson(memberCardIds));
                     }
                 }
 

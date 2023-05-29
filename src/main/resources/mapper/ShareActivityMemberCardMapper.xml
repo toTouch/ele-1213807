@@ -26,7 +26,7 @@
         where activity_id = #{activityId}
     </select>
 
-    <select id="selectMemberCardIdsByActivityId" resultMap="ShareActivityMemberCardMap">
+    <select id="selectMemberCardIdsByActivityId" resultType="long">
         select   member_card_id
         from t_share_activity_member_card
         where activity_id = #{activityId}
