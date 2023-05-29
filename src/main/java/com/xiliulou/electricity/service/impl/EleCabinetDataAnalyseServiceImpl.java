@@ -201,7 +201,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
             long disableCellNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
 
-            long openFanNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getIsFan(), ElectricityCabinetBox.OPEN_FAN)).count();
+            long openFanNumber = cabinetBoxList.stream().filter(e -> !Objects.equals(e.getIsFan(), ElectricityCabinetBox.OPEN_FAN)).count();
 
             long chargeCellNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())).map(t -> electricityBatteryService.queryBySnFromDb(t.getSn())).filter(battery -> Objects.nonNull(battery) && (Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_STARTING) || Objects.equals(battery.getChargeStatus(), ElectricityBattery.CHARGE_STATUS_CHARGING))).count();
 

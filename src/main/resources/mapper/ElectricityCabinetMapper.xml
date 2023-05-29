@@ -628,7 +628,8 @@
 
     <select id="selectLockPageCount" resultType="int">
         select
-        count(1)
+        count(1) from (
+        select tec.id
         from t_electricity_cabinet tec
         <if test="franchiseeId != null ">
             left join t_store ts on tec.store_id=ts.id
@@ -663,7 +664,7 @@
             and tec.store_id = #{storeId}
         </if>
         GROUP BY
-        ecb.electricity_cabinet_id
+        ecb.electricity_cabinet_id) a
     </select>
 
     <select id="selectOfflinePageCount" resultType="int">
