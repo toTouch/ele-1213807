@@ -193,9 +193,9 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
                 return;
             }
 
-            long exchangeableNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())&& StrUtil.contains(e.getSn(),"UNKNOW")&&eleCabinetService.isExchangeable(e, fullyCharged)).count();
+            long exchangeableNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && eleCabinetService.isExchangeable(e, fullyCharged)).count();
 
-            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn())&& StrUtil.contains(e.getSn(),"UNKNOW")&&Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
+            long fullBatteryNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
 
             long emptyCellNumber = cabinetBoxList.stream().filter(eleCabinetService::isNoElectricityBattery).count();
 
