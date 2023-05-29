@@ -492,7 +492,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//可领取
-		for (int i = 0; i < shareActivityRecord.getAvailableCount() / shareActivityRule.getTriggerCount(); i++) {
+		if(shareActivityRecord.getAvailableCount() >= shareActivityRule.getTriggerCount()){
 			CouponVO couponVO = new CouponVO();
 			couponVO.setCoupon(coupon);
 			couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
