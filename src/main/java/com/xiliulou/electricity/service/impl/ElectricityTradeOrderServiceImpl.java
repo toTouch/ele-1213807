@@ -56,6 +56,7 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -168,6 +169,9 @@ public class ElectricityTradeOrderServiceImpl extends
 
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Autowired
+    ShareActivityMemberCardService shareActivityMemberCardService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -370,21 +374,26 @@ public class ElectricityTradeOrderServiceImpl extends
                 //是否有人邀请
                 JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
                 if (Objects.nonNull(joinShareActivityRecord)) {
-                    //修改邀请状态
-                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-                    joinShareActivityRecordService.update(joinShareActivityRecord);
 
-                    //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), electricityMemberCardOrder.getUid());
-                    if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                    //是否购买的是活动指定的套餐
+                    List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
+                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCard.getId().longValue())) {
+                        //修改邀请状态
+                        joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                        joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityRecordService.update(joinShareActivityRecord);
+
+                        //修改历史记录状态
+                        JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), electricityMemberCardOrder.getUid());
+                        if (Objects.nonNull(oldJoinShareActivityHistory)) {
+                            oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                            oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                            joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        }
+
+                        //给邀请人增加邀请成功人数
+                        shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
                     }
-
-                    //给邀请人增加邀请成功人数
-                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
                 }
 
                 //是否有人返现邀请

@@ -165,6 +165,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
 
+    @Autowired
+    ShareActivityMemberCardService shareActivityMemberCardService;
+
     /**
      * 创建月卡订单
      *
@@ -544,21 +547,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 //是否有人邀请
                 JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(user.getUid());
                 if (Objects.nonNull(joinShareActivityRecord)) {
-                    //修改邀请状态
-                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-                    joinShareActivityRecordService.update(joinShareActivityRecord);
+                    //是否购买的是活动指定的套餐
+                    List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
+                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCard.getId().longValue())) {
+                        //修改邀请状态
+                        joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                        joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityRecordService.update(joinShareActivityRecord);
 
-                    //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
-                    if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        //修改历史记录状态
+                        JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
+                        if (Objects.nonNull(oldJoinShareActivityHistory)) {
+                            oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                            oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                            joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        }
+
+                        //给邀请人增加邀请成功人数
+                        shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
                     }
-
-                    //给邀请人增加邀请成功人数
-                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
                 }
 
                 //是否有人返现邀请

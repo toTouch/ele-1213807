@@ -110,6 +110,11 @@ public class ShareActivityMemberCardServiceImpl implements ShareActivityMemberCa
     }
 
     @Override
+    public List<Long> selectMemberCardIdsByActivityId(Integer id) {
+        return shareActivityMemberCardMapper.selectMemberCardIdsByActivityId(id);
+    }
+
+    @Override
     public Integer deleteByActivityId(Integer id) {
         return shareActivityMemberCardMapper.deleteByActivityId(id);
     }
