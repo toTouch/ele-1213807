@@ -1,29 +1,22 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper;
 import com.xiliulou.electricity.query.JoinShareMoneyActivityHistoryExcelQuery;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.FinalJoinShareActivityHistoryVo;
 import com.xiliulou.electricity.vo.FinalJoinShareMoneyActivityHistoryVo;
-import com.xiliulou.electricity.vo.JoinShareActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryExcelVo;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -38,11 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 参与邀请活动记录(JoinShareActivityHistory)表服务实现类
@@ -105,11 +94,20 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		return this.joinShareMoneyActivityHistoryMapper.updateById(joinShareMoneyActivityHistory);
 
 	}
+// TODO 111
+//	@Slave
+//	@Override
+//	public JoinShareMoneyActivityHistory queryByRecordIdAndStatus(Long id) {
+//		return joinShareMoneyActivityHistoryMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityHistory>()
+//				.eq(JoinShareMoneyActivityHistory::getRecordId,id).eq(JoinShareMoneyActivityHistory::getStatus,JoinShareMoneyActivityHistory.STATUS_INIT));
+//	}
 
+	@Slave
 	@Override
-	public JoinShareMoneyActivityHistory queryByRecordIdAndStatus(Long id) {
+	public JoinShareMoneyActivityHistory queryByRecordIdAndJoinUid(Long rid, Long uid) {
 		return joinShareMoneyActivityHistoryMapper.selectOne(new LambdaQueryWrapper<JoinShareMoneyActivityHistory>()
-				.eq(JoinShareMoneyActivityHistory::getRecordId,id).eq(JoinShareMoneyActivityHistory::getStatus,JoinShareMoneyActivityHistory.STATUS_INIT));
+				.eq(JoinShareMoneyActivityHistory::getRecordId, rid).eq(JoinShareMoneyActivityHistory::getJoinUid, uid)
+				.eq(JoinShareMoneyActivityHistory::getStatus, JoinShareMoneyActivityHistory.STATUS_INIT));
 	}
 
 	@Override

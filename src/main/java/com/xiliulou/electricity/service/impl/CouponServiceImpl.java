@@ -4,13 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.query.CouponQuery;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -41,6 +38,12 @@ public class CouponServiceImpl implements CouponService {
     private UserCouponService userCouponService;
     @Autowired
     RedisService redisService;
+    @Autowired
+    private ShareActivityRuleService shareActivityRuleService;
+    @Autowired
+    private OldUserActivityService oldUserActivityService;
+    @Autowired
+    private NewUserActivityService newUserActivityService;
 
 
     /**
@@ -182,7 +185,7 @@ public class CouponServiceImpl implements CouponService {
     public R update(Coupon coupon) {
         Coupon oldCoupon = queryByIdFromCache(coupon.getId());
         if (Objects.isNull(oldCoupon)) {
-            log.error("update Coupon  ERROR! not found coupon ! couponId:{} ", coupon.getId());
+            log.error("update Coupon  ERROR! not found coupon ! couponId={} ", coupon.getId());
             return R.fail("ELECTRICITY.00104", "找不到优惠券");
         }
 
@@ -217,17 +220,40 @@ public class CouponServiceImpl implements CouponService {
     public R queryCount(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryCount(couponQuery));
     }
-    
+
     @Override
     public Triple<Boolean, String, Object> deleteById(Long id) {
-    
-        List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
-        if(!CollectionUtils.isEmpty(userCoupons)){
-            return Triple.of(false,"","删除失败，优惠券已有用户领取未使用！");
+        Coupon coupon = this.queryByIdFromCache(id.intValue());
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
         }
-    
-        couponMapper.deleteById(id,TenantContextHolder.getTenantId());
-    
-        return Triple.of(true,"","删除成功！");
+
+        List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(id);
+        if (!CollectionUtils.isEmpty(userCoupons)) {
+            return Triple.of(false, "", "删除失败，优惠券已有用户领取");
+        }
+
+        ShareActivityRule shareActivityRule = shareActivityRuleService.selectByCouponId(id);
+        if (Objects.nonNull(shareActivityRule)) {
+            return Triple.of(false, "", "删除失败，优惠券已绑定邀请好友活动");
+        }
+
+        OldUserActivity oldUserActivity = oldUserActivityService.selectByCouponId(id);
+        if(Objects.nonNull(oldUserActivity)){
+            return Triple.of(false, "", "删除失败，优惠券已绑定套餐活动");
+        }
+
+        NewUserActivity newUserActivity=newUserActivityService.selectByCouponId(id);
+        if(Objects.nonNull(newUserActivity)){
+            return Triple.of(false, "", "删除失败，优惠券已绑定新用户活动");
+        }
+
+        Coupon couponUpdate = new Coupon();
+        couponUpdate.setId(id.intValue());
+        couponUpdate.setDelFlag(Coupon.DEL_DEL);
+        couponUpdate.setUpdateTime(System.currentTimeMillis());
+        this.update(couponUpdate);
+
+        return Triple.of(true, "", "删除成功！");
     }
 }
