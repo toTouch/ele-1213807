@@ -267,15 +267,4 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		return userService.memberCardDetail();
 	}
 
-
-	/**
-	 * 查询租户下是否有该换电柜 按三元组
-	 *
-	 * @return
-	 */
-	@GetMapping(value = "/user/electricityCabinet/existsElectricityCabinet")
-	public R existsElectricityCabinet(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-		return returnTripleResult(electricityCabinetService.existsElectricityCabinet(productKey, deviceName));
-	}
-
 }
