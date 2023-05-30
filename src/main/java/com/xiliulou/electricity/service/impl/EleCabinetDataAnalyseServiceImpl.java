@@ -197,7 +197,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
 
             long fullBatteryNumber = cabinetBoxList.stream().filter(e -> StringUtils.isNotBlank(e.getSn()) && !StrUtil.contains(e.getSn(), "UNKNOW") && Objects.nonNull(e.getPower()) && Objects.equals(e.getPower().intValue(), 100)).count();
 
-            long emptyCellNumber = cabinetBoxList.stream().filter(eleCabinetService::isNoElectricityBattery).count();
+            long emptyCellNumber = cabinetBoxList.stream().filter(e -> eleCabinetService.isNoElectricityBattery(e) && Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE)).count();
 
             long disableCellNumber = cabinetBoxList.stream().filter(e -> Objects.equals(e.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)).count();
 
