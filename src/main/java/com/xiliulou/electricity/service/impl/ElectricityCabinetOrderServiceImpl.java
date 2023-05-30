@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -15,12 +14,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -31,7 +29,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1752,6 +1749,34 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId) {
         return electricityCabinetOrderMapper.selectLatestByUid(uid, tenantId);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("BLUETOOTH EXCHANGE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "100001", "未能找到用户");
+        }
+
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("BLUETOOTH EXCHANGE ERROR! not found electricityCabinet,p={},d={}", productKey, deviceName);
+            return Triple.of(false, "100003", "柜机不存在");
+        }
+
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("BLUETOOTH EXCHANGE ERROR! not found store,eid={}", electricityCabinet.getId());
+            return Triple.of(false, "100003", "柜机不存在");
+        }
+
+        if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
+            log.error("BLUETOOTH EXCHANGE ERROR! user franchiseeId not equals store franchiseeId,uid={},storeId={}", userInfo.getFranchiseeId(), store.getId());
+            return Triple.of(false, "ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致");
+        }
+
+        return Triple.of(true, null, null);
     }
 
     private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {

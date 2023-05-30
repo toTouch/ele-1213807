@@ -80,4 +80,6 @@ public interface ElectricityCabinetOrderService {
     Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);
 
     ElectricityCabinetOrder selectLatestByUid(Long uid, Integer tenantId);
+
+    Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName);
 }
