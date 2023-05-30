@@ -689,7 +689,7 @@ public class UnionTradeOrderServiceImpl extends
 
             //被邀请新买月卡用户
             //是否是新用户
-            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
                 //是否有人邀请
                 JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
                 if (Objects.nonNull(joinShareActivityRecord)) {
