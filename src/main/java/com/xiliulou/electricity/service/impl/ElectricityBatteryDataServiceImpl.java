@@ -380,7 +380,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
-        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryStrayBatteryList(electricityBatteryQuery, offset, size);
         if(CollectionUtils.isEmpty(electricityBatteries)){
             return R.ok(new ArrayList<EleBatteryDataVO>());
         }
@@ -417,7 +417,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN)
                 .physicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_STRAY).build();
-        return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
+        return R.ok(electricitybatterymapper.queryStrayBatteryCount(electricityBatteryQuery));
     }
 
     @Override
