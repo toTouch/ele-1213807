@@ -95,6 +95,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
@@ -791,6 +794,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             cardOrderId = orderId;
             memberCardExpireTime = calculationOrderMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
                     carMemberCardOrder.getValidDays());
+
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         } else {
             cardId = userCarMemberCard.getCardId();
             cardOrderId = userCarMemberCard.getOrderId();
@@ -1135,6 +1140,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         updateUserCarMemberCard.setCardId(userCarModel.getId().longValue());
         updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
         userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+
+        divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         
         Long now = System.currentTimeMillis();
         Double oldCardDay = 0.0;

@@ -2,4 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ShareActivityRuleMapper">
 
+
+    <select id="selectByCouponId" resultType="com.xiliulou.electricity.entity.ShareActivityRule">
+        select id,activity_id
+        from t_share_activity_rule
+        where del_flag=0 and coupon_id=#{couponId} order by id limit 1
+    </select>
+
 </mapper>

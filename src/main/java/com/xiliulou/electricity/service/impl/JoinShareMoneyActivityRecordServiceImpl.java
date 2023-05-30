@@ -125,7 +125,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			joinShareMoneyActivityRecordMapper.updateById(oldJoinShareMoneyActivityRecord);
 
 			//修改被替换掉的历史记录状态
-			JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareMoneyActivityRecord.getId());
+			JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(oldJoinShareMoneyActivityRecord.getId(), user.getUid());
 			if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
 				oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_REPLACE);
 				oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());

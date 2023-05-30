@@ -3,15 +3,21 @@ package com.xiliulou.electricity.queue;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -95,6 +101,15 @@ public class EleOperateQueueHandler {
 
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Autowired
+    TenantService tenantService;
+
+    @Autowired
+    BatteryPlatRetrofitService batteryPlatRetrofitService;
+
+    XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_RENT_SOC_CHANGE", 1, "callRentSocChange");
+
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -456,8 +471,8 @@ public class EleOperateQueueHandler {
                 dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
 
                 HardwareCommandQuery comm = HardwareCommandQuery.builder().sessionId(
-                        CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":"
-                                + electricityCabinetOrder.getUid() + "_" + electricityCabinetOrder.getOrderId())
+                                CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":"
+                                        + electricityCabinetOrder.getUid() + "_" + electricityCabinetOrder.getOrderId())
                         .data(dataMap).productKey(electricityCabinet.getProductKey())
                         .deviceName(electricityCabinet.getDeviceName())
                         .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
@@ -606,7 +621,7 @@ public class EleOperateQueueHandler {
         if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) && Objects.equals(
                 rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
             checkRentBatteryDoor(rentBatteryOrder);
-    
+
             if (StrUtil.isNotBlank(rentBatteryOrder.getElectricityBatterySn())) {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + rentBatteryOrder.getElectricityCabinetId(),
                         String.valueOf(rentBatteryOrder.getCellNo()), 2L, TimeUnit.DAYS);
@@ -627,16 +642,15 @@ public class EleOperateQueueHandler {
     //检测租电池
     public void checkRentBatteryDoor(RentBatteryOrder rentBatteryOrder) {
         BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(
-                rentBatteryOrder.getElectricityBatterySn())
+                        rentBatteryOrder.getElectricityBatterySn())
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
-                        electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
+                                electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
                 .setType(BatteryTrackRecord.TYPE_RENT_OUT).setCreateTime(rentBatteryOrder.getUpdateTime())
                 .setOrderId(rentBatteryOrder.getOrderId());
         batteryTrackRecordService.insert(batteryTrackRecord);
 
 
-        
         //查找用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
         if (Objects.isNull(userInfo)) {
@@ -693,15 +707,16 @@ public class EleOperateQueueHandler {
 
         //删除柜机被锁缓存
         redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
+        handleCallBatteryChangeSoc(electricityBattery);
     }
 
     //检测还电池
     public void checkReturnBatteryDoor(RentBatteryOrder rentBatteryOrder) {
 
         BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(
-                rentBatteryOrder.getElectricityBatterySn())
+                        rentBatteryOrder.getElectricityBatterySn())
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
-                        electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
+                                electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
                 .setType(BatteryTrackRecord.TYPE_RETURN_IN).setCreateTime(rentBatteryOrder.getUpdateTime())
                 .setOrderId(rentBatteryOrder.getOrderId());
@@ -807,5 +822,31 @@ public class EleOperateQueueHandler {
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
         userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis());
         userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
+    }
+
+    private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
+        //调用改变电池电量
+        callBatterySocThreadPool.execute(() -> {
+            Tenant tenant = tenantService.queryByIdFromCache(electricityBattery.getTenantId());
+            if (Objects.isNull(tenant)) {
+                return;
+            }
+
+            Map<String, String> headers = new HashMap<>();
+            String time = String.valueOf(System.currentTimeMillis());
+            headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+            headers.put(CommonConstant.INNER_HEADER_TIME, time);
+            headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+            headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+
+            BatteryChangeSocQuery query = new BatteryChangeSocQuery();
+            query.setSoc(electricityBattery.getPower().intValue());
+            query.setSn(electricityBattery.getSn());
+
+            R r = batteryPlatRetrofitService.changeBatterySoc(headers, query);
+            if (Objects.isNull(r) || !r.isSuccess()) {
+                log.error("call battery sn error! sn={},result={}", electricityBattery.getSn(), null == r ? "" : r.getErrMsg());
+            }
+        });
     }
 }
