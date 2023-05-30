@@ -375,7 +375,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                         userCouponMapper.insert(userCoupon);
 
                         //领劵完，可用邀请人数减少
-                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount());
+                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
                         return R.ok("领取成功");
                     }
                 }
@@ -421,7 +421,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                         userCouponMapper.insert(userCoupon);
 
                         //领劵完，可用邀请人数减少
-                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount());
+                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
                         return R.ok("领取成功");
                     }
                 }
