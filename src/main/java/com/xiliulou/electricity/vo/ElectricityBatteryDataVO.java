@@ -156,4 +156,10 @@ public class ElectricityBatteryDataVO {
     private String name;
 
     private String userName;
+
+    /**
+     * 柜机上报电压
+     */
+
+    private Integer boxVoltage;
 }
