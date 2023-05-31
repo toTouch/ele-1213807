@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 
 
@@ -33,5 +34,5 @@ public interface ElectricityBatteryDataService extends IService<ElectricityBatte
 
     R selectOverdueBatteryDataCount(String sn, Long franchiseeId, Integer electricityCabinetId);
 
-    BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery);
+    BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery, Tenant tenant);
 }

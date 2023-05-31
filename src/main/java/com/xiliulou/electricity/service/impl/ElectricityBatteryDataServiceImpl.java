@@ -77,9 +77,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(tenantId)
                 .sn(sn)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
@@ -107,7 +112,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries));
+        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
     }
 
     @Override
@@ -150,9 +155,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(tenantId)
                 .sn(sn)
                 .franchiseeId(franchiseeId)
                 .electricityCabinetId(electricityCabinetId)
@@ -180,7 +190,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries));
+        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
 
     }
 
@@ -225,9 +235,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(tenantId)
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
@@ -254,7 +269,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries));
+        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
 
     }
 
@@ -298,9 +313,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(tenantId)
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
@@ -327,7 +347,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries));
+        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
 
     }
 
@@ -371,9 +391,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(tenantId)
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
@@ -402,7 +427,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries));
+        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
 
     }
 
@@ -448,9 +473,14 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.ok(Collections.EMPTY_LIST);
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
+        if (Objects.isNull(tenant)) {
+            log.error("TENANT ERROR! tenantEntity not exists! id={}", tenantId);
+            return R.ok(Collections.EMPTY_LIST);
+        }
         ElectricityBatteryDataQuery electricityBatteryQuery = ElectricityBatteryDataQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(tenantId)
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
                 .franchiseeId(franchiseeId)
@@ -479,7 +509,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 }
             }
         });
-        return R.ok(queryDataFromBMS(electricityBatteries));
+        return R.ok(queryDataFromBMS(electricityBatteries,tenant));
 
     }
 
@@ -503,12 +533,9 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
      * @return
      */
     @Override
-    public BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery) {
+    public BatteryInfoDto callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery,Tenant tenant) {
         try{
-            Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-            if (Objects.isNull(tenant)) {
-                return null;
-            }
+
 
             Map<String, String> headers = new HashMap<>();
             String time = String.valueOf(System.currentTimeMillis());
@@ -532,7 +559,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
 
     }
 
-    public List<EleBatteryDataVO> queryDataFromBMS(List<ElectricityBatteryDataVO> electricityBatteries){
+    public List<EleBatteryDataVO> queryDataFromBMS(List<ElectricityBatteryDataVO> electricityBatteries,Tenant tenant){
         try {
 
             if (CollectionUtils.isEmpty(electricityBatteries)) {
@@ -552,7 +579,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 if (!Objects.isNull(electricityBatteryDataVO) && !Objects.isNull(electricityBatteryDataVO.getSn())) {
                     BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
                     batteryInfoQuery.setSn(electricityBatteryDataVO.getSn());
-                    item.setBatteryInfoDto(callBatteryServiceQueryBatteryInfo(batteryInfoQuery));
+                    item.setBatteryInfoDto(callBatteryServiceQueryBatteryInfo(batteryInfoQuery,tenant));
                 }
             });
 
