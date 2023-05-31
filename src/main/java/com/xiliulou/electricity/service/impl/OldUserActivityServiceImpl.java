@@ -285,7 +285,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
         oldUserActivityUpdate.setUserScope(query.getUserScope());
         oldUserActivityUpdate.setUpdateTime(System.currentTimeMillis());
 
-        DbUtils.dbOperateSuccessThenHandleCache(oldUserActivityMapper.updateById(oldUserActivity), i -> {
+        DbUtils.dbOperateSuccessThenHandleCache(oldUserActivityMapper.updateById(oldUserActivityUpdate), i -> {
             redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + oldUserActivity.getId());
         });
 
