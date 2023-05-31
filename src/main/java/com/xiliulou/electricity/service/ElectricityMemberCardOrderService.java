@@ -119,4 +119,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> endOrder(String orderNo, Long uid);
     
     R disableMemberCardForRollback();
+
+    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
 }

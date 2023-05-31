@@ -36,6 +36,7 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.ArraysUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -469,26 +470,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
 
             //月卡是否绑定活动
-            if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
-                OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
-
-                if (Objects.nonNull(oldUserActivity)) {
-
-                    //次数
-                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT) && Objects.nonNull(oldUserActivity.getCount())) {
-                        remainingNumber = remainingNumber + oldUserActivity.getCount();
-                    }
-
-                    //优惠券
-                    if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-                        //发放优惠券
-                        Long[] uids = new Long[1];
-                        uids[0] = electricityMemberCardOrder.getUid();
-                        userCouponService.batchRelease(oldUserActivity.getCouponId(), uids);
-                    }
-                }
-            }
-
+            remainingNumber = handlerMembercardBindActivity(electricityMemberCard, userBatteryMemberCard, userInfo, remainingNumber);
 
             //用户套餐
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
@@ -3283,6 +3265,55 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid) {
         return baseMapper.selectFirstMemberCardOrder(uid);
+    }
+
+
+    /**
+     * 处理套餐绑定的活动
+     */
+    @Override
+    public Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber) {
+        if (Objects.isNull(electricityMemberCard) || Objects.isNull(electricityMemberCard.getActivityId()) || !Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY)) {
+            return remainingNumber;
+        }
+
+        OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
+        if (Objects.isNull(oldUserActivity)) {
+            log.error("MEMBERCARD ACTIVITY ERROR!oldUserActivity is null,uid={},activityId={}", userInfo.getUid(), electricityMemberCard.getActivityId());
+            return remainingNumber;
+        }
+
+        //判断是否能够参与套餐活动
+        if (!isCanJoinMembercardActivity(userBatteryMemberCard, oldUserActivity)) {
+            return remainingNumber;
+        }
+
+        //送次数
+        if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT) && Objects.nonNull(oldUserActivity.getCount())) {
+            remainingNumber = remainingNumber + oldUserActivity.getCount();
+        }
+
+        //送优惠券
+        if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
+            userCouponService.batchRelease(oldUserActivity.getCouponId(), ArraysUtil.array(userInfo.getUid()));
+        }
+
+        return remainingNumber;
+    }
+
+    private boolean isCanJoinMembercardActivity(UserBatteryMemberCard userBatteryMemberCard, OldUserActivity oldUserActivity) {
+
+        if (Objects.equals(oldUserActivity.getUserScope(), OldUserActivity.USER_SCOPE_ALL)) {//套餐活动 用户范围为全部用户
+            return Boolean.TRUE;
+        } else if (Objects.equals(oldUserActivity.getUserScope(), OldUserActivity.USER_SCOPE_NEW) &&//套餐活动 用户范围为新用户
+                (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0)) {
+            return Boolean.TRUE;
+        } else if (Objects.equals(oldUserActivity.getUserScope(), OldUserActivity.USER_SCOPE_OLD) &&//套餐活动 用户范围为老用户
+                Objects.nonNull(userBatteryMemberCard) && Objects.nonNull(userBatteryMemberCard.getCardPayCount()) && userBatteryMemberCard.getCardPayCount() > 0) {
+            return Boolean.TRUE;
+        } else {
+            return Boolean.FALSE;
+        }
     }
 }
 

@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
+import com.xiliulou.electricity.query.OldUserActivityUpdateQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -29,7 +31,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminOldUserActivityController {
+public class JsonAdminOldUserActivityController extends BaseController {
 	/**
 	 * 服务对象
 	 */
@@ -50,12 +52,17 @@ public class JsonAdminOldUserActivityController {
 		return oldUserActivityService.update(oldUserActivityAddAndUpdateQuery);
 	}
 
+	@PutMapping(value = "/admin/oldUserActivity/edit")
+	public R edit(@RequestBody @Validated OldUserActivityUpdateQuery query) {
+		return returnTripleResult(oldUserActivityService.edit(query));
+	}
 
 	//列表查询
 	@GetMapping(value = "/admin/oldUserActivity/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "userScope", required = false) Integer userScope,
 			@RequestParam(value = "discountType", required = false) String discountType,
 			@RequestParam(value = "status", required = false) Integer status) {
 		if (size < 0 || size > 50) {
@@ -76,6 +83,7 @@ public class JsonAdminOldUserActivityController {
 				.name(name)
 				.tenantId(tenantId)
 				.discountType(discountType)
+				.userScope(userScope)
 				.status(status).build();
 
 

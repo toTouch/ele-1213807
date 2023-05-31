@@ -1,21 +1,16 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -577,6 +572,12 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "套餐订单已处理!");
         }
 
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR! userinfo is null,orderNo={},uid={}", orderNo, electricityMemberCardOrder.getUid());
+            return Pair.of(false, "用户不存在");
+        }
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
 
         Long now = System.currentTimeMillis();
@@ -595,29 +596,9 @@ public class UnionTradeOrderServiceImpl extends
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrder.getMemberCardId());
 
             if (Objects.nonNull(electricityMemberCard)) {
-
                 //月卡是否绑定活动
-                if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
-                    OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
-
-                    if (Objects.nonNull(oldUserActivity)) {
-
-                        //次数
-                        if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT) && Objects.nonNull(oldUserActivity.getCount())) {
-                            remainingNumber = remainingNumber + oldUserActivity.getCount();
-                        }
-
-                        //优惠券
-                        if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-                            //发放优惠券
-                            Long[] uids = new Long[1];
-                            uids[0] = electricityMemberCardOrder.getUid();
-                            userCouponService.batchRelease(oldUserActivity.getCouponId(), uids);
-                        }
-                    }
-                }
+                remainingNumber = electricityMemberCardOrderService.handlerMembercardBindActivity(electricityMemberCard, userBatteryMemberCard, userInfo, remainingNumber);
             }
-
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
