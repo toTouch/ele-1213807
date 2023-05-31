@@ -773,9 +773,10 @@
 
     <select id="queryStrayBatteryList" resultType="com.xiliulou.electricity.vo.ElectricityBatteryDataVO">
         select teb.id,teb.sn,teb.longitude,teb.latitude,teb.power,teb.voltage,teb.capacity as dbCapacity,teb.model,teb.status,teb.electricity_cabinet_id,teb.electricity_cabinet_name,
-        teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,
+        teb.user_name,teb.create_time,teb.update_time,teb.del_flag,teb.charge_status,teb.health_status,teb.tenant_id,teb.borrow_expire_time,tbop.battery_v as boxVoltage,
         teb.iot_card_number,teb.exchange_count,teb.uid,teb.franchisee_id,teb.physics_status,teb.business_status,tec.cell_no
         from t_electricity_battery teb left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
+        left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
@@ -791,6 +792,7 @@
     <select id="queryStrayBatteryCount" resultType="java.lang.Integer">
         select  count(1)
         from t_electricity_battery teb left join  t_electricity_cabinet_box  tec on teb.sn=tec.sn and teb.electricity_cabinet_id=tec.electricity_cabinet_id and tec.del_flag = 0
+        left join t_battery_other_properties tbop on tbop.battery_name =teb.sn and tbop.del_flag = 0
         where teb.del_flag = 0 and teb.tenant_id = #{query.tenantId}
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
