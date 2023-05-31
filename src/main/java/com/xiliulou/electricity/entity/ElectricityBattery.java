@@ -37,17 +37,14 @@ public class ElectricityBattery {
     /**
      * 电池电量
      */
-    @Deprecated
     private Double power;
     /**
      * 电压
      */
-    @Deprecated
     private Integer voltage;
     /**
      * 电池容量,单位(mah)
      */
-    @Deprecated
     private Integer capacity;
     /**
      * 电池状态 0：在仓，1：在库，2：租借，3：异常取走，4游离

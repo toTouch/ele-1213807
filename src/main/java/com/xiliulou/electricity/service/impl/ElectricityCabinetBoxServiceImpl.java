@@ -154,11 +154,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return R.ok();
     }
 
-    @Override
     @Slave
+    @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+    }
+
+    @Override
+    public List<ElectricityCabinetBox> selectEleBoxAttrByEid(Integer id) {
+        return electricityCabinetBoxMapper.selectEleBoxAttrByEid(id);
     }
 
     @Override
@@ -262,7 +267,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         //获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
-            log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}", electricityCabinetId);
+            log.error("ELE ERROR! emptyCellNumber less than 1,electricityCabinetId={}", electricityCabinetId);
             return Triple.of(false, "100240", "当前无空余格挡可供退电，请联系客服！");
         }
 

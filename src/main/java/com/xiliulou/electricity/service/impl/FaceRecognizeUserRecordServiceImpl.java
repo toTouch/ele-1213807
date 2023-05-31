@@ -35,8 +35,6 @@ public class FaceRecognizeUserRecordServiceImpl implements FaceRecognizeUserReco
     @Autowired
     private FaceRecognizeUserRecordMapper faceRecognizeUserRecordMapper;
 
-    @Autowired
-    private UserInfoService userInfoService;
 
     /**
      * 通过ID查询单条数据从DB

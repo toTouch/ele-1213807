@@ -557,13 +557,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 item.setId(e.getId());
 
                 if (result) {
-                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                     item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(true, item);
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                 } else {
-                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                     item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(false, item);
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -765,32 +765,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
 
-            //查满仓空仓数
-            Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
-
-            //查满仓空仓数
-            int electricityBatteryTotal = 0;
-            int noElectricityBattery = 0;
-            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService
-                    .queryBoxByElectricityCabinetId(e.getId());
-            if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-
-                //空仓
-                noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery)
-                        .count();
-
-                //电池总数
-                electricityBatteryTotal = (int) electricityCabinetBoxList.stream()
-                        .filter(this::isElectricityBattery).count();
+            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
+//            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+            if (CollectionUtils.isEmpty(cabinetBoxList)) {
+                return null;
             }
 
-            e.setElectricityBatteryTotal(electricityBatteryTotal);
-            e.setNoElectricityBattery(noElectricityBattery);
-            e.setFullyElectricityBattery(fullyElectricityBattery);
+            //空仓
+            long emptyCellNumber = cabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+            //有电池仓门
+            long haveBatteryNumber = cabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
+            //可换电数量
+            long exchangeableNumber = cabinetBoxList.stream().filter(item -> isExchangeable(item, e.getFullyCharged())).count();
 
-            ElectricityCabinet item = new ElectricityCabinet();
-            item.setUpdateTime(System.currentTimeMillis());
-            item.setId(e.getId());
+            e.setElectricityBatteryTotal((int) haveBatteryNumber);
+            e.setNoElectricityBattery((int) emptyCellNumber);
+            e.setFullyElectricityBattery((int) exchangeableNumber);
+
 
             //电柜不在线也返回，可离线换电
             if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
@@ -1766,6 +1757,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setFranchiseeName(franchisee.getName());
             electricityCabinetVO.setFranchiseeId(franchisee.getId());
         }
+
+        if (deviceIsOnline(productKey, deviceName)) {
+            electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+            checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
+        } else {
+            electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
+        }
         
         return R.ok(electricityCabinetVO);
         
@@ -2733,8 +2732,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
-        if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(
-                electricityCabinet)) {
+        if ((!isOnline && isCupboardAttrIsOnline(electricityCabinet)) || (isOnline && !isCupboardAttrIsOnline(
+                electricityCabinet))) {
             ElectricityCabinet update = new ElectricityCabinet();
             update.setId(electricityCabinet.getId());
             update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS
@@ -2743,9 +2742,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             idempotentUpdateCupboard(electricityCabinet, update);
         }
     }
-    
+
     private boolean isCupboardAttrIsOnline(ElectricityCabinet electricityCabinet) {
-        return ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(electricityCabinet.getOnlineStatus().toString());
+        return Objects.equals(ElectricityCabinet.STATUS_ONLINE, electricityCabinet.getOnlineStatus());
+//        return ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(electricityCabinet.getOnlineStatus().toString());
     }
     
     @Override
@@ -3833,7 +3833,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 
                 messageNotifyList.forEach(i -> {
                     rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
-                    log.info("ELE FULL BATTERY INFO! ele abnormal notify,msg={}", JsonUtil.toJson(i));
                 });
             }
         });

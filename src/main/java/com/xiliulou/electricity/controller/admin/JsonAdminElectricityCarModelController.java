@@ -230,4 +230,9 @@ public class JsonAdminElectricityCarModelController {
     
         return electricityCarModelService.queryPull(size, offset, franchiseeId, name);
     }
+
+    @GetMapping(value = "/admin/electricityCarModel/all/{franchiseeId}")
+    public R selectListByFranchiseeId(@PathVariable(value = "franchiseeId") Long franchiseeId) {
+        return R.ok(electricityCarModelService.selectListByFranchiseeId(franchiseeId));
+    }
 }

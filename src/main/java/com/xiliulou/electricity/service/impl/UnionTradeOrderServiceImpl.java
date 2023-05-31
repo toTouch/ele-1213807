@@ -141,15 +141,18 @@ public class UnionTradeOrderServiceImpl extends
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
-    
+
     @Autowired
     ElectricityConfigService electricityConfigService;
-    
+
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     @Autowired
     ShippingManagerService shippingManagerService;
+
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -575,11 +578,6 @@ public class UnionTradeOrderServiceImpl extends
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
-
 
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
@@ -689,6 +687,9 @@ public class UnionTradeOrderServiceImpl extends
             //修改套餐订单购买次数
             electricityMemberCardOrderUpdate.setPayCount(userBatteryMemberCardUpdate.getCardPayCount());
 
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
+
             //被邀请新买月卡用户
             //是否是新用户
             if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
@@ -701,7 +702,7 @@ public class UnionTradeOrderServiceImpl extends
                     joinShareActivityRecordService.update(joinShareActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), electricityMemberCardOrder.getUid());
                     if (Objects.nonNull(oldJoinShareActivityHistory)) {
                         oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
                         oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -721,7 +722,7 @@ public class UnionTradeOrderServiceImpl extends
                     joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), electricityMemberCardOrder.getUid());
                     if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
                         oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
                         oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -928,7 +929,7 @@ public class UnionTradeOrderServiceImpl extends
             //                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
             //                electricityCarService.retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
             //            }
-    
+
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
             ElectricityConfig electricityConfig = electricityConfigService
                     .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -937,7 +938,7 @@ public class UnionTradeOrderServiceImpl extends
                     && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
                 boolean boo = electricityCarService
                         .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-    
+
                 CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
                 carLockCtrlHistory.setUid(userInfo.getUid());
                 carLockCtrlHistory.setName(userInfo.getName());
@@ -964,6 +965,9 @@ public class UnionTradeOrderServiceImpl extends
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
+
+            //租车套餐分帐
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         }
 
         CarMemberCardOrder updateCarMemberCardOrder = new CarMemberCardOrder();

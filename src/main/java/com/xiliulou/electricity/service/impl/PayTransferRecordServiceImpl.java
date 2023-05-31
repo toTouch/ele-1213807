@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.mapper.PayTransferRecordMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.PayTransferRecordService;
+import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.pay.weixin.query.PayTransferQuery;
@@ -15,10 +16,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author: Miss.Li
@@ -42,6 +44,9 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 	WithdrawRecordService withdrawRecordService;
 	@Autowired
 	ElectricityPayParamsService electricityPayParamsService;
+	
+	@Autowired
+	private WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
 
 	@Override
 	public void insert(PayTransferRecord payTransferRecord) {
@@ -61,6 +66,12 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 			return;
 		}
 		log.info("-----payTransferRecordList>>>>>{}", payTransferRecordList);
+		//由租户id查询提现证书信息
+		List<Integer> tenantIds = payTransferRecordList.stream().map(PayTransferRecord::getTenantId)
+				.collect(Collectors.toList());
+		log.info("handlerTransferPayQuery, tenantIds={}", tenantIds);
+		Map<Integer, byte[]> map = wechatWithdrawalCertificateService.listCertificateInTenantIds(tenantIds);
+	
 		for (PayTransferRecord payTransferRecord : payTransferRecordList) {
 			ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(payTransferRecord.getTenantId());
 			if (ObjectUtil.isEmpty(electricityPayParams)){
@@ -72,7 +83,8 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 					.partnerOrderNo(payTransferRecord.getOrderId())
 					.appId(electricityPayParams.getMerchantMinProAppId())
 					.patternedKey(electricityPayParams.getPaternerKey())
-					.apiName(electricityPayParams.getApiName()).build();
+					.certificateBinary(map.get(payTransferRecord.getTenantId()))
+					.build();
 			Map<String, String> resultMap = queryTransferResultService.queryBankTransferResultService(payTransferQuery);
 			log.info("-----resultMap>>>>>{}", resultMap);
 			handlerTransferResultMap(resultMap, payTransferRecord);

@@ -524,7 +524,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //检查空格挡数量
             Triple<Boolean, String, Object> checkBoxResult = electricityCabinetBoxService
                     .selectAvailableBoxNumber(electricityCabinetId, TenantContextHolder.getTenantId());
-            if (!checkBoxResult.getLeft()) {
+            if (Boolean.FALSE.equals(checkBoxResult.getLeft())) {
                 eleLockFlag = Boolean.FALSE;
                 return R.fail(checkBoxResult.getMiddle(), String.valueOf(checkBoxResult.getRight()));
             }
@@ -655,7 +655,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             String cellNo = usableEmptyCellNo.getRight().toString();
 
             String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_BATTERY, user.getUid());
-    
+
             //记录活跃时间
             userActiveInfoService.userActiveRecord(userInfo);
 
@@ -710,11 +710,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderId);
+        } catch (Exception e) {
+            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("RTURN BATTERY ERROR! create order error,uid={}", user.getUid(), e);
         } finally {
-            if (!eleLockFlag) {
+            if (Boolean.FALSE.equals(eleLockFlag)) {
                 redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             }
         }
+
+        return R.ok();
     }
 
     @Override

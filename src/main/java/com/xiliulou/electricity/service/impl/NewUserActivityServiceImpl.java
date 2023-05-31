@@ -313,5 +313,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		return newUserActivity;
 	}
 
+	@Override
+	public NewUserActivity selectByCouponId(Long id) {
+		return newUserActivityMapper.selectByCouponId(id);
+	}
 }
 

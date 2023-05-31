@@ -177,7 +177,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         
         //保存电池电压电流&充电器电压电流
-//        this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
+        this.checkBatteryAndCharger(electricityCabinet, eleBox, electricityBattery, eleBatteryVO, sessionId);
         
         //获取电池电量
         Double power = getBatteryPower(eleBatteryVO, electricityBattery, electricityCabinet, sessionId);
@@ -581,13 +581,11 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                 .filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
             List<String> emptyCellNo = notHaveBatteryBoxs.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList());
-            log.error("ELE BATTERY REPORT ERROR! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
+            log.info("ELE BATTERY REPORT INFO! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
             return;
         }
         
         //柜机仓内电池已满
-        log.info("ELE BATTERY REPORT INFO! push battery full message,electricityCabinetId={}",
-                electricityCabinet.getId());
         messageDelayQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE,
                 buildDelyQueueMessage(electricityCabinet), 5 * 60);
     }

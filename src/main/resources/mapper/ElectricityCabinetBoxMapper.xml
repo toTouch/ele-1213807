@@ -202,4 +202,14 @@
         </if>
     </select>
 
+    <select id="selectEleBoxAttrByEid" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, status ,power
+        from t_electricity_cabinet_box
+        where
+        electricity_cabinet_id = #{eid}
+        and usable_status = 0
+        and del_flag = 0
+    </select>
+
 </mapper>

@@ -13,14 +13,13 @@ import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
-import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.TenantVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 租户表(Tenant)表服务实现类
@@ -65,7 +62,8 @@ public class TenantServiceImpl implements TenantService {
     private FreeDepositDataService freeDepositDataService;
     @Autowired
     private BatteryModelService batteryModelService;
-
+    @Autowired
+    private ChannelActivityService channelActivityService;
 
     /**
      * 新增数据
@@ -176,6 +174,17 @@ public class TenantServiceImpl implements TenantService {
                 .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
                 .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
+
+        //新增租户给租户增加渠道活动（产品提的需求）
+        ChannelActivity channelActivity = new ChannelActivity();
+        channelActivity.setName("渠道活动");
+        channelActivity.setValidDayLimit(ChannelActivity.VALID_DAY_NOT_LIMIT);
+        channelActivity.setStatus(ChannelActivity.STATUS_FORBIDDEN);
+        channelActivity.setBindActivityType(ChannelActivity.BIND_ACTIVITY_TYPE_NONE);
+        channelActivity.setTenantId(tenant.getId().longValue());
+        channelActivity.setCreateTime(System.currentTimeMillis());
+        channelActivity.setUpdateTime(System.currentTimeMillis());
+        channelActivityService.insert(channelActivity);
 
         return R.ok();
     }
