@@ -513,6 +513,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //                    if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
                         carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                        updateUserInfo.setUid(userInfo.getUid());
+
+                        userInfoService.updateByUid(updateUserInfo);
 
                         userCarService.deleteByUid(userInfo.getUid());
 
@@ -2192,7 +2196,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 //                    if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
                         eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                         updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                        updateUserInfo.setUid(userInfo.getUid());
 
+                        userInfoService.updateByUid(updateUserInfo);
                         userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
                         userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
                         userBatteryService.deleteByUid(userInfo.getUid());
