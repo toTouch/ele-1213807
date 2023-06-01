@@ -2,10 +2,12 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
@@ -37,6 +39,9 @@ public class UserCouponServiceImpl implements UserCouponService {
     private UserCouponMapper  userCouponMapper;
     @Autowired
     private CouponService couponService;
+
+    @Autowired
+    private RedisService redisService;
 
     @Autowired
     UserService userService;
@@ -295,6 +300,11 @@ public class UserCouponServiceImpl implements UserCouponService {
         if (Objects.isNull(user)) {
             log.error("getShareCoupon  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+
+        if(!redisService.setNx(CacheConstant.CACHE_RECEIVE_COUPON_LOCK + SecurityUtils.getUid(), "1", 3000L, false)){
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         //租户
