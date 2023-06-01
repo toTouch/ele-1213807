@@ -189,17 +189,18 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
 
 			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
-				if (Objects.isNull(newUserActivity.getCouponId())) {
-					continue;
-				}
-
-				Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
-				if (Objects.isNull(coupon)) {
-					log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
-					continue;
-				}
-
-				newUserActivityVO.setCoupon(coupon);
+//				if (Objects.isNull(newUserActivity.getCouponId())) {
+//					continue;
+//				}
+//
+//				Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
+//				if (Objects.isNull(coupon)) {
+//					log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
+//					continue;
+//				}
+//
+//				newUserActivityVO.setCoupon(coupon);
+				newUserActivityVO.setCoupon(couponService.queryByIdFromCache(newUserActivity.getCouponId()));
 			}
 			newUserActivityVOList.add(newUserActivityVO);
 
