@@ -538,7 +538,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 eleRefund = true;
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-                if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+//                if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                     eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                     eleRefundOrderService.insert(eleRefundOrder);
 
@@ -550,7 +550,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
                     userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
 
-//                      userBatteryDepositService.deleteByUid(userInfo.getUid());
                     userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
 
                     userBatteryService.deleteByUid(userInfo.getUid());
@@ -562,11 +561,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     if (Objects.nonNull(insuranceUserInfo)) {
                         insuranceUserInfoService.deleteById(insuranceUserInfo);
                     }
-                    return R.ok("SUCCESS");
-                }
+
+//                }
             }
-
-
         }
 
         eleRefundOrderService.insert(eleRefundOrder);
@@ -2241,7 +2238,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
                 carRefundOrder.setUpdateTime(System.currentTimeMillis());
 
-                if (!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)) {
+//                if (!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)) {
                     carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                     carRefundOrder.setUpdateTime(System.currentTimeMillis());
 
@@ -2261,10 +2258,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     userInfoService.unBindUserFranchiseeId(userInfo.getUid());
                     //退押金成功通知前端
                     success = "SUCCESS";
-                }
+//                }
             }
         }
-    
+
         eleRefundOrderService.insert(carRefundOrder);
 
         //解冻
