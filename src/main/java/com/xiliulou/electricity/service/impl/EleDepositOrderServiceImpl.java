@@ -510,7 +510,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     carRefund = true;
                     carRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-                    if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
+//                    if(!Objects.equals(carDepositOrder.getPayType(), CarDepositOrder.FREE_DEPOSIT_PAYTYPE)){
                         carRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                         updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
 
@@ -519,7 +519,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                         userCarDepositService.logicDeleteByUid(userInfo.getUid());
 
                         userCarMemberCardService.deleteByUid(userInfo.getUid());
-                    }
+//                    }
                 }
             }
 
@@ -2189,7 +2189,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     eleRefund = true;
                     eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
 
-                    if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
+//                    if(!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)){
                         eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                         updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
 
@@ -2201,7 +2201,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                         if (Objects.nonNull(insuranceUserInfo)) {
                             insuranceUserInfoService.deleteById(insuranceUserInfo);
                         }
-                    }
+//                    }
                 }
 
             }
