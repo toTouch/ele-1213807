@@ -540,7 +540,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 //                if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
                     eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                    eleRefundOrderService.insert(eleRefundOrder);
+//                    eleRefundOrderService.insert(eleRefundOrder);
 
                     updateUserInfo.setUid(userInfo.getUid());
                     updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
