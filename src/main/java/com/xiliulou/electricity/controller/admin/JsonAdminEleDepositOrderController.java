@@ -109,6 +109,7 @@ public class JsonAdminEleDepositOrderController {
                 .carModel(carModel)
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
+                .storeName(storeName)
                 .payType(payType)
                 .franchiseeIds(franchiseeIds).build();
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
@@ -161,6 +162,7 @@ public class JsonAdminEleDepositOrderController {
                 .carModel(carModel)
                 .depositType(depositType)
                 .payType(payType)
+                .storeName(storeName)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeName(franchiseeName)
                 .franchiseeIds(franchiseeIds).build();
