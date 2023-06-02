@@ -177,8 +177,6 @@ public interface ElectricityCabinetService {
 
     CabinetBatteryVO batteryStatistics(Long id);
 
-    R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
-
     Triple<Boolean, String, Object> updateOnlineStatus(Long id);
 
     R batchOperateList(ElectricityCabinetQuery query);
