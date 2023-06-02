@@ -46,6 +46,9 @@
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
         </if>
+        <if test="query.payType != null">
+            and tel.pay_type =#{query.payType}
+        </if>
         <if test="query.source != null">
             and tel.source =#{query.source}
         </if>
@@ -87,6 +90,9 @@
         </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}
+        </if>
+        <if test="query.payType != null">
+            and tel.pay_type =#{query.payType}
         </if>
         <if test="query.source != null">
             and tel.source =#{query.source}

@@ -55,6 +55,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                                           @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "source", required = false) Integer source,
+                                          @RequestParam(value = "payType", required = false) Integer payType,
                                           @RequestParam(value = "payCount", required = false) Integer payCount,
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
@@ -98,6 +99,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
                 .source(source)
+                .payType(payType)
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
@@ -121,6 +123,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "payCount", required = false) Integer payCount,
                         @RequestParam(value = "source", required = false) Integer source,
+                        @RequestParam(value = "payType", required = false) Integer payType,
                         @RequestParam(value = "refId", required = false) Long refId,
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
@@ -154,6 +157,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .status(status)
                 .source(source)
+                .payType(payType)
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
