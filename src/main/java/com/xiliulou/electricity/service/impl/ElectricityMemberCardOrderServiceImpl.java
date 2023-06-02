@@ -3202,7 +3202,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //获取新用户所绑定的加盟商的电池服务费
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("BATTERY SERVICE FEE ERROR!not found franchisee,uid={}", userInfo.getUid());
+//            log.error("BATTERY SERVICE FEE ERROR!not found franchisee,uid={}", userInfo.getUid());
             return Pair.of(false, null);
         }
 

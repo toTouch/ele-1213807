@@ -254,7 +254,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 
 		if(user.getCreateTime()+60*1000L<System.currentTimeMillis()){
-			log.error("USER NOT NEW USER ! uid:{}",uid);
+//			log.error("USER NOT NEW USER ! uid:{}",uid);
 			return R.ok();
 		}
 

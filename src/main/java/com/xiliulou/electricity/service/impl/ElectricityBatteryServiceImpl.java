@@ -741,7 +741,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
                 if (Objects.isNull(templateConfigEntity) || Objects.isNull(
                         templateConfigEntity.getBatteryOuttimeTemplate())) {
-                    log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
+                    log.warn("TEMPLATE_CONFIG IS NULL WARN! tenantId={}", tenantId);
                     return;
                 }
 

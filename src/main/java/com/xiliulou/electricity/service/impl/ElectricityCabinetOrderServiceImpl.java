@@ -1121,17 +1121,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         Long now = System.currentTimeMillis();
         if (Objects.isNull(electricityExceptionOrderStatusRecord) || !Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
-            log.error("self open cell ERROR! not old cell exception ！orderId={}", orderSelfOpenCellQuery.getOrderId());
+            log.warn("SELF OPEN CELL WARN! not old cell exception,orderId={}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100020", "非旧仓门异常无法自主开仓");
         }
 
         if ((now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
-            log.error("self open cell ERROR! self open cell timeout ！orderId={}", orderSelfOpenCellQuery.getOrderId());
+            log.warn("SELF OPEN CELL WARN! self open cell timeout,orderId={}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100026", "自助开仓已超开仓时间");
         }
 
         if (Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
-            log.error("self open cell ERROR! is self open cell exception ！orderId={}", orderSelfOpenCellQuery.getOrderId());
+            log.warn("SELF OPEN CELL WARN! is self open cell exception,orderId={}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100021", "该订单已进行自助开仓");
         }
 

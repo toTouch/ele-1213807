@@ -277,7 +277,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
-            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
+//            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
             return R.ok();
         }
 
@@ -312,7 +312,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
         Integer tenantId = TenantContextHolder.getTenantId();
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.DISABLE_INSURANCE)) {
-            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
+//            log.error("queryInsurance  ERROR! not found insurance！franchiseeId={}", userInfo.getFranchiseeId());
             return R.ok();
         }
 
