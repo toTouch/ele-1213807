@@ -1,0 +1,32 @@
+server:
+  port: 9991
+  servlet:
+    context-path: /electricityCabinet
+  undertow:
+    threads:
+      worker: 50
+spring:
+  application:
+    name: @artifactId@
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS-HOST:saas-nacos}:8847
+      config:
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs[0]:
+          data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+          refresh: true
+  profiles:
+    active: prod
+logging:
+  config: classpath:logback-spring-prod.xml
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+        exclude: httptrace

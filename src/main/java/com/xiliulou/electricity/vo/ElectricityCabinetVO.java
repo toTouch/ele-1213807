@@ -139,6 +139,7 @@ public class ElectricityCabinetVO {
 
     //门店id
     private Integer storeId;
+    private String storeName;
 
     /**
      * 满电标准
@@ -174,6 +175,8 @@ public class ElectricityCabinetVO {
      * 柜机图片
      */
     private String pictureUrl;
+
+    private Integer exchangeType;
 
     //全天
     public static final String ALL_DAY = "-1";

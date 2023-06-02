@@ -63,26 +63,11 @@ public class JsonAdminElectricityCabinetOrderController {
             offset = 0L;
         }
 
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                return R.ok(new ArrayList<>());
-//            }
-//        }
 
         List<Integer> eleIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
@@ -184,19 +169,6 @@ public class JsonAdminElectricityCabinetOrderController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-//        List<Integer> eleIdList = null;
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER) && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-//            if (Objects.isNull(userTypeService)) {
-//                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-//                return R.fail("ELECTRICITY.0066", "用户权限不足");
-//            }
-//            eleIdList = userTypeService.getEleIdListByUserType(user);
-//            if (ObjectUtil.isEmpty(eleIdList)) {
-//                return R.ok();
-//            }
-//        }
 
         List<Integer> eleIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {

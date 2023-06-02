@@ -9,6 +9,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.query.FreeCellNoQuery;
 import com.xiliulou.electricity.service.*;
@@ -23,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -128,18 +128,18 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
             return R.ok(electricityCabinetBoxVOList);
         }
-    
+
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = electricityCabinetBoxVOList.parallelStream().peek(item -> {
-            if (StringUtils.isNotBlank(item.getSn())) {
-                ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
-                if (Objects.nonNull(electricityBatteryVO)) {
-                    item.setPower(electricityBatteryVO.getPower());
-                    item.setChargeStatus(electricityBatteryVO.getChargeStatus());
-                    item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
-                    item.setBatteryV(electricityBatteryVO.getBatteryV());
-                }
+            if (StringUtils.isBlank(item.getSn())) {
+                return;
             }
-            
+
+            ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
+            item.setPower(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getPower() : 0);
+            item.setChargeStatus(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getChargeStatus() : -1);
+            item.setBatteryA(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryChargeA() : 0);
+            item.setBatteryV(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryV() : 0);
+
         }).collect(Collectors.toList());
     
         List<ElectricityCabinetBoxVO> result = electricityCabinetBoxVOs.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
@@ -153,11 +153,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return R.ok();
     }
 
-    @Override
     @Slave
+    @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+    }
+
+    @Override
+    public List<ElectricityCabinetBox> selectEleBoxAttrByEid(Integer id) {
+        return electricityCabinetBoxMapper.selectEleBoxAttrByEid(id);
     }
 
     @Override
@@ -260,7 +265,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         //获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
-            log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}", electricityCabinetId);
+            log.error("ELE ERROR! emptyCellNumber less than 1,electricityCabinetId={}", electricityCabinetId);
             return Triple.of(false, "100240", "当前无空余格挡可供退电，请联系客服！");
         }
 

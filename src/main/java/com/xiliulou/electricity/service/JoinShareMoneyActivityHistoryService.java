@@ -39,7 +39,8 @@ public interface JoinShareMoneyActivityHistoryService {
      */
     Integer update(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
 
-	JoinShareMoneyActivityHistory queryByRecordIdAndStatus(Long id);
+    //	JoinShareMoneyActivityHistory queryByRecordIdAndStatus(Long id);
+    JoinShareMoneyActivityHistory queryByRecordIdAndJoinUid(Long rid, Long uid);
 
 	R userList(Integer activityId);
 

@@ -6,41 +6,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.CarDepositOrder;
-import com.xiliulou.electricity.entity.CarMemberCardOrder;
-import com.xiliulou.electricity.entity.ChannelActivityHistory;
-import com.xiliulou.electricity.entity.CommonPayOrder;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
-import com.xiliulou.electricity.entity.ElectricityCar;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.EnableMemberCardRecord;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.InsuranceUserInfo;
-import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ServiceFeeUserInfo;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.UserBattery;
-import com.xiliulou.electricity.entity.UserBatteryDeposit;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserCar;
-import com.xiliulou.electricity.entity.UserCarDeposit;
-import com.xiliulou.electricity.entity.UserCarMemberCard;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.WechatPayConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
+import com.xiliulou.electricity.query.CarMemberCardOrderQuery;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.service.CarDepositOrderService;
 import com.xiliulou.electricity.service.CarMemberCardOrderService;
 import com.xiliulou.electricity.service.ChannelActivityHistoryService;
@@ -185,9 +157,17 @@ public class ElectricityTradeOrderServiceImpl extends
     ElectricityCarService electricityCarService;
     @Autowired
     ShippingManagerService shippingManagerService;
-    
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
+
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
+
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+
+    @Autowired
+    CarLockCtrlHistoryService carLockCtrlHistoryService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -279,21 +259,7 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-//
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//
-//        }
-
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
-//        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-//            log.error("HOME WARN! user haven't memberCard uid={}", electricityMemberCardOrder.getUid());
-//            return Pair.of(false, "未找到用户信息!");
-//        }
 
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
@@ -410,7 +376,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     joinShareActivityRecordService.update(joinShareActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), electricityMemberCardOrder.getUid());
                     if (Objects.nonNull(oldJoinShareActivityHistory)) {
                         oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
                         oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -430,7 +396,7 @@ public class ElectricityTradeOrderServiceImpl extends
                     joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
 
                     //修改历史记录状态
-                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+                    JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndJoinUid(joinShareMoneyActivityRecord.getId(), electricityMemberCardOrder.getUid());
                     if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
                         oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
                         oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
@@ -454,7 +420,9 @@ public class ElectricityTradeOrderServiceImpl extends
 
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
-    
+            //套餐分帐
+            divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
+
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
                     .queryByUid(electricityMemberCardOrder.getUid());
             if (Objects.nonNull(channelActivityHistory) && Objects
@@ -744,6 +712,23 @@ public class ElectricityTradeOrderServiceImpl extends
             }
 
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+
+//            Long now = System.currentTimeMillis();
+//            //判断用户是否产生电池服务费
+//            Long cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+//
+//            //不足一天按一天计算
+//            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+//            if (time < 24) {
+//                cardDays = 1L;
+//            }
+//            //启用套餐时需要更新停卡记录中的实际停卡天数
+//            EleDisableMemberCardRecord updateDisableMemberCardRecord=new EleDisableMemberCardRecord();
+//            updateDisableMemberCardRecord.setId(eleDisableMemberCardRecord.getId());
+//            updateDisableMemberCardRecord.setRealDays(cardDays.intValue());
+//            updateDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+//            eleDisableMemberCardRecordService.updateBYId(updateDisableMemberCardRecord);
         }
 
         //交易订单
@@ -930,11 +915,31 @@ public class ElectricityTradeOrderServiceImpl extends
 
             userCarMemberCardService.insertOrUpdate(updateUserCarMemberCard);
 
-            //用户是否有绑定了车辆
+            //用户是否有绑定了车
             ElectricityCar electricityCar = electricityCarService.queryInfoByUid(userInfo.getUid());
-            if (Objects.nonNull(electricityCar) && Objects
-                    .equals(electricityCar.getLockType(), ElectricityCar.TYPE_LOCK)) {
-                electricityCarService.carLockCtrl(electricityCar, ElectricityCar.TYPE_UN_LOCK);
+            ElectricityConfig electricityConfig = electricityConfigService
+                    .queryFromCacheByTenantId(userInfo.getTenantId());
+            if (Objects.nonNull(electricityCar) && Objects.nonNull(electricityConfig) && Objects
+                    .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+                    && System.currentTimeMillis() < updateUserCarMemberCard.getMemberCardExpireTime()) {
+                boolean boo = electricityCarService
+                        .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
+
+                CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
+                carLockCtrlHistory.setUid(userInfo.getUid());
+                carLockCtrlHistory.setName(userInfo.getName());
+                carLockCtrlHistory.setPhone(userInfo.getPhone());
+                carLockCtrlHistory.setStatus(
+                        boo ? CarLockCtrlHistory.STATUS_UN_LOCK_SUCCESS : CarLockCtrlHistory.STATUS_UN_LOCK_FAIL);
+                carLockCtrlHistory.setType(CarLockCtrlHistory.TYPE_MEMBER_CARD_UN_LOCK);
+                carLockCtrlHistory.setCarModelId(electricityCar.getModelId().longValue());
+                carLockCtrlHistory.setCarModel(electricityCar.getModel());
+                carLockCtrlHistory.setCarId(electricityCar.getId().longValue());
+                carLockCtrlHistory.setCarSn(electricityCar.getSn());
+                carLockCtrlHistory.setCreateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setUpdateTime(System.currentTimeMillis());
+                carLockCtrlHistory.setTenantId(userInfo.getTenantId());
+                carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
     
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(userInfo.getUid());
@@ -946,8 +951,9 @@ public class ElectricityTradeOrderServiceImpl extends
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
-        }
 
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
+        }
 
         //交易订单
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();

@@ -184,13 +184,6 @@ public class JsonAdminElectricityCabinetBoxController {
             return R.ok();
         }
 
-        //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-        if (!eleResult) {
-            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
-            return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }
-
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         List<String> cellList = new ArrayList<>();
@@ -237,13 +230,6 @@ public class JsonAdminElectricityCabinetBoxController {
 		if (!Objects.equals(tenantId, electricityCabinet.getTenantId())) {
 			return R.ok();
 		}
-
-        //换电柜是否在线
-        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-        if (!eleResult) {
-            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
-            return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }
 
         List<String> cellList = new ArrayList<>();
         for (UpdateBoxesQuery updateBoxesQuery : updateBoxesStatusQuery.getUpdateBoxesQueryList()) {

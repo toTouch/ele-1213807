@@ -21,6 +21,7 @@ import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
+import com.xiliulou.electricity.entity.WechatWithdrawalCertificate;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.mapper.WithdrawRecordMapper;
@@ -35,10 +36,10 @@ import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.vo.WithdrawRecordVO;
 import com.xiliulou.pay.weixin.query.PayTransferQuery;
 import com.xiliulou.pay.weixin.transferPay.TransferPayHandlerService;
@@ -86,7 +87,6 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Autowired
 	RedisService redisService;
 
-
 	@Autowired
 	PayTransferRecordService payTransferRecordService;
 
@@ -113,6 +113,9 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Autowired
 	ElectricityPayParamsService electricityPayParamsService;
+	
+	@Autowired
+	WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -419,7 +422,14 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		if(Objects.isNull(electricityPayParams)){
 			throw new AuthenticationServiceException("未能查找到appId和appSecret！");
 		}
-
+		
+		WechatWithdrawalCertificate certificate = wechatWithdrawalCertificateService
+				.selectByTenantId(withdrawRecord.getTenantId());
+		if (Objects.isNull(certificate) || certificate.getCertificateValue().length ==0) {
+			throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+		}
+		
+		
 		Double amount = BigDecimal.valueOf(withdrawRecord.getAmount()).multiply(BigDecimal.valueOf(100)).doubleValue();
 
 		//微信提现中
@@ -450,7 +460,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 				.description(payTransferRecord.getDescription())
 				.appId(electricityPayParams.getMerchantMinProAppId())
 				.patternedKey(electricityPayParams.getPaternerKey())
-				.apiName(electricityPayParams.getApiName()).build();
+				.certificateBinary(certificate.getCertificateValue())
+				.build();
 
 		Pair<Boolean, Object> transferPayPair = transferPayHandlerService.transferPay(payTransferQuery);
 

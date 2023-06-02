@@ -94,4 +94,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     Integer insertBatch(@Param("list") List<ElectricityBattery> saveList);
 
+    String querySnByUid(@Param("uid") Long uid);
+
+    ElectricityBattery queryUserAttrBySn(@Param("sn") String sn);
 }
