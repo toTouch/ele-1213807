@@ -116,8 +116,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         ElectricityCabinetBox eleBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNO);
         if (Objects.isNull(eleBox)) {
-            log.error(
-                    "ELE BATTERY REPORT ERROR! no found electricityCabinetBox,electricityCabinetId={},sessionId={},cellNO={}",
+            log.info("ELE BATTERY REPORT INFO! no found electricityCabinetBox,electricityCabinetId={},sessionId={},cellNO={}",
                     electricityCabinet.getId(), sessionId, cellNO);
             return;
         }
@@ -470,8 +469,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         // 查换电柜所属加盟商
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
-            log.error(
-                    "ELE BATTERY REPORT ERROR! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}",
+            log.warn("ELE BATTERY REPORT WARN! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}",
                     store.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
             updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
         }

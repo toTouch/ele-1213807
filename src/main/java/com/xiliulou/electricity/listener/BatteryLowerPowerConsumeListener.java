@@ -106,7 +106,7 @@ public class BatteryLowerPowerConsumeListener implements RocketMQListener<String
 
         if (Objects.isNull(templateConfigEntity) || Objects.isNull(
                 templateConfigEntity.getBatteryOuttimeTemplate())) {
-            log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={},sn={}", tenantId, batteryPowerNotifyDto.getSn());
+            log.warn("TEMPLATE_CONFIG IS NULL WARN! tenantId={},sn={}", tenantId, batteryPowerNotifyDto.getSn());
             return;
         }
 

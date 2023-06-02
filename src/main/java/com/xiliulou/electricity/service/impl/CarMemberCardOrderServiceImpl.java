@@ -245,7 +245,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarMemberCard)) {
-            log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
+//            log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
             return Triple.of(true, "", null);
         }
 
