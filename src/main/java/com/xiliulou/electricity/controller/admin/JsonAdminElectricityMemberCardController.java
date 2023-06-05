@@ -252,7 +252,7 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @GetMapping(value = "/admin/electricityMemberCard/queryAll")
-    public R selectAll(@RequestParam("name") String name) {
+    public R selectAll(@RequestParam(value = "name", required = false) String name) {
 
         ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
