@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
+import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -30,21 +32,12 @@ public interface InvitationActivityService {
     InvitationActivity queryByIdFromCache(Long id);
 
     /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    List<InvitationActivity> queryAllByLimit(int offset, int limit);
-
-    /**
      * 新增数据
      *
      * @param invitationActivity 实例对象
      * @return 实例对象
      */
-    InvitationActivity insert(InvitationActivity invitationActivity);
+    Integer insert(InvitationActivity invitationActivity);
 
     /**
      * 修改数据
@@ -60,9 +53,15 @@ public interface InvitationActivityService {
      * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    Integer deleteById(Long id);
 
     List<InvitationActivity> selectByPage(InvitationActivityQuery query);
 
     Integer selectByPageCount(InvitationActivityQuery query);
+
+    Triple<Boolean, String, Object> save(InvitationActivityQuery query);
+
+    Triple<Boolean, String, Object> modify(InvitationActivityQuery query);
+
+    Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query);
 }

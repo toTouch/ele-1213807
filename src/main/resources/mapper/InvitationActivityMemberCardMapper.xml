@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.InvitationActivityMemberCardMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.InvitationActivityMemberCard" id="InvitationActivityMemberCardMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="mid" column="mid" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+    <select id="selectMemberCardIdsByActivityId" resultType="long">
+        select   mid
+        from t_invitation_activity_member_card
+        where activity_id = #{activityId}
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="InvitationActivityMemberCardMap">
+        select
+          id, activity_id, mid, create_time, update_time, tenant_id
+        from t_invitation_activity_member_card
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="InvitationActivityMemberCardMap">
+        select
+          id, activity_id, mid, create_time, update_time, tenant_id
+        from t_invitation_activity_member_card
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="InvitationActivityMemberCardMap">
+        select
+        id, activity_id, mid, create_time, update_time, tenant_id
+        from t_invitation_activity_member_card
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="activityId != null">
+                and activity_id = #{activityId}
+            </if>
+            <if test="mid != null">
+                and mid = #{mid}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_invitation_activity_member_card(activity_id, mid, create_time, update_time, tenant_id)
+        values (#{activityId}, #{mid}, #{createTime}, #{updateTime}, #{tenantId})
+    </insert>
+
+    <insert id="batchInsert">
+        insert into t_invitation_activity_member_card(activity_id, mid, create_time, update_time, tenant_id)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.activityId}, #{item.mid}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+        </foreach>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_invitation_activity_member_card
+        <set>
+            <if test="activityId != null">
+                activity_id = #{activityId},
+            </if>
+            <if test="mid != null">
+                mid = #{mid},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_invitation_activity_member_card where id = #{id}
+    </delete>
+
+    <delete id="deleteByActivityId">
+        delete from t_invitation_activity_member_card where activity_id = #{activityId}
+    </delete>
+
+</mapper>

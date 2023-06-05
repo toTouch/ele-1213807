@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * (InvitationActivity)实体类
  *
@@ -45,6 +47,15 @@ public class InvitationActivity {
      * 奖励类型  1--固定金额  2--套餐比例
      */
     private Integer discountType;
+
+    /**
+     * 首次购买返现
+     */
+    private BigDecimal firstReward;
+    /**
+     * 非首次购买返现
+     */
+    private BigDecimal otherReward;
     /**
      * 创建用户Id
      */
@@ -68,5 +79,7 @@ public class InvitationActivity {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer TYPE_DEFAULT = 0;
 
 }

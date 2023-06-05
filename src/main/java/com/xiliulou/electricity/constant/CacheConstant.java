@@ -371,4 +371,9 @@ public interface CacheConstant {
      * 分帐配置缓存
      */
     String CACHE_DIVISION_ACCOUNT_CONFIG = "division_account_config:";
+
+    /**
+     * 邀请活动缓存
+     */
+    String CACHE_INVITATION_ACTIVITY = "invitation_activity:";
 }
