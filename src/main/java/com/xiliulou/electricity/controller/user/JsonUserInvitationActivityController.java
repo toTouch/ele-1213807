@@ -23,10 +23,10 @@ public class JsonUserInvitationActivityController extends BaseController {
     /**
      * 生成邀请活动二维码
      */
-//    @GetMapping("/user/invitation/activity/generateCode")
-//    public R generateCode() {
-//        return returnTripleResult(invitationActivityService.generateCode());
-//    }
+    @GetMapping("/user/invitation/activity/generateCode")
+    public R generateCode() {
+        return returnTripleResult(invitationActivityService.generateCode());
+    }
 
 
 }

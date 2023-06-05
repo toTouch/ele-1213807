@@ -125,6 +125,12 @@
         select 1 from t_invitation_activity where del_flag=0 and tenantId = #{tenantId}
     </select>
 
+    <select id="selectUsableActivity" resultMap="InvitationActivityMap">
+        select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time
+        from t_invitation_activity
+        where tenant_id = #{tenantId} order by id desc limit 1
+    </select>
+
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_invitation_activity(name, type, status, description, hours, discount_type, first_reward, other_reward, operate_uid, del_flag, create_time, update_time, tenant_id)

@@ -85,5 +85,6 @@ public class InvitationActivity {
     public static final Integer STATUS_DOWN = 2;
 
     public static final Integer TYPE_DEFAULT = 0;
+    public static final Integer TYPE_FRANCHINSEE = 1;
 
 }

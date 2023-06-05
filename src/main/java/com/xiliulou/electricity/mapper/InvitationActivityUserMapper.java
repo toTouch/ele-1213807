@@ -71,4 +71,6 @@ public interface InvitationActivityUserMapper extends BaseMapper<InvitationActiv
     List<InvitationActivityUserVO> selectByPage(InvitationActivityUserQuery query);
 
     Integer selectByPageCount(InvitationActivityUserQuery query);
+
+    InvitationActivityUser selectByUid(@Param("uid") Long uid);
 }

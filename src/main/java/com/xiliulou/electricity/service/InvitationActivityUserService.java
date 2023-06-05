@@ -72,4 +72,6 @@ public interface InvitationActivityUserService {
     Triple<Boolean, String, Object> save(Long uid);
 
     Triple<Boolean, String, Object> delete(Long id);
+
+    InvitationActivityUser selectByUid(Long uid);
 }

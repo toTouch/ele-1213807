@@ -12,6 +12,13 @@
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
     </resultMap>
 
+
+    <select id="selectByUid" resultMap="InvitationActivityUserMap">
+        select  id, activity_id, uid
+        from t_invitation_activity_user
+        where uid = #{uid}
+    </select>
+
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityUserMap">
         select

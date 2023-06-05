@@ -123,6 +123,11 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
+        InvitationActivityUser invitationActivityUser1 = this.selectByUid(uid);
+        if(Objects.nonNull(invitationActivityUser1)){
+            return Triple.of(false, "", "用户已存在");
+        }
+
         InvitationActivityUser invitationActivityUser = new InvitationActivityUser();
         invitationActivityUser.setUid(uid);
         invitationActivityUser.setOperator(SecurityUtils.getUid());
@@ -145,5 +150,10 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         invitationActivityUserMapper.deleteById(id);
 
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public InvitationActivityUser selectByUid(Long uid) {
+        return this.invitationActivityUserMapper.selectByUid(uid);
     }
 }
