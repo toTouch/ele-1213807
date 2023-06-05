@@ -418,4 +418,9 @@ public class UserCouponServiceImpl implements UserCouponService {
                 .eq(UserCoupon::getTenantId, TenantContextHolder.getTenantId())
                 .eq(UserCoupon::getStatus, UserCoupon.STATUS_UNUSED));
     }
+
+    @Override
+    public Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList) {
+        return userCouponMapper.batchUpdateUserCoupon(buildUserCouponList);
+    }
 }

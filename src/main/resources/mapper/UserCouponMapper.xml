@@ -113,4 +113,14 @@
         where id = #{id} and tenant_id = #{tenantId}
     </update>
 
+    <update id="batchUpdateUserCoupon">
+        <foreach collection="list" item="item" open="" separator=";" close="">
+            update t_user_coupon set
+            status = #{item.status},
+            order_id=#{item.orderId},
+            update_time = #{item.updateTime}
+            where id = #{item.id}
+        </foreach>
+    </update>
+
 </mapper>

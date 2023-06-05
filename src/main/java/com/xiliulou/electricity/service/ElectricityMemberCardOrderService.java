@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public interface ElectricityMemberCardOrderService {
 
@@ -119,4 +120,10 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> endOrder(String orderNo, Long uid);
     
     R disableMemberCardForRollback();
+
+    Set<Integer> generateUserCouponIds(Integer userCouponId, List<Integer> userCouponIds);
+
+    List<UserCoupon> buildUserCouponList(Set<Integer> userCouponIds, Integer status, String orderId);
+
+    List<BatteryMemberCardOrderCoupon> buildMemberCardOrderCoupon(String orderId, Set<Integer> couponSet);
 }

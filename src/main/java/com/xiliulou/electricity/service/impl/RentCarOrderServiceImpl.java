@@ -104,6 +104,9 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
 
+    @Autowired
+    BatteryMemberCardOrderCouponService memberCardOrderCouponService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -740,25 +743,25 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
         //处理租车押金
         Triple<Boolean, String, Object> rentCarDepositTriple = carDepositOrderService.handleRentCarDeposit(query.getFranchiseeId(), query.getCarModelId(), query.getStoreId(), query.getMemberCardId(), userInfo);
-        if (!rentCarDepositTriple.getLeft()) {
+        if (Boolean.FALSE.equals(rentCarDepositTriple.getLeft())) {
             return rentCarDepositTriple;
         }
 
         //处理租车套餐订单
         Triple<Boolean, String, Object> rentCarMemberCardTriple = carMemberCardOrderService.handleRentCarMemberCard(query.getStoreId(), query.getCarModelId(), query.getRentTime(), query.getRentType(), userInfo);
-        if (!rentCarMemberCardTriple.getLeft()) {
+        if (Boolean.FALSE.equals(rentCarMemberCardTriple.getLeft())) {
             return rentCarMemberCardTriple;
         }
 
         //处理电池押金相关
         Triple<Boolean, String, Object> rentBatteryDepositTriple = eleDepositOrderService.handleRentBatteryDeposit(query.getFranchiseeId(), query.getMemberCardId(),query.getModel(), userInfo);
-        if (!rentBatteryDepositTriple.getLeft()) {
+        if (Boolean.FALSE.equals(rentBatteryDepositTriple.getLeft())) {
             return rentBatteryDepositTriple;
         }
 
         //处理电池套餐相关
         Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query.getProductKey(), query.getDeviceName(), query.getUserCouponId(), query.getMemberCardId(), query.getFranchiseeId(), userInfo);
-        if (!rentBatteryMemberCardTriple.getLeft()) {
+        if (Boolean.FALSE.equals(rentBatteryMemberCardTriple.getLeft())) {
             return rentBatteryMemberCardTriple;
         }
 
@@ -775,7 +778,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //保存租车押金订单
-        if (rentCarDepositTriple.getLeft() && Objects.nonNull(rentCarDepositTriple.getRight())) {
+        if (Boolean.TRUE.equals(rentCarDepositTriple.getLeft()) && Objects.nonNull(rentCarDepositTriple.getRight())) {
             CarDepositOrder carDepositOrder = (CarDepositOrder) rentCarDepositTriple.getRight();
             carDepositOrderService.insert(carDepositOrder);
 
@@ -787,7 +790,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //保存租车套餐订单
-        if (rentCarMemberCardTriple.getLeft() && Objects.nonNull(rentCarMemberCardTriple.getRight())) {
+        if (Boolean.TRUE.equals(rentCarMemberCardTriple.getLeft()) && Objects.nonNull(rentCarMemberCardTriple.getRight())) {
             CarMemberCardOrder carMemberCardOrder = (CarMemberCardOrder) rentCarMemberCardTriple.getRight();
             carMemberCardOrderService.insert(carMemberCardOrder);
 
@@ -800,7 +803,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //保存电池押金订单
-        if (rentBatteryDepositTriple.getLeft() && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
+        if (Boolean.TRUE.equals(rentBatteryDepositTriple.getLeft()) && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
 //            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
 //                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
@@ -816,7 +819,7 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
 
         //保存保险订单
-        if (rentBatteryInsuranceTriple.getLeft() && Objects.nonNull(rentBatteryInsuranceTriple.getRight())) {
+        if (Boolean.TRUE.equals(rentBatteryInsuranceTriple.getLeft()) && Objects.nonNull(rentBatteryInsuranceTriple.getRight())) {
             InsuranceOrder insuranceOrder = (InsuranceOrder) rentBatteryInsuranceTriple.getRight();
             insuranceOrderService.insert(insuranceOrder);
 
@@ -828,8 +831,8 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //保存电池套餐订单
-        if (rentBatteryMemberCardTriple.getLeft() && Objects.nonNull(rentBatteryMemberCardTriple.getRight()) && !CollectionUtils.isEmpty(((List) rentBatteryMemberCardTriple.getRight()))) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
+        if (Boolean.TRUE.equals(rentBatteryMemberCardTriple.getLeft()) && Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) (rentBatteryMemberCardTriple.getRight());
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
@@ -838,19 +841,16 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
 
-            //优惠券处理  抄的换电
-            if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
-
-                UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
-                //修改劵可用状态
-                if (Objects.nonNull(userCoupon)) {
-                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                    userCouponService.update(userCoupon);
-                }
+            //保存订单所使用的优惠券
+            Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
             }
-//            electricityMemberCardOrderService.handleUserCouponAndActivity(userInfo,electricityMemberCardOrder);
+
+            //修改优惠券状态为已使用
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
+            }
         }
 
         try {

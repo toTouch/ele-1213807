@@ -10,6 +10,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.api.client.util.Lists;
+import com.google.api.client.util.Sets;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
@@ -164,6 +165,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
+
+    @Autowired
+    BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
     /**
      * 创建月卡订单
@@ -459,11 +463,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setPayCount(payCount);
         electricityMemberCardOrder.setRefId(refId);
         electricityMemberCardOrder.setSource(source);
-        if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
-            electricityMemberCardOrder.setCouponId(electricityMemberCardOrderQuery.getUserCouponId().longValue());
-        }
         baseMapper.insert(electricityMemberCardOrder);
 
+        //保存订单所使用的优惠券
+        Set<Integer> userCouponIds = generateUserCouponIds(electricityMemberCardOrderQuery.getUserCouponId(), electricityMemberCardOrderQuery.getUserCouponIds());
+        if (CollectionUtils.isNotEmpty(userCouponIds)) {
+            memberCardOrderCouponService.batchInsert(buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
+        }
 
         //支付零元
         if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -530,12 +536,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             baseMapper.updateById(electricityMemberCardOrderUpdate);
 
             //修改优惠券状态为已使用
-            if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
-                //修改劵可用状态
-                userCoupon.setStatus(UserCoupon.STATUS_USED);
-                userCoupon.setUpdateTime(System.currentTimeMillis());
-                userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                userCouponService.update(userCoupon);
+            if (CollectionUtils.isNotEmpty(userCouponIds)) {
+                userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
 
             //被邀请新买月卡用户
@@ -608,12 +610,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         //修改优惠券状态为正在核销中
-        if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
-            //修改劵可用状态
-            userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-            userCoupon.setUpdateTime(System.currentTimeMillis());
-            userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-            userCouponService.update(userCoupon);
+        if (CollectionUtils.isNotEmpty(userCouponIds)) {
+            userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
         }
 
         //调起支付
@@ -3096,16 +3094,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setSource(source);
         electricityMemberCardOrder.setRefId(refId);
         electricityMemberCardOrder.setPayCount(payCount);
-        if (Objects.nonNull(userCouponId)) {
-            electricityMemberCardOrder.setCouponId(userCouponId.longValue());
-        }
 
-        //处理优惠券 抄的换电混合支付
-        List<Object> list = new ArrayList<>();
-        list.add(electricityMemberCardOrder);
-        list.add(userCoupon);
-
-        return Triple.of(true, null, list);
+        return Triple.of(true, null, electricityMemberCardOrder);
     }
 
     @Override
@@ -3144,19 +3134,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.baseMapper.updateById(memberCardOrderUpdate);
 
-        if(Objects.isNull(electricityMemberCardOrder.getCouponId())){
+        //获取套餐订单优惠券
+        List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
+        if(CollectionUtils.isEmpty(userCouponIds)){
             return R.ok();
         }
 
-        UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
-        if (Objects.isNull(userCoupon) || !Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)) {
-            return R.ok();
-        }
+        Set<Integer> couponIds=userCouponIds.parallelStream().map(item->userCouponService.queryByIdFromDB(item.intValue())).filter(Objects::nonNull)
+                .filter(e->Objects.equals(e.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)).map(i->i.getId().intValue()).collect(Collectors.toSet());
 
-        userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
-        userCoupon.setOrderId(null);
-        userCoupon.setUpdateTime(System.currentTimeMillis());
-        userCouponService.updateStatus(userCoupon);
+        userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, null));
 
         return R.ok();
     }
@@ -3192,22 +3179,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.baseMapper.updateById(memberCardOrderUpdate);
 
-        if (Objects.isNull(electricityMemberCardOrder.getCouponId())) {
+        //获取套餐订单优惠券
+        List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
+        if(CollectionUtils.isEmpty(userCouponIds)){
             return Triple.of(true, "", null);
         }
 
-        UserCoupon userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrder.getCouponId().intValue());
-        if (Objects.isNull(userCoupon) || !Objects.equals(userCoupon.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)) {
-            return Triple.of(true, "", null);
-        }
+        Set<Integer> couponIds=userCouponIds.parallelStream().map(item->userCouponService.queryByIdFromDB(item.intValue())).filter(Objects::nonNull)
+                .filter(e->Objects.equals(e.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)).map(i->i.getId().intValue()).collect(Collectors.toSet());
 
-        UserCoupon userCouponUpdate = new UserCoupon();
-        userCouponUpdate.setId(userCoupon.getId());
-        userCouponUpdate.setOrderId(null);
-        userCouponUpdate.setStatus(UserCoupon.STATUS_UNUSED);
-        userCouponUpdate.setTenantId(TenantContextHolder.getTenantId());
-        userCouponUpdate.setUpdateTime(System.currentTimeMillis());
-        userCouponService.updateStatus(userCouponUpdate);
+        userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, null));
 
         return Triple.of(true, "", null);
     }
@@ -3283,6 +3264,51 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public ElectricityMemberCardOrder selectFirstMemberCardOrder(Long uid) {
         return baseMapper.selectFirstMemberCardOrder(uid);
+    }
+
+    @Override
+    public List<BatteryMemberCardOrderCoupon> buildMemberCardOrderCoupon(String orderId, Set<Integer> couponSet) {
+
+        List<BatteryMemberCardOrderCoupon> list = new ArrayList<>(couponSet.size());
+        for (Integer id : couponSet) {
+            BatteryMemberCardOrderCoupon entity = new BatteryMemberCardOrderCoupon();
+            entity.setOrderId(orderId);
+            entity.setCouponId(id.longValue());
+            entity.setCreateTime(System.currentTimeMillis());
+            entity.setUpdateTime(System.currentTimeMillis());
+            entity.setTenantId(TenantContextHolder.getTenantId());
+            list.add(entity);
+        }
+
+        return list;
+    }
+
+    @Override
+    public Set<Integer> generateUserCouponIds(Integer userCouponId, List<Integer> userCouponIds) {
+        Set<Integer> couponSet = Sets.newHashSet();
+        if (Objects.nonNull(userCouponId)) {
+            couponSet.add(userCouponId);
+        }
+
+        if (CollectionUtils.isNotEmpty(userCouponIds)) {
+            couponSet.addAll(userCouponIds);
+        }
+
+        return couponSet;
+    }
+
+    @Override
+    public List<UserCoupon> buildUserCouponList(Set<Integer> userCouponIds, Integer status, String orderId) {
+        List<UserCoupon> list = new ArrayList<>(userCouponIds.size());
+        for (Integer userCouponId : userCouponIds) {
+            UserCoupon userCoupon = new UserCoupon();
+            userCoupon.setId(userCouponId.longValue());
+            userCoupon.setOrderId(orderId);
+            userCoupon.setStatus(status);
+            userCoupon.setUpdateTime(System.currentTimeMillis());
+            list.add(userCoupon);
+        }
+        return list;
     }
 }
 

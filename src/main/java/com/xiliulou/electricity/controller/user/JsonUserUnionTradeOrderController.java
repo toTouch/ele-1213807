@@ -36,6 +36,7 @@ public class JsonUserUnionTradeOrderController extends BaseController{
 
     //缴纳保险和押金
     @PostMapping("/user/payInsuranceAndDeposit")
+    @Deprecated
     public R payDeposit(@RequestBody @Validated(value = CreateGroup.class) UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request) {
         return tradeOrderService.createOrder(unionTradeOrderAdd, request);
     }

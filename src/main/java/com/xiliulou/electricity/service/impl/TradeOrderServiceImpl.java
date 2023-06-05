@@ -5,7 +5,6 @@ import cn.hutool.core.util.RandomUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -21,13 +20,12 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -123,6 +121,9 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Autowired
+    BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -385,19 +386,19 @@ public class TradeOrderServiceImpl implements TradeOrderService {
 
         //处理押金订单
         Triple<Boolean, String, Object> generateDepositOrderResult = generateDepositOrder(userInfo, integratedPaymentAdd.getFranchiseeId(), integratedPaymentAdd.getModel());
-        if (!generateDepositOrderResult.getLeft()) {
+        if (Boolean.FALSE.equals(generateDepositOrderResult.getLeft())) {
             return generateDepositOrderResult;
         }
 
         //处理套餐订单
         Triple<Boolean, String, Object> generateMemberCardOrderResult = generateMemberCardOrder(userInfo, integratedPaymentAdd);
-        if (!generateMemberCardOrderResult.getLeft()) {
+        if (Boolean.FALSE.equals(generateMemberCardOrderResult.getLeft())) {
             return generateMemberCardOrderResult;
         }
 
         //处理保险订单
         Triple<Boolean, String, Object> generateInsuranceOrderResult = generateInsuranceOrder(userInfo, integratedPaymentAdd.getInsuranceId());
-        if (!generateInsuranceOrderResult.getLeft()) {
+        if (Boolean.FALSE.equals(generateInsuranceOrderResult.getLeft())) {
             return generateInsuranceOrderResult;
         }
 
@@ -408,7 +409,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         BigDecimal integratedPaAmount = BigDecimal.valueOf(0);
 
         //保存押金订单
-        if (generateDepositOrderResult.getLeft() && Objects.nonNull(generateDepositOrderResult.getRight())) {
+        if (Boolean.TRUE.equals(generateDepositOrderResult.getLeft()) && Objects.nonNull(generateDepositOrderResult.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) generateDepositOrderResult.getRight();
             if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 eleDepositOrder.setBatteryType(batteryModelService.acquireBatteryShort(integratedPaymentAdd.getModel(),tenantId));
@@ -422,30 +423,28 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //保存套餐订单
-        if (generateMemberCardOrderResult.getLeft() && !CollectionUtils.isEmpty((List) generateMemberCardOrderResult.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) generateMemberCardOrderResult.getRight()).get(0);
+        if (Boolean.TRUE.equals(generateMemberCardOrderResult.getLeft()) && Objects.nonNull(generateMemberCardOrderResult.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) generateMemberCardOrderResult.getRight();
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
             orderList.add(electricityMemberCardOrder.getOrderId());
             orderTypeList.add(UnionPayOrder.ORDER_TYPE_MEMBER_CARD);
             allPayAmount.add(electricityMemberCardOrder.getPayAmount());
             integratedPaAmount = integratedPaAmount.add(electricityMemberCardOrder.getPayAmount());
 
-            //优惠券处理
-            if (Objects.nonNull(integratedPaymentAdd.getUserCouponId()) && ((List) generateMemberCardOrderResult.getRight()).size() > 1) {
+            //保存订单所使用的优惠券
+            Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(integratedPaymentAdd.getUserCouponId(), integratedPaymentAdd.getUserCouponIds());
+            if (CollectionUtils.isNotEmpty(userCouponIds)) {
+                memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
+            }
 
-                UserCoupon userCoupon = (UserCoupon) ((List) generateMemberCardOrderResult.getRight()).get(1);
-                //修改劵可用状态
-                if (Objects.nonNull(userCoupon)) {
-                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                    userCouponService.update(userCoupon);
-                }
+            //修改优惠券状态为已使用
+            if (CollectionUtils.isNotEmpty(userCouponIds)) {
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
             }
         }
 
         //保存保险订单
-        if (generateInsuranceOrderResult.getLeft() && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
+        if (Boolean.TRUE.equals(generateInsuranceOrderResult.getLeft()) && Objects.nonNull(generateInsuranceOrderResult.getRight())) {
             InsuranceOrder insuranceOrder = (InsuranceOrder) generateInsuranceOrderResult.getRight();
             insuranceOrderService.insert(insuranceOrder);
             orderList.add(insuranceOrder.getOrderId());
@@ -739,15 +738,8 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         electricityMemberCardOrder.setPayCount(payCount);
         electricityMemberCardOrder.setSource(source);
         electricityMemberCardOrder.setRefId(refId);
-        if (Objects.nonNull(integratedPaymentAdd.getUserCouponId())) {
-            electricityMemberCardOrder.setCouponId(integratedPaymentAdd.getUserCouponId().longValue());
-        }
 
-        List<Object> list = new ArrayList<>();
-        list.add(electricityMemberCardOrder);
-        list.add(userCoupon);
-
-        return Triple.of(true, null, list);
+        return Triple.of(true, null, electricityMemberCardOrder);
     }
 
     private Triple<Boolean, String, Object> generateInsuranceOrder(UserInfo userInfo, Integer insuranceId) {

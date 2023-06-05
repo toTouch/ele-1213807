@@ -38,10 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * (FreeDepositOrder)表服务实现类
@@ -141,6 +138,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Autowired
+    BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -1729,8 +1729,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存套餐订单
-        if (CollectionUtils.isNotEmpty((List) rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
+        if (Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) (rentBatteryMemberCardTriple.getRight());
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
@@ -1738,18 +1738,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
 
+            //保存订单所使用的优惠券
+            Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
+            }
 
-            //优惠券处理
-            if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
-
-                UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
-                //修改劵可用状态
-                if (Objects.nonNull(userCoupon)) {
-                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                    userCouponService.update(userCoupon);
-                }
+            //修改优惠券状态为已使用
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
             }
         }
 
@@ -2075,8 +2072,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存电池套餐订单
-        if (CollectionUtils.isNotEmpty((List) rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
+        if (Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) (rentBatteryMemberCardTriple.getRight());
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
@@ -2084,18 +2081,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
 
+            //保存订单所使用的优惠券
+            Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
+            }
 
-            //优惠券处理
-            if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
-
-                UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
-                //修改劵可用状态
-                if (Objects.nonNull(userCoupon)) {
-                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                    userCouponService.update(userCoupon);
-                }
+            //修改优惠券状态为已使用
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
             }
         }
 
@@ -2258,8 +2252,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //保存电池套餐订单
-        if (CollectionUtils.isNotEmpty((List) rentBatteryMemberCardTriple.getRight())) {
-            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) ((List) rentBatteryMemberCardTriple.getRight()).get(0);
+        if (Objects.nonNull(rentBatteryMemberCardTriple.getRight())) {
+            ElectricityMemberCardOrder electricityMemberCardOrder = (ElectricityMemberCardOrder) (rentBatteryMemberCardTriple.getRight());
             electricityMemberCardOrderService.insert(electricityMemberCardOrder);
 
             orderList.add(electricityMemberCardOrder.getOrderId());
@@ -2267,18 +2261,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             payAmountList.add(electricityMemberCardOrder.getPayAmount());
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
 
+            //保存订单所使用的优惠券
+            Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
+            }
 
-            //优惠券处理
-            if (Objects.nonNull(query.getUserCouponId()) && ((List) rentBatteryMemberCardTriple.getRight()).size() > 1) {
-
-                UserCoupon userCoupon = (UserCoupon) ((List) rentBatteryMemberCardTriple.getRight()).get(1);
-                //修改劵可用状态
-                if (Objects.nonNull(userCoupon)) {
-                    userCoupon.setStatus(UserCoupon.STATUS_IS_BEING_VERIFICATION);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
-                    userCouponService.update(userCoupon);
-                }
+            //修改优惠券状态为已使用
+            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
             }
         }
 
