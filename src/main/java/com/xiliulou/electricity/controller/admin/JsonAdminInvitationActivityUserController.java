@@ -44,7 +44,7 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         return R.ok(invitationActivityUserService.selectByPage(query));
     }
 
-    @GetMapping("/admin/invitationActivityUser/count")
+    @GetMapping("/admin/invitationActivityUser/queryCount")
     public R count(@RequestParam(value = "phone", required = false) String phone,
                    @RequestParam(value = "name", required = false) String name) {
 

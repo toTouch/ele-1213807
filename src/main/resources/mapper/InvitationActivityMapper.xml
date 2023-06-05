@@ -91,38 +91,11 @@
         tenant_id
         from t_invitation_activity
         <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
             <if test="name != null and name != ''">
                 and name = #{name}
             </if>
-            <if test="type != null">
-                and type = #{type}
-            </if>
             <if test="status != null">
                 and status = #{status}
-            </if>
-            <if test="description != null and description != ''">
-                and description = #{description}
-            </if>
-            <if test="hours != null">
-                and hours = #{hours}
-            </if>
-            <if test="discountType != null">
-                and discount_type = #{discountType}
-            </if>
-            <if test="operateUid != null">
-                and operate_uid = #{operateUid}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
             </if>
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
@@ -136,35 +109,20 @@
         select count(*)
         from t_invitation_activity
         <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
             <if test="name != null and name != ''">
                 and name = #{name}
-            </if>
-            <if test="type != null">
-                and type = #{type}
             </if>
             <if test="status != null">
                 and status = #{status}
             </if>
-            <if test="description != null and description != ''">
-                and description = #{description}
-            </if>
-            <if test="hours != null">
-                and hours = #{hours}
-            </if>
-            <if test="discountType != null">
-                and discount_type = #{discountType}
-            </if>
-            <if test="operateUid != null">
-                and operate_uid = #{operateUid}
-            </if>
-
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
         </where>
+    </select>
+
+    <select id="findUsableActivity" resultType="Integer">
+        select 1 from t_invitation_activity where del_flag=0 and tenantId = #{tenantId}
     </select>
 
     <!--新增所有列-->

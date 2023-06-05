@@ -80,6 +80,10 @@ public class InvitationActivity {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    //活动状态，分为 1--上架，2--下架
+    public static final Integer STATUS_UP = 1;
+    public static final Integer STATUS_DOWN = 2;
+
     public static final Integer TYPE_DEFAULT = 0;
 
 }

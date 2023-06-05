@@ -105,8 +105,8 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> modify(InvitationActivityQuery query) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(query.getId());
-        if(Objects.isNull(invitationActivity) || !Objects.equals( invitationActivity.getTenantId(),TenantContextHolder.getTenantId() )){
-            return Triple.of(false,"100390","活动不存在");
+        if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "100390", "活动不存在");
         }
 
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
@@ -118,7 +118,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivityUpdate.setUpdateTime(System.currentTimeMillis());
         Integer update = this.update(invitationActivityUpdate);
 
-        if(update>0){
+        if (update > 0) {
             //删除绑定的套餐
             invitationActivityMemberCardService.deleteByActivityId(query.getId());
 
@@ -134,8 +134,13 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Override
     public Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(query.getId());
-        if(Objects.isNull(invitationActivity) || !Objects.equals( invitationActivity.getTenantId(),TenantContextHolder.getTenantId() )){
-            return Triple.of(false,"100390","活动不存在");
+        if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "100390", "活动不存在");
+        }
+
+        Integer usableActivityCount = invitationActivityMapper.findUsableActivity(TenantContextHolder.getTenantId());
+        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
+            return Triple.of(false, "", "已存在上架的活动");
         }
 
         InvitationActivity invitationActivityUpdate = new InvitationActivity();

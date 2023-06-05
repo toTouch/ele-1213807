@@ -59,4 +59,6 @@ public interface InvitationActivityMapper extends BaseMapper<InvitationActivity>
     List<InvitationActivity> selectByPage(InvitationActivityQuery query);
 
     Integer selectByPageCount(InvitationActivityQuery query);
+
+    Integer findUsableActivity(@Param("tenantId") Integer tenantId);
 }
