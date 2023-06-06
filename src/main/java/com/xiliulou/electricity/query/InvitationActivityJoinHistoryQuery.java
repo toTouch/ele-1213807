@@ -18,6 +18,8 @@ public class InvitationActivityJoinHistoryQuery {
 
     private Integer tenantId;
 
+    private Integer status;
+
     private String userName;
 
     private String phone;

@@ -300,7 +300,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         return Triple.of(true, null, null);
     }
 
-    private String codeEnCoder(Long activityId, Long uid) {
+    private static String codeEnCoder(Long activityId, Long uid) {
         String encrypt = AESUtils.encrypt(activityId + ":" + uid);
 
         if (StringUtils.isNotBlank(encrypt)) {
@@ -311,7 +311,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         return null;
     }
 
-    private String codeDeCoder(String code) {
+    private static String codeDeCoder(String code) {
         if (StringUtils.isBlank(code)) {
             return null;
         }
@@ -324,5 +324,13 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return AESUtils.decrypt(base64Result);
         }
         return null;
+    }
+
+
+    public static void main(String[] args) {
+        String a = codeEnCoder(6L, 1150216L);
+        System.out.println(a);
+        String b = codeDeCoder("d1dNWGhCM1pDcDFRR3ZyK05mT0R1dz09");
+        System.out.println(b);
     }
 }
