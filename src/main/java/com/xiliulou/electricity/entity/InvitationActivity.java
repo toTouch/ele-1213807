@@ -87,4 +87,7 @@ public class InvitationActivity {
     public static final Integer TYPE_DEFAULT = 0;
     public static final Integer TYPE_FRANCHINSEE = 1;
 
+    //奖励类型  1--固定金额  2--套餐比例
+    public static final Integer DISCOUNT_TYPE_FIXED_AMOUNT = 1;
+
 }

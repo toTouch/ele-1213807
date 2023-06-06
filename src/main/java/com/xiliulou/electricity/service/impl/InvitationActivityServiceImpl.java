@@ -93,6 +93,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     public Triple<Boolean, String, Object> save(InvitationActivityQuery query) {
         InvitationActivity invitationActivity = new InvitationActivity();
         BeanUtils.copyProperties(query, invitationActivity);
+        invitationActivity.setDiscountType(InvitationActivity.DISCOUNT_TYPE_FIXED_AMOUNT);
         invitationActivity.setDelFlag(InvitationActivity.DEL_NORMAL);
         invitationActivity.setOperateUid(SecurityUtils.getUid());
         invitationActivity.setType(InvitationActivity.TYPE_DEFAULT);
