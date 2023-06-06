@@ -18,7 +18,7 @@ public class InvitationActivityRecordQuery {
 
     private Integer tenantId;
 
-    private String username;
+    private String userName;
 
     private String phone;
 

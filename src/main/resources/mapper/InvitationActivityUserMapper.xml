@@ -29,12 +29,12 @@
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityUserVO">
         select
-          iau.id id ,  iau.uid uid, iau.operator operator, iau.create_time create_time, iau.update_time update_time,
+          iau.id id, iau.activity_id , iau.uid uid, iau.operator operator, iau.create_time create_time, iau.update_time update_time,
           tui.name as userName ,tui.phone as phone
         from t_invitation_activity_user iau left join t_user_info tui on tui.uid=iau.uid
         <where>
-            <if test="name != null and name != ''">
-                and tui.name = #{name}
+            <if test="userName != null and userName != ''">
+                and tui.name = #{userName}
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}

@@ -1,23 +1,30 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.entity.InvitationActivityUser;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityUserMapper;
 import com.xiliulou.electricity.query.InvitationActivityUserQuery;
+import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.service.InvitationActivityUserService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InvitationActivityUserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * (InvitationActivityUser)表服务实现类
@@ -32,6 +39,10 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     private InvitationActivityUserMapper invitationActivityUserMapper;
     @Autowired
     private UserInfoService userInfoService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private InvitationActivityService invitationActivityService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -91,7 +102,6 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     @Transactional(rollbackFor = Exception.class)
     public Integer update(InvitationActivityUser invitationActivityUser) {
         return this.invitationActivityUserMapper.update(invitationActivityUser);
-
     }
 
     /**
@@ -108,7 +118,19 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
 
     @Override
     public List<InvitationActivityUserVO> selectByPage(InvitationActivityUserQuery query) {
-        return invitationActivityUserMapper.selectByPage(query);
+        List<InvitationActivityUserVO> list = invitationActivityUserMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        return list.parallelStream().peek(item -> {
+            User user = userService.queryByUidFromCache(item.getOperator());
+            item.setOperatorName(Objects.nonNull(user) ? user.getName() : "");
+
+            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
+            item.setActivityName(Objects.nonNull(invitationActivity) ? invitationActivity.getName() : "");
+
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -124,7 +146,7 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
         }
 
         InvitationActivityUser invitationActivityUser1 = this.selectByUid(query.getUid());
-        if(Objects.nonNull(invitationActivityUser1)){
+        if (Objects.nonNull(invitationActivityUser1)) {
             return Triple.of(false, "", "用户已存在");
         }
 

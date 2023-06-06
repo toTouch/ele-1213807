@@ -20,6 +20,8 @@ public class InvitationActivityUserVO {
      * 用户名
      */
     private String userName;
+
+    private Long operator;
     /**
      * 操作人姓名
      */
@@ -32,4 +34,7 @@ public class InvitationActivityUserVO {
      * 更新时间
      */
     private Long updateTime;
+
+    private Long activityId;
+    private String activityName;
 }

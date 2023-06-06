@@ -25,7 +25,7 @@ public class JsonAdminInvitationActivityRecordController {
     @GetMapping("/admin/invitationActivityRecord/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "phone", required = false) String phone,
-                  @RequestParam(value = "name", required = false) String name) {
+                  @RequestParam(value = "userName", required = false) String userName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -34,7 +34,7 @@ public class JsonAdminInvitationActivityRecordController {
             offset = 0L;
         }
 
-        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().size(size).offset(offset).username(name)
+        InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder().size(size).offset(offset).userName(userName)
                 .tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
 
         return R.ok(invitationActivityRecordService.selectByPage(query));
@@ -42,10 +42,10 @@ public class JsonAdminInvitationActivityRecordController {
 
     @GetMapping("/admin/invitationActivityRecord/queryCount")
     public R count(@RequestParam(value = "phone", required = false) String phone,
-                   @RequestParam(value = "name", required = false) String name) {
+                   @RequestParam(value = "userName", required = false) String userName) {
 
         InvitationActivityRecordQuery query = InvitationActivityRecordQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId()).username(name).phone(phone).build();
+                .tenantId(TenantContextHolder.getTenantId()).userName(userName).phone(phone).build();
 
         return R.ok(invitationActivityRecordService.selectByPageCount(query));
     }

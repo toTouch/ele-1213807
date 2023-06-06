@@ -46,8 +46,8 @@
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
         <where>
-            <if test="username != null and username != ''">
-                and tui.name = #{username}
+            <if test="userName != null and userName != ''">
+                and tui.name = #{userName}
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
@@ -68,8 +68,8 @@
         from t_invitation_activity_join_history iajh
         left join t_user_info tui on tui.uid=iajh.join_uid
         <where>
-            <if test="username != null and username != ''">
-                and tui.name = #{username}
+            <if test="userName != null and userName != ''">
+                and tui.name = #{userName}
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}

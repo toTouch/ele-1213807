@@ -25,7 +25,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
     @GetMapping("/admin/invitationActivityJoinHistory/page")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "phone", required = false) String phone,
-                  @RequestParam(value = "name", required = false) String name) {
+                  @RequestParam(value = "userName", required = false) String userName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -34,7 +34,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
             offset = 0L;
         }
 
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().size(size).offset(offset).username(name)
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().size(size).offset(offset).userName(userName)
                 .tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPage(query));
@@ -42,9 +42,9 @@ public class JsonAdminInvitationActivityJoinHistoryController {
 
     @GetMapping("/admin/invitationActivityJoinHistory/queryCount")
     public R count(@RequestParam(value = "phone", required = false) String phone,
-                   @RequestParam(value = "name", required = false) String name) {
+                   @RequestParam(value = "userName", required = false) String userName) {
 
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().username(name)
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().userName(userName)
                 .tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPageCount(query));
