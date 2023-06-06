@@ -2524,8 +2524,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
+    @Deprecated
     public void unlockElectricityCabinet(Integer eid) {
-        redisService.delete(CacheConstant.ORDER_ELE_ID + eid);
     }
     
     @Override
@@ -2645,21 +2645,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("getFranchisee  ERROR! not found store,electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
         }
         
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("getFranchisee  ERROR! not found store,storeId={}", electricityCabinet.getStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("getFranchisee  ERROR! not found Franchisee,storeId={}", store.getId());
             return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
         }

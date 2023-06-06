@@ -110,7 +110,7 @@ public interface ElectricityCabinetService {
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
     Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-
+    @Deprecated
     void unlockElectricityCabinet(Integer eid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
