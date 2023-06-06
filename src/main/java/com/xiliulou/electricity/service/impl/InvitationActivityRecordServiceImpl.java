@@ -205,7 +205,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityRecordMapper.insertOne(invitationActivityRecordInsert);
         }
 
-        return Triple.of(false, null, invitationActivityCodeVO);
+        return Triple.of(true, null, invitationActivityCodeVO);
     }
 
     @Override
