@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.InvitationActivityRecord;
 import java.util.List;
 
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
+import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -66,7 +67,7 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
      */
     int deleteById(Long id);
 
-    List<InvitationActivityRecord> selectByPage(InvitationActivityRecordQuery query);
+    List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query);
 
     Integer selectByPageCount(InvitationActivityRecordQuery query);
 }

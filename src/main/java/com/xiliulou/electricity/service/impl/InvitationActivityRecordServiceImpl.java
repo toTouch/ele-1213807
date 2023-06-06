@@ -64,19 +64,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
     @Override
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
-        List<InvitationActivityRecord> list = invitationActivityRecordMapper.selectByPage(query);
+        List<InvitationActivityRecordVO> list = invitationActivityRecordMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
 
-        return list.parallelStream().map(item -> {
-            InvitationActivityRecordVO invitationActivityRecordVO = new InvitationActivityRecordVO();
-            BeanUtils.copyProperties(item, invitationActivityRecordVO);
+        return list.parallelStream().peek(item -> {
 
             InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(item.getActivityId());
-            invitationActivityRecordVO.setActivityName(Objects.isNull(invitationActivity) ? "" : invitationActivity.getName());
-
-            return invitationActivityRecordVO;
+            item.setActivityName(Objects.isNull(invitationActivity) ? "" : invitationActivity.getName());
 
         }).collect(Collectors.toList());
     }
