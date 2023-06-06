@@ -33,15 +33,15 @@
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityRecordVO">
         select
-        id,
-        activity_id,
-        code,
-        uid,
-        share_count,
-        invitation_count,
-        status,
-        create_time,
-        update_time,
+        iar.id,
+        iar.activity_id,
+        iar.code,
+        iar.uid,
+        iar.share_count,
+        iar.invitation_count,
+        iar.status,
+        iar.create_time,
+        iar.update_time,
         tui.name as userName
         from t_invitation_activity_record iar
         left join t_user_info tui on tui.uid=iar.uid
