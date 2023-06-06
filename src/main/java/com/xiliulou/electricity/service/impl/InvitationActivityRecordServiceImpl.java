@@ -183,8 +183,15 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "000001", "系统异常");
         }
 
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if(Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())){
+            log.error("INVITATION ACTIVITY ERROR! tenant is null,uid={}", userInfo.getUid());
+            return Triple.of(false, "000001", "系统异常");
+        }
+
         InvitationActivityCodeVO invitationActivityCodeVO = new InvitationActivityCodeVO();
         invitationActivityCodeVO.setCode(codeEnCoder(invitationActivity.getId(), userInfo.getUid()));
+        invitationActivityCodeVO.setTenantCode(tenant.getCode());
         invitationActivityCodeVO.setPhone(userInfo.getPhone());
 
         InvitationActivityRecord invitationActivityRecord = invitationActivityRecordMapper.selectOne(new LambdaQueryWrapper<InvitationActivityRecord>()
