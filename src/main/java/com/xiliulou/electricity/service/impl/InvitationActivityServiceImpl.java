@@ -170,6 +170,11 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
+    public Integer checkUsableActivity(Integer tenantId){
+        return invitationActivityMapper.checkUsableActivity(tenantId);
+    }
+
+    @Override
     public List<InvitationActivity> selectByPage(InvitationActivityQuery query) {
         return invitationActivityMapper.selectByPage(query);
     }

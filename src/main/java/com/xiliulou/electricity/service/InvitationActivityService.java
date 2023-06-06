@@ -68,4 +68,6 @@ public interface InvitationActivityService {
     InvitationActivity selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
+
+    Integer checkUsableActivity(Integer tenantId);
 }
