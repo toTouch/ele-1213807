@@ -125,6 +125,16 @@
         select 1 from t_invitation_activity where del_flag=0 and tenantId = #{tenantId}
     </select>
 
+    <select id="selectBySearch" resultMap="InvitationActivityMap">
+        select id, name
+        from t_invitation_activity
+        where tenant_id = #{tenantId}
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+        </if>
+        order by id
+    </select>
+
     <select id="selectUsableActivity" resultMap="InvitationActivityMap">
         select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time
         from t_invitation_activity

@@ -1,0 +1,43 @@
+package com.xiliulou.electricity.vo;
+
+import lombok.Data;
+
+/**
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-06-06-13:44
+ */
+@Data
+public class InvitationActivityJoinHistoryVO {
+
+    private Long id;
+    /**
+     * 邀请用户uid
+     */
+    private String userName;
+
+    private Long uid;
+    /**
+     * 参与用户uid
+     */
+    private String joinUserName;
+
+    private String joinUserPhone;
+    /**
+     * 参与开始时间
+     */
+    private Long startTime;
+    /**
+     * 参与过期时间
+     */
+    private Long expiredTime;
+    /**
+     * 活动id
+     */
+    private Long activityId;
+    /**
+     * 参与状态 1--初始化，2--已参与，3--已过期
+     */
+    private Integer status;
+
+}

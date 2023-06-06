@@ -117,19 +117,20 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
     }
 
     @Override
-    public Triple<Boolean, String, Object> save(Long uid) {
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+    public Triple<Boolean, String, Object> save(InvitationActivityUserQuery query) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
         if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
-        InvitationActivityUser invitationActivityUser1 = this.selectByUid(uid);
+        InvitationActivityUser invitationActivityUser1 = this.selectByUid(query.getUid());
         if(Objects.nonNull(invitationActivityUser1)){
             return Triple.of(false, "", "用户已存在");
         }
 
         InvitationActivityUser invitationActivityUser = new InvitationActivityUser();
-        invitationActivityUser.setUid(uid);
+        invitationActivityUser.setUid(query.getUid());
+        invitationActivityUser.setActivityId(query.getActivityId());
         invitationActivityUser.setOperator(SecurityUtils.getUid());
         invitationActivityUser.setCreateTime(System.currentTimeMillis());
         invitationActivityUser.setUpdateTime(System.currentTimeMillis());

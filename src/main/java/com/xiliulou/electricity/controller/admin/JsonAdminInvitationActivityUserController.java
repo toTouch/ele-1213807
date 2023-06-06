@@ -54,8 +54,8 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
         return R.ok(invitationActivityUserService.selectByPageCount(query));
     }
 
-    @PostMapping("/admin/invitationActivityUser/save/{uid}")
-    public R save(@PathVariable("uid") Long uid) {
+    @PostMapping("/admin/invitationActivityUser/save")
+    public R save(@RequestParam(value = "uid") Long uid, @RequestParam(value = "activityId") Long activityId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -65,7 +65,9 @@ public class JsonAdminInvitationActivityUserController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return returnTripleResult(invitationActivityUserService.save(uid));
+        InvitationActivityUserQuery query = InvitationActivityUserQuery.builder().activityId(activityId).uid(uid).build();
+
+        return returnTripleResult(invitationActivityUserService.save(query));
     }
 
     @DeleteMapping("/admin/invitationActivityUser/{id}")

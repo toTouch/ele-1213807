@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
@@ -67,6 +68,6 @@ public class InvitationActivityQuery {
     /**
      * 可参与活动的套餐
      */
-    @NotBlank(message = "套餐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotEmpty(message = "套餐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private List<Long> membercardIds;
 }

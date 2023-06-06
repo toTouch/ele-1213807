@@ -30,6 +30,22 @@ public class JsonAdminInvitationActivityController extends BaseController {
     @Autowired
     private InvitationActivityService invitationActivityService;
 
+    @GetMapping("/admin/invitationActivity/search")
+    public R search(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                    @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        InvitationActivityQuery query = InvitationActivityQuery.builder().size(size).offset(offset)
+                .tenantId(TenantContextHolder.getTenantId()).name(name).build();
+
+        return R.ok(invitationActivityService.selectBySearch(query));
+    }
 
     /**
      * 新增

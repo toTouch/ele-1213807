@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.InvitationActivityJoinHistory"
+               id="InvitationActivityJoinHistoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="recordId" column="record_id" jdbcType="INTEGER"/>
+        <result property="joinUid" column="join_uid" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="INTEGER"/>
+        <result property="expiredTime" column="expired_time" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="InvitationActivityJoinHistoryMap">
+        select
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time
+        from t_invitation_activity_join_history
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="InvitationActivityJoinHistoryMap">
+        select
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time
+        from t_invitation_activity_join_history
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
+        select
+        iajh.id,
+        iajh.uid,
+        iajh.start_time,
+        iajh.expired_time,
+        iajh.activity_id,
+        iajh.status,
+        tui.name as joinUserName,
+        tui.phone as joinUserPhone
+        from t_invitation_activity_join_history iajh
+        left join t_user_info tui on tui.uid=iajh.join_uid
+        <where>
+            <if test="username != null and username != ''">
+                and tui.name = #{username}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
+            </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by iajh.id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultType="int">
+        select count(*)
+        from t_invitation_activity_join_history iajh
+        left join t_user_info tui on tui.uid=iajh.join_uid
+        <where>
+            <if test="username != null and username != ''">
+                and tui.name = #{username}
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone = #{phone}
+            </if>
+            <if test="status != null">
+                and iajh.status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and iajh.tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="InvitationActivityJoinHistoryMap">
+        select
+        id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time
+        from t_invitation_activity_join_history
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="recordId != null">
+                and record_id = #{recordId}
+            </if>
+            <if test="joinUid != null">
+                and join_uid = #{joinUid}
+            </if>
+            <if test="startTime != null">
+                and start_time = #{startTime}
+            </if>
+            <if test="expiredTime != null">
+                and expired_time = #{expiredTime}
+            </if>
+            <if test="activityId != null">
+                and activity_id = #{activityId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time)
+        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_invitation_activity_join_history
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="recordId != null">
+                record_id = #{recordId},
+            </if>
+            <if test="joinUid != null">
+                join_uid = #{joinUid},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="expiredTime != null">
+                expired_time = #{expiredTime},
+            </if>
+            <if test="activityId != null">
+                activity_id = #{activityId},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_invitation_activity_join_history where id = #{id}
+    </delete>
+
+</mapper>

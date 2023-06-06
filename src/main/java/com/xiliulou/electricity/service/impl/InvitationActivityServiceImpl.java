@@ -48,14 +48,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Autowired
     private InvitationActivityMemberCardService invitationActivityMemberCardService;
 
-    @Autowired
-    private UserInfoService userInfoService;
-
-    @Autowired
-    private TenantService tenantService;
-
-    @Autowired
-    private InvitationActivityUserService invitationActivityUserService;
+    @Override
+    public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
+        return this.invitationActivityMapper.selectBySearch(query);
+    }
 
     /**
      * 通过ID查询单条数据从DB
@@ -227,45 +223,6 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         return invitationActivityMapper.selectUsableActivity(tenantId);
     }
 
-    @Override
-    public Triple<Boolean, String, Object> generateCode() {
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-        if (Objects.isNull(userInfo)) {
-            return Triple.of(false, "100001", "用户不存在");
-        }
-
-        InvitationActivity invitationActivity = this.selectUsableActivity(TenantContextHolder.getTenantId());
-        if (Objects.isNull(invitationActivity)) {
-            log.error("INVITATION ACTIVITY ERROR! not found InvitationActivity,uid={}", userInfo.getUid());
-            return Triple.of(false, "100391", "暂无上架的活动");
-        }
-
-        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(userInfo.getUid());
-        if (Objects.isNull(invitationActivityUser)) {
-            log.error("INVITATION ACTIVITY ERROR! invitationActivityUser is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "100392", "无权限参加此活动");
-        }
-
-//        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-//        if (Objects.isNull(tenant) || Objects.isNull(tenant.getCode())) {
-//            log.error("INVITATION ACTIVITY ERROR! tenant is null,tenantId={}",TenantContextHolder.getTenantId());
-//            return Triple.of(false,"000001", "系统异常");
-//        }
-
-        if (StringUtils.isBlank(userInfo.getPhone())) {
-            log.error("INVITATION ACTIVITY ERROR! phone is null,uid={}", userInfo.getUid());
-            return Triple.of(false, "000001", "系统异常");
-        }
-
-        InvitationActivityCodeVO invitationActivityCodeVO = new InvitationActivityCodeVO();
-        invitationActivityCodeVO.setCode(codeEnCoder(InvitationActivity.TYPE_DEFAULT, userInfo.getUid()));
-//        invitationActivityCodeVO.setTenantCode(tenant.getCode());
-        invitationActivityCodeVO.setPhone(userInfo.getPhone());
-
-        return Triple.of(false, null, invitationActivityCodeVO);
-    }
-
     private List<InvitationActivityMemberCard> buildShareActivityMemberCard(Long id, List<Long> membercardIds) {
         List<InvitationActivityMemberCard> list = Lists.newArrayList();
 
@@ -282,17 +239,4 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         return list;
     }
 
-
-    private String codeEnCoder(Integer type, Long uid) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(type).append(":").append(uid);
-
-        String encrypt = AESUtils.encrypt(sb.toString());
-        if (StringUtils.isNotBlank(encrypt)) {
-            Base64.Encoder encoder = Base64.getUrlEncoder();
-            byte[] base64Result = encoder.encode(encrypt.getBytes());
-            return new String(base64Result);
-        }
-        return null;
-    }
 }

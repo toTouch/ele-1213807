@@ -6,18 +6,21 @@ import lombok.Data;
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
- * @date 2023-06-05-16:14
+ * @date 2023-06-06-13:28
  */
 @Data
 @Builder
-public class InvitationActivityUserQuery {
+public class InvitationActivityRecordQuery {
+
     private Long size;
+
     private Long offset;
 
     private Integer tenantId;
-    private String name;
+
+    private String username;
+
     private String phone;
 
-    private Long uid;
-    private Long activityId;
+
 }

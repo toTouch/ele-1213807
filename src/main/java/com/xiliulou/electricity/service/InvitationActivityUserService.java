@@ -69,7 +69,7 @@ public interface InvitationActivityUserService {
 
     Integer selectByPageCount(InvitationActivityUserQuery query);
 
-    Triple<Boolean, String, Object> save(Long uid);
+    Triple<Boolean, String, Object> save(InvitationActivityUserQuery query);
 
     Triple<Boolean, String, Object> delete(Long id);
 
