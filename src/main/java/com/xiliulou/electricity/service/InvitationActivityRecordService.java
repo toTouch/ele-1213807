@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.InvitationActivityRecord;
+import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
@@ -64,7 +65,7 @@ public interface InvitationActivityRecordService {
      */
     Boolean deleteById(Long id);
 
-    Triple<Boolean, String, Object> joinActivity(String code);
+    Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query);
 
     Triple<Boolean, String, Object> generateCode();
 

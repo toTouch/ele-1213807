@@ -71,4 +71,6 @@ public class InvitationActivityQuery {
      */
     @NotEmpty(message = "套餐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private List<Long> membercardIds;
+
+    private String code;
 }

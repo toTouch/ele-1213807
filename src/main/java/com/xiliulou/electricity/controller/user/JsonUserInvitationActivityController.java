@@ -2,14 +2,12 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.service.InvitationActivityRecordService;
 import com.xiliulou.electricity.service.InvitationActivityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author zzlong
@@ -35,8 +33,8 @@ public class JsonUserInvitationActivityController extends BaseController {
      * 参与活动
      */
     @PostMapping("/user/invitation/activity/joinActivity")
-    public R joinActivity(@RequestParam("code") String code) {
-        return returnTripleResult(invitationActivityRecordService.joinActivity(code));
+    public R joinActivity(@RequestBody InvitationActivityQuery query) {
+        return returnTripleResult(invitationActivityRecordService.joinActivity(query));
     }
 
 }

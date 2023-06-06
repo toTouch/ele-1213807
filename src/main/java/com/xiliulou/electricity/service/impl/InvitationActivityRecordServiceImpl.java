@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.InvitationActivityRecordMapper;
+import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -17,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,7 +180,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
 
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-        if(Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())){
+        if (Objects.isNull(tenant) || StringUtils.isBlank(tenant.getCode())) {
             log.error("INVITATION ACTIVITY ERROR! tenant is null,uid={}", userInfo.getUid());
             return Triple.of(false, "000001", "系统异常");
         }
@@ -213,7 +213,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> joinActivity(String code) {
+    public Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query) {
         if (!redisService.setNx(CacheConstant.CACHE_SCAN_INTO_ACTIVITY_LOCK + SecurityUtils.getUid(), "1", 2000L, false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -230,15 +230,21 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(true, null, null);
         }
 
-        String decrypt = codeDeCoder(code);
+        String decrypt = null;
+        try {
+            decrypt = codeDeCoder(query.getCode());
+        } catch (Exception e) {
+            log.error("INVITATION ACTIVITY ERROR! decode fail,uid={},code={}", SecurityUtils.getUid(), query.getCode());
+        }
+
         if (StringUtils.isBlank(decrypt)) {
-            log.error("INVITATION ACTIVITY ERROR! invitation activity code decrypt error,code={}, uid={}", code, userInfo.getUid());
+            log.error("INVITATION ACTIVITY ERROR! invitation activity code decrypt error,code={}, uid={}", query.getCode(), userInfo.getUid());
             return Triple.of(false, "100457", "活动二维码解析失败");
         }
 
         String[] split = decrypt.split(":");
         if (split == null || split.length != 2) {
-            log.error("INVITATION ACTIVITY ERROR! illegal code! code={}, uid={}", code, userInfo.getUid());
+            log.error("INVITATION ACTIVITY ERROR! illegal code! code={}, uid={}", query.getCode(), userInfo.getUid());
             return Triple.of(false, "100459", "活动二维码内容不合法");
         }
 
