@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
+import com.xiliulou.electricity.vo.InvitationActivityVO;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public interface InvitationActivityService {
      */
     Integer deleteById(Long id);
 
-    List<InvitationActivity> selectByPage(InvitationActivityQuery query);
+    List<InvitationActivityVO> selectByPage(InvitationActivityQuery query);
 
     Integer selectByPageCount(InvitationActivityQuery query);
 

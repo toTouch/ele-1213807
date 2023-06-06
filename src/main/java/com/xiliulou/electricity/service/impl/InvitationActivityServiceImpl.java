@@ -3,18 +3,21 @@ package com.xiliulou.electricity.service.impl;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.InvitationActivity;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.InvitationActivityMemberCard;
 import com.xiliulou.electricity.mapper.InvitationActivityMapper;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
 import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
 import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.InvitationActivityVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -24,8 +27,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * (InvitationActivity)表服务实现类
@@ -47,6 +52,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Autowired
     private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
+
+    @Autowired
+    private ElectricityMemberCardService memberCardService;
 
     @Override
     public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
@@ -170,13 +178,37 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
-    public Integer checkUsableActivity(Integer tenantId){
+    public Integer checkUsableActivity(Integer tenantId) {
         return invitationActivityMapper.checkUsableActivity(tenantId);
     }
 
     @Override
-    public List<InvitationActivity> selectByPage(InvitationActivityQuery query) {
-        return invitationActivityMapper.selectByPage(query);
+    public List<InvitationActivityVO> selectByPage(InvitationActivityQuery query) {
+
+        List<InvitationActivity> invitationActivities = invitationActivityMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(invitationActivities)) {
+            return Collections.emptyList();
+        }
+
+        return invitationActivities.parallelStream().map(item -> {
+            InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
+            BeanUtils.copyProperties(item, invitationActivityVO);
+
+            List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(item.getId());
+            if (!CollectionUtils.isEmpty(membercardIds)) {
+                List<ElectricityMemberCard> memberCardList = Lists.newArrayList();
+                for (Long membercardId : membercardIds) {
+                    ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercardId.intValue());
+                    if (Objects.nonNull(electricityMemberCard)) {
+                        memberCardList.add(electricityMemberCard);
+                    }
+                }
+
+                invitationActivityVO.setMemberCardList(memberCardList);
+            }
+            return invitationActivityVO;
+        }).collect(Collectors.toList());
+
     }
 
     @Override
