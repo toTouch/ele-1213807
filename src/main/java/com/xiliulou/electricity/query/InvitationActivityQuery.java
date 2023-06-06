@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,7 +30,7 @@ public class InvitationActivityQuery {
 
     private Integer tenantId;
 
-    @NotBlank(message = "活动id不能为空", groups = {UpdateGroup.class})
+    @NotNull(message = "活动id不能为空", groups = {UpdateGroup.class})
     private Long id;
 
     private Integer status;
@@ -45,7 +46,7 @@ public class InvitationActivityQuery {
     /**
      * 有效时间
      */
-    @NotBlank(message = "有效时间不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "有效时间不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer hours;
 
     /**
@@ -56,13 +57,13 @@ public class InvitationActivityQuery {
     /**
      * 首次购买返现
      */
-    @NotBlank(message = "首次购买返现不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "首次购买返现不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal firstReward;
 
     /**
      * 非首次购买返现
      */
-    @NotBlank(message = "非首次购买返现不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    @NotNull(message = "非首次购买返现不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal otherReward;
 
     /**
