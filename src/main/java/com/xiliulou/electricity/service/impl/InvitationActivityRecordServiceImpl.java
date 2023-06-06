@@ -195,6 +195,8 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             invitationActivityRecordInsert.setActivityId(invitationActivity.getId());
             invitationActivityRecordInsert.setUid(userInfo.getUid());
             invitationActivityRecordInsert.setCode(RandomUtil.randomNumbers(6));
+            invitationActivityRecordInsert.setShareCount(0);
+            invitationActivityRecordInsert.setInvitationCount(0);
             invitationActivityRecordInsert.setTenantId(TenantContextHolder.getTenantId());
             invitationActivityRecordInsert.setStatus(InvitationActivityRecord.STATUS_SUCCESS);
             invitationActivityRecordInsert.setCreateTime(System.currentTimeMillis());

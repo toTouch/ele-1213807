@@ -22,5 +22,5 @@ public class InvitationActivityRecordQuery {
 
     private String phone;
 
-
+    private Integer status;
 }
