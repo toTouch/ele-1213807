@@ -68,4 +68,6 @@ public interface InvitationActivityJoinHistoryService {
     List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query);
 
     Integer selectByPageCount(InvitationActivityJoinHistoryQuery query);
+
+    Integer updateStatusByActivityId(Long activityId, Integer status);
 }

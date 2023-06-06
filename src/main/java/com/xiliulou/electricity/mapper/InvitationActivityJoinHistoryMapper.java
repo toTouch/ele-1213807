@@ -1,13 +1,12 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
-
-import java.util.List;
-
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
 import com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * (InvitationActivityJoinHistory)表数据库访问层
@@ -70,4 +69,6 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
     List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query);
 
     Integer selectByPageCount(InvitationActivityJoinHistoryQuery query);
+
+    Integer updateStatusByActivityId(@Param("activityId") Long activityId, @Param("status") Integer status);
 }

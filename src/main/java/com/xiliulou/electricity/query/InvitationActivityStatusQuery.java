@@ -4,6 +4,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author zzlong
@@ -12,8 +13,8 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class InvitationActivityStatusQuery {
-    @NotBlank(message = "活动id不能为空")
+    @NotNull(message = "活动id不能为空")
     private Long id;
-    @NotBlank(message = "活动状态能为空")
+    @NotNull(message = "活动状态能为空")
     private Integer status;
 }

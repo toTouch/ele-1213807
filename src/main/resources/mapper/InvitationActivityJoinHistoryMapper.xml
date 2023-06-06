@@ -169,6 +169,12 @@
         where id = #{id}
     </update>
 
+    <update id="updateStatusByActivityId">
+        update t_invitation_activity_join_history
+        set status = #{status}
+        where activity_id = #{activityId} and status =1
+    </update>
+
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from t_invitation_activity_join_history where id = #{id}

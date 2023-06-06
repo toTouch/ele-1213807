@@ -4,21 +4,19 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.InvitationActivity;
+import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
 import com.xiliulou.electricity.entity.InvitationActivityMemberCard;
-import com.xiliulou.electricity.entity.InvitationActivityUser;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityMapper;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
+import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
+import com.xiliulou.electricity.service.InvitationActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.InvitationActivityCodeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,6 +44,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Autowired
     private InvitationActivityMemberCardService invitationActivityMemberCardService;
+
+    @Autowired
+    private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
 
     @Override
     public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
@@ -143,13 +143,14 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query) {
         InvitationActivity invitationActivity = this.queryByIdFromCache(query.getId());
         if (Objects.isNull(invitationActivity) || !Objects.equals(invitationActivity.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "100390", "活动不存在");
         }
 
-        Integer usableActivityCount = invitationActivityMapper.findUsableActivity(TenantContextHolder.getTenantId());
+        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
         if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
             return Triple.of(false, "", "已存在上架的活动");
         }
@@ -159,7 +160,11 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivityUpdate.setId(query.getId());
         invitationActivityUpdate.setStatus(query.getStatus());
         invitationActivityUpdate.setUpdateTime(System.currentTimeMillis());
-        this.update(invitationActivityUpdate);
+        Integer update = this.update(invitationActivityUpdate);
+
+        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_DOWN) && update > 0) {
+            invitationActivityJoinHistoryService.updateStatusByActivityId(query.getId(), InvitationActivityJoinHistory.STATUS_OFF);
+        }
 
         return Triple.of(true, null, null);
     }

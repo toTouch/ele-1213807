@@ -121,7 +121,7 @@
         </where>
     </select>
 
-    <select id="findUsableActivity" resultType="Integer">
+    <select id="checkUsableActivity" resultType="Integer">
         select 1 from t_invitation_activity where del_flag=0 and tenantId = #{tenantId}
     </select>
 

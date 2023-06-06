@@ -131,4 +131,9 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     public Integer selectByPageCount(InvitationActivityJoinHistoryQuery query) {
         return invitationActivityJoinHistoryMapper.selectByPageCount(query);
     }
+
+    @Override
+    public Integer updateStatusByActivityId(Long activityId, Integer status) {
+        return invitationActivityJoinHistoryMapper.updateStatusByActivityId(activityId,status);
+    }
 }
