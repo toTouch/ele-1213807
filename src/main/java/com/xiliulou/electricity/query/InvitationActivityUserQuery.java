@@ -15,7 +15,7 @@ public class InvitationActivityUserQuery {
     private Long offset;
 
     private Integer tenantId;
-    private String name;
+    private String userName;
     private String phone;
 
     private Long uid;
