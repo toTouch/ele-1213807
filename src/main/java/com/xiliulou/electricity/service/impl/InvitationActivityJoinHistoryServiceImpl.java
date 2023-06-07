@@ -141,4 +141,14 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     public InvitationActivityJoinHistory selectByJoinIdAndStatus(Long uid, Integer status) {
         return invitationActivityJoinHistoryMapper.selectByJoinIdAndStatus(uid, status);
     }
+
+    @Override
+    public List<InvitationActivityJoinHistoryVO> selectUserByPage(InvitationActivityJoinHistoryQuery query) {
+        List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectByPage(query);
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        return list;
+    }
 }

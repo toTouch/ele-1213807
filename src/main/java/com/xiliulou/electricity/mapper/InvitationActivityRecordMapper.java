@@ -72,4 +72,6 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
     Integer selectByPageCount(InvitationActivityRecordQuery query);
 
     Integer addCountAndMoneyByUid(@Param("rewardAmount") BigDecimal rewardAmount, @Param("recordId") Long recordId);
+
+    InvitationActivityRecord selectByActivityIdAndUid(@Param("activityId") Long activityId, @Param("uid") Long uid);
 }

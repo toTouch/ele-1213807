@@ -751,7 +751,7 @@ public class UnionTradeOrderServiceImpl extends
             }
 
             //处理拉新返现活动
-            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder, Objects.isNull(userBatteryMemberCard) ? null : userBatteryMemberCard.getCardPayCount());
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder.getOrderId());
 
 
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService

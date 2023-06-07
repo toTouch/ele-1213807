@@ -11,7 +11,9 @@
         <result property="startTime" column="start_time" jdbcType="INTEGER"/>
         <result property="expiredTime" column="expired_time" jdbcType="INTEGER"/>
         <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="money" column="money" jdbcType="NUMERIC"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="payCount" column="pay_count" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -20,14 +22,14 @@
     <!--查询单个-->
     <select id="queryById" resultMap="InvitationActivityJoinHistoryMap">
         select
-          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time
         from t_invitation_activity_join_history
         where id = #{id}
     </select>
 
     <select id="selectByJoinIdAndStatus" resultMap="InvitationActivityJoinHistoryMap">
         select
-          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
         from t_invitation_activity_join_history
         where join_uid = #{uid} and status=#{status} order by id desc limit 1
     </select>
@@ -35,7 +37,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="InvitationActivityJoinHistoryMap">
         select
-          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time
         from t_invitation_activity_join_history
         limit #{offset}, #{limit}
     </select>
@@ -48,6 +50,8 @@
         iajh.expired_time,
         iajh.activity_id,
         iajh.status,
+        iajh.pay_count,
+        iajh.money,
         tui.name as joinUserName,
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
@@ -61,6 +65,9 @@
             </if>
             <if test="status != null">
                 and iajh.status = #{status}
+            </if>
+            <if test="uid != null">
+                and iajh.uid = #{uid}
             </if>
             <if test="tenantId != null">
                 and iajh.tenant_id = #{tenantId}
@@ -93,7 +100,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="InvitationActivityJoinHistoryMap">
         select
-        id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time
+        id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time
         from t_invitation_activity_join_history
         <where>
             <if test="id != null">
@@ -134,8 +141,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, tenant_id, create_time, update_time)
-        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{tenantId}, #{createTime}, #{updateTime})
+        insert into t_invitation_activity_join_history(uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time)
+        values (#{uid}, #{recordId}, #{joinUid}, #{startTime}, #{expiredTime}, #{activityId}, #{status}, #{payCount}, #{money}, #{tenantId}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -162,6 +169,12 @@
             </if>
             <if test="status != null">
                 status = #{status},
+            </if>
+            <if test="payCount != null">
+                pay_count = #{payCount},
+            </if>
+            <if test="money != null">
+                money = #{money},
             </if>
             <if test="tenantId != null">
                 tenant_id = #{tenantId},

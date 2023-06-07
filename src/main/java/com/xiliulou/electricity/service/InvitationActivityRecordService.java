@@ -68,7 +68,7 @@ public interface InvitationActivityRecordService {
      */
     Boolean deleteById(Long id);
 
-    void handleInvitationActivity(UserInfo userInfo, ElectricityMemberCardOrder electricityMemberCardOrder, Integer payCount);
+    void handleInvitationActivity(UserInfo userInfo, String orderId);
 
     Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query);
 
@@ -79,4 +79,8 @@ public interface InvitationActivityRecordService {
     Integer selectByPageCount(InvitationActivityRecordQuery query);
 
     Integer addCountAndMoneyByUid( BigDecimal rewardAmount, Long recordId);
+
+    Triple<Boolean, String, Object> selectUserInvitationDetail();
+
+    InvitationActivityRecord selectByActivityIdAndUid(Long id, Long uid);
 }

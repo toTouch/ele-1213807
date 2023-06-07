@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * (InvitationActivityJoinHistory)实体类
  *
@@ -49,6 +51,10 @@ public class InvitationActivityJoinHistory {
      * 参与状态 1--初始化，2--已参与，3--已过期
      */
     private Integer status;
+
+    private Integer payCount;
+
+    private BigDecimal money;
     /**
      * 租户id
      */

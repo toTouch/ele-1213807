@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -16,7 +18,10 @@ public class InvitationActivityJoinHistoryVO {
      */
     private String userName;
 
+    private String phone;
+
     private Long uid;
+    private Long joinUid;
     /**
      * 参与用户uid
      */
@@ -39,5 +44,10 @@ public class InvitationActivityJoinHistoryVO {
      * 参与状态 1--初始化，2--已参与，3--已过期
      */
     private Integer status;
+
+
+    private Integer payCount;
+
+    private BigDecimal money;
 
 }

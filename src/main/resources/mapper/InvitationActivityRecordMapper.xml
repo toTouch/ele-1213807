@@ -24,6 +24,12 @@
         where id = #{id}
     </select>
 
+    <select id="selectByActivityIdAndUid" resultMap="InvitationActivityRecordMap">
+        select   id, activity_id, code, uid, share_count, invitation_count, status, money
+        from t_invitation_activity_record
+        where activity_id = #{activityId} and uid=#{uid} order by id desc limit 1
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="InvitationActivityRecordMap">
         select

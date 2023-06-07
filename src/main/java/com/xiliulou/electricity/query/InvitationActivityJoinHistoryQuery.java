@@ -24,4 +24,6 @@ public class InvitationActivityJoinHistoryQuery {
 
     private String phone;
 
+    private Long uid;
+
 }
