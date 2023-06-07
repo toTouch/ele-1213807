@@ -1,13 +1,13 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.InvitationActivityRecord;
-
-import java.util.List;
-
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * (InvitationActivityRecord)表数据库访问层
@@ -70,4 +70,6 @@ public interface InvitationActivityRecordMapper extends BaseMapper<InvitationAct
     List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query);
 
     Integer selectByPageCount(InvitationActivityRecordQuery query);
+
+    Integer addCountAndMoneyByUid(@Param("rewardAmount") BigDecimal rewardAmount, @Param("recordId") Long recordId);
 }

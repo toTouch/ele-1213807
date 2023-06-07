@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserAmountMapper;
 import com.xiliulou.electricity.query.UserAmountQuery;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
@@ -125,5 +126,37 @@ public class UserAmountServiceImpl implements UserAmountService {
 	@Override
 	public void updateRollBackIncome(Long uid,Double income) {
 		userAmountMapper.updateRollBackIncome(uid,income);
+	}
+
+	@Override
+	public void handleInvitationActivityAmount(UserInfo userInfo, Long uid, BigDecimal rewardAmount) {
+		UserAmount userAmount=queryByUid(uid);
+		if(Objects.isNull(userAmount)){
+			userAmount=new UserAmount();
+			userAmount.setUid(uid);
+			userAmount.setBalance(rewardAmount);
+			userAmount.setTotalIncome(rewardAmount);
+			userAmount.setTenantId(userInfo.getTenantId());
+			userAmount.setCreateTime(System.currentTimeMillis());
+			userAmount.setUpdateTime(System.currentTimeMillis());
+			insert(userAmount);
+		}else {
+			UserAmount userAmountUpdate=new UserAmount();
+			userAmountUpdate.setId(userAmount.getId());
+			userAmountUpdate.setBalance(userAmount.getBalance().add(rewardAmount));
+			userAmountUpdate.setTotalIncome(userAmount.getTotalIncome().add(rewardAmount));
+			userAmountUpdate.setUpdateTime(System.currentTimeMillis());
+			update(userAmountUpdate);
+		}
+
+		//新增余额流水
+		UserAmountHistory userAmountHistory=new UserAmountHistory();
+		userAmountHistory.setType(UserAmountHistory.TYPE_INVITATION_ACTIVITY);
+		userAmountHistory.setUid(uid);
+		userAmountHistory.setJoinUid(userInfo.getUid());
+		userAmountHistory.setAmount(rewardAmount);
+		userAmountHistory.setCreateTime(System.currentTimeMillis());
+		userAmountHistory.setTenantId(userAmount.getTenantId());
+		userAmountHistoryService.insert(userAmountHistory);
 	}
 }

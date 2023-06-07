@@ -169,6 +169,9 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
 
+    @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
+
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -411,12 +414,12 @@ public class ElectricityTradeOrderServiceImpl extends
 
                         //返现
                         userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
-
                     }
-
                 }
-
             }
+
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder, Objects.isNull(userBatteryMemberCard) ? null : userBatteryMemberCard.getCardPayCount());
 
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);

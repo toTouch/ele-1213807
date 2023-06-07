@@ -134,6 +134,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
 
     @Override
     public Integer updateStatusByActivityId(Long activityId, Integer status) {
-        return invitationActivityJoinHistoryMapper.updateStatusByActivityId(activityId,status);
+        return invitationActivityJoinHistoryMapper.updateStatusByActivityId(activityId, status);
+    }
+
+    @Override
+    public InvitationActivityJoinHistory selectByJoinIdAndStatus(Long uid, Integer status) {
+        return invitationActivityJoinHistoryMapper.selectByJoinIdAndStatus(uid, status);
     }
 }

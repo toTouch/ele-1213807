@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * (InvitationActivityRecord)实体类
  *
@@ -45,6 +47,9 @@ public class InvitationActivityRecord {
      * 分享状态 1--初始化，2--已分享，3--分享失败
      */
     private Integer status;
+
+
+    private BigDecimal money;
     /**
      * 创建时间
      */

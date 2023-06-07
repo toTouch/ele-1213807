@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.InvitationActivityRecord;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityRecordQuery;
 import com.xiliulou.electricity.vo.InvitationActivityRecordVO;
 import org.apache.commons.lang3.tuple.Triple;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -65,6 +68,8 @@ public interface InvitationActivityRecordService {
      */
     Boolean deleteById(Long id);
 
+    void handleInvitationActivity(UserInfo userInfo, ElectricityMemberCardOrder electricityMemberCardOrder, Integer payCount);
+
     Triple<Boolean, String, Object> joinActivity(InvitationActivityQuery query);
 
     Triple<Boolean, String, Object> generateCode();
@@ -72,4 +77,6 @@ public interface InvitationActivityRecordService {
     List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query);
 
     Integer selectByPageCount(InvitationActivityRecordQuery query);
+
+    Integer addCountAndMoneyByUid( BigDecimal rewardAmount, Long recordId);
 }

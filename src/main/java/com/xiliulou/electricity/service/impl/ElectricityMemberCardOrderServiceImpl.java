@@ -165,6 +165,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
 
+    @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
+
     /**
      * 创建月卡订单
      *
@@ -589,6 +592,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                 }
             }
+
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder, Objects.isNull(userBatteryMemberCard) ? null : userBatteryMemberCard.getCardPayCount());
 
             //套餐分帐
             divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);

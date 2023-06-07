@@ -154,6 +154,9 @@ public class UnionTradeOrderServiceImpl extends
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
 
+    @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
+
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -577,6 +580,12 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "套餐订单已处理!");
         }
 
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("NOTIFY_MEMBER_ORDER ERROR!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            return Pair.of(false, "用户不存在");
+        }
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
 
         Long now = System.currentTimeMillis();
@@ -737,12 +746,14 @@ public class UnionTradeOrderServiceImpl extends
 
                         //返现
                         userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
-
                     }
-
                 }
             }
-    
+
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder, Objects.isNull(userBatteryMemberCard) ? null : userBatteryMemberCard.getCardPayCount());
+
+
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
                     .queryByUid(electricityMemberCardOrder.getUid());
             if (Objects.nonNull(channelActivityHistory) && Objects

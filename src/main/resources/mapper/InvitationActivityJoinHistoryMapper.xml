@@ -25,6 +25,13 @@
         where id = #{id}
     </select>
 
+    <select id="selectByJoinIdAndStatus" resultMap="InvitationActivityJoinHistoryMap">
+        select
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status
+        from t_invitation_activity_join_history
+        where join_uid = #{uid} and status=#{status} order by id desc limit 1
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="InvitationActivityJoinHistoryMap">
         select

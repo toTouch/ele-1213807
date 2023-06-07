@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +62,12 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
 
     @Autowired
     private InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
+
+    @Autowired
+    private InvitationActivityMemberCardService invitationActivityMemberCardService;
+
+    @Autowired
+    private UserAmountService userAmountService;
 
     @Override
     public List<InvitationActivityRecordVO> selectByPage(InvitationActivityRecordQuery query) {
@@ -153,6 +160,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.invitationActivityRecordMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public Integer addCountAndMoneyByUid(BigDecimal rewardAmount, Long recordId) {
+        return this.invitationActivityRecordMapper.addCountAndMoneyByUid(rewardAmount, recordId);
     }
 
     @Override
@@ -298,6 +310,61 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         invitationActivityJoinHistoryService.insert(invitationActivityJoinHistoryInsert);
 
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public void handleInvitationActivity(UserInfo userInfo, ElectricityMemberCardOrder electricityMemberCardOrder, Integer payCount) {
+        try {
+            //是否有人邀请
+            InvitationActivityJoinHistory activityJoinHistory = invitationActivityJoinHistoryService.selectByJoinIdAndStatus(userInfo.getUid(), InvitationActivityJoinHistory.STATUS_INIT);
+            if (Objects.isNull(activityJoinHistory)) {
+                return;
+            }
+
+            //是否购买的是活动指定的套餐
+            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
+            if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
+                log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), electricityMemberCardOrder.getMemberCardId(), userInfo.getUid());
+                return;
+            }
+
+            InvitationActivity invitationActivity = invitationActivityService.queryByIdFromCache(activityJoinHistory.getActivityId());
+            if (Objects.isNull(invitationActivity)) {
+                log.error("INVITATION ACTIVITY ERROR!invitationActivity is null,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
+                return;
+            }
+
+            InvitationActivityRecord invitationActivityRecord = this.queryByIdFromDB(activityJoinHistory.getRecordId());
+            if (Objects.isNull(invitationActivityRecord)) {
+                log.error("INVITATION ACTIVITY ERROR!invitationActivityRecord is null,recordId={},uid={}", activityJoinHistory.getRecordId(), userInfo.getUid());
+                return;
+            }
+
+            //修改参与状态
+            InvitationActivityJoinHistory activityJoinHistoryUpdate = new InvitationActivityJoinHistory();
+            activityJoinHistoryUpdate.setId(activityJoinHistory.getId());
+            activityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
+            activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
+
+            //返现金额
+            BigDecimal rewardAmount = BigDecimal.ZERO;
+            //首次购买
+            if (Objects.isNull(payCount) || payCount == 0) {
+                rewardAmount = invitationActivity.getFirstReward();
+            } else {
+                rewardAmount = invitationActivity.getOtherReward();
+            }
+
+            //给邀请人增加邀请成功人数及返现金额
+            this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
+
+            //处理返现
+            userAmountService.handleInvitationActivityAmount(userInfo, invitationActivityRecord.getUid(), rewardAmount);
+
+        } catch (Exception e) {
+            log.error("ELE ERROR!handle invitation activity fail,uid={},orderId={}", userInfo.getUid(), electricityMemberCardOrder.getOrderId(), e);
+        }
     }
 
     private static String codeEnCoder(Long activityId, Long uid) {
