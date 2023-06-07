@@ -123,4 +123,8 @@
         </foreach>
     </update>
 
+    <update id="updateUserCouponStatus">
+            update t_user_coupon set  status = #{status}, order_id=#{orderId}, update_time = #{updateTime}  where id = #{id}
+    </update>
+
 </mapper>

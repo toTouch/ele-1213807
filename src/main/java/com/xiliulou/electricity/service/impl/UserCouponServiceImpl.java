@@ -6,6 +6,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +36,7 @@ import java.util.Objects;
 @Slf4j
 public class UserCouponServiceImpl implements UserCouponService {
     @Resource
-    private UserCouponMapper  userCouponMapper;
+    private UserCouponMapper userCouponMapper;
     @Autowired
     private CouponService couponService;
 
@@ -421,6 +423,19 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Override
     public Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList) {
-        return userCouponMapper.batchUpdateUserCoupon(buildUserCouponList);
+        if (CollectionUtils.isEmpty(buildUserCouponList)) {
+            return NumberConstant.ZERO;
+        }
+
+        for (UserCoupon userCoupon : buildUserCouponList) {
+            userCouponMapper.updateUserCouponStatus(userCoupon);
+        }
+
+        return NumberConstant.ONE;
+    }
+
+    @Override
+    public Integer updateUserCouponStatus(UserCoupon userCoupon) {
+        return userCouponMapper.updateUserCouponStatus(userCoupon);
     }
 }
