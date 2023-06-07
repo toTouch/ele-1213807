@@ -63,6 +63,9 @@
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
             </if>
+            <if test="activityId != null">
+                and iajh.activity_id = #{activityId}
+            </if>
             <if test="status != null">
                 and iajh.status = #{status}
             </if>
@@ -71,6 +74,12 @@
             </if>
             <if test="tenantId != null">
                 and iajh.tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and iajh.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and iajh.create_time &lt;=#{endTime}
             </if>
         </where>
         order by iajh.id desc
@@ -88,11 +97,20 @@
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
             </if>
+            <if test="activityId != null">
+                and iajh.activity_id = #{activityId}
+            </if>
             <if test="status != null">
                 and iajh.status = #{status}
             </if>
             <if test="tenantId != null">
                 and iajh.tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and iajh.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and iajh.create_time &lt;=#{endTime}
             </if>
         </where>
     </select>

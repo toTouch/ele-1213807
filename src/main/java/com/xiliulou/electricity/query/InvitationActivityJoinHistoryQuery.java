@@ -26,4 +26,10 @@ public class InvitationActivityJoinHistoryQuery {
 
     private Long uid;
 
+    private Long activityId;
+
+    private Long beginTime;
+
+    private Long endTime;
+
 }
