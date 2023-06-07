@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -24,13 +22,13 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -760,14 +758,15 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         }
 
         //处理电池套餐相关
-        Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query.getProductKey(), query.getDeviceName(), query.getUserCouponId(), query.getMemberCardId(), query.getFranchiseeId(), userInfo);
+        Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
+        Triple<Boolean, String, Object> rentBatteryMemberCardTriple = electricityMemberCardOrderService.handleRentBatteryMemberCard(query.getProductKey(), query.getDeviceName(), userCouponIds, query.getMemberCardId(), query.getFranchiseeId(), userInfo);
         if (Boolean.FALSE.equals(rentBatteryMemberCardTriple.getLeft())) {
             return rentBatteryMemberCardTriple;
         }
 
         //处理保险套餐相关
         Triple<Boolean, String, Object> rentBatteryInsuranceTriple = insuranceOrderService.handleRentBatteryInsurance(query.getInsuranceId(), userInfo);
-        if (!rentBatteryInsuranceTriple.getLeft()) {
+        if (Boolean.FALSE.equals(rentBatteryInsuranceTriple.getLeft())) {
             return rentBatteryInsuranceTriple;
         }
 
@@ -805,9 +804,6 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
         //保存电池押金订单
         if (Boolean.TRUE.equals(rentBatteryDepositTriple.getLeft()) && Objects.nonNull(rentBatteryDepositTriple.getRight())) {
             EleDepositOrder eleDepositOrder = (EleDepositOrder) rentBatteryDepositTriple.getRight();
-//            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-//                eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(query.getModel()));
-//            }
             eleDepositOrderService.insert(eleDepositOrder);
 
             orderList.add(eleDepositOrder.getOrderId());
@@ -841,14 +837,10 @@ public class RentCarOrderServiceImpl implements RentCarOrderService {
 
             totalPayAmount = totalPayAmount.add(electricityMemberCardOrder.getPayAmount());
 
-            //保存订单所使用的优惠券
-            Set<Integer> userCouponIds = electricityMemberCardOrderService.generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
-            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+            if (CollectionUtils.isNotEmpty(userCouponIds)) {
+                //保存订单所使用的优惠券
                 memberCardOrderCouponService.batchInsert(electricityMemberCardOrderService.buildMemberCardOrderCoupon(electricityMemberCardOrder.getOrderId(), userCouponIds));
-            }
-
-            //修改优惠券状态为已使用
-            if (org.apache.commons.collections4.CollectionUtils.isNotEmpty(userCouponIds)) {
+                //修改优惠券状态为核销中
                 userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, electricityMemberCardOrder.getOrderId()));
             }
         }

@@ -674,9 +674,7 @@ public class UnionTradeOrderServiceImpl extends
             //获取套餐订单优惠券
             List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
             if(CollectionUtils.isNotEmpty(userCouponIds)){
-                Set<Integer> couponIds=userCouponIds.parallelStream().map(item->userCouponService.queryByIdFromDB(item.intValue())).filter(Objects::nonNull)
-                        .map(e->e.getId().intValue()).collect(Collectors.toSet());
-
+                Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
 

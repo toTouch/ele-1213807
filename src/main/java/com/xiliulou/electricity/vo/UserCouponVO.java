@@ -96,4 +96,5 @@ public class UserCouponVO {
      */
     private String userName;
 
+    private Integer superposition;
 }

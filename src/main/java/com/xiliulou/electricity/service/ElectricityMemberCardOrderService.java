@@ -105,7 +105,7 @@ public interface ElectricityMemberCardOrderService {
 
     R queryUserExistMemberCard();
 
-    Triple<Boolean, String, Object> handleRentBatteryMemberCard(String productKey, String deviceName, Integer userCouponId, Integer memberCardId, Long franchiseeId, UserInfo userInfo);
+    Triple<Boolean, String, Object> handleRentBatteryMemberCard(String productKey, String deviceName, Set<Integer> userCouponIds, Integer memberCardId, Long franchiseeId, UserInfo userInfo);
 
     R cancelPayMemberCard();
 
@@ -126,4 +126,6 @@ public interface ElectricityMemberCardOrderService {
     List<UserCoupon> buildUserCouponList(Set<Integer> userCouponIds, Integer status, String orderId);
 
     List<BatteryMemberCardOrderCoupon> buildMemberCardOrderCoupon(String orderId, Set<Integer> couponSet);
+
+    Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds);
 }
