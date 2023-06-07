@@ -3090,9 +3090,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         ElectricityMemberCardOrder electricityMemberCardOrder = this.baseMapper.selectOne(
                 new LambdaQueryWrapper<ElectricityMemberCardOrder>()
-                        .eq(ElectricityMemberCardOrder::getStatus, ElectricityMemberCardOrder.STATUS_INIT)
                         .eq(ElectricityMemberCardOrder::getOrderId, orderNo)
-                        .eq(ElectricityMemberCardOrder::getUid, uid));
+                        .eq(ElectricityMemberCardOrder::getUid, uid).in(ElectricityMemberCardOrder::getStatus, ElectricityMemberCardOrder.STATUS_INIT, ElectricityMemberCardOrder.STATUS_FAIL));
 
         if (Objects.isNull(electricityMemberCardOrder)) {
             log.error("BATTERY MEMBERCARD ERROR!not found electricityMemberCardOrder,uid={},orderId={}", uid, orderNo);
