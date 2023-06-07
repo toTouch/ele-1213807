@@ -23,6 +23,9 @@
             <if test="query.userName != null and query.userName != ''">
                 and tui.name = #{query.userName}
             </if>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tuc.order_id = #{query.orderId}
+            </if>
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}
             </if>
@@ -64,6 +67,9 @@
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
+            </if>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tuc.order_id = #{query.orderId}
             </if>
             <if test="query.couponId != null">
                 and coupon_id = #{query.couponId}

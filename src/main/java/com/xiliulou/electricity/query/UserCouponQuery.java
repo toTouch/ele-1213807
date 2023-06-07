@@ -32,6 +32,7 @@ public class UserCouponQuery {
      */
     private  String phone;
 
+    private  String orderId;
 
     private List<Integer> statusList;
 
