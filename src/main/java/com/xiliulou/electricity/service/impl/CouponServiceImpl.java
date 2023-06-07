@@ -193,6 +193,7 @@ public class CouponServiceImpl implements CouponService {
         couponUpdate.setId(coupon.getId());
         couponUpdate.setSuperposition(coupon.getSuperposition());
         couponUpdate.setName(coupon.getName());
+        couponUpdate.setDelFlag(coupon.getDelFlag());
         couponUpdate.setUpdateTime(System.currentTimeMillis());
 
         int update = couponMapper.updateById(couponUpdate);
