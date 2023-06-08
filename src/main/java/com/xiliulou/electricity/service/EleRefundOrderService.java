@@ -65,7 +65,7 @@ public interface EleRefundOrderService {
 
     Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery);
 
-    Integer queryCountByOrderId(String orderId);
+    Integer queryCountByOrderId(String orderId, Integer refundOrderType);
 
     Integer queryIsRefundingCountByOrderId(String orderId);
 
@@ -88,13 +88,15 @@ public interface EleRefundOrderService {
      * @param orderId
      * @return
      */
-    boolean checkDepositOrderIsRefund(String orderId);
-
-    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
-
-    BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType,List<Long> franchiseeIds);
-
-    Long queryRefundTime(String orderId);
+    boolean checkDepositOrderIsRefund(String orderId, Integer refundOrderType);
+    
+    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
+            List<Long> franchiseeIds, Integer payType);
+    
+    BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
+            List<Long> franchiseeIds, Integer payType);
+    
+    Long queryRefundTime(String orderId, Integer refundOrderType);
 
     Triple<Boolean,String,Object> batteryFreeDepositRefund(String errMsg, Long uid);
 

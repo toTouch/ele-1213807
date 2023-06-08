@@ -59,5 +59,13 @@
 		</where>
 	</select>
 
+	<update id="reduceAvailableCountByUid">
+		update t_share_activity_record set available_count=available_count-#{count} where uid =#{uid} and activity_id=#{activityId}
+	</update>
+
+	<update id="addCountByUid">
+		update t_share_activity_record set count=count+1,available_count=available_count+1 where uid =#{uid} and activity_id=#{activityId}
+	</update>
+
 
 </mapper>

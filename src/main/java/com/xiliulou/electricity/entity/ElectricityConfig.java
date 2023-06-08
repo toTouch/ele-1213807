@@ -111,12 +111,16 @@ public class ElectricityConfig {
      * 迁移加盟商
      */
     private String franchiseeMoveInfo;
-    
+
+    /**
+     * 是否启用0元退押审核 (0--是 1--否)
+     */
+    private Integer isZeroDepositAuditEnabled;
     /**
      * 是否打开车电关联 0--是 1--否
      */
     private Integer isOpenCarBatteryBind;
-    
+
     /**
      * 是否开启车辆控制 0--是 0--否
      */
@@ -191,11 +195,19 @@ public class ElectricityConfig {
     public static Integer ENABLE_CAR_BATTERY_BIND = 0;
     
     public static Integer DISABLE_CAR_BATTERY_BIND = 1;
-    
+
     /**
      * 车辆控制
      */
     public static Integer ENABLE_CAR_CONTROL = 0;
-    
+
     public static Integer DISABLE_CAR_CONTROL = 1;
+
+    /**
+     * 0元退押审核 0--是 1--否
+     */
+    public static Integer ENABLE_ZERO_DEPOSIT_AUDIT=0;
+
+    public static Integer DISABLE_ZERO_DEPOSIT_AUDIT=1;
+
 }

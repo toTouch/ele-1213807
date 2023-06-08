@@ -165,6 +165,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
 
+    @Autowired
+    ShareActivityMemberCardService shareActivityMemberCardService;
+
     /**
      * 创建月卡订单
      *
@@ -241,26 +244,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     
         //是否开启购买保险（是进入）
-//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-//        if (Objects.nonNull(electricityConfig) && Objects
-//                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
-//            //保险是否强制购买（是进入）
-//            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
-//                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
-//                            userInfo.getTenantId());
-//            long now = System.currentTimeMillis();
-//            if (Objects.nonNull(franchiseeInsurance) && Objects
-//                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
-//                //用户是否没有保险信息或已过期（是进入）
-//                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-//                if (Objects.isNull(insuranceUserInfo) || Objects
-//                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
-//                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
-//                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
-//                    return R.fail("100309", "未购买保险或保险已过期");
-//                }
-//            }
-//        }
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            //保险是否强制购买（是进入）
+            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
+                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
+                            userInfo.getTenantId());
+            long now = System.currentTimeMillis();
+            if (Objects.nonNull(franchiseeInsurance) && Objects
+                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+                //用户是否没有保险信息或已过期（是进入）
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(insuranceUserInfo) || Objects
+                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
+                    return R.fail("100309", "未购买保险或保险已过期");
+                }
+            }
+        }
 
         Long now = System.currentTimeMillis();
 
@@ -540,25 +543,31 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             //被邀请新买月卡用户
             //是否是新用户
-            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
                 //是否有人邀请
                 JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(user.getUid());
                 if (Objects.nonNull(joinShareActivityRecord)) {
-                    //修改邀请状态
-                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-                    joinShareActivityRecordService.update(joinShareActivityRecord);
+                    //是否购买的是活动指定的套餐
+                    List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
+                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
+                        //修改邀请状态
+                        joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                        joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityRecordService.update(joinShareActivityRecord);
 
-                    //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
-                    if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        //修改历史记录状态
+                        JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
+                        if (Objects.nonNull(oldJoinShareActivityHistory)) {
+                            oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                            oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                            joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        }
+
+                        //给邀请人增加邀请成功人数
+                        shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
+                    } else {
+                        log.info("SHARE ACTIVITY INFO!invite fail,activityId={},membercardId={},memberCardIds={}", joinShareActivityRecord.getActivityId(), electricityMemberCardOrder.getMemberCardId(), JsonUtil.toJson(memberCardIds));
                     }
-
-                    //给邀请人增加邀请成功人数
-                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
                 }
 
                 //是否有人返现邀请
@@ -586,7 +595,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     //返现
                     userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
-
                 }
             }
 
