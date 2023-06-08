@@ -138,7 +138,7 @@
     <select id="selectUsableActivity" resultMap="InvitationActivityMap">
         select  id, name, type, status, description, hours, discount_type, first_reward, other_reward, create_time
         from t_invitation_activity
-        where tenant_id = #{tenantId} order by id desc limit 1
+        where tenant_id = #{tenantId} and status=1 order by id desc limit 1
     </select>
 
     <!--新增所有列-->

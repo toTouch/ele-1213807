@@ -179,6 +179,10 @@
         update t_invitation_activity_record set invitation_count=invitation_count+1,money=money+#{rewardAmount} where id=#{recordId}
     </update>
 
+    <update id="addMoneyByRecordId">
+        update t_invitation_activity_record set money=money+#{rewardAmount} where id=#{recordId}
+    </update>
+
     <update id="addShareCount">
         update t_invitation_activity_record set share_count=share_count+1 where id=#{id}
     </update>

@@ -173,6 +173,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
 
     @Override
+    public Integer addMoneyByRecordId(BigDecimal rewardAmount, Long recordId) {
+        return this.invitationActivityRecordMapper.addMoneyByRecordId(rewardAmount, recordId);
+    }
+
+    @Override
     public InvitationActivityRecord selectByActivityIdAndUid(Long activityId, Long uid) {
         return this.invitationActivityRecordMapper.selectByActivityIdAndUid(activityId, uid);
     }
@@ -412,6 +417,9 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryUpdate.setPayCount(electricityMemberCardOrder.getPayCount());
                 activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
                 invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
+
+                //给邀请人增加邀请成功人数及返现金额
+                this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
             } else {
                 //非首次购买需要判断 首次购买是否成功
                 if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
@@ -435,10 +443,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
                 activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
                 invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
+
+                //给邀请人增加返现金额
+                this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
             }
 
-            //给邀请人增加邀请成功人数及返现金额
-            this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
 
             //处理返现
             userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);

@@ -80,6 +80,8 @@ public interface InvitationActivityRecordService {
 
     Integer addCountAndMoneyByUid( BigDecimal rewardAmount, Long recordId);
 
+    Integer addMoneyByRecordId( BigDecimal rewardAmount, Long recordId);
+
     Triple<Boolean, String, Object> selectUserInvitationDetail();
 
     InvitationActivityRecord selectByActivityIdAndUid(Long id, Long uid);
