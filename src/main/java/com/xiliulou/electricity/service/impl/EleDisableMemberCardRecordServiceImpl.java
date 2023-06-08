@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
@@ -44,6 +45,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         return eleDisableMemberCardRecordMapper.insert(eleDisableMemberCardRecord);
     }
 
+    @Slave
     @Override
     public R list(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
         return R.ok(eleDisableMemberCardRecordMapper.queryList(electricityMemberCardRecordQuery));
@@ -141,6 +143,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         return R.ok();
     }
 
+    @Slave
     @Override
     public R queryCount(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
         return R.ok(eleDisableMemberCardRecordMapper.queryCount(electricityMemberCardRecordQuery));

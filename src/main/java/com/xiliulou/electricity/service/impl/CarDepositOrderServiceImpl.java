@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -132,6 +133,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<CarDepositOrderVO> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         List<CarDepositOrder> carDepositOrders = this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
@@ -161,6 +163,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }).collect(Collectors.toList());
     }
 
+    @Slave
     @Override
     public Integer selectPageCount(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         return this.carDepositOrderMapper.selectPageCount(rentCarDepositOrderQuery);
@@ -808,6 +811,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         return Triple.of(true, "", "操作成功");
     }
 
+    @Slave
     @Override
     public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType,
             List<Long> finalFranchiseeIds, Integer payType) {
@@ -816,6 +820,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, finalFranchiseeIds, beginTime, endTime);

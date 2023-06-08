@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -1843,6 +1844,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
     }
 
+    @Slave
     @Override
     public R queryList(EleRefundQuery eleRefundQuery) {
         List<EleRefundOrderVO> eleRefundOrderVOS = eleRefundOrderMapper.queryList(eleRefundQuery);
@@ -1867,6 +1869,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return R.ok(eleRefundOrderVOS);
     }
 
+    @Slave
     @Override
     public List<EleRefundOrderVO> selectCarRefundPageList(EleRefundQuery eleRefundQuery) {
         List<EleRefundOrderVO> eleRefundOrderVOS = eleRefundOrderMapper.selectCarRefundPageList(eleRefundQuery);
@@ -1891,6 +1894,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return eleRefundOrderVOS;
     }
 
+    @Slave
     @Override
     public Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery) {
         return eleRefundOrderMapper.selectCarRefundPageCount(eleRefundQuery);
@@ -1915,6 +1919,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return eleRefundOrderList.get(0).getStatus();
     }
 
+    @Slave
     @Override
     public R queryCount(EleRefundQuery eleRefundQuery) {
         return R.ok(eleRefundOrderMapper.queryCount(eleRefundQuery));
@@ -1925,11 +1930,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         return eleRefundOrderMapper.queryUserInfoId(refundOrderNo);
     }
 
+    @Slave
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {
         return Optional.ofNullable(eleRefundOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
     }
 
+    @Slave
     @Override
     public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
             List<Long> franchiseeIds, Integer payType) {
@@ -1938,6 +1945,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public BigDecimal queryCarRefundTurnOverByTime(Integer tenantId, Long todayStartTime, Integer refundOrderType,
             List<Long> franchiseeIds, Integer payType) {

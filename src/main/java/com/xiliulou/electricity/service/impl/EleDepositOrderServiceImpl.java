@@ -9,6 +9,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -755,6 +756,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return Triple.of(true, "", eleDepositOrder);
     }
 
+    @Slave
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = null;
@@ -891,6 +893,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok(null);
     }
 
+    @Slave
     @Override
     public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {
         eleDepositOrderQuery.setOffset(0L);
@@ -1028,6 +1031,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok(franchisee.getBatteryDeposit());
     }
 
+    @Slave
     @Override
     public R queryCount(EleDepositOrderQuery eleDepositOrderQuery) {
         return R.ok(eleDepositOrderMapper.queryCount(eleDepositOrderQuery));
@@ -1704,6 +1708,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return eleDepositOrderMapper.selectLatestByUid(uid);
     }
 
+    @Slave
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {
         return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
@@ -1843,6 +1848,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok();
     }
 
+    @Slave
     @Override
     public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType,
             List<Long> franchiseeIds, Integer payType) {
@@ -1851,11 +1857,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, franchiseeId, beginTime, enTime);
     }
 
+    @Slave
     @Override
     public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);

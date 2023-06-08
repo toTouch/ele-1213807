@@ -461,6 +461,7 @@ public class UserCouponServiceImpl implements UserCouponService {
         return userCouponMapper.updateStatus(userCoupon);
     }
 
+    @Slave
     @Override
     public R queryCount(UserCouponQuery userCouponQuery) {
         Integer count = userCouponMapper.queryCount(userCouponQuery);

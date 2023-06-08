@@ -38,6 +38,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
         return eleCabinetCoreDataMapper.selectListByQuery(eleCabinetCoreDataQuery);
     }
 
+    @Slave
     @Override
     public EleCabinetCoreData selectByEleCabinetId(Integer id) {
         return eleCabinetCoreDataMapper.selectById(id, TenantContextHolder.getTenantId());

@@ -139,6 +139,7 @@ public class ElectricityCabinetServerServiceImpl
         return this.electricityCabinetServerMapper.queryByProductKeyAndDeviceName(productKey, deviceName);
     }
 
+    @Slave
     @Override
     public R queryList(String eleName, String deviceName, String tenantName, Long serverTimeStart, Long serverTimeEnd,
                        Long offset, Long size) {

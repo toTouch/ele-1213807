@@ -38,9 +38,4 @@ public class JsonAdminProvinceCityController {
 		return R.ok(regionService.queryRegionListByPid(pid));
 	}
 
-	@GetMapping(value="/admin/province/test")
-	public void test() throws Exception {
-		provinceService.test();
-	}
-
 }

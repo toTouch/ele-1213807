@@ -406,6 +406,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
     }
 
+    @Slave
     @Override
     public Integer homeOne(Long first, Long now, Integer tenantId) {
         return userInfoMapper.homeOne(first, now, tenantId);
@@ -417,6 +418,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     //    }
     //
 
+    @Slave
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId) {
         return userInfoMapper.homeThree(startTimeMilliDay, endTimeMilliDay, tenantId);
@@ -827,6 +829,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userInfoMapper.queryAuthenticationCount(userInfoQuery));
     }
 
+    @Slave
     @Override
     public Integer querySumCount(UserInfoQuery userInfoQuery) {
         return userInfoMapper.queryCount(userInfoQuery);
@@ -1135,16 +1138,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
+    @Slave
     @Override
     public Integer queryAuthenticationUserCount(Integer tenantId) {
         return userInfoMapper.queryAuthenticationUserCount(tenantId);
     }
 
+    @Slave
     @Override
     public List<HomePageUserByWeekDayVo> queryUserAnalysisForAuthUser(Integer tenantId, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisForAuthUser(tenantId, beginTime, endTime);
     }
 
+    @Slave
     @Override
     public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisByUserStatus(tenantId, userStatus, beginTime, endTime);

@@ -279,6 +279,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
+    @Slave
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
@@ -293,6 +294,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.ok(franchiseeInsuranceVoList);
     }
 
+    @Slave
     @Override
     public R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         return R.ok(baseMapper.queryCount(status, type, tenantId, franchiseeId, null));

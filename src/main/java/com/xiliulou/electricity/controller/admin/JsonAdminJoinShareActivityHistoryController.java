@@ -29,7 +29,6 @@ public class JsonAdminJoinShareActivityHistoryController {
     private JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 
-
 	/**
 	 * 用户参与记录admin
 	 */

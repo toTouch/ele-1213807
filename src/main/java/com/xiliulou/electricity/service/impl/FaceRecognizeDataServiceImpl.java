@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FaceRecognizeData;
 import com.xiliulou.electricity.entity.FaceRecognizeRechargeRecord;
 import com.xiliulou.electricity.mapper.FaceRecognizeDataMapper;
@@ -67,6 +68,7 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<FaceRecognizeDataVO> selectByPage(FaceRecognizeDataQuery query) {
         List<FaceRecognizeDataVO> faceRecognizeDatas = this.faceRecognizeDataMapper.selectByPage(query);
@@ -77,6 +79,7 @@ public class FaceRecognizeDataServiceImpl implements FaceRecognizeDataService {
         return faceRecognizeDatas;
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(FaceRecognizeDataQuery query) {
         return this.faceRecognizeDataMapper.selectByPageCount(query);

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceRecord;
 import com.xiliulou.electricity.entity.OldCard;
@@ -153,6 +154,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         return generateVoReturn(returnList);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryListForAdmin(MaintenanceRecordListQuery query) {
         List<MaintenanceRecord> returnList = maintenanceRecordMapper.queryList(query);
@@ -193,6 +195,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
         return R.ok(maintenanceRecordMapper.queryCount(query));
     }
 
+    @Slave
     @Override
     public R  queryCountForAdmin(MaintenanceRecordListQuery query) {
         return R.ok(maintenanceRecordMapper.queryCount(query));

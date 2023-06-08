@@ -645,11 +645,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
+    @Slave
     @Override
     public BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId) {
         return baseMapper.homeOne(first, now, cardIdList, tenantId);
     }
 
+    @Slave
     @Override
     public List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId) {
         return baseMapper.homeTwo(startTimeMilliDay, endTimeMilliDay, cardIdList, tenantId);
@@ -806,16 +808,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     }
 
+    @Slave
     @Override
     public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
         return R.ok(baseMapper.queryCount(memberCardOrderQuery));
     }
 
+    @Slave
     @Override
     public Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery) {
         return baseMapper.queryCount(memberCardOrderQuery);
     }
 
+    @Slave
     @Override
     public BigDecimal queryTurnOver(Integer tenantId, Long uid) {
         return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(BigDecimal.valueOf(0));
@@ -2509,7 +2514,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder selectLatestByUid(Long uid) {
         return baseMapper.selectLatestByUid(uid);
     }
-    
+
+    @Slave
     @Override
     public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long
             todayStartTime, List<Long> franchiseeId) {
@@ -2521,6 +2527,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Optional.ofNullable(baseMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer
                                                                                                      tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
@@ -2533,6 +2540,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return baseMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
+    @Slave
     @Override
     public BigDecimal querySumMemberCardTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long
             endTime) {
