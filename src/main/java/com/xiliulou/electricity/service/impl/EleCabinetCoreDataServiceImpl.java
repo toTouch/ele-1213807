@@ -50,6 +50,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
      * @param id 主键
      * @return 实例对象
      */
+    @Slave
     @Override
     public EleCabinetCoreData queryByIdFromDB(Long id) {
         return this.eleCabinetCoreDataMapper.queryById(id);

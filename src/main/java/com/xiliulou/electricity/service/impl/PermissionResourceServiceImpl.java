@@ -1,20 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.google.api.client.util.Sets;
-import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.PermissionResource;
-import com.xiliulou.electricity.entity.PermissionResourceTree;
-import com.xiliulou.electricity.entity.PermissionTemplate;
-import com.xiliulou.electricity.entity.Role;
-import com.xiliulou.electricity.entity.RolePermission;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.PermissionTemplateService;
@@ -24,19 +17,16 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -337,17 +327,18 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	public List<PermissionResource> queryPermissionsByRole(Long rid) {
 		List<Long> permissionIds = rolePermissionService.queryPidsByRid(rid);
-		ArrayList<PermissionResource> result = Lists.newArrayList();
-
-		if (DataUtil.collectionIsUsable(permissionIds)) {
-			permissionIds.parallelStream().forEach(e -> {
-				PermissionResource permissionResource = queryByIdFromCache(e);
-				if (Objects.nonNull(permissionResource)) {
-					result.add(permissionResource);
-				}
-			});
+		if (CollectionUtils.isEmpty(permissionIds)) {
+			return Collections.emptyList();
 		}
-		return result;
+
+		return permissionIds.parallelStream().map(e -> {
+			PermissionResource permissionResource = queryByIdFromCache(e);
+			if (Objects.nonNull(permissionResource)) {
+				return permissionResource;
+			}
+
+			return null;
+		}).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 	
 	@Override

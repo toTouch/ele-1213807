@@ -2,7 +2,9 @@ package com.xiliulou.electricity.utils;
 
 import cn.hutool.core.date.DateUtil;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
@@ -27,6 +29,18 @@ public class DateUtils {
         LocalDateTime datetime = LocalDateTime.parse(date, MILLS_FORMAT_DATE);
         return datetime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
     }
+    public static long getTodayStartTimeStamp() {
+        return LocalDateTime.of(LocalDate.now(), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+
+    public static long getTodayEndTimeStamp() {
+        return LocalDateTime.of(LocalDate.now(), LocalTime.MAX).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+
+    public static long get30AgoStartTime() {
+        return LocalDateTime.of(LocalDate.now().minusDays(30), LocalTime.MIN).toEpochSecond(ZoneOffset.of("+8"))*1000;
+    }
+
     /**
      * @param nowTime
      * @param beginTime

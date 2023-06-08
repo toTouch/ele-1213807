@@ -278,4 +278,10 @@ public class ElectricityCabinetServerServiceImpl
 
         this.insert(electricityCabinetServer);
     }
+
+    @Slave
+    @Override
+    public ElectricityCabinetServer selectByEid(Integer id) {
+        return this.electricityCabinetServerMapper.selectByEid(id);
+    }
 }

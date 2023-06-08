@@ -11,47 +11,58 @@ import java.math.BigDecimal;
  */
 @Data
 public class HomePageDepositVo {
-
+    
+    /**
+     * 今日押金
+     */
+    private BigDecimal todayPayDeposit;
+    
+    /**
+     * 今日免押押金
+     */
+    private BigDecimal todayFreeDeposit;
+    
+    /**
+     * 今日总押金
+     */
+    private BigDecimal todayDeposit;
+    
     /**
      * 电池押金
      */
+    private BigDecimal payBatteryDeposit;
+    /**
+     * 免押电池押金
+     */
+    private BigDecimal freeBatteryDeposit;
+    /**
+     * 电池总押金
+     */
     private BigDecimal batteryDeposit;
-
+    /**
+     * 车辆押金
+     */
+    private BigDecimal payCarDeposit;
+    /**
+     * 免押车辆押金
+     */
+    private BigDecimal freeCarDeposit;
     /**
      * 车辆押金
      */
     private BigDecimal carDeposit;
-
-    /**
-     * 今日电池押金
-     */
-    private BigDecimal todayBatteryDeposit;
-
-    /**
-     * 今日车辆押金
-     */
-    private BigDecimal todayCarDeposit;
-
-    /**
-     * 今日缴纳押金
-     */
-    private BigDecimal todayPayDeposit;
-
     /**
      * 今日退押金
      */
+    private BigDecimal todayPayRefundDeposit;
+    /**
+     * 今日免押退押金
+     */
+    private BigDecimal todayFreeRefundDeposit;
+    /**
+     * 今日总退押金
+     */
     private BigDecimal todayRefundDeposit;
-
-    /**
-     * 历史退换电押金
-     */
-    private BigDecimal historyRefundBatteryDeposit;
-
-    /**
-     * 历史退租车押金
-     */
-    private BigDecimal historyRefundCarDeposit;
-
     /**
      * 总营业额
      */

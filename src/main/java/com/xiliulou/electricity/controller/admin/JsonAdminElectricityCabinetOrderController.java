@@ -248,7 +248,12 @@ public class JsonAdminElectricityCabinetOrderController {
                             @RequestParam(value = "status", required = false) String status,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "uid", required = false) Long uid,
-                            @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
+                            @RequestParam(value = "endTime", required = false) Long endTime,
+                            @RequestParam(value = "source", required = false) Integer source,
+                            @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+                            @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo,
+                            HttpServletResponse response) {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 33) {
@@ -277,6 +282,10 @@ public class JsonAdminElectricityCabinetOrderController {
         }
 
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+                .source(source)
+                .paymentMethod(paymentMethod)
+                .electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo)
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
