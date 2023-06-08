@@ -104,19 +104,19 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         EleBatteryVO eleBatteryVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVO.class);
         if (Objects.isNull(eleBatteryVO)) {
-            log.error("ELE BATTERY REPORT ERROR! eleBatteryVO is null,sessionId={}", sessionId);
+            log.warn("ELE BATTERY REPORT WARN! eleBatteryVO is null,sessionId={}", sessionId);
             return;
         }
         
         String cellNO = eleBatteryVO.getCellNo();
         if (StringUtils.isEmpty(cellNO)) {
-            log.error("ELE BATTERY REPORT ERROR! cellNO is empty,sessionId={}", sessionId);
+            log.warn("ELE BATTERY REPORT WARN! cellNO is empty,sessionId={}", sessionId);
             return;
         }
         
         ElectricityCabinetBox eleBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNO);
         if (Objects.isNull(eleBox)) {
-            log.info("ELE BATTERY REPORT INFO! no found electricityCabinetBox,electricityCabinetId={},sessionId={},cellNO={}",
+            log.warn("ELE BATTERY REPORT WARN! no found electricityCabinetBox,electricityCabinetId={},sessionId={},cellNO={}",
                     electricityCabinet.getId(), sessionId, cellNO);
             return;
         }
@@ -135,7 +135,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         
         //存在电池但是电池名字没有上报
         if (Boolean.TRUE.equals(Objects.nonNull(existsBattery) && existsBattery) && StringUtils.isBlank(batteryName)) {
-            log.error("ELE BATTERY REPORT ERROR! battery report illegal! existsBattery={},batteryName={},sessionId={}",
+            log.warn("ELE BATTERY REPORT WARN! battery report illegal! existsBattery={},batteryName={},sessionId={}",
                     eleBatteryVO.getExistsBattery(), eleBatteryVO.getBatteryName(), sessionId);
             return;
         }
@@ -169,7 +169,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
         
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
-            log.error("ELE BATTERY REPORT ERROR! tenantId is not equal,tenantId1={},tenantId2={},sessionId={}",
+            log.warn("ELE BATTERY REPORT WARN! tenantId is not equal,tenantId1={},tenantId2={},sessionId={}",
                     electricityCabinet.getTenantId(), electricityBattery.getTenantId(), sessionId);
             return;
         }
