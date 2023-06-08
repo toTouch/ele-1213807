@@ -53,4 +53,6 @@ public class InsuranceOrderVO {
     private BigDecimal forehead;
 
     private Integer isUse;
+
+    private Integer payType;
 }
