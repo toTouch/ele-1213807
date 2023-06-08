@@ -147,12 +147,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
-    
+
     @Autowired
     ElectricityConfigService electricityConfigService;
-    
+
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Autowired
+    CarRefundOrderService carRefundOrderService;
 
 
     /**
@@ -1766,7 +1769,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .newElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);
-    
+
             //车辆控制 -- 用户绑定解锁
             ElectricityConfig electricityConfig = electricityConfigService
                     .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -1774,7 +1777,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
                 boolean result = electricityCarService
                         .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-        
+
                 CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
                 carLockCtrlHistory.setUid(userInfo.getUid());
                 carLockCtrlHistory.setName(userInfo.getName());
@@ -1791,7 +1794,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
-            
+
             return null;
         });
         
@@ -1833,7 +1836,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
             return R.fail("100261", "用户未绑定车辆");
         }
-        
+
+//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+//        if (Objects.isNull(userCarDeposit)) {
+//            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", uid);
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
+//
+//        Integer count = carRefundOrderService
+//                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
+//                        userCarDeposit.getOrderId());
+//        if (Objects.nonNull(count) && count > 0) {
+//            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", uid);
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
+
         ElectricityCar updateElectricityCar = new ElectricityCar();
         updateElectricityCar.setId(electricityCar.getId());
         updateElectricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
@@ -1865,7 +1882,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
-    
+
         //车辆控制 -- 用户解绑加锁
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -1873,7 +1890,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
             boolean result = electricityCarService
                     .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
-        
+
             CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());

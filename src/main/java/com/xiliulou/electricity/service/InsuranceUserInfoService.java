@@ -37,4 +37,10 @@ public interface InsuranceUserInfoService {
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
 
+    R insertUserInsurance(InsuranceUserInfo insuranceOrder);
+
+    R editUserInsuranceInfo(InsuranceUserInfo order);
+
+    R renewalUserInsurance(InsuranceUserInfo insuranceOrder);
+
 }
