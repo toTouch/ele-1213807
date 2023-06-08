@@ -92,6 +92,12 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         return electricityCabinetService.edit(electricityCabinetAddAndUpdate);
     }
 
+    @PutMapping(value = "/admin/electricityCabinet/updateAddress")
+    @Log(title = "修改换电柜")
+    public R updateAddress(@RequestBody @Validated ElectricityCabinetAddressQuery eleCabinetAddressQuery) {
+        return returnTripleResult(electricityCabinetService.updateAddress(eleCabinetAddressQuery));
+    }
+
     //删除换电柜
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
     @Log(title = "删除换电柜")
