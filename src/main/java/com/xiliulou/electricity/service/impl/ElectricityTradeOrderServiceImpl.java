@@ -418,9 +418,6 @@ public class ElectricityTradeOrderServiceImpl extends
                 }
             }
 
-            //处理拉新返现活动
-            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder.getOrderId());
-
             //月卡分账
             handleSplitAccount(electricityMemberCardOrder);
             //套餐分帐
@@ -468,6 +465,11 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderUpdate.setPayCount(payCount + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
+
+        if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder.getOrderId());
+        }
 
         //小程序虚拟发货
         shippingManagerService
