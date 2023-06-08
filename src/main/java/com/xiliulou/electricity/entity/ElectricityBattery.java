@@ -131,6 +131,13 @@ public class ElectricityBattery {
      */
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    /**
+     * 0--空闲 1--正在开机 2--充电中 3--充满电 4--限额充电 -1 未充电
+     */
+    public static final Integer CHARGE_STATUS_STARTING = 1;
+    public static final Integer CHARGE_STATUS_CHARGING = 2;
+
     /**
      * 电池物理状态 0：在仓，1：不在仓
      */

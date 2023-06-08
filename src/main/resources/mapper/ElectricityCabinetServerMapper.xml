@@ -181,4 +181,12 @@
         from t_electricity_cabinet_server
         where del_flag = 0 and product_key = #{productKey} and device_name = #{deviceName}
     </select>
+
+    <select id="selectByEid" resultMap="ElectricityCabinetServerMap">
+        select
+          id, electricity_cabinet_id, product_key, device_name, tenant_id, server_begin_time, server_end_time, del_flag, create_time, update_time
+        from t_electricity_cabinet_server
+        where del_flag = 0 and electricity_cabinet_id = #{eid}
+    </select>
+
 </mapper>

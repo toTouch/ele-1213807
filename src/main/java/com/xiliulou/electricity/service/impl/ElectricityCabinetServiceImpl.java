@@ -181,7 +181,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     EleCommonConfig eleCommonConfig;
-    
+
     @Autowired
     private ElectricityCabinetServerService electricityCabinetServerService;
     
@@ -436,7 +436,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
-            
+
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                     + oldElectricityCabinet.getDeviceName());
 
@@ -817,7 +817,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer totalCount = ids.size();
         return totalCount;
     }
-    
+
     public Triple<Boolean, String, Object> queryFullyElectricityBatteryByExchangeOrder(Integer id, String batteryType,
             Long franchiseeId, Integer tenantId) {
         
@@ -950,7 +950,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //更新缓存
         redisService
                 .saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-        
+
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                 + oldElectricityCabinet.getDeviceName());
         return R.ok();
@@ -1514,7 +1514,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        
+
         //不合法的命令
         //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
         if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
@@ -1781,7 +1781,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
             checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
         }
-        
+
         return R.ok(electricityCabinetVO);
         
     }
@@ -2260,12 +2260,44 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok();
     }
-    
-    private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
+
+    @Slave
+    @Override
+    public Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectOfflinePageCount(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectLockCellByQuery(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectLockCellByQuery(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public Integer selectLockPageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectLockPageCount(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectPowerPage(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectPowerPageCount(cabinetQuery);
+    }
+
+    @Override
+    public boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
     }
-    
-    private boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
+
+    @Override
+    public boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
     
@@ -2273,11 +2305,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
 
-    private boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
+    @Override
+    public boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
         return Objects.nonNull(electricityCabinetBox.getPower())
                 && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
     }
-    
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -3742,7 +3775,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(homepageElectricityExchangeFrequencyVo);
     }
-    
+
+    @Slave
     @Override
     public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         
@@ -3950,6 +3984,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(s);
     }
 
+    @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
         List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper
@@ -3961,6 +3996,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinets);
     }
 
+    @Slave
     @Override
     public List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query) {
         List<ElectricityCabinet> list = electricityCabinetMapper.superAdminSelectByQuery(query);
@@ -3975,17 +4011,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
-    
+
+    @Slave
     @Override
     public R queryName(Integer tenantId, Integer id) {
         return R.ok(electricityCabinetMapper.queryName(tenantId, id));
     }
 
+    @Slave
     @Override
-    public R selectByQuery(ElectricityCabinetQuery query) {
-        return R.ok(electricityCabinetMapper.selectByQuery(query));
+    public List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.eleCabinetSearch(query);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            Collections.emptyList();
+        }
+
+        return electricityCabinets;
     }
 
+    @Slave
+    @Override
+    public List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectByQuery(query);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            Collections.emptyList();
+        }
+
+        return electricityCabinets;
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selecteleCabinetVOByQuery(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selecteleCabinetVOByQuery(cabinetQuery);
+    }
+
+    @Slave
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));
@@ -4012,7 +4073,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }).collect(Collectors.toList());
     }
-    
+
+    @Slave
     @Override
     public R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList) {
         List<ElectricityCabinetBatchOperateVo> electricityCabinetList = electricityCabinetMapper

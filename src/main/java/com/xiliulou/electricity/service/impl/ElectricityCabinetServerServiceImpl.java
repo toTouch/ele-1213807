@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.google.api.client.util.Lists;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
 import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
@@ -275,5 +276,11 @@ public class ElectricityCabinetServerServiceImpl
         electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
 
         this.insert(electricityCabinetServer);
+    }
+
+    @Slave
+    @Override
+    public ElectricityCabinetServer selectByEid(Integer id) {
+        return this.electricityCabinetServerMapper.selectByEid(id);
     }
 }
