@@ -471,7 +471,7 @@
         select count(1) as userCount,FROM_UNIXTIME( tfui.create_time / 1000, '%Y-%m-%d' ) as
         weekDate
         from t_user_info as tfui
-        where tfui.del_flag=0 and tfui.service_status=1
+        where tfui.del_flag=0 and tfui.auth_status=2
         <if test="tenantId != null">
             and tfui.tenant_id = #{tenantId}
         </if>
