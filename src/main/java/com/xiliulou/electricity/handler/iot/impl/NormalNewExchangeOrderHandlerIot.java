@@ -3,17 +3,25 @@ package com.xiliulou.electricity.handler.iot.impl;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
+import com.xiliulou.electricity.utils.AESUtils;
+import com.xiliulou.electricity.web.query.battery.BatteryChangeSocQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import lombok.Data;
@@ -64,6 +72,15 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Autowired
+    BatteryPlatRetrofitService batteryPlatRetrofitService;
+
+    @Autowired
+    TenantService tenantService;
+
+    XllThreadPoolExecutorService callBatterySocThreadPool = XllThreadPoolExecutors.newFixedThreadPool("CALL_BATTERY_SOC_CHANGE", 2, "callBatterySocChange");
+
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -223,6 +240,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             //保存取走电池格挡
             redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinet.getId(),
                     String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
+
+            handleCallBatteryChangeSoc(electricityBattery);
             
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(),
@@ -234,6 +253,32 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
                 .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
         batteryTrackRecordService.insert(batteryTrackRecord);
+    }
+
+    private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
+        //调用改变电池电量
+        callBatterySocThreadPool.execute(() -> {
+            Tenant tenant = tenantService.queryByIdFromCache(electricityBattery.getTenantId());
+            if (Objects.isNull(tenant)) {
+                return;
+            }
+
+            Map<String, String> headers = new HashMap<>();
+            String time = String.valueOf(System.currentTimeMillis());
+            headers.put(CommonConstant.INNER_HEADER_APP, CommonConstant.APP_SAAS);
+            headers.put(CommonConstant.INNER_HEADER_TIME, time);
+            headers.put(CommonConstant.INNER_HEADER_INNER_TOKEN, AESUtils.encrypt(time, CommonConstant.APP_SAAS_AES_KEY));
+            headers.put(CommonConstant.INNER_TENANT_ID, tenant.getCode());
+
+            BatteryChangeSocQuery query = new BatteryChangeSocQuery();
+            query.setSoc(electricityBattery.getPower().intValue());
+            query.setSn(electricityBattery.getSn());
+
+            R r = batteryPlatRetrofitService.changeBatterySoc(headers, query);
+            if (Objects.isNull(r) || !r.isSuccess()) {
+                log.error("call battery sn error! sn={},result={}", electricityBattery.getSn(), null == r ? "" : r.getErrMsg());
+            }
+        });
     }
 
     private void handlePlaceBatteryInfo(ExchangeOrderRsp exchangeOrderRsp,

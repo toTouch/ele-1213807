@@ -62,4 +62,8 @@ public interface ElectricityCarModelService {
     Triple<Boolean, String, Object> acquireUserCarModelInfo();
     
     ElectricityCarModel queryByNameAndStoreId(String name, Long storeId);
+
+    List<Long> selectByStoreIds(List<Long> storeIds);
+
+    List<ElectricityCarModel> selectListByFranchiseeId(Long franchiseeId);
 }

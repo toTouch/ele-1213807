@@ -72,7 +72,8 @@ public interface CarDepositOrderService {
     Triple<Boolean,String,Object> payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
 
     Triple<Boolean, String, Object> selectRentCarDeposit();
-
+    
+    @Deprecated
     Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request);
 
     CarDepositOrder selectByOrderId(String orderNo);
@@ -84,12 +85,15 @@ public interface CarDepositOrderService {
     Triple<Boolean, String, Object> handleRefundCarDeposit(String orderId, Long uid, String remark, BigDecimal refundAmount, HttpServletRequest request);
 
     Triple<Boolean, String, Object> handleOffLineRefundCarDeposit(String orderId, Long uid, HttpServletRequest request);
-
-    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit, List<Long> finalFranchiseeIds);
+    
+    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long o, Integer rentCarDeposit,
+            List<Long> finalFranchiseeIds, Integer payType);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer rentCarDeposit, List<Long> finalFranchiseeIds, Long beginTime, Long endTime);
     
     CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
     
     R payDepositOrderList(Long offset, Long size);
+
+    BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long time, Integer rentCarDeposit, List<Long> finalFranchiseeIds);
 }

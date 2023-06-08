@@ -265,5 +265,9 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
         }
     }
 
+    @Override
+    public OldUserActivity selectByCouponId(Long id) {
+        return oldUserActivityMapper.selectByCouponId(id);
+    }
 }
 

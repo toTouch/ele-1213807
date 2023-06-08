@@ -5,7 +5,6 @@ import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * 发起邀请活动记录(ShareActivityRecord)表服务接口
@@ -48,9 +47,9 @@ public interface ShareActivityRecordService {
 	ShareActivityRecord queryByUid(Long uid,Integer activityId);
 
 
-	void addCountByUid(Long uid);
+    void addCountByUid(Long uid, Integer activityId);
 
-	void reduceAvailableCountByUid(Long uid, Integer count);
+    void reduceAvailableCountByUid(Long uid, Integer count, Integer activityId);
 
 	R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
 

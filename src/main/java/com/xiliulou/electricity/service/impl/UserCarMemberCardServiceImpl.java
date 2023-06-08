@@ -15,11 +15,9 @@ import com.xiliulou.electricity.query.CarMemberCardExpireBreakPowerQuery;
 import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * (UserCarMemberCard)表服务实现类
@@ -271,14 +268,14 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
             }
             
             query.parallelStream().forEach(item -> {
-                if (StrUtil.isEmpty(item.getSn())) {
-                    log.error("EXPIRE BREAK POWER ERROR! illegal parameter result={}", item);
+                ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(item.getTenantId());
+                if (!Objects.equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
                     return;
                 }
-    
+
                 ElectricityCar electricityCar = electricityCarService.selectBySn(item.getSn(), item.getTenantId());
                 if (Objects.isNull(electricityCar)) {
-                    log.error("EXPIRE BREAK POWER ERROR! electricityCar not find, sn={}", item.getSn());
+                    log.error("EXPIRE BREAK POWER ERROR! electricityCar not find, sn={},uid={}", item.getSn(), item.getUid());
                     return;
                 }
     
@@ -294,15 +291,17 @@ public class UserCarMemberCardServiceImpl implements UserCarMemberCardService {
                     if (carInfoResult.isSuccess()) {
                         break;
                     }
-                    log.error("EXPIRE BREAK POWER ERROR! query car info error! sn={}", electricityCar.getSn());
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (Exception e) {
+                        log.error("EXPIRE BREAK POWER ERROR! thread interrupt,sn={},uid={}", electricityCar.getSn(), item.getUid(), e);
+                    }
+
+                    log.error("EXPIRE BREAK POWER ERROR! query car info error,sn={},uid={}", electricityCar.getSn(), item.getUid());
                 }
-    
-                ElectricityConfig electricityConfig = electricityConfigService
-                        .queryFromCacheByTenantId(item.getTenantId());
-                if (Objects.nonNull(electricityConfig)
-                        && Objects.nonNull(carInfoResult)
-                        && Objects.nonNull(carInfoResult.getData())
-                        && Objects.equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)
+
+                if (Objects.nonNull(carInfoResult) && Objects.nonNull(carInfoResult.getData())
                         && Objects.equals(carInfoResult.getData().getDoorStatus(), ElectricityCar.TYPE_UN_LOCK)) {
                     boolean result = electricityCarService.retryCarLockCtrl(item.getSn(), ElectricityCar.TYPE_LOCK, 3);
                     CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();

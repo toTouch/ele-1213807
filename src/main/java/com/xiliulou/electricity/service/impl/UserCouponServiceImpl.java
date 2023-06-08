@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
@@ -292,39 +293,40 @@ public class UserCouponServiceImpl implements UserCouponService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("getShareCoupon  ERROR! not found user ");
+            log.error("getShareCoupon ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
-        //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("getShareCoupon  ERROR! not found userInfo,uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        if(Objects.isNull(userInfo)){
+            log.error("getShareCoupon ERROR! not found user,uid={}",user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("getShareCoupon  ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //查找活动
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("getShareCoupon  ERROR! not found userInfo,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
         ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
         if (Objects.isNull(shareActivity)) {
-            log.error("getShareCoupon  ERROR! not found Activity ! ActivityId:{} ", activityId);
+            log.error("getShareCoupon  ERROR! not found Activity,ActivityId={},uid={}", activityId, user.getUid());
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
 
         //查询活动规则
         List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityId);
         if (ObjectUtil.isEmpty(shareActivityRuleList)) {
-            log.error("getShareCoupon ERROR! not found Activity ! ActivityId:{} ", activityId);
+            log.error("getShareCoupon ERROR! not found Activity ! ActivityId={},uid={}", activityId, user.getUid());
             return R.fail("ELECTRICITY.0069", "未找到活动");
         }
-
 
         //判断用户是否可以领取优惠券
         ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), activityId);
@@ -332,47 +334,96 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
         }
 
-        //查询优惠券是否在活动中间
-        for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-            if (Objects.equals(shareActivityRule.getCouponId(), couponId)) {
-                if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
-                    return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
-                } else {
-                    //领劵
-                    Coupon coupon = couponService.queryByIdFromCache(couponId);
-                    if (Objects.isNull(coupon)) {
-                        log.error("getShareCoupon  ERROR! not found coupon ! couponId:{} ", couponId);
-                        return R.fail("ELECTRICITY.0085", "未找到优惠券");
+        if (Objects.equals(shareActivity.getReceiveType(), ShareActivity.RECEIVE_TYPE_CYCLE)) {
+            //循环领取
+
+            //查询优惠券是否在活动中间
+            for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
+                if (Objects.equals(shareActivityRule.getCouponId(), couponId)) {
+                    if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
+                        return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
+                    } else {
+                        //领劵
+                        Coupon coupon = couponService.queryByIdFromCache(couponId);
+                        if (Objects.isNull(coupon)) {
+                            log.error("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+                            return R.fail("ELECTRICITY.0085", "未找到优惠券");
+                        }
+
+//                        UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
+//                        if (Objects.nonNull(oldUserCoupon)) {
+//                            continue;
+//                        }
+
+                        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+                        UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
+                                .name(coupon.getName())
+                                .source(UserCoupon.TYPE_SOURCE_ADMIN_SEND)
+                                .activityId(activityId)
+                                .activityRuleId(shareActivityRule.getId())
+                                .couponId(couponId)
+                                .discountType(coupon.getDiscountType())
+                                .status(UserCoupon.STATUS_UNUSED)
+                                .createTime(System.currentTimeMillis())
+                                .updateTime(System.currentTimeMillis())
+                                .uid(user.getUid())
+                                .phone(user.getPhone())
+                                .deadline(TimeUtils.convertTimeStamp(now))
+                                .tenantId(tenantId);
+
+                        UserCoupon userCoupon = couponBuild.build();
+                        userCouponMapper.insert(userCoupon);
+
+                        //领劵完，可用邀请人数减少
+                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+                        return R.ok("领取成功");
                     }
+                }
+            }
+        } else {
+            //阶梯领取
 
-                    UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
-                    if (Objects.nonNull(oldUserCoupon)) {
-                        continue;
+            //查询优惠券是否在活动中间
+            for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
+                if (Objects.equals(shareActivityRule.getCouponId(), couponId)) {
+                    if (shareActivityRecord.getAvailableCount() < shareActivityRule.getTriggerCount()) {
+                        return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
+                    } else {
+                        //领劵
+                        Coupon coupon = couponService.queryByIdFromCache(couponId);
+                        if (Objects.isNull(coupon)) {
+                            log.error("getShareCoupon  ERROR! not found coupon,couponId={},uid={}", couponId, user.getUid());
+                            return R.fail("ELECTRICITY.0085", "未找到优惠券");
+                        }
+
+                        UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, shareActivityRule.getId(), couponId, user.getUid());
+                        if (Objects.nonNull(oldUserCoupon)) {
+                            continue;
+                        }
+
+                        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+                        UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
+                                .name(coupon.getName())
+                                .source(UserCoupon.TYPE_SOURCE_ADMIN_SEND)
+                                .activityId(activityId)
+                                .activityRuleId(shareActivityRule.getId())
+                                .couponId(couponId)
+                                .discountType(coupon.getDiscountType())
+                                .status(UserCoupon.STATUS_UNUSED)
+                                .createTime(System.currentTimeMillis())
+                                .updateTime(System.currentTimeMillis())
+                                .uid(user.getUid())
+                                .phone(user.getPhone())
+                                .deadline(TimeUtils.convertTimeStamp(now))
+                                .tenantId(tenantId);
+
+                        UserCoupon userCoupon = couponBuild.build();
+                        userCouponMapper.insert(userCoupon);
+
+                        //领劵完，可用邀请人数减少
+                        shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount(), shareActivityRecord.getActivityId());
+                        return R.ok("领取成功");
                     }
-
-
-                    LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
-                    UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
-                            .name(coupon.getName())
-                            .source(UserCoupon.TYPE_SOURCE_ADMIN_SEND)
-                            .activityId(activityId)
-                            .activityRuleId(shareActivityRule.getId())
-                            .couponId(couponId)
-                            .discountType(coupon.getDiscountType())
-                            .status(UserCoupon.STATUS_UNUSED)
-                            .createTime(System.currentTimeMillis())
-                            .updateTime(System.currentTimeMillis())
-                            .uid(user.getUid())
-                            .phone(user.getPhone())
-                            .deadline(TimeUtils.convertTimeStamp(now))
-                            .tenantId(tenantId);
-
-                    UserCoupon userCoupon = couponBuild.build();
-                    userCouponMapper.insert(userCoupon);
-
-                    //领劵完，可用邀请人数减少
-                    shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount());
-                    return R.ok("领取成功");
                 }
             }
         }
@@ -394,6 +445,13 @@ public class UserCouponServiceImpl implements UserCouponService {
     }
 
     @Override
+    public List<UserCoupon> selectListByActivityIdAndCouponId(Integer activityId, Long activityRuleId, Integer couponId, Long uid) {
+        return userCouponMapper.selectList(new LambdaQueryWrapper<UserCoupon>()
+                .eq(UserCoupon::getActivityId, activityId).eq(UserCoupon::getActivityRuleId, activityRuleId)
+                .eq(UserCoupon::getCouponId, couponId).eq(UserCoupon::getUid, uid));
+    }
+
+    @Override
     public void update(UserCoupon userCoupon) {
         userCouponMapper.updateById(userCoupon);
     }
@@ -408,10 +466,13 @@ public class UserCouponServiceImpl implements UserCouponService {
         Integer count = userCouponMapper.queryCount(userCouponQuery);
         return R.ok(count);
     }
-    
+
+    @Slave
     @Override
     public List<UserCoupon> selectCouponUserCountById(Long id) {
         return userCouponMapper.selectList(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getCouponId, id)
-                        .eq(UserCoupon::getDelFlag, UserCoupon.DEL_NORMAL).eq(UserCoupon::getStatus,UserCoupon.STATUS_UNUSED).eq(UserCoupon::getTenantId,TenantContextHolder.getTenantId()));
+                .eq(UserCoupon::getDelFlag, UserCoupon.DEL_NORMAL)
+                .eq(UserCoupon::getTenantId, TenantContextHolder.getTenantId())
+                .eq(UserCoupon::getStatus, UserCoupon.STATUS_UNUSED));
     }
 }

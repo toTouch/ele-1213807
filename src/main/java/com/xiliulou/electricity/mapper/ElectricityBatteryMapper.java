@@ -3,14 +3,10 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.ElectricityBatteryDataQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.vo.BatteryStatisticalVo;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryLocationVO;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
-import org.apache.commons.lang3.tuple.Triple;
+import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -97,4 +93,16 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     String querySnByUid(@Param("uid") Long uid);
 
     ElectricityBattery queryUserAttrBySn(@Param("sn") String sn);
+
+    List<ElectricityBatteryDataVO> queryBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                                    @Param("offset") Long offset, @Param("size") Long size);
+    Integer queryBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
+
+    List<ElectricityBatteryDataVO> queryStrayBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                                    @Param("offset") Long offset, @Param("size") Long size);
+    Integer queryStrayBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
+
+    List<ElectricityBatteryDataVO> queryOverdueBatteryList(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery,
+                                              @Param("offset") Long offset, @Param("size") Long size);
+    Integer queryOverdueBatteryCount(@Param("query") ElectricityBatteryDataQuery electricityBatteryQuery);
 }

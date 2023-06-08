@@ -135,14 +135,15 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
      */
     @PutMapping("/admin/freeDepositOrder/AuthToPay")
     public R freeDepositAuthToPay(@RequestParam(value = "orderId") String orderId,
-            @RequestParam(value = "payTransAmt") BigDecimal payTransAmt) {
+            @RequestParam(value = "payTransAmt", required = false) BigDecimal payTransAmt,
+            @RequestParam(value = "remark", required = false) String remark) {
     
         Triple<Boolean, String, Object> verifyPermissionResult = verifyPermission();
         if (Boolean.FALSE.equals(verifyPermissionResult.getLeft())) {
             return returnTripleResult(verifyPermissionResult);
         }
     
-        return returnTripleResult(this.freeDepositOrderService.freeDepositAuthToPay(orderId, payTransAmt));
+        return returnTripleResult(this.freeDepositOrderService.freeDepositAuthToPay(orderId, payTransAmt, remark));
     }
     
     /**

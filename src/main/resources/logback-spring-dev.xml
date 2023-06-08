@@ -98,7 +98,7 @@
 		<appender-ref ref="request"/>
 	</appender>
 	
-	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
+	<logger name="com.xiliulou.electricity.*" level="INFO" additivity="false">
 		<appender-ref ref="ASYNC_DEBUG"/>
 	</logger>
 	

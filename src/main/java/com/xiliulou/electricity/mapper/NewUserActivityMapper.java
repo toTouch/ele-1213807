@@ -29,4 +29,5 @@ public interface NewUserActivityMapper extends BaseMapper<NewUserActivity>{
 
     Integer queryCount(@Param("query") NewUserActivityQuery newUserActivityQuery);
 
+    NewUserActivity selectByCouponId(@Param("couponId") Long couponId);
 }
