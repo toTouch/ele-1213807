@@ -106,6 +106,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     PictureService pictureService;
+    
+    @Autowired
+    CarRefundOrderService carRefundOrderService;
 
 
     
@@ -705,6 +708,20 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES) || !Objects.equals(userInfo.getUid(), electricityCarBindUser.getUid())) {
             log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
+        }
+    
+        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+        if (Objects.isNull(userCarDeposit)) {
+            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+    
+        Integer count = carRefundOrderService
+                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
+                        userCarDeposit.getOrderId());
+        if (Objects.nonNull(count) && count > 0) {
+            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         UserInfo updateUserInfo = new UserInfo();

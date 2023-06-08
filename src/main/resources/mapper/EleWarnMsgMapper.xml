@@ -169,5 +169,20 @@
         select count(1) from (select electricity_cabinet_id from t_ele_warn_msg GROUP BY electricity_cabinet_id) sub_ele_warn;
     </select>
 
+    <select id="selectEidByCellFailureList"  resultType="int">
+        select electricityCabinetId from t_warn_msg_cell where errorCode in
+        <foreach collection="failureList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        GROUP BY electricityCabinetId
+    </select>
+
+    <select id="selectEidByCabinetFailureList"  resultType="int">
+        select electricityCabinetId from t_warn_msg_cabinet where errorCode in
+        <foreach collection="failureList" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        GROUP BY electricityCabinetId
+    </select>
 
 </mapper>

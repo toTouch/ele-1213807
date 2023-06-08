@@ -93,6 +93,12 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         return electricityCabinetService.edit(electricityCabinetAddAndUpdate);
     }
 
+    @PutMapping(value = "/admin/electricityCabinet/updateAddress")
+    @Log(title = "修改换电柜")
+    public R updateAddress(@RequestBody @Validated ElectricityCabinetAddressQuery eleCabinetAddressQuery) {
+        return returnTripleResult(electricityCabinetService.updateAddress(eleCabinetAddressQuery));
+    }
+
     //删除换电柜
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
     @Log(title = "删除换电柜")
@@ -515,7 +521,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
      */
     @GetMapping(value = "/admin/electricityCabinet/allCabinet")
     public R queryAllElectricityCabinet(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-                                        @RequestParam(value = "name", required = false) String name) {
+            @RequestParam(value = "name", required = false) String name) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -752,6 +758,28 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     public R getOnlineLogCount(@RequestParam(value = "status", required = false) String status,
                                @RequestParam("eleId") Integer eleId) {
         return eleOnlineLogService.queryOnlineLogCount(status, eleId);
+    }
+
+    /**
+     * 列表页搜索接口
+     * @return
+     */
+    @GetMapping("/admin/electricityCabinet/search")
+    public R search(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                    @RequestParam(value = "name", required = false) String name) {
+
+        if (size < 0 || size > 50) {
+            size = 20;
+        }
+
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
+                .name(name).tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(electricityCabinetService.eleCabinetSearch(cabinetQuery));
     }
 
 

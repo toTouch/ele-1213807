@@ -73,4 +73,6 @@ public interface ElectricityCabinetServerService {
         ElectricityCabinet oldElectricityCabinet);
 
     R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd);
+
+    ElectricityCabinetServer selectByEid(Integer id);
 }

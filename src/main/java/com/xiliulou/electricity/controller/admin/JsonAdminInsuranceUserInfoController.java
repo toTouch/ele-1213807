@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
@@ -63,9 +64,7 @@ public class JsonAdminInsuranceUserInfoController {
         if (Objects.isNull(insuranceUserInfoVo)) {
             return R.ok();
         }
-        if (insuranceUserInfoVo.getInsuranceExpireTime() < System.currentTimeMillis()) {
-            return R.ok();
-        }
+
         return R.ok(insuranceUserInfoVo);
     }
 
@@ -83,4 +82,20 @@ public class JsonAdminInsuranceUserInfoController {
         return insuranceUserInfoService.updateInsuranceStatus(uid, insuranceStatus);
     }
 
+    @PostMapping(value = "/admin/insuranceUserInfo/addUserInsurance")
+    @Log(title = "新增用户保险信息")
+    public R addUserInsuranceInfo(@RequestBody InsuranceUserInfo order){
+        return insuranceUserInfoService.insertUserInsurance(order);
+    }
+
+    @PutMapping(value = "/admin/insuranceUserInfo/editUserInsurance")
+    @Log(title = "修改用户保险信息")
+    public R editUserInsuranceInfo(@RequestBody InsuranceUserInfo order){
+        return insuranceUserInfoService.editUserInsuranceInfo(order);
+    }
+    @PutMapping(value = "/admin/insuranceUserInfo/renewalUserInsurance")
+    @Log(title = "续费用户保险")
+    public R renewalUserInsuranceInfo(@RequestBody InsuranceUserInfo order){
+        return insuranceUserInfoService.renewalUserInsurance(order);
+    }
 }

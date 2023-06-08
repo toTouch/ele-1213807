@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
@@ -57,14 +58,28 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinet> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
     List<ElectricityCabinetVO> queryName(@Param("tenantId") Integer tenantId, @Param("id") Integer id);
     
+    List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query);
+
     List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query);
-    
+
+    List<EleCabinetDataAnalyseVO> selecteleCabinetVOByQuery(ElectricityCabinetQuery query);
+
+    Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery);
+
     List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query);
 
     List<Integer> selectEidByStoreId(@Param("tenantId") Integer tenantId, @Param("storeId") Long storeId);
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
-    
+
+    List<EleCabinetDataAnalyseVO> selectLockCellByQuery(ElectricityCabinetQuery cabinetQuery);
+
+    Integer selectLockPageCount(ElectricityCabinetQuery cabinetQuery);
+
+    List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery);
+
+    Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery);
+
     List<ElectricityCabinetBatchOperateVo> batchOperateList(ElectricityCabinetQuery query);
 
     List<SearchVo> cabinetSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name,

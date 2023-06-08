@@ -9,12 +9,14 @@ import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +42,8 @@ public class JsonAdminFranchiseeInsuranceController {
     @Autowired
     FranchiseeService franchiseeService;
 
+    @Autowired
+    UserInfoService userInfoService;
 
     /**
      * 新增保险配置
@@ -167,6 +171,23 @@ public class JsonAdminFranchiseeInsuranceController {
         }
 
         return franchiseeInsuranceService.queryCanAddInsuranceBatteryType(franchiseeId);
+    }
+
+    /**
+     * 展示加盟商保险列表
+     * @param franchiseeId,batteryType
+     * @return
+     */
+    @GetMapping("admin/franchiseeInsurance/Insurancelist")
+    public R getFranchiseeInsurancePage(  @RequestParam(value = "franchiseeId") Long franchiseeId,@RequestParam(value = "model") String batteryType) {
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+        if (Objects.isNull(franchisee)) {
+            log.error("ELE ERROR! not found franchisee,franchiseeId={}", franchiseeId);
+            return R.fail("ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, InsuranceOrder.BATTERY_INSURANCE_TYPE, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
     }
 
 }

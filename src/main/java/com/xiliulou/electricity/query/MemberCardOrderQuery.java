@@ -48,9 +48,5 @@ public class MemberCardOrderQuery {
      * 套餐购买次数
      */
     private Integer cardPayCount;
-
-    /**
-     * 交易方式 0--线上 1--线下
-     */
     private Integer payType;
 }
