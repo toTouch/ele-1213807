@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -129,6 +130,7 @@ public class UserAmountServiceImpl implements UserAmountService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void handleInvitationActivityAmount(UserInfo userInfo, Long uid, BigDecimal rewardAmount) {
 		UserAmount userAmount=queryByUid(uid);
 		if(Objects.isNull(userAmount)){

@@ -370,90 +370,86 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void handleInvitationActivity(UserInfo userInfo, String orderId) {
-        try {
-            //是否有上架的套餐返现活动
-            InvitationActivity invitationActivity = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
-            if (Objects.isNull(invitationActivity)) {
-                return;
-            }
-
-            //是否参与过套餐返现活动
-            InvitationActivityJoinHistory activityJoinHistory = invitationActivityJoinHistoryService.selectByActivityAndUid(invitationActivity.getId(), userInfo.getUid());
-            if (Objects.isNull(activityJoinHistory)) {
-                return;
-            }
-
-            ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
-            if (Objects.isNull(electricityMemberCardOrder)) {
-                log.info("INVITATION ACTIVITY INFO!not found electricityMemberCardOrder,orderId={},uid={}", orderId, userInfo.getUid());
-                return;
-            }
-
-            //是否购买的是活动指定的套餐
-            List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
-            if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
-                log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), electricityMemberCardOrder.getMemberCardId(), userInfo.getUid());
-                return;
-            }
-
-            //返现金额
-            BigDecimal rewardAmount = null;
-
-            //首次购买套餐
-            if (electricityMemberCardOrder.getPayCount() == 1) {
-                //首次购买需要判断活动是否过期
-                if (activityJoinHistory.getExpiredTime() < System.currentTimeMillis()) {
-                    log.error("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
-                    return;
-                }
-
-                rewardAmount = invitationActivity.getFirstReward();
-                //修改参与状态
-                InvitationActivityJoinHistory activityJoinHistoryUpdate = new InvitationActivityJoinHistory();
-                activityJoinHistoryUpdate.setId(activityJoinHistory.getId());
-                activityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
-                activityJoinHistoryUpdate.setMoney(rewardAmount);
-                activityJoinHistoryUpdate.setPayCount(electricityMemberCardOrder.getPayCount());
-                activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
-                invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
-
-                //给邀请人增加邀请成功人数及返现金额
-                this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
-            } else {
-                //非首次购买需要判断 首次购买是否成功
-                if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
-                    log.error("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
-                    return;
-                }
-
-                rewardAmount = invitationActivity.getOtherReward();
-                //保存参与记录
-                InvitationActivityJoinHistory activityJoinHistoryInsert = new InvitationActivityJoinHistory();
-                activityJoinHistoryInsert.setUid(activityJoinHistory.getUid());
-                activityJoinHistoryInsert.setRecordId(activityJoinHistory.getRecordId());
-                activityJoinHistoryInsert.setJoinUid(activityJoinHistory.getJoinUid());
-                activityJoinHistoryInsert.setStartTime(activityJoinHistory.getStartTime());
-                activityJoinHistoryInsert.setExpiredTime(activityJoinHistory.getExpiredTime());
-                activityJoinHistoryInsert.setActivityId(activityJoinHistory.getActivityId());
-                activityJoinHistoryInsert.setStatus(activityJoinHistory.getStatus());
-                activityJoinHistoryInsert.setPayCount(electricityMemberCardOrder.getPayCount());
-                activityJoinHistoryInsert.setMoney(rewardAmount);
-                activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
-                activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
-                activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
-                invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
-
-                //给邀请人增加返现金额
-                this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
-            }
-
-
-            //处理返现
-            userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
-        } catch (Exception e) {
-            log.error("ELE ERROR!handle invitation activity fail,uid={},orderId={}", userInfo.getUid(), orderId, e);
+        //是否有上架的套餐返现活动
+        InvitationActivity invitationActivity = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
+        if (Objects.isNull(invitationActivity)) {
+            return;
         }
+
+        //是否参与过套餐返现活动
+        InvitationActivityJoinHistory activityJoinHistory = invitationActivityJoinHistoryService.selectByActivityAndUid(invitationActivity.getId(), userInfo.getUid());
+        if (Objects.isNull(activityJoinHistory)) {
+            return;
+        }
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(orderId);
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            log.info("INVITATION ACTIVITY INFO!not found electricityMemberCardOrder,orderId={},uid={}", orderId, userInfo.getUid());
+            return;
+        }
+
+        //是否购买的是活动指定的套餐
+        List<Long> memberCardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(activityJoinHistory.getActivityId());
+        if (CollectionUtils.isEmpty(memberCardIds) || !memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
+            log.info("INVITATION ACTIVITY INFO!invite fail,activityId={},membercardId={},uid={}", activityJoinHistory.getActivityId(), electricityMemberCardOrder.getMemberCardId(), userInfo.getUid());
+            return;
+        }
+
+        //返现金额
+        BigDecimal rewardAmount = null;
+
+        //首次购买套餐
+        if (electricityMemberCardOrder.getPayCount() == 1) {
+            //首次购买需要判断活动是否过期
+            if (activityJoinHistory.getExpiredTime() < System.currentTimeMillis()) {
+                log.error("INVITATION ACTIVITY INFO!activity already sold out,activityId={},uid={}", activityJoinHistory.getActivityId(), userInfo.getUid());
+                return;
+            }
+
+            rewardAmount = invitationActivity.getFirstReward();
+            //修改参与状态
+            InvitationActivityJoinHistory activityJoinHistoryUpdate = new InvitationActivityJoinHistory();
+            activityJoinHistoryUpdate.setId(activityJoinHistory.getId());
+            activityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_SUCCESS);
+            activityJoinHistoryUpdate.setMoney(rewardAmount);
+            activityJoinHistoryUpdate.setPayCount(electricityMemberCardOrder.getPayCount());
+            activityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryService.update(activityJoinHistoryUpdate);
+
+            //给邀请人增加邀请成功人数及返现金额
+            this.addCountAndMoneyByUid(rewardAmount, activityJoinHistory.getRecordId());
+        } else {
+            //非首次购买需要判断 首次购买是否成功
+            if (!Objects.equals(activityJoinHistory.getStatus(), InvitationActivityJoinHistory.STATUS_SUCCESS)) {
+                log.error("INVITATION ACTIVITY INFO!activity join fail,activityHistoryId={},uid={}", activityJoinHistory.getId(), userInfo.getUid());
+                return;
+            }
+
+            rewardAmount = invitationActivity.getOtherReward();
+            //保存参与记录
+            InvitationActivityJoinHistory activityJoinHistoryInsert = new InvitationActivityJoinHistory();
+            activityJoinHistoryInsert.setUid(activityJoinHistory.getUid());
+            activityJoinHistoryInsert.setRecordId(activityJoinHistory.getRecordId());
+            activityJoinHistoryInsert.setJoinUid(activityJoinHistory.getJoinUid());
+            activityJoinHistoryInsert.setStartTime(activityJoinHistory.getStartTime());
+            activityJoinHistoryInsert.setExpiredTime(activityJoinHistory.getExpiredTime());
+            activityJoinHistoryInsert.setActivityId(activityJoinHistory.getActivityId());
+            activityJoinHistoryInsert.setStatus(activityJoinHistory.getStatus());
+            activityJoinHistoryInsert.setPayCount(electricityMemberCardOrder.getPayCount());
+            activityJoinHistoryInsert.setMoney(rewardAmount);
+            activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
+            activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
+            activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
+            invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
+
+            //给邀请人增加返现金额
+            this.addMoneyByRecordId(rewardAmount, activityJoinHistory.getRecordId());
+        }
+
+        //处理返现
+        userAmountService.handleInvitationActivityAmount(userInfo, activityJoinHistory.getUid(), rewardAmount);
     }
 
     private static String codeEnCoder(Long activityId, Long uid) {
