@@ -431,7 +431,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
                 activityJoinHistoryInsert.setStatus(activityJoinHistory.getStatus());
                 activityJoinHistoryInsert.setPayCount(electricityMemberCardOrder.getPayCount());
                 activityJoinHistoryInsert.setMoney(rewardAmount);
-                activityJoinHistoryInsert.setTenantId(activityJoinHistory.getTenantId());
+                activityJoinHistoryInsert.setTenantId(userInfo.getTenantId());
                 activityJoinHistoryInsert.setCreateTime(System.currentTimeMillis());
                 activityJoinHistoryInsert.setUpdateTime(System.currentTimeMillis());
                 invitationActivityJoinHistoryService.insert(activityJoinHistoryInsert);
