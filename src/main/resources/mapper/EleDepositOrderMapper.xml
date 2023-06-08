@@ -330,6 +330,53 @@
                 #{id}
             </foreach>
         </if>
+        <if test="payType != null">
+            and pay_type = #{payType}
+        </if>
+    </select>
+
+    <select id="queryFreeDepositAlipayTurnOver" resultType="decimal">
+        select sum(nullif(fdah.alipay_amount, 0))
+        from t_ele_deposit_order edo
+        left join t_free_deposit_alipay_history fdah on edo.order_id = fdah.order_id
+        where edo.status=1 and edo.pay_type = 2 and fdah.type = 1
+        <if test="tenantId != null">
+            and edo.tenant_id = #{tenantId}
+        </if>
+        <if test="todayStartTime != null">
+            and edo.create_time &gt;=#{todayStartTime}
+        </if>
+        <if test="depositType != null">
+            and edo.deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeIds != null">
+            and edo.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryCarBatteryFreeDepositAlipay" resultType="com.xiliulou.electricity.vo.CarBatteryFreeDepositAlipayVo">
+        select edo.pay_amount, fdah.alipay_amount
+        from t_ele_deposit_order edo
+        left join t_free_deposit_alipay_history fdah on edo.order_id = fdah.order_id
+        where edo.status=1 and edo.pay_type = 2 and fdah.type = 3
+        <if test="tenantId != null">
+            and edo.tenant_id = #{tenantId}
+        </if>
+        <if test="todayStartTime != null">
+            and edo.create_time &gt;=#{todayStartTime}
+        </if>
+        <if test="depositType != null">
+            and edo.deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeIds != null">
+            and edo.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
     <select id="queryDepositTurnOverAnalysisByDepositType"
