@@ -5,6 +5,7 @@ import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class JsonAdminElectricityCabinetModelController {
 	 */
 	@Autowired
 	ElectricityCabinetModelService electricityCabinetModelService;
+
+	@Autowired
+	ElectricityCabinetService electricityCabinetService;
 
 	//新增换电柜型号
 	@PostMapping(value = "/admin/electricityCabinetModel")
@@ -85,6 +89,27 @@ public class JsonAdminElectricityCabinetModelController {
 				.tenantId(tenantId).build();
 
 		return electricityCabinetModelService.queryCount(electricityCabinetModelQuery);
+	}
+
+	/**
+	 * 柜机型号search
+	 * @param size
+	 * @param offset
+	 * @param name
+	 * @return
+	 */
+	@GetMapping("/admin/cabinetModel/search")
+	public R cabinetSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+						   @RequestParam(value = "name", required = false) String name) {
+		if (size < 0 || size > 20) {
+			size = 20L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		return electricityCabinetService.cabinetSearch(size, offset, name, TenantContextHolder.getTenantId());
 	}
 
 }

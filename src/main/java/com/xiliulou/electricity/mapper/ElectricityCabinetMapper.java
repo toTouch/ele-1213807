@@ -8,6 +8,7 @@ import com.xiliulou.electricity.vo.EleCabinetDataAnalyseVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -70,10 +71,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<Integer> selectEidByStoreId(@Param("tenantId") Integer tenantId, @Param("storeId") Long storeId);
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
-    
-    List<ElectricityCabinetBatchOperateVo> batchOperateList(@Param("size") Long size, @Param("offset") Long offset,
-            @Param("name") String name, @Param("eleIdList") List<Integer> eleIdList,
-            @Param("tenantId") Integer tenantId);
 
     List<EleCabinetDataAnalyseVO> selectLockCellByQuery(ElectricityCabinetQuery cabinetQuery);
 
@@ -82,4 +79,9 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery);
 
     Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery);
+
+    List<ElectricityCabinetBatchOperateVo> batchOperateList(ElectricityCabinetQuery query);
+
+    List<SearchVo> cabinetSearch(@Param("size") Long size, @Param("offset") Long offset, @Param("name") String name,
+                               @Param("tenantId") Integer tenantId);
 }

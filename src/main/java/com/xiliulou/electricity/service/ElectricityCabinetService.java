@@ -182,8 +182,6 @@ public interface ElectricityCabinetService {
 
     CabinetBatteryVO batteryStatistics(Long id);
 
-    R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
-
     Triple<Boolean, String, Object> updateOnlineStatus(Long id);
 
     Triple<Boolean, String, Object> updateAddress(ElectricityCabinetAddressQuery eleCabinetAddressQuery);
@@ -203,4 +201,8 @@ public interface ElectricityCabinetService {
     List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery);
 
     Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery);
+
+    R batchOperateList(ElectricityCabinetQuery query);
+
+    R cabinetSearch(Long size, Long offset, String name , Integer tenantId);
 }

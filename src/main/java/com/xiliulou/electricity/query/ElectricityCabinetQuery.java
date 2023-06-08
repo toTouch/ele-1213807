@@ -61,6 +61,11 @@ public class ElectricityCabinetQuery {
 
     private Long franchiseeId;
 
+    /**
+     *电柜型号id
+     */
+    private Integer modelId;
+
     private Long storeId;
 
     private Integer usableStatusCell;

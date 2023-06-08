@@ -70,6 +70,12 @@
 		<if test="query.endTime != null">
 			and create_time &lt;=#{query.endTime}
 		</if>
+        <if test="query.sn != null and query.sn != ''">
+            and sn like concat('%',#{query.sn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.modelId != null">
+            and model_id = #{query.modelId}
+        </if>
 		<if test="query.eleIdList!=null and query.eleIdList!=''">
 			and id in
 			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -741,7 +747,7 @@
     
     <select id="batchOperateList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBatchOperateVo">
         select
-        id, name, sn, product_key, device_name, online_status
+        id, name, sn, product_key, device_name, online_status,model_id as modelId
         from t_electricity_cabinet
         where del_flag=0
         <if test="name != null and name != ''">
@@ -756,7 +762,27 @@
                 #{id}
             </foreach>
         </if>
+        <if test="modelId != null and modelId != ''">
+            and model_id = #{modelId}
+        </if>
+        <if test="sn != null and sn != ''">
+            and sn like concat('%',#{sn, jdbcType=VARCHAR},'%')
+        </if>
         order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="cabinetSearch" resultType="com.xiliulou.electricity.vo.SearchVo">
+        select id, name
+        from t_electricity_cabinet_model
+        where del_flag=0
+        <if test="name != null and name != ''">
+            and name like concat('%',#{name, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id
         limit #{offset}, #{size}
     </select>
 
