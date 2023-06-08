@@ -65,6 +65,8 @@ public interface InvitationActivityJoinHistoryService {
 
     InvitationActivityJoinHistory selectByActivityAndInvitationUid(Long id, Long invitationUid, Long uid);
 
+    InvitationActivityJoinHistory selectByActivityAndUid(Long id, Long uid);
+
     List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query);
 
     Integer selectByPageCount(InvitationActivityJoinHistoryQuery query);
@@ -72,6 +74,8 @@ public interface InvitationActivityJoinHistoryService {
     Integer updateStatusByActivityId(Long activityId, Integer status);
 
     InvitationActivityJoinHistory selectByJoinIdAndStatus(Long uid, Integer statusInit);
+
+    InvitationActivityJoinHistory selectByJoinUid(Long uid);
 
     List<InvitationActivityJoinHistoryVO> selectUserByPage(InvitationActivityJoinHistoryQuery query);
 }

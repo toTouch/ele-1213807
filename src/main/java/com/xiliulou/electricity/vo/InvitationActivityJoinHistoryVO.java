@@ -49,5 +49,9 @@ public class InvitationActivityJoinHistoryVO {
     private Integer payCount;
 
     private BigDecimal money;
+    /**
+     * 创建时间
+     */
+    private Long createTime;
 
 }

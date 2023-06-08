@@ -114,6 +114,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     }
 
     @Override
+    public InvitationActivityJoinHistory selectByActivityAndUid(Long activityId, Long uid) {
+        return this.invitationActivityJoinHistoryMapper.selectByActivityAndUid(activityId, uid);
+    }
+
+    @Override
     public List<InvitationActivityJoinHistoryVO> selectByPage(InvitationActivityJoinHistoryQuery query) {
         List<InvitationActivityJoinHistoryVO> list = this.invitationActivityJoinHistoryMapper.selectByPage(query);
         if (CollectionUtils.isEmpty(list)) {
@@ -140,6 +145,11 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Override
     public InvitationActivityJoinHistory selectByJoinIdAndStatus(Long uid, Integer status) {
         return invitationActivityJoinHistoryMapper.selectByJoinIdAndStatus(uid, status);
+    }
+
+    @Override
+    public InvitationActivityJoinHistory selectByJoinUid(Long uid) {
+        return invitationActivityJoinHistoryMapper.selectByJoinUid(uid);
     }
 
     @Override

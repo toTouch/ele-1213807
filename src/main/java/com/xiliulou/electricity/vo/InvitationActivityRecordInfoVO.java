@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @Data
 public class InvitationActivityRecordInfoVO {
 
+    private Long id;
     /**
      * 分享人数
      */

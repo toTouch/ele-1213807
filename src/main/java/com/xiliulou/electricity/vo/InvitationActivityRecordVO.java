@@ -24,6 +24,7 @@ public class InvitationActivityRecordVO {
      */
     private Long uid;
     private String userName;
+    private String phone;
     /**
      * 分享人数
      */

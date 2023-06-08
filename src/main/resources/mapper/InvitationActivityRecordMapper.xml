@@ -50,7 +50,8 @@
         iar.money,
         iar.create_time,
         iar.update_time,
-        tui.name as userName
+        tui.name as userName,
+        tui.phone as phone
         from t_invitation_activity_record iar
         left join t_user_info tui on tui.uid=iar.uid
         <where>
@@ -176,6 +177,10 @@
 
     <update id="addCountAndMoneyByUid">
         update t_invitation_activity_record set invitation_count=invitation_count+1,money=money+#{rewardAmount} where id=#{recordId}
+    </update>
+
+    <update id="addShareCount">
+        update t_invitation_activity_record set share_count=share_count+1 where id=#{id}
     </update>
 
     <!--通过主键删除-->

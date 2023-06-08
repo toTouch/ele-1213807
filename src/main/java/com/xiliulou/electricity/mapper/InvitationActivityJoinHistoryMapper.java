@@ -74,4 +74,7 @@ public interface InvitationActivityJoinHistoryMapper extends BaseMapper<Invitati
 
     InvitationActivityJoinHistory selectByJoinIdAndStatus(@Param("uid") Long uid, @Param("status") Integer status);
 
+    InvitationActivityJoinHistory selectByJoinUid(@Param("uid") Long uid);
+
+    InvitationActivityJoinHistory selectByActivityAndUid(@Param("activityId") Long activityId, @Param("uid") Long uid);
 }

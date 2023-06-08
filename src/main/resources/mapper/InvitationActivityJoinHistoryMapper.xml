@@ -34,6 +34,20 @@
         where join_uid = #{uid} and status=#{status} order by id desc limit 1
     </select>
 
+    <select id="selectByJoinUid" resultMap="InvitationActivityJoinHistoryMap">
+        select
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
+        from t_invitation_activity_join_history
+        where join_uid = #{uid} order by id desc limit 1
+    </select>
+
+    <select id="selectByActivityAndUid" resultMap="InvitationActivityJoinHistoryMap">
+        select
+          id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money
+        from t_invitation_activity_join_history
+        where join_uid = #{uid} and activity_id=#{activityId} order by id desc limit 1
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="InvitationActivityJoinHistoryMap">
         select
@@ -52,6 +66,7 @@
         iajh.status,
         iajh.pay_count,
         iajh.money,
+        iajh.create_time,
         tui.name as joinUserName,
         tui.phone as joinUserPhone
         from t_invitation_activity_join_history iajh
