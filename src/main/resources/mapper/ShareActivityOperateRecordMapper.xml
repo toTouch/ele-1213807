@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareActivityOperateRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ShareActivityOperateRecord" id="ShareActivityOperateRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="shareActivityId" column="share_activity_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="name" column="NAME" jdbcType="VARCHAR"/>
+        <result property="memberCard" column="member_card" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ShareActivityOperateRecordMap">
+        select
+          id, share_activity_id, uid, NAME, member_card, tenant_id, create_time, update_time
+        from t_share_activity_operate_record
+        where id = #{id}
+    </select>
+
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.ShareActivityOperateRecord">
+        select
+        id,
+        share_activity_id,
+        uid,
+        name,
+        member_card,
+        create_time,
+        update_time
+        from t_share_activity_operate_record
+        <where>
+            <if test="id != null">
+                and share_activity_id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(1)
+        from t_share_activity_operate_record
+        <where>
+            <if test="id != null">
+                and share_activity_id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ShareActivityOperateRecordMap">
+        select
+          id, share_activity_id, uid, NAME, member_card, tenant_id, create_time, update_time
+        from t_share_activity_operate_record
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ShareActivityOperateRecordMap">
+        select
+        id, share_activity_id, uid, NAME, member_card, tenant_id, create_time, update_time
+        from t_share_activity_operate_record
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="shareActivityId != null">
+                and share_activity_id = #{shareActivityId}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="name != null and name != ''">
+                and NAME = #{name}
+            </if>
+            <if test="memberCard != null and memberCard != ''">
+                and member_card = #{memberCard}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_share_activity_operate_record(share_activity_id, uid, NAME, member_card, tenant_id, create_time, update_time)
+        values (#{shareActivityId}, #{uid}, #{name}, #{memberCard}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_share_activity_operate_record
+        <set>
+            <if test="shareActivityId != null">
+                share_activity_id = #{shareActivityId},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                NAME = #{name},
+            </if>
+            <if test="memberCard != null and memberCard != ''">
+                member_card = #{memberCard},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_share_activity_operate_record where id = #{id}
+    </delete>
+
+</mapper>
