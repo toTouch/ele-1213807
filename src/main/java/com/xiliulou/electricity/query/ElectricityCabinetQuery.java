@@ -66,12 +66,6 @@ public class ElectricityCabinetQuery {
      */
     private Integer modelId;
 
-    /**
-     * 柜机编号
-     */
-    private String sn;
-
-
     private Long storeId;
 
     private Integer usableStatusCell;

@@ -812,7 +812,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         query.setEleIdList(eleIdList);
         query.setTenantId(TenantContextHolder.getTenantId());
 
-        return electricityCabinetService.selectByQuery(query);
+        return R.ok(electricityCabinetService.selectByQuery(query));
     }
 
     @GetMapping("/admin/electricityCabinet/superAdminQueryName")
