@@ -216,32 +216,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
 
-        Boolean eleLockFlag = Boolean.TRUE;
-
-        //下单锁住柜机
-        boolean result = redisService
-                .setNx(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 5 * 60 * 1000L, false);
-        if (!result) {
-            return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
-        }
 
         try {
             //查找换电柜门店
             if (Objects.isNull(electricityCabinet.getStoreId())) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("queryByDevice  ERROR! not found store ！electricityCabinetId={},uid={}", electricityCabinet.getId(), user.getUid());
                 return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
             }
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
             if (Objects.isNull(store)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("queryByDevice  ERROR! not found store ！storeId={},uid={}", electricityCabinet.getStoreId(), user.getUid());
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
 
             //查找门店加盟商
             if (Objects.isNull(store.getFranchiseeId())) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("queryByDevice  ERROR! not found Franchisee,storeId={},uid={}", store.getId(), user.getUid());
                 return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
             }
@@ -249,21 +238,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //校验用户
             UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
             if (Objects.isNull(userInfo)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR! not found user,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0019", "未找到用户");
             }
 
             //用户是否可用
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR! user is unUsable,uid={} ", user.getUid());
                 return R.fail("ELECTRICITY.0024", "用户已被禁用");
             }
 
             //未实名认证
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("ELE MEMBERCARD ERROR! user not auth,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0041", "未实名认证");
             }
@@ -271,7 +257,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
             if (Objects.isNull(franchisee)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0038", "加盟商不存在");
             }
@@ -287,14 +272,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             //判断该换电柜加盟商和用户加盟商是否一致
             if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR!FranchiseeId is not equal!uid={}, FranchiseeId1={} ,FranchiseeId2={}",
                         user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
                 return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
             }
 
             if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR! not pay deposit! uid={} ", user.getUid());
                 return R.fail("ELECTRICITY.0042", "未缴纳押金");
             }
@@ -308,7 +291,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
             if (Objects.isNull(electricityMemberCard)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("RENTBATTERY ERROR! memberCard  is not exit,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.00121", "套餐不存在");
             }
@@ -335,7 +317,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             //未租电池
             if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("order  ERROR! user not rent battery! uid={} ", user.getUid());
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池");
             }
@@ -345,7 +326,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
                 if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)
                         && userBatteryMemberCard.getMemberCardExpireTime() < now) {
-                    eleLockFlag = Boolean.FALSE;
                     log.error("order  ERROR! memberCard  is Expire ! uid={} ", user.getUid());
                     return R.fail("ELECTRICITY.0023", "月卡已过期");
                 }
@@ -354,20 +334,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                         .equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                     if (userBatteryMemberCard.getRemainingNumber() < 0) {
                         //用户需购买相同套餐，补齐所欠换电次数
-                        eleLockFlag = Boolean.FALSE;
                         log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
                         return R.fail("ELECTRICITY.00117", "套餐剩余次数为负", userBatteryMemberCard.getMemberCardId());
                     }
 
                     if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
-                        eleLockFlag = Boolean.FALSE;
                         log.error("order  ERROR! memberCard  is Expire ! uid={} ", user.getUid());
                         return R.fail("ELECTRICITY.0023", "月卡已过期");
                     }
                 }
             } else {
                 if (userBatteryMemberCard.getMemberCardExpireTime() < now) {
-                    eleLockFlag = Boolean.FALSE;
                     log.error("rentBattery  ERROR! memberCard  is Expire ! uid={} ", user.getUid());
                     return R.fail("ELECTRICITY.0023", "月卡已过期");
                 }
@@ -382,7 +359,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService
                     .findUsableEmptyCellNo(electricityCabinet.getId());
             if (Objects.isNull(usableEmptyCellNo.getRight())) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("EXCHANGE ERROR! not found empty cell NO,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
@@ -392,7 +368,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (Objects.equals(electricityMemberCard.getType(), ElectricityMemberCard.TYPE_COUNT)) {
                 Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                 if (row < 1) {
-                    eleLockFlag = Boolean.FALSE;
                     log.error("order  ERROR! not found memberCard uid={}", user.getUid());
                     return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
                 }
@@ -401,7 +376,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                         .equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                     Integer row = userBatteryMemberCardService.minCount(userBatteryMemberCard);
                     if (row < 1) {
-                        eleLockFlag = Boolean.FALSE;
                         log.error("order  ERROR! not found memberCard uid={}", user.getUid());
                         return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
                     }
@@ -410,7 +384,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
             if (Objects.isNull(electricityBattery)) {
-                eleLockFlag = Boolean.FALSE;
                 log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
                 return R.fail("ELECTRICITY.0020", "未找到电池");
             }
@@ -452,7 +425,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             } else {
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(userBattery)) {
-                    eleLockFlag = Boolean.FALSE;
                     log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
                     return R.fail("ELECTRICITY.0033", "加盟商不存在");
                 }
@@ -472,10 +444,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "下单失败");
         } finally {
-            if (!eleLockFlag) {
-                redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            }
-//            redisService.delete(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderQuery
 //                    .getElectricityCabinetId() + "_" + cellNo);
         }
     }
@@ -547,21 +515,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("order  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("order  ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("ELE MEMBERCARD ERROR! not found franchisee,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0038", "加盟商不存在");
         }
@@ -604,7 +569,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             } else {
                 UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
                 if (Objects.isNull(userBattery)) {
-                    redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
                     log.error("ELE MEMBERCARD ERROR! not found userBattery,uid={}", user.getUid());
                     return R.fail("ELECTRICITY.0033", "加盟商不存在");
                 }
@@ -864,8 +828,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //删除开门失败缓存
         redisService.delete(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 
-        //结束订单锁
-        redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
         return R.ok();
     }
 
@@ -1134,20 +1096,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not found store ！electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
         }
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not found store ！storeId={}", electricityCabinet.getStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not found Franchisee ！storeId={}", store.getId());
             return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
         }
@@ -1155,21 +1114,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order ERROR! user is unUsable! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //未实名认证
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order ERROR! user not auth,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
@@ -1184,28 +1140,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR!FranchiseeId is not equal!uid={} , FranchiseeId1={} ,FranchiseeId2={}", user.getUid(), store.getFranchiseeId(), userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         //未租电池
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! user not rent battery,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(orderSelfOpenCellQuery.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
         if (Objects.isNull(electricityCabinetBox)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not find cellNO! uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }

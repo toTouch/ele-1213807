@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetPhysicsOperRecord;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPhysicsOperRecordMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetPhysicsOperRecordService;
@@ -98,6 +99,7 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
     }
 
     @Override
+    @Slave
     public R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer operateType, Long beginTime, Long endTime, Integer cellNo, String userName, String phone) {
         List<ElectricityCabinetPhysicsOperRecordVo> data = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo, userName, phone);
         Long count = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordCount(eleId, operateType, beginTime, endTime, cellNo, userName, phone);

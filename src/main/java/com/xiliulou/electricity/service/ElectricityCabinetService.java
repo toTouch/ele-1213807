@@ -111,7 +111,7 @@ public interface ElectricityCabinetService {
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
     Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-
+    @Deprecated
     void unlockElectricityCabinet(Integer eid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
@@ -185,6 +185,8 @@ public interface ElectricityCabinetService {
     R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList);
 
     Triple<Boolean, String, Object> updateOnlineStatus(Long id);
+
+    Triple<Boolean, String, Object> updateAddress(ElectricityCabinetAddressQuery eleCabinetAddressQuery);
 
     boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox);
 

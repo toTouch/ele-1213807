@@ -282,6 +282,12 @@
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
         </if>
+        <if test="query.userCreateBeginTime !=null">
+            and tui.create_time &gt;=#{query.userCreateBeginTime}
+        </if>
+        <if test="query.userCreateEndTime !=null">
+            and tui.create_time &lt;=#{query.userCreateEndTime}
+        </if>
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">

@@ -40,6 +40,9 @@
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
         </if>
+        <if test="query.payType != null">
+            and tel.pay_type =#{query.payType}
+        </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}
         </if>
@@ -84,6 +87,9 @@
         </if>
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
+        </if>
+        <if test="query.payType != null">
+            and tel.pay_type =#{query.payType}
         </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}

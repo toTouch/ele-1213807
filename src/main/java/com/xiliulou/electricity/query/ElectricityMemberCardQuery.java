@@ -24,4 +24,5 @@ public class ElectricityMemberCardQuery {
 
     private Long franchiseeId;
 
+    private Integer cardModel;
 }
