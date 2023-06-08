@@ -68,8 +68,8 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> freeCarBatteryDepositHybridOrder(FreeCarBatteryDepositHybridOrderQuery query, HttpServletRequest request);
 
     Integer selectByPageCount(FreeDepositOrderQuery query);
-
-    Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt);
+    
+    Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt, String remark);
 
     Triple<Boolean, String, Object> selectFreeDepositAuthToPay(String orderId);
 

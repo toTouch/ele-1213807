@@ -51,4 +51,6 @@ public interface NewUserActivityService {
     R queryNewUserActivity();
 
     NewUserActivity queryActivity();
+
+    NewUserActivity selectByCouponId(Long id);
 }

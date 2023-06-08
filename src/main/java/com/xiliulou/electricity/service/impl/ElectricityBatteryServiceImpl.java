@@ -43,7 +43,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜电池表(ElectricityBattery)表服务实现类
@@ -311,8 +311,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
 
-    private Triple<Boolean, String, BatteryInfoDto> callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery) {
-        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+    private Triple<Boolean, String, BatteryInfoDto> callBatteryServiceQueryBatteryInfo(BatteryInfoQuery batteryInfoQuery,Integer tenantId) {
+        Tenant tenant = tenantService.queryByIdFromCache(tenantId);
         if (Objects.isNull(tenant)) {
             return Triple.of(false, "租户信息不能为空", null);
         }
@@ -396,46 +396,42 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     @Slave
     public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery,
-                offset, size);
-        if (ObjectUtil.isEmpty(electricityBatteryList)) {
+        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
+        if (CollectionUtils.isEmpty(electricityBatteryList)) {
             return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
 
-        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
+        Integer tenantId=TenantContextHolder.getTenantId();
 
-        /*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
-        if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
-            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-        }*/
-
-        for (ElectricityBattery electricityBattery : electricityBatteryList) {
-
+        List<ElectricityBatteryVO> electricityBatteryVOList = electricityBatteryList.parallelStream().map(item -> {
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
-            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+            BeanUtil.copyProperties(item, electricityBatteryVO);
 
-            if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)
-                    && Objects.nonNull(electricityBattery.getUid())) {
-                UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
-                if (Objects.nonNull(userInfo)) {
-                    electricityBatteryVO.setUserName(userInfo.getName());
-                }
-            }
-
-            if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
-                    && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
-                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(
-                        electricityBattery.getElectricityCabinetId());
-                if (Objects.nonNull(electricityCabinet)) {
-                    electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
-                }
-            }
-
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityBattery.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(item.getFranchiseeId());
             electricityBatteryVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
-            electricityBatteryVOList.add(electricityBatteryVO);
-        }
+            if (Objects.equals(item.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.nonNull(item.getUid())) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                electricityBatteryVO.setUserName(Objects.nonNull(userInfo) ? userInfo.getName() : "");
+            }
+
+            if (Objects.equals(item.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)) {
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+                electricityBatteryVO.setElectricityCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
+            } else {
+                //不在仓电池电量从BMS平台获取
+                BatteryInfoQuery batteryInfoQuery = new BatteryInfoQuery();
+                batteryInfoQuery.setSn(item.getSn());
+                Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery, tenantId);
+
+                if (Boolean.TRUE.equals(result.getLeft()) && Objects.nonNull(result.getRight())) {
+                    electricityBatteryVO.setPower(Objects.nonNull(result.getRight().getSoc()) ? result.getRight().getSoc() : 0.0);
+                }
+            }
+
+            return electricityBatteryVO;
+        }).collect(Collectors.toList());
+
         return R.ok(electricityBatteryVOList);
     }
 
@@ -491,11 +487,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         //为空也需要查询路径，兼容旧版本
         if (Objects.isNull(isNeedLocation) || Objects.equals(isNeedLocation, BatteryInfoQuery.NEED)) {
             batteryInfoQuery.setNeedLocation(BatteryInfoQuery.NEED);
-
         }
 
-        Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery);
-        if (!result.getLeft()) {
+        Triple<Boolean, String, BatteryInfoDto> result = callBatteryServiceQueryBatteryInfo(batteryInfoQuery, TenantContextHolder.getTenantId());
+        if (Boolean.FALSE.equals(result.getLeft())) {
             log.error("CALL BATTERY ERROR! uid={},msg={}", uid, result.getMiddle());
             return Triple.of(false, "200005", result.getMiddle());
         }

@@ -36,4 +36,6 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
             @Param("tenantId") Integer tenantId);
     
     ElectricityCarModel queryByNameAndStoreId(@Param("name") String name, @Param("storeId") Long storeId);
+
+    List<Long> selectByStoreIds(@Param("storeIds") List<Long> storeIds);
 }

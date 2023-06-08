@@ -95,6 +95,9 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
     
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+
+    @Autowired
+    DivisionAccountRecordService divisionAccountRecordService;
     
     @Autowired
     ChannelActivityHistoryService channelActivityHistoryService;
@@ -301,11 +304,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
     
         //车辆经纬度
-        CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
-        if (Objects.nonNull(carAttr)) {
-            userCarMemberCardVO.setLongitude(carAttr.getLongitude());
-            userCarMemberCardVO.setLatitude(carAttr.getLatitude());
-            userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+        if(Objects.nonNull(userCar)){
+            CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
+            if (Objects.nonNull(carAttr)) {
+                userCarMemberCardVO.setLongitude(carAttr.getLongitude());
+                userCarMemberCardVO.setLatitude(carAttr.getLatitude());
+                userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+            }
         }
     
         //车辆锁状态
@@ -791,6 +796,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
             cardOrderId = orderId;
             memberCardExpireTime = calculationOrderMemberCardExpireTime(carMemberCardOrder.getMemberCardType(),
                     carMemberCardOrder.getValidDays());
+
+            divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         } else {
             cardId = userCarMemberCard.getCardId();
             cardOrderId = userCarMemberCard.getOrderId();
@@ -1135,6 +1142,8 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         updateUserCarMemberCard.setCardId(userCarModel.getId().longValue());
         updateUserCarMemberCard.setMemberCardExpireTime(memberCardExpireTime);
         userCarMemberCardService.updateByUid(updateUserCarMemberCard);
+
+        divisionAccountRecordService.handleCarMembercardDivisionAccount(carMemberCardOrder);
         
         Long now = System.currentTimeMillis();
         Double oldCardDay = 0.0;

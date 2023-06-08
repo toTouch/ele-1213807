@@ -5,20 +5,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.service.WechatPaymentCertificateService;
+import com.xiliulou.electricity.service.WechatWithdrawalCertificateService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -36,7 +35,13 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 
 	@Autowired
 	WechatConfig config;
-
+	
+	@Autowired
+	private WechatPaymentCertificateService wechatPaymentCertificateService;
+	
+	@Autowired
+	private WechatWithdrawalCertificateService wechatWithdrawalCertificateService;
+	
 	/**
 	 * 新增或修改
 	 *
@@ -100,42 +105,37 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	@Override
 	public R uploadFile(MultipartFile file, Integer type) {
 		Integer tenantId = TenantContextHolder.getTenantId();
-
-		ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
-
-		if (Objects.isNull(oldElectricityPayParams)) {
-			return R.fail("找不到支付配置");
+		
+		//加锁
+		boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId,
+				String.valueOf(System.currentTimeMillis()), 3 * 1000L, true);
+		if (!getLockerSuccess) {
+			return R.failMsg("操作频繁!");
 		}
-
-		String fileName = file.getOriginalFilename();
-		String path = config.getMchCertificateDirectory() +  tenantId + "_" + fileName;
-
-		//需要优化,实现MultipartFile接口，在里面进行重写 TODO
-		File newFile = new File(path);
-		if (newFile.exists()) {
-			newFile.delete();
-		}
-		//MultipartFile（注意这个时候）
 		try {
-			file.transferTo(newFile);
-		} catch (IOException e) {
-			log.error("上传失败", e);
-			return R.fail(e.getLocalizedMessage());
+			ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
+			if (Objects.isNull(oldElectricityPayParams)) {
+				return R.fail("找不到支付配置");
+			}
+			
+			ElectricityPayParams electricityPayParams = new ElectricityPayParams();
+			electricityPayParams.setId(oldElectricityPayParams.getId());
+			electricityPayParams.setTenantId(tenantId);
+			electricityPayParams.setUpdateTime(System.currentTimeMillis());
+			if (Objects.isNull(type) || Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
+				wechatPaymentCertificateService.handleCertificateFile(file, tenantId);
+			} else {
+				wechatWithdrawalCertificateService.handleCertificateFile(file, tenantId);
+			}
+			//更新支付参数
+			updateElectricityPayParams(electricityPayParams);
+		}catch (Exception e) {
+			log.error("certificate get error, tenantId={}", tenantId);
+			return R.fail("证书内容获取失败，请重试！");
+		} finally {
+			//解锁
+			redisService.remove(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId);
 		}
-
-		ElectricityPayParams electricityPayParams = new ElectricityPayParams();
-		electricityPayParams.setId(oldElectricityPayParams.getId());
-
-		if (Objects.isNull(type) || Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
-			electricityPayParams.setWechatMerchantPrivateKeyPath(path);
-		} else {
-			electricityPayParams.setApiName(path);
-		}
-
-		electricityPayParams.setUpdateTime(System.currentTimeMillis());
-		baseMapper.updateById(electricityPayParams);
-
-		redisService.delete(CacheConstant.CACHE_PAY_PARAMS + oldElectricityPayParams.getTenantId());
 		return R.ok();
 
 	}
@@ -157,5 +157,14 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	@Override
 	public ElectricityPayParams queryByTenantId(Integer tenantId) {
 		return baseMapper.queryByTenantId(tenantId);
+	}
+	
+	/**
+	 * 更新支付参数
+	 * @param electricityPayParams electricityPayParams
+	 */
+	private void updateElectricityPayParams(ElectricityPayParams electricityPayParams) {
+		baseMapper.updateById(electricityPayParams);
+		redisService.delete(CacheConstant.CACHE_PAY_PARAMS + electricityPayParams.getTenantId());
 	}
 }

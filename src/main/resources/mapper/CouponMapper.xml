@@ -10,6 +10,7 @@
           uid, user_name, create_time, update_time, del_flag,franchisee_id,type
         from t_coupon
         <where>
+            del_flag=0
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
             </if>
@@ -39,6 +40,7 @@
         select  COUNT(1)
         from t_coupon
         <where>
+            del_flag=0
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
             </if>

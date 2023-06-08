@@ -66,5 +66,5 @@ public interface FaceRecognizeDataMapper extends BaseMapper<FaceRecognizeData> {
      */
     int deleteById(Long id);
 
-
+    Integer deductionCapacityByTenantId(FaceRecognizeData faceRecognizeDataUpdate);
 }
