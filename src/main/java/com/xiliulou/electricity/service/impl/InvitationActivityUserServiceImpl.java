@@ -145,6 +145,18 @@ public class InvitationActivityUserServiceImpl implements InvitationActivityUser
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
         InvitationActivityUser invitationActivityUser1 = this.selectByUid(query.getUid());
         if (Objects.nonNull(invitationActivityUser1)) {
             return Triple.of(false, "", "用户已存在");
