@@ -21,6 +21,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
@@ -3186,6 +3187,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userCoupon.setOrderId(null);
         userCoupon.setUpdateTime(System.currentTimeMillis());
         userCouponService.updateStatus(userCoupon);
+
+        redisService.delete(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + electricityMemberCardOrder.getOrderId());
 
         return R.ok();
     }
