@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
@@ -579,6 +580,15 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "套餐订单已处理!");
         }
 
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("NOTIFY_MEMBER_ORDER ERROR!userInfo is null,uid={}", electricityMemberCardOrder.getUid());
+            return Pair.of(false, "用户不存在");
+        }
+
+        //获取套餐订单优惠券
+        List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
+
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(electricityMemberCardOrder.getUid());
 
         Long now = System.currentTimeMillis();
@@ -673,8 +683,7 @@ public class UnionTradeOrderServiceImpl extends
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
 
-            //获取套餐订单优惠券
-            List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
+            //更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
                 Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
@@ -743,7 +752,7 @@ public class UnionTradeOrderServiceImpl extends
                     }
                 }
             }
-    
+
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
                     .queryByUid(electricityMemberCardOrder.getUid());
             if (Objects.nonNull(channelActivityHistory) && Objects
@@ -754,6 +763,16 @@ public class UnionTradeOrderServiceImpl extends
                 updateChannelActivityHistory.setUpdateTime(System.currentTimeMillis());
                 channelActivityHistoryService.update(updateChannelActivityHistory);
             }
+        }else{
+            //更新优惠券状态
+            if(CollectionUtils.isNotEmpty(userCouponIds)){
+                Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, electricityMemberCardOrder.getOrderId()));
+            }
+
+            //支付失败 清除套餐来源
+            electricityMemberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
+            electricityMemberCardOrderUpdate.setSource(NumberConstant.ZERO);
         }
 
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());

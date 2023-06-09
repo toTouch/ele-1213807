@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -134,6 +136,12 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     ShareActivityMemberCardService shareActivityMemberCardService;
 
+    @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
+
+    @Autowired
+    BatteryMemberCardOrderCouponService memberCardOrderCouponService;
+
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
 
@@ -204,6 +212,9 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "套餐订单已处理!");
         }
+
+        //获取套餐订单优惠券
+        List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
 
         //成功或失败
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
@@ -319,14 +330,20 @@ public class ElectricityTradeOrderServiceImpl extends
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
             }
 
-            if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
-                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
-                if (Objects.nonNull(userCoupon)) {
-                    //修改劵可用状态
-                    userCoupon.setStatus(UserCoupon.STATUS_USED);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCouponService.update(userCoupon);
-                }
+//            if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
+//                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
+//                if (Objects.nonNull(userCoupon)) {
+//                    //修改劵可用状态
+//                    userCoupon.setStatus(UserCoupon.STATUS_USED);
+//                    userCoupon.setUpdateTime(System.currentTimeMillis());
+//                    userCouponService.update(userCoupon);
+//                }
+//            }
+
+            //更新优惠券状态
+            if(CollectionUtils.isNotEmpty(userCouponIds)){
+                Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_USED, electricityMemberCardOrder.getOrderId()));
             }
 
             //被邀请新买月卡用户
@@ -404,15 +421,21 @@ public class ElectricityTradeOrderServiceImpl extends
             }
 
         } else {
-            if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
-                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
-                if (Objects.nonNull(userCoupon)) {
-                    //修改劵可用状态
-                    userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
-                    userCoupon.setUpdateTime(System.currentTimeMillis());
-                    userCoupon.setOrderId(null);
-                    userCouponService.updateStatus(userCoupon);
-                }
+//            if (StringUtils.isNotEmpty(callBackResource.getAttach()) && !Objects.equals(callBackResource.getAttach(), "null")) {
+//                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
+//                if (Objects.nonNull(userCoupon)) {
+//                    //修改劵可用状态
+//                    userCoupon.setStatus(UserCoupon.STATUS_UNUSED);
+//                    userCoupon.setUpdateTime(System.currentTimeMillis());
+//                    userCoupon.setOrderId(null);
+//                    userCouponService.updateStatus(userCoupon);
+//                }
+//            }
+
+            //更新优惠券状态
+            if(CollectionUtils.isNotEmpty(userCouponIds)){
+                Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
+                userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, electricityMemberCardOrder.getOrderId()));
             }
 
             //支付失败 清除套餐来源
