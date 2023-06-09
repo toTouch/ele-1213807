@@ -169,6 +169,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
+    @Autowired
+    ShareActivityMemberCardService shareActivityMemberCardService;
+
     /**
      * 创建月卡订单
      *
@@ -245,26 +248,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     
         //是否开启购买保险（是进入）
-//        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-//        if (Objects.nonNull(electricityConfig) && Objects
-//                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
-//            //保险是否强制购买（是进入）
-//            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
-//                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
-//                            userInfo.getTenantId());
-//            long now = System.currentTimeMillis();
-//            if (Objects.nonNull(franchiseeInsurance) && Objects
-//                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
-//                //用户是否没有保险信息或已过期（是进入）
-//                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
-//                if (Objects.isNull(insuranceUserInfo) || Objects
-//                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
-//                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
-//                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
-//                    return R.fail("100309", "未购买保险或保险已过期");
-//                }
-//            }
-//        }
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.nonNull(electricityConfig) && Objects
+                .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            //保险是否强制购买（是进入）
+            FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
+                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
+                            userInfo.getTenantId());
+            long now = System.currentTimeMillis();
+            if (Objects.nonNull(franchiseeInsurance) && Objects
+                    .equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+                //用户是否没有保险信息或已过期（是进入）
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.isNull(insuranceUserInfo) || Objects
+                        .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                        || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                    log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={} ", user.getUid());
+                    return R.fail("100309", "未购买保险或保险已过期");
+                }
+            }
+        }
 
         Long now = System.currentTimeMillis();
 
@@ -506,25 +509,31 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
             //被邀请新买月卡用户
             //是否是新用户
-            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
                 //是否有人邀请
                 JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(user.getUid());
                 if (Objects.nonNull(joinShareActivityRecord)) {
-                    //修改邀请状态
-                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-                    joinShareActivityRecordService.update(joinShareActivityRecord);
+                    //是否购买的是活动指定的套餐
+                    List<Long> memberCardIds = shareActivityMemberCardService.selectMemberCardIdsByActivityId(joinShareActivityRecord.getActivityId());
+                    if (CollectionUtils.isNotEmpty(memberCardIds) && memberCardIds.contains(electricityMemberCardOrder.getMemberCardId().longValue())) {
+                        //修改邀请状态
+                        joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                        joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityRecordService.update(joinShareActivityRecord);
 
-                    //修改历史记录状态
-                    JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
-                    if (Objects.nonNull(oldJoinShareActivityHistory)) {
-                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        //修改历史记录状态
+                        JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndJoinUid(joinShareActivityRecord.getId(), user.getUid());
+                        if (Objects.nonNull(oldJoinShareActivityHistory)) {
+                            oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                            oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                            joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                        }
+
+                        //给邀请人增加邀请成功人数
+                        shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid(), joinShareActivityRecord.getActivityId());
+                    } else {
+                        log.info("SHARE ACTIVITY INFO!invite fail,activityId={},membercardId={},memberCardIds={}", joinShareActivityRecord.getActivityId(), electricityMemberCardOrder.getMemberCardId(), JsonUtil.toJson(memberCardIds));
                     }
-
-                    //给邀请人增加邀请成功人数
-                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
                 }
 
                 //是否有人返现邀请
@@ -552,7 +561,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     //返现
                     userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
-
                 }
             }
 
@@ -599,11 +607,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
+    @Slave
     @Override
     public BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId) {
         return baseMapper.homeOne(first, now, cardIdList, tenantId);
     }
 
+    @Slave
     @Override
     public List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId) {
         return baseMapper.homeTwo(startTimeMilliDay, endTimeMilliDay, cardIdList, tenantId);
@@ -726,6 +736,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setOrderId(electricityMemberCardOrders.get(i).getOrderId());
             excelVo.setName(electricityMemberCardOrders.get(i).getUserName());
             excelVo.setPhone(electricityMemberCardOrders.get(i).getPhone());
+
+            if (Objects.nonNull(electricityMemberCardOrders.get(i).getFranchiseeId())) {
+                Franchisee franchisee = franchiseeService
+                        .queryByIdFromCache(electricityMemberCardOrders.get(i).getFranchiseeId());
+                excelVo.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            }
+
             excelVo.setFranchiseeName(electricityMemberCardOrders.get(i).getFranchiseeName());
             excelVo.setMemberCardName(electricityMemberCardOrders.get(i).getCardName());
             excelVo.setMaxUseCount(Objects.equals(electricityMemberCardOrders.get(i).getMaxUseCount(), -1L) ? "不限次" : String.valueOf(electricityMemberCardOrders.get(i).getMaxUseCount()));
@@ -753,16 +770,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     }
 
+    @Slave
     @Override
     public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
         return R.ok(baseMapper.queryCount(memberCardOrderQuery));
     }
 
+    @Slave
     @Override
     public Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery) {
         return baseMapper.queryCount(memberCardOrderQuery);
     }
 
+    @Slave
     @Override
     public BigDecimal queryTurnOver(Integer tenantId, Long uid) {
         return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(BigDecimal.valueOf(0));
@@ -2456,7 +2476,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public ElectricityMemberCardOrder selectLatestByUid(Long uid) {
         return baseMapper.selectLatestByUid(uid);
     }
-    
+
+    @Slave
     @Override
     public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long
             todayStartTime, List<Long> franchiseeId) {
@@ -2468,6 +2489,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Optional.ofNullable(baseMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer
                                                                                                      tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
@@ -2480,6 +2502,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return baseMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
+    @Slave
     @Override
     public BigDecimal querySumMemberCardTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long
             endTime) {

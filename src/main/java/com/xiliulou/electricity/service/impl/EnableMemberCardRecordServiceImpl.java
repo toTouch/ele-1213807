@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.EnableMemberCardRecord;
@@ -52,11 +53,13 @@ public class EnableMemberCardRecordServiceImpl implements EnableMemberCardRecord
         return enableMemberCardRecordMapper.updateById(enableMemberCardRecord);
     }
 
+    @Slave
     @Override
     public R queryList(EnableMemberCardRecordQuery enableMemberCardRecordQuery) {
         return R.ok(enableMemberCardRecordMapper.queryList(enableMemberCardRecordQuery));
     }
 
+    @Slave
     @Override
     public R queryCount(EnableMemberCardRecordQuery enableMemberCardRecordQuery) {
         return R.ok(enableMemberCardRecordMapper.queryCount(enableMemberCardRecordQuery));

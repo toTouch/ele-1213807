@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -59,7 +58,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                                           @RequestParam(value = "refId", required = false) Long refId,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 		                                  @RequestParam(value = "userName", required = false) String userName,
-                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+                                          @RequestParam(value = "payType",required = false) Integer payType) {
 
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -88,6 +88,7 @@ public class JsonAdminElectricityMemberCardOrderController {
         }
 
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
+                .payType(payType)
                 .phone(phone)
                 .orderId(orderId)
                 .cardType(cardType)
@@ -103,6 +104,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .franchiseeId(franchiseeId)
                 .cardPayCount(payCount)
 		        .userName(userName)
+                .payType(payType)
 		        .franchiseeIds(franchiseeIds).build();
 
         return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
@@ -125,7 +127,8 @@ public class JsonAdminElectricityMemberCardOrderController {
                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
 		                @RequestParam(value = "userName", required = false) String userName,
-                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "payType",required = false) Integer payType) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -146,6 +149,7 @@ public class JsonAdminElectricityMemberCardOrderController {
         }
 
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
+                .payType(payType)
                 .phone(phone)
                 .orderId(orderId)
                 .cardType(cardType)
@@ -159,6 +163,7 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .franchiseeId(franchiseeId)
                 .cardPayCount(payCount)
 		        .userName(userName)
+                .payType(payType)
 		        .franchiseeIds(franchiseeIds).build();
 
         return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
@@ -166,14 +171,18 @@ public class JsonAdminElectricityMemberCardOrderController {
 
     //换电柜购卡订单导出报表
     @GetMapping("/admin/electricityMemberCardOrder/exportExcel")
-    public void exportExcel(@RequestParam(value = "phone", required = false) String phone,
+    public void exportExcel(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                            @RequestParam(value = "phone", required = false) String phone,
                             @RequestParam(value = "orderId", required = false) String orderId,
-                            @RequestParam(value = "userName", required = false) String userName,
-                            @RequestParam(value = "status", required = false) Integer status,
                             @RequestParam(value = "memberCardType", required = false) Integer cardType,
-                            @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
                             @RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
+                            @RequestParam(value = "status", required = false) Integer status,
+                            @RequestParam(value = "source", required = false) Integer source,
+                            @RequestParam(value = "payType", required = false) Integer payType,
+                            @RequestParam(value = "payCount", required = false) Integer payCount,
+                            @RequestParam(value = "refId", required = false) Long refId,
                             @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+                            @RequestParam(value = "userName", required = false) String userName,
                             @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                             HttpServletResponse response) {
 
@@ -199,19 +208,16 @@ public class JsonAdminElectricityMemberCardOrderController {
                 throw new CustomBusinessException("订单不存在！");
             }
         }
-
+    
         MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
+                .payType(payType)
                 .phone(phone)
                 .orderId(orderId)
                 .cardType(cardType)
-                .status(status)
-                .userName(userName)
-                .franchiseeName(franchiseeName)
-                .cardModel(memberCardModel)
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
-                .tenantId(TenantContextHolder.getTenantId())
-                .cardModel(ElectricityMemberCardOrder.BATTERY_MEMBER_CARD)
+                .tenantId(TenantContextHolder.getTenantId()).status(status).source(source).refId(refId)
+                .cardModel(memberCardModel).franchiseeId(franchiseeId).cardPayCount(payCount).userName(userName)
                 .franchiseeIds(franchiseeIds).build();
         electricityMemberCardOrderService.exportExcel(memberCardOrderQuery, response);
     }

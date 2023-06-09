@@ -97,12 +97,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
         //2、别人点击链接登录
 
-        //2.1 判断此人是否首次购买月卡
-        Boolean result = checkUserIsCard(userInfo);
-
-        //已购买月卡,则直接返回首页
-        if (result) {
-//            return R.fail("ELECTRICITY.00107", "您已购买过月卡");
+        //2.1 判断此人是否首次购买月卡,已购买月卡,则直接返回首页
+        if (Boolean.TRUE.equals(checkUserIsCard(userInfo))) {
             return R.ok();
         }
 
@@ -207,25 +203,23 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
     }
 
     private Boolean checkUserIsCard(UserInfo userInfo) {
-
-        //是否缴纳押金，是否绑定电池
-//		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-
-        //未找到用户
-        if (Objects.isNull(userBatteryMemberCard)) {
-            return false;
-
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() == 0) {
+            return Boolean.FALSE;
         }
 
-        //用户是否开通月卡
-        if (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
-                && Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            return false;
-        }
+//            //未找到用户
+//        if (Objects.isNull(userBatteryMemberCard)) {
+//            return false;
+//
+//        }
+//
+//        //用户是否开通月卡
+//        if (Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime())
+//                && Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
+//            return false;
+//        }
 
-        return true;
-
+        return Boolean.TRUE;
     }
 }

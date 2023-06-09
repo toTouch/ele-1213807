@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivity">
         select
-        id, name, type, status,  description, del_flag, create_time,
+        id, name, type, status,  description, del_flag, create_time,receive_type,
         update_time, uid,user_name,franchisee_id,hours
         from t_share_activity
         <where>

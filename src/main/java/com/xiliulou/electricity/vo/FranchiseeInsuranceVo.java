@@ -81,4 +81,9 @@ public class FranchiseeInsuranceVo {
     private Long createTime;
 
     private Long updateTime;
+
+    /**
+     * 城市名称
+     */
+    private String cityName;
 }

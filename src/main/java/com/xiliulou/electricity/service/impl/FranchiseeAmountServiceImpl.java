@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -144,6 +145,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         franchiseeSplitAccountHistoryService.insert(history);
     }
 
+    @Slave
     @Override
     public R queryList(FranchiseeAccountQuery franchiseeAccountQuery) {
         List<FranchiseeAmount> franchiseeAmountList=franchiseeAmountMapper.queryList(franchiseeAccountQuery);
@@ -162,6 +164,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         return R.ok(list);
     }
 
+    @Slave
     @Override
     public R queryCount(FranchiseeAccountQuery franchiseeAccountQuery) {
         return R.ok(franchiseeAmountMapper.queryCount(franchiseeAccountQuery));

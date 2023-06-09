@@ -209,9 +209,11 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @GetMapping(value = "/admin/electricityMemberCard/selectByQuery")
-    public R selectByQuery(@RequestParam("name") String name) {
+    public R selectByQuery(@RequestParam(value = "name", required = false) String name,
+                           @RequestParam(value = "cardModel", required = false) Integer cardModel) {
         ElectricityMemberCardQuery cardQuery = ElectricityMemberCardQuery.builder()
                 .name(name)
+                .cardModel(cardModel)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
         return R.ok(electricityMemberCardService.selectByQuery(cardQuery));

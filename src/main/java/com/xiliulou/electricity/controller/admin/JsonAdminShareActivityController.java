@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.json.JSONUtil;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
@@ -33,7 +34,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminShareActivityController {
+public class JsonAdminShareActivityController extends BaseController {
     /**
      * 服务对象
      */
@@ -49,6 +50,17 @@ public class JsonAdminShareActivityController {
     public R save(@RequestBody @Validated(value = CreateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
         return shareActivityService.insert(shareActivityAddAndUpdateQuery);
     }
+
+    @GetMapping(value = "/admin/shareActivity/detail/{id}")
+    public R detail(@PathVariable("id") Integer id){
+        return returnTripleResult(shareActivityService.shareActivityDetail(id));
+    }
+
+    @PutMapping(value = "/admin/shareActivity/update")
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityQuery shareActivityQuery) {
+        return returnTripleResult(shareActivityService.updateShareActivity(shareActivityQuery));
+    }
+
 
     //修改--暂时无此功能
     @PutMapping(value = "/admin/shareActivity")

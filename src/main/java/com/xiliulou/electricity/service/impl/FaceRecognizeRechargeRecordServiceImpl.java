@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FaceRecognizeRechargeRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -66,6 +67,7 @@ public class FaceRecognizeRechargeRecordServiceImpl implements FaceRecognizeRech
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<FaceRecognizeRechargeRecordVO> selectByPage(FaceRecognizeRechargeRecordQuery query) {
         List<FaceRecognizeRechargeRecordVO> faceRecognizeRechargeRecords = this.faceRecognizeRechargeRecordMapper.selectByPage(query);
@@ -82,6 +84,7 @@ public class FaceRecognizeRechargeRecordServiceImpl implements FaceRecognizeRech
 
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(FaceRecognizeRechargeRecordQuery query) {
         return this.faceRecognizeRechargeRecordMapper.selectByPageCount(query);

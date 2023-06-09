@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Region;
@@ -65,6 +66,7 @@ public class CityServiceImpl implements CityService {
         return cityMapper.selectOne(new LambdaQueryWrapper<City>().eq(City::getCode, code));
     }
 
+    @Slave
     @Override
     public List<City> queryCityListByPid(Integer pid) {
         return cityMapper.selectList(new LambdaQueryWrapper<City>().eq(City::getPid, pid));

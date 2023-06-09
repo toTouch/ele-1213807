@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CouponMapper;
@@ -211,13 +212,13 @@ public class CouponServiceImpl implements CouponService {
 
     }
 
-
+    @Slave
     @Override
     public R queryList(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryList(couponQuery));
     }
 
-
+    @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryCount(couponQuery));

@@ -98,8 +98,8 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
         return this.electricityCabinetPhysicsOperRecordMapper.deleteById(id) > 0;
     }
 
-    @Override
     @Slave
+    @Override
     public R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer operateType, Long beginTime, Long endTime, Integer cellNo, String userName, String phone) {
         List<ElectricityCabinetPhysicsOperRecordVo> data = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo, userName, phone);
         Long count = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordCount(eleId, operateType, beginTime, endTime, cellNo, userName, phone);
