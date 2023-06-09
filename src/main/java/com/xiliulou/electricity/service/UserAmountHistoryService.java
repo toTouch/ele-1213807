@@ -3,6 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.query.UserAmountHistoryQuery;
+import com.xiliulou.electricity.vo.UserAmountHistoryVO;
+
+import java.util.List;
 
 /**
  * (FranchiseeSplitAccountHistory)表服务接口
@@ -23,4 +26,6 @@ public interface UserAmountHistoryService {
     R queryList(UserAmountHistoryQuery userAmountHistoryQuery);
 
     R queryCount(UserAmountHistoryQuery userAmountHistoryQuery);
+
+    List<UserAmountHistoryVO> selectRewardList(UserAmountHistoryQuery userAmountHistoryQuery);
 }

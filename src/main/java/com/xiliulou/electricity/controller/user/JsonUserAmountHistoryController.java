@@ -65,4 +65,25 @@ public class JsonUserAmountHistoryController {
 		return userAmountHistoryService.queryList(userAmountHistoryQuery);
 	}
 
+
+	/**
+	 * 返现记录
+	 */
+	@GetMapping(value = "/user/userAmountHistory/reward/list")
+	public R rewardList(@RequestParam("size") long size, @RequestParam("offset") long offset) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
+				.offset(offset)
+				.size(size)
+				.tenantId(TenantContextHolder.getTenantId())
+				.uid(SecurityUtils.getUid()).build();
+		return R.ok(userAmountHistoryService.selectRewardList(userAmountHistoryQuery));
+	}
 }

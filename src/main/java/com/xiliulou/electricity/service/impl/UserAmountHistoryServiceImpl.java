@@ -8,11 +8,13 @@ import com.xiliulou.electricity.mapper.UserAmountHistoryMapper;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.UserAmountHistoryQuery;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
+import com.xiliulou.electricity.vo.UserAmountHistoryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * (FranchiseeSplitAccountHistoryService)表服务实现类
@@ -50,4 +52,8 @@ public class UserAmountHistoryServiceImpl implements UserAmountHistoryService {
         return R.ok(userAmountHistoryMapper.queryCount(userAmountHistoryQuery));
     }
 
+    @Override
+    public List<UserAmountHistoryVO> selectRewardList(UserAmountHistoryQuery userAmountHistoryQuery) {
+        return userAmountHistoryMapper.selectRewardList(userAmountHistoryQuery);
+    }
 }
