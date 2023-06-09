@@ -42,4 +42,8 @@ public interface UserCouponService {
     R queryCount(UserCouponQuery userCouponQuery);
     
     List<UserCoupon> selectCouponUserCountById(Long id);
+
+    Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList);
+
+    Integer updateUserCouponStatus(UserCoupon userCoupon);
 }

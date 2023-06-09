@@ -66,7 +66,7 @@ public class ElectricityMemberCardOrder {
     private Integer memberCardModel;
 
     //优惠券Id
-    private Long couponId;
+//    private Long couponId;
 
     /**
      * 套餐购买次数

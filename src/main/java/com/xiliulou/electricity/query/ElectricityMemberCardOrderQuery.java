@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author: Miss.Li
@@ -42,4 +43,7 @@ public class ElectricityMemberCardOrderQuery {
 	private Long queryStartTime;
 	private Long queryEndTime;
 	private Integer status;
+
+	//优惠券
+	private List<Integer> userCouponIds;
 }

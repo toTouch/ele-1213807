@@ -32,6 +32,7 @@ public class JsonAdminUserCouponController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "couponId", required = false) Integer couponId,
                        @RequestParam(value = "userName", required = false) String userName,
+                       @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "discountType", required = false) Integer discountType,
@@ -49,6 +50,7 @@ public class JsonAdminUserCouponController {
                 .size(size)
                 .couponId(couponId)
                 .uid(uid)
+                .orderId(orderId)
                 .status(status)
                 .userName(userName)
                 .phone(phone)
@@ -61,12 +63,14 @@ public class JsonAdminUserCouponController {
     @GetMapping(value = "/admin/userCoupon/queryCount")
     public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "phone", required = false) String phone) {
 
         UserCouponQuery userCouponQuery = UserCouponQuery.builder()
                 .couponId(couponId)
                 .uid(uid)
+                .orderId(orderId)
                 .status(status)
                 .phone(phone)
                 .tenantId(TenantContextHolder.getTenantId()).build();

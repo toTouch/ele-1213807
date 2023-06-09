@@ -185,17 +185,19 @@ public class CouponServiceImpl implements CouponService {
     @Transactional(rollbackFor = Exception.class)
     public R update(Coupon coupon) {
         Coupon oldCoupon = queryByIdFromCache(coupon.getId());
-        if (Objects.isNull(oldCoupon)) {
+        if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId() ,TenantContextHolder.getTenantId())) {
             log.error("update Coupon  ERROR! not found coupon ! couponId={} ", coupon.getId());
             return R.fail("ELECTRICITY.00104", "找不到优惠券");
         }
 
+        Coupon couponUpdate = new Coupon();
+        couponUpdate.setId(coupon.getId());
+        couponUpdate.setSuperposition(coupon.getSuperposition());
+        couponUpdate.setName(coupon.getName());
+        couponUpdate.setDelFlag(coupon.getDelFlag());
+        couponUpdate.setUpdateTime(System.currentTimeMillis());
 
-        BeanUtil.copyProperties(coupon, oldCoupon);
-        oldCoupon.setUpdateTime(System.currentTimeMillis());
-
-
-        int update = couponMapper.updateById(oldCoupon);
+        int update = couponMapper.updateById(couponUpdate);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);

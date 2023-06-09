@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.UserCouponVO">
         select
         tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
-        tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,
+        tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time as createTime,tc.superposition as superposition,
         tuc.update_time as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
         tuc.discount_type as discountType,tc.amount AS amount,tc.discount AS discount,tui.name as userName
         from t_user_coupon as tuc
@@ -22,6 +22,9 @@
             </if>
             <if test="query.userName != null and query.userName != ''">
                 and tui.name = #{query.userName}
+            </if>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tuc.order_id = #{query.orderId}
             </if>
             <if test="query.couponId != null">
                 and tuc.coupon_id = #{query.couponId}
@@ -64,6 +67,9 @@
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
+            </if>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tuc.order_id = #{query.orderId}
             </if>
             <if test="query.couponId != null">
                 and coupon_id = #{query.couponId}
@@ -111,6 +117,20 @@
         order_id=#{orderId},
         update_time = #{updateTime}
         where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <update id="batchUpdateUserCoupon">
+        <foreach collection="list" item="item" open="" separator=";" close="">
+            update t_user_coupon set
+            status = #{item.status},
+            order_id=#{item.orderId},
+            update_time = #{item.updateTime}
+            where id = #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateUserCouponStatus">
+            update t_user_coupon set  status = #{status}, order_id=#{orderId}, update_time = #{updateTime}  where id = #{id}
     </update>
 
 </mapper>
