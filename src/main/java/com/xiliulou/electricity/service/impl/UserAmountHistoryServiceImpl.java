@@ -18,7 +18,6 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * (FranchiseeSplitAccountHistoryService)表服务实现类
@@ -65,9 +64,11 @@ public class UserAmountHistoryServiceImpl implements UserAmountHistoryService {
             return Collections.emptyList();
         }
 
-        return userAmountHistoryVOS.parallelStream().peek(item -> {
+        userAmountHistoryVOS.forEach(item -> {
             UserInfo userInfo = userInfoService.queryByUidFromCache(item.getJoinUid());
             item.setJoinPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
-        }).collect(Collectors.toList());
+        });
+
+        return userAmountHistoryVOS;
     }
 }
