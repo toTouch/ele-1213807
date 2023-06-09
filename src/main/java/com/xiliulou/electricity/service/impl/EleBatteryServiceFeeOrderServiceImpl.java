@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -65,7 +66,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS, user.getTenantId());
     }
 
-
+    @Slave
     @Override
     public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status, Integer tenantId) {
 
@@ -85,6 +86,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         return R.ok(eleBatteryServiceFeeOrders);
     }
 
+    @Slave
     @Override
     public R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery) {
         List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryList(batteryServiceFeeQuery);
@@ -103,26 +105,31 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         return R.ok(eleBatteryServiceFeeOrders);
     }
 
+    @Slave
     @Override
     public R queryCount(BatteryServiceFeeQuery batteryServiceFeeQuery) {
         return R.ok(eleBatteryServiceFeeOrderMapper.queryCount(batteryServiceFeeQuery));
     }
 
+    @Slave
     @Override
     public BigDecimal queryUserTurnOver(Integer tenantId, Long uid) {
         return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId, uid)).orElse(new BigDecimal("0"));
     }
 
+    @Slave
     @Override
     public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, List<Long> franchiseeIds) {
         return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId, todayStartTime, franchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return eleBatteryServiceFeeOrderMapper.queryTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
+    @Slave
     @Override
     public BigDecimal queryAllTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return eleBatteryServiceFeeOrderMapper.queryAllTurnOver(tenantId, franchiseeId, beginTime, endTime);

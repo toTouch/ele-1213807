@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.BatteryTrackRecord;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.mapper.BatteryTrackRecordMapper;
@@ -104,7 +105,8 @@ public class BatteryTrackRecordServiceImpl implements BatteryTrackRecordService 
     public Boolean deleteById(Long id) {
         return this.batteryTrackRecordMapper.deleteById(id) > 0;
     }
-    
+
+    @Slave
     @Override
     public Pair<Boolean, Object> queryTrackRecord(String sn, Integer size, Integer offset, Long startTime,
             Long endTime) {

@@ -4,21 +4,20 @@ import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarDepositOrderMapper;
+import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.RentCarDepositOrderQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.CarDepositOrderVO;
-import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
-import com.xiliulou.electricity.vo.UserCarDepositOrderVo;
-import com.xiliulou.electricity.vo.UserCarDepositVO;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -29,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -52,6 +52,8 @@ import org.springframework.util.CollectionUtils;
 public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     @Autowired
     private CarDepositOrderMapper carDepositOrderMapper;
+    @Resource
+    private EleDepositOrderMapper eleDepositOrderMapper;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -84,6 +86,24 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
     ElectricityCarService electricityCarService;
     @Autowired
     MemberCardFailureRecordService memberCardFailureRecordService;
+    
+    @Autowired
+    FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
+    
+    @Autowired
+    FreeDepositOrderService freeDepositOrderService;
+    
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+    
+    @Autowired
+    UserBatteryDepositService userBatteryDepositService;
+    
+    @Autowired
+    UserBatteryService userBatteryService;
+    
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -113,6 +133,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<CarDepositOrderVO> selectByPage(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         List<CarDepositOrder> carDepositOrders = this.carDepositOrderMapper.selectByPage(rentCarDepositOrderQuery);
@@ -135,12 +156,14 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
             }
 
             //是否已退押金
-            carDepositOrderVO.setRefundDeposit(eleRefundOrderService.checkDepositOrderIsRefund(item.getOrderId()));
+            carDepositOrderVO.setRefundDeposit(eleRefundOrderService
+                    .checkDepositOrderIsRefund(item.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER));
 
             return carDepositOrderVO;
         }).collect(Collectors.toList());
     }
 
+    @Slave
     @Override
     public Integer selectPageCount(RentCarDepositOrderQuery rentCarDepositOrderQuery) {
         return this.carDepositOrderMapper.selectPageCount(rentCarDepositOrderQuery);
@@ -346,6 +369,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Deprecated
     public Triple<Boolean, String, Object> refundRentCarDeposit(HttpServletRequest request) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -404,11 +428,15 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
 
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
             log.error("ELE CAR REFUND ERROR! have refunding order! uid={}", user.getUid());
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
         }
+    
+        //获取退还金额
+        BigDecimal refundAmount =
+                getRefundAmount(eleDepositOrder).doubleValue() < 0 ? BigDecimal.ZERO : getRefundAmount(eleDepositOrder);
 
         String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
 
@@ -416,19 +444,79 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
                 .refundOrderNo(orderId)
-                .payAmount(payAmount)
-                .refundAmount(payAmount)
+                .payAmount(payAmount).refundAmount(refundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
+    
+        //零元直接退
+        if (BigDecimal.valueOf(0).compareTo(refundAmount) == 0) {
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+        
+            UserInfo updateUserInfo = new UserInfo();
+            updateUserInfo.setUid(userInfo.getUid());
+            updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
+            updateUserInfo.setUpdateTime(System.currentTimeMillis());
+        
+            FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
+            //车辆电池一起免押，退押金解绑用户电池信息
+            if (Objects.nonNull(freeDepositOrder) && Objects
+                    .equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+            
+                updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
+            
+                userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
+                userBatteryDepositService.logicDeleteByUid(userInfo.getUid());
+                userBatteryService.deleteByUid(userInfo.getUid());
+            
+                InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+                if (Objects.nonNull(insuranceUserInfo)) {
+                    insuranceUserInfoService.deleteById(insuranceUserInfo);
+                }
+            }
+        
+            userInfoService.updateByUid(updateUserInfo);
+        
+            userCarService.deleteByUid(userInfo.getUid());
+        
+            userCarDepositService.logicDeleteByUid(userInfo.getUid());
+        
+            userCarMemberCardService.deleteByUid(userInfo.getUid());
+        
+            //退押金解绑用户所属加盟商
+            userInfoService.unBindUserFranchiseeId(userInfo.getUid());
+            //退押金成功通知前端
+            return Triple.of(true, "", "SUCCESS");
+        }
+    
+    
+    
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款
         return Triple.of(true, "", "提交成功！");
     }
-
+    
+    private BigDecimal getRefundAmount(EleDepositOrder eleDepositOrder) {
+        if (!Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.FREE_DEPOSIT_PAYMENT)) {
+            return eleDepositOrder.getPayAmount();
+        }
+        
+        BigDecimal refundAmount = eleDepositOrder.getPayAmount();
+        FreeDepositAlipayHistory freeDepositAlipayHistory = freeDepositAlipayHistoryService
+                .queryByOrderId(eleDepositOrder.getOrderId());
+        if (Objects.nonNull(freeDepositAlipayHistory)) {
+            BigDecimal subtractAmount = eleDepositOrder.getPayAmount()
+                    .subtract(freeDepositAlipayHistory.getAlipayAmount());
+            refundAmount = subtractAmount.doubleValue() < 0 ? BigDecimal.ZERO : subtractAmount;
+        }
+        
+        return refundAmount;
+    }
+    
     @Override
     public Triple<Boolean, String, Object> handleRentCarDeposit(Long franchiseeId ,Long carModelId, Long storeId, Integer memberCardId, UserInfo userInfo) {
         if (Objects.isNull(carModelId) || Objects.isNull(storeId)) {
@@ -540,7 +628,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
             log.error("ELE CAR REFUND ERROR! have refunding order,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
@@ -671,7 +759,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         }
 
         //是否有正在进行中的退款
-        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId());
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(carDepositOrder.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
             log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", uid);
             return Triple.of(false, "ELECTRICITY.0047", "请勿重复退款");
@@ -723,11 +811,16 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         return Triple.of(true, "", "操作成功");
     }
 
+    @Slave
     @Override
-    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, List<Long> finalFranchiseeIds) {
-        return Optional.ofNullable(carDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, finalFranchiseeIds)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType,
+            List<Long> finalFranchiseeIds, Integer payType) {
+        return Optional.ofNullable(carDepositOrderMapper
+                .queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, finalFranchiseeIds, payType))
+                .orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, finalFranchiseeIds, beginTime, endTime);
@@ -738,12 +831,36 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
         List<UserCarDepositOrderVo> voList = carDepositOrderMapper
                 .payDepositOrderList(SecurityUtils.getUid(), TenantContextHolder.getTenantId(), offset, size);
         Optional.ofNullable(voList).orElse(new ArrayList<>()).parallelStream().forEachOrdered(item -> {
-            Long refundTime = eleRefundOrderService.queryRefundTime(item.getOrderId());
+            Long refundTime = eleRefundOrderService
+                    .queryRefundTime(item.getOrderId(), EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
             item.setRefundTime(refundTime);
         });
         return R.ok(voList);
     }
-    
+
+    @Override
+    public BigDecimal queryFreeDepositAlipayTurnOver(Integer tenantId, Long time, Integer rentCarDeposit, List<Long> finalFranchiseeIds) {
+        BigDecimal result = Optional.ofNullable(carDepositOrderMapper.queryFreeDepositAlipayTurnOver(tenantId, time, rentCarDeposit, finalFranchiseeIds)).orElse(BigDecimal.ZERO);
+
+        List<CarBatteryFreeDepositAlipayVo> carBatteryFreeDepositAlipayVos = this.eleDepositOrderMapper.queryCarBatteryFreeDepositAlipay(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
+        BigDecimal eleAlipayAmount = BigDecimal.valueOf(0);
+        BigDecimal totalAlipayAmount = BigDecimal.valueOf(0);
+        if(!CollectionUtils.isEmpty(carBatteryFreeDepositAlipayVos)) {
+            for(CarBatteryFreeDepositAlipayVo item : carBatteryFreeDepositAlipayVos) {
+                if(item.getPayAmount().compareTo(item.getAlipayAmount()) < 0) {
+                    eleAlipayAmount = eleAlipayAmount.add(item.getPayAmount());
+                } else {
+                    eleAlipayAmount = eleAlipayAmount.add(item.getAlipayAmount());
+                }
+
+                totalAlipayAmount = totalAlipayAmount.add(item.getAlipayAmount());
+            }
+        }
+
+        result = result.add(totalAlipayAmount).subtract(eleAlipayAmount);
+        return result;
+    }
+
     @Override
     public CarDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
         return carDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);

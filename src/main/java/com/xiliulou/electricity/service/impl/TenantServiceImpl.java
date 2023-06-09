@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -317,6 +318,7 @@ public class TenantServiceImpl implements TenantService {
         return R.ok(tenantMapper.queryCount(tenantQuery));
     }
 
+    @Slave
     @Override
     public Integer querySumCount(TenantQuery tenantQuery) {
         return tenantMapper.queryCount(tenantQuery);

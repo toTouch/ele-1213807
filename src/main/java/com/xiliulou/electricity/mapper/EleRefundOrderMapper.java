@@ -32,12 +32,17 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
     List<EleRefundOrderVO> selectCarRefundPageList(EleRefundQuery eleRefundQuery);
 
     Integer selectCarRefundPageCount(EleRefundQuery eleRefundQuery);
-
-    BigDecimal queryTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("refundOrderType") Integer refundOrderType, @Param("franchiseeIds") List<Long> franchiseeIds);
-
-    BigDecimal queryCarRefundTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("refundOrderType") Integer refundOrderType, @Param("franchiseeIds") List<Long> franchiseeIds);
-
-    Long queryRefundTime(@Param("orderId") String orderId);
+    
+    BigDecimal queryTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime,
+            @Param("refundOrderType") Integer refundOrderType, @Param("franchiseeIds") List<Long> franchiseeIds,
+            @Param("payType")
+            Integer payType);
+    
+    BigDecimal queryCarRefundTurnOverByTime(@Param("tenantId") Integer tenantId,
+            @Param("todayStartTime") Long todayStartTime, @Param("refundOrderType") Integer refundOrderType,
+            @Param("franchiseeIds") List<Long> franchiseeIds, @Param("payType") Integer payType);
+    
+    Long queryRefundTime(@Param("orderId") String orderId, @Param("refundOrderType") Integer refundOrderType);
 
     List<EleRefundOrder> selectBatteryFreeDepositRefundingOrder(@Param("offset") Integer offset, @Param("size") Integer size);
 

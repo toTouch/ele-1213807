@@ -511,6 +511,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, null, userBatteryVo);
     }
 
+    @Slave
     @Override
     public Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return electricitybatterymapper.queryCount(electricityBatteryQuery);
@@ -521,6 +522,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);
     }
 
+    @Slave
     @Override
     public R queryById(Long electricityBatteryId) {
         ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId,
@@ -671,6 +673,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.updateBatteryStatus(electricityBattery);
     }
 
+    @Slave
     @Override
     public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
@@ -832,18 +835,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         //        }
     }
 
+    @Slave
     @Override
     public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(
             HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         return electricitybatterymapper.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
     }
 
+    @Slave
     @Override
     public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(
             HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         return electricitybatterymapper.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
     }
 
+    @Slave
     @Override
     public R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery) {
         List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryBatteryOverview(
@@ -854,11 +860,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
 
         List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
-
-        /*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
-        if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
-            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-        }*/
 
         for (ElectricityBattery electricityBattery : electricityBatteryList) {
 
@@ -887,22 +888,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setFranchiseeName(franchisee.getName());
             }
 
-            //用于电池绑定问题
-            /*electricityBatteryVO.setIsBind(false);
-
-            if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
-                for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
-                    if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
-                        electricityBatteryVO.setIsBind(true);
-                    }
-                }
-            }*/
-
             electricityBatteryVOList.add(electricityBatteryVO);
         }
         return R.ok(electricityBatteryVOList);
     }
 
+    @Slave
     @Override
     public R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.batteryStatistical(electricityBatteryQuery));
@@ -945,6 +936,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                         .eq(ElectricityBattery::getFranchiseeId, franchiseeId));
     }
 
+    @Slave
     @Override
     public List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
         return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
@@ -1033,6 +1025,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, "", batteryModel);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn) {
         ElectricityBattery electricityBattery = queryBySnFromDb(sn, TenantContextHolder.getTenantId());
@@ -1069,6 +1062,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds) {
         TokenUser user = SecurityUtils.getUserInfo();

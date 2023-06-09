@@ -18,6 +18,9 @@
         <if test="status != null">
             AND status = #{status}
         </if>
+        <if test="cardModel != null ">
+            and card_model = #{cardModel}
+        </if>
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
         </if>

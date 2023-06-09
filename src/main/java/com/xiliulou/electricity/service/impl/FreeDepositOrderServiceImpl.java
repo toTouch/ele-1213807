@@ -4,11 +4,13 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.mapper.FreeDepositOrderMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -138,9 +140,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
     @Autowired
     UserCouponService userCouponService;
+    
+    @Autowired
+    UserService userService;
+    
+    @Autowired
+    FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Resource
+    EleRefundOrderMapper eleRefundOrderMapper;
 
     /**
      * 通过ID查询单条数据从DB
@@ -163,6 +174,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<FreeDepositOrder> selectByPage(FreeDepositOrderQuery query) {
         List<FreeDepositOrder> freeDepositOrders = this.freeDepositOrderMapper.selectByPage(query);
@@ -173,6 +185,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         return freeDepositOrders;
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(FreeDepositOrderQuery query) {
         return this.freeDepositOrderMapper.selectByPageCount(query);
@@ -227,8 +240,19 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     }
 
     @Override
-    public Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt) {
-
+    public Triple<Boolean, String, Object> freeDepositAuthToPay(String orderId, BigDecimal payTransAmt, String remark) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            log.error("FREE DEPOSIT ERROR! not found user!");
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+    
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(uid)) {
+            log.error("FREE DEPOSIT ERROR! not found user! uid={}", uid);
+            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+        }
+    
         FreeDepositOrder freeDepositOrder = this.selectByOrderId(orderId);
         if (Objects.isNull(freeDepositOrder) || !Objects.equals(freeDepositOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.error("FREE DEPOSIT ERROR! not found freeDepositOrder,orderId={}", orderId);
@@ -237,7 +261,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
         if (!Objects.equals(freeDepositOrder.getPayStatus(), FreeDepositOrder.PAY_STATUS_INIT)) {
             log.error("FREE DEPOSIT ERROR! freeDepositOrder already AuthToPay,orderId={}", orderId);
-            return Triple.of(false, "100412", "免押订单已授权支付");
+            return Triple.of(false, "100412", "免押订单已进行代扣，请勿重复操作");
+        }
+    
+        if (Objects.isNull(payTransAmt)) {
+            payTransAmt = BigDecimal.valueOf(freeDepositOrder.getTransAmt());
         }
 
         if (Objects.isNull(payTransAmt) || payTransAmt.compareTo(BigDecimal.valueOf(freeDepositOrder.getTransAmt())) > 0) {
@@ -261,7 +289,8 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)
+                && !Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
             log.error("FREE DEPOSIT ERROR! user not pay deposit,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
@@ -307,11 +336,29 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //更新免押订单状态
         FreeDepositOrder freeDepositOrderUpdate = new FreeDepositOrder();
         freeDepositOrderUpdate.setId(freeDepositOrder.getId());
-        freeDepositOrderUpdate.setPayStatus(pxzAuthToPayRspPxzCommonRsp.getData().getOrderStatus());
-        freeDepositOrderUpdate.setPayTransAmt(payTransAmt.doubleValue());
+        freeDepositOrderUpdate.setPayStatus(FreeDepositOrder.PAY_STATUS_DEALING);
+        freeDepositOrderUpdate.setPayTransAmt(freeDepositOrder.getTransAmt() - payTransAmt.doubleValue());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
-
+    
+        //代扣记录
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setUid(freeDepositOrder.getUid());
+        freeDepositAlipayHistory.setName(freeDepositOrder.getRealName());
+        freeDepositAlipayHistory.setPhone(freeDepositOrder.getPhone());
+        freeDepositAlipayHistory.setIdCard(freeDepositOrder.getIdCard());
+        freeDepositAlipayHistory.setOperateName(user.getName());
+        freeDepositAlipayHistory.setOperateUid(user.getUid());
+        freeDepositAlipayHistory.setPayAmount(BigDecimal.valueOf(freeDepositOrder.getTransAmt()));
+        freeDepositAlipayHistory.setAlipayAmount(payTransAmt);
+        freeDepositAlipayHistory.setType(freeDepositOrder.getDepositType());
+        freeDepositAlipayHistory.setPayStatus(FreeDepositAlipayHistory.PAY_STATUS_DEALING);
+        freeDepositAlipayHistory.setRemark(remark);
+        freeDepositAlipayHistory.setCreateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistory.setTenantId(TenantContextHolder.getTenantId());
+        freeDepositAlipayHistoryService.insert(freeDepositAlipayHistory);
         return Triple.of(true, "", "授权转支付交易处理中！");
     }
 
@@ -365,6 +412,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         freeDepositOrderUpdate.setPayStatus(pxzAuthToPayOrderQueryRspPxzCommonRsp.getData().getOrderStatus());
         freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(freeDepositOrderUpdate);
+    
+        FreeDepositAlipayHistory freeDepositAlipayHistory = new FreeDepositAlipayHistory();
+        freeDepositAlipayHistory.setOrderId(freeDepositOrder.getOrderId());
+        freeDepositAlipayHistory.setPayStatus(freeDepositOrderUpdate.getPayStatus());
+        freeDepositAlipayHistory.setUpdateTime(System.currentTimeMillis());
+        freeDepositAlipayHistoryService.updateByOrderId(freeDepositAlipayHistory);
 
         return Triple.of(true, "", pxzAuthToPayOrderQueryRspPxzCommonRsp.getData());
     }
@@ -451,9 +504,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-                return Triple.of(true, null, "同步成功");
-            }
+//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+//                return Triple.of(true, null, "同步成功");
+//            }
 
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
@@ -544,9 +597,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-                return Triple.of(true, null, "同步成功");
-            }
+//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+//                return Triple.of(true, null, "同步成功");
+//            }
 
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
@@ -649,9 +702,9 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-                return Triple.of(true, null, "同步成功");
-            }
+//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
+//                return Triple.of(true, null, "同步成功");
+//            }
 
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
@@ -854,8 +907,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phone(freeBatteryDepositQuery.getPhoneNumber())
                 .realName(freeBatteryDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .payStatus(FreeDepositOrder.AUTH_INIT)
+                .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -971,8 +1023,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phone(freeCarDepositQuery.getPhoneNumber())
                 .realName(freeCarDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .payStatus(FreeDepositOrder.AUTH_INIT)
+                .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(carDepositOrder.getPayAmount().doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -1095,8 +1146,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 .phone(freeCarBatteryDepositQuery.getPhoneNumber())
                 .realName(freeCarBatteryDepositQuery.getRealName())
                 .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .payStatus(FreeDepositOrder.AUTH_INIT)
+                .updateTime(System.currentTimeMillis()).payStatus(FreeDepositOrder.PAY_STATUS_INIT)
                 .tenantId(TenantContextHolder.getTenantId())
                 .transAmt(eleDepositOrder.getPayAmount().add(carDepositOrder.getPayAmount()).doubleValue())
                 .type(FreeDepositOrder.TYPE_ZHIFUBAO)
@@ -2438,8 +2488,20 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 UserInfo updateUserInfo = new UserInfo();
 
+                EleRefundOrder carRefundOrder = eleRefundOrderMapper.selectOne(
+                        new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
+                                .eq(EleRefundOrder::getTenantId, eleRefundOrder.getTenantId())
+                                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
+                                .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+
                 //如果车电一起免押，解绑用户车辆信息
-                if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                if (Objects.nonNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                    EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
+                    carRefundOrderUpdate.setId(carRefundOrder.getId());
+                    carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                    carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    eleRefundOrderService.update(carRefundOrderUpdate);
+
                     updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
 
                     userCarService.deleteByUid(freeDepositOrder.getUid());
@@ -2516,8 +2578,18 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
 
                 UserInfo updateUserInfo = new UserInfo();
 
+                EleRefundOrder batteryRefundOrder = eleRefundOrderMapper.selectOne(
+                        new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, eleRefundOrder.getOrderId())
+                                .eq(EleRefundOrder::getTenantId, eleRefundOrder.getTenantId())
+                                .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
+                                .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
                 //车辆电池一起免押，退押金解绑用户电池信息
-                if (Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                if (Objects.nonNull(batteryRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
+                    EleRefundOrder batteryRefundOrderUpdate = new EleRefundOrder();
+                    batteryRefundOrderUpdate.setId(batteryRefundOrder.getId());
+                    batteryRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                    batteryRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                    eleRefundOrderService.update(batteryRefundOrderUpdate);
 
                     updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
 

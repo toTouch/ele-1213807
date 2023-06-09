@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.mapper.UserDataScopeMapper;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -125,6 +126,7 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
         return list;
     }
 
+    @Slave
     @Override
     public List<Long> selectDataIdByUid(Long uid) {
         return this.userDataScopeMapper.selectDataIdByUid(uid);

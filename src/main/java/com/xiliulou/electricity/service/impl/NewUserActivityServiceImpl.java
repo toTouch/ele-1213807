@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
@@ -176,6 +177,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
 
+	@Slave
 	@Override
 	public R queryList(NewUserActivityQuery newUserActivityQuery) {
 		List<NewUserActivity> newUserActivityList = newUserActivityMapper.queryList(newUserActivityQuery);
@@ -208,6 +210,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	}
 
+	@Slave
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
 		return R.ok(newUserActivityMapper.queryCount(newUserActivityQuery));

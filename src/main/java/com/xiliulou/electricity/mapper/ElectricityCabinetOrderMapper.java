@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
@@ -43,4 +41,9 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
 
     ElectricityCabinetOrder selectLatestByUid(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
+
+    List<ElectricityCabinetOrder> selectTodayExchangeOrder(@Param("eid") Integer eid, @Param("todayStartTimeStamp") long todayStartTimeStamp, @Param("todayEndTimeStamp") long todayEndTimeStamp, @Param("tenantId") Integer tenantId);
+
+    List<ElectricityCabinetOrder> selectMonthExchangeOrders(@Param("eid") Integer eid, @Param("startTimeStamp") long startTimeStamp, @Param("endTimeStamp") long endTimeStamp, @Param("tenantId") Integer tenantId);
+
 }

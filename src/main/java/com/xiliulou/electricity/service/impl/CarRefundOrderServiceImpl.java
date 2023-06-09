@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.CarLockCtrlHistory;
 import com.xiliulou.electricity.entity.CarRefundOrder;
@@ -164,7 +165,8 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
     public Integer queryCountByStatus(Long uid, Integer tenantId, Integer status) {
         return this.carRefundOrderMapper.queryCountByStatus(uid, tenantId, status);
     }
-    
+
+    @Slave
     @Override
     public R queryCount(CarRefundOrderQuery query) {
         return R.ok(this.carRefundOrderMapper.queryCount(query));
@@ -351,7 +353,8 @@ public class CarRefundOrderServiceImpl implements CarRefundOrderService {
         //等待后台审核后车辆接触绑定
         return R.ok();
     }
-    
+
+    @Slave
     @Override
     public R queryList(CarRefundOrderQuery query) {
         List<CarRefundOrder> carRefundOrders = carRefundOrderMapper.queryList(query);
