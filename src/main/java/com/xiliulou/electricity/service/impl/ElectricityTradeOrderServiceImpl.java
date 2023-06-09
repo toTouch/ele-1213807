@@ -137,9 +137,6 @@ public class ElectricityTradeOrderServiceImpl extends
     ShareActivityMemberCardService shareActivityMemberCardService;
 
     @Autowired
-    InvitationActivityRecordService invitationActivityRecordService;
-
-    @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
     @Override
