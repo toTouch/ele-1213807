@@ -245,7 +245,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         }
 
         InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(userInfo.getUid());
-        if (Objects.isNull(invitationActivityUser) || !Objects.equals(invitationActivityUser.getUid(), userInfo.getUid())) {
+        if (Objects.isNull(invitationActivityUser) || !Objects.equals(invitationActivity.getId(), invitationActivityUser.getActivityId())) {
             log.error("INVITATION ACTIVITY ERROR! invitationActivityUser is null,uid={}", userInfo.getUid());
             return Triple.of(false, "100392", "无权限参加此活动");
         }
