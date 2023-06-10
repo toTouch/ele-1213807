@@ -245,6 +245,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .tenantId(tenantId)
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
+                .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
         List<ElectricityBatteryDataVO> electricityBatteries = electricitybatterymapper.queryBatteryList(electricityBatteryQuery, offset, size);
@@ -280,6 +281,7 @@ public class ElectricityBatteryDataServiceImpl extends ServiceImpl<ElectricityBa
                 .tenantId(TenantContextHolder.getTenantId())
                 .sn(sn)
                 .electricityCabinetId(electricityCabinetId)
+                .franchiseeId(franchiseeId)
                 .businessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT)
                 .queryType(ElectricityBatteryDataQuery.QUERY_TYPE_PENDINGRENTAL).build();
         return R.ok(electricitybatterymapper.queryBatteryCount(electricityBatteryQuery));
