@@ -37,10 +37,10 @@
 				and tenant_id = #{tenantId}
 			</if>
 			<if test="type != null ">
-				and tuah.type = #{type}
+				and type = #{type}
 			</if>
 			<if test="type == null ">
-				and tuah.type in (1,2)
+				and type in (1,2)
 			</if>
 		</where>
 	</select>
