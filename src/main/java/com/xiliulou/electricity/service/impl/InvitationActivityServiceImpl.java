@@ -3,17 +3,11 @@ package com.xiliulou.electricity.service.impl;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.InvitationActivity;
-import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
-import com.xiliulou.electricity.entity.InvitationActivityMemberCard;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.InvitationActivityMapper;
 import com.xiliulou.electricity.query.InvitationActivityQuery;
 import com.xiliulou.electricity.query.InvitationActivityStatusQuery;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.InvitationActivityJoinHistoryService;
-import com.xiliulou.electricity.service.InvitationActivityMemberCardService;
-import com.xiliulou.electricity.service.InvitationActivityService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -55,6 +49,9 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Autowired
     private ElectricityMemberCardService memberCardService;
+
+    @Autowired
+    private InvitationActivityUserService invitationActivityUserService;
 
     @Override
     public List<InvitationActivity> selectBySearch(InvitationActivityQuery query) {
@@ -273,7 +270,13 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
 
     @Override
     public Triple<Boolean, String, Object> activityInfo() {
-        InvitationActivity invitationActivity = this.selectUsableActivity(TenantContextHolder.getTenantId());
+
+        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(SecurityUtils.getUid());
+        if(Objects.isNull(invitationActivityUser)){
+            return Triple.of(true, null, null);
+        }
+
+        InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getId());
         if(Objects.isNull(invitationActivity)){
             return Triple.of(true, null, null);
         }
