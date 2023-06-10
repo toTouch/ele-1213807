@@ -39,6 +39,9 @@
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
             </if>
+            <if test="tenantId != null">
+                and tui.tenant_id = #{tenantId}
+            </if>
         </where>
     </select>
 
@@ -51,6 +54,9 @@
             </if>
             <if test="phone != null and phone != ''">
                 and tui.phone = #{phone}
+            </if>
+            <if test="tenantId != null">
+                and tui.tenant_id = #{tenantId}
             </if>
         </where>
     </select>
