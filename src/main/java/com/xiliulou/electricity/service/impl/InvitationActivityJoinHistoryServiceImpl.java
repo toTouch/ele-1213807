@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.InvitationActivityJoinHistory;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.InvitationActivityJoinHistoryMapper;
 import com.xiliulou.electricity.query.InvitationActivityJoinHistoryQuery;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 @Service("invitationActivityJoinHistoryService")
 @Slf4j
 public class InvitationActivityJoinHistoryServiceImpl implements InvitationActivityJoinHistoryService {
+    private static final Integer PAGE_LIMIT = 100;
+
     @Resource
     private InvitationActivityJoinHistoryMapper invitationActivityJoinHistoryMapper;
     @Autowired
@@ -160,5 +163,13 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
         }
 
         return list;
+    }
+
+    @Override
+    public void handelActivityJoinHistoryExpired() {
+        InvitationActivityJoinHistory invitationActivityJoinHistoryUpdate = new InvitationActivityJoinHistory();
+        invitationActivityJoinHistoryUpdate.setStatus(InvitationActivityJoinHistory.STATUS_FAIL);
+        invitationActivityJoinHistoryUpdate.setUpdateTime(System.currentTimeMillis());
+        invitationActivityJoinHistoryMapper.updateExpired(invitationActivityJoinHistoryUpdate);
     }
 }

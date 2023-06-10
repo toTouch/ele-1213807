@@ -53,7 +53,7 @@
         select
           id, uid, record_id, join_uid, start_time, expired_time, activity_id, status, pay_count, money, tenant_id, create_time, update_time
         from t_invitation_activity_join_history
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <select id="selectByPage" resultType="com.xiliulou.electricity.vo.InvitationActivityJoinHistoryVO">
@@ -226,6 +226,10 @@
         update t_invitation_activity_join_history
         set status = #{status}
         where activity_id = #{activityId} and status =1
+    </update>
+
+    <update id="updateExpired">
+        update t_invitation_activity_join_history set status = #{status},update_time=#{updateTime} where expired_time &lt;= #{updateTime} and status =1
     </update>
 
     <!--通过主键删除-->

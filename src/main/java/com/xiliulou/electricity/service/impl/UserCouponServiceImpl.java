@@ -97,7 +97,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                 .status(UserCoupon.STATUS_UNUSED)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
-                .tenantId(tenantId);
+                .tenantId(coupon.getTenantId());
 
         //优惠券过期时间
 

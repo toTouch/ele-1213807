@@ -278,7 +278,23 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             return Triple.of(true, null, null);
         }
 
-        return Triple.of(true, null, invitationActivity);
+        InvitationActivityVO invitationActivityVO = new InvitationActivityVO();
+        BeanUtils.copyProperties(invitationActivity, invitationActivityVO);
+
+        List<Long> membercardIds = invitationActivityMemberCardService.selectMemberCardIdsByActivityId(invitationActivity.getId());
+        if (!CollectionUtils.isEmpty(membercardIds)) {
+            List<ElectricityMemberCard> memberCardList = Lists.newArrayList();
+            for (Long membercardId : membercardIds) {
+                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(membercardId.intValue());
+                if (Objects.nonNull(electricityMemberCard)) {
+                    memberCardList.add(electricityMemberCard);
+                }
+            }
+
+            invitationActivityVO.setMemberCardList(memberCardList);
+        }
+
+        return Triple.of(true, null, invitationActivityVO);
     }
 
     private List<InvitationActivityMemberCard> buildShareActivityMemberCard(Long id, List<Long> membercardIds) {

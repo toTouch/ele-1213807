@@ -201,15 +201,16 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
-        //获取当前上架的活动
-        InvitationActivity invitationActivity = invitationActivityService.selectUsableActivity(TenantContextHolder.getTenantId());
-        if (Objects.isNull(invitationActivity)) {
-            log.error("INVITATION ACTIVITY ERROR! not found InvitationActivity,uid={}", userInfo.getUid());
-            return Triple.of(false, "100391", "暂无上架的活动");
+        //获取当前用户所绑定的套餐返现活动
+        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(userInfo.getUid());
+        if (Objects.isNull(invitationActivityUser)) {
+            log.warn("INVITATION ACTIVITY WARN! not found invitationActivityUser,uid={}", userInfo.getUid());
+            return Triple.of(true, null, null);
         }
 
-        InvitationActivityRecord activityRecord = this.selectByActivityIdAndUid(invitationActivity.getId(), userInfo.getUid());
+        InvitationActivityRecord activityRecord = this.selectByActivityIdAndUid(invitationActivityUser.getActivityId(), userInfo.getUid());
         if (Objects.isNull(activityRecord)) {
+            log.warn("INVITATION ACTIVITY WARN! not found activityRecord,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
         }
 
