@@ -23,4 +23,8 @@ public class InvitationActivityRecordQuery {
     private String phone;
 
     private Integer status;
+
+    private Long beginTime;
+
+    private Long endTime;
 }

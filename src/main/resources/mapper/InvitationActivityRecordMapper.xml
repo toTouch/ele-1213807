@@ -73,6 +73,12 @@
             <if test="tenantId != null">
                 and iar.tenant_id = #{tenantId}
             </if>
+            <if test="beginTime != null">
+                and iar.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and iar.create_time &lt;=#{endTime}
+            </if>
         </where>
         order by iar.id desc
         limit #{offset}, #{size}
@@ -94,6 +100,12 @@
             </if>
             <if test="tenantId != null">
                 and iar.tenant_id = #{tenantId}
+            </if>
+            <if test="beginTime != null">
+                and iar.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and iar.create_time &lt;=#{endTime}
             </if>
         </where>
     </select>
