@@ -43,6 +43,8 @@
                 and tui.tenant_id = #{tenantId}
             </if>
         </where>
+        order by iau.id desc
+        limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="int">
