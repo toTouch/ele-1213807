@@ -134,6 +134,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         invitationActivityUpdate.setId(query.getId());
         invitationActivityUpdate.setName(query.getName());
         invitationActivityUpdate.setHours(query.getHours());
+        invitationActivityUpdate.setDescription(query.getDescription());
         invitationActivityUpdate.setFirstReward(query.getFirstReward());
         invitationActivityUpdate.setOtherReward(query.getOtherReward());
         invitationActivityUpdate.setUpdateTime(System.currentTimeMillis());
