@@ -266,6 +266,16 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
         return invitationActivityMapper.selectUsableActivity(tenantId);
     }
 
+    @Override
+    public Triple<Boolean, String, Object> activityInfo() {
+        InvitationActivity invitationActivity = this.selectUsableActivity(TenantContextHolder.getTenantId());
+        if(Objects.isNull(invitationActivity)){
+            return Triple.of(true, null, null);
+        }
+
+        return Triple.of(true, null, invitationActivity);
+    }
+
     private List<InvitationActivityMemberCard> buildShareActivityMemberCard(Long id, List<Long> membercardIds) {
         List<InvitationActivityMemberCard> list = Lists.newArrayList();
 

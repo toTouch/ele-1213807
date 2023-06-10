@@ -19,22 +19,15 @@ import org.springframework.web.bind.annotation.*;
 public class JsonUserInvitationActivityController extends BaseController {
 
     @Autowired
-    private InvitationActivityRecordService invitationActivityRecordService;
+    private InvitationActivityService invitationActivityService;
 
     /**
-     * 生成邀请活动二维码
+     * 获取活动详情
      */
-    @GetMapping("/user/invitation/activity/generateCode")
-    public R generateCode() {
-        return returnTripleResult(invitationActivityRecordService.generateCode());
+    @GetMapping("/user/invitation/activity/info")
+    public R activityInfo() {
+        return returnTripleResult(invitationActivityService.activityInfo());
     }
 
-    /**
-     * 参与活动
-     */
-    @PostMapping("/user/invitation/activity/joinActivity")
-    public R joinActivity(@RequestBody InvitationActivityQuery query) {
-        return returnTripleResult(invitationActivityRecordService.joinActivity(query));
-    }
 
 }

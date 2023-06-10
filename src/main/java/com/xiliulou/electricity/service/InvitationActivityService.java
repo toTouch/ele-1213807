@@ -71,4 +71,6 @@ public interface InvitationActivityService {
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
 
     Integer checkUsableActivity(Integer tenantId);
+
+    Triple<Boolean, String, Object> activityInfo();
 }
