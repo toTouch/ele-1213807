@@ -375,12 +375,14 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
         //是否有上架的套餐返现活动
         InvitationActivity invitationActivity = invitationActivityService.selectUsableActivity(userInfo.getTenantId());
         if (Objects.isNull(invitationActivity)) {
+            log.info("INVITATION ACTIVITY INFO!not found invitationActivity,tenantId={},uid={}", userInfo.getTenantId(), userInfo.getUid());
             return;
         }
 
         //是否参与过套餐返现活动
         InvitationActivityJoinHistory activityJoinHistory = invitationActivityJoinHistoryService.selectByActivityAndUid(invitationActivity.getId(), userInfo.getUid());
         if (Objects.isNull(activityJoinHistory)) {
+            log.info("INVITATION ACTIVITY INFO!not found activityJoinHistory,activityId={},uid={}", invitationActivity.getId(), userInfo.getUid());
             return;
         }
 
