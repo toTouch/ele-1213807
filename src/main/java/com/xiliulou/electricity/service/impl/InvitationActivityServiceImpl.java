@@ -99,6 +99,11 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(InvitationActivityQuery query) {
+        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
+        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
+            return Triple.of(false, "", "已存在上架的活动");
+        }
+
         InvitationActivity invitationActivity = new InvitationActivity();
         BeanUtils.copyProperties(query, invitationActivity);
         invitationActivity.setDiscountType(InvitationActivity.DISCOUNT_TYPE_FIXED_AMOUNT);
