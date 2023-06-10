@@ -183,6 +183,11 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
     }
 
     @Override
+    public InvitationActivityRecord selectByUid(Long uid) {
+        return this.invitationActivityRecordMapper.selectByUid(uid);
+    }
+
+    @Override
     public Triple<Boolean, String, Object> selectUserInvitationDetail() {
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
@@ -201,14 +206,7 @@ public class InvitationActivityRecordServiceImpl implements InvitationActivityRe
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
-        //获取当前用户所绑定的套餐返现活动
-        InvitationActivityUser invitationActivityUser = invitationActivityUserService.selectByUid(userInfo.getUid());
-        if (Objects.isNull(invitationActivityUser)) {
-            log.warn("INVITATION ACTIVITY WARN! not found invitationActivityUser,uid={}", userInfo.getUid());
-            return Triple.of(true, null, null);
-        }
-
-        InvitationActivityRecord activityRecord = this.selectByActivityIdAndUid(invitationActivityUser.getActivityId(), userInfo.getUid());
+        InvitationActivityRecord activityRecord = this.selectByUid(userInfo.getUid());
         if (Objects.isNull(activityRecord)) {
             log.warn("INVITATION ACTIVITY WARN! not found activityRecord,uid={}", userInfo.getUid());
             return Triple.of(true, null, null);
