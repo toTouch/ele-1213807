@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.mapper.OldUserActivityMapper;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
+import com.xiliulou.electricity.query.OldUserActivityUpdateQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.OldUserActivityService;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -269,6 +271,26 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
     @Override
     public OldUserActivity selectByCouponId(Long id) {
         return oldUserActivityMapper.selectByCouponId(id);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> edit(OldUserActivityUpdateQuery query) {
+        OldUserActivity oldUserActivity = this.queryByIdFromCache(query.getId());
+        if(Objects.isNull(oldUserActivity) || !Objects.equals(oldUserActivity.getTenantId(),TenantContextHolder.getTenantId() )){
+            return Triple.of(false,"","活动不存在");
+        }
+
+        OldUserActivity oldUserActivityUpdate = new OldUserActivity();
+        oldUserActivityUpdate.setId(oldUserActivity.getId());
+        oldUserActivityUpdate.setName(query.getName());
+        oldUserActivityUpdate.setUserScope(query.getUserScope());
+        oldUserActivityUpdate.setUpdateTime(System.currentTimeMillis());
+
+        DbUtils.dbOperateSuccessThenHandleCache(oldUserActivityMapper.updateById(oldUserActivityUpdate), i -> {
+            redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + oldUserActivity.getId());
+        });
+
+        return Triple.of(true,null,null);
     }
 }
 

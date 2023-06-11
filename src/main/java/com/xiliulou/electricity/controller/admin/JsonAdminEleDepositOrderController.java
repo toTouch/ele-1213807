@@ -161,8 +161,9 @@ public class JsonAdminEleDepositOrderController {
                 .carModel(carModel)
                 .depositType(depositType)
                 .payType(payType)
+                .storeName(storeName)
                 .tenantId(TenantContextHolder.getTenantId())
-                .franchiseeName(franchiseeName).storeName(storeName)
+                .franchiseeName(franchiseeName)
                 .franchiseeIds(franchiseeIds).build();
 
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);
@@ -208,7 +209,7 @@ public class JsonAdminEleDepositOrderController {
                 throw new CustomBusinessException("订单不存在！");
             }
         }
-    
+
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)

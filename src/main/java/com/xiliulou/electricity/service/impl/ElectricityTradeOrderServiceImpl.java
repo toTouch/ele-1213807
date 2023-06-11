@@ -251,27 +251,8 @@ public class ElectricityTradeOrderServiceImpl extends
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrder.getMemberCardId());
 
             if (Objects.nonNull(electricityMemberCard)) {
-
                 //月卡是否绑定活动
-                if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
-                    OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
-
-                    if (Objects.nonNull(oldUserActivity)) {
-
-                        //次数
-                        if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT) && Objects.nonNull(oldUserActivity.getCount())) {
-                            remainingNumber = remainingNumber + oldUserActivity.getCount();
-                        }
-
-                        //优惠券
-                        if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
-                            //发放优惠券
-                            Long[] uids = new Long[1];
-                            uids[0] = electricityMemberCardOrder.getUid();
-                            userCouponService.batchRelease(oldUserActivity.getCouponId(), uids);
-                        }
-                    }
-                }
+                remainingNumber = electricityMemberCardOrderService.handlerMembercardBindActivity(electricityMemberCard, userBatteryMemberCard, userInfo, remainingNumber);
             }
     
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();

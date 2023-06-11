@@ -372,6 +372,9 @@ public interface CacheConstant {
      */
     String CACHE_DIVISION_ACCOUNT_CONFIG = "division_account_config:";
 
+
+    String CACHE_RECEIVE_COUPON_LOCK = "receive_coupon_lock:";
+
     /**
      * 邀请活动缓存
      */

@@ -121,6 +121,8 @@ public interface ElectricityMemberCardOrderService {
     
     R disableMemberCardForRollback();
 
+    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
+
     Set<Integer> generateUserCouponIds(Integer userCouponId, List<Integer> userCouponIds);
 
     List<UserCoupon> buildUserCouponList(Set<Integer> userCouponIds, Integer status, String orderId);

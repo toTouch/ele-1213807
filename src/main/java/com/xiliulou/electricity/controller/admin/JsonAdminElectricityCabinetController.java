@@ -931,4 +931,12 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         return electricityCabinetService.batchOperateList(electricityCabinetQuery);
     }
 
+    /**
+     * 查询租户下是否有该换电柜 按三元组
+     */
+    @GetMapping(value = "/admin/electricityCabinet/existsElectricityCabinet")
+    public R existsElectricityCabinet(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+        return returnTripleResult(electricityCabinetService.existsElectricityCabinet(productKey, deviceName));
+    }
+
 }

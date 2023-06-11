@@ -98,6 +98,6 @@ public class OldUserActivityVO {
 
     private Integer payCount;
 
-
+    private Integer userScope;
 
 }

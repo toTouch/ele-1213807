@@ -49,7 +49,7 @@
         tcco.update_time,
         tcco.store_id,
         tcco.franchisee_id,
-        tui.name as user_name,
+        tcco.user_name as user_name,
         tui.phone
         from t_car_member_card_order tcco left join t_user_info tui on tcco.uid=tui.uid
         <where>

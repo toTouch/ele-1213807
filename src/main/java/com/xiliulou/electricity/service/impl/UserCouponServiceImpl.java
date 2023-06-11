@@ -44,6 +44,9 @@ public class UserCouponServiceImpl implements UserCouponService {
     private CouponService couponService;
 
     @Autowired
+    private RedisService redisService;
+
+    @Autowired
     UserService userService;
 
     @Autowired

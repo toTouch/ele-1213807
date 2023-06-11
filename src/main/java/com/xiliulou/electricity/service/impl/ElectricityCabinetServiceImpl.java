@@ -4161,4 +4161,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Collections.EMPTY_LIST;
     }
 
+    @Override
+    public Triple<Boolean, String, Object> existsElectricityCabinet(String productKey, String deviceName) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (Objects.isNull(tenantId) || StringUtils.isEmpty(productKey) || StringUtils.isEmpty(deviceName)) {
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+        }
+        if (!tenantId.equals(electricityCabinet.getTenantId())) {
+            log.error("query existsElectricityCabinet  ERROR!tenantId is not equal!tenantId1={}, tenantId2={} ,sn={}",
+                    tenantId, electricityCabinet.getTenantId(), electricityCabinet.getSn());
+            return Triple.of(false, "100373", "当前运营商与柜机所属运营商不一致");
+        }
+        return Triple.of(true, null, null);
+    }
 }

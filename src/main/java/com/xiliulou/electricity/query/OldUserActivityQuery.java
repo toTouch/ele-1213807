@@ -23,7 +23,7 @@ public class OldUserActivityQuery {
     private Integer tenantId;
     private String discountType;
     private Integer status;
-
+    private Integer userScope;
 
 
 }

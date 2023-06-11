@@ -99,8 +99,10 @@ public class OldUserActivity {
      * 创建人用户名
      */
     private String userName;
-
-
+    /**
+     * 用户范围 0：全部，1：新用户，2：老用户
+     */
+    private Integer userScope;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
@@ -122,6 +124,11 @@ public class OldUserActivity {
     public static final Integer TYPE_COUNT = 1;
     //2--优惠券
     public static final Integer TYPE_COUPON = 2;
+
+
+    public static final Integer USER_SCOPE_ALL = 0;
+    public static final Integer USER_SCOPE_NEW = 1;
+    public static final Integer USER_SCOPE_OLD = 2;
 
 
 }
