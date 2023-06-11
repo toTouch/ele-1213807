@@ -1739,7 +1739,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
             serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
         } else {
-            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
         }
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
@@ -2697,7 +2697,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(item.getUid());
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-                serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
+                serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
                 EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
