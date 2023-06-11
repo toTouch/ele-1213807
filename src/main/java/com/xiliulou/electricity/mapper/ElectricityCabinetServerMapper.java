@@ -72,4 +72,6 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
 
     ElectricityCabinetServer queryByProductKeyAndDeviceName(@Param("productKey") String productKey,
         @Param("deviceName") String deviceName);
+
+    ElectricityCabinetServer selectByEid(@Param("eid") Integer id);
 }

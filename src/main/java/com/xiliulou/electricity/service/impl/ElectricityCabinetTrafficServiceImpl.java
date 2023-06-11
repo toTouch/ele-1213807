@@ -7,6 +7,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.ElectricityCabinetTraffic;
 import com.xiliulou.electricity.mapper.ElectricityCabinetTrafficMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetTrafficService;
@@ -75,6 +76,7 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
         return electricityCabinetTrafficMapper.insertOne(electricityCabinetTraffic);
     }
 
+    @Slave
     @Override
     public R queryList(Long size, Long offset, Integer electricityCabinetId, String electricityCabinetName, LocalDate date, Long beginTime, Long endTime) {
 
@@ -110,6 +112,7 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
         return R.ok(electricityCabinetSumTrafficVo);
     }
 
+    @Slave
     @Override
     public void exportExcel( Integer electricityCabinetId,
         String electricityCabinetName, LocalDate date, Long beginTime, Long endTime,

@@ -106,6 +106,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 车辆控制  0--开  1--关
      */
     private Integer isOpenCarControl;
+
+    /**
+     * 是否启用0元退押审核
+     */
+    private Integer isZeroDepositAuditEnabled;
 }
 
 

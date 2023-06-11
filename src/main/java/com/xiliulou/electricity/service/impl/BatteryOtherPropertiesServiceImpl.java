@@ -56,6 +56,7 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 
 	}
 
+	@Slave
 	@Override
 	public R queryBySn(String sn) {
 		

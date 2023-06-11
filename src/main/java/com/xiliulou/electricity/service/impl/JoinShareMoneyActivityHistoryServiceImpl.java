@@ -144,7 +144,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
         return R.ok(voList);
 	}
 
-
+	@Slave
 	@Override
 	public R queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
         ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService
@@ -161,6 +161,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
         return R.ok(voList);
 	}
 
+	@Slave
 	@Override
 	public R queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
         ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService

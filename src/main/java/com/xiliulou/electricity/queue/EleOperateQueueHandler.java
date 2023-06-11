@@ -315,7 +315,6 @@ public class EleOperateQueueHandler {
                 }
 
                 //清除柜机锁定缓存
-                redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
                 return;
             }
 
@@ -482,9 +481,6 @@ public class EleOperateQueueHandler {
             } finally {
                 redisService.delete(CacheConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY
                         + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
-
-                //清除柜机锁定缓存
-                redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
             }
 
         }
@@ -503,8 +499,6 @@ public class EleOperateQueueHandler {
                 newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
                 electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
-                //清除柜机锁定缓存
-                redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
                 return;
             }
 
@@ -540,8 +534,6 @@ public class EleOperateQueueHandler {
             if (Objects.nonNull(oldElectricityBattery)) {
                 if (Objects.equals(oldElectricityBattery.getSn(),
                         electricityCabinetOrder.getNewElectricityBatterySn())) {
-                    //删除柜机被锁缓存
-                    redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
                     return;
                 }
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -570,8 +562,6 @@ public class EleOperateQueueHandler {
                             + System.currentTimeMillis());
             electricityBatteryService.updateBatteryUser(newElectricityBattery);
 
-            //删除柜机被锁缓存
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
             //缓存分配出去的格挡
             if (StrUtil.isNotBlank(electricityCabinetOrder.getNewElectricityBatterySn())) {
                 redisService.set(CacheConstant.CACHE_PRE_TAKE_CELL + electricityCabinetOrder.getElectricityCabinetId(),
@@ -594,8 +584,6 @@ public class EleOperateQueueHandler {
                 newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
                 rentBatteryOrderService.update(newRentBatteryOrder);
 
-                //清除柜机锁定缓存
-                redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
                 return;
             }
 
@@ -675,8 +663,6 @@ public class EleOperateQueueHandler {
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(rentBatteryOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
             if (Objects.equals(oldElectricityBattery.getSn(), rentBatteryOrder.getElectricityBatterySn())) {
-                //删除柜机被锁缓存
-                redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
                 return;
             }
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -705,8 +691,6 @@ public class EleOperateQueueHandler {
                         + System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(newElectricityBattery);
 
-        //删除柜机被锁缓存
-        redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
         handleCallBatteryChangeSoc(electricityBattery);
     }
 
@@ -787,8 +771,6 @@ public class EleOperateQueueHandler {
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
 
-            //删除柜机被锁缓存
-            redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
         }
 
     }

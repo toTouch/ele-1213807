@@ -40,4 +40,6 @@ public interface FranchiseeInsuranceService {
     List<FranchiseeInsurance> selectByFranchiseeId(Long toFranchiseeId, Integer tenantId);
 
     void moveInsurance(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee);
+
+    R selectInsuranceListByCondition( Integer status, Integer type, Integer tenantId, Long franchiseeId, String batterType);
 }

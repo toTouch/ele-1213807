@@ -33,6 +33,7 @@ public interface UserCouponService {
     UserCoupon queryByIdFromDB(Integer userCouponId);
 
     UserCoupon queryByActivityIdAndCouponId(Integer activityId, Long activityRuleId, Integer couponId,Long uid);
+    List<UserCoupon> selectListByActivityIdAndCouponId(Integer activityId, Long activityRuleId, Integer couponId,Long uid);
 
 	void update(UserCoupon userCoupon);
 
@@ -41,4 +42,8 @@ public interface UserCouponService {
     R queryCount(UserCouponQuery userCouponQuery);
     
     List<UserCoupon> selectCouponUserCountById(Long id);
+
+    Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList);
+
+    Integer updateUserCouponStatus(UserCoupon userCoupon);
 }

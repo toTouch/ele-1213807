@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.FaceAuthResultDTO;
@@ -9,19 +10,26 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.FaceidResultQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.ImageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.faceid.entity.dto.EidUserInfoDTO;
 import com.xiliulou.faceid.entity.rsp.FaceidResultRsp;
 import com.xiliulou.faceid.entity.rsp.FaceidTokenRsp;
 import com.xiliulou.faceid.service.FaceidResultService;
 import com.xiliulou.faceid.service.FaceidTokenService;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.AliyunOssService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author zzlong
@@ -32,12 +40,19 @@ import java.util.Objects;
 @Service
 public class FaceidServiceImpl implements FaceidService {
 
+    private static final String OCR_OSS_PATH = "saas/idcard/";
+
     private static final String SUCCESS_MESSAGE = "成功";
 
     /**
      * 人脸核身最大透支次数
      */
     private static final Integer FACEID_MAX_OVERDRAFT_CAPACITY = -100;
+
+
+    private static ExecutorService uploadIdcardPictureExecutor = XllThreadPoolExecutors.newFixedThreadPool("saveIdCardPicture",
+            2, "SAVE_IDCARD_PICTURE");
+
 
     @Autowired
     private FaceidConfigService faceidConfigService;
@@ -65,6 +80,17 @@ public class FaceidServiceImpl implements FaceidService {
 
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    StorageConfig storageConfig;
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
+    @Autowired
+    AliyunOssService aliyunOssService;
+
+    @Autowired
+    private EleUserAuthService eleUserAuthService;
 
     /**
      * 获取人脸核身token
@@ -299,12 +325,59 @@ public class FaceidServiceImpl implements FaceidService {
             userInfoUpdate.setTenantId(TenantContextHolder.getTenantId());
             userInfoService.update(userInfoUpdate);
 
+            uploadIdcardInfo(userInfo,faceidResultRsp);
+
             return Triple.of(true, "", null);
         } catch (Exception e) {
             log.error("ELE ERROR! face recognize fail,uid={},query={}", userInfo.getUid(),
                     JsonUtil.toJson(faceidResultQuery), e);
             return Triple.of(false, "100330", "人脸核身失败");
         }
+    }
+
+    private void uploadIdcardInfo(UserInfo userInfo, FaceidResultRsp faceidResultRsp) {
+        if (Objects.isNull(faceidResultRsp.getIdCardData()) || Objects.isNull(faceidResultRsp.getIdCardData().getOcrFront()) || Objects.isNull(faceidResultRsp.getIdCardData().getOcrBack())) {
+            log.error("ELE ERROR! acquire user idcard picture error,uid={},result={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
+            return;
+        }
+
+        uploadIdcardPictureExecutor.execute(() -> {
+            try {
+                //身份证正面照片
+                String ocrFrontPath = OCR_OSS_PATH + userInfo.getPhone() + userInfo.getUid() + "_front_" + userInfo.getUid() + ".png";
+
+                byte[] ocrFrontBytes = ImageUtil.base64ToImage(faceidResultRsp.getIdCardData().getOcrFront());
+
+                aliyunOssService.uploadFile(storageConfig.getBucketName(), ocrFrontPath, new ByteArrayInputStream(ocrFrontBytes));
+
+                EleUserAuth userAuthFront = new EleUserAuth();
+                userAuthFront.setUid(userInfo.getUid());
+                userAuthFront.setEntryId(EleAuthEntry.ID_CARD_FRONT_PHOTO);
+                userAuthFront.setValue(ocrFrontPath);
+                userAuthFront.setCreateTime(System.currentTimeMillis());
+                userAuthFront.setUpdateTime(System.currentTimeMillis());
+                userAuthFront.setTenantId(userInfo.getTenantId());
+                eleUserAuthService.insert(userAuthFront);
+
+                //身份证反面照片
+                String ocrBackPath = OCR_OSS_PATH + userInfo.getPhone() + userInfo.getUid() + "_back_" + userInfo.getUid() + ".png";
+
+                byte[] ocrBackBytes = ImageUtil.base64ToImage(faceidResultRsp.getIdCardData().getOcrBack());
+
+                aliyunOssService.uploadFile(storageConfig.getBucketName(), ocrBackPath, new ByteArrayInputStream(ocrBackBytes));
+
+                EleUserAuth userAuthBack = new EleUserAuth();
+                userAuthBack.setUid(userInfo.getUid());
+                userAuthBack.setEntryId(EleAuthEntry.ID_CARD_BACK_PHOTO);
+                userAuthBack.setValue(ocrFrontPath);
+                userAuthBack.setCreateTime(System.currentTimeMillis());
+                userAuthBack.setUpdateTime(System.currentTimeMillis());
+                userAuthBack.setTenantId(userInfo.getTenantId());
+                eleUserAuthService.insert(userAuthBack);
+            } catch (Exception e) {
+                log.error("ELE ERROR!upload idcard info fail,uid={},result={}", userInfo.getUid(), JsonUtil.toJson(faceidResultRsp));
+            }
+        });
     }
 
 

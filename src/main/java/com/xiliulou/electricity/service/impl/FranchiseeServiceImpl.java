@@ -373,6 +373,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchisee;
     }
 
+    @Slave
     @Override
     public R queryList(FranchiseeQuery franchiseeQuery) {
         List<FranchiseeVO> franchiseeVOList = franchiseeMapper.queryList(franchiseeQuery);
@@ -455,6 +456,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid, uid).eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL));
     }
 
+    @Slave
     @Override
     public R queryCount(FranchiseeQuery franchiseeQuery) {
         return R.ok(franchiseeMapper.queryCount(franchiseeQuery));
@@ -568,6 +570,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId, tenantId));
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> selectListByQuery(FranchiseeQuery franchiseeQuery) {
         List<Franchisee> franchisees = franchiseeMapper.selectListByQuery(franchiseeQuery);

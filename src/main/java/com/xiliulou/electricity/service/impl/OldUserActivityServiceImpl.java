@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.OldUserActivity;
@@ -171,7 +172,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
-
+    @Slave
     @Override
     public R queryList(OldUserActivityQuery oldUserActivityQuery) {
         List<OldUserActivity> oldUserActivityList = oldUserActivityMapper.queryList(oldUserActivityQuery);
@@ -204,7 +205,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
     }
 
-
+    @Slave
     @Override
     public R queryCount(OldUserActivityQuery oldUserActivityQuery) {
         Integer count = oldUserActivityMapper.queryCount(oldUserActivityQuery);

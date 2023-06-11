@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.FreeDepositRechargeRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.FreeDepositRechargeRecordMapper;
@@ -65,6 +66,7 @@ public class FreeDepositRechargeRecordServiceImpl implements FreeDepositRecharge
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<FreeDepositRechargeRecordVO> selectByPage(FreeDepositRechargeRecordQuery query) {
         List<FreeDepositRechargeRecord> freeDepositRechargeRecords = this.freeDepositRechargeRecordMapper.selectByPage(query);
@@ -84,6 +86,7 @@ public class FreeDepositRechargeRecordServiceImpl implements FreeDepositRecharge
         }).collect(Collectors.toList());
     }
 
+    @Slave
     @Override
     public Integer selectByPageCount(FreeDepositRechargeRecordQuery query) {
         return this.freeDepositRechargeRecordMapper.selectByPageCount(query);

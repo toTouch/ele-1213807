@@ -518,11 +518,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, userInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, franchiseeIds, userCar.getCarModel().intValue()));
     }
 
+    @Slave
     @Override
     public List<ElectricityMemberCard> queryByFranchisee(Long id) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id));
     }
 
+    @Slave
     @Override
     public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
@@ -532,6 +534,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                 .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
 
+    @Slave
     @Override
     public List<ElectricityMemberCard> selectByFranchiseeId(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
@@ -540,16 +543,19 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                 .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
 
+    @Slave
     @Override
     public R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, List<Long> franchiseeId) {
         return R.ok(baseMapper.queryCount(status, type, tenantId, cardModel, franchiseeId, null));
     }
 
+    @Slave
     @Override
     public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, List<Long> franchiseeIds) {
         return R.ok(baseMapper.listByFranchisee(offset, size, status, type, tenantId, franchiseeIds));
     }
 
+    @Slave
     @Override
     public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, List<Long> franchiseeIds) {
         return R.ok(baseMapper.listCountByFranchisee(status, type, tenantId, franchiseeIds));
@@ -615,6 +621,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return electricityMemberCard;
     }
 
+    @Slave
     @Override
     public List<ElectricityMemberCard> selectByQuery(ElectricityMemberCardQuery cardQuery) {
         return this.baseMapper.selectByQuery(cardQuery);

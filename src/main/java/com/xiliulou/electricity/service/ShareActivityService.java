@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * 活动表(Activity)表服务接口
@@ -47,4 +48,8 @@ public interface ShareActivityService {
     R activityInfo();
 
     ShareActivity queryByStatus(Integer activityId);
+
+    Triple<Boolean, String, Object> shareActivityDetail(Integer id);
+
+    Triple<Boolean, String, Object> updateShareActivity(ShareActivityQuery shareActivityQuery);
 }

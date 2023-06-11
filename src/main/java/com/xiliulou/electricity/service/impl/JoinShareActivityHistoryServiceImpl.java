@@ -126,6 +126,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
         return R.ok(Optional.ofNullable(joinShareActivityHistoryVOList).orElse(new ArrayList<>()));
 	}
 
+	@Slave
 	@Override
 	public R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService
@@ -156,7 +157,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	public FinalJoinShareActivityHistoryVo queryFinalHistoryByJoinUid(Long uid, Integer tenantId) {
 		return joinShareActivityHistoryMapper.queryFinalHistoryByJoinUid(uid, tenantId);
 	}
-	
+
+	@Slave
 	@Override
 	public R queryCount(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService
@@ -171,7 +173,8 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		Long count = joinShareActivityHistoryMapper.queryCount(jsonShareActivityHistoryQuery);
 		return R.ok(count);
 	}
-	
+
+	@Slave
 	@Override
 	public void queryExportExcel(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery,
 			HttpServletResponse response) {

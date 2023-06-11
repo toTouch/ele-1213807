@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CouponMapper;
@@ -184,17 +185,19 @@ public class CouponServiceImpl implements CouponService {
     @Transactional(rollbackFor = Exception.class)
     public R update(Coupon coupon) {
         Coupon oldCoupon = queryByIdFromCache(coupon.getId());
-        if (Objects.isNull(oldCoupon)) {
+        if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId() ,TenantContextHolder.getTenantId())) {
             log.error("update Coupon  ERROR! not found coupon ! couponId={} ", coupon.getId());
             return R.fail("ELECTRICITY.00104", "找不到优惠券");
         }
 
+        Coupon couponUpdate = new Coupon();
+        couponUpdate.setId(coupon.getId());
+        couponUpdate.setSuperposition(coupon.getSuperposition());
+        couponUpdate.setName(coupon.getName());
+        couponUpdate.setDelFlag(coupon.getDelFlag());
+        couponUpdate.setUpdateTime(System.currentTimeMillis());
 
-        BeanUtil.copyProperties(coupon, oldCoupon);
-        oldCoupon.setUpdateTime(System.currentTimeMillis());
-
-
-        int update = couponMapper.updateById(oldCoupon);
+        int update = couponMapper.updateById(couponUpdate);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
@@ -209,13 +212,13 @@ public class CouponServiceImpl implements CouponService {
 
     }
 
-
+    @Slave
     @Override
     public R queryList(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryList(couponQuery));
     }
 
-
+    @Slave
     @Override
     public R queryCount(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryCount(couponQuery));

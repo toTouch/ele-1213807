@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Region;
 import com.xiliulou.electricity.mapper.RegionMapper;
@@ -102,6 +103,7 @@ public class RegionServiceImpl implements RegionService {
         return this.regionMapper.selectByPage(offset, limit);
     }
 
+    @Slave
     @Override
     public List<Region> queryRegionListByPid(Integer pid) {
         return this.regionMapper.queryRegionListByPid(pid);

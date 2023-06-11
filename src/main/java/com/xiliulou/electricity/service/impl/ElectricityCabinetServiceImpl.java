@@ -181,7 +181,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     EleCommonConfig eleCommonConfig;
-    
+
     @Autowired
     private ElectricityCabinetServerService electricityCabinetServerService;
     
@@ -222,7 +222,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     BatteryModelService batteryModelService;
-    
+
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -242,6 +243,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return null;
         }
+
         //放入缓存
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + id, electricityCabinet);
         return electricityCabinet;
@@ -436,7 +438,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             
             //更新缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
-            
+
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                     + oldElectricityCabinet.getDeviceName());
 
@@ -608,6 +610,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             checkCupboardStatusAndUpdateDiff(false, electricityCabinetUpdate);
         }
 
+        return Triple.of(true, null, null);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> updateAddress(ElectricityCabinetAddressQuery eleCabinetAddressQuery) {
+        ElectricityCabinet electricityCabinet = this.queryByIdFromCache(eleCabinetAddressQuery.getId());
+        if (Objects.isNull(electricityCabinet) || !Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+        electricityCabinetUpdate.setId(electricityCabinet.getId());
+        electricityCabinetUpdate.setAddress(eleCabinetAddressQuery.getAddress());
+        electricityCabinetUpdate.setLatitude(eleCabinetAddressQuery.getLatitude());
+        electricityCabinetUpdate.setLongitude(eleCabinetAddressQuery.getLongitude());
+        this.electricityCabinetMapper.updateById(electricityCabinetUpdate);
         return Triple.of(true, null, null);
     }
 
@@ -801,7 +819,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer totalCount = ids.size();
         return totalCount;
     }
-    
+
     public Triple<Boolean, String, Object> queryFullyElectricityBatteryByExchangeOrder(Integer id, String batteryType,
             Long franchiseeId, Integer tenantId) {
         
@@ -934,7 +952,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //更新缓存
         redisService
                 .saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-        
+
         redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey()
                 + oldElectricityCabinet.getDeviceName());
         return R.ok();
@@ -1498,7 +1516,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        
+
         //不合法的命令
         //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
         if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
@@ -1765,7 +1783,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
             checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
         }
-        
+
         return R.ok(electricityCabinetVO);
         
     }
@@ -2177,7 +2195,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok(electricityCabinetVO);
     }
-    
+
+    @Slave
     @Override
     public List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList, Integer tenantId) {
         return electricityCabinetMapper.queryNameList(size, offset, eleIdList, tenantId);
@@ -2244,12 +2263,44 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok();
     }
-    
-    private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
+
+    @Slave
+    @Override
+    public Integer selectOfflinePageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectOfflinePageCount(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectLockCellByQuery(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectLockCellByQuery(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public Integer selectLockPageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectLockPageCount(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selectPowerPage(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectPowerPage(cabinetQuery);
+    }
+
+    @Slave
+    @Override
+    public Integer selectPowerPageCount(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selectPowerPageCount(cabinetQuery);
+    }
+
+    @Override
+    public boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
     }
-    
-    private boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
+
+    @Override
+    public boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
     
@@ -2257,11 +2308,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
 
-    private boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
+    @Override
+    public boolean isExchangeable(ElectricityCabinetBox electricityCabinetBox, Double fullyCharged) {
         return Objects.nonNull(electricityCabinetBox.getPower())
                 && Objects.nonNull(fullyCharged) && electricityCabinetBox.getPower() >= fullyCharged;
     }
-    
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -2428,7 +2480,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetVO.setIsLock(isLock);
         return R.ok(electricityCabinetVO);
     }
-    
+
+    @Slave
     @Override
     public R queryCabinetBelongFranchisee(Integer id) {
         return franchiseeService.queryByCabinetId(id, TenantContextHolder.getTenantId());
@@ -2524,8 +2577,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
+    @Deprecated
     public void unlockElectricityCabinet(Integer eid) {
-        redisService.delete(CacheConstant.ORDER_ELE_ID + eid);
     }
     
     @Override
@@ -2645,21 +2698,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         //查找换电柜门店
         if (Objects.isNull(electricityCabinet.getStoreId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("getFranchisee  ERROR! not found store,electricityCabinetId={}", electricityCabinet.getId());
             return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
         }
         
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("getFranchisee  ERROR! not found store,storeId={}", electricityCabinet.getStoreId());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         
         //查找门店加盟商
         if (Objects.isNull(store.getFranchiseeId())) {
-            redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("getFranchisee  ERROR! not found Franchisee,storeId={}", store.getId());
             return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
         }
@@ -2672,17 +2722,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(franchisee);
     }
-    
+
+    @Slave
     @Override
     public Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery) {
         return electricityCabinetMapper.queryCount(electricityCabinetQuery);
     }
-    
+
+    @Slave
     @Override
     public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
         return electricityCabinetMapper.queryCountByStoreIds(tenantId, storeIds);
     }
-    
+
+    @Slave
     @Override
     public Integer queryCountByStoreIdsAndStatus(Integer tenantId, List<Long> storeIds, Integer status) {
         return electricityCabinetMapper.queryCountByStoreIdsAndStatus(tenantId, storeIds, status);
@@ -2712,7 +2765,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok();
     }
-    
+
+    @Slave
     @Override
     public R queryAllElectricityCabinet(ElectricityCabinetQuery electricityCabinetQuery) {
         return R.ok(electricityCabinetMapper.queryList(electricityCabinetQuery));
@@ -2912,18 +2966,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-/*        //购买租车月卡
-        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-            BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId,
-                    null, finalFranchiseeIds);
-            BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(
-                    tenantId, todayStartTime, finalFranchiseeIds);
-            homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
-            homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });*/
         //租车套餐
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal carMemberCardTurnover = carMemberCardOrderService
@@ -2980,8 +3022,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
-        HomePageDepositVo homePageDepositVo = new HomePageDepositVo();
+
+        HomePageDepositQuery qeury = new HomePageDepositQuery();
 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             return R.fail("AUTH.0002", "没有权限操作！");
@@ -2991,7 +3033,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok(homePageDepositVo);
+                return R.ok(qeury);
             }
         }
 
@@ -3000,97 +3042,260 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //缴纳电池押金
         List<Long> finalFranchiseeIds = franchiseeIds;
         CompletableFuture<Void> batteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal batteryDepositTurnover = eleDepositOrderService
+            BigDecimal onlineBatteryDepositTurnover = eleDepositOrderService
                     .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
-                            finalFranchiseeIds);
-            BigDecimal todayBatteryDeposit = eleDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
-                            finalFranchiseeIds);
-            homePageDepositVo.setBatteryDeposit(batteryDepositTurnover);
-            homePageDepositVo.setTodayBatteryDeposit(todayBatteryDeposit);
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal offlineBatteryDepositTurnover = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal freeBatteryDepositTurnover = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+
+            qeury.setOnlineBatteryDeposit(onlineBatteryDepositTurnover);
+            qeury.setOfflineBatteryDeposit(offlineBatteryDepositTurnover);
+            qeury.setFreeBatteryDeposit(freeBatteryDepositTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
 
-        //        //缴纳租车押金
-        //        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-        //            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-        //            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
-        //            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
-        //            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
+        //今日电池押金
+        CompletableFuture<Void> batteryDepositToDay = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeBatteryDeposit = eleDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+
+            qeury.setTodayOfflineBatteryDeposit(todayOfflineBatteryDeposit);
+            qeury.setTodayOnlineBatteryDeposit(todayOnlineBatteryDeposit);
+            qeury.setTodayFreeBatteryDeposit(todayFreeBatteryDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //租车押金
+        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal onlineCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.ONLINE_PAYTYPE);
+            BigDecimal offlineCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.OFFLINE_PAYTYPE);
+            BigDecimal freeCarDepositTurnover = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
+            //            BigDecimal todayCarDeposit = carDepositOrderService
+            //                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+            //                            finalFranchiseeIds);
+            //            homePageDepositVo.setCarDeposit(carDepositTurnover);
+            //            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
+
+            qeury.setOnlineCarDeposit(onlineCarDepositTurnover);
+            qeury.setOfflineCarDeposit(offlineCarDepositTurnover);
+            qeury.setFreeCarDeposit(freeCarDepositTurnover);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //今日租车押金
+        CompletableFuture<Void> carDepositToDay = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.ONLINE_PAYTYPE);
+            BigDecimal todayOfflineCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.OFFLINE_PAYTYPE);
+            BigDecimal todayFreeCarDeposit = carDepositOrderService
+                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
+                            finalFranchiseeIds, CarDepositOrder.FREE_DEPOSIT_PAYTYPE);
+
+            qeury.setTodayOnlineCarDeposit(todayOnlineCarDeposit);
+            qeury.setTodayOfflineCarDeposit(todayOfflineCarDeposit);
+            qeury.setTodayFreeCarDeposit(todayFreeCarDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //代扣记录
+        CompletableFuture<Void> depositFreeAlipay = CompletableFuture.runAsync(() -> {
+            BigDecimal eleFreeDepositAlipay = eleDepositOrderService.queryFreeDepositAlipayTurnOver(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds);
+            BigDecimal carFreeDepositAlipay = carDepositOrderService.queryFreeDepositAlipayTurnOver(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds);
+
+            qeury.setBatteryFreeDepositAlipay(eleFreeDepositAlipay);
+            qeury.setCarFreeDepositAlipay(carFreeDepositAlipay);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query depositFreeAlipay error!", e);
+            return null;
+        });
+
+        //        //退电池押金
+        //        CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
+        //            BigDecimal todayRefundDeposit = refundOrderService
+        //                    .queryTurnOverByTime(tenantId, todayStartTime, null, finalFranchiseeIds);
+        //            BigDecimal historyRefundDeposit = refundOrderService
+        //                    .queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER,
+        //                            finalFranchiseeIds);
+        //            homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
+        //            homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
         //        }, executorService).exceptionally(e -> {
         //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
         //            return null;
         //        });
-        //租车押金
-        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal carDepositTurnover = carDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, null, EleDepositOrder.RENT_CAR_DEPOSIT,
-                            finalFranchiseeIds);
-            BigDecimal todayCarDeposit = carDepositOrderService
-                    .queryDepositTurnOverByDepositType(tenantId, todayStartTime, EleDepositOrder.RENT_CAR_DEPOSIT,
-                            finalFranchiseeIds);
-            homePageDepositVo.setCarDeposit(carDepositTurnover);
-            homePageDepositVo.setTodayCarDeposit(todayCarDeposit);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });
-        
-        //退电池押金
+
+        //今日退电池押金
         CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal todayRefundDeposit = refundOrderService
-                    .queryTurnOverByTime(tenantId, todayStartTime, null, finalFranchiseeIds);
-            BigDecimal historyRefundDeposit = refundOrderService
-                    .queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER,
-                            finalFranchiseeIds);
-            homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
-            homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
+            BigDecimal todayOnlineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, todayStartTime, EleDepositOrder.ELECTRICITY_DEPOSIT,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+
+            qeury.setTodayOnlineRefundDeposit(todayOnlineRefundDeposit);
+            qeury.setTodayOfflineRefundDeposit(todayOfflineRefundDeposit);
+            qeury.setTodayFreeRefundDeposit(todayFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundBatteryDeposit error!", e);
             return null;
         });
 
-/*        //退租车押金
-        CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,
-                    EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds);
-            homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });*/
 
-        //退租车押金
-        CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService
-                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
-                            finalFranchiseeIds);
-            homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
+        //历史退电池押金
+        CompletableFuture<Void> refundBatteryDepositHistory = CompletableFuture.runAsync(() -> {
+            BigDecimal historyOnlineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds,
+                            EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyOfflineRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds,
+                            EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyFreeRefundDeposit = refundOrderService
+                    .queryTurnOverByTime(tenantId, null, EleDepositOrder.ELECTRICITY_DEPOSIT, finalFranchiseeIds,
+                            EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+
+            qeury.setHistoryOnlineRefundBatteryDeposit(historyOnlineRefundDeposit);
+            qeury.setHistoryOfflineRefundBatteryDeposit(historyOfflineRefundDeposit);
+            qeury.setHistoryFreeRefundBatteryDeposit(historyFreeRefundDeposit);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query refundBatteryDepositHistory error!", e);
+            return null;
+        });
+
+
+        //今日退租车押金
+        CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal todayOnlineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, todayStartTime,
+                            EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds,
+                            EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayOfflineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, todayStartTime,
+                            EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds,
+                            EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal todayFreeRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, todayStartTime,
+                            EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER, finalFranchiseeIds,
+                            EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+
+            qeury.setTodayOnlineCarRefundDeposit(todayOnlineRefundDeposit);
+            qeury.setTodayOfflineCarRefundDeposit(todayOfflineRefundDeposit);
+            qeury.setTodayFreeCarRefundDeposit(todayFreeRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query refundCarDeposit error!", e);
+            return null;
+        });
+
+        //历史退租车押金
+        CompletableFuture<Void> refundCarDepositHistory = CompletableFuture.runAsync(() -> {
+            BigDecimal historyOnlineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
+                            finalFranchiseeIds, EleDepositOrder.ONLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyOfflineRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
+                            finalFranchiseeIds, EleDepositOrder.OFFLINE_DEPOSIT_PAYMENT);
+            BigDecimal historyFreeRefundDeposit = refundOrderService
+                    .queryCarRefundTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER,
+                            finalFranchiseeIds, EleDepositOrder.FREE_DEPOSIT_PAYMENT);
+
+            qeury.setHistoryOnlineRefundCarDeposit(historyOnlineRefundDeposit);
+            qeury.setHistoryOfflineRefundCarDeposit(historyOfflineRefundDeposit);
+            qeury.setHistoryFreeRefundCarDeposit(historyFreeRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query refundCarDepositHistory error!", e);
             return null;
         });
         
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture
-                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit);
+                .allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit, batteryDepositToDay,
+                        carDepositToDay, refundBatteryDepositHistory, refundCarDepositHistory,depositFreeAlipay);
+        HomePageDepositVo vo = new HomePageDepositVo();
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
-            homePageDepositVo.setBatteryDeposit(
-                    homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
-            homePageDepositVo.setCarDeposit(
-                    homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
-            homePageDepositVo.setSumDepositTurnover(
-                    homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
-            homePageDepositVo.setTodayPayDeposit(
-                    homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
+            //            homePageDepositVo.setBatteryDeposit(
+            //                    homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
+            //            homePageDepositVo.setCarDeposit(
+            //                    homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
+            //            homePageDepositVo.setSumDepositTurnover(
+            //                    homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
+            //            homePageDepositVo.setTodayPayDeposit(
+            //                    homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
+
+            BigDecimal payBatteryDeposit = qeury.getOnlineBatteryDeposit().add(qeury.getOfflineBatteryDeposit())
+                    .subtract(qeury.getHistoryOnlineRefundBatteryDeposit())
+                    .subtract(qeury.getHistoryOfflineRefundBatteryDeposit());
+            BigDecimal freeBatteryDeposit = qeury.getFreeBatteryDeposit()
+                    .subtract(qeury.getHistoryFreeRefundBatteryDeposit())
+                    .subtract(qeury.getBatteryFreeDepositAlipay());
+            BigDecimal batteryDepositSum = payBatteryDeposit.add(freeBatteryDeposit);
+            BigDecimal payCarDeposit = qeury.getOnlineCarDeposit().add(qeury.getOfflineCarDeposit())
+                    .subtract(qeury.getHistoryOnlineRefundCarDeposit())
+                    .subtract(qeury.getHistoryOfflineRefundCarDeposit());
+            BigDecimal freeCarDeposit = qeury.getFreeCarDeposit()
+                    .subtract(qeury.getHistoryFreeRefundCarDeposit())
+                    .subtract(qeury.getCarFreeDepositAlipay());
+            BigDecimal carDepositSum = payCarDeposit.add(freeCarDeposit);
+            BigDecimal todayPayRefundDeposit = qeury.getTodayOnlineRefundDeposit()
+                    .add(qeury.getTodayOfflineBatteryDeposit()).add(qeury.getTodayOnlineCarRefundDeposit())
+                    .add(qeury.getTodayOfflineCarRefundDeposit());
+            BigDecimal todayFreeRefundDeposit = qeury.getTodayFreeRefundDeposit()
+                    .add(qeury.getTodayFreeCarRefundDeposit());
+            BigDecimal todayRefundDeposit = todayPayRefundDeposit.add(todayFreeRefundDeposit);
+            BigDecimal todayPayDeposit = qeury.getTodayOnlineBatteryDeposit().add(qeury.getTodayOfflineBatteryDeposit())
+                    .add(qeury.getTodayOnlineCarDeposit()).add(qeury.getTodayOfflineCarRefundDeposit());
+            BigDecimal todayFreeDeposit = qeury.getTodayFreeBatteryDeposit().add(qeury.getTodayFreeCarDeposit());
+            BigDecimal todayDeposit = todayPayDeposit.add(todayFreeDeposit);
+            BigDecimal sumDepositTurnover = batteryDepositSum.add(carDepositSum);
+
+            vo.setPayBatteryDeposit(payBatteryDeposit);
+            vo.setFreeBatteryDeposit(freeBatteryDeposit);
+            vo.setBatteryDeposit(batteryDepositSum);
+            vo.setPayCarDeposit(payCarDeposit);
+            vo.setFreeCarDeposit(freeCarDeposit);
+            vo.setCarDeposit(carDepositSum);
+            vo.setTodayPayRefundDeposit(todayPayRefundDeposit);
+            vo.setTodayFreeRefundDeposit(todayFreeRefundDeposit);
+            vo.setTodayRefundDeposit(todayRefundDeposit);
+            vo.setTodayPayDeposit(todayPayDeposit);
+            vo.setTodayFreeDeposit(todayFreeDeposit);
+            vo.setTodayDeposit(todayDeposit);
+            vo.setSumDepositTurnover(sumDepositTurnover);
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
-        
-        return R.ok(homePageDepositVo);
+
+        return R.ok(vo);
     }
     
     @Override
@@ -3124,7 +3329,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Integer authenticationUserCount = userInfoService.queryAuthenticationUserCount(tenantId);
             homepageOverviewDetailVo.setAuthenticationUserCount(authenticationUserCount);
         }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            log.error("ORDER STATISTICS ERROR! query authenticationUser error!", e);
             return null;
         });
         
@@ -3213,15 +3418,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //        //购买租车月卡
-        //        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
-        //            List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);
-        //            homePageTurnOverAnalysisVo.setCarMemberCardAnalysis(carMemberCardTurnover);
-        //        }, executorService).exceptionally(e -> {
-        //            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-        //            return null;
-        //        });
-
         //购买租车套餐
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = carMemberCardOrderService
@@ -3253,14 +3449,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-/*        //租车押金
-        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
-            List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeIds, beginTime, endTime);
-            homePageTurnOverAnalysisVo.setCarDepositAnalysis(carDepositTurnOver);
-        }, executorService).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
-            return null;
-        });*/
         //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = carDepositOrderService
@@ -3418,30 +3606,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             stores = storeService.queryStoreIdByFranchiseeId(finalFranchiseeIds);
         }
 
-//        CompletableFuture<Void> electricityOrderSuccessCount = CompletableFuture.runAsync(() -> {
-//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-//                    .tenantId(tenantId).eleIdList(finalEleIdList)
-//                    .status(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS).build();
-//            Integer orderSuccessCount = electricityCabinetOrderService
-//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-//            homePageElectricityOrderVo.setOrderSuccessCount(orderSuccessCount);
-//        }, executorService).exceptionally(e -> {
-//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-//            return null;
-//        });
-//
-//        //换电总订单统计
-//        CompletableFuture<Void> electricitySunOrderCount = CompletableFuture.runAsync(() -> {
-//            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-//                    .tenantId(tenantId).eleIdList(finalEleIdList).build();
-//            Integer orderSumCount = electricityCabinetOrderService
-//                    .queryCountForScreenStatistic(electricityCabinetOrderQuery);
-//            homePageElectricityOrderVo.setSumOrderCount(orderSumCount);
-//        }, executorService).exceptionally(e -> {
-//            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
-//            return null;
-//        });
-        
         //换电柜在线总数统计
         List<Long> finalStores = stores;
         CompletableFuture<Void> electricityOnlineCabinetCount = CompletableFuture.runAsync(() -> {
@@ -3462,11 +3626,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
             return null;
         });
-        
-        //等待所有线程停止
-//        CompletableFuture<Void> resultFuture = CompletableFuture
-//                .allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount,
-//                        electricityOfflineCabinetCount);
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(electricityOnlineCabinetCount, electricityOfflineCabinetCount);
         try {
@@ -3544,7 +3704,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         return R.ok(homepageElectricityExchangeFrequencyVo);
     }
-    
+
+    @Slave
     @Override
     public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         
@@ -3752,6 +3913,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(s);
     }
 
+    @Slave
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
         List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper
@@ -3763,6 +3925,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinets);
     }
 
+    @Slave
     @Override
     public List<ElectricityCabinet> superAdminSelectByQuery(ElectricityCabinetQuery query) {
         List<ElectricityCabinet> list = electricityCabinetMapper.superAdminSelectByQuery(query);
@@ -3777,17 +3940,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
-    
+
+    @Slave
     @Override
     public R queryName(Integer tenantId, Integer id) {
         return R.ok(electricityCabinetMapper.queryName(tenantId, id));
     }
 
+    @Slave
     @Override
-    public R selectByQuery(ElectricityCabinetQuery query) {
-        return R.ok(electricityCabinetMapper.selectByQuery(query));
+    public List<ElectricityCabinet> eleCabinetSearch(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.eleCabinetSearch(query);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            Collections.emptyList();
+        }
+
+        return electricityCabinets;
     }
 
+    @Slave
+    @Override
+    public List<ElectricityCabinet> selectByQuery(ElectricityCabinetQuery query) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectByQuery(query);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            Collections.emptyList();
+        }
+
+        return electricityCabinets;
+    }
+
+    @Slave
+    @Override
+    public List<EleCabinetDataAnalyseVO> selecteleCabinetVOByQuery(ElectricityCabinetQuery cabinetQuery) {
+        return electricityCabinetMapper.selecteleCabinetVOByQuery(cabinetQuery);
+    }
+
+    @Slave
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));
@@ -3814,19 +4002,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }).collect(Collectors.toList());
     }
-    
+
+    @Slave
     @Override
-    public R batchOperateList(Long size, Long offset, String name, List<Integer> eleIdList) {
-        List<ElectricityCabinetBatchOperateVo> electricityCabinetList = electricityCabinetMapper
-                .batchOperateList(size, offset, name, eleIdList, TenantContextHolder.getTenantId());
-        if (ObjectUtil.isEmpty(electricityCabinetList)) {
-            return R.ok(new ArrayList<>());
+    public R batchOperateList(ElectricityCabinetQuery query) {
+        List<ElectricityCabinetBatchOperateVo> list = electricityCabinetMapper.batchOperateList(query);
+        if (ObjectUtil.isEmpty(list)) {
+            return R.ok(Collections.emptyList());
         }
-        
-        return R.ok(electricityCabinetList);
+
+        list.parallelStream().peek(item -> {
+            ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(item.getModelId());
+            item.setModelName(electricityCabinetModel.getName());
+        }).collect(Collectors.toList());
+
+        return R.ok(list);
     }
-    
-    
+
+    @Override
+    public R cabinetSearch(Long size, Long offset, String name , Integer tenantId) {
+        List<SearchVo> voList = electricityCabinetMapper.cabinetSearch(size, offset, name, tenantId);
+        return R.ok(voList);
+    }
+
+
     /**
      * 通过云端下发命令更新换电标准
      */
@@ -3962,4 +4161,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Collections.EMPTY_LIST;
     }
 
+    @Override
+    public Triple<Boolean, String, Object> existsElectricityCabinet(String productKey, String deviceName) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (Objects.isNull(tenantId) || StringUtils.isEmpty(productKey) || StringUtils.isEmpty(deviceName)) {
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+        }
+        if (!tenantId.equals(electricityCabinet.getTenantId())) {
+            log.error("query existsElectricityCabinet  ERROR!tenantId is not equal!tenantId1={}, tenantId2={} ,sn={}",
+                    tenantId, electricityCabinet.getTenantId(), electricityCabinet.getSn());
+            return Triple.of(false, "100373", "当前运营商与柜机所属运营商不一致");
+        }
+        return Triple.of(true, null, null);
+    }
 }

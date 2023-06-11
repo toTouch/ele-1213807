@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.mapper.EleRefundOrderHistoryMapper;
 import com.xiliulou.electricity.query.EleRefundHistoryQuery;
@@ -38,13 +39,13 @@ public class EleRefundOrderHistoryServiceImpl implements EleRefundOrderHistorySe
 	}
 
 
-
+	@Slave
 	@Override
 	public R queryList(EleRefundHistoryQuery eleRefundHistoryQuery) {
 		return R.ok(eleRefundOrderHistoryMapper.queryList(eleRefundHistoryQuery));
 	}
 
-
+	@Slave
 	@Override
 	public R queryCount(EleRefundHistoryQuery eleRefundHistoryQuery) {
 		return R.ok(eleRefundOrderHistoryMapper.queryCount(eleRefundHistoryQuery));

@@ -40,6 +40,9 @@
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
         </if>
+        <if test="query.payType != null">
+            and tel.pay_type =#{query.payType}
+        </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}
         </if>
@@ -63,6 +66,9 @@
         </if>
         <if test="query.tenantId != null">
             and tel.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.payType != null">
+            and tel.pay_type = #{query.payType}
         </if>
         <if test="query.queryStartTime != null">
             and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
@@ -88,6 +94,9 @@
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
         </if>
+        <if test="query.payType != null">
+            and tel.pay_type =#{query.payType}
+        </if>
         <if test="query.orderId != null">
             and tel.order_id =#{query.orderId}
         </if>
@@ -102,6 +111,9 @@
         </if>
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
+        </if>
+        <if test="query.payType != null">
+            and tel.pay_type = #{query.payType}
         </if>
         <if test="query.cardModel != null">
             and tel.member_card_model =#{query.cardModel}
