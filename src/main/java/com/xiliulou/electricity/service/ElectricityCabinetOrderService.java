@@ -85,4 +85,6 @@ public interface ElectricityCabinetOrderService {
 
     List<ElectricityCabinetOrder> selectMonthExchangeOrders(Integer id, long todayStartTimeStamp, long todayEndTimeStamp, Integer tenantId);
 
+
+    Triple<Boolean, String, Object> bluetoothExchangeCheck(String productKey, String deviceName);
 }
