@@ -253,7 +253,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         if (Objects.isNull(shareMoneyActivity)) {
-            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+            log.info("queryInfo Activity INFO! not found Activity,tenantId={} ", tenantId);
             return R.ok();
         }
 
