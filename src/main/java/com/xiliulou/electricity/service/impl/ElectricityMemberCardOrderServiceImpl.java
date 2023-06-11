@@ -3245,7 +3245,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             list.add(userCoupon);
         }
         return list;
-
+    }
 
     /**
      * 处理套餐绑定的活动
@@ -3293,7 +3293,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         } else {
             return Boolean.FALSE;
         }
-    }
     }
 
     @Override
