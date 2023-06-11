@@ -50,9 +50,6 @@ public class UserCouponServiceImpl implements UserCouponService {
     UserService userService;
 
     @Autowired
-    RedisService redisService;
-
-    @Autowired
     UserInfoService userInfoService;
 
     @Autowired
