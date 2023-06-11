@@ -205,4 +205,6 @@ public interface ElectricityCabinetService {
     R batchOperateList(ElectricityCabinetQuery query);
 
     R cabinetSearch(Long size, Long offset, String name , Integer tenantId);
+
+    Triple<Boolean, String, Object> existsElectricityCabinet(String productKey, String deviceName);
 }

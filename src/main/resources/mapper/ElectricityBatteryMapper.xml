@@ -709,27 +709,21 @@
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
-        <choose>
-            <when test="query.queryType == 3">
-                and (teb.franchisee_id is null or teb.franchisee_id=0)
-            </when>
-            <when test="query.queryType != 3 and query.franchiseeId != null">
-                and teb.franchisee_id =#{query.franchiseeId}
-            </when>
-        </choose>
+        <if test="query.queryType == 3">
+            and (teb.franchisee_id is null or teb.franchisee_id=0)
+        </if>
+        <if test="query.franchiseeId != null">
+            and teb.franchisee_id =#{query.franchiseeId}
+        </if>
 
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
 
-        <choose>
-            <when test="query.queryType == 4">
-                and teb.uid is not null
-            </when>
-            <when test="query.queryType != 4 and query.uid != null">
-                and teb.uid =#{query.uid}
-            </when>
-        </choose>
+        <if test="query.queryType == 4">
+            and teb.uid is not null
+        </if>
+
         order by teb.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -747,27 +741,20 @@
         <if test="query.businessStatus != null">
             and teb.business_status =#{query.businessStatus}
         </if>
-        <choose>
-            <when test="query.queryType == 3">
-                and (teb.franchisee_id is null or teb.franchisee_id=0)
-            </when>
-            <when test="query.queryType != 3 and query.franchiseeId != null">
-                and teb.franchisee_id =#{query.franchiseeId}
-            </when>
-        </choose>
+        <if test="query.queryType == 3">
+            and (teb.franchisee_id is null or teb.franchisee_id=0)
+        </if>
+        <if test="query.franchiseeId != null">
+            and teb.franchisee_id =#{query.franchiseeId}
+        </if>
 
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
 
-        <choose>
-            <when test="query.queryType == 4">
-                and teb.uid is not null
-            </when>
-            <when test="query.queryType != 4 and query.uid != null">
-                and teb.uid =#{query.uid}
-            </when>
-        </choose>
+        <if test="query.queryType == 4">
+            and teb.uid is not null
+        </if>
 
     </select>
 
@@ -781,7 +768,9 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
-
+        <if test="query.franchiseeId != null">
+            and teb.franchisee_id =#{query.franchiseeId}
+        </if>
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
@@ -797,7 +786,9 @@
         <if test="query.sn != null and query.sn !=''">
             and teb.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
         </if>
-
+        <if test="query.franchiseeId != null">
+            and teb.franchisee_id =#{query.franchiseeId}
+        </if>
         <if test="query.electricityCabinetId != null">
             and teb.electricity_cabinet_id =#{query.electricityCabinetId}
         </if>
