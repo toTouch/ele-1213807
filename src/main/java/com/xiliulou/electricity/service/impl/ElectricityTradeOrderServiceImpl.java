@@ -137,6 +137,9 @@ public class ElectricityTradeOrderServiceImpl extends
     ShareActivityMemberCardService shareActivityMemberCardService;
 
     @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
+
+    @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
     @Override
@@ -436,6 +439,11 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setPayCount(payCount + 1);
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
 
+        if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder.getOrderId());
+        }
+
         //小程序虚拟发货
         shippingManagerService
                 .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
@@ -678,7 +686,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
             } else {
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
             }
 
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);

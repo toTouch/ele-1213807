@@ -712,19 +712,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100015", "用户未绑定车辆");
         }
     
-        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
-        if (Objects.isNull(userCarDeposit)) {
-            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
-    
-        Integer count = carRefundOrderService
-                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
-                        userCarDeposit.getOrderId());
-        if (Objects.nonNull(count) && count > 0) {
-            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", userInfo.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
+//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+//        if (Objects.isNull(userCarDeposit)) {
+//            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", userInfo.getUid());
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
+//
+//        Integer count = carRefundOrderService
+//                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
+//                        userCarDeposit.getOrderId());
+//        if (Objects.nonNull(count) && count > 0) {
+//            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", userInfo.getUid());
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
 
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());

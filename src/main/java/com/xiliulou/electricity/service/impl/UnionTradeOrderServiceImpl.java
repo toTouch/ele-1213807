@@ -155,6 +155,9 @@ public class UnionTradeOrderServiceImpl extends
     ShareActivityMemberCardService shareActivityMemberCardService;
 
     @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
+
+    @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
 
     @Override
@@ -733,6 +736,7 @@ public class UnionTradeOrderServiceImpl extends
                 }
             }
 
+
             ChannelActivityHistory channelActivityHistory = channelActivityHistoryService
                     .queryByUid(electricityMemberCardOrder.getUid());
             if (Objects.nonNull(channelActivityHistory) && Objects
@@ -759,6 +763,12 @@ public class UnionTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setStatus(orderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
+
+        if (Objects.equals(orderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder.getOrderId());
+        }
+
         return Pair.of(true, null);
     }
 

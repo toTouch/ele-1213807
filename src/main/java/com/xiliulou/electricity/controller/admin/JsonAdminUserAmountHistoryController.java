@@ -45,7 +45,6 @@ public class JsonAdminUserAmountHistoryController {
         UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
                 .offset(offset)
                 .size(size)
-                .type(UserAmountHistory.TYPE_SHARE_ACTIVITY)
                 .tenantId(TenantContextHolder.getTenantId())
                 .uid(uid).build();
         return userAmountHistoryService.queryList(userAmountHistoryQuery);
@@ -59,7 +58,6 @@ public class JsonAdminUserAmountHistoryController {
     public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
 
         UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
-                .type(UserAmountHistory.TYPE_SHARE_ACTIVITY)
                 .tenantId(TenantContextHolder.getTenantId())
                 .uid(uid).build();
         return userAmountHistoryService.queryCount(userAmountHistoryQuery);

@@ -56,6 +56,7 @@ public class UserAmountHistory {
 
 
     public static final Integer TYPE_SHARE_ACTIVITY = 1;
+    public static final Integer TYPE_INVITATION_ACTIVITY = 2;
 
     //提现
     public static final Integer TYPE_WITHDRAW =4;

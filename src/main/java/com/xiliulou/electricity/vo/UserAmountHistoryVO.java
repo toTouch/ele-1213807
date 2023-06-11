@@ -42,7 +42,7 @@ public class UserAmountHistoryVO {
     /**
      * 邀人phone
      */
-    private Long joinPhone;
+    private String joinPhone;
 
 
     private Long createTime;

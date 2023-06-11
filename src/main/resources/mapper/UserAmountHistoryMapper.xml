@@ -8,7 +8,7 @@
 		tuah.join_uid as joinUid,tu.phone as joinPhone,tuah.create_time as createTime,
 		tuah.tenant_id as tenantId
 		from t_user_amount_history as tuah
-		left join t_user as tu on tuah.join_uid=tu.uid
+		left join t_user_info as tu on tuah.join_uid=tu.uid
 		<where>
 			<if test="uid != null ">
 				and tuah.uid = #{uid}
@@ -18,6 +18,9 @@
 			</if>
 			<if test="type != null ">
 				and tuah.type = #{type}
+			</if>
+			<if test="type == null ">
+				and tuah.type in (1,2)
 			</if>
 		</where>
 		order by tuah.create_time desc
@@ -33,6 +36,26 @@
 			<if test="tenantId != null ">
 				and tenant_id = #{tenantId}
 			</if>
+			<if test="type != null ">
+				and type = #{type}
+			</if>
+			<if test="type == null ">
+				and type in (1,2)
+			</if>
 		</where>
+	</select>
+
+	<select id="selectRewardList" resultType="com.xiliulou.electricity.vo.UserAmountHistoryVO">
+		select
+		id,
+		uid,
+		type,
+		amount,
+		join_uid,
+		create_time
+		from t_user_amount_history
+		where uid = #{uid} and tenant_id = #{tenantId} and type in (1,2)
+		order by id desc
+		limit #{offset},#{size}
 	</select>
 </mapper>

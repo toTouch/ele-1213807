@@ -374,4 +374,11 @@ public interface CacheConstant {
 
 
     String CACHE_RECEIVE_COUPON_LOCK = "receive_coupon_lock:";
+
+    /**
+     * 邀请活动缓存
+     */
+    String CACHE_INVITATION_ACTIVITY = "invitation_activity:";
+
+    String CACHE_GET_COUPON = "get_coupon:";
 }

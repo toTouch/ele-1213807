@@ -22,6 +22,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
+import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
@@ -166,6 +167,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     DivisionAccountRecordService divisionAccountRecordService;
+
+    @Autowired
+    InvitationActivityRecordService invitationActivityRecordService;
 
     @Autowired
     BatteryMemberCardOrderCouponService memberCardOrderCouponService;
@@ -545,6 +549,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(), joinShareMoneyActivityRecord.getJoinUid(), shareMoneyActivity.getMoney(), electricityMemberCardOrder.getTenantId());
                 }
             }
+
+            //处理拉新返现活动
+            invitationActivityRecordService.handleInvitationActivity(userInfo, electricityMemberCardOrder.getOrderId());
 
             //套餐分帐
             divisionAccountRecordService.handleBatteryMembercardDivisionAccount(electricityMemberCardOrder);
@@ -1714,7 +1721,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
             serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
         } else {
-            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
         }
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
@@ -2672,7 +2679,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
                 serviceFeeUserInfoUpdate.setUid(item.getUid());
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
-                serviceFeeUserInfoUpdate.setTenantId(userBatteryMemberCard.getTenantId());
+                serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
                 EleDisableMemberCardRecord eleDisableMemberCardRecordUpdate = new EleDisableMemberCardRecord();
@@ -3078,6 +3085,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .filter(e->Objects.equals(e.getStatus(), UserCoupon.STATUS_IS_BEING_VERIFICATION)).map(i->i.getId().intValue()).collect(Collectors.toSet());
 
         userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, null));
+
+        redisService.delete(WechatPayConstant.PAY_ORDER_ID_CALL_BACK + electricityMemberCardOrder.getOrderId());
 
         return R.ok();
     }

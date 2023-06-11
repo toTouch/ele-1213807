@@ -250,6 +250,20 @@ public class JsonAdminElectricityMemberCardController {
     }
 
     /**
+     * 根据加盟商id获取所有套餐
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/queryAll")
+    public R selectAll(@RequestParam(value = "name", required = false) String name) {
+
+        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .name(name).build();
+
+        return R.ok(electricityMemberCardService.selectByQuery(query));
+    }
+
+    /**
      * 用户停卡记录
      *
      * @param offset

@@ -18,6 +18,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class UserCouponServiceImpl implements UserCouponService {
                 .status(UserCoupon.STATUS_UNUSED)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
-                .tenantId(tenantId);
+                .tenantId(coupon.getTenantId());
 
         //优惠券过期时间
 
@@ -304,12 +305,10 @@ public class UserCouponServiceImpl implements UserCouponService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-
-        if(!redisService.setNx(CacheConstant.CACHE_RECEIVE_COUPON_LOCK + SecurityUtils.getUid(), "1", 3000L, false)){
-            return R.fail("ELECTRICITY.0034", "操作频繁");
+        if (!redisService.setNx(CacheConstant.CACHE_GET_COUPON + SecurityUtils.getUid(), "1", 1000L, false)) {
+            return R.fail( "ELECTRICITY.0034", "领取的太快啦，请稍后");
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
