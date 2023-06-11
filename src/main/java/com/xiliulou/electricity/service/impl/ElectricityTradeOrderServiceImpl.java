@@ -686,7 +686,11 @@ public class ElectricityTradeOrderServiceImpl extends
                 Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
             } else {
-                serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
+                if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(System.currentTimeMillis());
+                } else {
+                    serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCard.getMemberCardExpireTime());
+                }
             }
 
             serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);

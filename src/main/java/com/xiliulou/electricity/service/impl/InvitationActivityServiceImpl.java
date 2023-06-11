@@ -277,7 +277,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             return Triple.of(true, null, null);
         }
 
-        InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getId());
+        InvitationActivity invitationActivity = this.queryByIdFromCache(invitationActivityUser.getActivityId());
         if(Objects.isNull(invitationActivity)){
             return Triple.of(true, null, null);
         }
