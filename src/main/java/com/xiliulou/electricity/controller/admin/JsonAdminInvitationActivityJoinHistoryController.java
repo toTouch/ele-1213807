@@ -27,6 +27,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
                   @RequestParam(value = "beginTime", required = false) Long beginTime,
                   @RequestParam(value = "endTime", required = false) Long endTime,
                   @RequestParam(value = "activityId", required = false) Long activityId,
+                  @RequestParam(value = "id", required = false) Long id,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "phone", required = false) String phone,
                   @RequestParam(value = "joinUserName", required = false) String joinUserName) {
@@ -38,7 +39,7 @@ public class JsonAdminInvitationActivityJoinHistoryController {
             offset = 0L;
         }
 
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().size(size).offset(offset).userName(joinUserName)
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().size(size).offset(offset).userName(joinUserName).recordId(id)
                 .beginTime(beginTime).endTime(endTime).activityId(activityId).status(status).tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPage(query));
@@ -46,13 +47,14 @@ public class JsonAdminInvitationActivityJoinHistoryController {
 
     @GetMapping("/admin/invitationActivityJoinHistory/queryCount")
     public R count(@RequestParam(value = "activityId", required = false) Long activityId,
+                   @RequestParam(value = "id", required = false) Long id,
                    @RequestParam(value = "beginTime", required = false) Long beginTime,
                    @RequestParam(value = "endTime", required = false) Long endTime,
                    @RequestParam(value = "status", required = false) Integer status,
                    @RequestParam(value = "phone", required = false) String phone,
                    @RequestParam(value = "joinUserName", required = false) String joinUserName) {
 
-        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().userName(joinUserName)
+        InvitationActivityJoinHistoryQuery query = InvitationActivityJoinHistoryQuery.builder().userName(joinUserName).recordId(id)
                 .beginTime(beginTime).endTime(endTime).activityId(activityId).status(status).tenantId(TenantContextHolder.getTenantId()).phone(phone).build();
 
         return R.ok(invitationActivityJoinHistoryService.selectByPageCount(query));
