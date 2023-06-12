@@ -23,8 +23,8 @@ public class BatteryServiceFeeQuery {
     private Long uid;
     private String name;
 
-    private Long queryStartTime;
-    private Long queryEndTime;
+    private Long beginTime;
+    private Long endTime;
 
     private Integer status;
 

@@ -45,4 +45,8 @@ public class UserCouponQuery {
     private Integer discountType;
 
     private Integer status;
+
+    private Long beginTime;
+
+    private Long endTime;
 }

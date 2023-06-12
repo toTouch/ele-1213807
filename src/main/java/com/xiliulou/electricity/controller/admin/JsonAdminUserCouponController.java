@@ -34,6 +34,8 @@ public class JsonAdminUserCouponController {
                        @RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "discountType", required = false) Integer discountType,
                        @RequestParam(value = "phone", required = false) String phone) {
@@ -48,6 +50,8 @@ public class JsonAdminUserCouponController {
         UserCouponQuery userCouponQuery = UserCouponQuery.builder()
                 .offset(offset)
                 .size(size)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .couponId(couponId)
                 .uid(uid)
                 .orderId(orderId)
@@ -63,6 +67,8 @@ public class JsonAdminUserCouponController {
     @GetMapping(value = "/admin/userCoupon/queryCount")
     public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "userName", required = false) String userName,
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "status", required = false) Integer status,
@@ -72,6 +78,8 @@ public class JsonAdminUserCouponController {
         UserCouponQuery userCouponQuery = UserCouponQuery.builder()
                 .couponId(couponId)
                 .uid(uid)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .orderId(orderId)
                 .userName(userName)
                 .discountType(discountType)
