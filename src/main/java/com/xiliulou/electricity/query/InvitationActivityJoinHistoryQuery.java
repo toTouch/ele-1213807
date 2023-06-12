@@ -32,4 +32,5 @@ public class InvitationActivityJoinHistoryQuery {
 
     private Long endTime;
 
+    private Long recordId;
 }

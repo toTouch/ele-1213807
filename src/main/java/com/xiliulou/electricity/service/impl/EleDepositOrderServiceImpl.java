@@ -333,7 +333,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE DEPOSIT ERROR! user is disable! uid={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! user is disable! uid={}", user.getUid());
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -345,12 +345,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer memberCardOweNumber = null;
         if (Objects.nonNull(userBatteryMemberCard)) {
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-                log.error("returnDeposit  ERROR! disable member card is reviewing userId={}", user.getUid());
+                log.warn("ELE DEPOSIT WARN! disable member card is reviewing userId={}", user.getUid());
                 return R.fail("ELECTRICITY.100003", "停卡正在审核中");
             }
 
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                log.error("returnDeposit  ERROR! member card is disable userId={}", user.getUid());
+                log.warn("ELE DEPOSIT WARN! member card is disable userId={}", user.getUid());
                 return R.fail("ELECTRICITY.100004", "月卡已暂停");
             }
 
@@ -366,7 +366,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //判断是否缴纳押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", user.getUid());
+            log.warn("ELE DEPOSIT WARN! not pay deposit,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -393,13 +393,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! not found eleDepositOrder! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
         BigDecimal deposit = userBatteryDeposit.getBatteryDeposit();
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
-            log.error("ELE DEPOSIT ERROR! illegal deposit! userId={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! illegal deposit! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
@@ -440,12 +440,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //判断是否退电池
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! not return battery,uid={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! not return battery,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
 
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
-            log.error("ELE DEPOSIT ERROR! travel to store,uid={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! travel to store,uid={}", user.getUid());
             return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
 
@@ -454,7 +454,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //是否有正在进行中的退款
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
         if (refundCount > 0) {
-            log.error("ELE DEPOSIT ERROR! have refunding order,uid={}", user.getUid());
+            log.warn("ELE DEPOSIT WARN! have refunding order,uid={}", user.getUid());
             return R.fail("ELECTRICITY.0047", "请勿重复退款");
         }
 
@@ -655,36 +655,36 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public Triple<Boolean, String, Object> returnDepositPreCheck(UserInfo userInfo) {
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE DEPOSIT ERROR! user is disable! uid={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! user is disable! uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
         }
 
         //判断是否退电池
         if (Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! not return battery,uid={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! not return battery,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0046", "未退还电池");
         }
 
         //判断是否缴纳押金
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit) || !Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! not pay deposit,uid={} ", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! not pay deposit,uid={} ", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getMemberCardId(), NumberConstant.ZERO_L)) {
-            log.error("ELE DEPOSIT ERROR! not found userBatteryMemberCard! uid={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! not found userBatteryMemberCard! uid={}", userInfo.getUid());
             return Triple.of(true, "", null);
         }
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("returnDeposit  ERROR! disable member card is reviewing userId={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! disable member card is reviewing userId={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.100003", "套餐暂停审核中");
         }
 
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            log.error("returnDeposit  ERROR! member card is disable userId={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! member card is disable userId={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.100004", "套餐已暂停");
         }
 
@@ -707,12 +707,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userBatteryDeposit.getOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
-            log.error("ELE DEPOSIT ERROR! not found eleDepositOrder! userId={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARN! not found eleDepositOrder! userId={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.0015", "未找到订单");
         }
 
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
-            log.error("ELE DEPOSIT ERROR! travel to store,uid={}", userInfo.getUid());
+            log.warn("ELE DEPOSIT WARM! travel to store,uid={}", userInfo.getUid());
             return Triple.of(false, "ELECTRICITY.00115", "请前往门店退押金");
         }
 
@@ -821,13 +821,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("ELE DEPOSIT ERROR! user not rent deposit,uid={}", user.getUid());
+            log.info("ELE DEPOSIT INFO! user not rent deposit,uid={}", user.getUid());
             return R.ok(null);
         }
 
         UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBattery)) {
-            log.error("ELE DEPOSIT ERROR! not found userBattery,uid={}", user.getUid());
+            log.info("ELE DEPOSIT INFO! not found userBattery,uid={}", user.getUid());
             return R.ok(null);
         }
 

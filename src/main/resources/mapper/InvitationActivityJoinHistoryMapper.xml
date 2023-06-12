@@ -81,6 +81,9 @@
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}
             </if>
+            <if test="recordId != null">
+                and iajh.record_id = #{recordId}
+            </if>
             <if test="status != null">
                 and iajh.status = #{status}
             </if>
@@ -114,6 +117,9 @@
             </if>
             <if test="activityId != null">
                 and iajh.activity_id = #{activityId}
+            </if>
+            <if test="recordId != null">
+                and iajh.record_id = #{recordId}
             </if>
             <if test="status != null">
                 and iajh.status = #{status}
