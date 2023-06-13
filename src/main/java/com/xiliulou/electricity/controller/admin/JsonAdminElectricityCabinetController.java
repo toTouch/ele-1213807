@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**
@@ -938,5 +940,50 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     public R existsElectricityCabinet(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return returnTripleResult(electricityCabinetService.existsElectricityCabinet(productKey, deviceName));
     }
+
+    /**
+     * 柜机数据导出
+     */
+    @GetMapping(value = "/admin/electricityCabinet/exportExcel")
+    public void exportExcel(@RequestParam(value = "name", required = false) String name,
+                            @RequestParam(value = "address", required = false) String address,
+                            @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                            @RequestParam(value = "beginTime", required = false) Long beginTime,
+                            @RequestParam(value = "endTime", required = false) Long endTime,
+                            @RequestParam(value = "id", required = false) Integer id, HttpServletResponse response) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("用户不存在");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
+            if (Objects.isNull(userTypeService)) {
+                throw new CustomBusinessException("用户权限不足");
+            }
+
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                throw new CustomBusinessException("未找到柜机");
+            }
+        }
+
+        ElectricityCabinetQuery query = ElectricityCabinetQuery.builder()
+                .name(name)
+                .address(address)
+                .usableStatus(usableStatus)
+                .onlineStatus(onlineStatus)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .id(id)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        electricityCabinetService.exportExcel(query, response);
+    }
+
 
 }

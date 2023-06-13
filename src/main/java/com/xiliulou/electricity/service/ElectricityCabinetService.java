@@ -12,6 +12,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -207,4 +208,6 @@ public interface ElectricityCabinetService {
     R cabinetSearch(Long size, Long offset, String name , Integer tenantId);
 
     Triple<Boolean, String, Object> existsElectricityCabinet(String productKey, String deviceName);
+
+    void exportExcel(ElectricityCabinetQuery query, HttpServletResponse response);
 }
