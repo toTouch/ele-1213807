@@ -67,9 +67,6 @@
             <if test="query.source != null">
                 and te.source =#{query.source}
             </if>
-            <if test="query.queryStartTime != null">
-                and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
-            </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -111,9 +108,6 @@
             </if>
             <if test="query.source != null">
                 and te.source =#{query.source}
-            </if>
-            <if test="query.queryStartTime != null">
-                and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
