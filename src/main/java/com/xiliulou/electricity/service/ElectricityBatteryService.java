@@ -12,6 +12,7 @@ import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import org.apache.commons.lang3.tuple.Triple;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -102,4 +103,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryUserAttrBySnFromDb(String sn);
 
     Triple<Boolean, String, Object> queryBatteryLocationTrack(Long uid, Long beginTime, Long endTime);
+
+    void export(ElectricityBatteryQuery query, HttpServletResponse response);
 }

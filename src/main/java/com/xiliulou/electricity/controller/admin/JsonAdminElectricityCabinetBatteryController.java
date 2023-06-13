@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -27,6 +28,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -505,5 +507,38 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         List<ElectricityBattery> electricityBatterys = electricityBatteryService.selectBatteryInfoByBatteryName(
                 batteryQuery);
         return R.ok(electricityBatterys);
+    }
+
+
+    @GetMapping("/admin/battery/export")
+    public void export(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+                       @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+                       @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                       @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
+                       @RequestParam(value = "sn", required = false) String sn,
+                       @RequestParam(value = "power", required = false) Double power,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName, HttpServletResponse response){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            throw new CustomBusinessException("用户不存在");
+        }
+
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
+            throw new CustomBusinessException("用户权限不足");
+        }
+
+        ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
+        electricityBatteryQuery.setBusinessStatus(businessStatus);
+        electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setPower(power);
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
+        electricityBatteryQuery.setChargeStatus(chargeStatus);
+        electricityBatteryQuery.setFranchiseeId(franchiseeId);
+        electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
+        electricityBatteryQuery.setFranchiseeName(franchiseeName);
+
+        electricityBatteryService.export(electricityBatteryQuery,response);
     }
 }

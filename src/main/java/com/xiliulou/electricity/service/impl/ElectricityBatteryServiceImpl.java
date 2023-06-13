@@ -1,15 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
@@ -19,6 +24,7 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
@@ -28,6 +34,7 @@ import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -49,6 +56,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -287,6 +298,74 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 
         return Triple.of(true, null, result.getRight());
+    }
+
+    @Override
+    public void export(ElectricityBatteryQuery query, HttpServletResponse response) {
+        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(query, NumberConstant.ZERO_L, Long.MAX_VALUE);
+        if (CollectionUtils.isEmpty(electricityBatteryList)) {
+            throw new CustomBusinessException("柜机列表为空！");
+        }
+
+        List<ElectricityBatteryExcelVO> excelVOS = new ArrayList<>(electricityBatteryList.size());
+        int index = 0;
+
+        for (ElectricityBattery battery : electricityBatteryList) {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(battery.getFranchiseeId());
+            UserInfo userInfo = userInfoService.queryByUidFromCache(battery.getUid());
+
+            index++;
+
+            ElectricityBatteryExcelVO excelVO = new ElectricityBatteryExcelVO();
+            excelVO.setId(index);
+            excelVO.setSn(battery.getSn());
+            excelVO.setModel(battery.getModel());
+            excelVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            excelVO.setPhysicsStatus(Objects.equals(battery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) ? "在仓" : "不在仓");
+            excelVO.setBusinessStatus(acquireBatteryBusinessStatus(battery));
+            excelVO.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
+            excelVO.setIotCardNumber(battery.getIotCardNumber());
+            excelVO.setCreateTime(DateUtil.format(DateUtil.date(battery.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER));
+
+            excelVOS.add(excelVO);
+        }
+
+        String fileName = "电池列表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, CharsetUtil.UTF_8));
+            EasyExcel.write(outputStream, ElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOS);
+        } catch (IOException e) {
+            log.error("ELE ERROR! export electricity cabinet fail!", e);
+        }
+    }
+
+    private String acquireBatteryBusinessStatus(ElectricityBattery battery) {
+        String result = "";
+        if (Objects.isNull(battery) || Objects.isNull(battery.getBusinessStatus())) {
+            return result;
+        }
+
+        switch (battery.getBusinessStatus()) {
+            case 1:
+                result = "已录入";
+                break;
+            case 2:
+                result = "租借";
+                break;
+            case 3:
+                result = "归还";
+                break;
+            case 4:
+                result = "异常交换";
+                break;
+            default:
+                result = "未知";
+                break;
+        }
+
+        return result;
     }
 
     private Triple<Boolean, String, List<BatteryTrackDto>> callBatteryServiceQueryBatteryTrack(BatteryLocationTrackQuery batteryLocationTrackQuery) {

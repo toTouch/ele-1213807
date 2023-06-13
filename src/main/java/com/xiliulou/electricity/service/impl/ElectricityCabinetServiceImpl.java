@@ -4193,7 +4193,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(query);
         if (CollectionUtils.isEmpty(electricityCabinetList)) {
-            throw new CustomBusinessException("用户列表为空！");
+            throw new CustomBusinessException("柜机列表为空！");
         }
 
         List<ElectricityCabinetExcelVO> excelVOS = new ArrayList<>(electricityCabinetList.size());
@@ -4222,9 +4222,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         String fileName = "电柜列表.xlsx";
         try {
             ServletOutputStream outputStream = response.getOutputStream();
-            // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type", "application/vnd.ms-excel");
-            // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, CharsetUtil.UTF_8));
             EasyExcel.write(outputStream, ElectricityCabinetExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOS);
         } catch (IOException e) {

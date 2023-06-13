@@ -958,17 +958,8 @@ public class JsonAdminElectricityCabinetController extends BaseController {
             throw new CustomBusinessException("用户不存在");
         }
 
-        List<Integer> eleIdList = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                throw new CustomBusinessException("用户权限不足");
-            }
-
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
-                throw new CustomBusinessException("未找到柜机");
-            }
+            throw new CustomBusinessException("用户权限不足");
         }
 
         ElectricityCabinetQuery query = ElectricityCabinetQuery.builder()
@@ -978,7 +969,6 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                 .onlineStatus(onlineStatus)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .eleIdList(eleIdList)
                 .id(id)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
