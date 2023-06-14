@@ -4178,4 +4178,92 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return Triple.of(true, null, null);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> batchDeleteCabinet(Set<Integer> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+
+        for (Integer id : ids) {
+            ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
+            if (Objects.isNull(electricityCabinet)) {
+                log.info("ELE INFO!delete fail,not found cabinet,id={}", id);
+                continue;
+            }
+
+            ElectricityCabinet electricityCabinetUpdate = new ElectricityCabinet();
+            electricityCabinetUpdate.setId(id);
+            electricityCabinetUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetUpdate.setDelFlag(ElectricityCabinet.DEL_DEL);
+            electricityCabinetUpdate.setTenantId(TenantContextHolder.getTenantId());
+
+            DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.updateEleById(electricityCabinetUpdate), i -> {
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + id);
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+
+                //删除格挡
+                electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
+            });
+
+        }
+
+        return Triple.of(true, null, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> batchImportCabinet(List<ElectricityCabinetImportQuery> list) {
+        if (!redisService.setNx(CacheConstant.ELE_BATCH_IMPORT + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
+        Triple<Boolean, String, Object> verifyBatchImportResult = verifyBatchImportParams(list);
+        if (Boolean.FALSE.equals(verifyBatchImportResult.getLeft())) {
+            return verifyBatchImportResult;
+        }
+
+        for (ElectricityCabinetImportQuery query : list) {
+            ElectricityCabinet electricityCabinet = new ElectricityCabinet();
+            BeanUtils.copyProperties(query, electricityCabinet);
+            electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            electricityCabinet.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+            electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
+            electricityCabinet.setCreateTime(System.currentTimeMillis());
+            electricityCabinet.setUpdateTime(System.currentTimeMillis());
+
+            DbUtils.dbOperateSuccessThenHandleCache(electricityCabinetMapper.insert(electricityCabinet), i -> {
+                //添加格挡
+                electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModelService.queryByIdFromCache(query.getModelId()), electricityCabinet.getId());
+                //添加服务时间记录
+                electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
+            });
+        }
+
+        return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> verifyBatchImportParams(List<ElectricityCabinetImportQuery> list) {
+        for (ElectricityCabinetImportQuery cabinetImportQuery : list) {
+            ElectricityCabinet electricityCabinet = this.queryByProductAndDeviceName(cabinetImportQuery.getProductKey(), cabinetImportQuery.getDeviceName());
+            if (Objects.nonNull(electricityCabinet)) {
+                return Triple.of(false, "", "三元组已存在");
+            }
+
+
+            Store store = storeService.queryByIdFromCache(cabinetImportQuery.getStoreId());
+            if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
+                return Triple.of(false, "", "门店不存在");
+            }
+
+            ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(cabinetImportQuery.getModelId());
+            if (Objects.isNull(cabinetModel) || !Objects.equals(cabinetModel.getTenantId(), TenantContextHolder.getTenantId())) {
+                return Triple.of(false, "", "柜机型号不存在");
+            }
+        }
+
+        return Triple.of(true, null, null);
+    }
 }
