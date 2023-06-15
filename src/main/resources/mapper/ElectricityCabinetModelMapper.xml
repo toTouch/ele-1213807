@@ -2,7 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper">
 
-
+    <select id="selectByNum" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">
+        select    id, name, num, voltage
+        from t_electricity_cabinet_model
+        where del_flag=0 and num= #{num} and tenant_id=#{tenantId}
+    </select>
 
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCabinetModel">

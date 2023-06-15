@@ -22,5 +22,9 @@ public class ElectricityCabinetTransferQuery {
     @NotNull(message = "门店id不能为空!")
     private Long storeId;
 
+    private Double longitude;
 
+    private Double latitude;
+
+    private String address;
 }
