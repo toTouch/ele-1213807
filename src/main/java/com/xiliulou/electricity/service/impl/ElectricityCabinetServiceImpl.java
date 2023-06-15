@@ -490,6 +490,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
         return R.ok();
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet) {
+        int delete = electricityCabinetMapper.deleteById(electricityCabinet.getId());
+        DbUtils.dbOperateSuccessThenHandleCache(delete, i -> {
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+
+            //删除电柜服务时间
+            electricityCabinetServerService.deleteByEid(electricityCabinet.getId());
+        });
+        return delete>0?Triple.of(true,null,null):Triple.of(false,"","删除失败");
+    }
     
     @Override
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
@@ -4241,6 +4255,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             });
         }
+
+        return Triple.of(true, null, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query) {
+
+        Store store = storeService.queryByIdFromCache(query.getStoreId());
+        if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, "", "门店不存在");
+        }
+
+
+        //物理删除柜机
+//        this.physicsDelete();
+
+        //生成迁移记录
 
         return Triple.of(true, null, null);
     }

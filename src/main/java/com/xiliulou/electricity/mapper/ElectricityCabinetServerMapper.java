@@ -74,4 +74,6 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
         @Param("deviceName") String deviceName);
 
     ElectricityCabinetServer selectByEid(@Param("eid") Integer id);
+
+    Integer deleteByEid(@Param("eid") Integer eid);
 }

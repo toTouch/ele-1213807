@@ -212,4 +212,8 @@ public interface ElectricityCabinetService {
     Triple<Boolean, String, Object> batchDeleteCabinet(Set<Integer> ids);
 
     Triple<Boolean, String, Object> batchImportCabinet(List<ElectricityCabinetImportQuery> list);
+
+    Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query);
+
+    Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet);
 }
