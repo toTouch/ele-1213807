@@ -943,7 +943,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
      * 批量删除柜机
      */
     @PostMapping(value = "/admin/electricityCabinet/batchDelete")
-    public R batchDelete(@RequestBody final Set<Integer> ids) {
+    public R batchDelete(@RequestBody Set<Integer> ids) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
