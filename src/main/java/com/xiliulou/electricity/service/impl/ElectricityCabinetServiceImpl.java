@@ -4272,7 +4272,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //物理删除柜机
 //        this.physicsDelete();
 
+
+
         //生成迁移记录
+
+
 
         return Triple.of(true, null, null);
     }
@@ -4283,7 +4287,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(electricityCabinet)) {
                 return Triple.of(false, "", "三元组已存在");
             }
-
 
             Store store = storeService.queryByIdFromCache(cabinetImportQuery.getStoreId());
             if (Objects.isNull(store) || !Objects.equals(store.getTenantId(), TenantContextHolder.getTenantId())) {

@@ -23,6 +23,4 @@ public class ElectricityCabinetTransferQuery {
     private Long storeId;
 
 
-
-
 }
