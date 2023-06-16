@@ -4214,8 +4214,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
-            excelVO.setServerEndTime(DateUtil.format(DateUtil.date(cabinetVO.getServerEndTime()), DatePattern.NORM_DATETIME_FORMATTER));
-            excelVO.setCreateTime(DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER));
+            excelVO.setServerEndTime(Objects.nonNull(cabinetVO.getServerEndTime())?DateUtil.format(DateUtil.date(cabinetVO.getServerEndTime()), DatePattern.NORM_DATETIME_FORMATTER):"");
+            excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime())?DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER):"");
             excelVOS.add(excelVO);
         }
 

@@ -325,7 +325,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             excelVO.setBusinessStatus(acquireBatteryBusinessStatus(battery));
             excelVO.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
             excelVO.setIotCardNumber(battery.getIotCardNumber());
-            excelVO.setCreateTime(DateUtil.format(DateUtil.date(battery.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER));
+            excelVO.setCreateTime(Objects.isNull(battery.getCreateTime()) ? "" :DateUtil.format(DateUtil.date(battery.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER));
 
             excelVOS.add(excelVO);
         }
