@@ -334,10 +334,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         try {
             ServletOutputStream outputStream = response.getOutputStream();
             response.setHeader("content-Type", "application/vnd.ms-excel");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, CharsetUtil.UTF_8));
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
             EasyExcel.write(outputStream, ElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOS);
+            return;
         } catch (IOException e) {
-            log.error("ELE ERROR! export electricity cabinet fail!", e);
+            log.error("导出报表失败！", e);
         }
     }
 
