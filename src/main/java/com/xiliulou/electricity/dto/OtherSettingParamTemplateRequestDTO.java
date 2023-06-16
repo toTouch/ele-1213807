@@ -157,4 +157,9 @@ public class OtherSettingParamTemplateRequestDTO {
      */
     private Integer defaultChargeStorageMaxA;
     private Integer aOpenChargeStrategy;
+
+    /**
+     * 高温告警阈值
+     */
+    private Integer temperatureWarningValue;
 }
