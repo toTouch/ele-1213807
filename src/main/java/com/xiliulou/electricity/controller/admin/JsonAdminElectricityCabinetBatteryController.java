@@ -529,6 +529,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setOffset(0L);
+        electricityBatteryQuery.setSize(Long.MAX_VALUE);
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);

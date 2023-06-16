@@ -963,6 +963,8 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         }
 
         ElectricityCabinetQuery query = ElectricityCabinetQuery.builder()
+                .size(Long.MAX_VALUE)
+                .offset(0L)
                 .name(name)
                 .address(address)
                 .usableStatus(usableStatus)
