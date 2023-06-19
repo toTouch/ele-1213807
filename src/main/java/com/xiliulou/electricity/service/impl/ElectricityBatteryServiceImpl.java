@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -326,6 +325,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             excelVO.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
             excelVO.setIotCardNumber(battery.getIotCardNumber());
             excelVO.setCreateTime(Objects.isNull(battery.getCreateTime()) ? "" :DateUtil.format(DateUtil.date(battery.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER));
+
+            if (Objects.nonNull(battery.getElectricityCabinetId())) {
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(battery.getElectricityCabinetId());
+                excelVO.setCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
+            }
 
             excelVOS.add(excelVO);
         }

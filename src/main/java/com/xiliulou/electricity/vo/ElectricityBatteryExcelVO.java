@@ -14,11 +14,14 @@ public class ElectricityBatteryExcelVO {
     @ExcelProperty("序号")
     private Integer id;
 
-    @ExcelProperty("编码")
+    @ExcelProperty("电池编号")
     private String sn;
 
     @ExcelProperty("电池型号")
     private String model;
+
+    @ExcelProperty("所在电柜")
+    private String cabinetName;
 
     @ExcelProperty("所属加盟商")
     private String franchiseeName;

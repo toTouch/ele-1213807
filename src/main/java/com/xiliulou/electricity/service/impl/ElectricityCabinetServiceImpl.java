@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
@@ -4214,8 +4213,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
-            excelVO.setServerEndTime(Objects.nonNull(cabinetVO.getServerEndTime())?DateUtil.format(DateUtil.date(cabinetVO.getServerEndTime()), DatePattern.NORM_DATETIME_FORMATTER):"");
-            excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime())?DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER):"");
+            excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
+
+            ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(), cabinetVO.getDeviceName());
+            if (Objects.nonNull(electricityCabinetServer)) {
+                excelVO.setServerEndTime(Objects.nonNull(electricityCabinetServer.getServerEndTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getServerEndTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
+            }
+
             excelVOS.add(excelVO);
         }
 
