@@ -4368,6 +4368,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     private Triple<Boolean, String, Object> verifyBatchImportParams(List<ElectricityCabinetImportQuery> list) {
+        Set<String> deviceNameSet = list.stream().map(ElectricityCabinetImportQuery::getDeviceName).collect(Collectors.toSet());
+        if(deviceNameSet.size()!=list.size()){
+            return Triple.of(false, "", "三元组重复");
+        }
+
         for (ElectricityCabinetImportQuery cabinetImportQuery : list) {
             ElectricityCabinet electricityCabinet = this.queryByProductAndDeviceName(cabinetImportQuery.getProductKey(), cabinetImportQuery.getDeviceName());
             if (Objects.nonNull(electricityCabinet)) {
