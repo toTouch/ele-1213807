@@ -70,6 +70,10 @@ public class NormalHighTemperatureAlarmHandler extends AbstractElectricityIotHan
             return Collections.emptyList();
         }
 
+        if ((notifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_HIGH_TEMPERATURE_ALARM) != MaintenanceUserNotifyConfig.TYPE_HIGH_TEMPERATURE_ALARM) {
+            return Collections.emptyList();
+        }
+
         List<String> phones = JsonUtil.fromJsonArray(notifyConfig.getPhones(), String.class);
         if (org.apache.commons.collections.CollectionUtils.isEmpty(phones)) {
             log.warn("ELE HIGH TEMPERATURE WARN! phones is empty,tenantId={}", electricityCabinet.getTenantId());
