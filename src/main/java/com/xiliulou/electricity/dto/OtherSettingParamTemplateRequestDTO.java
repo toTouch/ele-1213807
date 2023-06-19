@@ -161,5 +161,5 @@ public class OtherSettingParamTemplateRequestDTO {
     /**
      * 高温告警阈值
      */
-    private Integer temperatureWarningValue;
+    private Double temperatureWarningValue;
 }
