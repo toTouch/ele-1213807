@@ -28,14 +28,6 @@ public interface InvitationActivityRecordService {
     InvitationActivityRecord queryByIdFromDB(Long id);
 
     /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    InvitationActivityRecord queryByIdFromCache(Long id);
-
-    /**
      * 查询多条数据
      *
      * @param offset 查询起始位置
