@@ -64,4 +64,9 @@ public class MaintenanceUserNotifyConfig {
      */
     public static Integer TYPE_DISABLE_MEMBER_CARD = 16;
 
+    /**
+     * 高温告警
+     */
+    public static Integer TYPE_HIGH_TEMPERATURE_ALARM = 32;
+
 }

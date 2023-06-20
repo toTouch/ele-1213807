@@ -46,6 +46,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
     public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
+    public static final String NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER = "highTemperatureAlarmHandler";
 
     /**
      * 核心板上报数据处理
@@ -398,7 +399,12 @@ public class ElectricityIotConstant {
      * 同步电池型号
      */
     public static final String TAKE_BATTERY_MODE = "take_battery_mode";
-    
+
+    /**
+     * 高温告警
+     */
+    public static final String TEMPERATURE_WARNING = "temperature_warning";
+
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -523,5 +529,11 @@ public class ElectricityIotConstant {
     
         COMMAND_HANDLER_MAPS.put(OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(READ_OTHER_SETTING_PARAM_TEMPLATE, NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER);
+
+        /**
+         * 高温告警
+         */
+        COMMAND_HANDLER_MAPS.put(TEMPERATURE_WARNING, NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER);
+
     }
 }
