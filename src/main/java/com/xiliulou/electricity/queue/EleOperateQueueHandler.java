@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -634,16 +635,18 @@ public class EleOperateQueueHandler {
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
                                 electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
-                .setType(BatteryTrackRecord.TYPE_RENT_OUT).setCreateTime(rentBatteryOrder.getUpdateTime())
+                .setType(BatteryTrackRecord.TYPE_RENT_OUT).setCreateTime(TimeUtils.convertToStandardFormatTime(rentBatteryOrder.getUpdateTime()))
                 .setOrderId(rentBatteryOrder.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
 
 
         //查找用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
         if (Objects.isNull(userInfo)) {
+            batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
             return;
         }
+        batteryTrackRecord.setUid(rentBatteryOrder.getUid()).setPhone(userInfo.getPhone()).setName(userInfo.getName());
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
 
         //更新用户租赁状态
         UserInfo updateUserInfo = new UserInfo();
@@ -702,9 +705,9 @@ public class EleOperateQueueHandler {
                 .setEId(Long.valueOf(rentBatteryOrder.getElectricityCabinetId())).setEName(Optional.ofNullable(
                                 electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId()))
                         .map(ElectricityCabinet::getName).orElse("")).setENo(rentBatteryOrder.getCellNo())
-                .setType(BatteryTrackRecord.TYPE_RETURN_IN).setCreateTime(rentBatteryOrder.getUpdateTime())
+                .setType(BatteryTrackRecord.TYPE_RETURN_IN).setCreateTime(TimeUtils.convertToStandardFormatTime(rentBatteryOrder.getUpdateTime()))
                 .setOrderId(rentBatteryOrder.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
 
         //查找用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(rentBatteryOrder.getUid());
