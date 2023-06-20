@@ -38,7 +38,7 @@ public class ElectricityCabinetExcelVO {
     @ExcelProperty("加盟商")
     private String franchiseeName;
 
-    @ExcelProperty("服务结束时间")
+    @ExcelProperty("服务到期时间")
     private String serverEndTime;
 
     @ExcelProperty("创建时间")
