@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.outer;
+
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BatteryReportQuery;
@@ -58,6 +59,12 @@ public class JsonOuterElectricityCabinetController {
     @Value("${ele.qijiapk.url:https://ele.xiliulou.com/apk}")
     String qijiUrl;
 
+
+    @Value("${ele.tcp.version:1.0.0}")
+    String tcpVersion;
+    @Value("${ele.tcp.url:https://ele.xiliulou.com/apk}")
+    String tcpUrl;
+
     /**
      * app检查版本
      *
@@ -68,6 +75,14 @@ public class JsonOuterElectricityCabinetController {
         Map<String, Object> result = Maps.newHashMap();
         result.put("version", apkVersion);
         result.put("dir", apkUrl);
+        return R.ok(result);
+    }
+
+    @GetMapping(value = "/outer/tcp/version")
+    public R getTcpVersion() {
+        Map<String, Object> result = Maps.newHashMap();
+        result.put("version", tcpVersion);
+        result.put("dir", tcpUrl);
         return R.ok(result);
     }
 
@@ -88,7 +103,7 @@ public class JsonOuterElectricityCabinetController {
     @PostMapping(value = "/outer/electricityCabinet/log")
     public R receiverAppLog(@RequestParam("productKey") String productKey,
                             @RequestParam("deviceName") String deviceName,
-                            @RequestParam("file") MultipartFile file)  {
+                            @RequestParam("file") MultipartFile file) {
 
 //        ElectricityCabinet electricityCabinet=electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
 //        if(Objects.isNull(electricityCabinet)){
@@ -160,8 +175,8 @@ public class JsonOuterElectricityCabinetController {
      */
     @GetMapping(value = "/outer/checkBattery")
     public R checkBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName,
-            @RequestParam("batterySn") String batterySn,@RequestParam(value = "isParseBattery", required = false) Boolean isParseBattery) {
-        return electricityCabinetService.checkBattery(productKey,deviceName,batterySn,isParseBattery);
+                          @RequestParam("batterySn") String batterySn, @RequestParam(value = "isParseBattery", required = false) Boolean isParseBattery) {
+        return electricityCabinetService.checkBattery(productKey, deviceName, batterySn, isParseBattery);
     }
 
     /**
@@ -176,24 +191,25 @@ public class JsonOuterElectricityCabinetController {
 
     /**
      * 三元组前置检测
+     *
      * @param apiRequestQuery
      * @return
      */
     @PostMapping("/outer/checkDevice")
-    public R queryDeviceIsUnActiveFStatus(@RequestBody ApiRequestQuery apiRequestQuery){
+    public R queryDeviceIsUnActiveFStatus(@RequestBody ApiRequestQuery apiRequestQuery) {
         return electricityCabinetService.queryDeviceIsUnActiveFStatus(apiRequestQuery);
     }
 
 
     /**
      * 网络检测检测
+     *
      * @return
      */
     @GetMapping("/outer/heartbeat/check")
-    public R queryHeartbeat(){
+    public R queryHeartbeat() {
         return R.ok();
     }
-
 
 
 }
