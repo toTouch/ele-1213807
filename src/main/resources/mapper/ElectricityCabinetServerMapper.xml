@@ -118,6 +118,10 @@
         delete from t_electricity_cabinet_server where id = #{id}
     </delete>
 
+    <delete id="deleteByEid">
+        delete from t_electricity_cabinet_server where electricity_cabinet_id = #{eid}
+    </delete>
+
     <select id="queryList" resultMap="ElectricityCabinetServerMap">
         select
         ecs.id, ecs.electricity_cabinet_id, ecs.product_key, ecs.device_name, ecs.tenant_id,

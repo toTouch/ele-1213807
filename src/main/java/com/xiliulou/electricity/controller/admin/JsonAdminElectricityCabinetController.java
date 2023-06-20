@@ -942,6 +942,58 @@ public class JsonAdminElectricityCabinetController extends BaseController {
     }
 
     /**
+     * 批量删除柜机
+     */
+    @PostMapping(value = "/admin/electricityCabinet/batchDelete")
+    public R batchDelete(@RequestBody Set<Integer> ids) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        return returnTripleResult(electricityCabinetService.batchDeleteCabinet(ids));
+    }
+
+    /**
+     * 批量导入柜机
+     */
+    @PostMapping(value = "/admin/electricityCabinet/batchImport")
+    public R batchImport(@RequestBody @Validated List<ElectricityCabinetImportQuery> list) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        return returnTripleResult(electricityCabinetService.batchImportCabinet(list));
+    }
+
+    /**
+     * 迁移柜机
+     * 将工厂账号下柜机迁移到扫码租户下，并物理删除工厂租户下的柜机信息
+     */
+    @PostMapping("/admin/electricityCabinet/transfer")
+    public R transferCabinet(@RequestBody @Validated ElectricityCabinetTransferQuery query){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        return returnTripleResult(electricityCabinetService.transferCabinet(query));
+    }
+
+    /**
      * 柜机数据导出
      */
     @GetMapping(value = "/admin/electricityCabinet/exportExcel")

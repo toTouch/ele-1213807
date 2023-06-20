@@ -1212,7 +1212,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         if (Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
-            log.warn("SELF OPEN CELL WARN! is self open cell exception,orderId={}", orderSelfOpenCellQuery.getOrderId());
+            log.warn("SELF OPEN CELL WARN! self open cell fail,orderId={}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100021", "该订单已进行自助开仓");
         }
 

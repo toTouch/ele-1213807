@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CabinetMoveHistoryMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.CabinetMoveHistory" id="CabinetMoveHistoryMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="productKey" column="product_key" jdbcType="VARCHAR"/>
+        <result property="deviceName" column="device_name" jdbcType="VARCHAR"/>
+        <result property="oldInfo" column="old_info" jdbcType="VARCHAR"/>
+        <result property="eid" column="eid" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="CabinetMoveHistoryMap">
+        select
+          id, product_key, device_name, old_info, eid, uid, create_time, update_time, tenant_id
+        from t_cabinet_move_history
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="CabinetMoveHistoryMap">
+        select
+          id, product_key, device_name, old_info, eid, uid, create_time, update_time, tenant_id
+        from t_cabinet_move_history
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="CabinetMoveHistoryMap">
+        select
+        id, product_key, device_name, old_info, eid, uid, create_time, update_time, tenant_id
+        from t_cabinet_move_history
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="productKey != null and productKey != ''">
+                and product_key = #{productKey}
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                and device_name = #{deviceName}
+            </if>
+            <if test="oldInfo != null and oldInfo != ''">
+                and old_info = #{oldInfo}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_cabinet_move_history(product_key, device_name, old_info, eid, uid, create_time, update_time, tenant_id)
+        values (#{productKey}, #{deviceName}, #{oldInfo}, #{eid}, #{uid}, #{createTime}, #{updateTime}, #{tenantId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_cabinet_move_history
+        <set>
+            <if test="productKey != null and productKey != ''">
+                product_key = #{productKey},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name = #{deviceName},
+            </if>
+            <if test="oldInfo != null and oldInfo != ''">
+                old_info = #{oldInfo},
+            </if>
+            <if test="eid != null">
+                eid = #{eid},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_cabinet_move_history where id = #{id}
+    </delete>
+
+</mapper>
