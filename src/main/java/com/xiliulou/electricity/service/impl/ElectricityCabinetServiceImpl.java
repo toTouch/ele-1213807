@@ -5,6 +5,7 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.iot.model.v20180120.GetDeviceStatusResponse;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -29,6 +31,7 @@ import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -55,7 +58,11 @@ import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -4177,5 +4184,94 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "100373", "当前运营商与柜机所属运营商不一致");
         }
         return Triple.of(true, null, null);
+    }
+
+    @Slave
+    @Override
+    public void exportExcel(ElectricityCabinetQuery query, HttpServletResponse response) {
+
+        List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(query);
+        if (CollectionUtils.isEmpty(electricityCabinetList)) {
+            throw new CustomBusinessException("柜机列表为空！");
+        }
+
+        List<ElectricityCabinetExcelVO> excelVOS = new ArrayList<>(electricityCabinetList.size());
+        int index = 0;
+
+        for (ElectricityCabinetVO cabinetVO : electricityCabinetList) {
+
+            ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(cabinetVO.getModelId());
+
+            index++;
+
+            ElectricityCabinetExcelVO excelVO = new ElectricityCabinetExcelVO();
+            excelVO.setId(index);
+            excelVO.setSn(cabinetVO.getSn());
+            excelVO.setName(cabinetVO.getName());
+            excelVO.setAddress(cabinetVO.getAddress());
+            excelVO.setUsableStatus(Objects.equals(cabinetVO.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS) ? "启用" : "禁用");
+            excelVO.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
+            excelVO.setVersion(cabinetVO.getVersion());
+            excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
+            excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
+            excelVO.setExchangeType(acquireExchangeType(cabinetVO.getExchangeType()));
+
+            ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(), cabinetVO.getDeviceName());
+            if (Objects.nonNull(electricityCabinetServer)) {
+                excelVO.setServerEndTime(Objects.nonNull(electricityCabinetServer.getServerEndTime()) ? DateUtil.format(DateUtil.date(electricityCabinetServer.getServerEndTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
+            }
+
+            excelVOS.add(excelVO);
+        }
+
+        String fileName = "电柜列表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, ElectricityCabinetExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOS);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+    }
+
+    private String acquireExchangeType(Integer exchangeType) {
+        String type = null;
+        switch (exchangeType) {
+            case 1:
+                type = "有屏";
+                break;
+            case 2:
+                type = "无屏";
+                break;
+            case 3:
+                type = "单片机";
+                break;
+            default:
+                type = "未知";
+                break;
+        }
+        return type;
+    }
+
+    private String acquireFranchiseeNameByStore(Integer storeId) {
+        String name = "";
+
+        if (Objects.isNull(storeId)) {
+            return name;
+        }
+
+        Store store = storeService.queryByIdFromCache(storeId.longValue());
+        if (Objects.isNull(store)) {
+            return name;
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(store.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            return name;
+        }
+
+        return franchisee.getName();
     }
 }
