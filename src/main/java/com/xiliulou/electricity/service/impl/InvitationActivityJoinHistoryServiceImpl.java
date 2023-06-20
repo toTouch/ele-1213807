@@ -95,7 +95,6 @@ public class InvitationActivityJoinHistoryServiceImpl implements InvitationActiv
     @Transactional(rollbackFor = Exception.class)
     public Integer update(InvitationActivityJoinHistory invitationActivityJoinHistory) {
         return this.invitationActivityJoinHistoryMapper.update(invitationActivityJoinHistory);
-
     }
 
     /**

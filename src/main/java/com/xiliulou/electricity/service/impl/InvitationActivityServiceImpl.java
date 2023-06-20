@@ -96,10 +96,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> save(InvitationActivityQuery query) {
-        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
-        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
-            return Triple.of(false, "", "已存在上架的活动");
-        }
+//        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
+//        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
+//            return Triple.of(false, "", "已存在上架的活动");
+//        }
 
         InvitationActivity invitationActivity = new InvitationActivity();
         BeanUtils.copyProperties(query, invitationActivity);
@@ -161,10 +161,10 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
             return Triple.of(false, "100390", "活动不存在");
         }
 
-        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
-        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
-            return Triple.of(false, "", "已存在上架的活动");
-        }
+//        Integer usableActivityCount = invitationActivityMapper.checkUsableActivity(TenantContextHolder.getTenantId());
+//        if (Objects.equals(query.getStatus(), InvitationActivity.STATUS_UP) && Objects.nonNull(usableActivityCount)) {
+//            return Triple.of(false, "", "已存在上架的活动");
+//        }
 
         InvitationActivity invitationActivityUpdate = new InvitationActivity();
 
@@ -265,7 +265,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
     }
 
     @Override
-    public InvitationActivity selectUsableActivity(Integer tenantId) {
+    public List<InvitationActivity> selectUsableActivity(Integer tenantId) {
         return invitationActivityMapper.selectUsableActivity(tenantId);
     }
 
