@@ -4308,7 +4308,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //当前租户下新增柜机
         ElectricityCabinet electricityCabinetInsert = new ElectricityCabinet();
-        electricityCabinetInsert.setName(query.getDeviceName());
+        electricityCabinetInsert.setName(query.getName());
         electricityCabinetInsert.setSn(query.getDeviceName());
         electricityCabinetInsert.setModelId(modelId);
         electricityCabinetInsert.setProductKey(query.getProductKey());
