@@ -62,7 +62,7 @@ public interface InvitationActivityMapper extends BaseMapper<InvitationActivity>
 
     Integer checkUsableActivity(@Param("tenantId") Integer tenantId);
 
-    InvitationActivity selectUsableActivity(Integer tenantId);
+    List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
 }

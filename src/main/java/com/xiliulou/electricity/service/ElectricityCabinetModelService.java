@@ -33,4 +33,8 @@ public interface ElectricityCabinetModelService {
     R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 	R queryCount(ElectricityCabinetModelQuery electricityCabinetModelQuery);
+
+    ElectricityCabinetModel selectByNum(Integer num, Integer tenantId);
+
+    Integer insert(ElectricityCabinetModel cabinetModelInsert);
 }

@@ -66,7 +66,7 @@ public interface InvitationActivityService {
 
     Triple<Boolean, String, Object> updateStatus(InvitationActivityStatusQuery query);
 
-    InvitationActivity selectUsableActivity(Integer tenantId);
+    List<InvitationActivity> selectUsableActivity(Integer tenantId);
 
     List<InvitationActivity> selectBySearch(InvitationActivityQuery query);
 

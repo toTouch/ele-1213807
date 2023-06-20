@@ -284,4 +284,9 @@ public class ElectricityCabinetServerServiceImpl
     public ElectricityCabinetServer selectByEid(Integer id) {
         return this.electricityCabinetServerMapper.selectByEid(id);
     }
+
+    @Override
+    public Integer deleteByEid(Integer eid) {
+        return this.electricityCabinetServerMapper.deleteByEid(eid);
+    }
 }

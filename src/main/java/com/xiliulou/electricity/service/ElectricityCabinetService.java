@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -208,6 +209,14 @@ public interface ElectricityCabinetService {
     R cabinetSearch(Long size, Long offset, String name , Integer tenantId);
 
     Triple<Boolean, String, Object> existsElectricityCabinet(String productKey, String deviceName);
+
+    Triple<Boolean, String, Object> batchDeleteCabinet(Set<Integer> ids);
+
+    Triple<Boolean, String, Object> batchImportCabinet(List<ElectricityCabinetImportQuery> list);
+
+    Triple<Boolean, String, Object> transferCabinet(ElectricityCabinetTransferQuery query);
+
+    Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet);
 
     void exportExcel(ElectricityCabinetQuery query, HttpServletResponse response);
 }

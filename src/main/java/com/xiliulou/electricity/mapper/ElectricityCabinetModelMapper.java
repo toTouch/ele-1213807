@@ -26,4 +26,6 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
 	Integer queryCount(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 	int update(ElectricityCabinetModel electricityCabinetModel);
+
+    ElectricityCabinetModel selectByNum(@Param("num") Integer num, @Param("tenantId") Integer tenantId);
 }

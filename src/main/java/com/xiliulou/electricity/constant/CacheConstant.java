@@ -47,6 +47,8 @@ public interface CacheConstant {
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
 
+    String ELE_BATCH_IMPORT = "ele_batch_import_uid:";
+
     //修改换电柜缓存
     String ELE_EDIT_UID = "ele_edit_uid:";
 

@@ -10,7 +10,6 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -156,6 +155,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     CarRefundOrderService carRefundOrderService;
+
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
+
+    @Autowired
+    InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
 
 
     /**
@@ -2187,7 +2192,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     }
     
-    
+    //TODO 优化
     private String queryFinalInviterUserName(Long uid, Integer tenantId) {
         FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
                 .queryFinalHistoryByJoinUid(uid, tenantId);
@@ -2200,7 +2205,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
             return finalJoinShareMoneyActivityHistoryVo.getUserName();
         }
-        
+
+        //渠道活动
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(uid);
+        if (Objects.nonNull(channelActivityHistory)) {
+            UserInfo userInfo = this.queryByUidFromCache(channelActivityHistory.getInviteUid());
+            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+        }
+
+        //套餐返现
+        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.selectByJoinUid(uid);
+        if(Objects.nonNull(invitationActivityJoinHistory)){
+            UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
+            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+        }
+
         return null;
     }
 }
