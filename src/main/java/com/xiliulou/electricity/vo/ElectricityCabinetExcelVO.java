@@ -26,8 +26,11 @@ public class ElectricityCabinetExcelVO {
     @ExcelProperty("运行状态")
     private String usableStatus;
 
-    @ExcelProperty("型号")
+    @ExcelProperty("电柜型号")
     private String modelName;
+
+    @ExcelProperty("电柜类型")
+    private String exchangeType;
 
     @ExcelProperty("版本号")
     private String version;

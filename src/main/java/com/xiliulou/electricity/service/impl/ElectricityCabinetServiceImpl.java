@@ -4214,6 +4214,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             excelVO.setVersion(cabinetVO.getVersion());
             excelVO.setFranchiseeName(acquireFranchiseeNameByStore(cabinetVO.getStoreId()));
             excelVO.setCreateTime(Objects.nonNull(cabinetVO.getCreateTime()) ? DateUtil.format(DateUtil.date(cabinetVO.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER) : "");
+            excelVO.setExchangeType(acquireExchangeType(cabinetVO.getExchangeType()));
 
             ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService.queryByProductKeyAndDeviceName(cabinetVO.getProductKey(), cabinetVO.getDeviceName());
             if (Objects.nonNull(electricityCabinetServer)) {
@@ -4233,6 +4234,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } catch (IOException e) {
             log.error("导出报表失败！", e);
         }
+    }
+
+    private String acquireExchangeType(Integer exchangeType) {
+        String type = null;
+        switch (exchangeType) {
+            case 1:
+                type = "有屏";
+                break;
+            case 2:
+                type = "无屏";
+                break;
+            case 3:
+                type = "单片机";
+                break;
+            default:
+                type = "未知";
+                break;
+        }
+        return type;
     }
 
     private String acquireFranchiseeNameByStore(Integer storeId) {
