@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
+import com.xiliulou.electricity.query.OldUserActivityUpdateQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * 活动表(Activity)表服务接口
@@ -52,4 +54,6 @@ public interface OldUserActivityService {
 	void handleActivityExpired();
 
     OldUserActivity selectByCouponId(Long id);
+
+    Triple<Boolean, String, Object> edit(OldUserActivityUpdateQuery query);
 }

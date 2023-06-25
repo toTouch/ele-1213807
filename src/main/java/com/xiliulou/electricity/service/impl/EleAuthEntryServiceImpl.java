@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
@@ -77,6 +78,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         return R.ok();
     }
 
+    @Slave
     @Override
     public  List<EleAuthEntry> getEleAuthEntriesList(Integer tenantId) {
         return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL).eq(EleAuthEntry::getTenantId,tenantId));

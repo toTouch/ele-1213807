@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @Builder
@@ -40,4 +41,7 @@ public class RentCarHybridOrderQuery {
     private String productKey;
 
     private String deviceName;
+
+    //优惠券
+    private List<Integer> userCouponIds;
 }

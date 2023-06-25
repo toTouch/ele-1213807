@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.EleOnlineLog;
@@ -46,12 +47,14 @@ public class EleOnlineLogServiceImpl implements EleOnlineLogService {
         return eleOnlineLog;
     }
 
+    @Slave
     @Override
     public R queryOnlineLogList(Integer size, Integer offset, String type, Integer eleId) {
         List<ELeOnlineLogVO> list = eleOnlineLogMapper.queryOnlineLogList(size, offset, type, eleId,TenantContextHolder.getTenantId());
         return R.ok(list);
     }
 
+    @Slave
     @Override
     public R queryOnlineLogCount(String type, Integer eleId) {
         return R.ok(eleOnlineLogMapper.queryOnlineLogCount(type, eleId));

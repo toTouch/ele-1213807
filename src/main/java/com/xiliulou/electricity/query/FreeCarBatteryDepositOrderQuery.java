@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -40,4 +41,7 @@ public class FreeCarBatteryDepositOrderQuery {
     private String productKey;
 
     private String deviceName;
+
+    //优惠券
+    private List<Integer> userCouponIds;
 }

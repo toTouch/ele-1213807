@@ -6,6 +6,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
@@ -93,7 +94,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(exchangeOrderRsp.getOrderId());
         if (Objects.isNull(electricityCabinetOrder)) {
-            log.error("EXCHANGE ORDER ERROR! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
+            log.warn("EXCHANGE ORDER WARN! order not found !requestId={},orderId={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId());
             return;
         }
 
@@ -242,7 +243,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                     String.valueOf(electricityCabinetOrder.getNewCellNo()), 2L, TimeUnit.DAYS);
 
             handleCallBatteryChangeSoc(electricityBattery);
-            
+
         } else {
             log.error("EXCHANGE ORDER ERROR! takeBattery is null!uid={},requestId={},orderId={}", userInfo.getUid(),
                     exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId());
@@ -251,8 +252,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getTakeBatteryName())
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getTakeCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_OUT)
-                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+                .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId())
+                .setUid(userInfo.getUid()).setName(userInfo.getName()).setPhone(userInfo.getPhone());
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
     }
 
     private void handleCallBatteryChangeSoc(ElectricityBattery electricityBattery) {
@@ -327,8 +329,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         BatteryTrackRecord batteryTrackRecord = new BatteryTrackRecord().setSn(exchangeOrderRsp.getPlaceBatteryName())
                 .setEId(Long.valueOf(electricityCabinet.getId())).setEName(electricityCabinet.getName())
                 .setENo(exchangeOrderRsp.getPlaceCellNo()).setType(BatteryTrackRecord.TYPE_EXCHANGE_IN)
-                .setCreateTime(exchangeOrderRsp.getReportTime()).setOrderId(exchangeOrderRsp.getOrderId());
-        batteryTrackRecordService.insert(batteryTrackRecord);
+                .setCreateTime(TimeUtils.convertToStandardFormatTime(exchangeOrderRsp.getReportTime())).setOrderId(exchangeOrderRsp.getOrderId());
+        batteryTrackRecordService.putBatteryTrackQueue(batteryTrackRecord);
     }
 
 

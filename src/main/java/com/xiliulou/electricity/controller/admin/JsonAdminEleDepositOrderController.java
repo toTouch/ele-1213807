@@ -109,7 +109,7 @@ public class JsonAdminEleDepositOrderController {
                 .carModel(carModel)
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
-                .payType(payType)
+                .payType(payType).storeName(storeName)
                 .franchiseeIds(franchiseeIds).build();
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
@@ -161,6 +161,7 @@ public class JsonAdminEleDepositOrderController {
                 .carModel(carModel)
                 .depositType(depositType)
                 .payType(payType)
+                .storeName(storeName)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeName(franchiseeName)
                 .franchiseeIds(franchiseeIds).build();
@@ -170,12 +171,17 @@ public class JsonAdminEleDepositOrderController {
 
     //押金订单导出报表
     @GetMapping("/admin/eleDepositOrder/exportExcel")
-    public void exportExcel(@RequestParam(value = "status", required = false) Integer status,
-                            @RequestParam(value = "name", required = false) String name,
-                            @RequestParam(value = "phone", required = false) String phone,
-                            @RequestParam(value = "orderId", required = false) String orderId,
-                            @RequestParam(value = "beginTime", required = false) Long beginTime,
-                            @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
+    public void exportExcel(@RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "depositType", required = false) Integer depositType,
+            @RequestParam(value = "carModel", required = false) String carModel,
+            @RequestParam(value = "payType", required = false) Integer payType,
+            @RequestParam(value = "storeName", required = false) String storeName, HttpServletResponse response) {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 33) {
@@ -203,7 +209,7 @@ public class JsonAdminEleDepositOrderController {
                 throw new CustomBusinessException("订单不存在！");
             }
         }
-        
+
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)
@@ -212,8 +218,8 @@ public class JsonAdminEleDepositOrderController {
                 .status(status)
                 .orderId(orderId)
                 .storeIds(storeIds)
-                .depositType(EleDepositOrder.ELECTRICITY_DEPOSIT)
-                .tenantId(TenantContextHolder.getTenantId())
+                .tenantId(TenantContextHolder.getTenantId()).carModel(carModel).franchiseeName(franchiseeName)
+                .depositType(depositType).payType(payType).storeName(storeName)
                 .franchiseeIds(franchiseeIds).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
     }

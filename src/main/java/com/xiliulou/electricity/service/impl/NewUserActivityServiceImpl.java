@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
@@ -176,6 +177,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
 
+	@Slave
 	@Override
 	public R queryList(NewUserActivityQuery newUserActivityQuery) {
 		List<NewUserActivity> newUserActivityList = newUserActivityMapper.queryList(newUserActivityQuery);
@@ -188,26 +190,16 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
 
-			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
-				if (Objects.isNull(newUserActivity.getCouponId())) {
-					continue;
-				}
-
-				Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
-				if (Objects.isNull(coupon)) {
-					log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
-					continue;
-				}
-
-				newUserActivityVO.setCoupon(coupon);
+			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(newUserActivity.getCouponId())) {
+				newUserActivityVO.setCoupon(couponService.queryByIdFromCache(newUserActivity.getCouponId()));
 			}
-			newUserActivityVOList.add(newUserActivityVO);
 
+			newUserActivityVOList.add(newUserActivityVO);
 		}
 		return R.ok(newUserActivityVOList);
-
 	}
 
+	@Slave
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
 		return R.ok(newUserActivityMapper.queryCount(newUserActivityQuery));
@@ -265,7 +257,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 
 		if(user.getCreateTime()+60*1000L<System.currentTimeMillis()){
-			log.error("USER NOT NEW USER ! uid:{}",uid);
+//			log.error("USER NOT NEW USER ! uid:{}",uid);
 			return R.ok();
 		}
 
@@ -273,7 +265,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (Objects.isNull(newUserActivity)) {
-			log.error("queryInfo Activity  ERROR! not found Activity !  tenantId:{} ", tenantId);
+			log.info("queryInfo Activity INFO! not found Activity,tenantId={}", tenantId);
 			return R.ok();
 		}
 

@@ -26,6 +26,8 @@ public class ElectricityCabinetQuery {
      * 换电柜名称
      */
     private String name;
+
+    private String sn;
     /**
      * 换电柜地址
      */
@@ -59,4 +61,15 @@ public class ElectricityCabinetQuery {
 
     private Long franchiseeId;
 
+    /**
+     *电柜型号id
+     */
+    private Integer modelId;
+
+    private Long storeId;
+
+    private Integer usableStatusCell;
+
+    private Double fullChargeRate;
+    private Double lowChargeRate;
 }

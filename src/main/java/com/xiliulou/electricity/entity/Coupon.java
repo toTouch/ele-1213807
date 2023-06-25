@@ -100,6 +100,15 @@ public class Coupon {
      */
     private Integer tenantId;
 
+    /**
+     * 是否可叠加 0：否，1：是
+     */
+    @NotNull(message = "优惠券叠加使用方式不能为空!", groups = {CreateGroup.class})
+    private Integer superposition;
+
+    public static final Integer SUPERPOSITION_NO = 0;
+    public static final Integer SUPERPOSITION_YES = 1;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

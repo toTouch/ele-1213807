@@ -209,9 +209,11 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @GetMapping(value = "/admin/electricityMemberCard/selectByQuery")
-    public R selectByQuery(@RequestParam("name") String name) {
+    public R selectByQuery(@RequestParam(value = "name", required = false) String name,
+                           @RequestParam(value = "cardModel", required = false) Integer cardModel) {
         ElectricityMemberCardQuery cardQuery = ElectricityMemberCardQuery.builder()
                 .name(name)
+                .cardModel(cardModel)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
         return R.ok(electricityMemberCardService.selectByQuery(cardQuery));
@@ -243,6 +245,20 @@ public class JsonAdminElectricityMemberCardController {
         ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(id).build();
+
+        return R.ok(electricityMemberCardService.selectByQuery(query));
+    }
+
+    /**
+     * 根据加盟商id获取所有套餐
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/queryAll")
+    public R selectAll(@RequestParam(value = "name", required = false) String name) {
+
+        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .name(name).build();
 
         return R.ok(electricityMemberCardService.selectByQuery(query));
     }

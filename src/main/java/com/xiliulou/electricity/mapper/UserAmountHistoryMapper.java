@@ -18,4 +18,6 @@ public interface UserAmountHistoryMapper extends BaseMapper<UserAmountHistory> {
 	List<UserAmountHistoryVO> queryList(UserAmountHistoryQuery userAmountHistoryQuery);
 
 	Integer queryCount(UserAmountHistoryQuery userAmountHistoryQuery);
+
+	List<UserAmountHistoryVO> selectRewardList(UserAmountHistoryQuery userAmountHistoryQuery);
 }

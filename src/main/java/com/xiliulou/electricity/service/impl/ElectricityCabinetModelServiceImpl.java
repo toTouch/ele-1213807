@@ -159,9 +159,19 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         return R.ok(electricityCabinetModelMapper.queryList(electricityCabinetModelQuery));
     }
 
+    @Slave
     @Override
     public R queryCount(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         return R.ok(electricityCabinetModelMapper.queryCount(electricityCabinetModelQuery));
     }
 
+    @Override
+    public ElectricityCabinetModel selectByNum(Integer num, Integer tenantId) {
+        return electricityCabinetModelMapper.selectByNum(num,tenantId);
+    }
+
+    @Override
+    public Integer insert(ElectricityCabinetModel cabinetModelInsert) {
+        return electricityCabinetModelMapper.insert(cabinetModelInsert);
+    }
 }

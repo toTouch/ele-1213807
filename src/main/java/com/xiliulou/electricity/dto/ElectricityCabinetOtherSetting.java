@@ -137,4 +137,9 @@ public class ElectricityCabinetOtherSetting {
      */
     private Integer defaultChargeStorageMaxA;
     private Integer aOpenChargeStrategy;
+
+    /**
+     * 高温告警阈值
+     */
+    private Double temperatureWarningValue;
 }

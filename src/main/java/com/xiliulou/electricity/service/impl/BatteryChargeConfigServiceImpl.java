@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
 import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.mapper.BatteryChargeConfigMapper;
@@ -100,7 +101,8 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     public Boolean deleteById(Long id) {
         return this.batteryChargeConfigMapper.deleteById(id) > 0;
     }
-    
+
+    @Slave
     @Override
     public BatteryChargeConfigVO selectByElectricityCabinetId(BatteryChargeConfigQuery query) {
         BatteryChargeConfigVO batteryChargeConfigVO = new BatteryChargeConfigVO();

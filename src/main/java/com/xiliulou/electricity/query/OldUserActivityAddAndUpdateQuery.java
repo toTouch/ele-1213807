@@ -35,7 +35,7 @@ public class OldUserActivityAddAndUpdateQuery {
      */
     private Integer count;
 
-
+    private Integer userScope;
     /**
      * 优惠券id
      */

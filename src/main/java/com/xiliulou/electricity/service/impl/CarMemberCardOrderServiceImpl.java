@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
@@ -139,6 +140,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
      *
      * @return 对象列表
      */
+    @Slave
     @Override
     public List<CarMemberCardOrderVO> selectByPage(RentCarMemberCardOrderQuery memberCardOrderQuery) {
         List<CarMemberCardOrderVO> carMemberCardOrders = this.carMemberCardOrderMapper.selectByPage(memberCardOrderQuery);
@@ -245,7 +247,7 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
 
         UserCarMemberCard userCarMemberCard = userCarMemberCardService.selectByUidFromCache(user.getUid());
         if (Objects.isNull(userCarMemberCard)) {
-            log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
+//            log.error("ELE CAR MEMBER CARD ERROR! not found userCarMemberCard! uid={}", user.getUid());
             return Triple.of(true, "", null);
         }
 
@@ -304,11 +306,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         }
     
         //车辆经纬度
-        CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
-        if (Objects.nonNull(carAttr)) {
-            userCarMemberCardVO.setLongitude(carAttr.getLongitude());
-            userCarMemberCardVO.setLatitude(carAttr.getLatitude());
-            userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+        if(Objects.nonNull(userCar)){
+            CarAttr carAttr = electricityCarService.queryLastReportPointBySn(userCar.getSn());
+            if (Objects.nonNull(carAttr)) {
+                userCarMemberCardVO.setLongitude(carAttr.getLongitude());
+                userCarMemberCardVO.setLatitude(carAttr.getLatitude());
+                userCarMemberCardVO.setPointUpdateTime(carAttr.getCreateTime().getTime());
+            }
         }
     
         //车辆锁状态
@@ -671,11 +675,13 @@ public class CarMemberCardOrderServiceImpl implements CarMemberCardOrderService 
         return "其它";
     }
 
+    @Slave
     @Override
     public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, List<Long> finalFranchiseeIds) {
         return Optional.ofNullable(carMemberCardOrderMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime, finalFranchiseeIds)).orElse(BigDecimal.valueOf(0));
     }
 
+    @Slave
     @Override
     public List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, List<Long> finalFranchiseeIds, Long beginTime, Long endTime) {
         return carMemberCardOrderMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeIds, beginTime, endTime);

@@ -14,10 +14,7 @@ import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
-import com.xiliulou.electricity.service.ChannelActivityService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -61,6 +58,9 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
     
     @Autowired
     ChannelActivityService channelActivityService;
+
+    @Autowired
+    InvitationActivityService invitationActivityService;
 
 
     /**
@@ -253,7 +253,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
                 .eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
         if (Objects.isNull(shareMoneyActivity)) {
-            log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+            log.info("queryInfo Activity INFO! not found Activity,tenantId={} ", tenantId);
             return R.ok();
         }
 
@@ -328,6 +328,14 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
         if (Objects.isNull(usableActivity)) {
             map.put("channelActivity", 1);
         }
+
+        Integer invitationActivity = invitationActivityService.checkUsableActivity(tenantId);
+        if(Objects.isNull(invitationActivity)){
+            map.put("invitationActivity", 1);
+        }else{
+            map.put("invitationActivity", 0);
+        }
+
         return R.ok(map);
     }
 

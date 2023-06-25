@@ -252,5 +252,46 @@
         select id,uid,new_electricity_battery_sn from t_electricity_cabinet_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
 
+    <!--获取柜机今日订单-->
+    <select id="selectTodayExchangeOrder" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
+        select
+        id, uid
+        from t_electricity_cabinet_order
+        <where>
+            <if test="eid != null">
+                and electricity_cabinet_id = #{eid}
+            </if>
+            <if test="todayStartTimeStamp != null">
+                and create_time &gt;=#{todayStartTimeStamp}
+            </if>
+            <if test="todayEndTimeStamp != null">
+                and create_time &lt;=#{todayEndTimeStamp}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+    <!--获取30天内总订单-->
+    <select id="selectMonthExchangeOrders" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrder">
+        SELECT
+        id, uid
+        FROM t_electricity_cabinet_order
+        <where>
+            <if test="eid != null">
+                and electricity_cabinet_id = #{eid}
+            </if>
+            <if test="startTimeStamp != null">
+                and create_time &gt;=#{startTimeStamp}
+            </if>
+            <if test="endTimeStamp != null">
+                and create_time &lt;= #{endTimeStamp}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>

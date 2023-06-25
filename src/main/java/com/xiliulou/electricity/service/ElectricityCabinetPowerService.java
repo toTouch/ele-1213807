@@ -20,4 +20,6 @@ public interface ElectricityCabinetPowerService {
   R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
 
   void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery, HttpServletResponse response);
+
+  ElectricityCabinetPower selectLatestByEid(Integer id);
 }

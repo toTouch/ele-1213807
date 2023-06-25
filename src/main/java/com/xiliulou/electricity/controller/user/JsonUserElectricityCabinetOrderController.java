@@ -141,4 +141,12 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
 		return electricityCabinetOrderService.checkOpenSessionId(sessionId);
 	}
 
+	/**
+	 * 蓝牙换电校验用户加盟商
+	 */
+	@GetMapping("/user/electricityCabinet/bluetooth/check")
+	public R bluetoothExchangeCheck(@RequestParam("productKey") String productKey,@RequestParam("deviceName") String deviceName) {
+		return returnTripleResult(electricityCabinetOrderService.bluetoothExchangeCheck(productKey,deviceName));
+	}
+
 }

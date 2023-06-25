@@ -106,6 +106,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     PictureService pictureService;
+    
+    @Autowired
+    CarRefundOrderService carRefundOrderService;
 
 
     
@@ -306,6 +309,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL).eq(ElectricityCar::getTenantId, TenantContextHolder.getTenantId()));
     }
 
+    @Slave
     @Override
     public R queryCount(ElectricityCarQuery electricityCarQuery) {
         return R.ok(electricityCarMapper.queryCount(electricityCarQuery));
@@ -389,6 +393,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return carAttrMapper.queryLastReportPointBySn(sn);
     }
 
+    @Slave
     @Override
     public R queryElectricityCarMove(Long storeId, String sn, Long size, Long offset) {
         List<ElectricityCarMoveVo> queryList = electricityCarMapper
@@ -706,6 +711,20 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
+    
+//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+//        if (Objects.isNull(userCarDeposit)) {
+//            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", userInfo.getUid());
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
+//
+//        Integer count = carRefundOrderService
+//                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
+//                        userCarDeposit.getOrderId());
+//        if (Objects.nonNull(count) && count > 0) {
+//            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", userInfo.getUid());
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
 
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
@@ -772,6 +791,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getUid, uid));
     }
 
+    @Slave
     @Override
     public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
         return electricityCarMapper.queryCountByStoreIds(tenantId, storeIds);
@@ -840,14 +860,16 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     public List<ElectricityCar> queryByStoreIds(List<Long> storeIds) {
         return electricityCarMapper.queryByStoreIds(storeIds, TenantContextHolder.getTenantId());
     }
-    
+
+    @Slave
     @Override
     public R queryElectricityCarOverview(String sn, List<Integer> carIds) {
         List<ElectricityCarOverviewVo> electricityCars = electricityCarMapper
                 .queryElectricityCarOverview(carIds, sn, TenantContextHolder.getTenantId());
         return R.ok(electricityCars);
     }
-    
+
+    @Slave
     @Override
     public R batteryStatistical(List<Integer> carIdList, Integer tenantId) {
         return R.ok(electricityCarMapper.batteryStatistical(carIdList, tenantId));

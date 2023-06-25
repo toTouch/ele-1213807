@@ -210,13 +210,13 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
     }
 
     @Override
-    public void addCountByUid(Long uid) {
-        shareActivityRecordMapper.addCountByUid(uid);
+    public void addCountByUid(Long uid,Integer activityId) {
+        shareActivityRecordMapper.addCountByUid(uid,activityId);
     }
 
     @Override
-    public void reduceAvailableCountByUid(Long uid, Integer count) {
-        shareActivityRecordMapper.reduceAvailableCountByUid(uid, count);
+    public void reduceAvailableCountByUid(Long uid, Integer count,Integer activityId) {
+        shareActivityRecordMapper.reduceAvailableCountByUid(uid, count,activityId);
     }
 
     @Override

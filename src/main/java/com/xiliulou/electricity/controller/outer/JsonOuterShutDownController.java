@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.listener.MessageDelayQueueListener;
+import com.xiliulou.electricity.queue.BatteryTrackRecordBatchSaveQueueService;
 import com.xiliulou.electricity.service.monitor.ThreadPoolMonitorComponent;
 import com.xiliulou.electricity.utils.WebUtils;
 import com.xiliulou.iot.mns.MnsSubscriber;
@@ -25,6 +26,8 @@ public class JsonOuterShutDownController {
     MessageDelayQueueListener messageDelayQueueListener;
     @Autowired
     ThreadPoolMonitorComponent threadPoolMonitorComponent;
+    @Autowired
+    BatteryTrackRecordBatchSaveQueueService batteryTrackRecordBatchSaveQueueService;
 
     @PostMapping("/outer/server/shutdown")
     public R shutDown(HttpServletRequest request) throws Exception {
@@ -34,6 +37,7 @@ public class JsonOuterShutDownController {
             mnsSubscriber.destroy();
             messageDelayQueueListener.destroy();
 //            threadPoolMonitorComponent.shutdown();
+            batteryTrackRecordBatchSaveQueueService.destroy();
             return R.ok();
         }
         return R.fail("SYSTEM.0007", ip);

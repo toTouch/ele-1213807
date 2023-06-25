@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.DepositProtocol;
 import com.xiliulou.electricity.entity.UserNotice;
 import com.xiliulou.electricity.mapper.DepositProtocolMapper;
@@ -30,6 +31,7 @@ public class DepositProtocolServiceImpl implements DepositProtocolService {
 	@Resource
 	DepositProtocolMapper depositProtocolMapper;
 
+	@Slave
 	@Override
 	public R queryDepositProtocol() {
 		//tenant

@@ -4,6 +4,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author: Miss.Li
@@ -45,5 +46,6 @@ public class IntegratedPaymentAdd {
 	 */
 	private Integer userCouponId;
 
-
+	//优惠券
+	private List<Integer> userCouponIds;
 }

@@ -1,18 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.entity.UserAmountHistory;
-import com.xiliulou.electricity.mapper.FranchiseeSplitAccountHistoryMapper;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserAmountHistoryMapper;
-import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.UserAmountHistoryQuery;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.vo.UserAmountHistoryVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * (FranchiseeSplitAccountHistoryService)表服务实现类
@@ -26,6 +31,8 @@ public class UserAmountHistoryServiceImpl implements UserAmountHistoryService {
     @Resource
     private UserAmountHistoryMapper userAmountHistoryMapper;
 
+    @Autowired
+    private UserInfoService userInfoService;
 
     /**
      * 新增数据
@@ -50,4 +57,18 @@ public class UserAmountHistoryServiceImpl implements UserAmountHistoryService {
         return R.ok(userAmountHistoryMapper.queryCount(userAmountHistoryQuery));
     }
 
+    @Override
+    public List<UserAmountHistoryVO> selectRewardList(UserAmountHistoryQuery userAmountHistoryQuery) {
+        List<UserAmountHistoryVO> userAmountHistoryVOS = userAmountHistoryMapper.selectRewardList(userAmountHistoryQuery);
+        if (CollectionUtils.isEmpty(userAmountHistoryVOS)) {
+            return Collections.emptyList();
+        }
+
+        userAmountHistoryVOS.forEach(item -> {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getJoinUid());
+            item.setJoinPhone(Objects.isNull(userInfo) ? "" : userInfo.getPhone());
+        });
+
+        return userAmountHistoryVOS;
+    }
 }

@@ -1,15 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
@@ -19,6 +23,7 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.bms.BatteryInfoDto;
 import com.xiliulou.electricity.dto.bms.BatteryTrackDto;
 import com.xiliulou.electricity.entity.*;
@@ -28,6 +33,7 @@ import com.xiliulou.electricity.query.EleBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.service.retrofit.BatteryPlatRetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.AESUtils;
@@ -49,6 +55,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -289,6 +299,80 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, null, result.getRight());
     }
 
+    @Override
+    public void export(ElectricityBatteryQuery query, HttpServletResponse response) {
+        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(query, NumberConstant.ZERO_L, Long.MAX_VALUE);
+        if (CollectionUtils.isEmpty(electricityBatteryList)) {
+            throw new CustomBusinessException("柜机列表为空！");
+        }
+
+        List<ElectricityBatteryExcelVO> excelVOS = new ArrayList<>(electricityBatteryList.size());
+        int index = 0;
+
+        for (ElectricityBattery battery : electricityBatteryList) {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(battery.getFranchiseeId());
+            UserInfo userInfo = userInfoService.queryByUidFromCache(battery.getUid());
+
+            index++;
+
+            ElectricityBatteryExcelVO excelVO = new ElectricityBatteryExcelVO();
+            excelVO.setId(index);
+            excelVO.setSn(battery.getSn());
+            excelVO.setModel(battery.getModel());
+            excelVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+            excelVO.setPhysicsStatus(Objects.equals(battery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) ? "在仓" : "不在仓");
+            excelVO.setBusinessStatus(acquireBatteryBusinessStatus(battery));
+            excelVO.setUserName(Objects.isNull(userInfo) ? "" : userInfo.getName());
+            excelVO.setIotCardNumber(battery.getIotCardNumber());
+            excelVO.setCreateTime(Objects.isNull(battery.getCreateTime()) ? "" :DateUtil.format(DateUtil.date(battery.getCreateTime()), DatePattern.NORM_DATETIME_FORMATTER));
+
+            if (Objects.nonNull(battery.getElectricityCabinetId())) {
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(battery.getElectricityCabinetId());
+                excelVO.setCabinetName(Objects.nonNull(electricityCabinet) ? electricityCabinet.getName() : "");
+            }
+
+            excelVOS.add(excelVO);
+        }
+
+        String fileName = "电池列表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, ElectricityBatteryExcelVO.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(excelVOS);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+    }
+
+    private String acquireBatteryBusinessStatus(ElectricityBattery battery) {
+        String result = "";
+        if (Objects.isNull(battery) || Objects.isNull(battery.getBusinessStatus())) {
+            return result;
+        }
+
+        switch (battery.getBusinessStatus()) {
+            case 1:
+                result = "已录入";
+                break;
+            case 2:
+                result = "租借";
+                break;
+            case 3:
+                result = "归还";
+                break;
+            case 4:
+                result = "异常交换";
+                break;
+            default:
+                result = "未知";
+                break;
+        }
+
+        return result;
+    }
+
     private Triple<Boolean, String, List<BatteryTrackDto>> callBatteryServiceQueryBatteryTrack(BatteryLocationTrackQuery batteryLocationTrackQuery) {
         Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
         if (Objects.isNull(tenant)) {
@@ -511,6 +595,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, null, userBatteryVo);
     }
 
+    @Slave
     @Override
     public Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return electricitybatterymapper.queryCount(electricityBatteryQuery);
@@ -521,6 +606,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);
     }
 
+    @Slave
     @Override
     public R queryById(Long electricityBatteryId) {
         ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId,
@@ -671,6 +757,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.updateBatteryStatus(electricityBattery);
     }
 
+    @Slave
     @Override
     public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
@@ -741,7 +828,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
                 if (Objects.isNull(templateConfigEntity) || Objects.isNull(
                         templateConfigEntity.getBatteryOuttimeTemplate())) {
-                    log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
+                    log.warn("TEMPLATE_CONFIG IS NULL WARN! tenantId={}", tenantId);
                     return;
                 }
 
@@ -832,18 +919,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         //        }
     }
 
+    @Slave
     @Override
     public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(
             HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         return electricitybatterymapper.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
     }
 
+    @Slave
     @Override
     public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(
             HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         return electricitybatterymapper.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
     }
 
+    @Slave
     @Override
     public R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery) {
         List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryBatteryOverview(
@@ -854,11 +944,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
 
         List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
-
-        /*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
-        if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
-            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-        }*/
 
         for (ElectricityBattery electricityBattery : electricityBatteryList) {
 
@@ -887,22 +972,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 electricityBatteryVO.setFranchiseeName(franchisee.getName());
             }
 
-            //用于电池绑定问题
-            /*electricityBatteryVO.setIsBind(false);
-
-            if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
-                for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
-                    if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
-                        electricityBatteryVO.setIsBind(true);
-                    }
-                }
-            }*/
-
             electricityBatteryVOList.add(electricityBatteryVO);
         }
         return R.ok(electricityBatteryVOList);
     }
 
+    @Slave
     @Override
     public R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.batteryStatistical(electricityBatteryQuery));
@@ -945,6 +1020,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                         .eq(ElectricityBattery::getFranchiseeId, franchiseeId));
     }
 
+    @Slave
     @Override
     public List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
         return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
@@ -1033,6 +1109,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return Triple.of(true, "", batteryModel);
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatteryInfoBySn(String sn) {
         ElectricityBattery electricityBattery = queryBySnFromDb(sn, TenantContextHolder.getTenantId());
@@ -1069,6 +1146,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     }
 
+    @Slave
     @Override
     public Triple<Boolean, String, Object> queryBatteryMapList(Integer offset, Integer size, List<Long> franchiseeIds) {
         TokenUser user = SecurityUtils.getUserInfo();

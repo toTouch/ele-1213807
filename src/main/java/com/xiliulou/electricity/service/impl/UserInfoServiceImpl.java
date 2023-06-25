@@ -10,7 +10,6 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
@@ -147,12 +146,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     FreeDepositOrderService freeDepositOrderService;
-    
+
     @Autowired
     ElectricityConfigService electricityConfigService;
-    
+
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Autowired
+    CarRefundOrderService carRefundOrderService;
+
+    @Autowired
+    ChannelActivityHistoryService channelActivityHistoryService;
+
+    @Autowired
+    InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
 
 
     /**
@@ -403,6 +411,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
     }
 
+    @Slave
     @Override
     public Integer homeOne(Long first, Long now, Integer tenantId) {
         return userInfoMapper.homeOne(first, now, tenantId);
@@ -414,6 +423,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     //    }
     //
 
+    @Slave
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId) {
         return userInfoMapper.homeThree(startTimeMilliDay, endTimeMilliDay, tenantId);
@@ -435,7 +445,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("returnBattery  ERROR! not pay deposit,uid={}", userInfo.getUid());
+            log.warn("ELE WARN! not pay deposit,uid={}", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -525,7 +535,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getCarDepositStatus(), UserInfo.CAR_DEPOSIT_STATUS_YES)) {
-            log.error("returnBattery  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
+            log.warn("ELE WARN! not pay deposit! uid:{} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -603,7 +613,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 //        }
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.error("returnBattery  ERROR! not pay deposit,uid={} ", userInfo.getUid());
+            log.warn("ELE WARN! not pay deposit,uid={} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -824,6 +834,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userInfoMapper.queryAuthenticationCount(userInfoQuery));
     }
 
+    @Slave
     @Override
     public Integer querySumCount(UserInfoQuery userInfoQuery) {
         return userInfoMapper.queryCount(userInfoQuery);
@@ -1132,16 +1143,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
+    @Slave
     @Override
     public Integer queryAuthenticationUserCount(Integer tenantId) {
         return userInfoMapper.queryAuthenticationUserCount(tenantId);
     }
 
+    @Slave
     @Override
     public List<HomePageUserByWeekDayVo> queryUserAnalysisForAuthUser(Integer tenantId, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisForAuthUser(tenantId, beginTime, endTime);
     }
 
+    @Slave
     @Override
     public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisByUserStatus(tenantId, userStatus, beginTime, endTime);
@@ -1766,7 +1780,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .newElectricityCarSn(electricityCar.getSn()).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);
-    
+
             //车辆控制 -- 用户绑定解锁
             ElectricityConfig electricityConfig = electricityConfigService
                     .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -1774,7 +1788,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
                 boolean result = electricityCarService
                         .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_UN_LOCK, 3);
-        
+
                 CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
                 carLockCtrlHistory.setUid(userInfo.getUid());
                 carLockCtrlHistory.setName(userInfo.getName());
@@ -1791,7 +1805,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 carLockCtrlHistory.setTenantId(TenantContextHolder.getTenantId());
                 carLockCtrlHistoryService.insert(carLockCtrlHistory);
             }
-            
+
             return null;
         });
         
@@ -1833,7 +1847,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("WEBUNBIND ERROR! not  rent car,uid={}", uid);
             return R.fail("100261", "用户未绑定车辆");
         }
-        
+
+//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
+//        if (Objects.isNull(userCarDeposit)) {
+//            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", uid);
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
+//
+//        Integer count = carRefundOrderService
+//                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
+//                        userCarDeposit.getOrderId());
+//        if (Objects.nonNull(count) && count > 0) {
+//            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", uid);
+//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+//        }
+
         ElectricityCar updateElectricityCar = new ElectricityCar();
         updateElectricityCar.setId(electricityCar.getId());
         updateElectricityCar.setStatus(ElectricityCar.STATUS_NOT_RENT);
@@ -1865,7 +1893,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .tenantId(TenantContextHolder.getTenantId()).createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
-    
+
         //车辆控制 -- 用户解绑加锁
         ElectricityConfig electricityConfig = electricityConfigService
                 .queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -1873,7 +1901,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 .equals(electricityConfig.getIsOpenCarControl(), ElectricityConfig.ENABLE_CAR_CONTROL)) {
             boolean result = electricityCarService
                     .retryCarLockCtrl(electricityCar.getSn(), ElectricityCar.TYPE_LOCK, 3);
-        
+
             CarLockCtrlHistory carLockCtrlHistory = new CarLockCtrlHistory();
             carLockCtrlHistory.setUid(userInfo.getUid());
             carLockCtrlHistory.setName(userInfo.getName());
@@ -2164,7 +2192,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     }
     
-    
+    //TODO 优化
     private String queryFinalInviterUserName(Long uid, Integer tenantId) {
         FinalJoinShareActivityHistoryVo finalJoinShareActivityHistoryVo = joinShareActivityHistoryService
                 .queryFinalHistoryByJoinUid(uid, tenantId);
@@ -2177,7 +2205,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(finalJoinShareMoneyActivityHistoryVo)) {
             return finalJoinShareMoneyActivityHistoryVo.getUserName();
         }
-        
+
+        //渠道活动
+        ChannelActivityHistory channelActivityHistory = channelActivityHistoryService.queryByUid(uid);
+        if (Objects.nonNull(channelActivityHistory)) {
+            UserInfo userInfo = this.queryByUidFromCache(channelActivityHistory.getInviteUid());
+            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+        }
+
+        //套餐返现
+        InvitationActivityJoinHistory invitationActivityJoinHistory = invitationActivityJoinHistoryService.selectByJoinUid(uid);
+        if(Objects.nonNull(invitationActivityJoinHistory)){
+            UserInfo userInfo = this.queryByUidFromCache(invitationActivityJoinHistory.getUid());
+            return Objects.isNull(userInfo) ? "" : userInfo.getName();
+        }
+
         return null;
     }
 }

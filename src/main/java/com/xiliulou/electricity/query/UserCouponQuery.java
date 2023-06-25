@@ -32,6 +32,7 @@ public class UserCouponQuery {
      */
     private  String phone;
 
+    private  String orderId;
 
     private List<Integer> statusList;
 
@@ -44,4 +45,8 @@ public class UserCouponQuery {
     private Integer discountType;
 
     private Integer status;
+
+    private Long beginTime;
+
+    private Long endTime;
 }

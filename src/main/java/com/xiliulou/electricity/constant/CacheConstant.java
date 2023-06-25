@@ -47,6 +47,8 @@ public interface CacheConstant {
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
 
+    String ELE_BATCH_IMPORT = "ele_batch_import_uid:";
+
     //修改换电柜缓存
     String ELE_EDIT_UID = "ele_edit_uid:";
 
@@ -371,4 +373,14 @@ public interface CacheConstant {
      * 分帐配置缓存
      */
     String CACHE_DIVISION_ACCOUNT_CONFIG = "division_account_config:";
+
+
+    String CACHE_RECEIVE_COUPON_LOCK = "receive_coupon_lock:";
+
+    /**
+     * 邀请活动缓存
+     */
+    String CACHE_INVITATION_ACTIVITY = "invitation_activity:";
+
+    String CACHE_GET_COUPON = "get_coupon:";
 }

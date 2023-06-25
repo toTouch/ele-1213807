@@ -111,20 +111,11 @@ public class JsonAdminBatteryServiceFeeController {
     /**
      * 电池服务费列表
      *
-     * @param offset
-     * @param size
-     * @param queryStartTime
-     * @param queryEndTime
-     * @param uid
-     * @param phone
-     * @param status
-     * @param source
-     * @return
      */
     @GetMapping("/admin/batteryServiceFee/queryList")
     public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-                       @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                       @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "sn", required = false) String sn,
@@ -160,8 +151,8 @@ public class JsonAdminBatteryServiceFeeController {
 
         BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
                 .uid(uid)
-                .queryStartTime(queryStartTime)
-                .queryEndTime(queryEndTime)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .offset(offset)
                 .size(size)
                 .name(name)
@@ -178,17 +169,10 @@ public class JsonAdminBatteryServiceFeeController {
     /**
      * 电池服务费列表
      *
-     * @param queryStartTime
-     * @param queryEndTime
-     * @param uid
-     * @param phone
-     * @param status
-     * @param source
-     * @return
      */
     @GetMapping("/admin/batteryServiceFee/queryCount")
-    public R queryCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-                        @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+    public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "sn", required = false) String sn,
@@ -218,8 +202,8 @@ public class JsonAdminBatteryServiceFeeController {
 
         BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
                 .uid(uid)
-                .queryStartTime(queryStartTime)
-                .queryEndTime(queryEndTime)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .status(status)
                 .name(name)
                 .sn(sn)

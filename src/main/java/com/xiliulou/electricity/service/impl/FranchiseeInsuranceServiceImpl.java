@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
@@ -57,6 +58,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Autowired
+    CityService cityService;
 
     @Override
     public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
@@ -275,6 +279,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
+    @Slave
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
@@ -289,6 +294,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.ok(franchiseeInsuranceVoList);
     }
 
+    @Slave
     @Override
     public R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         return R.ok(baseMapper.queryCount(status, type, tenantId, franchiseeId, null));
@@ -423,5 +429,21 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     
         this.baseMapper.batchInsert(oldFranchiseeInsurances);
 
+    }
+
+    @Slave
+    @Override
+    public R selectInsuranceListByCondition( Integer status, Integer type, Integer tenantId, Long franchiseeId, String batterType) {
+        List<FranchiseeInsuranceVo> franchiseeInsuranceVos = franchiseeInsuranceMapper.queryInsuranceList(status, type, tenantId, franchiseeId, batterType);
+        if(CollectionUtils.isEmpty(franchiseeInsuranceVos)){
+            return R.ok(franchiseeInsuranceVos);
+        }
+        franchiseeInsuranceVos.parallelStream().forEach(vo ->{
+            City city = cityService.queryByIdFromDB(vo.getCid());
+            if (Objects.nonNull(city) && Objects.nonNull(city.getName())) {
+                vo.setCityName(city.getName());
+            }
+        });
+        return R.ok(franchiseeInsuranceVos);
     }
 }

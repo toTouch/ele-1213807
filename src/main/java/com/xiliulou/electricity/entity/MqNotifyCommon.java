@@ -45,7 +45,12 @@ public class MqNotifyCommon<T> {
      * 故障通知告警
      */
     public static final Integer TYPE_ABNORMAL_ALARM = 6;
-    
+
+    /**
+     * 高温告警
+     */
+    public static final Integer TYPE_HIGH_TEMPERATURE_ALARM=12;
+
     /**
      * 实名认证审核通知
      */

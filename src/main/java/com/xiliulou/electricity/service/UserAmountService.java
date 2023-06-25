@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserAmountQuery;
 
 import java.math.BigDecimal;
@@ -53,4 +54,6 @@ public interface UserAmountService {
 	void updateReduceIncome(Long uid, Double requestAmount);
 
     void updateRollBackIncome(Long uid, Double requestAmount);
+
+    void handleInvitationActivityAmount(UserInfo userInfo, Long uid, BigDecimal rewardAmount);
 }

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.entity.EleTenantMapKey;
@@ -87,7 +88,7 @@ public class BankCardServiceImpl extends ServiceImpl<BankCardMapper, BankCard> i
 	}
 
 
-
+	@Slave
 	@Override
 	public R queryList(BankCardQuery bankCardQuery) {
 		List<BankCard> bankCardList=baseMapper.queryList(bankCardQuery);
@@ -103,6 +104,7 @@ public class BankCardServiceImpl extends ServiceImpl<BankCardMapper, BankCard> i
 		return R.ok(bankCardVOList);
 	}
 
+	@Slave
 	@Override
 	public R queryCount(BankCardQuery bankCardQuery) {
 		return R.ok(baseMapper.queryCount(bankCardQuery));
