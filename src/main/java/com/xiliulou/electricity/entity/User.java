@@ -56,7 +56,7 @@ public class User {
 	 */
 	private Integer lockFlag;
 	/**
-	 * 0--超级管理员 1--运营商 2--普通管理员  11--微信小程序用户
+	 * 0--超级管理员 1--运营商  11--微信小程序用户
 	 */
 	private Integer userType;
 	/**
