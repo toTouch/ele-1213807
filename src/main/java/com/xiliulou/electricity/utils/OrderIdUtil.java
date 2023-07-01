@@ -13,19 +13,25 @@ import com.xiliulou.electricity.enums.BusinessType;
  */
 public class OrderIdUtil {
     
-    private static final String PURE_DATE_PATTERN = "yyMMdd";
+    private static final String PURE_DATE_PATTERN = "yyMMddHHmm";
     
     private OrderIdUtil() {
     }
     
     /**
-     * 生成业务ID 规则：业务类型 + 年月日(221011) + uid + 随机4位 ）
+     * 生成业务ID 规则：业务类型 + 年月日时分秒(221011111111) + uid + 随机2位 ）
      *
      * @return
      */
     public static String generateBusinessOrderId(BusinessType businessType, Long uid) {
         return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + uid
-                + RandomUtil.randomInt(1000, 9999);
+                + RandomUtil.randomInt(10, 99);
+    }
+
+    public static void main(String[] args) {
+        String yyMMdd = DateUtil.format(DateUtil.date(), "yyMMddHHmm");
+
+        System.out.println(yyMMdd);
     }
     
 }
