@@ -33,6 +33,7 @@ public class UserSourceQuery {
     private Integer source;
 
     private Long refId;
+    private Long inviter;
 
     private Long size;
     private Long offset;

@@ -92,6 +92,8 @@ public class UserInfo {
      */
     private Long franchiseeId;
 
+    private Long storeId;
+
     /**
      * 0--正常 1--删除
      */

@@ -88,6 +88,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
     @Autowired
     UserBatteryMemberCardService userBatteryMemberCardService;
 
+    @Autowired
+    UserExtraService userExtraService;
+
     @Override
     public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
         String code = (String) authMap.get("code");
@@ -336,6 +339,10 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .usableStatus(UserInfo.USER_USABLE_STATUS).build();
         UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
+        //保存用户扩展信息
+        UserExtra userExtra = UserExtra.builder().uid(insert.getUid()).createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).tenantId(tenantId).build();
+        userExtraService.insert(userExtra);
 
         //参加新用户活动
         NewUserActivity newUserActivity = newUserActivityService.queryActivity();

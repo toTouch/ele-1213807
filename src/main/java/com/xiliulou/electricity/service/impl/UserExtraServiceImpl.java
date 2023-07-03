@@ -5,11 +5,13 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.UserExtra;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserExtraMapper;
 import com.xiliulou.electricity.query.UpdateUserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserExtraService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -38,6 +40,8 @@ public class UserExtraServiceImpl implements UserExtraService {
     private RedisService redisService;
     @Autowired
     private ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    private UserInfoService userInfoService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -125,44 +129,85 @@ public class UserExtraServiceImpl implements UserExtraService {
 
         UserExtra userExtra = this.queryByIdFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userExtra)) {
-            UserExtra userExtraInsert = new UserExtra();
-            userExtraInsert.setUid(SecurityUtils.getUid());
-            userExtraInsert.setSource(query.getSource());
-            userExtraInsert.setUpdateTime(System.currentTimeMillis());
-            userExtraInsert.setCreateTime(System.currentTimeMillis());
-            userExtraInsert.setTenantId(TenantContextHolder.getTenantId());
-
-            if (Objects.equals(query.getSource(), UserExtra.SOURCE_TYPE_SCAN) && StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
-                ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
-                if (Objects.nonNull(electricityCabinet)) {
-                    userExtraInsert.setEid(electricityCabinet.getId().longValue());
-                } else {
-                    log.warn("USER SOURCE WARN! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), SecurityUtils.getUid());
-                }
-            }
-
-            this.insert(userExtraInsert);
+            log.error("USER SOURCE ERROR! not found user,uid={}", SecurityUtils.getUid());
             return;
         }
 
-        if (!Objects.equals(userExtra.getSource(), NumberConstant.ZERO)) {
+        if (!Objects.equals(userExtra.getSource(), NumberConstant.MINUS_ONE)) {
             return;
         }
+
+        Long storeId = null;
 
         UserExtra userExtraUpdate = new UserExtra();
         userExtraUpdate.setUid(userExtra.getUid());
         userExtraUpdate.setSource(query.getSource());
         userExtraUpdate.setUpdateTime(System.currentTimeMillis());
-        if (Objects.equals(query.getSource(), UserExtra.SOURCE_TYPE_SCAN) && StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
+        //扫码
+        if (Objects.equals(query.getSource(), UserExtra.SOURCE_TYPE_SCAN)) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
             if (Objects.nonNull(electricityCabinet)) {
                 userExtraUpdate.setEid(electricityCabinet.getId().longValue());
+                storeId = electricityCabinet.getStoreId();
             } else {
                 log.warn("USER SOURCE WARN! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), SecurityUtils.getUid());
             }
         }
 
-        this.update(userExtraUpdate);
+        //邀请
+        if (Objects.equals(query.getSource(), UserExtra.SOURCE_TYPE_INVITE)) {
+            userExtraUpdate.setInviter(query.getInviter());
+            UserInfo inviterUserInfo = userInfoService.queryByUidFromCache(query.getInviter());
+            storeId = Objects.nonNull(inviterUserInfo) ? inviterUserInfo.getStoreId() : null;
+        }
+
+        if (Objects.nonNull(storeId)) {
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUid(userExtra.getUid());
+            userInfo.setStoreId(storeId);
+            userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfo);
+        }
+
+//        if (Objects.isNull(userExtra)) {
+//            UserExtra userExtraInsert = new UserExtra();
+//            userExtraInsert.setUid(SecurityUtils.getUid());
+//            userExtraInsert.setSource(query.getSource());
+//            userExtraInsert.setUpdateTime(System.currentTimeMillis());
+//            userExtraInsert.setCreateTime(System.currentTimeMillis());
+//            userExtraInsert.setTenantId(TenantContextHolder.getTenantId());
+//
+//            if (Objects.equals(query.getSource(), UserExtra.SOURCE_TYPE_SCAN) && StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
+//                ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+//                if (Objects.nonNull(electricityCabinet)) {
+//                    userExtraInsert.setEid(electricityCabinet.getId().longValue());
+//                } else {
+//                    log.warn("USER SOURCE WARN! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), SecurityUtils.getUid());
+//                }
+//            }
+//
+//            this.insert(userExtraInsert);
+//            return;
+//        }
+//
+//        if (!Objects.equals(userExtra.getSource(), NumberConstant.ZERO)) {
+//            return;
+//        }
+//
+//        UserExtra userExtraUpdate = new UserExtra();
+//        userExtraUpdate.setUid(userExtra.getUid());
+//        userExtraUpdate.setSource(query.getSource());
+//        userExtraUpdate.setUpdateTime(System.currentTimeMillis());
+//        if (Objects.equals(query.getSource(), UserExtra.SOURCE_TYPE_SCAN) && StringUtils.isNotBlank(query.getProductKey()) && StringUtils.isNotBlank(query.getDeviceName())) {
+//            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+//            if (Objects.nonNull(electricityCabinet)) {
+//                userExtraUpdate.setEid(electricityCabinet.getId().longValue());
+//            } else {
+//                log.warn("USER SOURCE WARN! not found electricityCabinet,p={},d={},uid={}", query.getProductKey(), query.getDeviceName(), SecurityUtils.getUid());
+//            }
+//        }
+//
+//        this.update(userExtraUpdate);
     }
 
     @Override
