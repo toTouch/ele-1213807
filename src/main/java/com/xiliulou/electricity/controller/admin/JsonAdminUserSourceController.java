@@ -4,9 +4,11 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserExtra;
 import com.xiliulou.electricity.query.UpdateUserSourceQuery;
 import com.xiliulou.electricity.query.UserSourceQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.UserExtraService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -33,6 +35,8 @@ public class JsonAdminUserSourceController extends BaseController {
     private UserService userService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    UserExtraService userExtraService;
 
 
     @GetMapping(value = "/admin/userSource/list")
@@ -119,18 +123,24 @@ public class JsonAdminUserSourceController extends BaseController {
         return R.ok(userService.selectUserSourcePageCount(userSourceQuery));
     }
 
+//    @PutMapping(value = "/admin/userSource")
+//    @Log(title = "修改用户来源")
+//    public R updateUserSource(@RequestBody @Validated UpdateUserSourceQuery userSourceQuery){
+//        User updateUser = new User();
+//        updateUser.setUid(userSourceQuery.getUid());
+//        updateUser.setRefId(userSourceQuery.getRefId());
+//        updateUser.setSource(userSourceQuery.getSource());
+//        updateUser.setTenantId(TenantContextHolder.getTenantId());
+//        updateUser.setUpdateTime(System.currentTimeMillis());
+//
+//        userService.updateUserSource(updateUser);
+//        return R.ok();
+//    }
+
     @PutMapping(value = "/admin/userSource")
     @Log(title = "修改用户来源")
     public R updateUserSource(@RequestBody @Validated UpdateUserSourceQuery userSourceQuery){
-        User updateUser = new User();
-        updateUser.setUid(userSourceQuery.getUid());
-        updateUser.setRefId(userSourceQuery.getRefId());
-        updateUser.setSource(userSourceQuery.getSource());
-        updateUser.setTenantId(TenantContextHolder.getTenantId());
-        updateUser.setUpdateTime(System.currentTimeMillis());
-
-        userService.updateUserSource(updateUser);
-        return R.ok();
+        return returnTripleResult(userExtraService.updateUserSource(userSourceQuery));
     }
 
 }

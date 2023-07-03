@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserSourceQuery;
+import com.xiliulou.electricity.service.UserExtraService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class JsonUserUserInfoController extends BaseController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    UserExtraService userExtraService;
 
     //查看用户状态
     @GetMapping(value = "/user/userInfo/queryUserInfo")
@@ -57,7 +61,9 @@ public class JsonUserUserInfoController extends BaseController {
      */
     @PutMapping(value = "/user/userSource/callback")
     public R loginCallBack(@RequestBody UserSourceQuery query) {
-        userService.loginCallBack(query);
+        userExtraService.loginCallBack(query);
         return R.ok();
     }
+
+
 }

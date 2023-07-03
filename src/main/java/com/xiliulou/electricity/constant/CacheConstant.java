@@ -15,6 +15,7 @@ public interface CacheConstant {
     //用户缓存
     String CACHE_USER_UID = "user_uid:";
     String CACHE_USER_PHONE = "user_phone:";
+    String CACHE_USER_EXTRA = "user_extra:";
     String CACHE_MEMBER_CARD = "CACHE_MEMBER_CARD:";
     String CACHE_USER_INFO_UID = "user_info_uid:";
     //最后一个操作格挡缓存
