@@ -4327,6 +4327,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setUpdateTime(System.currentTimeMillis());
         electricityCabinetInsert.setTenantId(TenantContextHolder.getTenantId());
         electricityCabinetInsert.setStoreId(query.getStoreId());
+        electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
         electricityCabinetInsert.setExchangeType(testFactoryCabinet.getExchangeType());
 
         //物理删除工厂测试柜机
