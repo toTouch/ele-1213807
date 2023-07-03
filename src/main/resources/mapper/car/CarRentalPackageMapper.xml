@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackagePO" id="entityMap">
+        <!--基础映射 -->
+        <result property="id" column="id" jdbcType="BIGINT" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
+        <result property="storeId" column="store_id" jdbcType="INTEGER" />
+        <result property="createUid" column="create_uid" jdbcType="BIGINT" />
+        <result property="updateUid" column="update_uid" jdbcType="BIGINT" />
+        <result property="createTime" column="create_time" jdbcType="BIGINT" />
+        <result property="updateTime" column="update_time" jdbcType="BIGINT" />
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER" />
+        <!-- 私有映射 -->
+        <result property="name" column="name" jdbcType="VARCHAR" />
+        <result property="type" column="type" jdbcType="INTEGER" />
+        <result property="tenancy" column="tenancy" jdbcType="INTEGER" />
+        <result property="tenancyUnit" column="tenancy_unit" jdbcType="INTEGER" />
+        <result property="rent" column="rent" jdbcType="DECIMAL" />
+        <result property="deposit" column="deposit" jdbcType="DECIMAL" />
+        <result property="carModelId" column="car_model_id" jdbcType="INTEGER" />
+        <result property="batteryModelIds" column="battery_model_ids" jdbcType="VARCHAR" />
+        <result property="applicableType" column="applicable_type" jdbcType="INTEGER" />
+        <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER" />
+        <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER" />
+        <result property="depositExemption" column="deposit_exemption" jdbcType="INTEGER" />
+        <result property="depositRebateApprove" column="deposit_rebate_approve" jdbcType="INTEGER" />
+        <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />
+        <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
+        <result property="confine" column="confine" jdbcType="INTEGER" />
+        <result property="confineNum" column="confine_num" jdbcType="INTEGER" />
+        <result property="giveCoupon" column="give_coupon" jdbcType="INTEGER" />
+        <result property="couponId" column="coupon_id" jdbcType="BIGINT" />
+        <result property="status" column="status" jdbcType="INTEGER" />
+        <result property="showFlag" column="show_flag" jdbcType="INTEGER" />
+        <result property="remark" column="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="table_name">`t_car_rental_package`</sql>
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
+    </sql>
+    <!-- 私有字段 -->
+    <sql id="private_field">
+        `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_model_ids`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `deposit_exemption`, `deposit_rebate_approve`,
+        `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `show_flag`, `remark`
+    </sql>
+    <!-- 全部字段 -->
+    <sql id="all_field">
+        <include refid="basic_field" />
+        <include refid="private_field" />
+    </sql>
+    <!-- where 查询条件 -->
+    <sql id="where_field">
+        <if test=" franchiseeId != null"> AND `franchisee_id` = #{franchiseeId} </if>
+        <if test=" name != null and name != '' "> AND `name` LIKE CONCAT('%', #{name}, '%') </if>
+        <if test=" type != null "> AND `type` = #{type} </if>
+        <if test=" status != null "> AND `status` = #{status} </if>
+    </sql>
+    <!-- 条件新增字段 -->
+    <sql id="insert_field">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> `tenant_id` </if>
+            <if test=" franchiseeId != null "> `franchisee_id` </if>
+            <if test=" storeId != null "> `store_id` </if>
+            <if test=" createUid != null "> `create_uid` </if>
+            <if test=" updateUid != null "> `update_uid` </if>
+            <if test=" createTime != null "> `create_time` </if>
+            <if test=" updateTime != null "> `update_time` </if>
+            <if test=" delFlag != null "> `del_flag` </if>
+            <if test=" name != null and name != '' "> `name` </if>
+            <if test=" type != null "> `type` </if>
+            <if test=" tenancy != null "> `tenancy` </if>
+            <if test=" tenancyUnit != null "> `tenancy_unit` </if>
+            <if test=" rent != null "> `rent` </if>
+            <if test=" deposit != null "> `deposit` </if>
+            <if test=" carModelId != null "> `car_model_id` </if>
+            <if test=" batteryModelIds != null and batteryModelIds != '' "> `battery_model_ids` </if>
+            <if test=" applicableType != null "> `applicable_type` </if>
+            <if test=" rentRebate != null "> `rent_rebate` </if>
+            <if test=" rentRebateTerm != null "> `rent_rebate_term` </if>
+            <if test=" depositExemption != null "> `deposit_exemption` </if>
+            <if test=" depositRebateApprove != null "> `deposit_rebate_approve` </if>
+            <if test=" rentUnitPrice != null "> `rent_unit_price` </if>
+            <if test=" lateFee != null "> `late_fee` </if>
+            <if test=" confine != null "> `confine` </if>
+            <if test=" confineNum != null "> `confine_num` </if>
+            <if test=" giveCoupon != null "> `give_coupon` </if>
+            <if test=" couponId != null "> `coupon_id` </if>
+            <if test=" status != null "> `status` </if>
+            <if test=" showFlag != null "> `show_flag` </if>
+            <if test=" remark != null and remark != '' "> `remark` </if>
+        </trim>
+    </sql>
+    <!-- 条件新增字段值 -->
+    <sql id="insert_value">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> #{tenantId} </if>
+            <if test=" franchiseeId != null "> #{franchiseeId} </if>
+            <if test=" storeId != null "> #{storeId} </if>
+            <if test=" createUid != null "> #{createUid} </if>
+            <if test=" updateUid != null "> #{updateUid} </if>
+            <if test=" createTime != null "> #{createTime} </if>
+            <if test=" updateTime != null "> #{updateTime} </if>
+            <if test=" delFlag != null "> #{delFlag} </if>
+            <if test=" name != null and name != '' "> #{name} </if>
+            <if test=" type != null "> #{type} </if>
+            <if test=" tenancy != null "> #{tenancy} </if>
+            <if test=" tenancyUnit != null "> #{tenancyUnit} </if>
+            <if test=" rent != null "> #{rent} </if>
+            <if test=" deposit != null "> #{deposit} </if>
+            <if test=" carModelId != null "> #{carModelId} </if>
+            <if test=" batteryModelIds != null and batteryModelIds != '' "> #{batteryModelIds} </if>
+            <if test=" applicableType != null "> #{applicableType} </if>
+            <if test=" rentRebate != null "> #{rentRebate} </if>
+            <if test=" rentRebateTerm != null "> #{rentRebateTerm} </if>
+            <if test=" depositExemption != null "> #{depositExemption} </if>
+            <if test=" depositRebateApprove != null "> #{depositRebateApprove} </if>
+            <if test=" rentUnitPrice != null "> #{rentUnitPrice} </if>
+            <if test=" lateFee != null "> #{lateFee} </if>
+            <if test=" confine != null "> #{confine} </if>
+            <if test=" confineNum != null "> #{confineNum} </if>
+            <if test=" giveCoupon != null "> #{giveCoupon} </if>
+            <if test=" couponId != null "> #{couponId} </if>
+            <if test=" status != null "> #{status} </if>
+            <if test=" showFlag != null "> #{showFlag} </if>
+            <if test=" remark != null and remark != '' "> #{remark </if>
+        </trim>
+    </sql>
+
+    <!-- 检测唯一：租户ID + 套餐名称 -->
+    <select id="uqByTenantIdAndName" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `name` = #{name} AND `del_flag` = 0
+        </where>
+    </select>
+
+    <!-- 根据ID修改上下架状态 -->
+    <update id="updateStatusById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_uid` = #{updateUid}, `update_time` = #{updateTime}, `status` = #{status}
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 根据ID删除(逻辑删除) -->
+    <update id="delById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_uid` = #{updateUid}, `update_time` = #{updateTime}, `del_flag` = 1
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 条件查询列表 -->
+    <select id="list" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 条件查询分页 -->
+    <select id="page" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+        LIMIT #{offset}, #{limitNum}
+    </select>
+
+    <!-- 条件查询总数 -->
+    <select id="count" resultType="java.lang.Integer">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `id` = #{id}
+        </where>
+    </select>
+
+    <!-- 根据ID更新 -->
+    <update id="updateById" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePO">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_uid` = #{updateUid}, `update_time` = #{updateTime}
+            <if test=" name != null and name != '' "> , `name` = #{name} </if>
+            <if test=" tenancy != null "> , `tenancy` = #{tenancy} </if>
+            <if test=" tenancyUnit != null "> , `tenancy_unit` = #{tenancyUnit} </if>
+            <if test=" rent != null "> , `rent` = #{rent} </if>
+            <if test=" deposit != null "> , `deposit` = #{deposit} </if>
+            <if test=" applicableType != null "> , `applicable_type` = #{applicableType} </if>
+            <if test=" rentRebate != null "> , `rent_rebate` = #{rentRebate} </if>
+            <if test=" rentRebateTerm != null "> , `rent_rebate_term` = #{rentRebateTerm} </if>
+            <if test=" depositExemption != null "> , `deposit_exemption` = #{depositExemption} </if>
+            <if test=" depositRebateApprove != null "> , `deposit_rebate_approve` = #{depositRebateApprove} </if>
+            <if test=" rentUnitPrice != null "> , `rent_unit_price` = #{rentUnitPrice} </if>
+            <if test=" lateFee != null "> , `late_fee` = #{lateFee} </if>
+            <if test=" giveCoupon != null "> , `give_coupon` = #{giveCoupon} </if>
+            <if test=" couponId != null "> , `coupon_id` = #{couponId} </if>
+            <if test=" showFlag != null "> , `show_flag` = #{showFlag} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 条件新增 -->
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackagePO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
+    </insert>
+
+</mapper>
