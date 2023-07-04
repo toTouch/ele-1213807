@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1323,6 +1324,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public RentBatteryOrder selectLatestByUid(Long uid, Integer tenantId) {
         return rentBatteryOrderMapper.selectLatestByUid(uid, tenantId);
+    }
+    @Slave
+    @Override
+    public List<EleCabinetUsedRecordVO> findEleCabinetUsedRecords(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
+        List<EleCabinetUsedRecord> eleCabinetUsedRecords = rentBatteryOrderMapper.selectEleCabinetUsedRecords(eleCabinetUsedRecordQuery);
+        if(CollectionUtils.isEmpty(eleCabinetUsedRecords)){
+            return Collections.emptyList();
+        }
+
+        List<EleCabinetUsedRecordVO> cabinetUsedRecordVOList = new ArrayList<>();
+        for(EleCabinetUsedRecord eleCabinetUsedRecord : eleCabinetUsedRecords){
+            EleCabinetUsedRecordVO eleCabinetUsedRecordVO = new EleCabinetUsedRecordVO();
+            BeanUtils.copyProperties(eleCabinetUsedRecord, eleCabinetUsedRecordVO);
+            cabinetUsedRecordVOList.add(eleCabinetUsedRecordVO);
+        }
+
+        return cabinetUsedRecordVOList;
+    }
+
+    @Override
+    public Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
+        return rentBatteryOrderMapper.selectCabinetUsedRecordsCount(eleCabinetUsedRecordQuery);
     }
 
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {
