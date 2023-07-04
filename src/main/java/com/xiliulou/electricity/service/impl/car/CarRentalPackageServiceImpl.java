@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -201,16 +203,14 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     }
 
     /**
-     * 新增数据，返回主键ID
+     * 新增数据，返回主键ID<br />
+     * 若为车电一体，则会联动调用换电套餐的逻辑
      * @param optModel 操作模型
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R<Long> insert(CarRentalPackageOptModel optModel) {
-        R<Long> checkInsertParamsResult = checkInsertParams(optModel);
-        if (!checkInsertParamsResult.isSuccess()) {
-            return checkInsertParamsResult;
-        }
         Integer tenantId = optModel.getTenantId();
         String name = optModel.getName();
         // 检测唯一
@@ -226,19 +226,19 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         entity.setUpdateTime(now);
         // 保存入库
         carRentalPackageMapper.insert(entity);
+        // 后续处理逻辑
+        afterInsert(entity);
         return R.ok(entity.getId());
     }
 
     /**
-     * 新增校验
-     * @param optModel
+     * 新增之后的后续操作
+     * @param entity
      */
-    private R<Long> checkInsertParams(CarRentalPackageOptModel optModel) {
-        if (optModel == null) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        // TODO 明细校验
-        return R.ok();
-    }
+    private void afterInsert(CarRentalPackagePO entity) {
+        // TODO 若为车电一体的套餐，需要调用换电套餐的接口，志龙
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(entity.getType())) {
 
+        }
+    }
 }

@@ -216,10 +216,6 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Override
     public R<Long> insert(CarRentalPackageOrderOptModel optModel) {
-        R<Long> checkInsertParamsResult = checkInsertParams(optModel);
-        if (!checkInsertParamsResult.isSuccess()) {
-            return checkInsertParamsResult;
-        }
         CarRentalPackageOrderPO entity = new CarRentalPackageOrderPO();
         BeanUtils.copyProperties(optModel, entity);
         // 赋值操作人及时间
@@ -230,17 +226,5 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         // 保存入库
         carRentalPackageOrderMapper.insert(entity);
         return R.ok(entity.getId());
-    }
-
-    /**
-     * 新增校验
-     * @param optModel
-     */
-    private R<Long> checkInsertParams(CarRentalPackageOrderOptModel optModel) {
-        if (optModel == null) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        // TODO 明细校验
-        return R.ok();
     }
 }

@@ -182,7 +182,7 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 创建时间
      */
-    private Integer createTime;
+    private Long createTime;
 
     // ++++++++++ 辅助业务数据 ++++++++++
 

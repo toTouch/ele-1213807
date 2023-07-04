@@ -86,7 +86,8 @@ public interface CarRentalPackageService {
     R<Boolean> updateById(CarRentalPackageOptModel optModel);
 
     /**
-     * 新增数据，返回主键ID
+     * 新增数据，返回主键ID<br />
+     * 若为车电一体，则会联动调用换电套餐的逻辑
      * @param optModel 操作模型
      * @return
      */

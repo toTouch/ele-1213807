@@ -74,7 +74,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
      * @param status 上下架状态
      * @return
      */
-    @PostMapping("/modifyStatusById")
+    @GetMapping("/modifyStatusById")
     public R<Boolean> modifyStatusById(Long id, Integer status) {
         if (!ObjectUtils.allNotNull(id, status)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
