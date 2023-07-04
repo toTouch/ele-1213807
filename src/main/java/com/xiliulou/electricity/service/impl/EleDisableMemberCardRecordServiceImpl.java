@@ -128,17 +128,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
             updateUserBatteryMemberCard.setDisableMemberCardTime(System.currentTimeMillis());
         }
 
-//        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-//        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        updateFranchiseeUserInfo.setMemberCardDisableStatus(status);
-//        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
-//        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
-//            updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
-//        }
-//        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-//            updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
-//        }
-
         userBatteryMemberCardService.updateByUid(updateUserBatteryMemberCard);
         return R.ok();
     }

@@ -34,4 +34,7 @@ public class ElectricityMemberCardRecordQuery {
 
     private Long uid;
 
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

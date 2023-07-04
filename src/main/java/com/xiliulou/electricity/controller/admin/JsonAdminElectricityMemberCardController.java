@@ -284,16 +284,36 @@ public class JsonAdminElectricityMemberCardController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
 
         ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder()
                 .offset(offset)
                 .size(size)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .disableMemberCardNo(disableMemberCardNo)
                 .phone(phone)
                 .status(status)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return eleDisableMemberCardRecordService.list(electricityMemberCardRecordQuery);
     }
@@ -308,14 +328,34 @@ public class JsonAdminElectricityMemberCardController {
                                                   @RequestParam(value = "phone", required = false) String phone,
                                                   @RequestParam(value = "status", required = false) Integer status) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
 
         ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder()
                 .disableMemberCardNo(disableMemberCardNo)
                 .phone(phone)
                 .status(status)
-                .tenantId(tenantId).build();
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return eleDisableMemberCardRecordService.queryCount(electricityMemberCardRecordQuery);
     }
@@ -323,10 +363,6 @@ public class JsonAdminElectricityMemberCardController {
     /**
      * 审核用户停卡
      *
-     * @param disableMemberCardNo
-     * @param status
-     * @param errMsg
-     * @return
      */
     @PostMapping(value = "/admin/electricityMemberCard/reviewDisableMemberCard")
     @Log(title = "用户暂停套餐审核")

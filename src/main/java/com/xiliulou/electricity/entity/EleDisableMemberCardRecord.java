@@ -116,6 +116,10 @@ public class EleDisableMemberCardRecord {
      */
     private Long batteryMemberCardId;
 
+    private Long franchiseeId;
+
+    private Long storeId;
+
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;

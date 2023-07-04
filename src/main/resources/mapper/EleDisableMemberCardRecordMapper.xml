@@ -23,6 +23,18 @@
             <if test="query.status !=null ">
                 and status=#{query.status}
             </if>
+            <if test="query.franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by create_time desc
         limit #{query.offset},#{query.size}
@@ -43,6 +55,18 @@
             </if>
             <if test="query.status !=null ">
                 and status=#{query.status}
+            </if>
+            <if test="query.franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

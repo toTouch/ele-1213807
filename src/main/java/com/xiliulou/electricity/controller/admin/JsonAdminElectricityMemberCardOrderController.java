@@ -71,18 +71,21 @@ public class JsonAdminElectricityMemberCardOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELE ERROR! not found user");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
         }
 
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -103,10 +106,12 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .cardPayCount(payCount)
 		        .userName(userName)
                 .payType(payType)
-		        .franchiseeIds(franchiseeIds).build();
+		        .build();
 
         return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
     }
@@ -133,18 +138,21 @@ public class JsonAdminElectricityMemberCardOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
         }
 
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -163,10 +171,12 @@ public class JsonAdminElectricityMemberCardOrderController {
                 .refId(refId)
                 .cardModel(memberCardModel)
                 .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .cardPayCount(payCount)
 		        .userName(userName)
                 .payType(payType)
-		        .franchiseeIds(franchiseeIds).build();
+		        .build();
 
         return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
     }

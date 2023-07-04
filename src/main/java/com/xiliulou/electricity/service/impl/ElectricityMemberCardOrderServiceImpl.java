@@ -431,6 +431,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
+        electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayCount(payCount);
@@ -691,8 +692,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         return R.ok(ElectricityMemberCardOrderVOs);
-
-
     }
 
     @Slave
@@ -882,6 +881,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .status(usableStatus)
                     .tenantId(userInfo.getTenantId())
                     .uid(user.getUid())
+                    .storeId(userInfo.getStoreId())
+                    .franchiseeId(userInfo.getFranchiseeId())
                     .batteryMemberCardId(userBatteryMemberCard.getMemberCardId())
                     .disableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_NOT_LIMIT_TIME)
                     .createTime(System.currentTimeMillis())
@@ -1075,6 +1076,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .uid(userInfo.getUid())
                 .tenantId(userInfo.getTenantId())
                 .uid(user.getUid())
+                .franchiseeId(userInfo.getFranchiseeId())
+                .storeId(userInfo.getStoreId())
                 .batteryMemberCardId(userBatteryMemberCard.getMemberCardId())
                 .chooseDays(disableCardDays)
                 .disableDeadline(disableDeadline)
@@ -1555,10 +1558,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-                log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee ! uid={}", userInfo.getUid());
+                log.error("DISABLE MEMBER CARD ERROR! user exist battery service fee,uid={}", userInfo.getUid());
                 return R.fail("ELECTRICITY.100000", "存在电池服务费", userChangeServiceFee);
             }
-
 
             EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
                     .disableMemberCardNo(generateOrderId(uid))
@@ -1568,6 +1570,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .status(usableStatus)
                     .tenantId(userInfo.getTenantId())
                     .uid(uid)
+                    .franchiseeId(userInfo.getFranchiseeId())
+                    .storeId(userInfo.getStoreId())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             BigDecimal batteryServiceFee = checkDifferentModelBatteryServiceFee(franchisee, userInfo, null);
@@ -1596,7 +1600,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 serviceFeeUserInfoService.updateByUid(insertOrUpdateServiceFeeUserInfo);
             }
         }
-
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
@@ -1812,6 +1815,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setValidDays(0);
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayCount(payCount + 1);
@@ -2010,6 +2014,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setValidDays(0);
             electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
             electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+            electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
             electricityMemberCardOrder.setPayCount(payCount + 1);
@@ -2205,6 +2210,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
