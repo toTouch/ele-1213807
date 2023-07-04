@@ -23,6 +23,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
      */
     @PostMapping("/modifyStatusById")
     public R<Boolean> modifyStatusById(Long id, Integer status) {
-        if (ObjectUtils.allNotNull(id, status)) {
+        if (!ObjectUtils.allNotNull(id, status)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         // 获取用户
@@ -211,7 +212,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
      * @return
      */
     @PostMapping("/modifyById")
-    public R<Boolean> modifyById(CarRentalPackageOptModel optModel) {
+    public R<Boolean> modifyById(@RequestBody @Valid CarRentalPackageOptModel optModel) {
         if (optModel == null || optModel.getId() <= 0L) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -229,7 +230,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
      * @return
      */
     @PostMapping("/insert")
-    public R<Long> insert(CarRentalPackageOptModel optModel) {
+    public R<Long> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
         // 赋值租户及操作人
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();

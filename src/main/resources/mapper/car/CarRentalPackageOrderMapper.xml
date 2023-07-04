@@ -73,77 +73,77 @@
     <!-- 条件新增字段 -->
     <sql id="insert_field">
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test=" tenantId != null "> `tenant_id` </if>
-            <if test=" franchiseeId != null "> `franchisee_id` </if>
-            <if test=" storeId != null "> `store_id` </if>
-            <if test=" createUid != null "> `create_uid` </if>
-            <if test=" updateUid != null "> `update_uid` </if>
-            <if test=" createTime != null "> `create_time` </if>
-            <if test=" updateTime != null "> `update_time` </if>
-            <if test=" delFlag != null "> `del_flag` </if>
-            <if test=" uid != null "> `uid` </if>
-            <if test=" orderNo != null and orderNo != '' "> `order_no` </if>
-            <if test=" rentalPackageId != null "> `rental_package_id` </if>
-            <if test=" rentalPackageType != null "> `rental_package_type` </if>
-            <if test=" confine != null "> `confine` </if>
-            <if test=" confineNum != null "> `confine_num` </if>
-            <if test=" tenancy != null "> `tenancy` </if>
-            <if test=" tenancyUnit != null "> `tenancy_unit` </if>
-            <if test=" rentUnitPrice != null "> `rent_unit_price` </if>
-            <if test=" rent != null "> `rent` </if>
-            <if test=" rentPayment != null "> `rent_payment` </if>
-            <if test=" carModelId != null "> `car_model_id` </if>
-            <if test=" batteryModelIds != null and batteryModelIds != '' "> `battery_model_ids` </if>
-            <if test=" applicableType != null "> `applicable_type` </if>
-            <if test=" rentRebate != null "> `rent_rebate` </if>
-            <if test=" rentRebateTerm != null "> `rent_rebate_term` </if>
-            <if test=" rentRebateEndTime != null "> `rent_rebate_end_time` </if>
-            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no` </if>
-            <if test=" lateFee != null "> `late_fee` </if>
-            <if test=" payType != null "> `pay_type` </if>
-            <if test=" cabinetId != null "> `cabinet_id` </if>
-            <if test=" couponId != null "> `coupon_id` </if>
-            <if test=" payState != null "> `pay_state` </if>
-            <if test=" useState != null "> `use_state` </if>
-            <if test=" remark != null and remark != '' "> `remark` </if>
+            <if test=" tenantId != null "> `tenant_id`, </if>
+            <if test=" franchiseeId != null "> `franchisee_id`, </if>
+            <if test=" storeId != null "> `store_id`, </if>
+            <if test=" createUid != null "> `create_uid`, </if>
+            <if test=" updateUid != null "> `update_uid`, </if>
+            <if test=" createTime != null "> `create_time`, </if>
+            <if test=" updateTime != null "> `update_time`, </if>
+            <if test=" delFlag != null "> `del_flag`, </if>
+            <if test=" uid != null "> `uid`, </if>
+            <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
+            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
+            <if test=" rentalPackageType != null "> `rental_package_type`, </if>
+            <if test=" confine != null "> `confine`, </if>
+            <if test=" confineNum != null "> `confine_num`, </if>
+            <if test=" tenancy != null "> `tenancy`, </if>
+            <if test=" tenancyUnit != null "> `tenancy_unit`, </if>
+            <if test=" rentUnitPrice != null "> `rent_unit_price`, </if>
+            <if test=" rent != null "> `rent`, </if>
+            <if test=" rentPayment != null "> `rent_payment`, </if>
+            <if test=" carModelId != null "> `car_model_id`, </if>
+            <if test=" batteryModelIds != null and batteryModelIds != '' "> `battery_model_ids`, </if>
+            <if test=" applicableType != null "> `applicable_type`, </if>
+            <if test=" rentRebate != null "> `rent_rebate`, </if>
+            <if test=" rentRebateTerm != null "> `rent_rebate_term`, </if>
+            <if test=" rentRebateEndTime != null "> `rent_rebate_end_time`, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
+            <if test=" lateFee != null "> `late_fee`, </if>
+            <if test=" payType != null "> `pay_type`, </if>
+            <if test=" cabinetId != null "> `cabinet_id`, </if>
+            <if test=" couponId != null "> `coupon_id`, </if>
+            <if test=" payState != null "> `pay_state`, </if>
+            <if test=" useState != null "> `use_state`, </if>
+            <if test=" remark != null and remark != '' "> `remark`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
     <sql id="insert_value">
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test=" tenantId != null "> #{tenantId} </if>
-            <if test=" franchiseeId != null "> #{franchiseeId} </if>
-            <if test=" storeId != null "> #{storeId} </if>
-            <if test=" createUid != null "> #{createUid} </if>
-            <if test=" updateUid != null "> #{updateUid} </if>
-            <if test=" createTime != null "> #{createTime} </if>
-            <if test=" updateTime != null "> #{updateTime} </if>
-            <if test=" delFlag != null "> #{delFlag} </if>
-            <if test=" uid != null "> #{uid} </if>
-            <if test=" orderNo != null and orderNo != '' "> #{orderNo} </if>
-            <if test=" rentalPackageId != null "> #{rentalPackageId} </if>
-            <if test=" rentalPackageType != null "> #{rentalPackageType} </if>
-            <if test=" confine != null "> #{confine} </if>
-            <if test=" confineNum != null "> #{confineNum} </if>
-            <if test=" tenancy != null "> #{tenancy} </if>
-            <if test=" tenancyUnit != null "> #{tenancyUnit} </if>
-            <if test=" rentUnitPrice != null "> #{rentUnitPrice} </if>
-            <if test=" rent != null "> #{rent </if>
-            <if test=" rentPayment != null "> #{rentPayment} </if>
-            <if test=" carModelId != null "> #{carModelId} </if>
-            <if test=" batteryModelIds != null and batteryModelIds != '' "> #{batteryModelIds} </if>
-            <if test=" applicableType != null "> #{applicableType} </if>
-            <if test=" rentRebate != null "> #{rentRebate} </if>
-            <if test=" rentRebateTerm != null "> #{rentRebateTerm} </if>
-            <if test=" rentRebateEndTime != null "> #{rentRebateEndTime} </if>
-            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo} </if>
-            <if test=" lateFee != null "> #{lateFee} </if>
-            <if test=" payType != null "> #{payType} </if>
-            <if test=" cabinetId != null "> #{cabinetId} </if>
-            <if test=" couponId != null "> #{couponId} </if>
-            <if test=" payState != null "> #{payState} </if>
-            <if test=" useState != null "> #{useState} </if>
-            <if test=" remark != null and remark != '' "> #{remark} </if>
+            <if test=" tenantId != null "> #{tenantId}, </if>
+            <if test=" franchiseeId != null "> #{franchiseeId}, </if>
+            <if test=" storeId != null "> #{storeId}, </if>
+            <if test=" createUid != null "> #{createUid}, </if>
+            <if test=" updateUid != null "> #{updateUid}, </if>
+            <if test=" createTime != null "> #{createTime}, </if>
+            <if test=" updateTime != null "> #{updateTime}, </if>
+            <if test=" delFlag != null "> #{delFlag}, </if>
+            <if test=" uid != null "> #{uid}, </if>
+            <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
+            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
+            <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
+            <if test=" confine != null "> #{confine}, </if>
+            <if test=" confineNum != null "> #{confineNum}, </if>
+            <if test=" tenancy != null "> #{tenancy}, </if>
+            <if test=" tenancyUnit != null "> #{tenancyUnit}, </if>
+            <if test=" rentUnitPrice != null "> #{rentUnitPrice}, </if>
+            <if test=" rent != null "> #{rent}, </if>
+            <if test=" rentPayment != null "> #{rentPayment}, </if>
+            <if test=" carModelId != null "> #{carModelId}, </if>
+            <if test=" batteryModelIds != null and batteryModelIds != '' "> #{batteryModelIds}, </if>
+            <if test=" applicableType != null "> #{applicableType}, </if>
+            <if test=" rentRebate != null "> #{rentRebate}, </if>
+            <if test=" rentRebateTerm != null "> #{rentRebateTerm}, </if>
+            <if test=" rentRebateEndTime != null "> #{rentRebateEndTime}, </if>
+            <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
+            <if test=" lateFee != null "> #{lateFee}, </if>
+            <if test=" payType != null "> #{payType}, </if>
+            <if test=" cabinetId != null "> #{cabinetId}, </if>
+            <if test=" couponId != null "> #{couponId}, </if>
+            <if test=" payState != null "> #{payState}, </if>
+            <if test=" useState != null "> #{useState}, </if>
+            <if test=" remark != null and remark != '' "> #{remark}, </if>
         </trim>
     </sql>
 
