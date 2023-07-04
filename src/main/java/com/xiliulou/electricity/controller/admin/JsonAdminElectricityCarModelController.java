@@ -8,7 +8,6 @@ import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -106,31 +105,29 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Long> franchiseeIds=null;
+        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-
-            List<Store> stores=storeService.selectByStoreIds(storeIds);
-            if(CollectionUtils.isEmpty(stores)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-
-            franchiseeIds = stores.stream().map(Store::getFranchiseeId).collect(Collectors.toList());
         }
 
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-
+     
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .offset(offset)
                 .size(size)
                 .name(name)
                 .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .uid(uid)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
@@ -150,27 +147,25 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Long> franchiseeIds=null;
+        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            List<Long> storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-
-            List<Store> stores=storeService.selectByStoreIds(storeIds);
-            if(CollectionUtils.isEmpty(stores)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-
-            franchiseeIds = stores.stream().map(Store::getFranchiseeId).collect(Collectors.toList());
         }
 
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .name(name)
                 .tenantId(tenantId).build();
 
@@ -188,7 +183,6 @@ public class JsonAdminElectricityCarModelController {
 
         return electricityCarModelService.selectByStoreId(electricityCarModelQuery);
     }
-
 
     /**
      * 校验金额不能为0

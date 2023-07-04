@@ -64,6 +64,8 @@ public class ElectricityCar {
      */
     private Long storeId;
 
+    private Long franchiseeId;
+
     /**
      * 车辆型号Id
      */

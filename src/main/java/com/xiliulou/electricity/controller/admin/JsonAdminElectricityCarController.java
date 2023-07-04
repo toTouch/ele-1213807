@@ -4,20 +4,12 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCarBindUser;
 import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserDataScopeService;
-import com.xiliulou.electricity.service.UserTypeFactory;
-import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -32,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 换电柜表(TElectricityCar)表控制层
@@ -118,18 +109,12 @@ public class JsonAdminElectricityCarController {
             }
         }
 
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-
-            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
-            if(CollectionUtils.isEmpty(stores)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-
-            storeIds=stores.stream().map(Store::getId).collect(Collectors.toList());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -141,6 +126,7 @@ public class JsonAdminElectricityCarController {
                 .status(status)
                 .storeId(storeId)
                 .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -166,23 +152,17 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Long> storeIds=null;
+        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-
-            List<Store> stores = storeService.selectByFranchiseeIds(franchiseeIds);
-            if(CollectionUtils.isEmpty(stores)){
-                return R.ok(Collections.EMPTY_LIST);
-            }
-
-            storeIds=stores.stream().map(Store::getId).collect(Collectors.toList());
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
@@ -192,6 +172,7 @@ public class JsonAdminElectricityCarController {
                 .status(status)
                 .storeId(storeId)
                 .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)

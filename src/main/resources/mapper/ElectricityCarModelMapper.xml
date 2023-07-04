@@ -40,13 +40,19 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null">
+            and tecm.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by tecm.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
-        from t_electricity_car_model tecm  left join t_franchisee tf on tecm.franchisee_id=tf.id
+        from t_electricity_car_model tecm
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tecm.name = #{query.name}
@@ -60,6 +66,12 @@
         <if test="query.franchiseeIds != null">
             and tecm.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null">
+            and tecm.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>

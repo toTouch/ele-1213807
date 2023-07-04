@@ -170,13 +170,6 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return R.ok();
         }
 
-
-//        Integer count = electricityCarService.queryByModelId(query.getId());
-//        if (count > 0) {
-//            return R.fail("100006", "型号已绑定车辆，不能操作");
-//        }
-
-
         ElectricityCarModel updateCarModel = new ElectricityCarModel();
         BeanUtils.copyProperties(query, updateCarModel);
 

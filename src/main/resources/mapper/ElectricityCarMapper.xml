@@ -11,12 +11,10 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
         select
         tec.id,tec.sn,
-        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id, tec.phone
-        ,tec.create_time,tec.update_time,ts.name as storeName,tec.uid
+        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id, tec.phone, tec.franchisee_id,
+        tec.create_time,tec.update_time,ts.name as storeName,tec.uid
         from t_electricity_car tec
         left join t_store ts on tec.store_id=ts.id
-        left join t_franchisee_user_info tfui on
-        tec.user_info_id=tfui.user_info_id
         where tec.del_flag=0
         <if test="query.sn != null and query.sn!=''">
             and tec.sn = #{query.sn}
@@ -39,8 +37,11 @@
                 #{id}
             </foreach>
         </if>
-        <if test="query.batterySn != null and query.batterySn!=''">
-            and tfui.now_electricity_battery_sn = #{query.batterySn}
+        <if test="query.franchiseeIds != null ">
+            and tec.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.beginTime != null">
             and tec.create_time &gt;=#{query.beginTime}
@@ -77,6 +78,12 @@
         <if test="query.storeIds != null ">
             and tec.store_id in
             <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.franchiseeIds != null ">
+            and tec.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
                 #{id}
             </foreach>
         </if>

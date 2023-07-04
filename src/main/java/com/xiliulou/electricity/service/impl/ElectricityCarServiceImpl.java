@@ -110,8 +110,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Autowired
     CarRefundOrderService carRefundOrderService;
 
-
-    
     @Autowired
     ElectricityConfigService electricityConfigService;
     
@@ -157,6 +155,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
+        Store store = storeService.queryByIdFromCache(electricityCarAddAndUpdate.getStoreId());
+        if(Objects.isNull(store)){
+            return R.fail("100204", "未找到门店");
+        }
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -167,6 +170,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setCreateTime(System.currentTimeMillis());
         electricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+        electricityCar.setFranchiseeId(store.getFranchiseeId());
 
         //查找车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
@@ -245,6 +249,14 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         electricityCar.setUpdateTime(System.currentTimeMillis());
+
+        if(Objects.nonNull(electricityCarAddAndUpdate.getStoreId())){
+            Store store = storeService.queryByIdFromCache(electricityCarAddAndUpdate.getStoreId());
+            if(Objects.isNull(store)){
+                return R.fail("100204", "未找到门店");
+            }
+            electricityCar.setFranchiseeId(store.getFranchiseeId());
+        }
 
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
@@ -711,20 +723,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELE CAR ERROR! user not binding car,uid={}", userInfo.getUid());
             return R.fail("100015", "用户未绑定车辆");
         }
-    
-//        UserCarDeposit userCarDeposit = userCarDepositService.selectByUidFromCache(user.getUid());
-//        if (Objects.isNull(userCarDeposit)) {
-//            log.error("WEB BIND CAR ERROR ERROR! not found userCarDeposit error uid={}", userInfo.getUid());
-//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-//        }
-//
-//        Integer count = carRefundOrderService
-//                .queryStatusByLastCreateTime(user.getUid(), TenantContextHolder.getTenantId(), electricityCar.getSn(),
-//                        userCarDeposit.getOrderId());
-//        if (Objects.nonNull(count) && count > 0) {
-//            log.error("WEB BIND CAR ERROR ERROR! uid has runing carRefundOrder uid={}", userInfo.getUid());
-//            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-//        }
 
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(userInfo.getUid());
