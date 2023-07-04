@@ -2,8 +2,11 @@ package com.xiliulou.electricity.model.car.opt;
 
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -20,6 +23,7 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 主键ID
      */
+    @NotNull(message = "[主键ID]不能为空", groups = {UpdateGroup.class})
     private Long id;
 
     /**
@@ -71,6 +75,7 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 套餐名称
      */
+    @NotNull(message = "[套餐名称]不能为空")
     private String name;
 
     /**
@@ -81,11 +86,13 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see CarRentalPackageTypeEnum
      */
+    @NotNull(message = "[套餐类型]不能为空", groups = {CreateGroup.class})
     private Integer type;
 
     /**
      * 租期
      */
+    @NotNull(message = "[租期]不能为空")
     private Integer tenancy;
 
     /**
@@ -96,21 +103,25 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see TimeUnitEnum
      */
+    @NotNull(message = "[租期单位]不能为空")
     private Integer tenancyUnit;
 
     /**
      * 租金
      */
+    @NotNull(message = "[租金]不能为空")
     private BigDecimal rent;
 
     /**
      * 押金
      */
+    @NotNull(message = "[押金]不能为空")
     private BigDecimal deposit;
 
     /**
      * 车辆型号ID
      */
+    @NotNull(message = "[车辆型号]不能为空")
     private Integer carModelId;
 
     /**
@@ -127,6 +138,7 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see ApplicableTypeEnum
      */
+    @NotNull(message = "[租赁类型]不能为空")
     private Integer applicableType;
 
     /**
@@ -137,11 +149,13 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see YesNoEnum
      */
+    @NotNull(message = "[租金可退]不能为空")
     private Integer rentRebate;
 
     /**
      * 租金退还期限(天)
      */
+    @NotNull(message = "[租金退还期限]不能为空")
     private Integer rentRebateTerm;
 
     /**
@@ -152,6 +166,7 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see DepositExemptionEnum
      */
+    @NotNull(message = "[免押]不能为空")
     private Integer depositExemption;
 
     /**
@@ -162,16 +177,19 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see YesNoEnum
      */
+    @NotNull(message = "[押金返还审批]不能为空")
     private Integer depositRebateApprove;
 
     /**
      * 租金单价，单位同租期单位
      */
+    @NotNull(message = "[租金单价]不能为空")
     private BigDecimal rentUnitPrice;
 
     /**
      * 滞纳金(天)
      */
+    @NotNull(message = "[滞纳金]不能为空")
     private BigDecimal lateFee;
 
     /**
@@ -182,6 +200,7 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see RenalPackageConfineEnum
      */
+    @NotNull(message = "[套餐限制]不能为空")
     private Integer confine;
 
     /**
@@ -197,6 +216,7 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see YesNoEnum
      */
+    @NotNull(message = "[优惠券赠送]不能为空")
     private Integer giveCoupon;
 
     /**
@@ -222,6 +242,7 @@ public class CarRentalPackageOptModel implements Serializable {
      * </pre>
      * @see YesNoEnum
      */
+    @NotNull(message = "[是否展示]不能为空")
     private Integer showFlag;
 
     /**
