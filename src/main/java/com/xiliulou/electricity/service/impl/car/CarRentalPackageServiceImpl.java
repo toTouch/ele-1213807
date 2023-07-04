@@ -177,12 +177,6 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (optModel == null || optModel.getId() == null || optModel.getId() <= 0 || optModel.getUpdateUid() == null || optModel.getUpdateUid() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        Integer tenantId = optModel.getTenantId();
-        String name = optModel.getName();
-        // 检测唯一
-        if (carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
-            return R.fail("300100", "套餐名称已存在");
-        }
         // 检测原始套餐状态
         CarRentalPackagePO oriEntity = carRentalPackageMapper.selectById(optModel.getId());
         if (oriEntity == null || DelFlagEnum.DEL.getCode().equals(oriEntity.getDelFlag())) {
@@ -190,6 +184,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         }
         if (UpDownEnum.UP.getCode().equals(oriEntity.getStatus())) {
             return R.fail("300102", "上架状态的套餐不允许修改");
+        }
+        Integer tenantId = optModel.getTenantId();
+        String name = optModel.getName();
+        // 检测唯一
+        if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
+            return R.fail("300100", "套餐名称已存在");
         }
         CarRentalPackagePO entity = new CarRentalPackagePO();
         BeanUtils.copyProperties(optModel, entity);
