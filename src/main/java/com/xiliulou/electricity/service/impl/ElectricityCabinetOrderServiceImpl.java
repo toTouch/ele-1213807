@@ -97,10 +97,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     
     @Autowired
     UserCarDepositService userCarDepositService;
-    
-    
-    
-    
+
     @Autowired
     UserActiveInfoService userActiveInfoService;
 
@@ -399,7 +396,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .orderSeq(ElectricityCabinetOrder.STATUS_INIT).status(ElectricityCabinetOrder.INIT)
                     .source(orderQuery.getSource()).paymentMethod(electricityMemberCard.getType())
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .storeId(electricityCabinet.getStoreId()).tenantId(tenantId).build();
+                    .storeId(electricityCabinet.getStoreId()).franchiseeId(store.getFranchiseeId()).tenantId(tenantId).build();
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
             //4.开旧电池门
@@ -1456,6 +1453,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .storeId(electricityCabinet.getStoreId())
+                    .franchiseeId(store.getFranchiseeId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
             if (Objects.nonNull(electricityMemberCard)) {
                 electricityCabinetOrder.setPaymentMethod(electricityMemberCard.getType());

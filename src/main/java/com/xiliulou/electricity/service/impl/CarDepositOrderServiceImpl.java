@@ -449,6 +449,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
     
         //零元直接退
@@ -647,6 +648,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
@@ -777,6 +779,7 @@ public class CarDepositOrderServiceImpl implements CarDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(carDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);

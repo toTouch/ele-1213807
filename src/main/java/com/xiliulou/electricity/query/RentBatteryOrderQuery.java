@@ -28,4 +28,6 @@ public class RentBatteryOrderQuery {
     private Integer type;
     private List<Integer> eleIdList;
     private Integer tenantId;
+    private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 }
