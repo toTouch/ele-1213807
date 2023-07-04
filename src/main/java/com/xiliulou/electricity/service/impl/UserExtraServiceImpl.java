@@ -161,6 +161,8 @@ public class UserExtraServiceImpl implements UserExtraService {
             storeId = Objects.nonNull(inviterUserInfo) ? inviterUserInfo.getStoreId() : null;
         }
 
+        this.update(userExtraUpdate);
+
         if (Objects.nonNull(storeId)) {
             UserInfo userInfo = new UserInfo();
             userInfo.setUid(userExtra.getUid());
