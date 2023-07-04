@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.query;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -13,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author: eclair
@@ -93,4 +92,9 @@ public class ElectricityCarModelQuery {
     private Long uid;
     //租户id
     private Integer tenantId;
+
+    /**
+     * 车辆型号主键ID集
+     */
+    private Set<Integer> ids;
 }

@@ -577,10 +577,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and (count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate} or power is null)
+            and (count( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate})
         </if>
         <if test="fullChargeRate != null">
-            and count( power &gt;= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and count( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         limit #{offset}, #{size}
     </select>
@@ -627,10 +627,10 @@
         ecb.electricity_cabinet_id
         having del_flag=0
         <if test="lowChargeRate != null">
-            and (count( power &lt;= fully_charged ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate} or power is null)
+            and (count( status = 0 ) / count( electricity_cabinet_id ) &lt;= #{lowChargeRate} or power is null)
         </if>
         <if test="fullChargeRate != null">
-            and count( power &gt;= fully_charged ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
+            and count( status = 0 ) / count( electricity_cabinet_id ) &gt;= #{fullChargeRate}
         </if>
         ) a
     </select>
@@ -770,6 +770,9 @@
         </if>
         <if test="sn != null and sn != ''">
             and sn like concat('%',#{sn, jdbcType=VARCHAR},'%')
+        </if>
+        <if test="onlineStatus != null">
+            and online_status = #{onlineStatus}
         </if>
         order by create_time desc
         limit #{offset}, #{size}

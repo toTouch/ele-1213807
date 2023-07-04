@@ -870,7 +870,8 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                               @RequestParam("offset") Long offset,
                               @RequestParam(value = "name", required = false) String name,
                               @RequestParam(value = "modelId", required = false) Integer modelId,
-                              @RequestParam(value = "sn", required = false) String sn) {
+                              @RequestParam(value = "sn", required = false) String sn,
+                              @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
         }
@@ -906,6 +907,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                 .name(name)
                 .modelId(modelId)
                 .sn(sn)
+                .onlineStatus(onlineStatus)
                 .eleIdList(eleIdList)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
