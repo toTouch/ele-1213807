@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserTypeFactory;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -273,6 +275,50 @@ public class JsonAdminRentBatteryOrderController {
     @PostMapping(value = "/admin/rentBatteryOrder/endOrder")
     public R endOrder(@RequestParam("orderId") String orderId) {
         return rentBatteryOrderService.endOrder(orderId);
+    }
+
+    /**
+     * 电柜使用记录，（租，换，退）电池订单列表信息查询
+     * @param size
+     * @param offset
+     * @param name
+     * @param createTime
+     * @return
+     */
+    @GetMapping("/admin/rentBatteryOrder/usedRecords")
+    public R usedRecords(@RequestParam("size") Long size,
+                            @RequestParam("offset") Long offset,
+                            @RequestParam(value = "name", required = false) String name,
+                            @RequestParam(value = "createTime", required = false) Long createTime) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .createTime(createTime).build();
+        return R.ok(rentBatteryOrderService.findEleCabinetUsedRecords(eleCabinetUsedRecordQuery));
+    }
+
+    /**
+     * 电柜使用记录，（租，换，退）电池订单列表总数
+     * @param name
+     * @param createTime
+     * @return
+     */
+    @GetMapping("/admin/rentBatteryOrder/usedRecordsTotalCount")
+    public R usedRecordsTotalCount(@RequestParam(value = "name", required = false) String name,
+                         @RequestParam(value = "createTime", required = false) Long createTime) {
+        EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
+                .name(name)
+                .createTime(createTime).build();
+        return R.ok(rentBatteryOrderService.findUsedRecordsTotalCount(eleCabinetUsedRecordQuery));
     }
 
 }
