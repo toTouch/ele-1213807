@@ -28,6 +28,13 @@ import java.util.Set;
 public interface ElectricityCabinetService {
 
     /**
+     * 根据主键ID集获取柜机基本信息
+     * @param ids 主键ID集
+     * @return
+     */
+    List<ElectricityCabinet> listByIds(Set<Integer> ids);
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键

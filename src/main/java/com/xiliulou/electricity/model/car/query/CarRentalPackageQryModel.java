@@ -5,6 +5,7 @@ import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 租车套餐，DB层查询模型
@@ -61,4 +62,9 @@ public class CarRentalPackageQryModel implements Serializable {
      * @see UpDownEnum
      */
     private Integer status;
+
+    /**
+     * 主键ID集
+     */
+    private List<Long> idList;
 }

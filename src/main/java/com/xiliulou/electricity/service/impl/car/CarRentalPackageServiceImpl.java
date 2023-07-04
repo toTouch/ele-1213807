@@ -9,6 +9,7 @@ import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -28,7 +29,24 @@ import java.util.List;
 public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
     @Resource
+    private CarRentalPackageOrderService carRentalPackageOrderService;
+
+    @Resource
     private CarRentalPackageMapper carRentalPackageMapper;
+
+    /**
+     * 根据条件查询<br />
+     * PS：<br />
+     * 1、不区分租户<br />
+     * 2、不区分删除<br />
+     *
+     * @param qryModel
+     * @return
+     */
+    @Override
+    public R<List<CarRentalPackagePO>> listByCondition(CarRentalPackageQryModel qryModel) {
+        return null;
+    }
 
     /**
      * 检测唯一：租户ID+套餐名称
@@ -56,7 +74,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Override
     public R<Boolean> updateStatusById(Long id, Integer status, Long uid) {
-        if (ObjectUtils.allNotNull(id, status, uid)) {
+        if (!ObjectUtils.allNotNull(id, status, uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         if (!BasicEnum.isExist(status, UpDownEnum.class)) {
@@ -76,10 +94,16 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Override
     public R<Boolean> delById(Long id, Long uid) {
-        if (ObjectUtils.allNotNull(id, uid)) {
+        if (!ObjectUtils.allNotNull(id, uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        // TODO 已经产生了套餐订单数据，不允许删除
+        R<Boolean> checkRes = carRentalPackageOrderService.checkByRentalPackageId(id);
+        if (!checkRes.isSuccess()) {
+            return R.fail(checkRes.getErrCode(), checkRes.getErrMsg());
+        }
+        if (checkRes.getData()) {
+            return R.fail("300103", "已有购买订单记录，不允许删除");
+        }
         long delTime = System.currentTimeMillis();
         int num = carRentalPackageMapper.delById(id, uid, delTime);
         return R.ok(num >= 0);
@@ -91,9 +115,10 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @param qryModel 查询模型
      * @return
      */
+    @Slave
     @Override
     public R<List<CarRentalPackagePO>> list(CarRentalPackageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId()) {
+        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return R.ok(carRentalPackageMapper.list(qryModel));
@@ -107,7 +132,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public R<List<CarRentalPackagePO>> page(CarRentalPackageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId()) {
+        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return R.ok(carRentalPackageMapper.page(qryModel));
@@ -121,7 +146,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public R<Integer> count(CarRentalPackageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId()) {
+        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return R.ok(carRentalPackageMapper.count(qryModel));
@@ -136,7 +161,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public R<CarRentalPackagePO> selectById(Long id) {
-        if (null == id) {
+        if (null == id || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return R.ok(carRentalPackageMapper.selectById(id));
@@ -149,7 +174,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Override
     public R<Boolean> updateById(CarRentalPackageOptModel optModel) {
-        if (optModel == null || optModel.getId() <= 0 || optModel.getUpdateUid() <= 0) {
+        if (optModel == null || optModel.getId() == null || optModel.getId() <= 0 || optModel.getUpdateUid() == null || optModel.getUpdateUid() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         Integer tenantId = optModel.getTenantId();

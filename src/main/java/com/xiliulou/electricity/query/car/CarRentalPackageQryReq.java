@@ -12,10 +12,19 @@ import java.io.Serializable;
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageQueryReq implements Serializable {
+public class CarRentalPackageQryReq implements Serializable {
 
     private static final long serialVersionUID = -626924925797065186L;
 
+    /**
+     * 偏移量
+     */
+    private Integer offset = 0;
+
+    /**
+     * 取值数量
+     */
+    private Integer limitNum = 10;
 
     /**
      * 租户ID

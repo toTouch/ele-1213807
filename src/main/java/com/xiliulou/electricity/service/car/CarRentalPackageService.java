@@ -15,6 +15,16 @@ import java.util.List;
 public interface CarRentalPackageService {
 
     /**
+     * 根据条件查询<br />
+     * PS：<br />
+     * 1、不区分租户<br />
+     * 2、不区分删除<br />
+     * @param qryModel
+     * @return
+     */
+    R<List<CarRentalPackagePO>> listByCondition(CarRentalPackageQryModel qryModel);
+
+    /**
      * 检测唯一：租户ID+套餐名称
      * @param tenantId 租户ID
      * @param name 套餐名称

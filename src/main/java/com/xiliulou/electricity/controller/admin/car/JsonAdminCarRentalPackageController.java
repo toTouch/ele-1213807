@@ -7,9 +7,7 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
-import com.xiliulou.electricity.query.ElectricityCarModelQuery;
-import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.query.car.CarRentalPackageQueryReq;
+import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -18,14 +16,17 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author xiaohui.song
  **/
+@Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackage")
 public class JsonAdminCarRentalPackageController extends JsonAdminBasicController {
@@ -84,20 +86,20 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
 
     /**
      * 条件查询列表
-     * @param queryReq 请求参数类
+     * @param qryReq 请求参数类
      * @return
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageVO>> page(@RequestBody CarRentalPackageQueryReq queryReq) {
-        if (null == queryReq) {
-            queryReq = new CarRentalPackageQueryReq();
+    public R<List<CarRentalPackageVO>> page(@RequestBody CarRentalPackageQryReq qryReq) {
+        if (null == qryReq) {
+            qryReq = new CarRentalPackageQryReq();
         }
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        queryReq.setTenantId(tenantId);
+        qryReq.setTenantId(tenantId);
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
-        BeanUtils.copyProperties(queryReq, qryModel);
+        BeanUtils.copyProperties(qryReq, qryModel);
         // 调用服务
         R<List<CarRentalPackagePO>> listRes = carRentalPackageService.page(qryModel);
         if (!listRes.isSuccess()) {
@@ -113,33 +115,18 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
         });
         // 获取辅助业务信息（加盟商、车辆型号）
         // 加盟商信息
-        FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
-        franchiseeQuery.setIds(new ArrayList<>(franchiseeIds));
-        Triple<Boolean, String, Object> franchiseeTriple = franchiseeService.selectListByQuery(franchiseeQuery);
-        List<Franchisee> franchiseeList = (List<Franchisee>) franchiseeTriple.getRight();
-        Map<Long, String> franchiseeMap = null;
-        if (!franchiseeList.isEmpty()) {
-            franchiseeMap = franchiseeList.stream().collect(Collectors.toMap(Franchisee::getId, Franchisee::getName, (k1, k2) -> k1));
-        }
+        Map<Long, String> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIds);
         // 车辆型号信息
-        ElectricityCarModelQuery electricityCarModelQuery = new ElectricityCarModelQuery();
-        electricityCarModelQuery.setIds(carModelIds);
-        List<ElectricityCarModel> carModelList = electricityCarModelService.selectByQuery(electricityCarModelQuery);
-        Map<Integer, String> carModelMap = null;
-        if (!carModelList.isEmpty()) {
-            carModelMap = carModelList.stream().collect(Collectors.toMap(ElectricityCarModel::getId, ElectricityCarModel::getName, (k1, k2) -> k1));
-        }
+        Map<Integer, String> carModelMap = getCarModelByIdsForMap(carModelIds);
         // 模型转换，封装返回
-        Map<Long, String> finalFranchiseeMap = franchiseeMap;
-        Map<Integer, String> finalCarModelMap = carModelMap;
         List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackagePOList.stream().map(carRentalPackage -> {
             CarRentalPackageVO carRentalPackageVO = new CarRentalPackageVO();
             BeanUtils.copyProperties(carRentalPackage, carRentalPackageVO);
-            if (!finalFranchiseeMap.isEmpty()) {
-                carRentalPackageVO.setFranchiseeName(finalFranchiseeMap.getOrDefault(Long.valueOf(carRentalPackage.getFranchiseeId()), ""));
+            if (!franchiseeMap.isEmpty()) {
+                carRentalPackageVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackage.getFranchiseeId()), ""));
             }
-            if (!finalCarModelMap.isEmpty()) {
-                carRentalPackageVO.setCarModelName(finalCarModelMap.getOrDefault(carRentalPackage.getCarModelId(), ""));
+            if (!carModelMap.isEmpty()) {
+                carRentalPackageVO.setCarModelName(carModelMap.getOrDefault(carRentalPackage.getCarModelId(), ""));
             }
             return carRentalPackageVO;
         }).collect(Collectors.toList());
@@ -148,20 +135,20 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
 
     /**
      * 条件查询总数
-     * @param queryReq 请求参数类
+     * @param qryReq 请求参数类
      * @return
      */
     @PostMapping("/count")
-    public R<Integer> count(@RequestBody CarRentalPackageQueryReq queryReq) {
-        if (null == queryReq) {
-            queryReq = new CarRentalPackageQueryReq();
+    public R<Integer> count(@RequestBody CarRentalPackageQryReq qryReq) {
+        if (null == qryReq) {
+            qryReq = new CarRentalPackageQryReq();
         }
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        queryReq.setTenantId(tenantId);
+        qryReq.setTenantId(tenantId);
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
-        BeanUtils.copyProperties(queryReq, qryModel);
+        BeanUtils.copyProperties(qryReq, qryModel);
         // 调用服务
         return carRentalPackageService.count(qryModel);
     }
