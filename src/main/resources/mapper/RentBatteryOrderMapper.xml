@@ -89,5 +89,85 @@
         select id,uid,electricity_battery_sn from t_rent_battery_order where uid=#{uid} and tenant_id=#{tenantId} order by create_time desc limit 1
     </select>
 
+    <resultMap type="com.xiliulou.electricity.entity.EleCabinetUsedRecord" id="EleCabinetUsedRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="returnBatterySn" column="old_electricity_battery_sn" jdbcType="VARCHAR"/>
+        <result property="returnCellNo" column="old_cell_no" jdbcType="VARCHAR" />
+        <result property="leaseBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR" />
+        <result property="leaseCellNo" column="new_cell_no" jdbcType="VARCHAR" />
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="selectEleCabinetUsedRecords" resultType="com.xiliulou.electricity.query.EleCabinetUsedRecordQuery" resultMap="EleCabinetUsedRecordMap">
+        select temp.name,
+               temp.phone,
+               temp.type,
+               temp.order_id,
+               temp.old_electricity_battery_sn,
+               temp.old_cell_no,
+               temp.new_electricity_battery_sn,
+               temp.new_cell_no,
+               temp.create_time
+        from
+            (select name, phone, type, order_id,
+                case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when type = 1 then cell_no else null end as old_cell_no,
+                case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when type = 2 then cell_no else null end as new_cell_no,
+                create_time
+            from t_rent_battery_order
+            union all
+            select tu.name, tu.phone, 'electricity' type, teco.order_id,
+                teco.old_electricity_battery_sn ,
+                teco.old_cell_no ,
+                teco.new_electricity_battery_sn,
+                teco.new_cell_no,
+                teco.create_time
+            from t_electricity_cabinet_order teco
+            left join t_user tu on tu.uid = teco.uid) temp
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and temp.name like concat('%',#{query.name, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="query.create_time != null">
+                and temp.create_time = #{query.createTime}
+            </if>
+        </where>
+        order by temp.create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectUsedRecordsTotalCount" resultType="java.lang.Integer">
+        select count(1)
+        from
+            (select name, phone, type, order_id,
+                case when type = 1 then electricity_battery_sn else null end as old_electricity_battery_sn,
+                case when type = 1 then cell_no else null end as old_cell_no,
+                case when type = 2 then electricity_battery_sn else null end as new_electricity_battery_sn,
+                case when type = 2 then cell_no else null end as new_cell_no,
+                create_time
+            from t_rent_battery_order
+            union all
+            select tu.name, tu.phone, 'electricity' type, teco.order_id,
+                teco.old_electricity_battery_sn,
+                teco.old_cell_no,
+                teco.new_electricity_battery_sn,
+                teco.new_cell_no,
+                teco.create_time
+            from t_electricity_cabinet_order teco
+            left join t_user tu on tu.uid = teco.uid) temp
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and temp.name like concat('%',#{query.name, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="query.create_time != null">
+                and temp.create_time = #{query.createTime}
+            </if>
+        </where>
+    </select>
 
 </mapper>
