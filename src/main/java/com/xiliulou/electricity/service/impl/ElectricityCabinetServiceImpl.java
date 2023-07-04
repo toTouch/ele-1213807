@@ -52,7 +52,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -284,7 +283,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -350,6 +349,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .queryByIdFromCache(electricityCabinet.getModelId());
         if (Objects.isNull(electricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
+        }
+
+        //加盟商
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(electricityCabinetAddAndUpdate.getStoreId());
+            electricityCabinet.setFranchiseeId(Objects.nonNull(store) ? store.getFranchiseeId() : null);
         }
         
         int insert = electricityCabinetMapper.insert(electricityCabinet);
@@ -431,6 +436,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     return R.fail("ELECTRICITY.0002", "换电柜的三元组已存在");
                 }
             }
+        }
+
+        //加盟商
+        if (Objects.nonNull(electricityCabinetAddAndUpdate.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(electricityCabinetAddAndUpdate.getStoreId());
+            electricityCabinet.setFranchiseeId(Objects.nonNull(store) ? store.getFranchiseeId() : null);
         }
         
         //快递柜老型号
@@ -812,7 +823,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
 
             List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.selectEleBoxAttrByEid(e.getId());
-//            List<ElectricityCabinetBox> cabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
             if (CollectionUtils.isEmpty(cabinetBoxList)) {
                 return null;
             }
@@ -869,11 +879,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (Objects.nonNull(battery)) {
                     count++;
                 }
-                
-                //                FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
-                //                if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-                //                    count++;
-                //                }
             }
             
             if (count < 1) {
@@ -888,10 +893,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(battery)) {
                 count++;
             }
-            //            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
-            //            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-            //                count++;
-            //            }
         }
         
         if (count < 1) {
@@ -915,10 +916,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(battery)) {
                 count++;
             }
-            //            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
-            //            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-            //                count++;
-            //            }
         }
         
         if (count < 1) {
@@ -1911,16 +1908,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("queryByDevice  ERROR! not auth,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-        
-        //是否缴纳押金，是否绑定电池
-        //        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //        //未找到用户
-        //        if (Objects.isNull(franchiseeUserInfo)) {
-        //            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-        //            return R.fail("ELECTRICITY.0001", "未找到用户");
-        //
-        //        }
 
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), userInfo.getFranchiseeId())) {
@@ -1999,20 +1986,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     userInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
-        //        Triple<Boolean, String, Object> tripleResult;
-        //        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-        //            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
-        //        } else {
-        //            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
-        //        }
-        //
-        //        if (Objects.isNull(tripleResult)) {
-        //            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
-        //        }
-        //
-        //        if (!tripleResult.getLeft()) {
-        //            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
-        //        }
         
         //查满仓空仓数
         int electricityBatteryTotal = 0;
@@ -2415,7 +2388,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         
         //查电池所属加盟商
-        //        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
         if (Objects.isNull(electricityBattery.getFranchiseeId())) {
             log.error("checkBattery error! battery not bind franchisee,electricityBatteryId={}",
                     electricityBattery.getId());
@@ -2555,18 +2527,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId)
                 .collect(Collectors.toList());
-        //        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteries = franchiseeBindElectricityBatteryService.queryByBatteryIds(batteryIds);
-        //        if (!DataUtil.collectionIsUsable(franchiseeBindElectricityBatteries)) {
-        //            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
-        //        }
-        //
-        //        //把本柜机加盟商的绑定电池信息拿出来
-        //        franchiseeBindElectricityBatteries = franchiseeBindElectricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchiseeId.intValue())).collect(Collectors.toList());
-        //        //获取全部可用电池id
-        //        List<Long> bindingBatteryIds = franchiseeBindElectricityBatteries.stream().map(FranchiseeBindElectricityBattery::getElectricityBatteryId).collect(Collectors.toList());
-        //        //把加盟商绑定的电池过滤出来
-        //        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
-        //        return Triple.of(true, null, usableBatteryCellNos.get(0));
 
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.selectByBatteryIds(batteryIds);
         if (CollectionUtils.isEmpty(electricityBatteries)) {
@@ -2806,7 +2766,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 new LambdaQueryWrapper<ElectricityCabinet>().in(ElectricityCabinet::getStoreId, storeIds)
                         .eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
     }
-    
+
+    @Override
+    public List<ElectricityCabinet> selectByFranchiseeIds(List<Long> franchiseeIds) {
+        return electricityCabinetMapper.selectList(
+                new LambdaQueryWrapper<ElectricityCabinet>().in(ElectricityCabinet::getFranchiseeId, franchiseeIds)
+                        .eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
+    }
+
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
         if ((!isOnline && isCupboardAttrIsOnline(electricityCabinet)) || (isOnline && !isCupboardAttrIsOnline(
                 electricityCabinet))) {
@@ -2890,12 +2857,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         if (Objects.nonNull(electricityBattery.getPower()) && Objects
                                 .nonNull(lowBatteryExchangeModel.getBatteryPowerStandard())
                                 && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
-                            //3、查加盟商是否绑定电池
-                            //                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                            //                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-                            //                                result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
-                            //                                return result;
-                            //                            }
                             ElectricityBattery battery = electricityBatteryService
                                     .selectByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
                             if (Objects.nonNull(battery)) {

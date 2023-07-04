@@ -153,6 +153,9 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
     List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
+
+    List<ElectricityCabinet> selectByFranchiseeIds(List<Long> franchiseeIds);
+
     R acquireIdcardFileSign();
 
     R queryName(Integer tenant,Integer id);
