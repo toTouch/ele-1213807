@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.enums.car;
 
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,7 +12,7 @@ import lombok.Getter;
  **/
 @Getter
 @AllArgsConstructor
-public enum CarRentalPackageTypeEnum {
+public enum CarRentalPackageTypeEnum implements BasicEnum<Integer, String> {
 
     CAR(1, "单车"),
     CAR_BATTERY(1, "车电一体"),

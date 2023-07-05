@@ -6,17 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 交易方式枚举
+ * 押金类型枚举
  *
  * @author xiaohui.song
  **/
 @Getter
 @AllArgsConstructor
-public enum PayTypeEnum implements BasicEnum<Integer, String> {
-
-    ON_LINE(1, "线上"),
-    OFF_LINE(2, "线下"),
-    EXEMPT(3, "免押"),
+public enum DepositTypeEnum implements BasicEnum<Integer, String> {
+    NORMAL(1, "正常缴纳"),
+    CARRY_FORWARD(2, "转押"),
     ;
 
     private final Integer code;
