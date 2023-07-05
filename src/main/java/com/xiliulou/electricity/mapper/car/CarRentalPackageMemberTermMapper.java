@@ -37,13 +37,6 @@ public interface CarRentalPackageMemberTermMapper {
     Integer count(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
-     * 根据订单编码查询
-     * @param orderNo 订单编码
-     * @return
-     */
-    CarRentalPackageMemberTermPO selectByOrderNo(String orderNo);
-
-    /**
      * 根据ID查询
      * @param id 主键ID
      * @return

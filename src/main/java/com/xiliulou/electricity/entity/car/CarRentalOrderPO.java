@@ -5,7 +5,7 @@ import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
 
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.car.CarRentalStateEnum;
-import com.xiliulou.electricity.enums.car.CarRentalTypeEnum;
+import com.xiliulou.electricity.enums.RentalTypeEnum;
 import lombok.Data;
 
 /**
@@ -37,10 +37,10 @@ public class CarRentalOrderPO extends BasicCarPO {
     /**
      * 类型
      * <pre>
-     *     1-租车
-     *     2-还车
+     *     1-租借
+     *     2-归还
      * </pre>
-     * @see CarRentalTypeEnum
+     * @see RentalTypeEnum
      */
     private Integer type;
 

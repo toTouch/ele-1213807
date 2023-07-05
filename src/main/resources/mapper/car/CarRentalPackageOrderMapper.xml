@@ -63,7 +63,7 @@
     <!-- where 查询条件 -->
     <sql id="where_field">
         <if test=" franchiseeId != null "> AND `franchisee_id` = #{franchiseeId} </if>
-        <if test=" orderNo != null and orderNo != '' "> AND `order_no` LIKE CONCAT('%', #{orderNo}, '%') </if>
+        <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>

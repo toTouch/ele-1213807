@@ -31,14 +31,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 租车套餐控制层
+ * 租车套餐表 Controller
  *
  * @author xiaohui.song
  **/
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackage")
-public class JsonAdminCarRentalPackageController extends JsonAdminBasicController {
+public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicController {
 
     @Resource
     private ElectricityCarModelService electricityCarModelService;
@@ -116,9 +116,9 @@ public class JsonAdminCarRentalPackageController extends JsonAdminBasicControlle
         });
         // 获取辅助业务信息（加盟商、车辆型号）
         // 加盟商信息
-        Map<Long, String> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIds);
+        Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
         // 车辆型号信息
-        Map<Integer, String> carModelMap = getCarModelByIdsForMap(carModelIds);
+        Map<Integer, String> carModelMap = getCarModelNameByIdsForMap(carModelIds);
         // 模型转换，封装返回
         List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackagePOList.stream().map(carRentalPackage -> {
             CarRentalPackageVO carRentalPackageVO = new CarRentalPackageVO();

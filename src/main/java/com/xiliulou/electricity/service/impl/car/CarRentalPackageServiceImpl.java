@@ -22,7 +22,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * 租车套餐业务接口实现
+ * 租车套餐表 ServiceImpl
  *
  * @author xiaohui.song
  **/

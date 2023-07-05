@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.model.car.query;
+package com.xiliulou.electricity.query.car;
 
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
@@ -7,13 +7,13 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 租车套餐押金缴纳订单表，DB层查询模型
+ * 租车套餐押金缴纳订单表，查询模型
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageDepositPayQryModel implements Serializable {
+public class CarRentalPackageDepositPayQryReq implements Serializable {
 
-    private static final long serialVersionUID = 1456275094579149620L;
+    private static final long serialVersionUID = -2183553837328493812L;
 
     /**
      * 偏移量

@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * 租车套餐购买订单业务ServiceImpl
+ * 租车套餐订单表 ServiceImpl
  *
  * @author xiaohui.song
  **/

@@ -43,7 +43,13 @@
     </sql>
     <!-- where 查询条件 -->
     <sql id="where_field">
-
+        <if test=" franchiseeId != null "> AND `franchisee_id` = #{franchiseeId} </if>
+        <if test=" storeId != null "> AND `store_id` = #{storeId} </if>
+        <if test=" orderNo != null and order_no != '' "> AND `order_no` = #{orderNo} </if>
+        <if test=" uid != null "> AND `uid` = #{uid} </if>
+        <if test=" payType != null "> AND `pay_type` = #{payType} </if>
+        <if test=" refundState != null "> AND `refund_state` = #{refundState} </if>
+        <if test=" createTimeBegin != null and createTimeEnd != null "> AND `create_time` BETWEEN #{createTimeBegin} AND #{createTimeEnd} </if>
     </sql>
     <!-- 条件新增字段 -->
     <sql id="insert_field">
