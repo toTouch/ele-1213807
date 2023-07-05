@@ -173,7 +173,7 @@ public class FaceidServiceImpl implements FaceidService {
     //    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> verifyEidResult(FaceidResultQuery faceidResultQuery) {
 
-        if (!redisService.setNx(CacheConstant.ELE_CACHE_FACEID_RESULT_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L,
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_FACEID_RESULT_LOCK_KEY + SecurityUtils.getUid(), "1", 3 * 1000L,
                 false)) {
             return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
         }
@@ -332,6 +332,8 @@ public class FaceidServiceImpl implements FaceidService {
             log.error("ELE ERROR! face recognize fail,uid={},query={}", userInfo.getUid(),
                     JsonUtil.toJson(faceidResultQuery), e);
             return Triple.of(false, "100330", "人脸核身失败");
+        }finally {
+            redisService.delete(CacheConstant.ELE_CACHE_FACEID_RESULT_LOCK_KEY + SecurityUtils.getUid());
         }
     }
 
