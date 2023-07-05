@@ -47,6 +47,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by tui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -125,6 +131,12 @@
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -221,6 +233,12 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         <if test="query.userCreateBeginTime !=null">
             and tui.create_time &gt;=#{query.userCreateBeginTime}
         </if>
@@ -291,6 +309,12 @@
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -383,6 +407,12 @@
         <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
             and tui.franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null and query.storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>

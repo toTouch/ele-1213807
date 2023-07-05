@@ -211,9 +211,4 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     
         return returnTripleResult(electricityMemberCardOrderService.endOrder(orderNo, uid));
     }
-    
-    
-    
-
-
 }
