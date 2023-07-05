@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.enums.car;
+package com.xiliulou.electricity.enums;
 
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 
@@ -6,16 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 租车套餐类型枚举
+ * 押金类型枚举
  *
  * @author xiaohui.song
  **/
 @Getter
 @AllArgsConstructor
-public enum CarRentalPackageTypeEnum implements BasicEnum<Integer, String> {
-
-    CAR(1, "单车"),
-    CAR_BATTERY(1, "车电一体"),
+public enum DepositTypeEnum implements BasicEnum<Integer, String> {
+    NORMAL(1, "正常缴纳"),
+    CARRY_FORWARD(2, "转押"),
     ;
 
     private final Integer code;

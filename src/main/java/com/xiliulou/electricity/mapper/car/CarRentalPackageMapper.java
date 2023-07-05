@@ -26,43 +26,43 @@ public interface CarRentalPackageMapper {
     /**
      * 根据ID修改上下架状态
      * @param id 逐渐ID
-     * @param updateUid 操作人ID
+     * @param uid 操作人ID
      * @param status 上下架状态
-     * @param updateTime 修改时间
+     * @param optTime 修改时间
      * @return
      */
-    int updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("updateUid") Long updateUid, @Param("updateTime") Long updateTime);
+    int updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("uid") Long uid, @Param("optTime") Long optTime);
 
     /**
      * 根据ID删除-逻辑删
      * @param id 主键ID
-     * @param updateUid 操作人ID
-     * @param updateTime 修改时间
+     * @param uid 操作人ID
+     * @param optTime 修改时间
      * @return
      */
-    int delById(@Param("id") Long id, @Param("updateUid") Long updateUid, @Param("updateTime") Long updateTime);
+    int delById(@Param("id") Long id, @Param("uid") Long uid, @Param("optTime") Long optTime);
 
     /**
      * 条件查询列表<br />
      * 全表扫描，慎用
-     * @param queryModel 查询条件模型
+     * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackagePO> list(CarRentalPackageQryModel queryModel);
+    List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询分页
-     * @param queryModel 查询条件模型
+     * @param qryModel 查询条件模型
      * @return
      */
-    List<CarRentalPackagePO> page(CarRentalPackageQryModel queryModel);
+    List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询总数
-     * @param queryModel 查询条件模型
+     * @param qryModel 查询条件模型
      * @return
      */
-    Integer count(CarRentalPackageQryModel queryModel);
+    Integer count(CarRentalPackageQryModel qryModel);
 
     /**
      * 根据ID查询

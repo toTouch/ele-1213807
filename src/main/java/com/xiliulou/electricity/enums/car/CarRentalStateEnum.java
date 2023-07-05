@@ -6,16 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 租车套餐类型枚举
+ * 车辆租赁订单状态枚举
  *
  * @author xiaohui.song
  **/
 @Getter
 @AllArgsConstructor
-public enum CarRentalPackageTypeEnum implements BasicEnum<Integer, String> {
+public enum CarRentalStateEnum implements BasicEnum<Integer, String> {
 
-    CAR(1, "单车"),
-    CAR_BATTERY(1, "车电一体"),
+    AUDIT_ING(1, "审核中"),
+    SUCCESS(2, "成功"),
+    AUDIT_REJECT(3, "审核拒绝"),
     ;
 
     private final Integer code;

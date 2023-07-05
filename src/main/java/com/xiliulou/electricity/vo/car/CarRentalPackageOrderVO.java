@@ -8,20 +8,20 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 租车套餐展示层数据模型
+ * 租车套餐购买订单展示层数据模型
  *
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageVO implements Serializable {
+public class CarRentalPackageOrderVO implements Serializable {
 
-    private static final long serialVersionUID = 8317006002657408755L;
-
+    private static final long serialVersionUID = -1774728302026416327L;
 
     /**
-     * 套餐名称
+     * 订单编码
      */
-    private String name;
+    private String orderNo;
+
 
     /**
      * 套餐类型
@@ -31,7 +31,22 @@ public class CarRentalPackageVO implements Serializable {
      * </pre>
      * @see CarRentalPackageTypeEnum
      */
-    private Integer type;
+    private Integer rentalPackageType;
+
+    /**
+     * 套餐限制
+     * <pre>
+     *     1-不限制
+     *     2-次数
+     * </pre>
+     * @see RenalPackageConfineEnum
+     */
+    private Integer confine;
+
+    /**
+     * 限制数量
+     */
+    private Integer confineNum;
 
     /**
      * 租期
@@ -49,14 +64,19 @@ public class CarRentalPackageVO implements Serializable {
     private Integer tenancyUnit;
 
     /**
-     * 租金(元)
+     * 租金单价，单位同租期单位
+     */
+    private BigDecimal rentUnitPrice;
+
+    /**
+     * 租金(原价)
      */
     private BigDecimal rent;
 
     /**
-     * 押金(元)
+     * 租金(支付价格)
      */
-    private BigDecimal deposit;
+    private BigDecimal rentPayment;
 
     /**
      * 车辆型号ID
@@ -95,29 +115,14 @@ public class CarRentalPackageVO implements Serializable {
     private Integer rentRebateTerm;
 
     /**
-     * 免押
-     * <pre>
-     *     1-否
-     *     2-芝麻信用
-     * </pre>
-     * @see DepositExemptionEnum
+     * 租金退还截止时间
      */
-    private Integer depositExemption;
+    private Long rentRebateEndTime;
 
     /**
-     * 押金返还审批
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
+     * 押金缴纳订单编号
      */
-    private Integer depositRebateApprove;
-
-    /**
-     * 租金单价，单位同租期单位
-     */
-    private BigDecimal rentUnitPrice;
+    private String depositPayOrderNo;
 
     /**
      * 滞纳金(天)
@@ -125,54 +130,59 @@ public class CarRentalPackageVO implements Serializable {
     private BigDecimal lateFee;
 
     /**
-     * 套餐限制
+     * 交易方式
      * <pre>
-     *     1-不限制
-     *     2-次数
+     *     1-线上
+     *     2-线下
      * </pre>
-     * @see RenalPackageConfineEnum
+     * @see PayTypeEnum
      */
-    private Integer confine;
+    private Integer payType;
 
     /**
-     * 限制数量
-     */
-    private Integer confineNum;
-
-    /**
-     * 优惠券赠送
+     * 购买方式
      * <pre>
-     *     1-是
-     *     2-否
+     *     1-线上
+     *     2-线下
+     *     3-赠送
      * </pre>
-     * @see YesNoEnum
+     * @see BuyTypeEnum
      */
-    private Integer giveCoupon;
+    private Integer buyType;
 
     /**
-     * 优惠券ID
+     * 柜机ID
+     */
+    private Integer cabinetId;
+
+    /**
+     * 赠送的优惠券ID
      */
     private Long couponId;
 
     /**
-     * 上下架状态
+     * 支付状态
      * <pre>
-     *     1-上架
-     *     2-下架
+     *     1-未支付
+     *     2-支付成功
+     *     3-支付失败
+     *     4-取消支付
      * </pre>
-     * @see UpDownEnum
+     * @see PayStateEnum
      */
-    private Integer status;
+    private Integer payState;
 
     /**
-     * C端展示
+     * 使用状态
      * <pre>
-     *     1-是
-     *     2-否
+     *     1-未使用
+     *     2-使用中
+     *     3-已失效
+     *     4-已退租
      * </pre>
-     * @see YesNoEnum
+     * @see UseStateEnum
      */
-    private Integer showFlag;
+    private Integer useState;
 
     /**
      * 备注
@@ -180,7 +190,7 @@ public class CarRentalPackageVO implements Serializable {
     private String remark;
 
     /**
-     * 创建时间
+     * 创建时间，时间戳
      */
     private Long createTime;
 
@@ -192,13 +202,23 @@ public class CarRentalPackageVO implements Serializable {
     private String franchiseeName;
 
     /**
-     * 门店名称
+     * 用户真实姓名
      */
-    private String storeName;
+    private String userRelName;
 
     /**
-     * 车辆型号名称
+     * 用户手机号
      */
-    private String carModelName;
+    private String userPhone;
+
+    /**
+     * 租车套餐名称
+     */
+    private String carRentalPackageName;
+
+    /**
+     * 柜机名称
+     */
+    private String cabinetName;
 
 }

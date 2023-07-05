@@ -9,6 +9,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.iot.model.v20180120.GetDeviceStatusResponse;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.util.Lists;
@@ -236,6 +237,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     CabinetMoveHistoryService cabinetMoveHistoryService;
 
+    /**
+     * 根据主键ID集获取柜机基本信息
+     * @param ids 主键ID集
+     * @return
+     */
+    @Slave
+    @Override
+    public List<ElectricityCabinet> listByIds(Set<Integer> ids) {
+        LambdaQueryWrapper<ElectricityCabinet> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(ElectricityCabinet::getId, new ArrayList<>(ids));
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectList(queryWrapper);
+        return electricityCabinets;
+    }
 
     /**
      * 通过ID查询单条数据从缓存
