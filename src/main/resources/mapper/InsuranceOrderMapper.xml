@@ -49,6 +49,18 @@
                 and tio.franchisee_id in (select id from t_franchisee where name like
                 concat('%',#{query.franchiseeName},'%'))
             </if>
+            <if test="query.franchiseeIds != null">
+                and tio.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and tio.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by tio.create_time desc
         limit #{query.offset},#{query.size}
@@ -87,6 +99,18 @@
             <if test="query.franchiseeName != null and '' != query.franchiseeName">
                 and franchisee_id in (select id from t_franchisee where name like
                 concat('%',#{query.franchiseeName},'%'))
+            </if>
+            <if test="query.franchiseeIds != null">
+                and tio.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and tio.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

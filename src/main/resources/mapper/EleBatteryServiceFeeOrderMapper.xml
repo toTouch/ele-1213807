@@ -28,6 +28,18 @@
         <if test="startTime != null">
             and te.create_time BETWEEN #{startTime} and #{endTime}
         </if>
+        <if test="query.franchiseeIds != null">
+            and te.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.storeIds != null">
+            and te.store_id in
+            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by te.create_time desc
         limit #{offset},#{size}
     </select>
@@ -112,6 +124,12 @@
             <if test="query.franchiseeIds != null">
                 and te.franchisee_id in
                 <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.storeIds != null">
+                and te.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>

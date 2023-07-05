@@ -1193,6 +1193,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .tenantId(tenantId)
                 .source(source)
                 .franchiseeId(franchisee.getId())
+                .storeId(userInfo.getStoreId())
                 .modelType(franchisee.getModelType())
                 .batteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType())
                 .sn(nowBattery)

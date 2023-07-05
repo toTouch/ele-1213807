@@ -64,13 +64,10 @@ public class JsonAdminBatteryServiceFeeController {
             offset = 0L;
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -130,22 +127,24 @@ public class JsonAdminBatteryServiceFeeController {
             offset = 0L;
         }
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -160,6 +159,7 @@ public class JsonAdminBatteryServiceFeeController {
                 .status(status)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .source(source)
                 .phone(phone).build();
 
@@ -179,24 +179,26 @@ public class JsonAdminBatteryServiceFeeController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "source", required = false) Integer source) {
-       
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
-            return R.ok(Collections.EMPTY_LIST);
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
-                return R.ok();
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
             }
         }
 
@@ -209,6 +211,7 @@ public class JsonAdminBatteryServiceFeeController {
                 .sn(sn)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .source(source)
                 .phone(phone).build();
 

@@ -83,6 +83,9 @@ public class InsuranceOrder {
      */
     private Long franchiseeId;
 
+
+    private Long storeId;
+
     /**
      * 城市Id
      */

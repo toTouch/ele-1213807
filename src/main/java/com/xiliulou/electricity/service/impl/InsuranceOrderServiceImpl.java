@@ -378,6 +378,7 @@ public class InsuranceOrderServiceImpl extends ServiceImpl<InsuranceOrderMapper,
                 .phone(userInfo.getPhone())
                 .status(InsuranceOrder.STATUS_INIT)
                 .tenantId(userInfo.getTenantId())
+                .storeId(userInfo.getStoreId())
                 .uid(userInfo.getUid())
                 .userName(userInfo.getName())
                 .validDays(franchiseeInsurance.getValidDays())

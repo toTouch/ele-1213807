@@ -50,6 +50,11 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     }
 
     @Override
+    public Integer insert(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder) {
+        return eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
+    }
+
+    @Override
     public void update(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder) {
         eleBatteryServiceFeeOrderMapper.updateById(eleBatteryServiceFeeOrder);
     }
