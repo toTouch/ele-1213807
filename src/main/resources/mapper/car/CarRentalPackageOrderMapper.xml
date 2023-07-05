@@ -40,6 +40,8 @@
         <result property="payState" column="pay_state" jdbcType="INTEGER" />
         <result property="useState" column="use_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="thirdPayNo" column="third_pay_no" jdbcType="VARCHAR" />
+        <result property="thirdPayChannel" column="third_pay_channel" jdbcType="INTEGER" />
 
     </resultMap>
 
@@ -53,7 +55,7 @@
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `confine`, `deposit`, `confine_num`, `tenancy`, `tenancy_unit`, `rent_unit_price`, `rent`, `rent_payment`, `car_model_id`,
         `battery_model_ids`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `rent_rebate_end_time`, `deposit_pay_order_no`, `late_fee`, `pay_type`, `buy_type`, `cabinet_id`, `coupon_id`,
-        `pay_state`, `use_state`, `remark`
+        `pay_state`, `use_state`, `remark`, `third_pay_no`, `third_pay_channel`
     </sql>
     <!-- 全部字段 -->
     <sql id="all_field">
@@ -106,6 +108,8 @@
             <if test=" payState != null "> `pay_state`, </if>
             <if test=" useState != null "> `use_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" thirdPayNo != null and thirdPayNo != '' "> `third_pay_no`, </if>
+            <if test=" thirdPayChannel != null "> `third_pay_channel`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -144,6 +148,8 @@
             <if test=" payState != null "> #{payState}, </if>
             <if test=" useState != null "> #{useState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" thirdPayNo != null and thirdPayNo != '' "> #{thirdPayNo}, </if>
+            <if test=" thirdPayChannel != null "> #{thirdPayChannel}, </if>
         </trim>
     </sql>
 

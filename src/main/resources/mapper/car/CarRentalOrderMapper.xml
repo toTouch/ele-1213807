@@ -44,7 +44,12 @@
     </sql>
     <!-- where 查询条件 -->
     <sql id="where_field">
-
+        <if test=" franchiseeId != null "> AND `uid` = #{franchisee_id} </if>
+        <if test=" storeId != null "> AND `uid` = #{store_id} </if>
+        <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
+        <if test=" uid != null "> AND `uid` = #{uid} </if>
+        <if test=" type != null "> AND `type` = #{type} </if>
+        <if test=" carSn != null "> AND `car_sn` LIKE CONCAT('%', #{carSn}, '%') </if>
     </sql>
     <!-- 条件新增字段 -->
     <sql id="insert_field">

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
 
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.ThirdPayChannelEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -41,9 +42,18 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
     private String depositPayOrderNo;
 
     /**
-     * 三方退款单号
+     * 三方支付单号
      */
-    private String thirdRefundNo;
+    private String thirdPayNo;
+
+    /**
+     * 三方支付渠道
+     * <pre>
+     *     1-微信
+     * </pre>
+     * @see ThirdPayChannelEnum
+     */
+    private Integer thirdPayChannel;
 
     /**
      * 申请金额
