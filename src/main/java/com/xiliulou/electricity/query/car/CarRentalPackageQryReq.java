@@ -7,7 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 租车套餐查询类
+ * 租车套餐表，查询模型
  *
  * @author xiaohui.song
  **/

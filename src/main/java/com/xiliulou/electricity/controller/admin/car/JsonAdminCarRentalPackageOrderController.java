@@ -24,13 +24,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * 租车套餐购买订单控制层
+ * 租车套餐订单表 Controller
  * @author xiaohui.song
  **/
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackageOrder")
-public class JsonAdminCarRentalPackageOrderController extends JsonAdminBasicController {
+public class JsonAdminCarRentalPackageOrderController extends JsonAdminCarBasicController {
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -71,9 +71,9 @@ public class JsonAdminCarRentalPackageOrderController extends JsonAdminBasicCont
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
         // 套餐信息
-        Map<Long, String> carRentalPackageMap = getCarRentalPackageByIdsForMap(rentalPackageIds);
+        Map<Long, String> carRentalPackageMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
         // 加盟商信息
-        Map<Long, String> franchiseeMap = getFranchiseeByIdsForMap(franchiseeIds);
+        Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
         // 柜机信息
         Map<Integer, ElectricityCabinet> cabinetMap = getCabinetByIdsForMap(cabinetIds);
         // 模型转换，封装返回

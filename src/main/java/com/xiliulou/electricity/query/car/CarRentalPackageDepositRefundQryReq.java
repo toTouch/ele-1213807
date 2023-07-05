@@ -1,19 +1,19 @@
-package com.xiliulou.electricity.model.car.query;
+package com.xiliulou.electricity.query.car;
 
-import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.RefundStateEnum;
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
- * 租车套餐押金缴纳订单表，DB层查询模型
+ * 租车套餐押金退款表，查询模型
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalPackageDepositPayQryModel implements Serializable {
+public class CarRentalPackageDepositRefundQryReq implements Serializable {
 
-    private static final long serialVersionUID = 1456275094579149620L;
+    private static final long serialVersionUID = 8517519076859233590L;
 
     /**
      * 偏移量
@@ -50,26 +50,37 @@ public class CarRentalPackageDepositPayQryModel implements Serializable {
      */
     private Long uid;
 
-
     /**
      * 交易方式
      * <pre>
      *     1-线上
      *     2-线下
-     *     3-免押
      * </pre>
      * @see PayTypeEnum
      */
     private Integer payType;
 
     /**
-     * 支付状态
+     * 退款订单状态
      * <pre>
-     *     1-未支付
-     *     2-支付成功
-     *     3-支付失败
+     *     1-待审核
+     *     2-审核通过
+     *     3-审核拒绝
+     *     4-退款中
+     *     5-退款成功
+     *     6-退款失败
      * </pre>
-     * @see PayStateEnum
+     * @see RefundStateEnum
      */
-    private Integer payState;
+    private Integer refundState;
+
+    /**
+     * 创建时间开始
+     */
+    private Long createTimeBegin;
+
+    /**
+     * 创建时间截止
+     */
+    private Long createTimeEnd;
 }

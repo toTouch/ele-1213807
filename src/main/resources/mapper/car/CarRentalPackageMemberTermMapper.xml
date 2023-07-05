@@ -116,14 +116,6 @@
         </where>
     </select>
 
-    <!-- 根据订单编码查询 -->
-    <select id="selectByOrderNo" resultMap="entityMap">
-        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
-        <where>
-            `order_no` = #{orderNo}
-        </where>
-    </select>
-
     <!-- 根据ID查询 -->
     <select id="selectById" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />

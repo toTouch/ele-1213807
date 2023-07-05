@@ -8,7 +8,7 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import java.util.List;
 
 /**
- * 租车套餐业务接口定义
+ * 租车套餐表 Service
  *
  * @author xiaohui.song
  **/

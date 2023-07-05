@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.enums.car;
+package com.xiliulou.electricity.enums;
 
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 
@@ -12,10 +12,10 @@ import lombok.Getter;
  **/
 @Getter
 @AllArgsConstructor
-public enum CarRentalTypeEnum implements BasicEnum<Integer, String> {
+public enum RentalTypeEnum implements BasicEnum<Integer, String> {
 
-    RENTAL(1, "租车"),
-    RETURN(2, "还车"),
+    RENTAL(1, "租借"),
+    RETURN(2, "归还"),
     ;
 
     private final Integer code;

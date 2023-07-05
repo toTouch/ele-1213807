@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -27,7 +28,10 @@ import java.util.stream.Collectors;
  * @author xiaohui.song
  **/
 @Slf4j
-public class JsonAdminBasicController {
+public class JsonAdminCarBasicController {
+
+    @Resource
+    private StoreService storeService;
 
     @Resource
     private ElectricityCabinetService electricityCabinetService;
@@ -48,7 +52,9 @@ public class JsonAdminBasicController {
     private UserDataScopeService userDataScopeService;
 
     /**
-     * 根据柜机ID集获取
+     * 根据柜机ID集获取柜机信息<br />
+     * K：柜机ID<br />
+     * V：柜机信息
      * @param cabinetIds 柜机ID集
      * @return
      */
@@ -66,16 +72,18 @@ public class JsonAdminBasicController {
     }
 
     /**
-     * 根据租车套餐ID集获取套餐名称
+     * 根据租车套餐ID集获取套餐名称<br />
+     * K：租车套餐ID<br />
+     * V：租车套餐名称
      * @param carRentalPackageIds 租车套餐ID集
      * @return
      */
-    protected Map<Long, String> getCarRentalPackageByIdsForMap(Set<Long> carRentalPackageIds) {
+    protected Map<Long, String> getCarRentalPackageNameByIdsForMap(Set<Long> carRentalPackageIds) {
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         qryModel.setIdList(new ArrayList<>(carRentalPackageIds));
         R<List<CarRentalPackagePO>> carPackageRes = carRentalPackageService.listByCondition(qryModel);
         if (!carPackageRes.isSuccess()) {
-            log.error("JsonAdminBasicController.getCarRentalPackageByIdsForMap error. response is {}", JSON.toJSONString(carPackageRes));
+            log.error("JsonAdminCarBasicController.getCarRentalPackageByIdsForMap error. response is {}", JSON.toJSONString(carPackageRes));
             return Collections.emptyMap();
         }
         List<CarRentalPackagePO> resData = carPackageRes.getData();
@@ -110,13 +118,34 @@ public class JsonAdminBasicController {
     }
 
     /**
-     * 根据加盟商ID集获取加盟商信息<br />
+     * 根据门店ID集获取门店名称<br />
+     * K：门店ID<br />
+     * V：门店名称
+     * @param storeIds 门店ID集
+     * @return
+     */
+    protected Map<Long, String> getStoreNameByIdsForMap(Set<Long> storeIds) {
+        if (CollectionUtils.isEmpty(storeIds)) {
+            return Collections.emptyMap();
+        }
+        StoreQuery storeQuery = new StoreQuery();
+        Triple<Boolean, String, Object> storeTriple = storeService.selectListByQuery(storeQuery);
+        List<Store> stores = (List<Store>) storeTriple.getRight();
+        if (CollectionUtils.isEmpty(stores)) {
+            return Collections.emptyMap();
+        }
+        Map<Long, String> storeNameMap = stores.stream().collect(Collectors.toMap(Store::getId, Store::getName, (k1, k2) -> k1));
+        return storeNameMap;
+    }
+
+    /**
+     * 根据加盟商ID集获取加盟商名称<br />
      * K：加盟商ID<br />
      * V：加盟商名称
      * @param franchiseeIds 加盟商ID集
      * @return
      */
-    protected Map<Long, String> getFranchiseeByIdsForMap(Set<Long> franchiseeIds) {
+    protected Map<Long, String> getFranchiseeNameByIdsForMap(Set<Long> franchiseeIds) {
         if (CollectionUtils.isEmpty(franchiseeIds)) {
             return Collections.emptyMap();
         }
@@ -133,13 +162,13 @@ public class JsonAdminBasicController {
     }
 
     /**
-     * 根据车辆型号ID集获取车辆型号信息<br />
+     * 根据车辆型号ID集获取车辆型号名称<br />
      * K：车辆型号ID
      * V：车辆型号名称
      * @param carModelIds 车辆型号ID集
      * @return
      */
-    protected Map<Integer, String> getCarModelByIdsForMap(Set<Integer> carModelIds) {
+    protected Map<Integer, String> getCarModelNameByIdsForMap(Set<Integer> carModelIds) {
         if (CollectionUtils.isEmpty(carModelIds)) {
             return Collections.emptyMap();
         }

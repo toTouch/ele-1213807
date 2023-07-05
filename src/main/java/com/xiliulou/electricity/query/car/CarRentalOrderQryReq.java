@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.model.car.query;
+package com.xiliulou.electricity.query.car;
 
 import com.xiliulou.electricity.enums.RentalTypeEnum;
 import lombok.Data;
@@ -6,13 +6,13 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 车辆租赁订单表，DB层查询模型
+ * 车辆租赁订单表，查询模型
  * @author xiaohui.song
  **/
 @Data
-public class CarRentalOrderQryModel implements Serializable {
+public class CarRentalOrderQryReq implements Serializable {
 
-    private static final long serialVersionUID = -8960817730474079740L;
+    private static final long serialVersionUID = -6034098988106299099L;
 
     /**
      * 偏移量
