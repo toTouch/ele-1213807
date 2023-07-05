@@ -199,8 +199,6 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到交易订单!");
         }
 
-        ThreadUtil.safeSleep(5000);
-
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO={}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
