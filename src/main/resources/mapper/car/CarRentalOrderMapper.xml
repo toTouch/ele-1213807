@@ -29,19 +29,23 @@
 
     <!-- 表名 -->
     <sql id="table_name">`t_car_rental_order`</sql>
+
     <!-- 基础字段 -->
     <sql id="basic_field">
         `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
     </sql>
+
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `battery_model_id`, `battery_sn`, `pay_type`, `rental_state`, `remark`
     </sql>
+
     <!-- 全部字段 -->
     <sql id="all_field">
         <include refid="basic_field" />
         <include refid="private_field" />
     </sql>
+
     <!-- where 查询条件 -->
     <sql id="where_field">
         <if test=" franchiseeId != null "> AND `uid` = #{franchisee_id} </if>
@@ -51,6 +55,7 @@
         <if test=" type != null "> AND `type` = #{type} </if>
         <if test=" carSn != null "> AND `car_sn` LIKE CONCAT('%', #{carSn}, '%') </if>
     </sql>
+
     <!-- 条件新增字段 -->
     <sql id="insert_field">
         <trim prefix="(" suffix=")" suffixOverrides=",">

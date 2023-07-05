@@ -62,7 +62,9 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == tenantId || null == name) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         int num = carRentalPackageMapper.uqByTenantIdAndName(tenantId, name);
+
         return R.ok(num >= 0);
     }
 
@@ -82,8 +84,10 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (!BasicEnum.isExist(status, UpDownEnum.class)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         long updateTime = System.currentTimeMillis();
         int num = carRentalPackageMapper.updateStatusById(id, status, uid, updateTime);
+
         return R.ok(num >= 0);
     }
 
@@ -99,6 +103,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (!ObjectUtils.allNotNull(id, uid)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         R<Boolean> checkRes = carRentalPackageOrderService.checkByRentalPackageId(id);
         if (!checkRes.isSuccess()) {
             return R.fail(checkRes.getErrCode(), checkRes.getErrMsg());
@@ -106,8 +111,10 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (checkRes.getData()) {
             return R.fail("300103", "已有购买订单记录，不允许删除");
         }
+
         long delTime = System.currentTimeMillis();
         int num = carRentalPackageMapper.delById(id, uid, delTime);
+
         return R.ok(num >= 0);
     }
 
@@ -123,6 +130,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMapper.list(qryModel));
     }
 
@@ -137,6 +145,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMapper.page(qryModel));
     }
 
@@ -151,6 +160,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMapper.count(qryModel));
     }
 
@@ -166,6 +176,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == id || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMapper.selectById(id));
     }
 
@@ -179,6 +190,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (optModel == null || optModel.getId() == null || optModel.getId() <= 0 || optModel.getUpdateUid() == null || optModel.getUpdateUid() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         // 检测原始套餐状态
         CarRentalPackagePO oriEntity = carRentalPackageMapper.selectById(optModel.getId());
         if (oriEntity == null || DelFlagEnum.DEL.getCode().equals(oriEntity.getDelFlag())) {
@@ -187,18 +199,23 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (UpDownEnum.UP.getCode().equals(oriEntity.getStatus())) {
             return R.fail("300102", "上架状态的套餐不允许修改");
         }
+
         Integer tenantId = optModel.getTenantId();
         String name = optModel.getName();
         // 检测唯一
         if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
             return R.fail("300100", "套餐名称已存在");
         }
+
         CarRentalPackagePO entity = new CarRentalPackagePO();
         BeanUtils.copyProperties(optModel, entity);
+
         // 赋值修改时间
         long now = System.currentTimeMillis();
         entity.setUpdateTime(now);
+
         int num = carRentalPackageMapper.updateById(entity);
+
         return R.ok(num >= 0);
     }
 
@@ -213,21 +230,27 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     public R<Long> insert(CarRentalPackageOptModel optModel) {
         Integer tenantId = optModel.getTenantId();
         String name = optModel.getName();
+
         // 检测唯一
         if (carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
             return R.fail("300100", "套餐名称已存在");
         }
+
         CarRentalPackagePO entity = new CarRentalPackagePO();
         BeanUtils.copyProperties(optModel, entity);
+
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+
         // 保存入库
         carRentalPackageMapper.insert(entity);
+
         // 后续处理逻辑
         afterInsert(entity);
+
         return R.ok(entity.getId());
     }
 

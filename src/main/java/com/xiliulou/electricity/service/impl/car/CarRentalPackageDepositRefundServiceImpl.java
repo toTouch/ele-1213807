@@ -39,6 +39,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageDepositRefundMapper.list(qryModel));
     }
 
@@ -54,6 +55,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageDepositRefundMapper.page(qryModel));
     }
 
@@ -69,6 +71,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageDepositRefundMapper.count(qryModel));
     }
 
@@ -84,6 +87,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         if (StringUtils.isBlank(orderNo)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageDepositRefundMapper.selectByOrderNo(orderNo));
     }
 
@@ -98,6 +102,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         if (null == id || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageDepositRefundMapper.selectById(id));
     }
 
@@ -111,13 +116,16 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
     public R<Long> insert(CarRentalPackageDepositRefundOptModel optModel) {
         CarRentalPackageDepositRefundPO entity = new CarRentalPackageDepositRefundPO();
         BeanUtils.copyProperties(optModel, entity);
+
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+
         // 保存入库
         carRentalPackageDepositRefundMapper.insert(entity);
+
         return R.ok(entity.getId());
     }
 }

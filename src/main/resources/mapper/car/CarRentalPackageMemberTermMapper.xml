@@ -26,23 +26,28 @@
 
     <!-- 表名 -->
     <sql id="table_name">`t_car_rental_package_member_term`</sql>
+
     <!-- 基础字段 -->
     <sql id="basic_field">
         `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
     </sql>
+
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `residue`, `status`, `remark`
     </sql>
+
     <!-- 全部字段 -->
     <sql id="all_field">
         <include refid="basic_field" />
         <include refid="private_field" />
     </sql>
+
     <!-- where 查询条件 -->
     <sql id="where_field">
 
     </sql>
+
     <!-- 条件新增字段 -->
     <sql id="insert_field">
         <trim prefix="(" suffix=")" suffixOverrides=",">

@@ -68,33 +68,43 @@ public class JsonAdminCarRentalPackageDepositRefundController extends JsonAdminC
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
+
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
+
         // 转换请求体
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+
         // 调用服务
         R<List<CarRentalPackageDepositRefundPO>> listRes = carRentalPackageDepositRefundService.page(qryModel);
         if (!listRes.isSuccess()) {
             return R.fail(listRes.getErrCode(), listRes.getErrMsg());
         }
-        // 获取辅助业务信息（用户信息）
         List<CarRentalPackageDepositRefundPO> depositRefundPOList = listRes.getData();
+
+        // 获取辅助业务信息（用户信息）
         Set<Long> uids = depositRefundPOList.stream().map(CarRentalPackageDepositRefundPO::getUid).collect(Collectors.toSet());
+
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
+
         // 模型转换，封装返回
         List<CarRentalPackageDepositPayVO> depositPayVOList = depositRefundPOList.stream().map(depositRefundPO -> {
+
             CarRentalPackageDepositPayVO depositPayVO = new CarRentalPackageDepositPayVO();
             BeanUtils.copyProperties(depositRefundPO, depositPayVO);
+
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(depositRefundPO.getUid(), new UserInfo());
                 depositPayVO.setUserRelName(userInfo.getName());
                 depositPayVO.setUserPhone(userInfo.getPhone());
             }
+
             return depositPayVO;
         }).collect(Collectors.toList());
+
         return R.ok(depositPayVOList);
     }
 
@@ -108,12 +118,15 @@ public class JsonAdminCarRentalPackageDepositRefundController extends JsonAdminC
         if (null == qryReq) {
             qryReq = new CarRentalPackageDepositRefundQryReq();
         }
+
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
+
         // 转换请求体
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+
         // 调用服务
         return carRentalPackageDepositRefundService.count(qryModel);
     }

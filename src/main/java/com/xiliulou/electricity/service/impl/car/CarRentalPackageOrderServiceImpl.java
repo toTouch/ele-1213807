@@ -42,7 +42,9 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (rentalPackageId == null || rentalPackageId <=0 ) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         Integer num = carRentalPackageOrderMapper.countByRentalPackageId(rentalPackageId);
+
         return R.ok(num > 0);
     }
 
@@ -59,6 +61,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageOrderMapper.list(qryModel));
     }
 
@@ -74,6 +77,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageOrderMapper.page(qryModel));
     }
 
@@ -89,6 +93,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageOrderMapper.count(qryModel));
     }
 
@@ -104,6 +109,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (StringUtils.isBlank(orderNo)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageOrderMapper.selectByOrderNo(orderNo));
     }
 
@@ -119,6 +125,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (id == null || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageOrderMapper.selectById(id));
     }
 
@@ -139,8 +146,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (!BasicEnum.isExist(payState, PayStateEnum.class)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updatePayStateByOrderNo(orderNo, payState, remark, uid, now);
+
         return R.ok(num >= 0);
     }
 
@@ -161,8 +170,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (!BasicEnum.isExist(payState, PayStateEnum.class)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updatePayStateById(id, payState, remark, uid, now);
+
         return R.ok(num >= 0);
     }
 
@@ -182,8 +193,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (!BasicEnum.isExist(useState, PayStateEnum.class)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updateUseStateByOrderNo(orderNo, useState, uid, now);
+
         return R.ok(num >= 0);
     }
 
@@ -203,8 +216,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         if (!BasicEnum.isExist(useState, UseStateEnum.class)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updateUseStateById(id, useState, uid, now);
+
         return R.ok(num >= 0);
     }
 
@@ -218,13 +233,16 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     public R<Long> insert(CarRentalPackageOrderOptModel optModel) {
         CarRentalPackageOrderPO entity = new CarRentalPackageOrderPO();
         BeanUtils.copyProperties(optModel, entity);
+
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+
         // 保存入库
         carRentalPackageOrderMapper.insert(entity);
+
         return R.ok(entity.getId());
     }
 }

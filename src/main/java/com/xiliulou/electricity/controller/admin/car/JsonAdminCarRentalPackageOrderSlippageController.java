@@ -77,16 +77,20 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends JsonAdminC
 
         // 模型转换，封装返回
         List<CarRentalPackageOrderSlippageVO> slippageVOList = slippagePOList.stream().map(slippagePO -> {
+
             CarRentalPackageOrderSlippageVO slippageVO = new CarRentalPackageOrderSlippageVO();
             BeanUtils.copyProperties(slippagePO, slippageVO);
+
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(slippagePO.getUid(), new UserInfo());
                 slippageVO.setUserRelName(userInfo.getName());
                 slippageVO.setUserPhone(userInfo.getPhone());
             }
+
             if (!franchiseeNameMap.isEmpty()) {
                 slippageVO.setFranchiseeName(franchiseeNameMap.getOrDefault(Long.valueOf(slippagePO.getStoreId()), ""));
             }
+
             return slippageVO;
         }).collect(Collectors.toList());
 

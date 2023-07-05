@@ -101,16 +101,20 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends JsonAdminCar
 
         // 模型转换，封装返回
         List<CarRentalPackageOrderFreezeVO> freezeVOList = freezePOList.stream().map(freezePO -> {
+
             CarRentalPackageOrderFreezeVO freezeVO = new CarRentalPackageOrderFreezeVO();
             BeanUtils.copyProperties(freezePO, freezeVO);
+
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(freezePO.getUid(), new UserInfo());
                 freezeVO.setUserRelName(userInfo.getName());
                 freezeVO.setUserPhone(userInfo.getPhone());
             }
+
             if (!packageNameMap.isEmpty()) {
                 freezeVO.setCarRentalPackageName(packageNameMap.getOrDefault(Long.valueOf(freezePO.getStoreId()), ""));
             }
+
             return freezeVO;
         }).collect(Collectors.toList());
 
