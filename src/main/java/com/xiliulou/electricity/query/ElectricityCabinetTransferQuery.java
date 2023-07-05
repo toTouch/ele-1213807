@@ -19,6 +19,9 @@ public class ElectricityCabinetTransferQuery {
     @NotBlank(message = "deviceName不能为空!")
     private String deviceName;
 
+    @NotBlank(message = "name不能为空!")
+    private String name;
+
     @NotNull(message = "门店id不能为空!")
     private Long storeId;
 

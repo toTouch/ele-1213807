@@ -91,7 +91,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private static final String BATTERY_FULL_CONDITION = "batteryFullCondition";
 
-//    @Value("${testFactory.tenantId}")
+    @Value("${testFactory.tenantId}")
     private Integer testFactoryTenantId;
 
     @Resource
@@ -4315,7 +4315,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //当前租户下新增柜机
         ElectricityCabinet electricityCabinetInsert = new ElectricityCabinet();
-        electricityCabinetInsert.setName(query.getDeviceName());
+        electricityCabinetInsert.setName(query.getName());
         electricityCabinetInsert.setSn(query.getDeviceName());
         electricityCabinetInsert.setModelId(modelId);
         electricityCabinetInsert.setProductKey(query.getProductKey());
@@ -4334,6 +4334,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInsert.setUpdateTime(System.currentTimeMillis());
         electricityCabinetInsert.setTenantId(TenantContextHolder.getTenantId());
         electricityCabinetInsert.setStoreId(query.getStoreId());
+        electricityCabinetInsert.setVersion(testFactoryCabinet.getVersion());
         electricityCabinetInsert.setExchangeType(testFactoryCabinet.getExchangeType());
 
         //物理删除工厂测试柜机
