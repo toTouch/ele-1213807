@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageOrderFreezeMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO" id="entityMap">
+        <!--基础映射 -->
+        <result property="id" column="id" jdbcType="BIGINT" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
+        <result property="storeId" column="store_id" jdbcType="INTEGER" />
+        <result property="createUid" column="create_uid" jdbcType="BIGINT" />
+        <result property="updateUid" column="update_uid" jdbcType="BIGINT" />
+        <result property="createTime" column="create_time" jdbcType="BIGINT" />
+        <result property="updateTime" column="update_time" jdbcType="BIGINT" />
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER" />
+        <!-- 私有映射 -->
+        <result property="uid" column="uid" jdbcType="BIGINT" />
+        <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
+        <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
+        <result property="residue" column="residue" jdbcType="VARCHAR" />
+        <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
+        <result property="applyTerm" column="apply_term" jdbcType="INTEGER" />
+        <result property="realTerm" column="real_term" jdbcType="INTEGER" />
+        <result property="applyTime" column="apply_time" jdbcType="BIGINT" />
+        <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
+        <result property="enableTime" column="enable_time" jdbcType="BIGINT" />
+        <result property="status" column="status" jdbcType="INTEGER" />
+        <result property="remark" column="remark" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="table_name">`t_car_rental_package_order_freeze`</sql>
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
+    </sql>
+    <!-- 私有字段 -->
+    <sql id="private_field">
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
+        `audit_time`, `enable_time`, `status`, `remark`
+    </sql>
+    <!-- 全部字段 -->
+    <sql id="all_field">
+        <include refid="basic_field" />
+        <include refid="private_field" />
+    </sql>
+    <!-- where 查询条件 -->
+    <sql id="where_field">
+
+    </sql>
+    <!-- 条件新增字段 -->
+    <sql id="insert_field">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> `tenant_id`, </if>
+            <if test=" franchiseeId != null "> `franchisee_id`, </if>
+            <if test=" storeId != null "> `store_id`, </if>
+            <if test=" createUid != null "> `create_uid`, </if>
+            <if test=" updateUid != null "> `update_uid`, </if>
+            <if test=" createTime != null "> `create_time`, </if>
+            <if test=" updateTime != null "> `update_time`, </if>
+            <if test=" delFlag != null "> `del_flag`, </if>
+            <if test=" uid != null "> `uid`, </if>
+            <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
+            <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
+            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
+            <if test=" rentalPackageType != null "> `rental_package_type`, </if>
+            <if test=" residue != null and residue != '' "> `residue`, </if>
+            <if test=" lateFee != null "> `late_fee`, </if>
+            <if test=" applyTerm != null "> `apply_term`, </if>
+            <if test=" realTerm != null "> `real_term`, </if>
+            <if test=" applyTime != null "> `apply_time`, </if>
+            <if test=" auditTime != null "> `audit_time`, </if>
+            <if test=" enableTime != null "> `enable_time`, </if>
+            <if test=" status != null "> `status`, </if>
+            <if test=" remark != null and remark != '' "> `remark`, </if>
+        </trim>
+    </sql>
+    <!-- 条件新增字段值 -->
+    <sql id="insert_value">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test=" tenantId != null "> #{tenantId}, </if>
+            <if test=" franchiseeId != null "> #{franchiseeId}, </if>
+            <if test=" storeId != null "> #{storeId}, </if>
+            <if test=" createUid != null "> #{createUid}, </if>
+            <if test=" updateUid != null "> #{updateUid}, </if>
+            <if test=" createTime != null "> #{createTime}, </if>
+            <if test=" updateTime != null "> #{updateTime}, </if>
+            <if test=" delFlag != null "> #{delFlag}, </if>
+            <if test=" uid != null "> #{uid}, </if>
+            <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
+            <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
+            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
+            <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
+            <if test=" residue != null and residue != '' "> #{residue}, </if>
+            <if test=" lateFee != null "> #{lateFee}, </if>
+            <if test=" applyTerm != null "> #{applyTerm}, </if>
+            <if test=" realTerm != null "> #{realTerm}, </if>
+            <if test=" applyTime != null "> #{applyTime}, </if>
+            <if test=" auditTime != null "> #{auditTime}, </if>
+            <if test=" enableTime != null "> #{enableTime}, </if>
+            <if test=" status != null "> #{status}, </if>
+            <if test=" remark != null and remark != '' "> #{remark}, </if>
+        </trim>
+    </sql>
+
+    <!-- 条件查询列表 -->
+    <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            <include refid="where_field" />
+            ORDER BY `create_time` DESC
+        </where>
+    </select>
+
+    <!-- 条件查询分页 -->
+    <select id="page" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{limitNum}
+    </select>
+
+    <!-- 条件查询总数 -->
+    <select id="count" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel" resultType="java.lang.Integer">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            <include refid="where_field" />
+        </where>
+    </select>
+
+    <!-- 根据订单编码查询 -->
+    <select id="selectByOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `id` = #{id}
+        </where>
+    </select>
+
+    <!-- 条件新增 -->
+    <insert id="insert" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO <include refid="table_name" /> <include refid="insert_field" /> VALUES <include refid="insert_value" />
+    </insert>
+
+</mapper>

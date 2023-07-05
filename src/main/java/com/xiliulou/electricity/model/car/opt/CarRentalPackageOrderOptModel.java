@@ -5,8 +5,8 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 租车套餐购买订单，DB层操作模型
- *
+ * 租车套餐购买订单，操作模型<br />
+ * 转换DB
  * @author xiaohui.song
  **/
 @Data

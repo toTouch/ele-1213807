@@ -11,8 +11,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 租车套餐，DB层操作模型
- *
+ * 租车套餐，操作模型<br />
+ * 转换DB
  * @author xiaohui.song
  **/
 @Data

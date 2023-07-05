@@ -84,4 +84,9 @@ public class CarRentalOrderPO extends BasicCarPO {
      * @see CarRentalStateEnum
      */
     private Integer rentalState;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }
