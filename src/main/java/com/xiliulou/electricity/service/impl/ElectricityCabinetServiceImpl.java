@@ -91,8 +91,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     private static final String BATTERY_FULL_CONDITION = "batteryFullCondition";
 
-    @Value("${testFactory.tenantId}")
-    private Integer testFactoryTenantId;
+//    @Value("${testFactory.tenantId}")
+//    private Integer testFactoryTenantId;
 
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
