@@ -13,7 +13,7 @@ import com.xiliulou.electricity.enums.BusinessType;
  */
 public class OrderIdUtil {
     
-    private static final String PURE_DATE_PATTERN = "yyMMddHHmm";
+    private static final String PURE_DATE_PATTERN = "yyMMddHHmmss";
     
     private OrderIdUtil() {
     }
@@ -27,11 +27,11 @@ public class OrderIdUtil {
         return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + uid
                 + RandomUtil.randomInt(10, 99);
     }
-
-    public static void main(String[] args) {
-        String yyMMdd = DateUtil.format(DateUtil.date(), "yyMMddHHmm");
-
-        System.out.println(yyMMdd);
-    }
+//
+//    public static void main(String[] args) {
+//        String yyMMdd = DateUtil.format(DateUtil.date(), "yyMMddHHmmss");
+//
+//        System.out.println(yyMMdd);
+//    }
     
 }
