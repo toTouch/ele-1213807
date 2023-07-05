@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query.car;
 
+import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -27,4 +28,47 @@ public class CarRentalPackageOrderFreezeQryReq implements Serializable {
      * 租户ID
      */
     private Integer tenantId;
+
+    /**
+     * 加盟商ID
+     */
+    private Integer franchiseeId;
+
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
+
+    /**
+     * 订单编号
+     */
+    private String orderNo;
+
+    /**
+     * 用户ID
+     */
+    private Long uid;
+
+    /**
+     * 状态
+     * <pre>
+     *     1-待审核
+     *     2-审核通过
+     *     3-审核拒绝
+     *     4-提前启用
+     *     5-自动启用
+     * </pre>
+     * @see RentalPackageOrderFreezeStatusEnum
+     */
+    private Integer status;
+
+    /**
+     * 创建时间开始
+     */
+    private Long createTimeBegin;
+
+    /**
+     * 创建时间截止
+     */
+    private Long createTimeEnd;
 }

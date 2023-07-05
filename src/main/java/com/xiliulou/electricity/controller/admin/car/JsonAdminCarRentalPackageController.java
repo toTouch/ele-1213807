@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐表 Controller
- *
+ * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -62,8 +62,10 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (StringUtils.isEmpty(name)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         // 获取租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
         // 调用服务
         return carRentalPackageService.uqByTenantIdAndName(tenantId, name);
     }
@@ -79,8 +81,10 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (!ObjectUtils.allNotNull(id, status)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         // 获取用户
         TokenUser user = SecurityUtils.getUserInfo();
+
         // 调用服务
         return carRentalPackageService.updateStatusById(id, status, user.getUid());
     }
@@ -95,42 +99,54 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (null == qryReq) {
             qryReq = new CarRentalPackageQryReq();
         }
+
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
+
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+
         // 调用服务
         R<List<CarRentalPackagePO>> listRes = carRentalPackageService.page(qryModel);
         if (!listRes.isSuccess()) {
             return R.fail(listRes.getErrCode(), listRes.getErrMsg());
         }
+        List<CarRentalPackagePO> carRentalPackagePOList = listRes.getData();
+
         // 获取辅助业务信息（加盟商、车辆型号）
         Set<Long> franchiseeIds = new HashSet<>();
         Set<Integer> carModelIds = new HashSet<>();
-        List<CarRentalPackagePO> carRentalPackagePOList = listRes.getData();
         carRentalPackagePOList.forEach(carRentalPackage -> {
             franchiseeIds.add(Long.valueOf(carRentalPackage.getFranchiseeId()));
             carModelIds.add(carRentalPackage.getCarModelId());
         });
+
         // 获取辅助业务信息（加盟商、车辆型号）
         // 加盟商信息
         Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
+
         // 车辆型号信息
         Map<Integer, String> carModelMap = getCarModelNameByIdsForMap(carModelIds);
+
         // 模型转换，封装返回
         List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackagePOList.stream().map(carRentalPackage -> {
+
             CarRentalPackageVO carRentalPackageVO = new CarRentalPackageVO();
             BeanUtils.copyProperties(carRentalPackage, carRentalPackageVO);
+
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackage.getFranchiseeId()), ""));
             }
+
             if (!carModelMap.isEmpty()) {
                 carRentalPackageVO.setCarModelName(carModelMap.getOrDefault(carRentalPackage.getCarModelId(), ""));
             }
+
             return carRentalPackageVO;
         }).collect(Collectors.toList());
+
         return R.ok(carRentalPackageVOList);
     }
 
@@ -144,12 +160,15 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (null == qryReq) {
             qryReq = new CarRentalPackageQryReq();
         }
+
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
+
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+
         // 调用服务
         return carRentalPackageService.count(qryModel);
     }
@@ -164,29 +183,35 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (id <= 0L) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         // 调用服务
         R<CarRentalPackagePO> carRentalPackagePORes = carRentalPackageService.selectById(id);
         if (!carRentalPackagePORes.isSuccess()) {
             return R.fail(carRentalPackagePORes.getErrCode(), carRentalPackagePORes.getErrMsg());
         }
         CarRentalPackagePO carRentalPackagePO = carRentalPackagePORes.getData();
+
         // 查询加盟商
         Long franchiseeId = Long.valueOf(carRentalPackagePO.getFranchiseeId());
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
+
         // 查询门店
         Long storeId = Long.valueOf(carRentalPackagePO.getStoreId());
         Store store = storeService.queryByIdFromCache(storeId);
+
         // 查询型号
         Integer carModelId = carRentalPackagePO.getCarModelId();
         ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(carModelId);
+
         // 转换模型，组装返回值
         CarRentalPackageVO carRentalPackageVO = new CarRentalPackageVO();
         BeanUtils.copyProperties(carRentalPackagePO, carRentalPackageVO);
+
         // 赋值辅助业务数据
         carRentalPackageVO.setFranchiseeName(franchisee.getName());
         carRentalPackageVO.setStoreName(store.getName());
         carRentalPackageVO.setCarModelName(carModel.getName());
-        // 返回
+
         return R.ok(carRentalPackageVO);
     }
 
@@ -200,8 +225,10 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (id <= 0L) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         // 登录态获取用户信息
         TokenUser user = SecurityUtils.getUserInfo();
+
         // 调用服务
         return carRentalPackageService.delById(id, user.getUid());
     }
@@ -216,10 +243,13 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         if (optModel == null || optModel.getId() <= 0L) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         // 登录态获取用户信息
         TokenUser user = SecurityUtils.getUserInfo();
+
         // 赋值操作人
         optModel.setUpdateUid(user.getUid());
+
         // 调用服务
         return carRentalPackageService.updateById(optModel);
     }
@@ -236,6 +266,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         TokenUser user = SecurityUtils.getUserInfo();
         optModel.setTenantId(tenantId);
         optModel.setCreateUid(user.getUid());
+
         // 调用服务
         return carRentalPackageService.insert(optModel);
     }

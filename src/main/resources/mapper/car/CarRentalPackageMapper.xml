@@ -40,20 +40,24 @@
 
     <!-- 表名 -->
     <sql id="table_name">`t_car_rental_package`</sql>
+
     <!-- 基础字段 -->
     <sql id="basic_field">
         `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
     </sql>
+
     <!-- 私有字段 -->
     <sql id="private_field">
         `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_model_ids`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `deposit_exemption`, `deposit_rebate_approve`,
         `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `show_flag`, `remark`
     </sql>
+
     <!-- 全部字段 -->
     <sql id="all_field">
         <include refid="basic_field" />
         <include refid="private_field" />
     </sql>
+
     <!-- where 查询条件 -->
     <sql id="where_field">
         <if test=" franchiseeId != null"> AND `franchisee_id` = #{franchiseeId} </if>
@@ -67,6 +71,7 @@
             </foreach>
         </if>
     </sql>
+
     <!-- 条件新增字段 -->
     <sql id="insert_field">
         <trim prefix="(" suffix=")" suffixOverrides=",">

@@ -62,12 +62,16 @@ public class JsonAdminCarBasicController {
         if (CollectionUtils.isEmpty(cabinetIds)) {
             return Collections.emptyMap();
         }
+
         List<ElectricityCabinet> electricityCabinets = electricityCabinetService.listByIds(cabinetIds);
+
         if (CollectionUtils.isEmpty(electricityCabinets)) {
             return Collections.emptyMap();
         }
+
         Map<Integer, ElectricityCabinet> cabinetMap = electricityCabinets.stream()
                 .collect(Collectors.toMap(ElectricityCabinet::getId, Function.identity(), (k1, k2) -> k1));
+
         return cabinetMap;
     }
 
@@ -81,15 +85,18 @@ public class JsonAdminCarBasicController {
     protected Map<Long, String> getCarRentalPackageNameByIdsForMap(Set<Long> carRentalPackageIds) {
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         qryModel.setIdList(new ArrayList<>(carRentalPackageIds));
+
         R<List<CarRentalPackagePO>> carPackageRes = carRentalPackageService.listByCondition(qryModel);
         if (!carPackageRes.isSuccess()) {
             log.error("JsonAdminCarBasicController.getCarRentalPackageByIdsForMap error. response is {}", JSON.toJSONString(carPackageRes));
             return Collections.emptyMap();
         }
+
         List<CarRentalPackagePO> resData = carPackageRes.getData();
         if (CollectionUtils.isEmpty(resData)) {
             return Collections.emptyMap();
         }
+
         Map<Long, String> carRentalPackageMap = resData.stream()
                 .collect(Collectors.toMap(CarRentalPackagePO::getId, CarRentalPackagePO::getName, (k1, k2) -> k1));
         return carRentalPackageMap;
@@ -107,13 +114,16 @@ public class JsonAdminCarBasicController {
         if (CollectionUtils.isEmpty(uids)) {
             return Collections.emptyMap();
         }
+
         LambdaQueryWrapper<UserInfo> userQueryWrapper = new LambdaQueryWrapper();
         userQueryWrapper.in(UserInfo::getUid, uids);
         List<UserInfo> userInfos = userInfoService.list(userQueryWrapper);
         if(userInfos.isEmpty()) {
             return Collections.emptyMap();
         }
+
         Map<Long, UserInfo> userInfoMap = userInfos.stream().collect(Collectors.toMap(UserInfo::getUid, Function.identity(), (k1, k2) -> k1));
+
         return userInfoMap;
     }
 
@@ -128,13 +138,16 @@ public class JsonAdminCarBasicController {
         if (CollectionUtils.isEmpty(storeIds)) {
             return Collections.emptyMap();
         }
+
         StoreQuery storeQuery = new StoreQuery();
         Triple<Boolean, String, Object> storeTriple = storeService.selectListByQuery(storeQuery);
         List<Store> stores = (List<Store>) storeTriple.getRight();
         if (CollectionUtils.isEmpty(stores)) {
             return Collections.emptyMap();
         }
+
         Map<Long, String> storeNameMap = stores.stream().collect(Collectors.toMap(Store::getId, Store::getName, (k1, k2) -> k1));
+
         return storeNameMap;
     }
 
@@ -149,6 +162,7 @@ public class JsonAdminCarBasicController {
         if (CollectionUtils.isEmpty(franchiseeIds)) {
             return Collections.emptyMap();
         }
+
         FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
         franchiseeQuery.setIds(new ArrayList<>(franchiseeIds));
         Triple<Boolean, String, Object> franchiseeTriple = franchiseeService.selectListByQuery(franchiseeQuery);
@@ -156,8 +170,10 @@ public class JsonAdminCarBasicController {
         if (franchiseeList.isEmpty()) {
             return Collections.emptyMap();
         }
+
         Map<Long, String> franchiseeMap = franchiseeList.stream()
                 .collect(Collectors.toMap(Franchisee::getId, Franchisee::getName, (k1, k2) -> k1));
+
         return franchiseeMap;
     }
 
@@ -172,13 +188,16 @@ public class JsonAdminCarBasicController {
         if (CollectionUtils.isEmpty(carModelIds)) {
             return Collections.emptyMap();
         }
+
         ElectricityCarModelQuery electricityCarModelQuery = new ElectricityCarModelQuery();
         electricityCarModelQuery.setIds(carModelIds);
         List<ElectricityCarModel> carModelList = electricityCarModelService.selectByQuery(electricityCarModelQuery);
         if (CollectionUtils.isEmpty(carModelList)) {
             return Collections.emptyMap();
         }
+
         Map<Integer, String> carModelMap = carModelList.stream().collect(Collectors.toMap(ElectricityCarModel::getId, ElectricityCarModel::getName, (k1, k2) -> k1));
+
         return carModelMap;
     }
 
@@ -193,19 +212,23 @@ public class JsonAdminCarBasicController {
             log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         // 加盟商查询
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
+
         // 判定返回
         if(CollectionUtils.isEmpty(franchiseeIds)){
             return R.ok(Collections.EMPTY_LIST);
         }
+
         // 门店不可见
         if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
             return R.ok(Collections.EMPTY_LIST);
         }
+
         return  R.ok(Collections.EMPTY_LIST);
     }
 

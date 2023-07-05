@@ -39,6 +39,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalOrderMapper.list(qryModel));
     }
 
@@ -54,6 +55,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalOrderMapper.page(qryModel));
     }
 
@@ -69,6 +71,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalOrderMapper.count(qryModel));
     }
 
@@ -84,6 +87,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         if (StringUtils.isBlank(orderNo)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalOrderMapper.selectByOrderNo(orderNo));
     }
 
@@ -99,6 +103,7 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         if (null == id || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalOrderMapper.selectById(id));
     }
 
@@ -112,13 +117,16 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
     public R<Long> insert(CarRentalOrderOptModel optModel) {
         CarRentalOrderPO entity = new CarRentalOrderPO();
         BeanUtils.copyProperties(optModel, entity);
+
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+
         // 保存入库
         carRentalOrderMapper.insert(entity);
+
         return R.ok(entity.getId());
     }
 }

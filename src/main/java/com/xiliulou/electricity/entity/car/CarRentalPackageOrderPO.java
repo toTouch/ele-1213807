@@ -200,4 +200,18 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      */
     private String remark;
 
+    /**
+     * 三方支付单号
+     */
+    private String thirdPayNo;
+
+    /**
+     * 三方支付渠道
+     * <pre>
+     *     1-微信
+     * </pre>
+     * @see ThirdPayChannelEnum
+     */
+    private Integer thirdPayChannel;
+
 }

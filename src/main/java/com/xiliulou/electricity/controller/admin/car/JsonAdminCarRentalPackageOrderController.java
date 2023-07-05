@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐订单表 Controller
+ * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -45,57 +46,73 @@ public class JsonAdminCarRentalPackageOrderController extends JsonAdminCarBasicC
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderQryReq();
         }
+
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
+
         // 转换请求体
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+
         // 调用服务
         R<List<CarRentalPackageOrderPO>> listRes = carRentalPackageOrderService.page(qryModel);
         if (!listRes.isSuccess()) {
             return R.fail(listRes.getErrCode(), listRes.getErrMsg());
         }
+        List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = listRes.getData();
+
         // 获取辅助业务信息（用户信息、套餐名称、加盟商信息、柜机信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
         Set<Integer> cabinetIds = new HashSet<>();
-        List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = listRes.getData();
         carRentalPackageOrderPOList.forEach(carRentalPackageOrder -> {
             uids.add(carRentalPackageOrder.getUid());
             rentalPackageIds.add(carRentalPackageOrder.getRentalPackageId());
             franchiseeIds.add(Long.valueOf(carRentalPackageOrder.getFranchiseeId()));
             cabinetIds.add(carRentalPackageOrder.getCabinetId());
         });
+
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
+
         // 套餐信息
         Map<Long, String> carRentalPackageMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
+
         // 加盟商信息
         Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
+
         // 柜机信息
         Map<Integer, ElectricityCabinet> cabinetMap = getCabinetByIdsForMap(cabinetIds);
+
         // 模型转换，封装返回
         List<CarRentalPackageOrderVO> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
+
             CarRentalPackageOrderVO carRentalPackageOrderVO = new CarRentalPackageOrderVO();
             BeanUtils.copyProperties(carRentalPackageOrder, carRentalPackageOrderVO);
+
             if (!userInfoMap.isEmpty()) {
                 UserInfo userInfo = userInfoMap.getOrDefault(carRentalPackageOrder.getUid(), new UserInfo());
                 carRentalPackageOrderVO.setUserRelName(userInfo.getName());
                 carRentalPackageOrderVO.setUserPhone(userInfo.getPhone());
             }
+
             if (!carRentalPackageMap.isEmpty()) {
                 carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), ""));
             }
+
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageOrderVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageOrder.getFranchiseeId()), ""));
             }
+
             if (!cabinetMap.isEmpty()) {
                 carRentalPackageOrderVO.setCabinetName(cabinetMap.getOrDefault(carRentalPackageOrder.getCabinetId(), new ElectricityCabinet()).getName());
             }
+
             return carRentalPackageOrderVO;
         }).collect(Collectors.toList());
+
         return R.ok(carRentalPackageVOList);
     }
 
@@ -109,12 +126,15 @@ public class JsonAdminCarRentalPackageOrderController extends JsonAdminCarBasicC
         if (null == qryReq) {
             qryReq = new CarRentalPackageOrderQryReq();
         }
+
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
+
         // 转换请求体
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+
         // 调用服务
         return carRentalPackageOrderService.count(qryModel);
     }

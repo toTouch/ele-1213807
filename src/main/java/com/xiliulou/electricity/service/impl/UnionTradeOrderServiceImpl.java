@@ -578,6 +578,12 @@ public class UnionTradeOrderServiceImpl extends
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");
         }
+
+        //处理用户端取消支付的问题
+        if(Objects.equals(ElectricityMemberCardOrder.STATUS_CANCELL, electricityMemberCardOrder.getStatus())){
+            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        }
+
         if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO={}", orderNo);
             return Pair.of(false, "套餐订单已处理!");

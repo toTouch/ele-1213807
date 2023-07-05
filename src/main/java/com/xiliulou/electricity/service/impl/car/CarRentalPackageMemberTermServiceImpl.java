@@ -38,6 +38,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMemberTermMapper.list(qryModel));
     }
 
@@ -53,6 +54,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMemberTermMapper.page(qryModel));
     }
 
@@ -68,6 +70,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMemberTermMapper.count(qryModel));
     }
 
@@ -83,6 +86,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         if (null == id || id <= 0) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
         return R.ok(carRentalPackageMemberTermMapper.selectById(id));
     }
 
@@ -96,13 +100,16 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     public R<Long> insert(CarRentalPackageMemberTermOptModel optModel) {
         CarRentalPackageMemberTermPO entity = new CarRentalPackageMemberTermPO();
         BeanUtils.copyProperties(optModel, entity);
+
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+
         // 保存入库
         carRentalPackageMemberTermMapper.insert(entity);
+
         return R.ok(entity.getId());
     }
 }
