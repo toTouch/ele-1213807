@@ -65,4 +65,7 @@ public class UserSourceQuery {
 
     private Long uid;
 
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

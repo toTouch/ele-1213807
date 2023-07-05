@@ -80,13 +80,13 @@
                 #{id}
             </foreach>
         </if>
-        <if test="storeIds != null and franchiseeIds.size()>0">
+        <if test="storeIds != null and storeIds.size()>0">
             and tui.store_id in
             <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
-        order by tfdo.create_time desc
+        order by tfdo.id desc
         limit #{offset}, #{size}
     </select>
 
