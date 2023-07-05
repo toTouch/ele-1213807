@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class OrderIdUtil {
     
-    private static final String PURE_DATE_PATTERN = "yyMMddHHmm";
+    private static final String PURE_DATE_PATTERN = "yyMMddHHmmss";
     
     private OrderIdUtil() {
     }
@@ -34,13 +34,11 @@ public class OrderIdUtil {
         return businessType.getBusiness().toString() + DateUtil.format(DateUtil.date(), PURE_DATE_PATTERN) + String.format("%08d", uid)
                 + RandomUtil.randomInt(1000, 9999);
     }
-
-
-    public static void main(String[] args) {
-        String yyMMdd = DateUtil.format(DateUtil.date(), "yyMMddHHmm");
-
-        System.out.println(yyMMdd);
-        System.out.println(generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT,123L));
-    }
+//
+//    public static void main(String[] args) {
+//        String yyMMdd = DateUtil.format(DateUtil.date(), "yyMMddHHmmss");
+//
+//        System.out.println(yyMMdd);
+//    }
     
 }
