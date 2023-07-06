@@ -17,6 +17,7 @@
         <result property="uid" column="uid" jdbcType="BIGINT" />
         <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
+        <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="type" column="type" jdbcType="INTEGER" />
         <result property="changeAmount" column="change_amount" jdbcType="DECIMAL" />
         <result property="deposit" column="deposit" jdbcType="DECIMAL" />
@@ -27,6 +28,7 @@
         <result property="sourceOrderNo" column="source_order_no" jdbcType="VARCHAR" />
         <result property="thirdPayNo" column="third_pay_no" jdbcType="VARCHAR" />
         <result property="thirdPayChannel" column="third_pay_channel" jdbcType="INTEGER" />
+        <result property="refundFlag" column="refund_flag" jdbcType="INTEGER" />
     </resultMap>
 
     <!-- 表名 -->
@@ -39,8 +41,8 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_id`, `type`, `change_amount`, `deposit`, `deposit_exemption`, `deposit_rebate_approve`, `pay_type`, `pay_state`, `remark`,
-        `source_order_no`, `third_pay_no`, `third_pay_channel`
+        `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `type`, `change_amount`, `deposit`, `deposit_exemption`, `deposit_rebate_approve`,
+        `pay_type`, `pay_state`, `remark`, `source_order_no`, `third_pay_no`, `third_pay_channel`, `refund_flag`
     </sql>
 
     <!-- 全部字段 -->
@@ -73,6 +75,7 @@
             <if test=" uid != null "> `uid`, </if>
             <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
+            <if test=" rentalPackageType != null "> `rental_package_type`, </if>
             <if test=" type != null "> `type`, </if>
             <if test=" changeAmount != null "> `change_amount`, </if>
             <if test=" deposit != null "> `deposit`, </if>
@@ -84,6 +87,7 @@
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> `source_order_no`, </if>
             <if test=" thirdPayNo != null and thirdPayNo != '' "> `third_pay_no`, </if>
             <if test=" thirdPayChannel != null "> `third_pay_channel`, </if>
+            <if test=" refundFlag != null "> `refund_flag`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -100,6 +104,7 @@
             <if test=" uid != null "> #{uid}, </if>
             <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
+            <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" type != null "> #{type}, </if>
             <if test=" changeAmount != null "> #{changeAmount}`, </if>
             <if test=" deposit != null "> #{deposit}, </if>
@@ -111,6 +116,7 @@
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> #{sourceOrderNo}, </if>
             <if test=" thirdPayNo != null and thirdPayNo != '' "> #{thirdPayNo}, </if>
             <if test=" thirdPayChannel != null "> #{thirdPayChannel}, </if>
+            <if test=" refundFlag != null "> #{refundFlag}, </if>
         </trim>
     </sql>
 

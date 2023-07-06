@@ -14,7 +14,9 @@ import lombok.Getter;
 public enum MemberTermStatusEnum implements BasicEnum<Integer, String> {
 
     NORMAL(1, "正常"),
-    ABNORMAL(2, "异常"),
+    APPLY_FREEZE(1, "申请冻结"),
+    FREEZE(1, "冻结"),
+    APPLY_REFUND_DEPOSIT(1, "申请退押"),
     ;
 
     private final Integer code;

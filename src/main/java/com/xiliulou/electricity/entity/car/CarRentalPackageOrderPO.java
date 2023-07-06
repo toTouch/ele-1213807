@@ -131,6 +131,11 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     private Long rentRebateEndTime;
 
     /**
+     * 押金
+     */
+    private BigDecimal deposit;
+
+    /**
      * 押金缴纳订单编号
      */
     private String depositPayOrderNo;

@@ -1,13 +1,16 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMemberTermMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageMemberTermOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +26,39 @@ import java.util.List;
 public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMemberTermService {
 
     @Resource
+    private RedisService redisService;
+
+    @Resource
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
+
+    /**
+     * 根据租户ID和用户ID查询租车套餐会员限制信息
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return
+     */
+    @Override
+    public R<CarRentalPackageMemberTermPO> selectByTenantIdAndUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 获取缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        CarRentalPackageMemberTermPO cachePO = redisService.getWithHash(cacheKey, CarRentalPackageMemberTermPO.class);
+        if (ObjectUtils.isNotEmpty(cachePO)) {
+            return R.ok(cachePO);
+        }
+
+        // 获取 DB
+        CarRentalPackageMemberTermPO dbPO = carRentalPackageMemberTermMapper.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(dbPO)) {
+            redisService.saveWithHash(cacheKey, dbPO);
+        }
+
+        return R.ok(dbPO);
+    }
 
     /**
      * 条件查询列表<br />

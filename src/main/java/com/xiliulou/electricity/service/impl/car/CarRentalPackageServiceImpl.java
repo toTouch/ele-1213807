@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
@@ -29,6 +31,9 @@ import java.util.List;
 @Service
 @Slf4j
 public class CarRentalPackageServiceImpl implements CarRentalPackageService {
+
+    @Resource
+    private RedisService redisService;
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -85,8 +90,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 操作 DB
         long updateTime = System.currentTimeMillis();
         int num = carRentalPackageMapper.updateStatusById(id, status, uid, updateTime);
+
+        // 删除缓存
+        delCache(String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id));
 
         return R.ok(num >= 0);
     }
@@ -104,6 +113,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
+        // 校验能否删除
         R<Boolean> checkRes = carRentalPackageOrderService.checkByRentalPackageId(id);
         if (!checkRes.isSuccess()) {
             return R.fail(checkRes.getErrCode(), checkRes.getErrMsg());
@@ -112,8 +122,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return R.fail("300103", "已有购买订单记录，不允许删除");
         }
 
+        // 操作 DB
         long delTime = System.currentTimeMillis();
         int num = carRentalPackageMapper.delById(id, uid, delTime);
+
+        // 删除缓存
+        delCache(String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id));
 
         return R.ok(num >= 0);
     }
@@ -177,7 +191,20 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageMapper.selectById(id));
+        // 获取缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id);
+        CarRentalPackagePO cachePO = redisService.getWithHash(cacheKey, CarRentalPackagePO.class);
+        if (ObjectUtils.isNotEmpty(cachePO)) {
+            return R.ok(cachePO);
+        }
+
+        // 查询 DB
+        CarRentalPackagePO dbPO = carRentalPackageMapper.selectById(id);
+
+        // 存入缓存
+        redisService.saveWithHash(cacheKey, dbPO);
+
+        return R.ok(dbPO);
     }
 
     /**
@@ -202,6 +229,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         Integer tenantId = optModel.getTenantId();
         String name = optModel.getName();
+
         // 检测唯一
         if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
             return R.fail("300100", "套餐名称已存在");
@@ -215,6 +243,10 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         entity.setUpdateTime(now);
 
         int num = carRentalPackageMapper.updateById(entity);
+
+        // 删除缓存
+        String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, optModel.getId());
+        redisService.delete(cacheEky);
 
         return R.ok(num >= 0);
     }
@@ -263,5 +295,13 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(entity.getType())) {
 
         }
+    }
+
+    /**
+     * 删除缓存
+     * @param key
+     */
+    private void delCache(String key) {
+        redisService.delete(key);
     }
 }

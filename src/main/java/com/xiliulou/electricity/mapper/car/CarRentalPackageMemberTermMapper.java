@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,6 +14,14 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageMemberTermMapper {
+
+    /**
+     * 根据租户ID和用户ID查询租车套餐会员限制信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageMemberTermPO selectByTenantIdAndUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />

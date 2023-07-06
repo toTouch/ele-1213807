@@ -57,7 +57,9 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      * 状态
      * <pre>
      *     1-正常
-     *     2-异常
+     *     2-申请冻结
+     *     3-冻结
+     *     4-申请退押
      * </pre>
      * @see MemberTermStatusEnum
      */
