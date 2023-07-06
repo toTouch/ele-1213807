@@ -141,51 +141,87 @@
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.CarLockCtrlHistoryVo">
         select
-        id, uid, name, phone, status, type, car_id, car_sn, car_model, car_model_id, create_time,
-        update_time, tenant_id
-        from t_car_lock_ctrl_history
+        clch.id,
+        clch.uid,
+        clch.name,
+        clch.phone,
+        clch.status,
+        clch.type,
+        clch.car_id,
+        clch.car_sn,
+        clch.car_model,
+        clch.car_model_id,
+        clch.create_time,
+        clch.update_time
+        from t_car_lock_ctrl_history clch
+        left join t_electricity_car tec on clch.car_id=tec.id
         <where>
-            tenant_id = #{tenantId}
+            clch.tenant_id = #{tenantId}
             <if test="name != null and name != ''">
-                and name like concat('%', #{name}, '%')
+                and clch.name like concat('%', #{name}, '%')
             </if>
             <if test="phone != null and phone != ''">
-                and phone like concat('%', #{phone}, '%')
+                and clch.phone like concat('%', #{phone}, '%')
             </if>
             <if test="carSn != null and carSn != ''">
-                and car_sn like concat('%', #{carSn}, '%')
+                and clch.car_sn like concat('%', #{carSn}, '%')
             </if>
             <if test="beginTime != null">
-                and create_time &gt; #{beginTime}
+                and clch.create_time &gt; #{beginTime}
             </if>
             <if test="endTime != null">
-                and create_time &lt; #{endTime}
+                and clch.create_time &lt; #{endTime}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tec.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tec.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
-        order by create_time desc
+        order by clch.create_time desc
         limit #{offset}, #{size}
     </select>
     
     <select id="queryCount" resultType="integer">
         select
         count(*)
-        from t_car_lock_ctrl_history
+        from t_car_lock_ctrl_history clch
+        left join t_electricity_car tec on clch.car_id=tec.id
         <where>
-            tenant_id = #{tenantId}
+            clch.tenant_id = #{tenantId}
             <if test="name != null and name != ''">
-                and name like concat('%', #{name}, '%')
+                and clch.name like concat('%', #{name}, '%')
             </if>
             <if test="phone != null and phone != ''">
-                and phone like concat('%', #{phone}, '%')
+                and clch.phone like concat('%', #{phone}, '%')
             </if>
             <if test="carSn != null and carSn != ''">
-                and car_sn like concat('%', #{carSn}, '%')
+                and clch.car_sn like concat('%', #{carSn}, '%')
             </if>
             <if test="beginTime != null">
-                and create_time &gt; #{beginTime}
+                and clch.create_time &gt; #{beginTime}
             </if>
             <if test="endTime != null">
-                and create_time &lt; #{endTime}
+                and clch.create_time &lt; #{endTime}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tec.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tec.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

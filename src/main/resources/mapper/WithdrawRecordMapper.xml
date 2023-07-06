@@ -11,7 +11,7 @@
 		twr.bank_code as bankCode,twr.true_name as trueName,twr.type as type,
 		twr.amount as amount,twr.handling_fee as handlingFee,twr.msg as msg
 		from t_withdraw_record as twr
-		left join t_user as tu on tu.uid=twr.uid
+		left join t_user_info as tu on tu.uid=twr.uid
 		<where>
 			<if test="query.uid != null ">
 				and twr.uid = #{query.uid}
@@ -39,6 +39,18 @@
 			</if>
 			<if test="query.tenantId != null ">
 				and twr.tenant_id = #{query.tenantId}
+			</if>
+			<if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+				and tu.franchisee_id in
+				<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="query.storeIds != null and query.storeIds.size()>0">
+				and tu.store_id in
+				<foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 		order by twr.create_time desc
@@ -51,7 +63,7 @@
 	<select id="queryCount" resultType="java.lang.Integer">
 		select COUNT(1)
 		from t_withdraw_record as twr
-		left join t_user as tu on tu.uid=twr.uid
+		left join t_user_info as tu on tu.uid=twr.uid
 		<where>
 			<if test="query.uid != null ">
 				and twr.uid = #{query.uid}
@@ -79,6 +91,18 @@
 			</if>
 			<if test="query.tenantId != null ">
 				and twr.tenant_id = #{query.tenantId}
+			</if>
+			<if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+				and tu.franchisee_id in
+				<foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="query.storeIds != null and query.storeIds.size()>0">
+				and tu.store_id in
+				<foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 	</select>

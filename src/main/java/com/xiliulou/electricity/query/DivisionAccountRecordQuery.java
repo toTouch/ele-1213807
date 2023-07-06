@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -39,4 +41,8 @@ public class DivisionAccountRecordQuery {
 
     private Long beginTime;
     private Long endTime;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

@@ -1,15 +1,21 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -23,6 +29,9 @@ public class JsonAdminShareActivityRecordController {
 
 	@Autowired
 	private ShareActivityRecordService shareActivityRecordService;
+
+	@Autowired
+	UserDataScopeService userDataScopeService;
 
 	//列表查询
 	@GetMapping(value = "/admin/shareActivityRecord/list")
@@ -40,13 +49,37 @@ public class JsonAdminShareActivityRecordController {
 			offset = 0L;
 		}
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		List<Long> storeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+			storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+				return R.ok(Collections.EMPTY_LIST);
+			}
+		}
+
+		List<Long> franchiseeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+				return R.ok(Collections.EMPTY_LIST);
+			}
+		}
 
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
 				.offset(offset)
 				.size(size)
-				.phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
+				.phone(phone)
+				.name(name)
+				.storeIds(storeIds)
+				.franchiseeIds(franchiseeIds)
+				.tenantId(TenantContextHolder.getTenantId())
+				.startTime(beginTime)
+				.endTime(endTime).build();
 
 		return shareActivityRecordService.queryList(shareActivityRecordQuery);
 	}
@@ -58,11 +91,36 @@ public class JsonAdminShareActivityRecordController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		List<Long> storeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+			storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+				return R.ok(Collections.EMPTY_LIST);
+			}
+		}
+
+		List<Long> franchiseeIds = null;
+		if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+			franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+			if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+				return R.ok(Collections.EMPTY_LIST);
+			}
+		}
 
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
-				.phone(phone).name(name).tenantId(tenantId).startTime(beginTime).endTime(endTime).build();
+				.phone(phone)
+				.name(name)
+				.storeIds(storeIds)
+				.franchiseeIds(franchiseeIds)
+				.tenantId(TenantContextHolder.getTenantId())
+				.startTime(beginTime)
+				.endTime(endTime)
+				.build();
 
 		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
     }

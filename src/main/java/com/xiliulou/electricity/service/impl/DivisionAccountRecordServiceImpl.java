@@ -247,6 +247,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setStoreRate(storeRate);
                 divisionAccountRecord.setSource(batteryMemberCardOrder.getSource());
                 divisionAccountRecord.setTenantId(batteryMemberCardOrder.getTenantId());
+                divisionAccountRecord.setFranchiseeId(batteryMemberCardOrder.getFranchiseeId());
+                divisionAccountRecord.setStoreId(batteryMemberCardOrder.getStoreId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
                 divisionAccountRecord.setCreateTime(System.currentTimeMillis());
@@ -308,6 +310,8 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 divisionAccountRecord.setOperatorRate(operatorRate);
                 divisionAccountRecord.setFranchiseeRate(franchiseeRate);
                 divisionAccountRecord.setStoreRate(storeRate);
+                divisionAccountRecord.setFranchiseeId(carMemberCardOrder.getFranchiseeId());
+                divisionAccountRecord.setStoreId(carMemberCardOrder.getStoreId());
                 divisionAccountRecord.setTenantId(carMemberCardOrder.getTenantId());
                 divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
                 divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);

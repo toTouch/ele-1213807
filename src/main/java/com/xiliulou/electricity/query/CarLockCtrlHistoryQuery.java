@@ -8,24 +8,30 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * @author: lxc
- * @Date: 2021/4/15 16:02
- * @Description:
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-07-06-14:22
  */
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class ShareActivityRecordQuery {
+@AllArgsConstructor
+public class CarLockCtrlHistoryQuery {
+
     private Long size;
+
     private Long offset;
-    private String phone;
-    private String name;
 
     private Integer tenantId;
-    
-    private Long startTime;
-    
+
+    private String carSn;
+
+    private String name;
+
+    private String phone;
+
+    private Long beginTime;
+
     private Long endTime;
 
     private List<Long> franchiseeIds;

@@ -17,6 +17,18 @@
 		<if test="phone != null and phone != ''">
 			and tui.phone = #{phone}
 		</if>
+			<if test="franchiseeIds != null and franchiseeIds.size()>0">
+				and tui.franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="storeIds != null and storeIds.size()>0">
+				and tui.store_id in
+				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
 		</where>
 		ORDER BY tua.create_time DESC
 		limit #{offset}, #{size}
@@ -32,6 +44,18 @@
 			</if>
 			<if test="phone != null and phone != ''">
 				and tui.phone = #{phone}
+			</if>
+			<if test="franchiseeIds != null and franchiseeIds.size()>0">
+				and tui.franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="storeIds != null and storeIds.size()>0">
+				and tui.store_id in
+				<foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 	</select>
