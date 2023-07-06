@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
 import com.xiliulou.electricity.service.DivisionAccountRecordService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,6 +31,9 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
 
     @Autowired
     private DivisionAccountRecordService divisionAccountRecordService;
+
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 分页列表
@@ -52,8 +58,20 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         DivisionAccountRecordQuery query = DivisionAccountRecordQuery.builder()
@@ -65,6 +83,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
                 .source(source)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return R.ok(divisionAccountRecordService.selectByPage(query));
@@ -85,8 +105,20 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         DivisionAccountRecordQuery query = DivisionAccountRecordQuery.builder()
@@ -96,6 +128,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
                 .source(source)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return R.ok(divisionAccountRecordService.selectByPageCount(query));
@@ -123,8 +157,20 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         DivisionAccountRecordQuery query = DivisionAccountRecordQuery.builder()
@@ -135,6 +181,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
                 .membercardName(membercardName)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return R.ok(divisionAccountRecordService.selectStatisticByPage(query));
@@ -152,8 +200,20 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!(SecurityUtils.isAdmin() || Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE))) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         DivisionAccountRecordQuery query = DivisionAccountRecordQuery.builder()
@@ -162,6 +222,8 @@ public class JsonAdminDivisionAccountRecordController extends BaseController {
                 .membercardName(membercardName)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .build();
 
         return R.ok(divisionAccountRecordService.selectStatisticByPageCount(query));

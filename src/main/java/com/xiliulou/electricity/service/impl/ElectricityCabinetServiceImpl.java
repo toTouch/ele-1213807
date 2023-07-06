@@ -87,12 +87,12 @@ import java.util.stream.Collectors;
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
     
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
-    
-    
+
+
     private static final String BATTERY_FULL_CONDITION = "batteryFullCondition";
 
-    @Value("${testFactory.tenantId}")
-    private Integer testFactoryTenantId;
+    //    @Value("${testFactory.tenantId}")
+//    private Integer testFactoryTenantId;
 
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;
@@ -4264,16 +4264,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //查询工厂租户下是否有该柜机
-        ElectricityCabinet testFactoryCabinet = this.selectByProductKeyAndDeviceNameFromDB(query.getProductKey(), query.getDeviceName(), testFactoryTenantId);
+        ElectricityCabinet testFactoryCabinet = this.selectByProductKeyAndDeviceNameFromDB(query.getProductKey(), query.getDeviceName(), eleCommonConfig.getTestFactoryTenantId());
         if (Objects.isNull(testFactoryCabinet)) {
-            log.error("ELE ERROR!not found testFactoryCabinet,p={},d={},tenantId={}", query.getProductKey(), query.getDeviceName(), testFactoryTenantId);
+            log.error("ELE ERROR!not found testFactoryCabinet,p={},d={},tenantId={}", query.getProductKey(), query.getDeviceName(), eleCommonConfig.getTestFactoryTenantId());
             return Triple.of(false, "", "柜机不存在");
         }
 
         //获取工厂柜机型号
         ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(testFactoryCabinet.getModelId());
         if (Objects.isNull(electricityCabinetModel)) {
-            log.error("ELE ERROR!not found electricityCabinetModel,p={},d={},tenantId={}", query.getProductKey(), query.getDeviceName(), testFactoryTenantId);
+            log.error("ELE ERROR!not found electricityCabinetModel,p={},d={},tenantId={}", query.getProductKey(), query.getDeviceName(), eleCommonConfig.getTestFactoryTenantId());
             return Triple.of(false, "", "柜机型号不存在");
         }
 

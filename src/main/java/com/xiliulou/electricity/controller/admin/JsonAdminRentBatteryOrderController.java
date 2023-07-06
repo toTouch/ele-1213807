@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleCabinetUsedRecordQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -41,6 +42,8 @@ public class JsonAdminRentBatteryOrderController {
     private RentBatteryOrderService rentBatteryOrderService;
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //列表查询
     @GetMapping(value = "/admin/rentBatteryOrder/list")
@@ -63,20 +66,21 @@ public class JsonAdminRentBatteryOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
+        }
 
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -91,7 +95,8 @@ public class JsonAdminRentBatteryOrderController {
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
@@ -115,10 +120,8 @@ public class JsonAdminRentBatteryOrderController {
 			offset = 0L;
 		}
 
-		//用户区分
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -151,10 +154,8 @@ public class JsonAdminRentBatteryOrderController {
 							 @RequestParam(value = "endTime", required = false) Long endTime,
 							 @RequestParam(value = "orderId", required = false) String orderId) {
 
-		//用户区分
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
@@ -176,7 +177,6 @@ public class JsonAdminRentBatteryOrderController {
 		return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
 	}
 
-
 	//列表查询
 	@GetMapping(value = "/admin/rentBatteryOrder/queryCount")
 	public R queryCount(@RequestParam(value = "status", required = false) String status,
@@ -189,20 +189,21 @@ public class JsonAdminRentBatteryOrderController {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Integer> eleIdList = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE) || Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getDataType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userDataType={}", user.getDataType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
             }
+        }
 
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (CollectionUtils.isEmpty(eleIdList)) {
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (org.springframework.util.CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -215,7 +216,8 @@ public class JsonAdminRentBatteryOrderController {
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList)
+                .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);

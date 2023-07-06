@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 
 /**
  * @author: eclair
@@ -15,10 +17,11 @@ public class UserAmountQuery {
     private Long size;
     private Long offset;
 
-
     private Integer tenantId;
 
     private String phone;
 
+    private List<Long> franchiseeIds;
 
+    private List<Long> storeIds;
 }

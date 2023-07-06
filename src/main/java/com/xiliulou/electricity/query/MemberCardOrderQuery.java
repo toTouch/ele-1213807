@@ -33,6 +33,7 @@ public class MemberCardOrderQuery {
 
     private Long franchiseeId;
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
     private String franchiseeName;
     private String userName;
 

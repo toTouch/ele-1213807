@@ -88,6 +88,10 @@ public class DivisionAccountRecord {
 
     private Long updateTime;
 
+    private Long franchiseeId;
+
+    private Long storeId;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

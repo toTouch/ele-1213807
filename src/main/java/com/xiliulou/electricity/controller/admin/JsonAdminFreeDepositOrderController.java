@@ -6,14 +6,15 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FreeDepositOrderQuery;
 import com.xiliulou.electricity.query.FreeDepositRechargeRecordQuery;
 import com.xiliulou.electricity.service.FreeDepositOrderService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -34,6 +36,9 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
 
     @Autowired
     private FreeDepositOrderService freeDepositOrderService;
+
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 分页
@@ -56,6 +61,27 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
             offset = 0L;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.springframework.util.CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         FreeDepositOrderQuery query = FreeDepositOrderQuery.builder()
                 .size(size)
                 .offset(offset)
@@ -65,6 +91,8 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                 .orderId(orderId)
                 .phone(phone)
                 .realName(realName)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .startTime(startTime)
                 .endTime(endTime)
@@ -85,6 +113,28 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                        @RequestParam(value = "realName", required = false) String realName,
                        @RequestParam(value = "startTime", required = false) Long startTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
         FreeDepositOrderQuery query = FreeDepositOrderQuery.builder()
                 .authStatus(authStatus)
                 .payStatus(payStatus)
@@ -92,6 +142,8 @@ public class JsonAdminFreeDepositOrderController extends BaseController {
                 .orderId(orderId)
                 .phone(phone)
                 .realName(realName)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .tenantId(TenantContextHolder.getTenantId())
                 .startTime(startTime)
                 .endTime(endTime)

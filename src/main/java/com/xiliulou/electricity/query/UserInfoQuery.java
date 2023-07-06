@@ -33,6 +33,7 @@ public class UserInfoQuery {
     private Long batteryId;
     private Long franchiseeId;
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 
     private Long memberCardExpireTimeBegin;
     private Long memberCardExpireTimeEnd;

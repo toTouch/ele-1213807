@@ -1084,6 +1084,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .tenantId(eleDepositOrder.getTenantId())
+                    .franchiseeId(userInfo.getFranchiseeId())
                     .build();
             eleRefundOrderService.insert(eleRefundOrder);
 
@@ -1127,6 +1128,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
                         .status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).tenantId(carDepositOrder.getTenantId())
+                        .franchiseeId(userInfo.getFranchiseeId())
                         .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
         
                 updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
@@ -1160,6 +1162,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
+                .franchiseeId(userInfo.getFranchiseeId())
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
     
@@ -1171,7 +1174,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
                     .payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount).status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
-                    .tenantId(eleDepositOrder.getTenantId())
+                    .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
             eleRefundOrderService.insert(carRefundOrder);
         }
@@ -1313,6 +1316,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .tenantId(tenantId)
+                    .franchiseeId(userInfo.getFranchiseeId())
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                     .build();
             eleRefundOrderService.insert(eleRefundOrder);
@@ -1341,6 +1345,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
                         .tenantId(tenantId)
+                        .franchiseeId(userInfo.getFranchiseeId())
                         .build();
                 eleRefundOrderService.insert(insertEleRefundOrder);
 
@@ -1373,6 +1378,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(tenantId)
+                .franchiseeId(userInfo.getFranchiseeId())
                 .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                 .build();
         eleRefundOrderService.insert(eleRefundOrder);
@@ -1388,6 +1394,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
+                    .franchiseeId(userInfo.getFranchiseeId())
                     .tenantId(tenantId)
                     .refundOrderType(EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)
                     .build();
@@ -1740,6 +1747,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setOrderId(userBatteryDeposit.getOrderId());
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
         eleRefundOrder.setTenantId(userInfo.getTenantId());
+        eleRefundOrder.setFranchiseeId(userInfo.getFranchiseeId());
         eleRefundOrder.setCreateTime(System.currentTimeMillis());
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());

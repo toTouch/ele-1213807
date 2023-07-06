@@ -1,33 +1,40 @@
 package com.xiliulou.electricity.query;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 /**
- * @author: eclair
- * @Date: 2020/6/15 10:02
- * @Description:
+ * @author zzlong
+ * @email zhaozhilong@xiliulou.com
+ * @date 2023-07-06-14:22
  */
 @Data
 @Builder
-public class RentBatteryOrderQuery {
+@NoArgsConstructor
+@AllArgsConstructor
+public class CarLockCtrlHistoryQuery {
+
     private Long size;
+
     private Long offset;
-    /**
-     * 用户名字
-     */
+
+    private Integer tenantId;
+
+    private String carSn;
+
     private String name;
+
     private String phone;
 
     private Long beginTime;
+
     private Long endTime;
-    private String status;
-    private String orderId;
-    private Integer type;
-    private List<Integer> eleIdList;
-    private Integer tenantId;
+
     private List<Long> franchiseeIds;
+
     private List<Long> storeIds;
 }

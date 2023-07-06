@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author zgw
  * @date 2023/3/1 17:41
@@ -29,4 +31,8 @@ public class UserActiveInfoQuery {
     private Integer tenantId;
     
     private Long limitTime;
+
+    private List<Long> franchiseeIds;
+
+    private List<Long> storeIds;
 }

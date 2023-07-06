@@ -49,6 +49,8 @@ public class ElectricityMemberCardOrder {
     //租户id
     private Integer tenantId;
 
+    private Long storeId;
+
     private Long franchiseeId;
 
     private Integer isBindActivity;

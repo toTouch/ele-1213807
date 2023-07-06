@@ -398,6 +398,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
+                    .storeId(store.getId())
+                    .franchiseeId(store.getFranchiseeId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 
@@ -613,6 +615,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .orderSeq(RentBatteryOrder.STATUS_INIT).status(RentBatteryOrder.INIT)
                     .electricityCabinetId(electricityCabinet.getId()).cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
+                    .storeId(store.getId())
+                    .franchiseeId(store.getFranchiseeId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 

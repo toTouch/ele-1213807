@@ -26,6 +26,8 @@ public interface EleBatteryServiceFeeOrderService {
 
     EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo);
 
+    Integer insert(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
+
     void update(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
 
     /**

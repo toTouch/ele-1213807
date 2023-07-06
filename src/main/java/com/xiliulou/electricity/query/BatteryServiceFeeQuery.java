@@ -34,4 +34,5 @@ public class BatteryServiceFeeQuery {
     private String sn;
     
     private List<Long> franchiseeIds;
+    private List<Long> storeIds;
 }

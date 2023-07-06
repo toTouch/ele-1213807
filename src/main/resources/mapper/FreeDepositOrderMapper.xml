@@ -32,66 +32,104 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="FreeDepositOrderMap">
         select
-        id, uid, order_id, auth_no, phone, id_card, real_name, trans_amt, pay_trans_amt, auth_status, pay_status,
-        tenant_id, type, deposit_type, create_time, update_time
-        from t_free_deposit_order
-        where tenant_id=#{tenantId}
+        tfdo.id,
+        tfdo.uid,
+        tfdo.order_id,
+        tfdo.auth_no,
+        tfdo.phone,
+        tfdo.id_card,
+        tfdo.real_name,
+        tfdo.trans_amt,
+        tfdo.pay_trans_amt,
+        tfdo.auth_status,
+        tfdo.pay_status,
+        tfdo.tenant_id,
+        tfdo.type,
+        tfdo.deposit_type,
+        tfdo.create_time,
+        tfdo.update_time
+        from t_free_deposit_order tfdo left join t_user_info tui on tui.uid=tfdo.uid
+        where tfdo.tenant_id=#{tenantId}
         <if test="authStatus != null">
-            and auth_status = #{authStatus}
+            and tfdo.auth_status = #{authStatus}
         </if>
         <if test="payStatus != null">
-            and pay_status = #{payStatus}
+            and tfdo.pay_status = #{payStatus}
         </if>
         <if test="depositType != null">
-            and deposit_type = #{depositType}
+            and tfdo.deposit_type = #{depositType}
         </if>
         <if test="orderId != null and orderId != ''">
-            and order_id = #{orderId}
+            and tfdo.order_id = #{orderId}
         </if>
         <if test="phone != null and phone != ''">
-            and phone = #{phone}
+            and tfdo.phone = #{phone}
         </if>
         <if test="realName != null and realName != '' ">
-            and real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
+            and tfdo.real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
         </if>
         <if test="startTime != null">
-            and create_time &gt;= #{startTime}
+            and tfdo.create_time &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            and create_time &lt;= #{endTime}
+            and tfdo.create_time &lt;= #{endTime}
         </if>
-        order by create_time desc
+        <if test="franchiseeIds != null and franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="storeIds != null and storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by tfdo.id desc
         limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="int">
         select
         count(1)
-        from t_free_deposit_order
-        where tenant_id=#{tenantId}
+        from t_free_deposit_order tfdo left join t_user_info tui on tui.uid=tfdo.uid
+        where tfdo.tenant_id=#{tenantId}
         <if test="authStatus != null">
-            and auth_status = #{authStatus}
+            and tfdo.auth_status = #{authStatus}
         </if>
         <if test="payStatus != null">
-            and pay_status = #{payStatus}
+            and tfdo.pay_status = #{payStatus}
         </if>
         <if test="depositType != null">
-            and deposit_type = #{depositType}
+            and tfdo.deposit_type = #{depositType}
         </if>
         <if test="orderId != null and orderId != ''">
-            and order_id = #{orderId}
+            and tfdo.order_id = #{orderId}
         </if>
         <if test="phone != null and phone != ''">
-            and phone = #{phone}
+            and tfdo.phone = #{phone}
         </if>
         <if test="realName != null and realName != '' ">
-            and real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
+            and tfdo.real_name like concat('%',#{realName,jdbcType=VARCHAR},'%')
         </if>
         <if test="startTime != null">
-            and create_time &gt;= #{startTime}
+            and tfdo.create_time &gt;= #{startTime}
         </if>
         <if test="endTime != null">
-            and create_time &lt;= #{endTime}
+            and tfdo.create_time &lt;= #{endTime}
+        </if>
+        <if test="franchiseeIds != null and franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="storeIds != null and storeIds.size()>0">
+            and tui.store_id in
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
         </if>
     </select>
 

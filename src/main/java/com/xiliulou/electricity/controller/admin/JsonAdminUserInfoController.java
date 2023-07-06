@@ -93,20 +93,23 @@ public class JsonAdminUserInfoController extends BaseController {
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
@@ -129,6 +132,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .batteryRentStatus(batteryRentStatus)
                 .batteryDepositStatus(batteryDepositStatus)
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .userCreateBeginTime(userCreateBeginTime)
                 .userCreateEndTime(userCreateEndTime)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -225,20 +229,23 @@ public class JsonAdminUserInfoController extends BaseController {
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(org.apache.commons.collections.CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
         
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
@@ -259,6 +266,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .cardPayCount(cardPayCount)
                 .memberCardExpireType(memberCardExpireType)
                 .franchiseeIds(franchiseeIds)
+                .storeIds(storeIds)
                 .userCreateBeginTime(userCreateTimeBegin)
                 .userCreateEndTime(userCreateTimeEnd)
                 .tenantId(TenantContextHolder.getTenantId()).build();
@@ -337,24 +345,27 @@ public class JsonAdminUserInfoController extends BaseController {
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
-        List<Long> franchiseeIds = null;
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if (CollectionUtils.isEmpty(franchiseeIds)) {
+
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(storeIds)){
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            return R.ok(Collections.EMPTY_LIST);
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if(CollectionUtils.isEmpty(franchiseeIds)){
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-    
+
         UserInfoQuery userInfoQuery = UserInfoQuery.builder().offset(offset).size(size).name(name).phone(phone).authType(authType)
-                .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds)
+                .beginTime(beginTime).endTime(endTime).authStatus(authStatus).franchiseeIds(franchiseeIds).storeIds(storeIds)
                 .tenantId(TenantContextHolder.getTenantId()).build();
     
         return userInfoService.queryUserAuthInfo(userInfoQuery);

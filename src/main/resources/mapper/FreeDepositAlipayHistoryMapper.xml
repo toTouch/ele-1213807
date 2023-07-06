@@ -156,67 +156,102 @@
     
     <select id="queryList" resultType="com.xiliulou.electricity.vo.FreeDepositAlipayHistoryVo">
         select
-        id, order_id, name, phone, id_card, operate_name, pay_amount, alipay_amount,
-        type, create_time, tenant_id, remark, pay_status
-        from t_free_deposit_alipay_history
+        fdah.id,
+        fdah.order_id,
+        fdah.name,
+        fdah.phone,
+        fdah.id_card,
+        fdah.operate_name,
+        fdah.pay_amount,
+        fdah.alipay_amount,
+        fdah.type,
+        fdah.create_time,
+        fdah.tenant_id,
+        fdah.remark,
+        fdah.pay_status
+        from t_free_deposit_alipay_history fdah left join t_user_info tui on tui.uid=fdah.uid
         <where>
             <if test="orderId != null and orderId != ''">
-                and order_id like concat('%', #{orderId}, '%')
+                and fdah.order_id like concat('%', #{orderId}, '%')
             </if>
             <if test="userName != null and userName != ''">
-                and name like concat('%', #{userName}, '%')
+                and fdah.name like concat('%', #{userName}, '%')
             </if>
             <if test="phone != null and phone != ''">
-                and phone like concat('%', #{phone}, '%')
+                and fdah.phone like concat('%', #{phone}, '%')
             </if>
             <if test="idCard != null and idCard != ''">
-                and id_card like concat('%', #{idCard}, '%')
+                and fdah.id_card like concat('%', #{idCard}, '%')
             </if>
             <if test="type != null">
-                and type = #{type}
+                and fdah.type = #{type}
             </if>
             <if test="beginTime != null">
-                and create_time &gt; #{beginTime}
+                and fdah.create_time &gt; #{beginTime}
             </if>
             <if test="endTime != null">
-                and create_time &lt; #{endTime}
+                and fdah.create_time &lt; #{endTime}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and fdah.tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
-        order by create_time desc
+        order by fdah.create_time desc
         limit #{offset}, #{size}
     </select>
     
     <select id="queryCount" resultType="long">
         select
         count(*)
-        from t_free_deposit_alipay_history
+        from t_free_deposit_alipay_history fdah left join t_user_info tui on tui.uid=fdah.uid
         <where>
             <if test="orderId != null and orderId != ''">
-                and order_id like concat('%', #{orderId}, '%')
+                and fdah.order_id like concat('%', #{orderId}, '%')
             </if>
             <if test="userName != null and userName != ''">
-                and name like concat('%', #{userName}, '%')
+                and fdah.name like concat('%', #{userName}, '%')
             </if>
             <if test="phone != null and phone != ''">
-                and phone like concat('%', #{phone}, '%')
+                and fdah.phone like concat('%', #{phone}, '%')
             </if>
             <if test="idCard != null and idCard != ''">
-                and id_card like concat('%', #{idCard}, '%')
+                and fdah.id_card like concat('%', #{idCard}, '%')
             </if>
             <if test="type != null">
-                and type = #{type}
+                and fdah.type = #{type}
             </if>
             <if test="beginTime != null">
-                and create_time &gt; #{beginTime}
+                and fdah.create_time &gt; #{beginTime}
             </if>
             <if test="endTime != null">
-                and create_time &lt; #{endTime}
+                and fdah.create_time &lt; #{endTime}
             </if>
             <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+                and fdah.tenant_id = #{tenantId}
+            </if>
+            <if test="franchiseeIds != null and franchiseeIds.size()>0">
+                and tui.franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="storeIds != null and storeIds.size()>0">
+                and tui.store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
     </select>

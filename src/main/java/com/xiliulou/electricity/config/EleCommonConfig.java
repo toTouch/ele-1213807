@@ -29,6 +29,8 @@ public class EleCommonConfig {
      */
     private Integer powerChangeDiff;
 
+    private Integer testFactoryTenantId;
+
     /**
      * 开启电量上报检测
      */

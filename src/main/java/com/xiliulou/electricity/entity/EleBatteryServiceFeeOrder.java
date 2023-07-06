@@ -60,7 +60,13 @@ public class EleBatteryServiceFeeOrder {
 
     //租户id
     private Integer tenantId;
-
+    /**
+     * 门店Id
+     */
+    private Long storeId;
+    /**
+     * 加盟商Id
+     */
     private Long franchiseeId;
 
     /**
