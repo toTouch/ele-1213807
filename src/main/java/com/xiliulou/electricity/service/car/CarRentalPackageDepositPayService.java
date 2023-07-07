@@ -15,6 +15,14 @@ import java.util.List;
 public interface CarRentalPackageDepositPayService {
 
     /**
+     * 根据租户ID和用户ID查询租车套餐押金缴纳订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageDepositPayPO selectByTenantIdAndUid(Integer tenantId, Long uid);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型

@@ -48,7 +48,7 @@ public interface CarRentalPackageOrderService {
      * @param orderNo 订单编码
      * @return
      */
-    R<CarRentalPackageOrderPO> selectByOrderNo(String orderNo);
+    CarRentalPackageOrderPO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询

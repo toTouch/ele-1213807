@@ -40,4 +40,14 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
      */
     private Long insuranceId;
 
+    /**
+     * 是否选择免押
+     * <pre>
+     *     1-是
+     *     2-否
+     * </pre>
+     * @see com.xiliulou.electricity.enums.YesNoEnum
+     */
+    private Integer depositType;
+
 }

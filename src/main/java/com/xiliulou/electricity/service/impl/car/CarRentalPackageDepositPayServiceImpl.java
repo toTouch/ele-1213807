@@ -3,11 +3,13 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositPayMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositPayOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,22 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
 
     @Resource
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
+
+    /**
+     * 根据租户ID和用户ID查询租车套餐押金缴纳订单
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return
+     */
+    @Slave
+    @Override
+    public CarRentalPackageDepositPayPO selectByTenantIdAndUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageDepositPayMapper.selectByTenantIdAndUid(tenantId, uid);
+    }
 
     /**
      * 条件查询列表<br />

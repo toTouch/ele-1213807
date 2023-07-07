@@ -85,5 +85,6 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      * </pre>
      * @see com.xiliulou.electricity.enums.YesNoEnum
      */
+    @Deprecated
     private Integer depositPayFlag;
 }

@@ -120,6 +120,14 @@
         </trim>
     </sql>
 
+    <!-- 根据租户ID和用户ID查询租车套餐押金缴纳订单 -->
+    <select id="selectByTenantIdAndUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
+        </where>
+    </select>
+
     <!-- 条件查询列表 -->
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />

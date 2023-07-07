@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,6 +14,15 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageDepositPayMapper {
+
+    /**
+     * 根据租户ID和用户ID查询租车套餐押金缴纳订单
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return
+     */
+    CarRentalPackageDepositPayPO selectByTenantIdAndUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />

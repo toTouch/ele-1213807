@@ -105,12 +105,12 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderPO> selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderPO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            return null;
         }
 
-        return R.ok(carRentalPackageOrderMapper.selectByOrderNo(orderNo));
+        return carRentalPackageOrderMapper.selectByOrderNo(orderNo);
     }
 
     /**

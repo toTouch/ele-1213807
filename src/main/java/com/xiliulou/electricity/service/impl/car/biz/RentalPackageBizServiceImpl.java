@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
@@ -14,7 +14,9 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -69,7 +71,7 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         CouponQuery couponQuery = CouponQuery.builder().ids(couponIdList).build();
         R couponResult = couponService.queryList(couponQuery);
         if (!couponResult.isSuccess()) {
-            throw new CustomBusinessException(couponResult.getErrMsg());
+            throw new BizException(couponResult.getErrMsg());
         }
 
         List<Coupon> couponList = (List<Coupon>) couponResult.getData();
@@ -77,7 +79,7 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         // 按照优惠券是否可叠加分组
         Map<Integer, List<Coupon>> superpositionMap = couponList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
-            throw new CustomBusinessException("使用优惠券有误");
+            throw new BizException("使用优惠券有误");
         }
 
         // 真正使用的用户优惠券ID
@@ -107,39 +109,39 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("CheckBuyPackageCommon failed. Not found user. uid is {} ", uid);
-            throw new CustomBusinessException("未找到用户");
+            throw new BizException("未找到用户");
         }
 
         // 1.1 用户可用状态
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("CheckBuyPackageCommon failed. User is unUsable. uid is {} ", uid);
-            throw new CustomBusinessException("用户已被禁用");
+            throw new BizException("用户已被禁用");
         }
 
         // 1.2 用户实名认证状态
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("CheckBuyPackageCommon failed. User not auth. uid is {}", uid);
-            throw new CustomBusinessException("用户尚未实名认证");
+            throw new BizException("用户尚未实名认证");
         }
 
         // 2. 支付相关
         ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
         if (Objects.isNull(electricityPayParams)) {
             log.error("CheckBuyPackageCommon failed. Not found pay_params. uid is {}", uid);
-            throw new CustomBusinessException("未配置支付参数");
+            throw new BizException("未配置支付参数");
         }
 
         // 3. 三方授权相关
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-            throw new CustomBusinessException("未找到用户的第三方授权信息");
+            throw new BizException("未找到用户的第三方授权信息");
         }
 
         // 4. 判定滞纳金
         if (slippageBizService.isExitUnpaid(tenantId, uid)) {
             log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-            throw new CustomBusinessException("存在滞纳金，请先缴纳");
+            throw new BizException("存在滞纳金，请先缴纳");
         }
 
         // 5.
