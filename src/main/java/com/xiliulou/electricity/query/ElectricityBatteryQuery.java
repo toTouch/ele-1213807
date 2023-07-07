@@ -18,6 +18,12 @@ public class ElectricityBatteryQuery {
      * sn码
      */
     private String sn;
+    
+    /**
+     * 电池型号
+     */
+    private String model;
+    
     /**
      * 电池物理状态 0：在仓，1：不在仓
      */

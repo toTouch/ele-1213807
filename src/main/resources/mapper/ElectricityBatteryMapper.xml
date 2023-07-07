@@ -123,6 +123,9 @@
         <if test="query.franchiseeName != null and '' != query.franchiseeName">
             and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
         </if>
+        <if test="query.model != null and '' != query.model">
+            and model like concat('%',#{query.model},'%')
+        </if>
         <if test="query.franchiseeIds != null">
             and franchisee_id in
             <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
@@ -261,6 +264,9 @@
         </if>
         <if test="query.franchiseeName != null and '' != query.franchiseeName">
             and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+        </if>
+        <if test="query.model != null and '' != query.model">
+            and model like concat('%',#{query.model},'%')
         </if>
         <if test="query.franchiseeIds != null">
             and franchisee_id in
