@@ -471,7 +471,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid())).payAmount(payAmount).refundAmount(eleRefundAmount)
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid())).payAmount(payAmount).refundAmount(eleRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
@@ -500,7 +500,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                             : carDepositOrder.getPayAmount();
 
             EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(userCarDeposit.getOrderId())
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid())).payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, user.getUid())).payAmount(carDepositOrder.getPayAmount()).refundAmount(carRefundAmount)
                     .status(EleRefundOrder.STATUS_INIT).createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
                     .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
@@ -1501,7 +1501,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal refundAmount =
                 getRefundAmount(eleDepositOrder).doubleValue() < 0 ? BigDecimal.ZERO : getRefundAmount(eleDepositOrder);
         UserInfo updateUserInfo = new UserInfo();
-        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid());
+        String orderId = OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, user.getUid());
         FreeDepositOrder freeDepositOrder = freeDepositOrderService.selectByOrderId(eleDepositOrder.getOrderId());
 
 
@@ -2187,7 +2187,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             BigDecimal eleRefundAmount = refundAmount.doubleValue() < 0 ?  BigDecimal.ZERO : refundAmount;
             //生成退款订单
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder().orderId(eleDepositOrder.getOrderId())
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, user.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, user.getUid())).payAmount(userBatteryDeposit.getBatteryDeposit())
                     .refundAmount(eleRefundAmount).status(EleRefundOrder.STATUS_INIT)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
                     .tenantId(eleDepositOrder.getTenantId()).memberCardOweNumber(memberCardOweNumber).build();
@@ -2229,7 +2229,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
-                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, user.getUid())).payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, user.getUid())).payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis()).franchiseeId(userInfo.getFranchiseeId())
                 .tenantId(carDepositOrder.getTenantId()).refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)

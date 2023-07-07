@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.BatteryMemberCardMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.BatteryMemberCard" id="BatteryMemberCardMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="deposit" column="deposit" jdbcType="NUMERIC"/>
+        <result property="rentPrice" column="rent_price" jdbcType="NUMERIC"/>
+        <result property="rentPriceUnit" column="rent_price_unit" jdbcType="NUMERIC"/>
+        <result property="validDays" column="valid_days" jdbcType="INTEGER"/>
+        <result property="rentUnit" column="rent_unit" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="rentType" column="rent_type" jdbcType="INTEGER"/>
+        <result property="sendCoupon" column="send_coupon" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="limitCount" column="limit_count" jdbcType="INTEGER"/>
+        <result property="useCount" column="use_count" jdbcType="INTEGER"/>
+        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="isRefund" column="is_refund" jdbcType="INTEGER"/>
+        <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
+        <result property="freeDeposite" column="free_deposite" jdbcType="INTEGER"/>
+        <result property="refundDepositeAudit" column="refund_deposite_audit" jdbcType="INTEGER"/>
+        <result property="serviceCharge" column="service_charge" jdbcType="NUMERIC"/>
+        <result property="display" column="display" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BatteryMemberCardMap">
+        select
+          id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon, status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, refund_deposite_audit, service_charge, display, type, remark, business_type, del_flag, tenant_id, create_time, update_time
+        from t_battery_member_card
+        where id = #{id}
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_battery_member_card
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="deposit != null">
+                deposit = #{deposit},
+            </if>
+            <if test="rentPrice != null">
+                rent_price = #{rentPrice},
+            </if>
+            <if test="rentPriceUnit != null">
+                rent_price_unit = #{rentPriceUnit},
+            </if>
+            <if test="validDays != null">
+                valid_days = #{validDays},
+            </if>
+            <if test="rentUnit != null">
+                rent_unit = #{rentUnit},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="rentType != null">
+                rent_type = #{rentType},
+            </if>
+            <if test="sendCoupon != null">
+                send_coupon = #{sendCoupon},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="limitCount != null">
+                limit_count = #{limitCount},
+            </if>
+            <if test="useCount != null">
+                use_count = #{useCount},
+            </if>
+            <if test="couponId != null">
+                coupon_id = #{couponId},
+            </if>
+            <if test="isRefund != null">
+                is_refund = #{isRefund},
+            </if>
+            <if test="refundLimit != null">
+                refund_limit = #{refundLimit},
+            </if>
+            <if test="freeDeposite != null">
+                free_deposite = #{freeDeposite},
+            </if>
+            <if test="refundDepositeAudit != null">
+                refund_deposite_audit = #{refundDepositeAudit},
+            </if>
+            <if test="serviceCharge != null">
+                service_charge = #{serviceCharge},
+            </if>
+            <if test="display != null">
+                display = #{display},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="businessType != null">
+                business_type = #{businessType},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_battery_member_card where id = #{id}
+    </delete>
+
+</mapper>

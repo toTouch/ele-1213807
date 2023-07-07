@@ -9,7 +9,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -1078,7 +1077,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //生成退款订单
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                     .orderId(eleDepositOrder.getOrderId())
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid))
                     .payAmount(eleDepositOrder.getPayAmount()).refundAmount(eleRefundAmount)
                     .status(EleRefundOrder.STATUS_SUCCESS)
                     .createTime(System.currentTimeMillis())
@@ -1124,7 +1123,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         :userCarDeposit.getCarDeposit().add(refundAmount);
         
                 EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
-                        .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
+                        .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, uid))
                         .payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount)
                         .status(EleRefundOrder.STATUS_SUCCESS).createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis()).tenantId(carDepositOrder.getTenantId())
@@ -1156,7 +1155,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         //生成退款订单
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid))
                 .payAmount(eleDepositOrder.getPayAmount()).refundAmount(eleRefundAmount)
                 .status(EleRefundOrder.STATUS_REFUND)
                 .createTime(System.currentTimeMillis())
@@ -1171,7 +1170,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     :userCarDeposit.getCarDeposit().add(refundAmount);
 
             EleRefundOrder carRefundOrder = EleRefundOrder.builder().orderId(carDepositOrder.getOrderId())
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, uid))
                     .payAmount(userCarDeposit.getCarDeposit()).refundAmount(carRefundAmount).status(EleRefundOrder.STATUS_REFUND)
                     .createTime(System.currentTimeMillis()).updateTime(System.currentTimeMillis())
                     .tenantId(eleDepositOrder.getTenantId()).franchiseeId(userInfo.getFranchiseeId())
@@ -1310,7 +1309,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                     .orderId(carDepositOrder.getOrderId())
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, uid))
                     .payAmount(carDepositOrder.getPayAmount()).refundAmount(refundAmount)
                     .status(EleRefundOrder.STATUS_SUCCESS)
                     .createTime(System.currentTimeMillis())
@@ -1339,7 +1338,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
                         .orderId(userBatteryDeposit.getOrderId())
-                        .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
+                        .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid))
                         .payAmount(userBatteryDeposit.getBatteryDeposit()).refundAmount(eleRefundAmount)
                         .status(EleRefundOrder.STATUS_SUCCESS)
                         .createTime(System.currentTimeMillis())
@@ -1372,7 +1371,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
                 .orderId(carDepositOrder.getOrderId())
-                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_REFUND, uid))
+                .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, uid))
                 .payAmount(carDepositOrder.getPayAmount()).refundAmount(refundAmount)
                 .status(EleRefundOrder.STATUS_REFUND)
                 .createTime(System.currentTimeMillis())
@@ -1388,7 +1387,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             BigDecimal eleRefundAmount = freeDepositAlipay.doubleValue() > userBatteryDeposit.getBatteryDeposit().doubleValue() ? BigDecimal.ZERO : userBatteryDeposit.getBatteryDeposit().subtract(freeDepositAlipay);
             EleRefundOrder insertEleRefundOrder = EleRefundOrder.builder()
                     .orderId(userBatteryDeposit.getOrderId())
-                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_REFUND, uid))
+                    .refundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_DEPOSIT_REFUND, uid))
                     .payAmount(userBatteryDeposit.getBatteryDeposit())
                     .refundAmount(eleRefundAmount)
                     .status(EleRefundOrder.STATUS_REFUND)
