@@ -15,12 +15,13 @@ import java.util.List;
 public interface CarRentalPackageMemberTermService {
 
     /**
-     * 根据租户ID和用户ID查询租车套餐会员限制信息
+     * 根据租户ID和用户ID查询租车套餐会员限制信息<br />
+     * 可能返回<code>null</code>
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return
      */
-    R<CarRentalPackageMemberTermPO> selectByTenantIdAndUid(Integer tenantId, Long uid);
+    CarRentalPackageMemberTermPO selectByTenantIdAndUid(Integer tenantId, Long uid);
 
     /**
      * 条件查询列表<br />

@@ -14,7 +14,14 @@ import java.util.List;
  */
 public interface UserCouponService {
 
-
+    /**
+     * 查询用户名下有效的优惠券
+     * @param uid 用户ID
+     * @param ids 主键ID
+     * @param deadline 到期时间
+     * @return
+     */
+    List<UserCoupon> selectEffectiveByUid(Long uid, List<Long> ids, Long deadline);
 
     R queryList(UserCouponQuery userCouponQuery);
 

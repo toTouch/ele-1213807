@@ -1,13 +1,13 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.UserCoupon;
-import java.util.List;
-
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * 优惠券表(TCoupon)表数据库访问层
@@ -17,6 +17,15 @@ import org.apache.ibatis.annotations.Select;
  */
 public interface UserCouponMapper extends BaseMapper<UserCoupon>{
 
+    /**
+     * 查询用户名下有效的优惠券
+     *
+     * @param uid      用户ID
+     * @param ids      主键ID
+     * @param deadline 到期时间
+     * @return
+     */
+    List<UserCoupon> selectEffectiveByUid(@Param("uid") Long uid, @Param("ids") List<Long> ids, @Param("deadline") Long deadline);
 
     /**
      * 查询指定行数据

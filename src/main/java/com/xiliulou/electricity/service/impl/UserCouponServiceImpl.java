@@ -18,8 +18,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +66,22 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
+
+    /**
+     * 查询用户名下有效的优惠券
+     *
+     * @param uid      用户ID
+     * @param ids      主键ID
+     * @param deadline 到期时间
+     * @return
+     */
+    @Override
+    public List<UserCoupon> selectEffectiveByUid(Long uid, List<Long> ids, Long deadline) {
+        if (!ObjectUtils.allNotNull(uid, ids, deadline)) {
+            return null;
+        }
+        return userCouponMapper.selectEffectiveByUid(uid, ids, deadline);
+    }
 
     @Override
     public R queryList(UserCouponQuery userCouponQuery) {

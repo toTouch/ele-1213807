@@ -36,4 +36,9 @@ public class CouponQuery {
 
     private Integer tenantId;
 
+    /**
+     * 优惠券ID集
+     */
+    private List<Integer> ids;
+
 }

@@ -27,6 +27,19 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
     private CarRentalPackageOrderSlippageMapper carRentalPackageOrderSlippageMapper;
 
     /**
+     * 距当前时间，是否存在未缴纳的逾期订单
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return
+     */
+    @Slave
+    @Override
+    public Boolean isExitUnpaid(Integer tenantId, Long uid) {
+        return carRentalPackageOrderSlippageMapper.isExitUnpaid(tenantId, uid, System.currentTimeMillis()) > 0;
+    }
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      *

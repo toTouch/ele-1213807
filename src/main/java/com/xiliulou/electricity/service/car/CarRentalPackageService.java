@@ -72,11 +72,12 @@ public interface CarRentalPackageService {
     R<Integer> count(CarRentalPackageQryModel qryModel);
 
     /**
-     * 根据ID查询
+     * 根据ID查询<br />
+     * 可能返回<code>null</code>
      * @param id 主键ID
      * @return
      */
-    R<CarRentalPackagePO> selectById(Long id);
+    CarRentalPackagePO selectById(Long id);
 
     /**
      * 根据ID更新

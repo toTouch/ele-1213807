@@ -15,6 +15,15 @@ import java.util.List;
 public interface CarRentalPackageOrderSlippageMapper {
 
     /**
+     * 是否存在未缴纳的逾期订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param time 时间
+     * @return
+     */
+    Integer isExitUnpaid(Integer tenantId, Long uid, Long time);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询条件模型

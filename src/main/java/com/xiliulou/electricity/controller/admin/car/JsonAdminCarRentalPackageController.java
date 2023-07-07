@@ -185,11 +185,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         }
 
         // 调用服务
-        R<CarRentalPackagePO> carRentalPackagePORes = carRentalPackageService.selectById(id);
-        if (!carRentalPackagePORes.isSuccess()) {
-            return R.fail(carRentalPackagePORes.getErrCode(), carRentalPackagePORes.getErrMsg());
-        }
-        CarRentalPackagePO carRentalPackagePO = carRentalPackagePORes.getData();
+        CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(id);
 
         // 查询加盟商
         Long franchiseeId = Long.valueOf(carRentalPackagePO.getFranchiseeId());

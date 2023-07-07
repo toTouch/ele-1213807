@@ -32,23 +32,24 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
 
     /**
-     * 根据租户ID和用户ID查询租车套餐会员限制信息
-     *
+     * 根据租户ID和用户ID查询租车套餐会员限制信息<br />
+     * 可能返回<code>null</code>
      * @param tenantId 租户ID
      * @param uid      用户ID
      * @return
      */
+    @Slave
     @Override
-    public R<CarRentalPackageMemberTermPO> selectByTenantIdAndUid(Integer tenantId, Long uid) {
+    public CarRentalPackageMemberTermPO selectByTenantIdAndUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            return null;
         }
 
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
         CarRentalPackageMemberTermPO cachePO = redisService.getWithHash(cacheKey, CarRentalPackageMemberTermPO.class);
         if (ObjectUtils.isNotEmpty(cachePO)) {
-            return R.ok(cachePO);
+            return cachePO;
         }
 
         // 获取 DB
@@ -57,7 +58,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             redisService.saveWithHash(cacheKey, dbPO);
         }
 
-        return R.ok(dbPO);
+        return dbPO;
     }
 
     /**

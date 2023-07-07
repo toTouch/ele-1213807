@@ -179,23 +179,23 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     }
 
     /**
-     * 根据ID查询
-     *
+     * 根据ID查询<br />
+     * 可能返回<code>null</code>
      * @param id 主键ID
      * @return
      */
     @Slave
     @Override
-    public R<CarRentalPackagePO> selectById(Long id) {
+    public CarRentalPackagePO selectById(Long id) {
         if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            return null;
         }
 
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id);
         CarRentalPackagePO cachePO = redisService.getWithHash(cacheKey, CarRentalPackagePO.class);
         if (ObjectUtils.isNotEmpty(cachePO)) {
-            return R.ok(cachePO);
+            return null;
         }
 
         // 查询 DB
@@ -204,7 +204,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 存入缓存
         redisService.saveWithHash(cacheKey, dbPO);
 
-        return R.ok(dbPO);
+        return dbPO;
     }
 
     /**

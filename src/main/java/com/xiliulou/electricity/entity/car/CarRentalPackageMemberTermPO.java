@@ -7,6 +7,8 @@ import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 租车套餐会员期限表
  *
@@ -69,4 +71,19 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      * 备注
      */
     private String remark;
+
+    /**
+     * 押金金额(元)
+     */
+    private BigDecimal deposit;
+
+    /**
+     * 押金支付状态
+     * <pre>
+     *     1-是
+     *     2-否
+     * </pre>
+     * @see com.xiliulou.electricity.enums.YesNoEnum
+     */
+    private Integer depositPayFlag;
 }

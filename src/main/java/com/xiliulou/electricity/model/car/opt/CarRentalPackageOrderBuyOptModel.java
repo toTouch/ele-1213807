@@ -31,9 +31,9 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
     private Long rentalPackageId;
 
     /**
-     * 使用的优惠券ID集
+     * 用户使用的优惠券ID集
      */
-    private List<Long> couponIds;
+    private List<Long> userCouponIds;
 
     /**
      * 保险ID
