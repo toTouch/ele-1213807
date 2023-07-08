@@ -113,6 +113,7 @@ public class CarRentalPackagePO extends BasicCarPO {
      * </pre>
      * @see YesNoEnum
      */
+    @Deprecated
     private Integer depositRebateApprove;
 
     /**

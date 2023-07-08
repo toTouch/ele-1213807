@@ -120,6 +120,19 @@
         </trim>
     </sql>
 
+    <!-- 根据订单编码更新支付状态 -->
+    <update id="updatePayStateByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `pay_state` = #{payState}, `update_time` = #{optTime}
+            <if test=" uid != null "> , `uid` = #{uid} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
+
     <!-- 根据租户ID和用户ID查询租车套餐押金缴纳订单 -->
     <select id="selectByTenantIdAndUid" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />

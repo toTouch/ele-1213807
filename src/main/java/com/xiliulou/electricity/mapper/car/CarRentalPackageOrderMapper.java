@@ -59,7 +59,7 @@ public interface CarRentalPackageOrderMapper {
     CarRentalPackageOrderPO selectById(Long id);
 
     /**
-     * 根据ID更新支付状态
+     * 根据订单编码更新支付状态
      * @param orderNo 订单编码
      * @param payState 支付状态
      * @param remark 备注

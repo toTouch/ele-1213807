@@ -19,7 +19,9 @@
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="dueTime" column="due_time" jdbcType="BIGINT" />
+        <result property="dueTimeTotal" column="due_time_total" jdbcType="BIGINT" />
         <result property="residue" column="residue" jdbcType="BIGINT" />
+        <result property="residueTotal" column="residue_total" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
     </resultMap>
@@ -34,7 +36,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `residue`, `status`, `remark`
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `residue_total`, `status`, `remark`
     </sql>
 
     <!-- 全部字段 -->
@@ -64,7 +66,9 @@
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
             <if test=" dueTime != null "> `due_time`, </if>
+            <if test=" dueTimeTotal != null "> `due_time_total`, </if>
             <if test=" residue != null "> `residue`, </if>
+            <if test=" residueTotal != null "> `residue_total`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
         </trim>
@@ -85,11 +89,59 @@
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" dueTime != null "> #{dueTime}, </if>
+            <if test=" dueTimeTotal != null "> #{dueTimeTotal}, </if>
             <if test=" residue != null "> #{residue}, </if>
+            <if test=" residueTotal != null "> #{residueTotal}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
         </trim>
     </sql>
+
+    <!-- 根据用户ID和租户ID更新状态 -->
+    <update id="updateStatusByUidAndTenantId">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `status` = #{status}
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+    </update>
+
+    <!-- 根据主键ID更新状态 -->
+    <update id="updateStatusById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `status` = #{status}
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 根据主键ID更新数据 -->
+    <update id="updateById" parameterType="com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{updateTime}
+            <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
+            <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> , `rental_package_order_no` = #{rentalPackageOrderNo} </if>
+            <if test=" rentalPackageId != null "> , `rental_package_id` = #{rentalPackageId} </if>
+            <if test=" rentalPackageType != null "> , `rental_package_type` = #{rentalPackageType} </if>
+            <if test=" dueTime != null "> , `due_time` = #{dueTime} </if>
+            <if test=" dueTimeTotal != null "> , `due_time_total` = #{dueTimeTotal} </if>
+            <if test=" residue != null "> , `residue` = #{residue} </if>
+            <if test=" dueTimeTotal != null "> , `residue_total` = #{residueTotal} </if>
+            <if test=" status != null "> , `status` = #{status} </if>
+            <if test=" deposit != null "> , `deposit` = #{deposit} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
 
     <!-- 根据租户ID和用户ID查询租车套餐会员限制信息 -->
     <select id="selectByTenantIdAndUid" resultMap="entityMap">

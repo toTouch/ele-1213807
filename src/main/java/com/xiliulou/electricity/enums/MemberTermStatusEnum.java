@@ -13,6 +13,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum MemberTermStatusEnum implements BasicEnum<Integer, String> {
 
+    PENDING_EFFECTIVE(0, "待生效"),
     NORMAL(1, "正常"),
     APPLY_FREEZE(1, "申请冻结"),
     FREEZE(1, "冻结"),

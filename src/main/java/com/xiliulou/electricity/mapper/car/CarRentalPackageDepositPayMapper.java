@@ -16,6 +16,17 @@ import java.util.List;
 public interface CarRentalPackageDepositPayMapper {
 
     /**
+     * 根据订单编码更新支付状态
+     * @param orderNo 订单编码
+     * @param payState 支付状态
+     * @param remark 备注
+     * @param uid 操作人
+     * @param optTime 操作时间
+     * @return
+     */
+    int updatePayStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("remark") String remark, @Param("uid") Long uid, @Param("optTime") Long optTime);
+
+    /**
      * 根据租户ID和用户ID查询租车套餐押金缴纳订单
      *
      * @param tenantId 租户ID

@@ -221,7 +221,7 @@
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
         </set>
         <where>
-            `orderNo` = #{order_no}
+            `order_no` = #{orderNo}
         </where>
     </update>
 
@@ -246,7 +246,7 @@
             <if test=" uid != null "> , `uid` = #{uid} </if>
         </set>
         <where>
-            `orderNo` = #{order_no}
+            `order_no` = #{orderNo}
         </where>
     </update>
 

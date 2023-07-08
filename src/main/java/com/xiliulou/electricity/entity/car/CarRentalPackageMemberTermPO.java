@@ -48,16 +48,27 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
     /**
      * 到期时间
      */
-    private Integer dueTime;
+    private Long dueTime;
 
     /**
-     * 当前套餐订单余量
+     * 总计到期时间
+     */
+    private Long dueTimeTotal;
+
+    /**
+     * 当前余量
      */
     private Integer residue;
 
     /**
+     * 总计余量
+     */
+    private Integer residueTotal;
+
+    /**
      * 状态
      * <pre>
+     *     0-待生效
      *     1-正常
      *     2-申请冻结
      *     3-冻结

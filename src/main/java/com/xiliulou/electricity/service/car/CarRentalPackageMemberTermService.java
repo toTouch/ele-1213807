@@ -15,6 +15,32 @@ import java.util.List;
 public interface CarRentalPackageMemberTermService {
 
     /**
+     * 根据用户ID和租户ID更新状态
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param status 状态
+     * @param optId 操作人ID（可以为空）
+     * @return
+     */
+    Boolean updateStatusByUidAndTenantId(Integer tenantId, Long uid, Integer status, Long optId);
+
+    /**
+     * 根据主键ID更新状态
+     * @param id 主键ID
+     * @param status 状态
+     * @param optId 操作人（可以为空）
+     * @return
+     */
+    Boolean updateStatusById(Long id, Integer status, Long optId);
+
+    /**
+     * 根据主键ID更新数据
+     * @param optModel
+     * @return
+     */
+    Boolean updateById(CarRentalPackageMemberTermOptModel optModel);
+
+    /**
      * 根据租户ID和用户ID查询租车套餐会员限制信息<br />
      * 可能返回<code>null</code>
      * @param tenantId 租户ID

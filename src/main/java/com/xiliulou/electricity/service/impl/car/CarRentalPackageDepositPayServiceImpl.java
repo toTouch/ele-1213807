@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
+import com.xiliulou.electricity.enums.PayStateEnum;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositPayMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositPayOptModel;
@@ -27,6 +29,39 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
 
     @Resource
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
+
+    /**
+     * 根据订单编号更新支付状态
+     *
+     * @param orderNo  订单编码
+     * @param payState 支付状态
+     * @return
+     */
+    @Override
+    public Boolean updatePayStateByOrderNo(String orderNo, Integer payState) {
+        return updatePayStateByOrderNo(orderNo, payState);
+    }
+
+    /**
+     * 根据订单编号更新支付状态
+     *
+     * @param orderNo  订单编码
+     * @param payState 支付状态
+     * @param remark   备注
+     * @param uid      操作人
+     * @return
+     */
+    @Override
+    public Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid) {
+        if (StringUtils.isBlank(orderNo) || !BasicEnum.isExist(payState, PayStateEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        long now = System.currentTimeMillis();
+        int num = carRentalPackageDepositPayMapper.updatePayStateByOrderNo(orderNo, payState, remark, uid, now);
+
+        return num >= 0;
+    }
 
     /**
      * 根据租户ID和用户ID查询租车套餐押金缴纳订单
@@ -101,12 +136,12 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Slave
     @Override
-    public R<CarRentalPackageDepositPayPO> selectByOrderNo(String orderNo) {
+    public CarRentalPackageDepositPayPO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageDepositPayMapper.selectByOrderNo(orderNo));
+        return carRentalPackageDepositPayMapper.selectByOrderNo(orderNo);
     }
 
     /**

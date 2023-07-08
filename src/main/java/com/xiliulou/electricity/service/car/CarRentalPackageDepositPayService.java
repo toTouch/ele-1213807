@@ -15,6 +15,24 @@ import java.util.List;
 public interface CarRentalPackageDepositPayService {
 
     /**
+     * 根据订单编号更新支付状态
+     * @param orderNo 订单编码
+     * @param payState 支付状态
+     * @return
+     */
+    Boolean updatePayStateByOrderNo(String orderNo, Integer payState);
+
+    /**
+     * 根据订单编号更新支付状态
+     * @param orderNo 订单编码
+     * @param payState 支付状态
+     * @param remark 备注
+     * @param uid 操作人
+     * @return
+     */
+    Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
+
+    /**
      * 根据租户ID和用户ID查询租车套餐押金缴纳订单
      * @param tenantId 租户ID
      * @param uid 用户ID
@@ -49,7 +67,7 @@ public interface CarRentalPackageDepositPayService {
      * @param orderNo 订单编码
      * @return
      */
-    R<CarRentalPackageDepositPayPO> selectByOrderNo(String orderNo);
+    CarRentalPackageDepositPayPO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询

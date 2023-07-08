@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
@@ -130,7 +131,19 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     }
 
     /**
-     * 根据ID更新支付状态
+     * 根据订单编号更新支付状态
+     *
+     * @param orderNo  订单编码
+     * @param payState 支付状态
+     * @return
+     */
+    @Override
+    public Boolean updatePayStateByOrderNo(String orderNo, Integer payState) {
+        return updatePayStateByOrderNo(orderNo, payState, null, null);
+    }
+
+    /**
+     * 根据订单编码更新支付状态
      *
      * @param orderNo  订单编码
      * @param payState 支付状态
@@ -139,18 +152,15 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @return
      */
     @Override
-    public R<Boolean> updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid) {
-        if (StringUtils.isBlank(orderNo) || payState == null) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        if (!BasicEnum.isExist(payState, PayStateEnum.class)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid) {
+        if (StringUtils.isBlank(orderNo) || !BasicEnum.isExist(payState, PayStateEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updatePayStateByOrderNo(orderNo, payState, remark, uid, now);
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**

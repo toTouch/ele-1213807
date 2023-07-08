@@ -33,6 +33,7 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
     /**
      * 套餐ID
      */
+    @Deprecated
     private Long rentalPackageId;
 
     /**
@@ -43,6 +44,7 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
      * </pre>
      * @see CarRentalPackageTypeEnum
      */
+    @Deprecated
     private Integer rentalPackageType;
 
     /**
@@ -84,6 +86,7 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
      * </pre>
      * @see YesNoEnum
      */
+    @Deprecated
     private Integer depositRebateApprove;
 
     /**
@@ -111,7 +114,7 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
     /**
      * 备注
      */
-    private Integer remark;
+    private String remark;
 
     /**
      * 来源订单编码

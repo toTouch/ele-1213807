@@ -5,16 +5,13 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.UnionTradeOrder;
+import com.xiliulou.electricity.enums.CallBackEnums;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UnionTradeOrderService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
-import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
-import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
-import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
-import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
+import com.xiliulou.pay.weixinv3.query.*;
 import com.xiliulou.pay.weixinv3.service.WechatV3MerchantLoadAndUpdateCertificateService;
 import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import com.xiliulou.pay.weixinv3.util.AesUtil;
@@ -24,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
@@ -96,11 +92,14 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
             electricityTradeOrderService.notifyRentCarDepositOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)) {
             electricityTradeOrderService.notifyRentCarMemberOrder(callBackResource);
+        } else if (Objects.equals(callBackResource.getAttach(), CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc())) {
+            // 租车套餐购买订单回调
+            electricityTradeOrderService.notifyCarRenalPackageOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_INSURANCE)) {
             electricityTradeOrderService.notifyInsuranceOrder(callBackResource);
         } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_UNION_INSURANCE_AND_DEPOSIT)) {
             unionTradeOrderService.notifyUnionDepositAndInsurance(callBackResource);
-        }else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)) {
+        } else if (Objects.equals(callBackResource.getAttach(), UnionTradeOrder.ATTACH_INTEGRATED_PAYMENT)) {
             unionTradeOrderService.notifyIntegratedPayment(callBackResource);
         } else {
             electricityTradeOrderService.notifyMemberOrder(callBackResource);

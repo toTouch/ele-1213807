@@ -58,14 +58,22 @@ public interface CarRentalPackageOrderService {
     R<CarRentalPackageOrderPO> selectById(Long id);
 
     /**
-     * 根据ID更新支付状态
+     * 根据订单编号更新支付状态
+     * @param orderNo 订单编码
+     * @param payState 支付状态
+     * @return
+     */
+    Boolean updatePayStateByOrderNo(String orderNo, Integer payState);
+
+    /**
+     * 根据订单编号更新支付状态
      * @param orderNo 订单编码
      * @param payState 支付状态
      * @param remark 备注
      * @param uid 操作人
      * @return
      */
-    R<Boolean> updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
+    Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
 
     /**
      * 根据ID更新支付状态
