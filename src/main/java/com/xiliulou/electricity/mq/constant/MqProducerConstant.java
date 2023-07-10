@@ -1,0 +1,27 @@
+package com.xiliulou.electricity.mq.constant;
+
+/**
+ * MQ Producer constant
+ *
+ * @author xiaohui.song
+ **/
+public interface MqProducerConstant {
+
+    /** 保险模块公用 topic */
+    String INSURE_COMMON_TOPIC = "insure_common_topic";
+
+    /** 保险模块公用 topic 下的所有 tag */
+    String INSURE_COMMOM_TOPIC_TAG = "*";
+
+    /** 活动模块公用 topic */
+    String ACTIVITY_COMMON_TOPIC = "activity_common_topic";
+
+    /** 活动模块公用 topic 下的所有 tag */
+    String ACTIVITY_COMMOM_TOPIC_TAG = "*";
+
+    /** 分账模块公用 topic */
+    String DIVISION_ACCOUNT_COMMON_TOPIC = "division_account_common_topic";
+
+    /** 分账模块公用 topic 下的所有 tag */
+    String DIVISION_ACCOUNT_COMMOM_TOPIC_TAG = "*";
+}
