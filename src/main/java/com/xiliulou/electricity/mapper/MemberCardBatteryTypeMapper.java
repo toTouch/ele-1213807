@@ -39,4 +39,5 @@ public interface MemberCardBatteryTypeMapper extends BaseMapper<MemberCardBatter
      */
     int deleteById(Long id);
 
+    Integer batchInsert(List<MemberCardBatteryType> memberCardBatteryTypeList);
 }

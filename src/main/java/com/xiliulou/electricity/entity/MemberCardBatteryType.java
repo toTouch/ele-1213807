@@ -25,6 +25,8 @@ public class MemberCardBatteryType {
      * 电池型号
      */
     private String batteryType;
+
+    private String batteryV;
     /**
      * 套餐Id
      */

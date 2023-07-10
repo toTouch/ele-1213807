@@ -1,6 +1,12 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
+import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
+import com.xiliulou.electricity.query.BatteryModelQuery;
+import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -18,7 +24,7 @@ public interface BatteryMemberCardService {
      * @param id 主键
      * @return 实例对象
      */
-    BatteryMemberCard queryByIdFromDB(Integer id);
+    BatteryMemberCard queryByIdFromDB(Long id);
 
     /**
      * 通过ID查询单条数据从缓存
@@ -26,7 +32,7 @@ public interface BatteryMemberCardService {
      * @param id 主键
      * @return 实例对象
      */
-    BatteryMemberCard queryByIdFromCache(Integer id);
+    BatteryMemberCard queryByIdFromCache(Long id);
 
     /**
      * 修改数据
@@ -42,6 +48,23 @@ public interface BatteryMemberCardService {
      * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Integer id);
+    Integer deleteById(Long id);
 
+    List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query);
+
+    Integer selectByPageCount(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
+
+    Triple<Boolean, String, Object> updateStatus(BatteryMemberCardStatusQuery batteryModelQuery);
+
+    Triple<Boolean, String, Object> delete(Long id);
+
+    Triple<Boolean, String, Object> modify(BatteryMemberCardQuery query);
+
+    Triple<Boolean, String, Object> save(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
+
+    List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
 }

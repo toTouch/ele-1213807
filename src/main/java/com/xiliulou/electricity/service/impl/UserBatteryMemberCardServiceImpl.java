@@ -298,4 +298,9 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime) {
         return userBatteryMemberCardMapper.queryMemberCardExpireUser(offset, size, nowTime);
     }
+
+    @Override
+    public Integer checkUserByMembercardId(Long id) {
+        return userBatteryMemberCardMapper.checkUserByMembercardId(id);
+    }
 }

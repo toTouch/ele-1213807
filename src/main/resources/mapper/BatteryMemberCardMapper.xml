@@ -40,6 +40,202 @@
         where id = #{id}
     </select>
 
+    <select id="selectBySearch" resultMap="BatteryMemberCardMap">
+        select
+        id, name
+        from t_battery_member_card
+        <where>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and rent_type = #{rentType}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPage" resultMap="BatteryMemberCardMap">
+        select
+        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
+        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, refund_deposite_audit,
+        service_charge, display, type, remark, business_type, del_flag, tenant_id, create_time, update_time
+        from t_battery_member_card
+        <where>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and rent_type = #{rentType}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageForUser" resultMap="BatteryMemberCardMap">
+        select
+        bmc.id,
+        bmc.name,
+        bmc.deposit,
+        bmc.rent_price,
+        bmc.rent_price_unit,
+        bmc.valid_days,
+        bmc.rent_unit,
+        bmc.franchisee_id,
+        bmc.rent_type,
+        bmc.send_coupon,
+        bmc.status,
+        bmc.limit_count,
+        bmc.use_count,
+        bmc.coupon_id,
+        bmc.is_refund,
+        bmc.refund_limit,
+        bmc.free_deposite,
+        bmc.refund_deposite_audit,
+        bmc.service_charge,
+        bmc.display
+        from t_battery_member_card bmc left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
+        <where>
+            <if test="batteryV != null and batteryV != ''">
+                and mcbt.battery_v = #{batteryV}
+            </if>
+            <if test="franchiseeId != null">
+                and bmc.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and bmc.status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and bmc.rent_type = #{rentType}
+            </if>
+            <if test="tenantId != null">
+                and bmc.tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and bmc.del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeId != null">
+                and bmc.franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+        order by bmc.id desc
+        limit #{offset}, #{size}
+    </select>
+
+
+    <select id="selectMembercardBatteryV" resultType="com.xiliulou.electricity.vo.BatteryMemberCardVO">
+        select
+        bmc.id,
+        mcbt.battery_v
+        from t_battery_member_card bmc left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
+        <where>
+            <if test="batteryV != null and batteryV != ''">
+                and mcbt.battery_v = #{batteryV}
+            </if>
+            <if test="franchiseeId != null">
+                and bmc.franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and bmc.status = #{status}
+            </if>
+            <if test="name != null and name != ''">
+                and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and bmc.rent_type = #{rentType}
+            </if>
+            <if test="tenantId != null">
+                and bmc.tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and bmc.del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeId != null">
+                and bmc.franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectByPageCount" resultType="int">
+        select
+        count(*)
+        from t_battery_member_card
+        <where>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="display != null">
+                and display = #{display}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and rent_type = #{rentType}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="checkMembercardExist" resultType="Integer">
+        select 1 from t_battery_member_card where name=#{name} and tenant_id = #{tenantId} LIMIT 1
+    </select>
+
     <!--通过主键修改数据-->
     <update id="update">
         update t_battery_member_card
@@ -112,9 +308,6 @@
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
-            </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},

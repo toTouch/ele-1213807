@@ -33,7 +33,6 @@ public interface ElectricityMemberCardOrderService {
     @Deprecated
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
-
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
 
     void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
@@ -130,4 +129,6 @@ public interface ElectricityMemberCardOrderService {
     List<BatteryMemberCardOrderCoupon> buildMemberCardOrderCoupon(String orderId, Set<Integer> couponSet);
 
     Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds);
+
+    Integer checkOrderByMembercardId(Long membercardId);
 }

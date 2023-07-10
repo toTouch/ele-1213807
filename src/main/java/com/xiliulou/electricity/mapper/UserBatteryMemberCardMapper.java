@@ -78,4 +78,6 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     List<FailureMemberCardVo > queryMemberCardExpireUser(@Param("offset") Integer offset, @Param("size") Integer size, @Param("nowTime") Long nowTime);
     
     int unbindMembercardInfoByUid(UserBatteryMemberCard userBatteryMemberCard);
+
+    Integer checkUserByMembercardId(@Param("membercardId") Long membercardId);
 }

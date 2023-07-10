@@ -434,4 +434,9 @@
     <select id="selectFirstMemberCardOrder" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
         select id,ref_id from t_electricity_member_card_order where uid=#{uid} and status=1 and pay_count=1 order by create_time desc limit 1
     </select>
+
+    <select id="checkOrderByMembercardId" resultType="Integer">
+        select 1 from t_electricity_member_card_order where member_card_id=#{membercardId} LIMIT 1
+    </select>
+
 </mapper>

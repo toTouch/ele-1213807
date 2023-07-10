@@ -7,9 +7,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Range;
-
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -27,19 +29,22 @@ public class BatteryMemberCardQuery {
 
     private Integer tenantId;
 
+    @NotNull(message = "id不能为空", groups = {UpdateGroup.class})
+    private Long id;
+
     @NotBlank(message = "套餐名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     @Range(min = 0, max = 8, message = "套餐名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
 
     @NotNull(message = "押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     @Range(min = 0, max = 8, message = "押金不合法", groups = {CreateGroup.class, UpdateGroup.class})
-    private Double deposit;
+    private BigDecimal deposit;
 
     @NotNull(message = "租金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Double rentPrice;
+    private BigDecimal rentPrice;
 
     @NotNull(message = "租金单价不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Double rentPriceUnit;
+    private BigDecimal rentPriceUnit;
 
     @NotNull(message = "租期不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer validDays;
@@ -48,7 +53,7 @@ public class BatteryMemberCardQuery {
     private Integer rentUnit;
 
     @NotNull(message = "加盟商不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     @NotNull(message = "租赁类型不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer rentType;
@@ -71,7 +76,6 @@ public class BatteryMemberCardQuery {
     private Integer couponId;
 
     @NotNull(message = "是否退租金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 0, max = 8, message = "是否退租金不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer isRefund;
     /**
      * 退租金天数限制
@@ -85,14 +89,21 @@ public class BatteryMemberCardQuery {
     private Integer refundDepositeAudit;
 
     @NotNull(message = "滞纳金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Double serviceCharge;
+    private BigDecimal serviceCharge;
 
     @NotNull(message = "套餐显隐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer display;
 
-    /**
-     * 备注
-     */
+    @Range(min = 0, max = 30, message = "备注不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String remark;
+
+    @NotEmpty(message = "电池型号不能为空", groups = {CreateGroup.class})
+    private List<String> batteryModels;
+
+    private Integer delFlag;
+
+    private List<Long> franchiseeIds;
+
+    private String batteryV;
 
 }

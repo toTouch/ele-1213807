@@ -216,4 +216,9 @@
         limit #{offset},#{size}
     </select>
 
+
+    <select id="checkUserByMembercardId" resultType="Integer">
+        select 1 from t_user_battery_member_card where del_flag=0 and member_card_id=#{membercardId} LIMIT 1
+    </select>
+
 </mapper>

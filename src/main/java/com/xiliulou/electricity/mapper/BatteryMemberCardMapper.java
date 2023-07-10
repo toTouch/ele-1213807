@@ -4,6 +4,8 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -21,7 +23,7 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      * @param id 主键
      * @return 实例对象
      */
-    BatteryMemberCard queryById(Integer id);
+    BatteryMemberCard queryById(Long id);
 
     /**
      * 修改数据
@@ -37,6 +39,17 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
      * @param id 主键
      * @return 影响行数
      */
-    int deleteById(Integer id);
+    int deleteById(Long id);
 
+    List<BatteryMemberCard> selectByPage(BatteryMemberCardQuery query);
+
+    Integer selectByPageCount(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCard> selectBySearch(BatteryMemberCardQuery query);
+
+    Integer checkMembercardExist(@Param("name") String name, @Param("tenantId") Integer tenantId);
+
+    List<BatteryMemberCard> selectByPageForUser(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardVO> selectMembercardBatteryV(BatteryMemberCardQuery query);
 }

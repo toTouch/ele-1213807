@@ -56,7 +56,6 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     @Transactional(rollbackFor = Exception.class)
     public Integer update(MemberCardBatteryType memberCardBatteryType) {
         return this.memberCardBatteryTypeMapper.update(memberCardBatteryType);
-
     }
 
     /**
@@ -69,5 +68,11 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.memberCardBatteryTypeMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer batchInsert(List<MemberCardBatteryType> memberCardBatteryTypeList) {
+        return this.memberCardBatteryTypeMapper.batchInsert(memberCardBatteryTypeList);
     }
 }

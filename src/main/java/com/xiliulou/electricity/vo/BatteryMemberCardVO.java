@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -15,7 +17,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class BatteryMemberCardVO {
-    private Integer id;
+
+    private Long id;
     /**
      * 套餐名称
      */
@@ -23,15 +26,15 @@ public class BatteryMemberCardVO {
     /**
      * 押金
      */
-    private Double deposit;
+    private BigDecimal deposit;
     /**
      * 租金
      */
-    private Double rentPrice;
+    private BigDecimal rentPrice;
     /**
      * 租金单价
      */
-    private Double rentPriceUnit;
+    private BigDecimal rentPriceUnit;
     /**
      * 租期
      */
@@ -41,7 +44,7 @@ public class BatteryMemberCardVO {
      */
     private Integer rentUnit;
 
-    private Integer franchiseeId;
+    private Long franchiseeId;
     /**
      * 租赁类型
      */
@@ -85,7 +88,7 @@ public class BatteryMemberCardVO {
     /**
      * 服务费
      */
-    private Double serviceCharge;
+    private BigDecimal serviceCharge;
     /**
      * 是否显示(0:显示,1:隐藏)
      */
@@ -103,11 +106,9 @@ public class BatteryMemberCardVO {
      */
     private Integer businessType;
 
-    private Integer delFlag;
-
-    private Integer tenantId;
-
     private Long createTime;
 
     private Long updateTime;
+
+    private String batteryV;
 }

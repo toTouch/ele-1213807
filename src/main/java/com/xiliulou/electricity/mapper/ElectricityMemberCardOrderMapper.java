@@ -66,4 +66,5 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     ElectricityMemberCardOrder selectFirstMemberCardOrder(@Param("uid") Long uid );
 
+    Integer checkOrderByMembercardId(@Param("membercardId") Long membercardId);
 }

@@ -3361,4 +3361,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return Triple.of(true, null, payAmount);
     }
 
+    @Override
+    public Integer checkOrderByMembercardId(Long membercardId) {
+        return baseMapper.checkOrderByMembercardId(membercardId);
+    }
 }

@@ -99,4 +99,6 @@ public interface UserBatteryMemberCardService {
                                                              Long lastTime);
 
     List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime);
+
+    Integer checkUserByMembercardId(Long id);
 }
