@@ -117,7 +117,7 @@ public class UserCoupon {
     public static final Integer STATUS_EXPIRED = 3;
     //已核销
     public static final Integer STATUS_DESTRUCTION = 4;
-    //正在核销中
+    // 使用中
     public static final Integer STATUS_IS_BEING_VERIFICATION = 5;
 
     //减免劵

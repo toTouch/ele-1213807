@@ -186,13 +186,14 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
     @Override
-    public R<Long> insert(CarRentalPackageMemberTermOptModel optModel) {
-        CarRentalPackageMemberTermPO entity = new CarRentalPackageMemberTermPO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalPackageMemberTermPO entity) {
+        if (ObjectUtils.isEmpty(entity)) {
+            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
@@ -203,6 +204,6 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         // 保存入库
         carRentalPackageMemberTermMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

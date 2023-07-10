@@ -2,13 +2,11 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.math.BigDecimal;
 
 /**
  * 用户绑定列表(TUserInfo)实体类
@@ -83,7 +81,13 @@ public class UserInfo {
     private Integer carDepositStatus;
 
     /**
-     * 实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
+     * 车电一体押金状态
+     * @see com.xiliulou.electricity.enums.YesNoEnum
+     */
+    private Integer carBatteryDepositStatus;
+
+    /**
+     实名认证审核类型，1：人工审核，2：自动审核，3：人脸审核
      */
     private Integer authType;
 

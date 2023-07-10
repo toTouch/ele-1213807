@@ -7,13 +7,11 @@ import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositPayMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositPayOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -163,13 +161,11 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
     @Override
-    public R<Long> insert(CarRentalPackageDepositPayOptModel optModel) {
-        CarRentalPackageDepositPayPO entity = new CarRentalPackageDepositPayPO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalPackageDepositPayPO entity) {
 
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
@@ -180,6 +176,6 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
         // 保存入库
         carRentalPackageDepositPayMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

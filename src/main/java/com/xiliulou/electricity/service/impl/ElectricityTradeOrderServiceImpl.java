@@ -1,27 +1,28 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.OrderTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
-import com.xiliulou.electricity.enums.TimeUnitEnum;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageMemberTermOptModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -54,6 +55,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ElectricityTradeOrderServiceImpl extends
         ServiceImpl<ElectricityTradeOrderMapper, ElectricityTradeOrder> implements ElectricityTradeOrderService {
+
+    @Resource
+    private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    @Resource
+    private RocketMqService rocketMqService;
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
@@ -170,31 +177,40 @@ public class ElectricityTradeOrderServiceImpl extends
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource) {
-        // TODO 具体实现逻辑，成功 or 失败
+    public Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        if (ObjectUtils.isEmpty(callBackResource)) {
+            log.error("NotifyCarRenalPackageOrder failed, callBackResource is empty");
+            return Pair.of(false, "参数为空");
+        }
+        log.info("notifyCarRenalPackageOrder params callBackResource is {}", JSON.toJSONString(callBackResource));
+
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
         String transactionId = callBackResource.getTransactionId();
 
-        // TODO 回调状态失败状态的场景
-        if (StringUtils.isNotBlank(tradeState) && !WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState)) {
-            log.error("NotifyCarRenalPackageOrder failed, trade_order_no is {}, trade_state is {}", tradeOrderNo, tradeState);
-            return;
-        }
+        // 支付状态
+        Integer tradeOrderStatus = WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState) ? ElectricityTradeOrder.STATUS_SUCCESS : ElectricityTradeOrder.STATUS_FAIL;
 
-        // 如下场景均为成功支付的场景
-        // 交易流水订单
+        // 1. 处理交易流水订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
             log.error("NotifyCarRenalPackageOrder failed, not found electricity_trade_order, trade_order_no is {}", tradeOrderNo);
-            return;
+            return Pair.of(false, "未找到交易流水订单");
         }
 
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
             log.error("NotifyCarRenalPackageOrder failed, electricity_trade_order processed, trade_order_no is {}", tradeOrderNo);
-            return;
+            return Pair.of(false, "交易流水订单已处理");
         }
+
+        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
+        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
+        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
+        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(electricityTradeOrderUpdate);
+
 
         // 租车套餐购买订单编码
         String orderNo = electricityTradeOrder.getOrderNo();
@@ -203,96 +219,91 @@ public class ElectricityTradeOrderServiceImpl extends
         // 用户ID
         Long uid = electricityTradeOrder.getUid();
 
-        // 获取租车套餐购买订单
+        if (WechatJsapiOrderCallBackResource.TRADE_STATUS_SUCCESS.equals(tradeState)) {
+            return handSuccess(orderNo, tenantId, uid, transactionId);
+        } else {
+            return handFailed(orderNo, tenantId, uid);
+        }
+    }
+
+    /**
+     * 租车套餐支付回调-支付失败
+     * @param orderNo 租车套餐购买订单编号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    private Pair<Boolean, Object> handFailed(String orderNo, Integer tenantId, Long uid) {
+        // 1. 处理租车套餐购买订单
         CarRentalPackageOrderPO carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
         if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
             log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_order, order_no is {}", orderNo);
-            return;
+            return Pair.of(false, "未找到租车套餐购买订单");
         }
-
-        // TODO C端用户取消支付？？？
 
         // 订单支付状态不匹配
         if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), carRentalPackageOrderEntity.getPayState())) {
             log.error("NotifyCarRenalPackageOrder failed, car_rental_package_order processed, order_no is {}", orderNo);
-            return;
+            return Pair.of(false, "租车套餐购买订单已处理");
         }
 
         // 更改套餐购买订单的支付状态
-        carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
+        carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.FAILED.getCode());
 
-        // 处理租车套餐押金缴纳订单
+        // 2. 处理租车套餐押金缴纳订单
         String depositPayOrderNo = carRentalPackageOrderEntity.getDepositPayOrderNo();
         CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
-        // 数据不存在
         if (ObjectUtils.isEmpty(depositPayEntity)) {
             log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_deposit_pay, order_no is {}", depositPayOrderNo);
-            return;
+            return Pair.of(false, "未找到租车套餐押金缴纳订单");
         }
 
         // 判定押金缴纳订单是否需要更改支付状态
         if (ObjectUtil.equal(PayStateEnum.UNPAID.getCode(), depositPayEntity.getPayState())) {
-            // 更改租车套餐押金缴纳订单
-            carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.SUCCESS.getCode());
+            carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.FAILED.getCode());
         }
 
-        // 处理租车套餐会员期限表
+        // 3. 处理租车套餐会员期限
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        // 数据不存在
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_member_term, uid is {}", uid);
-            return;
+            return Pair.of(false, "未找到租车会员记录信息");
         }
 
-        // 待生效的数据，直接更改状态
+        // 待生效的数据，直接删除
         if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             carRentalPackageMemberTermService.updateStatusById(memberTermEntity.getId(), MemberTermStatusEnum.NORMAL.getCode(), null);
         }
 
-        // 正常的数据，更改总计到期时间、总计套餐余量
-        if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-            CarRentalPackageMemberTermOptModel optModel = new CarRentalPackageMemberTermOptModel();
-            optModel.setId(memberTermEntity.getId());
+        // 4. 处理用户押金支付信息（保持原样，不做处理）
 
-            // 计算到期时间
-            Integer tenancy = carRentalPackageOrderEntity.getTenancy();
-            Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
-            long dueTime = System.currentTimeMillis();
-            if (TimeUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
-            }
-            if (TimeUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * 1000);
-            }
-            optModel.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + dueTime);
+        // 5. 处理用户优惠券的使用状态
+        userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
 
-            // 计算套餐余量
-            if (ObjectUtils.isNotEmpty(memberTermEntity.getResidueTotal())) {
-                optModel.setResidueTotal(memberTermEntity.getResidueTotal() + carRentalPackageOrderEntity.getConfineNum());
-            }
+        // 7. TODO 处理保险购买订单
 
-            carRentalPackageMemberTermService.updateById(optModel);
+        return Pair.of(true, null);
+
+    }
+
+    /**
+     * 租车套餐支付回调-支付成功
+     * @param orderNo 租车套餐购买订单编号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    private Pair<Boolean, Object> handSuccess(String orderNo, Integer tenantId, Long uid, String transactionId) {
+        Pair<Boolean, Object> pair = carRentalPackageOrderBizService.handBuyRentalPackageOrderSuccess(orderNo, tenantId, uid);
+        if (!pair.getLeft()) {
+            return pair;
         }
 
-        // TODO 判定更改保险订单的支付状态
-
-        // TODO 分账相关的业务逻辑处理
-
-        // TODO 活动相关的业务逻辑处理
-
-        // 1.
-        // 2.
-        // 3. 生成或更新用户押金缴纳状态
-        // 4.
-        // 5. 用户的优惠券的使用状态
-        // 6. 判定保险购买记录是否需要更新
-        // 7. 车辆断启电
-        // 8. 分账
-        // 9. 活动
-        // 10. 小程序虚拟发货
         // 最后一步，小程序虚拟发货
-        // TODO 用户手机号
-        shippingManagerService.uploadShippingInfo(uid, "userInfo.getPhone()", transactionId, tenantId);
+        String phone = pair.getRight().toString();
+        shippingManagerService.uploadShippingInfo(uid, phone, transactionId, tenantId);
+
+        return Pair.of(true, null);
     }
 
     @Override

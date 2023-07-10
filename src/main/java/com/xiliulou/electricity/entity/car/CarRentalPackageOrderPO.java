@@ -164,11 +164,13 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      * </pre>
      * @see BuyTypeEnum
      */
+    @Deprecated
     private Integer buyType;
 
     /**
      * 柜机ID
      */
+    @Deprecated
     private Integer cabinetId;
 
     /**
@@ -208,6 +210,7 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     /**
      * 三方支付单号
      */
+    @Deprecated
     private String thirdPayNo;
 
     /**
@@ -217,6 +220,7 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      * </pre>
      * @see ThirdPayChannelEnum
      */
+    @Deprecated
     private Integer thirdPayChannel;
 
 }

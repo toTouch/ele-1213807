@@ -81,9 +81,9 @@ public interface CarRentalPackageMemberTermService {
 
     /**
      * 新增数据，返回主键ID
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
-    R<Long> insert(CarRentalPackageMemberTermOptModel optModel);
+    Long insert(CarRentalPackageMemberTermPO entity);
     
 }

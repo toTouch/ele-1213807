@@ -8,12 +8,11 @@ import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -236,13 +235,14 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作数据
+     * @param entity 操作实体
      * @return
      */
     @Override
-    public R<Long> insert(CarRentalPackageOrderOptModel optModel) {
-        CarRentalPackageOrderPO entity = new CarRentalPackageOrderPO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalPackageOrderPO entity) {
+        if (ObjectUtils.isEmpty(entity)) {
+            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
         // 赋值操作人及时间
         long now = System.currentTimeMillis();
@@ -250,9 +250,8 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
 
-        // 保存入库
         carRentalPackageOrderMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

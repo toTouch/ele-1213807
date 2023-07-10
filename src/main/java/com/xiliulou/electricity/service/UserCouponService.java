@@ -15,6 +15,15 @@ import java.util.List;
 public interface UserCouponService {
 
     /**
+     * 根据订单编码更新优惠券状态
+     * @param orderId 订单编码
+     * @param orderIdType 订单编码对应的类型
+     * @param status 状态
+     * @return
+     */
+    boolean updateStatusByOrderId(String orderId, Integer orderIdType, Integer status);
+
+    /**
      * 查询用户名下有效的优惠券
      * @param uid 用户ID
      * @param ids 主键ID

@@ -18,7 +18,7 @@ public interface ElectricityTradeOrderService {
      * 租车套餐购买回调
      * @param callBackResource
      */
-    void notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource);
+    Pair<Boolean, Object> notifyCarRenalPackageOrder(WechatJsapiOrderCallBackResource callBackResource);
 
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder,

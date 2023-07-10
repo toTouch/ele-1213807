@@ -46,4 +46,5 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
     Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList);
 
     Integer updateUserCouponStatus(UserCoupon userCoupon);
+
 }

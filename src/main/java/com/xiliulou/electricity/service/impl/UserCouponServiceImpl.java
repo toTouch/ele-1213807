@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
@@ -10,6 +11,7 @@ import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.*;
@@ -66,6 +68,32 @@ public class UserCouponServiceImpl implements UserCouponService {
 
     @Autowired
     CouponIssueOperateRecordService couponIssueOperateRecordService;
+
+    /**
+     * 根据订单编码更新优惠券状态
+     *
+     * @param orderId     订单编码
+     * @param orderIdType 订单编码对应的类型
+     * @param status      状态
+     * @return
+     */
+    @Override
+    public boolean updateStatusByOrderId(String orderId, Integer orderIdType, Integer status) {
+        if (ObjectUtils.allNotNull(orderId, orderIdType, status)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        UserCoupon entity = new UserCoupon();
+        entity.setStatus(status);
+        entity.setUpdateTime(System.currentTimeMillis());
+
+        LambdaUpdateWrapper<UserCoupon> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserCoupon::getOrderId, orderId).eq(UserCoupon::getOrderIdType, orderIdType);
+
+        int num = userCouponMapper.update(entity, updateWrapper);
+
+        return num >= 0;
+    }
 
     /**
      * 查询用户名下有效的优惠券
