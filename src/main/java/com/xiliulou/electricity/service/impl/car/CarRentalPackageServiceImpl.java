@@ -9,6 +9,7 @@ import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -140,12 +141,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public R<List<CarRentalPackagePO>> list(CarRentalPackageQryModel qryModel) {
+    public List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel) {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageMapper.list(qryModel));
+        return carRentalPackageMapper.list(qryModel);
     }
 
     /**
@@ -155,12 +156,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public R<List<CarRentalPackagePO>> page(CarRentalPackageQryModel qryModel) {
+    public List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel) {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageMapper.page(qryModel));
+        return carRentalPackageMapper.page(qryModel);
     }
 
     /**

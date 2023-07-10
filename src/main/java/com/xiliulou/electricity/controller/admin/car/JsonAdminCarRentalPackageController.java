@@ -109,11 +109,7 @@ public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicContro
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalPackagePO>> listRes = carRentalPackageService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
-        }
-        List<CarRentalPackagePO> carRentalPackagePOList = listRes.getData();
+        List<CarRentalPackagePO> carRentalPackagePOList = carRentalPackageService.page(qryModel);
 
         // 获取辅助业务信息（加盟商、车辆型号）
         Set<Long> franchiseeIds = new HashSet<>();

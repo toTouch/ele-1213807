@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service.car.biz;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 租车套餐购买业务聚合 BizService
  *
@@ -15,6 +17,6 @@ public interface CarRentalPackageOrderBizService {
      * @param buyOptModel
      * @return
      */
-    R<Boolean> buyRentalPackageOrder (CarRentalPackageOrderBuyOptModel buyOptModel);
+    R buyRentalPackageOrder (CarRentalPackageOrderBuyOptModel buyOptModel, HttpServletRequest request);
 
 }

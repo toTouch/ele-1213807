@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
+import com.xiliulou.core.web.R;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
@@ -11,6 +12,14 @@ import java.util.List;
  * @author xiaohui.song
  **/
 public interface RentalPackageBizService {
+
+    /**
+     * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param carModelId 车辆型号ID
+     */
+    R queryByCarModel(Integer tenantId, Long uid, Integer carModelId);
 
     /**
      * 计算需要支付的金额

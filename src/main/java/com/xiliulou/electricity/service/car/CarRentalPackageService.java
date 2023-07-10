@@ -55,14 +55,14 @@ public interface CarRentalPackageService {
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackagePO>> list(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackagePO>> page(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel);
 
     /**
      * 条件查询总数

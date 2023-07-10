@@ -4,16 +4,18 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
-import com.xiliulou.electricity.entity.InsuranceOrder;
-import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
@@ -21,6 +23,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,9 +32,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +46,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+
+    @Resource
+    private UserOauthBindService userOauthBindService;
+
+    @Resource
+    private ElectricityPayParamsService electricityPayParamsService;
 
     @Resource
     private ElectricityTradeOrderService electricityTradeOrderService;
@@ -70,7 +82,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Boolean> buyRentalPackageOrder(CarRentalPackageOrderBuyOptModel buyOptModel) {
+    public R buyRentalPackageOrder(CarRentalPackageOrderBuyOptModel buyOptModel, HttpServletRequest request) {
         // 参数校验
         Integer tenantId = buyOptModel.getTenantId();
         Long uid = buyOptModel.getUid();
@@ -91,6 +103,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 下单前的统一拦截校验
             rentalPackageBizService.checkBuyPackageCommon(tenantId, uid);
+
+            // 2. 支付相关
+            ElectricityPayParams payParamsEntity = electricityPayParamsService.queryFromCache(tenantId);
+            if (Objects.isNull(payParamsEntity)) {
+                log.error("CheckBuyPackageCommon failed. Not found pay_params. uid is {}", uid);
+                throw new BizException("未配置支付参数");
+            }
+
+            // 3. 三方授权相关
+            UserOauthBind userOauthBindEntity = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+            if (Objects.isNull(userOauthBindEntity) || Objects.isNull(userOauthBindEntity.getThirdId())) {
+                log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
+                throw new BizException("未找到用户的第三方授权信息");
+            }
 
             // 初始化押金金额
             BigDecimal deposit = BigDecimal.ZERO;
@@ -198,7 +224,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     return R.fail("ELECTRICITY.0042", "未缴纳押金");
                 }
                 // 生成押金缴纳订单，准备 insert
-                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, packageEntity.getDeposit(), DepositExemptionEnum.NO.getCode());
+                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, packageEntity.getDeposit(), DepositExemptionEnum.NO.getCode(), packageEntity.getFranchiseeId(), packageEntity.getStoreId());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             }
 
@@ -213,10 +239,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // TODO 需要重新计算保险金额以及是否强制购买保险的判断逻辑校验
             // TODO 判定 t_insurance_order、t_insurance_user_info是否需要操作
             // TODO insuranceAmount 需要重新赋值
+            // TODO 志龙提供接口，根据车辆型号、电池型号（电压伏数）查询是否存在保险
              InsuranceOrder insuranceOrderInsertEntity = buildInsuranceOrder(uid);
             // 保险费用初始化
             BigDecimal insuranceAmount = BigDecimal.ZERO;
-            // TODO 志龙提供接口，根据车辆型号、电池型号（电压伏数）查询是否存在保险
 
             // TODO 柜机的判定，此逻辑取决于是否有购买来源（柜机、非柜机）
 
@@ -242,30 +268,26 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 CarRentalPackageMemberTermPO memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, packageEntity, carRentalPackageOrder);
             }
 
+            // TODO 调用 TX 事务
 
             // 支付零元的处理
             if (BigDecimal.ZERO.compareTo(paymentAmount) >= 0) {
                 // TODO 无须唤起支付，走支付回调的逻辑，抽取方法，直接调用
 
             } else {
-                // TODO 唤起支付，走回调
-                /*CommonPayOrder commonPayOrder = CommonPayOrder.builder()
-                        .orderId(electricityMemberCardOrder.getOrderId())
+                CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                        .orderId(carRentalPackageOrder.getOrderNo())
                         .uid(uid)
                         .payAmount(paymentAmount)
-                        .orderType(ElectricityTradeOrder.ORDER_TYPE_MEMBER_CARD)
-                        .attach(String.valueOf(electricityMemberCardOrderQuery.getUserCouponId()))
-                        .description("月卡收费")
+                        .orderType(CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getCode())
+                        .attach(CallBackEnums.CAR_RENAL_PACKAGE_ORDER.getDesc())
+                        .description("租车套餐购买收费")
                         .tenantId(tenantId).build();
 
                 WechatJsapiOrderResultDTO resultDTO =
-                        electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-                return R.ok(resultDTO);*/
+                        electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, payParamsEntity, userOauthBindEntity.getThirdId(), request);
+                return R.ok(resultDTO);
             }
-
-
-            // 13. 支付成功之后， 分账、使用优惠券、赠送优惠券、押金、保险、套餐订单记录、会员期限、用户信息userInfo、
-
 
         } catch (Exception e) {
 
@@ -278,10 +300,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 构建租车套餐会员期限信息
-     * @param tenantId
-     * @param uid
-     * @param packageEntity
-     * @param carRentalPackageOrderEntity
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageEntity 租车套餐信息
+     * @param carRentalPackageOrderEntity 租车套餐订单信息
      * @return
      */
     private CarRentalPackageMemberTermPO buildCarRentalPackageMemberTerm(Integer tenantId, Long uid, CarRentalPackagePO packageEntity, CarRentalPackageOrderPO carRentalPackageOrderEntity) {
@@ -309,10 +331,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermPO.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermPO.setDeposit(carRentalPackageOrderEntity.getDeposit());
         carRentalPackageMemberTermPO.setTenantId(tenantId);
-        // TODO 加盟商ID
-        carRentalPackageMemberTermPO.setFranchiseeId(0);
-        // TODO 门店ID
-        carRentalPackageMemberTermPO.setStoreId(0);
+        carRentalPackageMemberTermPO.setFranchiseeId(packageEntity.getFranchiseeId());
+        carRentalPackageMemberTermPO.setStoreId(packageEntity.getStoreId());
         carRentalPackageMemberTermPO.setCreateUid(uid);
         carRentalPackageMemberTermPO.setUpdateUid(uid);
         carRentalPackageMemberTermPO.setCreateTime(System.currentTimeMillis());
@@ -334,11 +354,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 构建押金订单信息
-     * @param tenantId
-     * @param uid
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param deposit 押金
+     * @param depositExemption 免押
+     * @param franchiseeId 加盟商ID
+     * @param storeId 门店ID
      * @return
      */
-    private CarRentalPackageDepositPayPO buildCarRentalPackageDepositPay(Integer tenantId, Long uid, BigDecimal deposit, Integer depositExemption) {
+    private CarRentalPackageDepositPayPO buildCarRentalPackageDepositPay(Integer tenantId, Long uid, BigDecimal deposit, Integer depositExemption, Integer franchiseeId, Integer storeId) {
         CarRentalPackageDepositPayPO carRentalPackageDepositPayEntity = new CarRentalPackageDepositPayPO();
         carRentalPackageDepositPayEntity.setUid(uid);
         carRentalPackageDepositPayEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, uid));
@@ -349,15 +373,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageDepositPayEntity.setDeposit(deposit);
         carRentalPackageDepositPayEntity.setDepositExemption(depositExemption);
         carRentalPackageDepositPayEntity.setDepositRebateApprove(0);
-        // TODO 这两个需要看是否抽取，若此方法服务于C端，则此值正常，若运营端，则有点问题
         carRentalPackageDepositPayEntity.setPayType(PayTypeEnum.ON_LINE.getCode());
         carRentalPackageDepositPayEntity.setPayState(PayStateEnum.UNPAID.getCode());
         carRentalPackageDepositPayEntity.setRefundFlag(YesNoEnum.NO.getCode());
         carRentalPackageDepositPayEntity.setTenantId(tenantId);
-        // TODO 加盟商取值
-        carRentalPackageDepositPayEntity.setFranchiseeId(0);
-        // TODO 门店取值
-        carRentalPackageDepositPayEntity.setStoreId(0);
+        carRentalPackageDepositPayEntity.setFranchiseeId(franchiseeId);
+        carRentalPackageDepositPayEntity.setStoreId(storeId);
         carRentalPackageDepositPayEntity.setCreateUid(uid);
         carRentalPackageDepositPayEntity.setUpdateUid(uid);
         carRentalPackageDepositPayEntity.setCreateTime(System.currentTimeMillis());
@@ -369,10 +390,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 构建用户优惠券使用信息
-     * @param userCouponIds
-     * @param status
-     * @param orderNo
-     * @param orderIdType
+     * @param userCouponIds 用户优惠券ID
+     * @param status 状态
+     * @param orderNo 订单编号
+     * @param orderIdType 订单类型
      * @return
      */
     private List<UserCoupon> buildUserCouponList(List<Long> userCouponIds, Integer status, String orderNo, Integer orderIdType) {
@@ -389,11 +410,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     /**
      * 构建租车套餐订单购买信息
-     * @param packagePO
-     * @param paymentAmount
+     * @param packagePO 套餐信息
+     * @param rentPayment 租金(支付价格)
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param depositPayOrderNo 押金缴纳订单编号
      * @return
      */
-    private CarRentalPackageOrderPO buildCarRentalPackageOrder(CarRentalPackagePO packagePO, BigDecimal paymentAmount, Integer tenantId, Long uid, String depositPayOrderNo) {
+    private CarRentalPackageOrderPO buildCarRentalPackageOrder(CarRentalPackagePO packagePO, BigDecimal rentPayment, Integer tenantId, Long uid, String depositPayOrderNo) {
 
         CarRentalPackageOrderPO carRentalPackage = new CarRentalPackageOrderPO();
         carRentalPackage.setUid(uid);
@@ -406,7 +430,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackage.setTenancyUnit(packagePO.getTenancyUnit());
         carRentalPackage.setRentUnitPrice(packagePO.getRentUnitPrice());
         carRentalPackage.setRent(packagePO.getRent());
-        carRentalPackage.setRentPayment(paymentAmount);
+        carRentalPackage.setRentPayment(rentPayment);
         carRentalPackage.setCarModelId(packagePO.getCarModelId());
         carRentalPackage.setBatteryModelIds(packagePO.getBatteryModelIds());
         carRentalPackage.setApplicableType(packagePO.getApplicableType());
@@ -416,8 +440,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackage.setDeposit(packagePO.getDeposit());
         carRentalPackage.setDepositPayOrderNo(depositPayOrderNo);
         carRentalPackage.setLateFee(packagePO.getLateFee());
-        // TODO 支付方式
-        carRentalPackage.setPayType(1);
+        carRentalPackage.setPayType(PayTypeEnum.ON_LINE.getCode());
         // TODO 购买方式
         carRentalPackage.setBuyType(1);
         // TODO 柜机ID
@@ -426,10 +449,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackage.setPayState(PayStateEnum.UNPAID.getCode());
         carRentalPackage.setUseState(UseStateEnum.UN_USED.getCode());
         carRentalPackage.setTenantId(tenantId);
-        // TODO 加盟商ID
-        carRentalPackage.setFranchiseeId(1);
-        // TODO 门店ID
-        carRentalPackage.setStoreId(1);
+        carRentalPackage.setFranchiseeId(packagePO.getFranchiseeId());
+        carRentalPackage.setStoreId(packagePO.getStoreId());
         carRentalPackage.setCreateUid(uid);
         carRentalPackage.setUpdateUid(uid);
         carRentalPackage.setCreateTime(System.currentTimeMillis());

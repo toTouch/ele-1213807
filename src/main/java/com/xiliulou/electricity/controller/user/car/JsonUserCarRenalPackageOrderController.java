@@ -1,9 +1,13 @@
 package com.xiliulou.electricity.controller.user.car;
 
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.annotation.Resource;
 
 /**
  * 租车套餐订单相关的 Controller
@@ -14,4 +18,17 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/user/car/renalPackageOrder")
 public class JsonUserCarRenalPackageOrderController {
+
+    @Resource
+    private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    /**
+     * C端用户购买租车套餐订单
+     * @param buyOptModel
+     */
+    @PostMapping("/buyRentalPackageOrder")
+    public void buyRentalPackageOrder(CarRentalPackageOrderBuyOptModel buyOptModel) {
+        carRentalPackageOrderBizService.buyRentalPackageOrder(buyOptModel);
+    }
+
 }

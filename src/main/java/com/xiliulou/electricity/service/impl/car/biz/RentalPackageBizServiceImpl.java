@@ -5,9 +5,11 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.SlippageBizService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +31,9 @@ import java.util.stream.Collectors;
 public class RentalPackageBizServiceImpl implements RentalPackageBizService {
 
     @Resource
+    private CarRentalPackageService carRentalPackageService;
+
+    @Resource
     private CouponService couponService;
 
     @Resource
@@ -45,6 +50,32 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
 
     @Resource
     private UserInfoService userInfoService;
+
+    /**
+     * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐
+     *
+     * @param tenantId   租户ID
+     * @param uid        用户ID
+     * @param carModelId 车辆型号ID
+     */
+    @Override
+    public R queryByCarModel(Integer tenantId, Long uid, Integer carModelId) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, carModelId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // TODO 判定用户是否是新用户，只要产生了套餐购买记录的用户，均为老用户（租车、换电）
+
+
+        // TODO 判定用户名下是否存在正在使用的套餐，查询用户租车套餐会员期限表
+
+        // TODO 结合如上两点，从数据库中筛选合适的套餐，查询租车套餐设置表（分页，不分页？）
+
+
+        // TODO 返回给上一层
+
+        return null;
+    }
 
     /**
      * 计算需要支付的金额<br />
@@ -122,20 +153,6 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             log.error("CheckBuyPackageCommon failed. User not auth. uid is {}", uid);
             throw new BizException("用户尚未实名认证");
-        }
-
-        // 2. 支付相关
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-        if (Objects.isNull(electricityPayParams)) {
-            log.error("CheckBuyPackageCommon failed. Not found pay_params. uid is {}", uid);
-            throw new BizException("未配置支付参数");
-        }
-
-        // 3. 三方授权相关
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
-        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-            log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-            throw new BizException("未找到用户的第三方授权信息");
         }
 
         // 4. 判定滞纳金
