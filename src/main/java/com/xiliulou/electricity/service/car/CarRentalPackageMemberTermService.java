@@ -15,6 +15,15 @@ import java.util.List;
 public interface CarRentalPackageMemberTermService {
 
     /**
+     * 根据用户ID和租户ID删除
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param optId 操作人ID（可以为空）
+     * @return
+     */
+    Boolean delByUidAndTenantId(Integer tenantId, Long uid, Long optId);
+
+    /**
      * 根据用户ID和租户ID更新状态
      * @param tenantId 租户ID
      * @param uid 用户ID

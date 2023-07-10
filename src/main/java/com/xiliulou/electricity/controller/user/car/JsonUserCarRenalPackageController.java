@@ -34,12 +34,12 @@ public class JsonUserCarRenalPackageController extends BasicController {
     private RentalPackageBizService rentalPackageBizService;
 
     /**
-     * 根据车辆型号获取C端能够展示的套餐
+     * 根据车辆型号获取<code>C</code>端能够展示的套餐
      * @param qryReq 查询数据模型
      * @return
      */
     @PostMapping("/queryByCarModel")
-    public R queryByCarModel(@RequestBody CarRentalPackageQryReq qryReq) {
+    public R<List<CarRentalPackageVO>> queryByCarModel(@RequestBody CarRentalPackageQryReq qryReq) {
         // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -68,9 +68,6 @@ public class JsonUserCarRenalPackageController extends BasicController {
 
         return R.ok(voList);
     }
-
-
-
 
     /**
      * entityList to voList

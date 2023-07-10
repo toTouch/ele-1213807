@@ -97,6 +97,18 @@
         </trim>
     </sql>
 
+    <!-- 根据用户ID和租户ID删除数据 -->
+    <update id="delByUidAndTenantId">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}, `del_flag` = 1
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid}
+        </where>
+    </update>
+
     <!-- 根据用户ID和租户ID更新状态 -->
     <update id="updateStatusByUidAndTenantId">
         UPDATE <include refid="table_name" />

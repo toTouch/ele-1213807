@@ -234,56 +234,7 @@ public class ElectricityTradeOrderServiceImpl extends
      * @return
      */
     private Pair<Boolean, Object> handFailed(String orderNo, Integer tenantId, Long uid) {
-        // 1. 处理租车套餐购买订单
-        CarRentalPackageOrderPO carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(orderNo);
-        if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_order, order_no is {}", orderNo);
-            return Pair.of(false, "未找到租车套餐购买订单");
-        }
-
-        // 订单支付状态不匹配
-        if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), carRentalPackageOrderEntity.getPayState())) {
-            log.error("NotifyCarRenalPackageOrder failed, car_rental_package_order processed, order_no is {}", orderNo);
-            return Pair.of(false, "租车套餐购买订单已处理");
-        }
-
-        // 更改套餐购买订单的支付状态
-        carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.FAILED.getCode());
-
-        // 2. 处理租车套餐押金缴纳订单
-        String depositPayOrderNo = carRentalPackageOrderEntity.getDepositPayOrderNo();
-        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
-        if (ObjectUtils.isEmpty(depositPayEntity)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_deposit_pay, order_no is {}", depositPayOrderNo);
-            return Pair.of(false, "未找到租车套餐押金缴纳订单");
-        }
-
-        // 判定押金缴纳订单是否需要更改支付状态
-        if (ObjectUtil.equal(PayStateEnum.UNPAID.getCode(), depositPayEntity.getPayState())) {
-            carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.FAILED.getCode());
-        }
-
-        // 3. 处理租车套餐会员期限
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("NotifyCarRenalPackageOrder failed, not found car_rental_package_member_term, uid is {}", uid);
-            return Pair.of(false, "未找到租车会员记录信息");
-        }
-
-        // 待生效的数据，直接删除
-        if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
-            carRentalPackageMemberTermService.updateStatusById(memberTermEntity.getId(), MemberTermStatusEnum.NORMAL.getCode(), null);
-        }
-
-        // 4. 处理用户押金支付信息（保持原样，不做处理）
-
-        // 5. 处理用户优惠券的使用状态
-        userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
-
-        // 7. TODO 处理保险购买订单
-
-        return Pair.of(true, null);
-
+        return carRentalPackageOrderBizService.handBuyRentalPackageOrderFailed(orderNo, tenantId, uid);
     }
 
     /**

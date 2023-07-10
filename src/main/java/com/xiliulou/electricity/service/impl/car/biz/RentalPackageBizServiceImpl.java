@@ -200,13 +200,13 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
             throw new BizException("用户尚未实名认证");
         }
 
-        // 4. 判定滞纳金
+        // 2. 判定滞纳金
         if (slippageBizService.isExitUnpaid(tenantId, uid)) {
             log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
             throw new BizException("存在滞纳金，请先缴纳");
         }
 
-        // 5.
+        // 3.
 
     }
 }

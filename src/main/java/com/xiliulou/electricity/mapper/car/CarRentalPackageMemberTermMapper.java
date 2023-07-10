@@ -19,6 +19,16 @@ public interface CarRentalPackageMemberTermMapper {
      * 根据用户ID和租户ID更新状态
      * @param tenantId 租户ID
      * @param uid 用户ID
+     * @param optId 操作人ID（可以为空）
+     * @param optTime 操作时间
+     * @return
+     */
+    int delByUidAndTenantId(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("optId") Long optId, @Param("optTime") Long optTime);
+
+    /**
+     * 根据用户ID和租户ID更新状态
+     * @param tenantId 租户ID
+     * @param uid 用户ID
      * @param status 状态
      * @param optId 操作人ID（可以为空）
      * @param optTime 操作时间

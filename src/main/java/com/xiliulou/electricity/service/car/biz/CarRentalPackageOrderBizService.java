@@ -14,6 +14,15 @@ import javax.servlet.http.HttpServletRequest;
 public interface CarRentalPackageOrderBizService {
 
     /**
+     * 租车套餐订单
+     * @param orderNo 租车套餐购买订单编号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    Boolean cancelRentalPackageOrder(String orderNo, Integer tenantId, Long uid);
+
+    /**
      * 租车套餐订单，购买/续租
      * @param buyOptModel
      * @return
@@ -30,5 +39,14 @@ public interface CarRentalPackageOrderBizService {
      * @return
      */
     Pair<Boolean, Object> handBuyRentalPackageOrderSuccess(String orderNo, Integer tenantId, Long uid);
+
+    /**
+     * 支付失败之后的逻辑
+     * @param orderNo 租车套餐购买订单编号
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    Pair<Boolean, Object> handBuyRentalPackageOrderFailed(String orderNo, Integer tenantId, Long uid);
 
 }
