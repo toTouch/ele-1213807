@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackage")
-public class JsonAdminCarRentalPackageController extends JsonAdminCarBasicController {
+public class JsonAdminCarRentalPackageController extends BasicController {
 
     @Resource
     private ElectricityCarModelService electricityCarModelService;

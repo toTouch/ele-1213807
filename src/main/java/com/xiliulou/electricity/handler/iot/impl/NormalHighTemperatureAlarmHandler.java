@@ -4,12 +4,12 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.EleHighTemperatureAlarmNotify;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -60,7 +60,7 @@ public class NormalHighTemperatureAlarmHandler extends AbstractElectricityIotHan
             return;
         }
 
-        messageNotifyList.forEach(i -> rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0));
+        messageNotifyList.forEach(i -> rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0));
     }
 
     private List<MqNotifyCommon<EleHighTemperatureAlarmNotify>> buildHighTemperatureAlarmNotify(ElectricityCabinet electricityCabinet, HighTemperatureAlarmVO highTemperatureAlarmVO) {

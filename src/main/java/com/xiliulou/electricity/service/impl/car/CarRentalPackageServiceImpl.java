@@ -181,6 +181,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
     /**
      * 根据ID查询<br />
+     * 优先查询缓存，缓存没有查询DB，懒加载缓存<br />
      * 可能返回<code>null</code>
      * @param id 主键ID
      * @return

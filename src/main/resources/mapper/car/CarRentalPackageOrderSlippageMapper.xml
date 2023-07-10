@@ -138,7 +138,7 @@
             <include refid="where_field" />
         </where>
         ORDER BY `create_time` DESC
-        LIMIT #{offset}, #{limitNum}
+        LIMIT #{offset}, #{size}
     </select>
 
     <!-- 条件查询总数 -->

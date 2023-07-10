@@ -1,11 +1,27 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -20,13 +36,14 @@ import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.constant.WechatPayConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.manager.CalcRentCarPriceFactory;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
@@ -38,27 +55,15 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
+
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import jodd.util.ArraysUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @program: XILIULOU
@@ -176,6 +181,28 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Autowired
     ShareActivityMemberCardService shareActivityMemberCardService;
+
+    /**
+     * 根据用户ID查询对应状态的记录
+     *
+     * @param tenantId
+     * @param uid
+     * @param status
+     * @return
+     */
+    @Override
+    public Integer selectCountByUid(Integer tenantId, Long uid, Integer status) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        LambdaQueryWrapper<ElectricityMemberCardOrder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ElectricityMemberCardOrder::getTenantId, tenantId)
+                .eq(ElectricityMemberCardOrder::getUid, uid);
+        if (!ObjectUtils.isEmpty(status)) {
+            queryWrapper.eq(ElectricityMemberCardOrder::getStatus, status);
+        }
+        return baseMapper.selectCount(queryWrapper);
+    }
 
     /**
      * 创建月卡订单
@@ -2864,7 +2891,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         messageNotifyList.forEach(i -> {
-            rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
             log.info("ELE INFO! user authentication audit notify,msg={},uid={}", JsonUtil.toJson(i), userInfo.getUid());
         });
     }

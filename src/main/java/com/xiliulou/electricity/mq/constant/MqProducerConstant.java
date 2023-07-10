@@ -24,4 +24,9 @@ public interface MqProducerConstant {
 
     /** 分账模块公用 topic 下的所有 tag */
     String DIVISION_ACCOUNT_COMMOM_TOPIC_TAG = "*";
+
+    String TOPIC_BATTERY_POWER = "battery_power_topic";
+
+    /** 运维通知 topic */
+    String TOPIC_MAINTENANCE_NOTIFY = "MAINTENANCE_NOTIFY";
 }

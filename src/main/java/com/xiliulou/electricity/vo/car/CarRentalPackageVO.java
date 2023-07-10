@@ -69,6 +69,11 @@ public class CarRentalPackageVO implements Serializable {
     private String batteryModelIds;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     1-全部
@@ -112,6 +117,7 @@ public class CarRentalPackageVO implements Serializable {
      * </pre>
      * @see YesNoEnum
      */
+    @Deprecated
     private Integer depositRebateApprove;
 
     /**
@@ -150,7 +156,7 @@ public class CarRentalPackageVO implements Serializable {
     private Integer giveCoupon;
 
     /**
-     * 优惠券ID
+     * 赠送的优惠券ID
      */
     private Long couponId;
 
@@ -200,5 +206,10 @@ public class CarRentalPackageVO implements Serializable {
      * 车辆型号名称
      */
     private String carModelName;
+
+    /**
+     * 赠送优惠券金额
+     */
+    private BigDecimal giveCouponAmount;
 
 }

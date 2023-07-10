@@ -61,6 +61,7 @@
     <!-- where 查询条件 -->
     <sql id="where_field">
         <if test=" franchiseeId != null"> AND `franchisee_id` = #{franchiseeId} </if>
+        <if test=" storeId != null"> AND `store_id` = #{storeId} </if>
         <if test=" name != null and name != '' "> AND `name` LIKE CONCAT('%', #{name}, '%') </if>
         <if test=" type != null "> AND `type` = #{type} </if>
         <if test=" status != null "> AND `status` = #{status} </if>
@@ -191,7 +192,7 @@
             <include refid="where_field" />
         </where>
         ORDER BY `create_time` DESC
-        LIMIT #{offset}, #{limitNum}
+        LIMIT #{offset}, #{size}
     </select>
 
     <!-- 条件查询总数 -->

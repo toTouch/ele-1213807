@@ -108,7 +108,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         try {
             // 加锁
-            if (!redisService.setNx(buyLockKey, "1")) {
+            if (!redisService.setNx(buyLockKey, "1", 10 * 1000L, false)) {
                 return R.fail("ELECTRICITY.0034", "操作频繁");
             }
 
@@ -194,13 +194,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     Integer oriCarModelId = packageOrderEntity.getCarModelId();
                     BigDecimal oriDeposit = packageOrderEntity.getDeposit();
                     Integer oriConfine = packageOrderEntity.getConfine();
-                    List<String> oriBatteryModelIds = Arrays.asList(packageEntity.getBatteryModelIds());
+                    List<String> oriBatteryModelIds = Arrays.asList(packageOrderEntity.getBatteryModelIds().split(","));
 
                     // 要下单的套餐订单
                     Integer buyCarModelId = packageEntity.getCarModelId();
                     BigDecimal buyDeposit = packageEntity.getDeposit();
                     Integer buyConfine = packageEntity.getConfine();
-                    List<String> buyBatteryModelIds = Arrays.asList(packageEntity.getBatteryModelIds());
+                    List<String> buyBatteryModelIds = Arrays.asList(packageEntity.getBatteryModelIds().split(","));
 
                     // 车辆型号、押金、套餐限制，任意一个不一致，则判定为不一致套餐
                     if (!buyCarModelId.equals(oriCarModelId) || buyDeposit.compareTo(oriDeposit) != 0 || !buyConfine.equals(oriConfine)) {
@@ -208,7 +208,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     }
 
                     // 电池型号，若新买的，没有完全包含于已经购买的，则不允许购买
-                    if (buyBatteryModelIds.size() < oriBatteryModelIds.size() || !buyBatteryModelIds.stream().allMatch(n -> oriBatteryModelIds.contains(n)) ) {
+                    if (buyBatteryModelIds.size() < oriBatteryModelIds.size() || !buyBatteryModelIds.containsAll(oriBatteryModelIds)) {
                         return R.fail("300205", "套餐不匹配");
                     }
 
@@ -440,7 +440,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermPO.setRentalPackageOrderNo(carRentalPackageOrderEntity.getOrderNo());
         carRentalPackageMemberTermPO.setRentalPackageId(packageEntity.getId());
         carRentalPackageMemberTermPO.setRentalPackageType(packageEntity.getType());
-
+        carRentalPackageMemberTermPO.setRentalPackageConfine(packageEntity.getConfine());
         // 计算到期时间
         Integer tenancy = packageEntity.getTenancy();
         Integer tenancyUnit = packageEntity.getTenancyUnit();

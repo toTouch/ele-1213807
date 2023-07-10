@@ -24,7 +24,7 @@ public class CarRentalPackageQryReq implements Serializable {
     /**
      * 取值数量
      */
-    private Integer limitNum = 10;
+    private Integer size = 10;
 
     /**
      * 租户ID
@@ -35,6 +35,11 @@ public class CarRentalPackageQryReq implements Serializable {
      * 加盟商ID
      */
     private Integer franchiseeId;
+
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
 
     /**
      * 套餐名称
@@ -61,5 +66,10 @@ public class CarRentalPackageQryReq implements Serializable {
      * @see UpDownEnum
      */
     private Integer status;
+
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
 
 }

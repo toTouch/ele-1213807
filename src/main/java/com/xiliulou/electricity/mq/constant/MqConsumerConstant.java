@@ -15,4 +15,7 @@ public interface MqConsumerConstant {
 
     /** 活动模块公用 consumer group */
     String ACTIVITY_COMMON_CONSUMER_GROUP = "activity_common_consumer_group";
+
+    String BATTERY_CONSUMER = "battery-power-consumer";
+
 }

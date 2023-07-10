@@ -42,6 +42,7 @@ public interface CarRentalPackageMemberTermService {
 
     /**
      * 根据租户ID和用户ID查询租车套餐会员限制信息<br />
+     * 优先查询缓存，缓存没有查询DB，懒加载缓存<br />
      * 可能返回<code>null</code>
      * @param tenantId 租户ID
      * @param uid 用户ID

@@ -1,44 +1,41 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.MqConstant;
-import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mapper.EleUserAuthMapper;
-import com.xiliulou.electricity.service.EleAuthEntryService;
-import com.xiliulou.electricity.service.EleUserAuthService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.mq.service.RocketMqService;
-import com.xiliulou.security.bean.TokenUser;
-import com.xiliulou.storage.config.StorageConfig;
-import com.xiliulou.storage.service.StorageService;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import shaded.org.apache.commons.lang3.StringUtils;
 
-import javax.annotation.Resource;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.mapper.EleUserAuthMapper;
+import com.xiliulou.electricity.mq.constant.MqProducerConstant;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.mq.service.RocketMqService;
+import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
+
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import lombok.extern.slf4j.Slf4j;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 /**
  * 实名认证信息(TEleUserAuth)表服务实现类
@@ -227,7 +224,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
     
         messageNotifyList.forEach(i -> {
-            rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
+            rocketMqService.sendAsyncMsg(MqProducerConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(i), "", "", 0);
         });
     }
     

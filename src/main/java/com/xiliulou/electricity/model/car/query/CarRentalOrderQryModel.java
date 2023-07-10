@@ -22,7 +22,7 @@ public class CarRentalOrderQryModel implements Serializable {
     /**
      * 取值数量
      */
-    private Integer limitNum = 10;
+    private Integer size = 10;
 
     /**
      * 租户ID

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ import javax.annotation.Resource;
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackageMemberTerm")
-public class JsonAdminCarRentalPackageMemberTermController extends JsonAdminCarBasicController {
+public class JsonAdminCarRentalPackageMemberTermController extends BasicController {
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
