@@ -56,6 +56,8 @@ public interface BatteryMemberCardService {
 
     List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
 
+    List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query);
+
     Triple<Boolean, String, Object> updateStatus(BatteryMemberCardStatusQuery batteryModelQuery);
 
     Triple<Boolean, String, Object> delete(Long id);

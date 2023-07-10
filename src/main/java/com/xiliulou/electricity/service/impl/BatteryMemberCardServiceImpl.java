@@ -145,6 +145,18 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
 
     @Override
+    public List<BatteryMemberCardVO> selectByQuery(BatteryMemberCardQuery query) {
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByQuery(query);
+
+        return list.parallelStream().map(item -> {
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+
+    }
+
+    @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
 

@@ -52,4 +52,6 @@ public interface BatteryMemberCardMapper extends BaseMapper<BatteryMemberCard> {
     List<BatteryMemberCard> selectByPageForUser(BatteryMemberCardQuery query);
 
     List<BatteryMemberCardVO> selectMembercardBatteryV(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCard> selectByQuery(BatteryMemberCardQuery query);
 }

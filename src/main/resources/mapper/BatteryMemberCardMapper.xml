@@ -110,6 +110,44 @@
         limit #{offset}, #{size}
     </select>
 
+    <select id="selectByQuery" resultMap="BatteryMemberCardMap">
+        select
+        id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
+        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, refund_deposite_audit,
+        service_charge, display, type, remark, business_type, del_flag, tenant_id, create_time, update_time
+        from t_battery_member_card
+        <where>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="display != null">
+                and display = #{display}
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="rentType != null">
+                and rent_type = #{rentType}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+    </select>
+
     <select id="selectByPageForUser" resultMap="BatteryMemberCardMap">
         select
         bmc.id,
@@ -142,6 +180,9 @@
             </if>
             <if test="status != null">
                 and bmc.status = #{status}
+            </if>
+            <if test="display != null">
+                and bmc.display = #{display}
             </if>
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
@@ -178,6 +219,9 @@
             </if>
             <if test="status != null">
                 and bmc.status = #{status}
+            </if>
+            <if test="display != null">
+                and display = #{display}
             </if>
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')

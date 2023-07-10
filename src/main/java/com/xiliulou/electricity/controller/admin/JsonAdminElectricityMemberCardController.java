@@ -2,14 +2,13 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
-import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -41,6 +40,8 @@ public class JsonAdminElectricityMemberCardController {
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
     @Autowired
     UserDataScopeService userDataScopeService;
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
     /**
      * 新增
@@ -208,30 +209,37 @@ public class JsonAdminElectricityMemberCardController {
      * 根据名称模糊搜索套餐
      * @return
      */
-    @GetMapping(value = "/admin/electricityMemberCard/selectByQuery")
-    public R selectByQuery(@RequestParam(value = "name", required = false) String name,
-                           @RequestParam(value = "cardModel", required = false) Integer cardModel) {
-        ElectricityMemberCardQuery cardQuery = ElectricityMemberCardQuery.builder()
-                .name(name)
-                .cardModel(cardModel)
-                .tenantId(TenantContextHolder.getTenantId())
-                .build();
-        return R.ok(electricityMemberCardService.selectByQuery(cardQuery));
-    }
+//    @GetMapping(value = "/admin/electricityMemberCard/selectByQuery")
+//    public R selectByQuery(@RequestParam(value = "name", required = false) String name,
+//                           @RequestParam(value = "cardModel", required = false) Integer cardModel) {
+//        ElectricityMemberCardQuery cardQuery = ElectricityMemberCardQuery.builder()
+//                .name(name)
+//                .cardModel(cardModel)
+//                .tenantId(TenantContextHolder.getTenantId())
+//                .build();
+//        return R.ok(electricityMemberCardService.selectByQuery(cardQuery));
+//    }
 
 
     //查询换电套餐根据加盟商
-    @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
-    public R getElectricityBatteryList(@PathVariable("id") Long id) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(electricityMemberCardService.selectByFranchiseeId(id, tenantId));
-    }
+//    @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
+//    public R getElectricityBatteryList(@PathVariable("id") Long id) {
+//        Integer tenantId = TenantContextHolder.getTenantId();
+//        return R.ok(electricityMemberCardService.selectByFranchiseeId(id, tenantId));
+//    }
 
     //查询未删除并且启用换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryUsableByFranchisee/{id}")
     public R getElectricityUsableBatteryList(@PathVariable("id") Long id) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(electricityMemberCardService.getElectricityUsableBatteryList(id,tenantId));
+//        Integer tenantId = TenantContextHolder.getTenantId();
+//        return R.ok(electricityMemberCardService.getElectricityUsableBatteryList(id,tenantId));
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .franchiseeId(id)
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .status(BatteryMemberCard.STATUS_UP)
+                .display(BatteryMemberCard.YES)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+        return R.ok(batteryMemberCardService.selectByQuery(query));
     }
 
     /**
@@ -241,27 +249,30 @@ public class JsonAdminElectricityMemberCardController {
      */
     @GetMapping(value = "/admin/electricityMemberCard/selectByFranchiseeId/{id}")
     public R selectByFranchiseeId(@PathVariable("id") Long id) {
+//
+//        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
+//                .tenantId(TenantContextHolder.getTenantId())
+//                .franchiseeId(id).build();
+//
+//        return R.ok(electricityMemberCardService.selectByQuery(query));
 
-        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .franchiseeId(id).build();
-
-        return R.ok(electricityMemberCardService.selectByQuery(query));
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder().franchiseeId(id).tenantId(TenantContextHolder.getTenantId()).build();
+        return R.ok(batteryMemberCardService.selectByQuery(query));
     }
 
     /**
      * 根据加盟商id获取所有套餐
      * @return
      */
-    @GetMapping(value = "/admin/electricityMemberCard/queryAll")
-    public R selectAll(@RequestParam(value = "name", required = false) String name) {
-
-        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
-                .tenantId(TenantContextHolder.getTenantId())
-                .name(name).build();
-
-        return R.ok(electricityMemberCardService.selectByQuery(query));
-    }
+//    @GetMapping(value = "/admin/electricityMemberCard/queryAll")
+//    public R selectAll(@RequestParam(value = "name", required = false) String name) {
+//
+//        ElectricityMemberCardQuery query = ElectricityMemberCardQuery.builder()
+//                .tenantId(TenantContextHolder.getTenantId())
+//                .name(name).build();
+//
+//        return R.ok(electricityMemberCardService.selectByQuery(query));
+//    }
 
     /**
      * 用户停卡记录
