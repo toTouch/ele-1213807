@@ -134,26 +134,11 @@ public class CarRentalPackageOrderVO implements Serializable {
      * <pre>
      *     1-线上
      *     2-线下
+     *     4-赠送
      * </pre>
      * @see PayTypeEnum
      */
     private Integer payType;
-
-    /**
-     * 购买方式
-     * <pre>
-     *     1-线上
-     *     2-线下
-     *     3-赠送
-     * </pre>
-     * @see BuyTypeEnum
-     */
-    private Integer buyType;
-
-    /**
-     * 柜机ID
-     */
-    private Integer cabinetId;
 
     /**
      * 赠送的优惠券ID
@@ -215,10 +200,5 @@ public class CarRentalPackageOrderVO implements Serializable {
      * 租车套餐名称
      */
     private String carRentalPackageName;
-
-    /**
-     * 柜机名称
-     */
-    private String cabinetName;
 
 }

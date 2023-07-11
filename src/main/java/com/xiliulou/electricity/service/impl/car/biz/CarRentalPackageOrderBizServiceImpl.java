@@ -1,4 +1,7 @@
 package com.xiliulou.electricity.service.impl.car.biz;
+import com.xiliulou.electricity.domain.car.CarInfoDO;
+import com.xiliulou.electricity.vo.car.CarVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -25,6 +28,7 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +54,18 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
+
+    @Resource
+    private ElectricityCarService electricityCarService;
+
+    @Resource
+    private StoreService storeService;
+
+    @Resource
+    private Jt808CarService jt808CarService;
+
+    @Resource
+    private UserCarService userCarService;
 
     @Resource
     private UserBizService userBizService;
@@ -89,6 +105,85 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
     @Resource
     private CarRentalPackageService carRentalPackageService;
+
+    /**
+     * 根据用户ID查询正在使用的套餐信息<br />
+     * 复合查询，车辆信息、门店信息、GPS信息、电池信息、保险信息
+     *
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return com.xiliulou.core.web.R
+     * @author xiaohui.song
+     **/
+    @Override
+    public R<RentalPackageVO> queryUseRentalPackageOrderByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 1. 查询会员期限信息
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            return R.ok();
+        }
+
+        // 2. 查询套餐信息
+        CarRentalPackagePO carRentalPackageEntity = carRentalPackageService.selectById(memberTermEntity.getRentalPackageId());
+
+        // 3. 查询用户车辆信息
+        UserCar userCar = userCarService.selectByUidFromCache(uid);
+
+        // 4. 查询车辆相关信息
+        CarInfoDO carInfoDO = electricityCarService.queryByCarId(tenantId, userCar.getCid());
+
+        // 5. TODO 查询保险信息，志龙
+
+        // 6. TODO 电池消息，志龙
+
+        // 7. TODO 滞纳金信息
+        BigDecimal lateFeeAmount = null;
+
+        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTermEntity, carRentalPackageEntity, carInfoDO, lateFeeAmount);
+
+        return R.ok(rentalPackageVO);
+    }
+
+    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO carRentalPackageEntity, CarInfoDO carInfoDO, BigDecimal lateFeeAmount) {
+        // 构建返回值
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            return null;
+        }
+        RentalPackageVO rentalPackageVO = new RentalPackageVO();
+        rentalPackageVO.setDeadlineTime(memberTermEntity.getDueTimeTotal());
+        rentalPackageVO.setLateFeeAmount(lateFeeAmount);
+
+        // 套餐订单信息
+        CarRentalPackageOrderVO carRentalPackageOrderVO = new CarRentalPackageOrderVO();
+        carRentalPackageOrderVO.setOrderNo(memberTermEntity.getRentalPackageOrderNo());
+        carRentalPackageOrderVO.setRentalPackageType(carRentalPackageEntity.getType());
+        carRentalPackageOrderVO.setConfine(carRentalPackageEntity.getConfine());
+        carRentalPackageOrderVO.setConfineNum(carRentalPackageEntity.getConfineNum());
+        carRentalPackageOrderVO.setTenancy(carRentalPackageEntity.getTenancy());
+        carRentalPackageOrderVO.setTenancyUnit(carRentalPackageEntity.getTenancyUnit());
+        carRentalPackageOrderVO.setRent(carRentalPackageEntity.getRent());
+        carRentalPackageOrderVO.setCarModelId(carRentalPackageEntity.getCarModelId());
+        carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageEntity.getName());
+        // 赋值套餐订单信息
+        rentalPackageVO.setCarRentalPackageOrder(carRentalPackageOrderVO);
+
+        // 车辆信息
+        if (ObjectUtils.isNotEmpty(carInfoDO)) {
+            CarVO carVO = new CarVO();
+            carVO.setCarSn(carInfoDO.getCarSn());
+            carVO.setStoreName(carInfoDO.getStoreName());
+            carVO.setLatitude(carInfoDO.getLatitude());
+            carVO.setLongitude(carInfoDO.getLongitude());
+            // 赋值车辆信息
+            rentalPackageVO.setCar(carVO);
+        }
+
+        return rentalPackageVO;
+    }
 
     /**
      * 租车套餐订单
@@ -448,7 +543,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageMemberTermOptModel optModel = new CarRentalPackageMemberTermOptModel();
             optModel.setId(memberTermEntity.getId());
 
-            // 计算到期时间
+            // 计算总到期时间
             Integer tenancy = carRentalPackageOrderEntity.getTenancy();
             Integer tenancyUnit = carRentalPackageOrderEntity.getTenancyUnit();
             long dueTime = System.currentTimeMillis();
@@ -460,7 +555,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             optModel.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + dueTime);
 
-            // 计算套餐余量
+            // 计算总套餐余量
             if (ObjectUtils.isNotEmpty(memberTermEntity.getResidueTotal())) {
                 optModel.setResidueTotal(memberTermEntity.getResidueTotal() + carRentalPackageOrderEntity.getConfineNum());
             }
@@ -593,8 +688,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermPO.setCreateTime(System.currentTimeMillis());
         carRentalPackageMemberTermPO.setUpdateTime(System.currentTimeMillis());
         carRentalPackageMemberTermPO.setDelFlag(DelFlagEnum.OK.getCode());
-        carRentalPackageMemberTermPO.setCarModelId(carRentalPackageOrderEntity.getCarModelId());
-        carRentalPackageMemberTermPO.setBatteryModelIds(carRentalPackageOrderEntity.getBatteryModelIds());
         return carRentalPackageMemberTermPO;
     }
 

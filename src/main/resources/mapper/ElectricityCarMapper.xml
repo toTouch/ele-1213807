@@ -7,6 +7,21 @@
        	select   id, sn, model, longitude, latitude, status, uid, phone, user_info_id, user_name, store_id, model_id, battery_sn, create_time, update_time, del_flag, tenant_id,lock_type         from t_electricity_car
     </sql>
 
+    <!-- 根据 uid 查询， 复合查询，车辆、门店-->
+    <select id="queryByCarId" resultType="com.xiliulou.electricity.domain.car.CarInfoDO">
+        SELECT
+            ec.id AS carId,
+            ec.sn AS carSn,
+            ec.store_id AS storeId,
+            s.`name` AS storeName
+        FROM
+            t_electricity_car ec
+                JOIN t_store s ON ec.store_id = s.id
+        WHERE
+            ec.id = #{carId}
+          AND ec.tenant_id = #{tenantId}
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
         select

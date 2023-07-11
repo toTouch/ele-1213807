@@ -34,14 +34,10 @@
         <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
-        <result property="buyType" column="buy_type" jdbcType="INTEGER" />
-        <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER" />
         <result property="couponId" column="coupon_id" jdbcType="BIGINT" />
         <result property="payState" column="pay_state" jdbcType="INTEGER" />
         <result property="useState" column="use_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
-        <result property="thirdPayNo" column="third_pay_no" jdbcType="VARCHAR" />
-        <result property="thirdPayChannel" column="third_pay_channel" jdbcType="INTEGER" />
 
     </resultMap>
 
@@ -56,8 +52,8 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `confine`, `deposit`, `confine_num`, `tenancy`, `tenancy_unit`, `rent_unit_price`, `rent`, `rent_payment`, `car_model_id`,
-        `battery_model_ids`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `rent_rebate_end_time`, `deposit_pay_order_no`, `late_fee`, `pay_type`, `buy_type`, `cabinet_id`, `coupon_id`,
-        `pay_state`, `use_state`, `remark`, `third_pay_no`, `third_pay_channel`
+        `battery_model_ids`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `rent_rebate_end_time`, `deposit_pay_order_no`, `late_fee`, `pay_type`, `coupon_id`,
+        `pay_state`, `use_state`, `remark`
     </sql>
 
     <!-- 全部字段 -->
@@ -73,7 +69,6 @@
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
-        <if test=" buyType != null "> AND `buy_type` = #{buyType} </if>
         <if test=" buyTimeBegin != null and buyTimeEnd != null "> AND `create_time` BETWEEN #{buyTimeBegin} AND #{buyTimeEnd} </if>
     </sql>
 
@@ -108,13 +103,10 @@
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" payType != null "> `pay_type`, </if>
-            <if test=" cabinetId != null "> `cabinet_id`, </if>
             <if test=" couponId != null "> `coupon_id`, </if>
             <if test=" payState != null "> `pay_state`, </if>
             <if test=" useState != null "> `use_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
-            <if test=" thirdPayNo != null and thirdPayNo != '' "> `third_pay_no`, </if>
-            <if test=" thirdPayChannel != null "> `third_pay_channel`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -148,13 +140,10 @@
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" payType != null "> #{payType}, </if>
-            <if test=" cabinetId != null "> #{cabinetId}, </if>
             <if test=" couponId != null "> #{couponId}, </if>
             <if test=" payState != null "> #{payState}, </if>
             <if test=" useState != null "> #{useState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
-            <if test=" thirdPayNo != null and thirdPayNo != '' "> #{thirdPayNo}, </if>
-            <if test=" thirdPayChannel != null "> #{thirdPayChannel}, </if>
         </trim>
     </sql>
 

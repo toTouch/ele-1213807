@@ -5,7 +5,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
+import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -33,7 +33,7 @@ public class JsonUserCarRenalPackageOrderController {
      * 查询用户正在使用的租车套餐订单
      * @return
      */
-    public R<CarRentalPackageOrderVO> queryUseRentalPackageOrder() {
+    public R<RentalPackageVO> queryUseRentalPackageOrder() {
 
         // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -46,9 +46,6 @@ public class JsonUserCarRenalPackageOrderController {
         }
 
         // 查询租车套餐会员期限信息
-
-
-
 
 
         return null;
@@ -79,8 +76,6 @@ public class JsonUserCarRenalPackageOrderController {
             log.error("order  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        // TODO 判定一下是否允许取消（反查支付状态）
 
         Boolean cancelFlag = carRentalPackageOrderBizService.cancelRentalPackageOrder(orderNo, tenantId, user.getUid());
 

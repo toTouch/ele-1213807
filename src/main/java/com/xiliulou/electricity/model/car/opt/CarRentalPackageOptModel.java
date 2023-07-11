@@ -241,17 +241,6 @@ public class CarRentalPackageOptModel implements Serializable {
     private Integer status;
 
     /**
-     * C端展示
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
-     */
-    @NotNull(message = "[是否展示]不能为空")
-    private Integer showFlag;
-
-    /**
      * 备注
      */
     private String remark;

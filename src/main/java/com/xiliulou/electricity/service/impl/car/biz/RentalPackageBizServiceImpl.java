@@ -8,7 +8,6 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
-import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
@@ -105,8 +104,6 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
             rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
             franchiseeId = memberTermEntity.getFranchiseeId();
             storeId = memberTermEntity.getStoreId();
-            carModelId = memberTermEntity.getCarModelId();
-            batteryModelIds = memberTermEntity.getBatteryModelIds();
         }
 
         // 结合如上两点，从数据库中筛选合适的套餐
@@ -116,7 +113,6 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         qryModel.setTenantId(tenantId);
         qryModel.setFranchiseeId(franchiseeId);
         qryModel.setStoreId(storeId);
-        qryModel.setShowFlag(YesNoEnum.YES.getCode());
         qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
         qryModel.setDeposit(deposit);
         qryModel.setType(rentalPackageType);
@@ -165,6 +161,8 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
             throw new BizException("使用优惠券有误");
         }
+
+        // TODO 校验优惠券的使用，是否指定这个套餐
 
         // 真正使用的用户优惠券ID
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());

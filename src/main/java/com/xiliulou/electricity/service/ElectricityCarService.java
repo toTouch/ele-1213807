@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
-import com.xiliulou.electricity.query.*;
-import com.xiliulou.electricity.vo.CarGpsVo;
-import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCarBindUser;
+import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
+import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 
 import java.util.List;
@@ -18,6 +20,15 @@ import java.util.List;
  * @since 2020-11-25 11:00:14
  */
 public interface ElectricityCarService {
+
+    /**
+     * 根据 uid 查询车辆信息<br />
+     * 复合查询，车辆、门店、车辆经纬度
+     * @param tenantId 租户ID
+     * @param carId 车辆ID
+     * @return
+     */
+    CarInfoDO queryByCarId(Integer tenantId, Long carId);
 
     /**
      * 通过ID查询单条数据从缓存

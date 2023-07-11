@@ -4,28 +4,30 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.mysql.cj.x.protobuf.MysqlxExpr;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.StoreMapper;
-import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
+import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.query.StoreAddAndUpdate;
+import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
-import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +54,10 @@ import java.util.stream.Collectors;
 @Service("storeService")
 @Slf4j
 public class StoreServiceImpl implements StoreService {
+
+    @Resource
+    private ElectricityCarService carService;
+
     @Resource
     private StoreMapper storeMapper;
     @Autowired
@@ -85,6 +91,28 @@ public class StoreServiceImpl implements StoreService {
     ElectricityCarModelService electricityCarModelService;
     @Autowired
     ElectricityConfigService electricityConfigService;
+
+    /**
+     * 根据车辆<code>SN</code>码获取门店信息
+     *
+     * @param tenantId
+     * @param sn
+     * @return
+     */
+    @Slave
+    @Override
+    public Store queryByCarSn(Integer tenantId, String sn) {
+        if (!ObjectUtils.allNotNull(tenantId, sn)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        ElectricityCar car = carService.selectBySn(sn, tenantId);
+        if (ObjectUtils.isEmpty(car)) {
+            return null;
+        }
+
+        return queryByIdFromCache(car.getStoreId());
+    }
 
     /**
      * 通过ID查询单条数据从缓存

@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
@@ -67,12 +66,10 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
-        Set<Integer> cabinetIds = new HashSet<>();
         carRentalPackageOrderPOList.forEach(carRentalPackageOrder -> {
             uids.add(carRentalPackageOrder.getUid());
             rentalPackageIds.add(carRentalPackageOrder.getRentalPackageId());
             franchiseeIds.add(Long.valueOf(carRentalPackageOrder.getFranchiseeId()));
-            cabinetIds.add(carRentalPackageOrder.getCabinetId());
         });
 
         // 用户信息
@@ -83,9 +80,6 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
         // 加盟商信息
         Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
-
-        // 柜机信息
-        Map<Integer, ElectricityCabinet> cabinetMap = getCabinetByIdsForMap(cabinetIds);
 
         // 模型转换，封装返回
         List<CarRentalPackageOrderVO> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
@@ -105,10 +99,6 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageOrderVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageOrder.getFranchiseeId()), ""));
-            }
-
-            if (!cabinetMap.isEmpty()) {
-                carRentalPackageOrderVO.setCabinetName(cabinetMap.getOrDefault(carRentalPackageOrder.getCabinetId(), new ElectricityCabinet()).getName());
             }
 
             return carRentalPackageOrderVO;
