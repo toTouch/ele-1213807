@@ -113,4 +113,21 @@ public class CarRentalPackageQryModel implements Serializable {
      */
     private Integer confine;
 
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
+    /**
+     * 电池型号ID集，用英文逗号分割
+     */
+    private String batteryModelIds;
+
+    /**
+     * 电池型号ID集，用英文逗号分割，左匹配
+     */
+    private String batteryModelIdsLeftLike;
+
+
+
 }

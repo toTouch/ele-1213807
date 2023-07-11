@@ -65,6 +65,9 @@
         <if test=" name != null and name != '' "> AND `name` LIKE CONCAT('%', #{name}, '%') </if>
         <if test=" type != null "> AND `type` = #{type} </if>
         <if test=" status != null "> AND `status` = #{status} </if>
+        <if test=" carModelId != null "> AND `car_model_id` = #{carModelId} </if>
+        <if test=" batteryModelIds != null "> AND `battery_model_ids` = #{batteryModelIds} </if>
+        <if test=" batteryModelIdsLeftLike != null "> AND `battery_model_ids` LIKE CONCAT(#{batteryModelIdsLeftLike}, '%') </if>
         <if test=" idList != null and idList.size > 0">
             AND `id` IN
             <foreach collection="idList" item="id" open="(" close=")" separator=",">

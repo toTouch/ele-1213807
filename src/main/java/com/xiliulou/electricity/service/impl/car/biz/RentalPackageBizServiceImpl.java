@@ -91,6 +91,8 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         BigDecimal deposit = null;
         Integer rentalPackageType = null;
         Integer rentalPackageConfine = null;
+        Integer carModelId = null;
+        String batteryModelIds = null;
 
         // 判定用户名下是否存在正在使用的套餐
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
@@ -101,6 +103,10 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
             deposit = memberTermEntity.getDeposit();
             rentalPackageType = memberTermEntity.getRentalPackageType();
             rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
+            franchiseeId = memberTermEntity.getFranchiseeId();
+            storeId = memberTermEntity.getStoreId();
+            carModelId = memberTermEntity.getCarModelId();
+            batteryModelIds = memberTermEntity.getBatteryModelIds();
         }
 
         // 结合如上两点，从数据库中筛选合适的套餐
@@ -115,6 +121,8 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         qryModel.setDeposit(deposit);
         qryModel.setType(rentalPackageType);
         qryModel.setConfine(rentalPackageConfine);
+        qryModel.setCarModelId(carModelId);
+        qryModel.setBatteryModelIdsLeftLike(batteryModelIds);
         List<CarRentalPackagePO> entityList = carRentalPackageService.list(qryModel);
 
         return entityList;

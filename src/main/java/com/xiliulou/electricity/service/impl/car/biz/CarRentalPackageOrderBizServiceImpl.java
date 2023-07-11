@@ -287,7 +287,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
 
-            // 退租未退押，押金一致，可以购的租车套餐（单车、车电一体）
+            // 退租未退押，押金不一致
             if (deposit.compareTo(packageEntity.getDeposit()) != 0) {
                 return R.fail("300205", "套餐不匹配");
             }
@@ -593,7 +593,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermPO.setCreateTime(System.currentTimeMillis());
         carRentalPackageMemberTermPO.setUpdateTime(System.currentTimeMillis());
         carRentalPackageMemberTermPO.setDelFlag(DelFlagEnum.OK.getCode());
-
+        carRentalPackageMemberTermPO.setCarModelId(carRentalPackageOrderEntity.getCarModelId());
+        carRentalPackageMemberTermPO.setBatteryModelIds(carRentalPackageOrderEntity.getBatteryModelIds());
         return carRentalPackageMemberTermPO;
     }
 

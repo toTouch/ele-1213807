@@ -100,6 +100,16 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
     private BigDecimal deposit;
 
     /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
+    /**
+     * 电池型号ID集，用英文逗号分割
+     */
+    private String batteryModelIds;
+
+    /**
      * 押金支付状态
      * <pre>
      *     1-是
