@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car.biz;
 
-import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.math.BigDecimal;
@@ -15,11 +16,10 @@ public interface RentalPackageBizService {
 
     /**
      * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐
-     * @param tenantId 租户ID
+     * @param qryReq 查询模型
      * @param uid 用户ID
-     * @param carModelId 车辆型号ID
      */
-    R queryByCarModel(Integer tenantId, Long uid, Integer carModelId);
+    List<CarRentalPackagePO> queryByCarModel(CarRentalPackageQryReq qryReq, Long uid);
 
     /**
      * 计算需要支付的金额

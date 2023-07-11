@@ -130,6 +130,11 @@ public class CarRentalPackageOptModel implements Serializable {
     private String batteryModelIds;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     1-全部
@@ -178,6 +183,7 @@ public class CarRentalPackageOptModel implements Serializable {
      * @see YesNoEnum
      */
     @NotNull(message = "[押金返还审批]不能为空")
+    @Deprecated
     private Integer depositRebateApprove;
 
     /**

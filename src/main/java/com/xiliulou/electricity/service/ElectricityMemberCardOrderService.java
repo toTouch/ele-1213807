@@ -16,6 +16,14 @@ import java.util.Set;
 
 public interface ElectricityMemberCardOrderService {
 
+    /**
+     * 根据用户ID查询对应状态的记录
+     * @param tenantId
+     * @param uid
+     * @param status
+     * @return
+     */
+    Integer selectCountByUid(Integer tenantId, Long uid, Integer status);
 
     R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 

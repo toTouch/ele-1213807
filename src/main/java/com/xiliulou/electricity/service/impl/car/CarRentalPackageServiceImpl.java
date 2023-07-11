@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
+import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
@@ -17,12 +18,15 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 租车套餐表 ServiceImpl
@@ -146,6 +150,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
+        handleQryModel(qryModel);
+
         return carRentalPackageMapper.list(qryModel);
     }
 
@@ -160,6 +166,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
+
+        handleQryModel(qryModel);
 
         return carRentalPackageMapper.page(qryModel);
     }
@@ -176,11 +184,32 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
+        handleQryModel(qryModel);
+
         return R.ok(carRentalPackageMapper.count(qryModel));
     }
 
     /**
+     * 处理请求参数
+     * @param qryModel
+     */
+    private void handleQryModel(CarRentalPackageQryModel qryModel) {
+        // 处理电池型号，保底
+        String batteryModelIds = qryModel.getBatteryModelIds();
+        String batteryModelIdsLeftLike = qryModel.getBatteryModelIdsLeftLike();
+        if (StringUtils.isNotBlank(batteryModelIds)) {
+            batteryModelIds = Arrays.asList(batteryModelIds.split(StringConstant.COMMA_EN)).stream().sorted().collect(Collectors.joining(StringConstant.COMMA_EN));
+            qryModel.setBatteryModelIds(batteryModelIds);
+        }
+        if (StringUtils.isNotBlank(batteryModelIdsLeftLike)) {
+            batteryModelIdsLeftLike = Arrays.asList(batteryModelIdsLeftLike.split(StringConstant.COMMA_EN)).stream().sorted().collect(Collectors.joining(StringConstant.COMMA_EN));
+            qryModel.setBatteryModelIdsLeftLike(batteryModelIdsLeftLike);
+        }
+    }
+
+    /**
      * 根据ID查询<br />
+     * 优先查询缓存，缓存没有查询DB，懒加载缓存<br />
      * 可能返回<code>null</code>
      * @param id 主键ID
      * @return
@@ -225,7 +254,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             return R.fail("300101", "套餐不存在");
         }
         if (UpDownEnum.UP.getCode().equals(oriEntity.getStatus())) {
-            return R.fail("300102", "上架状态的套餐不允许修改");
+            return R.fail("300102", "请先下架套餐再进行编辑操作");
         }
 
         Integer tenantId = optModel.getTenantId();
@@ -271,6 +300,13 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         CarRentalPackagePO entity = new CarRentalPackagePO();
         BeanUtils.copyProperties(optModel, entity);
+
+        // 保底处理电池型号ID连接字符串
+        String batteryModelIds = entity.getBatteryModelIds();
+        if (StringUtils.isNotBlank(batteryModelIds)) {
+            batteryModelIds = Arrays.asList(batteryModelIds.split(StringConstant.COMMA_EN)).stream().sorted().collect(Collectors.joining(StringConstant.COMMA_EN));
+            entity.setBatteryModelIds(batteryModelIds);
+        }
 
         // 赋值操作人及时间
         long now = System.currentTimeMillis();

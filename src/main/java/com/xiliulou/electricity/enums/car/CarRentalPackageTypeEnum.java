@@ -15,7 +15,7 @@ import lombok.Getter;
 public enum CarRentalPackageTypeEnum implements BasicEnum<Integer, String> {
 
     CAR(1, "单车"),
-    CAR_BATTERY(1, "车电一体"),
+    CAR_BATTERY(2, "车电一体"),
     ;
 
     private final Integer code;

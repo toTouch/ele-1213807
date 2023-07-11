@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.enums;
 
 import com.xiliulou.electricity.enums.basic.BasicEnum;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 租车套餐适用类型枚举<br>
@@ -28,4 +30,21 @@ public enum ApplicableTypeEnum implements BasicEnum<Integer, String> {
     private final Integer code;
 
     private final String desc;
+
+    /**
+     * 新用户适用套餐
+     * @return
+     */
+    public static List<Integer> newUserApplicable() {
+        return Arrays.asList(ApplicableTypeEnum.ALL.getCode(), ApplicableTypeEnum.NEW.getCode());
+    }
+
+    /**
+     * 老用户适用套餐
+     * @return
+     */
+    public static List<Integer> oldUserApplicable() {
+        return Arrays.asList(ApplicableTypeEnum.ALL.getCode(), ApplicableTypeEnum.OLD.getCode());
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackageOrder")
-public class JsonAdminCarRentalPackageOrderController extends JsonAdminCarBasicController {
+public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
     @Resource
     private CarRentalPackageOrderService carRentalPackageOrderService;
@@ -136,6 +137,6 @@ public class JsonAdminCarRentalPackageOrderController extends JsonAdminCarBasicC
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalPackageOrderService.count(qryModel);
+        return R.ok(carRentalPackageOrderService.count(qryModel));
     }
 }

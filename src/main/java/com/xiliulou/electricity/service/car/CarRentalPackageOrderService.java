@@ -40,7 +40,7 @@ public interface CarRentalPackageOrderService {
      * @param queryModel 查询条件模型
      * @return
      */
-    R<Integer> count(CarRentalPackageOrderQryModel queryModel);
+    Integer count(CarRentalPackageOrderQryModel queryModel);
 
     /**
      * 根据订单编码查询

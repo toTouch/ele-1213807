@@ -1,13 +1,24 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.SlippageBizService;
+import com.xiliulou.electricity.service.user.biz.UserBizService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -16,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +41,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class RentalPackageBizServiceImpl implements RentalPackageBizService {
+
+    @Resource
+    private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    @Resource
+    private UserBizService userBizService;
 
     @Resource
     private CarRentalPackageService carRentalPackageService;
@@ -54,27 +72,60 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
     /**
      * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐
      *
-     * @param tenantId   租户ID
      * @param uid        用户ID
-     * @param carModelId 车辆型号ID
+     * @param qryReq     查询模型
      */
     @Override
-    public R queryByCarModel(Integer tenantId, Long uid, Integer carModelId) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, carModelId)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackagePO> queryByCarModel(CarRentalPackageQryReq qryReq, Long uid) {
+        if (!ObjectUtils.allNotNull(qryReq, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // TODO 判定用户是否是新用户，只要产生了套餐购买记录的用户，均为老用户（租车、换电）
+        Integer tenantId = qryReq.getTenantId();
+        Integer franchiseeId = qryReq.getFranchiseeId();
+        Integer storeId = qryReq.getStoreId();
 
+        // 判定用户是否是老用户
+        Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
 
-        // TODO 判定用户名下是否存在正在使用的套餐，查询用户租车套餐会员期限表
+        BigDecimal deposit = null;
+        Integer rentalPackageType = null;
+        Integer rentalPackageConfine = null;
+        Integer carModelId = null;
+        String batteryModelIds = null;
 
-        // TODO 结合如上两点，从数据库中筛选合适的套餐，查询租车套餐设置表（分页，不分页？）
+        // 判定用户名下是否存在正在使用的套餐
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
+            if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+                return Collections.emptyList();
+            }
+            deposit = memberTermEntity.getDeposit();
+            rentalPackageType = memberTermEntity.getRentalPackageType();
+            rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
+            franchiseeId = memberTermEntity.getFranchiseeId();
+            storeId = memberTermEntity.getStoreId();
+            carModelId = memberTermEntity.getCarModelId();
+            batteryModelIds = memberTermEntity.getBatteryModelIds();
+        }
 
+        // 结合如上两点，从数据库中筛选合适的套餐
+        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+        qryModel.setOffset(qryReq.getOffset());
+        qryModel.setSize(qryReq.getSize());
+        qryModel.setTenantId(tenantId);
+        qryModel.setFranchiseeId(franchiseeId);
+        qryModel.setStoreId(storeId);
+        qryModel.setShowFlag(YesNoEnum.YES.getCode());
+        qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
+        qryModel.setDeposit(deposit);
+        qryModel.setType(rentalPackageType);
+        qryModel.setConfine(rentalPackageConfine);
+        qryModel.setCarModelId(carModelId);
+        qryModel.setBatteryModelIdsLeftLike(batteryModelIds);
+        List<CarRentalPackagePO> entityList = carRentalPackageService.list(qryModel);
 
-        // TODO 返回给上一层
-
-        return null;
+        return entityList;
     }
 
     /**
@@ -96,10 +147,12 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         if (CollectionUtils.isEmpty(userCoupons)) {
             return Triple.of(BigDecimal.ZERO, null, true) ;
         }
+
         List<Integer> couponIdList = userCoupons.stream().map(UserCoupon::getCouponId).distinct().collect(Collectors.toList());
+        List<Long> couponIds = couponIdList.stream().map(s -> Long.valueOf(s)).collect(Collectors.toList());
 
         // 查询优惠券信息
-        CouponQuery couponQuery = CouponQuery.builder().ids(couponIdList).build();
+        CouponQuery couponQuery = CouponQuery.builder().ids(couponIds).build();
         R couponResult = couponService.queryList(couponQuery);
         if (!couponResult.isSuccess()) {
             throw new BizException(couponResult.getErrMsg());
@@ -155,13 +208,13 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
             throw new BizException("用户尚未实名认证");
         }
 
-        // 4. 判定滞纳金
+        // 2. 判定滞纳金
         if (slippageBizService.isExitUnpaid(tenantId, uid)) {
             log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
             throw new BizException("存在滞纳金，请先缴纳");
         }
 
-        // 5.
+        // 3.
 
     }
 }

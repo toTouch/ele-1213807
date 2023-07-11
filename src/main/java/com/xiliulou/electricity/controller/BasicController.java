@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.admin.car;
+package com.xiliulou.electricity.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.StoreQuery;
@@ -28,7 +29,10 @@ import java.util.stream.Collectors;
  * @author xiaohui.song
  **/
 @Slf4j
-public class JsonAdminCarBasicController {
+public class BasicController {
+
+    @Resource
+    private CouponService couponService;
 
     @Resource
     private StoreService storeService;
@@ -50,6 +54,36 @@ public class JsonAdminCarBasicController {
 
     @Resource
     private UserDataScopeService userDataScopeService;
+
+    /**
+     * 根据优惠券ID集获取优惠券信息<br />
+     * K：优惠券ID<br />
+     * V：优惠券信息
+     * @param couponIdList 优惠券ID集
+     * @return
+     */
+    protected Map<Long, Coupon> queryCouponForMapByIds(List<Long> couponIdList) {
+        if (CollectionUtils.isEmpty(couponIdList)) {
+            return Collections.emptyMap();
+        }
+        CouponQuery couponQuery = CouponQuery.builder()
+                .ids(couponIdList)
+                .build();
+
+        R couponResult = couponService.queryList(couponQuery);
+        if (!couponResult.isSuccess()) {
+            return Collections.emptyMap();
+        }
+
+        List<Coupon> couponList = (List<Coupon>) couponResult.getData();
+
+        Map<Long, Coupon> couponMap = new HashMap<>();
+        couponList.forEach(coupon -> {
+            couponMap.put(Long.valueOf(coupon.getId()), coupon);
+        });
+
+        return couponMap;
+    }
 
     /**
      * 根据柜机ID集获取柜机信息<br />
@@ -88,7 +122,7 @@ public class JsonAdminCarBasicController {
 
         R<List<CarRentalPackagePO>> carPackageRes = carRentalPackageService.listByCondition(qryModel);
         if (!carPackageRes.isSuccess()) {
-            log.error("JsonAdminCarBasicController.getCarRentalPackageByIdsForMap error. response is {}", JSON.toJSONString(carPackageRes));
+            log.error("BasicController.getCarRentalPackageByIdsForMap error. response is {}", JSON.toJSONString(carPackageRes));
             return Collections.emptyMap();
         }
 

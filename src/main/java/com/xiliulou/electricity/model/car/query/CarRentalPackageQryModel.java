@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.model.car.query;
 
+import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -25,7 +29,7 @@ public class CarRentalPackageQryModel implements Serializable {
     /**
      * 取值数量
      */
-    private Integer limitNum = 10;
+    private Integer size = 10;
 
     /**
      * 租户ID
@@ -36,6 +40,11 @@ public class CarRentalPackageQryModel implements Serializable {
      * 加盟商ID
      */
     private Integer franchiseeId;
+
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
 
     /**
      * 套餐名称
@@ -67,4 +76,58 @@ public class CarRentalPackageQryModel implements Serializable {
      * 主键ID集
      */
     private List<Long> idList;
+
+    /**
+     * C端展示
+     * <pre>
+     *     1-是
+     *     2-否
+     * </pre>
+     * @see YesNoEnum
+     */
+    private Integer showFlag;
+
+    /**
+     * 适用类型
+     * <pre>
+     *     1-全部
+     *     2-新租套餐
+     *     3-续租套餐
+     * </pre>
+     * @see ApplicableTypeEnum
+     */
+    private List<Integer> applicableTypeList;
+
+    /**
+     * 押金
+     */
+    private BigDecimal deposit;
+
+    /**
+     * 套餐限制
+     * <pre>
+     *     1-不限制
+     *     2-次数
+     * </pre>
+     * @see RenalPackageConfineEnum
+     */
+    private Integer confine;
+
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
+    /**
+     * 电池型号ID集，用英文逗号分割
+     */
+    private String batteryModelIds;
+
+    /**
+     * 电池型号ID集，用英文逗号分割，左匹配
+     */
+    private String batteryModelIdsLeftLike;
+
+
+
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/admin/car/carRentalPackageDepositPay")
-public class JsonAdminCarRentalPackageDepositPayController extends JsonAdminCarBasicController {
+public class JsonAdminCarRentalPackageDepositPayController extends BasicController {
 
     @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;

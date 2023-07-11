@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
@@ -44,6 +45,16 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      * @see CarRentalPackageTypeEnum
      */
     private Integer rentalPackageType;
+
+    /**
+     * 套餐限制
+     * <pre>
+     *     1-不限制
+     *     2-次数
+     * </pre>
+     * @see RenalPackageConfineEnum
+     */
+    private Integer rentalPackageConfine;
 
     /**
      * 到期时间
@@ -87,6 +98,16 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      * 押金金额(元)
      */
     private BigDecimal deposit;
+
+    /**
+     * 车辆型号ID
+     */
+    private Integer carModelId;
+
+    /**
+     * 电池型号ID集，用英文逗号分割
+     */
+    private String batteryModelIds;
 
     /**
      * 押金支付状态
