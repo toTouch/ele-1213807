@@ -22,7 +22,7 @@
 
     <!--根据用户ID和租户ID查询最新记录-->
     <select id="selectLatestRecordByUser" resultType="com.xiliulou.electricity.entity.EleUserEsignRecord">
-        <include refid="selectLatestAuthRecordByUser"/>
+        <include refid="selectUserIdentityAuthRecord"/>
         where uid=#{uid} and tenant_id = #{tenantId} and del_flag = 0 order by create_time desc limit 1
     </select>
 
