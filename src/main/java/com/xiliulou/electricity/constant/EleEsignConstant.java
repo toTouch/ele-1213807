@@ -16,4 +16,6 @@ public class EleEsignConstant {
 
     public static final Integer ESIGN_TURN_OFF = 2;
 
+    public static final String PSN_PHOTO_OSS_PATH = "saas/psnPhoto/";
+
 }

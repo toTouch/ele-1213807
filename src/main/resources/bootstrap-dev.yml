@@ -33,13 +33,3 @@ management:
 rocketmq:
   producer:
     send-message-timeout: 6000
-
-### 电子签名配置信息,以下均为测试场信息
-e-sign:
-  xxlAppId: 7438972313
-  xxlAppSecret: 4ff6dba477a39b959988e720ddbec21d
-  redirectUrlAfterAuth:
-  redirectUrlAfterSign:
-  endpoint:
-    host: https://smlopenapi.esign.cn
-    version: /v3

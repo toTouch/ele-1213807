@@ -1,0 +1,22 @@
+package com.xiliulou.electricity.service;
+
+import com.xiliulou.core.web.R;
+import org.apache.commons.lang3.tuple.Triple;
+
+/**
+ * 电子签名服务
+ * @author: Kenneth
+ * @Date: 2023/7/5 8:50
+ * @Description:
+ */
+public interface EleCabinetSignatureService {
+
+    public Triple<Boolean, String, Object> personalAuthentication();
+
+    public Triple<Boolean, String, Object> fileSignatureFlow(String authFlowId);
+
+    public Triple<Boolean, String, Object> checkUserEsignFinished();
+
+    public Triple<Boolean, String, Object> getSignatureFile(String signFlowId);
+
+}

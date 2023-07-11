@@ -95,10 +95,10 @@
         update t_tenant_esign_config
         <set>
             <if test="appId != null and appId != ''">
-                appId = #{appId},
+                app_id = #{appId},
             </if>
             <if test="appSecret != null and appSecret != ''">
-                appSecret = #{appSecret},
+                app_secret = #{appSecret},
             </if>
             <if test="docTemplateId != null and docTemplateId != ''">
                 doc_template_id = #{docTemplateId},

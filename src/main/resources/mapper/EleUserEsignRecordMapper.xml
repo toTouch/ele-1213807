@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleUserEsignRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EleUserEsignRecord" id="eleUserEsignMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="signFlowId" column="sign_flow_id" jdbcType="VARCHAR"/>
+        <result property="signFinishStatus" column="sign_finish_status" jdbcType="INTEGER"/>
+        <result property="fileId" column="file_id" jdbcType="VARCHAR"/>
+        <result property="fileName" column="file_name" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectUserEsignRecord">
+        select id, uid, tenant_id, sign_flow_id, sign_finish_status, file_id, file_name, del_flag, create_time, update_time from t_user_esign_record
+    </sql>
+
+    <!--根据用户ID和租户ID查询最新记录-->
+    <select id="selectLatestEsignRecordByUser" resultType="com.xiliulou.electricity.entity.EleUserEsignRecord">
+        <include refid="selectUserEsignRecord"/>
+        where uid=#{uid} and tenant_id = #{tenantId} and del_flag = 0 order by create_time desc limit 1
+    </select>
+
+    <!--新增数据-->
+    <insert id="insertUserEsignRecord" parameterType="com.xiliulou.electricity.entity.EleUserEsignRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user_esign_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            tenant_id,
+            sign_flow_id,
+            sign_finish_status,
+            file_id,
+            file_name,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{tenantId},
+            #{signFlowId},
+            #{signFinishStatus},
+            #{fileId},
+            #{fileName},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+    <!--根据条件修改数据-->
+    <update id="updateUserEsignRecord">
+        update t_user_esign_record
+        <set>
+            <if test="signFlowId != null and signFlowId != ''">
+                sign_flow_id = #{signFlowId},
+            </if>
+            <if test="signFinishStatus != null">
+                sign_finish_status = #{signFinishStatus},
+            </if>
+            <if test="fileId != null and fileId != ''">
+                file_id = #{fileId},
+            </if>
+            <if test="fileName != null and fileName != ''">
+                file_name = #{fileName},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and uid = #{uid} and tenant_id = #{tenantId}
+    </update>
+
+    <select id="selectByPage" resultType="com.xiliulou.electricity.vo.EleUserEsignRecordVO">
+        select tuer.id  as id,
+            tuer.uid    as uid,
+            tui.name    as name,
+            tui.phone   as phone,
+            tuer.tenant_id as tenantId,
+            tuer.sign_flow_id as signFlowId,
+            tuer.sign_finish_status as signFinishStatus,
+            tuer.file_id as fileId,
+            tuer.file_name as fileName,
+            tuer.del_flag as delFlag,
+            tuer.create_time as createTime,
+            tuer.update_time as updateTime
+        from t_user_esign_record tuer
+        left join t_user_info tui on tui.uid = tuer.uid
+        <where>
+            tuer.tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and tui.name like concat('%', #{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="signFinishStatus != null">
+                and tuer.sign_finish_status = #{signFinishStatus}
+            </if>
+        </where>
+        order by tuer.create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectByPageCount" resultType="Integer">
+        select count(1)
+        from t_user_esign_record tuer
+        left join t_user_info tui on tui.uid = tuer.uid
+        <where>
+            tuer.tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and tui.name like concat('%', #{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and tui.phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="signFinishStatus != null">
+                and tuer.sign_finish_status = #{signFinishStatus}
+            </if>
+        </where>
+    </select>
+
+</mapper>

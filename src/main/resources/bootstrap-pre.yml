@@ -30,13 +30,3 @@ management:
       exposure:
         include: "*"
         exclude: httptrace
-
-### 电子签名配置信息,以下均为测试场信息
-e-sign:
-  xxlAppId:
-  xxlAppSecret:
-  redirectUrlAfterAuth:
-  redirectUrlAfterSign:
-  endpoint:
-    host: https://openapi.esign.cn
-    version: /v3
