@@ -39,7 +39,8 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
 
     @PostMapping("user/memberCard/payMemberCard")
     public R payMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
-        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
+//        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
+        return returnTripleResult(electricityMemberCardOrderService.buyBatteryMemberCard(electricityMemberCardOrderQuery, request));
     }
     
     @GetMapping("user/memberCardOrder/list")

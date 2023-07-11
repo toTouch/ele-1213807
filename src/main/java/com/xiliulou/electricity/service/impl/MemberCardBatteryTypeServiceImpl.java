@@ -75,4 +75,9 @@ public class MemberCardBatteryTypeServiceImpl implements MemberCardBatteryTypeSe
     public Integer batchInsert(List<MemberCardBatteryType> memberCardBatteryTypeList) {
         return this.memberCardBatteryTypeMapper.batchInsert(memberCardBatteryTypeList);
     }
+
+    @Override
+    public List<String> selectBatteryTypeByMid(Long mid) {
+        return this.memberCardBatteryTypeMapper.selectBatteryTypeByMid(mid);
+    }
 }

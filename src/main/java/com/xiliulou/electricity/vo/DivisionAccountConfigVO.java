@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -51,7 +50,7 @@ public class DivisionAccountConfigVO {
 
     private List<String> membercardNames;
 
-    private List<ElectricityMemberCard> memberCardList;
+    private List<BatteryMemberCardVO> memberCardList;
 
     private List<ElectricityCarModel> carModelList;
 

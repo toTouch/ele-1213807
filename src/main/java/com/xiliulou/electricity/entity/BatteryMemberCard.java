@@ -148,4 +148,9 @@ public class BatteryMemberCard {
     public static final Integer BUSINESS_TYPE_BATTERY = 0;
     public static final Integer BUSINESS_TYPE_BATTERY_CAR = 1;
 
+    //租赁类型 0:不限 1:新租 2:续租
+    public static final Integer RENT_TYPE_OLD = 2;
+    public static final Integer RENT_TYPE_NEW = 1;
+    public static final Integer RENT_TYPE_UNLIMIT = 0;
+
 }

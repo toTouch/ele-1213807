@@ -518,7 +518,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<ShareActivityMemberCard> shareActivityMemberCardList = shareActivityMemberCardService.selectByActivityId(shareActivity.getId());
 		if (CollectionUtils.isNotEmpty(shareActivityMemberCardList)) {
 			List<ElectricityMemberCard> memberCards = shareActivityMemberCardList.parallelStream().map(item -> electricityMemberCardService.queryByCache(item.getMemberCardId().intValue())).collect(Collectors.toList());
-			shareActivityVO.setMemberCards(memberCards);
+//			shareActivityVO.setMemberCards(memberCards);
 		}
 
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivity.getId());

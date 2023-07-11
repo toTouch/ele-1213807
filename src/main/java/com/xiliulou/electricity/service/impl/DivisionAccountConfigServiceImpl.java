@@ -462,7 +462,7 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             List<ElectricityMemberCard> memberCards = new ArrayList<>();
             memberCardIds.forEach(item -> memberCards.add(memberCardService.queryByCache(item.intValue())));
 
-            divisionAccountConfigVO.setMemberCardList(memberCards);
+//            divisionAccountConfigVO.setMemberCardList(memberCards);
         }
 
         if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_CAR)) {

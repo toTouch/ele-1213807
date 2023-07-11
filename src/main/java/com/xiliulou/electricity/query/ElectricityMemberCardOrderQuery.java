@@ -23,7 +23,7 @@ public class ElectricityMemberCardOrderQuery {
 
 	//月卡
 	@NotNull(message = "月卡不能为空!", groups = {CreateGroup.class})
-	private Integer memberId;
+	private Long memberId;
 
 	//三元组
 	private String productKey;

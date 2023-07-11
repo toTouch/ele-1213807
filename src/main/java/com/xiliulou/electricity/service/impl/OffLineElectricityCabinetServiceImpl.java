@@ -5,7 +5,6 @@ import com.xiliulou.core.totp.TotpUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleOffLineSecretConfig;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.service.*;

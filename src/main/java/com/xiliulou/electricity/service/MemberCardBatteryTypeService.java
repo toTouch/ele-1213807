@@ -45,4 +45,6 @@ public interface MemberCardBatteryTypeService {
     Boolean deleteById(Long id);
 
     Integer batchInsert(List<MemberCardBatteryType> buildMemberCardBatteryTypeList);
+
+    List<String> selectBatteryTypeByMid(Long id);
 }

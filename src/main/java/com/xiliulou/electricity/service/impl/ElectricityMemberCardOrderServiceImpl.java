@@ -177,6 +177,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Autowired
     ShareActivityMemberCardService shareActivityMemberCardService;
 
+    @Autowired
+    private BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private MemberCardBatteryTypeService memberCardBatteryTypeService;
+
     /**
      * 创建月卡订单
      *
@@ -311,7 +317,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId().intValue());
         if (Objects.isNull(electricityMemberCard)) {
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID={}", electricityMemberCardOrderQuery.getMemberId());
             return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
@@ -595,6 +601,179 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         return R.fail("ELECTRICITY.0099", "下单失败");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery query, HttpServletRequest request) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("BATTERY MEMBER ORDER ERROR! not found user");
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!redisService.setNx(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY + user.getUid(), "1", 3 * 1000L, false)) {
+            return Triple.of(false, "ELECTRICITY.0034", "操作频繁");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("BATTERY MEMBER ORDER ERROR! not found user,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.warn("BATTERY MEMBER ORDER WARN! user is unUsable,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.warn("BATTERY MEMBER ORDER WARN! user not auth,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
+        }
+
+        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            log.warn("BATTERY MEMBER ORDER WARN! not pay deposit,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.warn("BATTERY MEMBER ORDER WARN! not found franchisee,uid={}", user.getUid());
+            return Triple.of(false, "ELECTRICITY.0038", "加盟商不存在");
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(query.getMemberId());
+        if (Objects.isNull(batteryMemberCard) || Objects.equals(batteryMemberCard.getStatus(), BatteryMemberCard.STATUS_DOWN) || Objects.equals(batteryMemberCard.getDisplay(), BatteryMemberCard.NO)) {
+            log.warn("BATTERY MEMBER ORDER WARN! not found batteryMemberCard,uid={},mid={}", user.getUid(), query.getMemberId());
+            return Triple.of(false, "ELECTRICITY.0087", "套餐不存在");
+        }
+
+        Boolean isFirstBuyMemberCard = Boolean.FALSE;
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || Objects.equals(NumberConstant.ZERO, userBatteryMemberCard.getCardPayCount())) {
+            isFirstBuyMemberCard = Boolean.TRUE;
+        }
+
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            log.warn("BATTERY MEMBER ORDER WARN! userBatteryMemberCard is disable,uid={}", user.getUid());
+            return Triple.of(false, "100241", "当前套餐暂停中，请先启用套餐");
+        }
+
+        if (Objects.nonNull(userBatteryMemberCard) && Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
+            log.warn("BATTERY MEMBER ORDER WARN! not allow buy,uid={}", user.getUid());
+            return Triple.of(false, "100274", "赠送套餐不允许续费");
+        }
+
+        if (Boolean.TRUE.equals(isFirstBuyMemberCard)) {
+            Triple<Boolean, String, Object> firstBuyBatteryMemberCardResult = verifyFirstBuyBatteryMemberCard(batteryMemberCard, userInfo);
+            if (Boolean.FALSE.equals(firstBuyBatteryMemberCardResult.getLeft())) {
+                return firstBuyBatteryMemberCardResult;
+            }
+        } else {
+            Triple<Boolean, String, Object> nonFirstBuyBatteryMemberCardResult = verifyNonFirstBuyBatteryMemberCard(batteryMemberCard, userBatteryMemberCard, franchisee);
+            if (Boolean.FALSE.equals(nonFirstBuyBatteryMemberCardResult.getLeft())) {
+                return nonFirstBuyBatteryMemberCardResult;
+            }
+        }
+
+        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBattery)) {
+            log.warn("BATTERY MEMBER ORDER WARN! not found userBattery,uid={}", user.getUid());
+            return Triple.of(false, "100247", "用户信息不存在");
+        }
+
+        Triple<Boolean, String, Object> verifyUserBatteryInsuranceResult = verifyUserBatteryInsurance(userInfo, userBattery, query);
+        if (Boolean.FALSE.equals(verifyUserBatteryInsuranceResult.getLeft())) {
+            return verifyUserBatteryInsuranceResult;
+        }
+
+        Triple<Boolean, String, Object> verifyUserBatteryServicFeeResult = verifyUserBatteryServicFee(userInfo, userBatteryMemberCard);
+        if (Boolean.FALSE.equals(verifyUserBatteryServicFeeResult.getLeft())) {
+            return verifyUserBatteryServicFeeResult;
+        }
+
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("BATTERY MEMBER ORDER ERROR!not found pay params,uid={}", user.getUid());
+            return Triple.of(false, "", "未配置支付参数!");
+        }
+
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("BATTERY MEMBER ORDER ERROR!not found userOauthBind,uid={}", user.getUid());
+            return Triple.of(false, "", "未找到用户的第三方授权信息!");
+        }
+
+        //兼容旧版小程序
+        Set<Integer> userCouponIds = generateUserCouponIds(query.getUserCouponId(), query.getUserCouponIds());
+
+        //计算优惠后支付金额
+        Triple<Boolean, String, Object> calculatePayAmountResult = calculatePayAmount(batteryMemberCard.getRentPrice(), userCouponIds);
+        if (Boolean.FALSE.equals(calculatePayAmountResult.getLeft())) {
+            return calculatePayAmountResult;
+        }
+
+        BigDecimal payAmount = (BigDecimal) calculatePayAmountResult.getRight();
+
+        ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
+        memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
+        memberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        memberCardOrder.setMemberCardId(batteryMemberCard.getId());
+        memberCardOrder.setUid(userInfo.getUid());
+        memberCardOrder.setMaxUseCount(batteryMemberCard.getUseCount());
+        memberCardOrder.setCardName(batteryMemberCard.getName());
+        memberCardOrder.setPayAmount(payAmount);
+        memberCardOrder.setUserName(userInfo.getName());
+        memberCardOrder.setValidDays(batteryMemberCard.getValidDays());
+        memberCardOrder.setTenantId(TenantContextHolder.getTenantId());
+        memberCardOrder.setFranchiseeId(franchisee.getId());
+        memberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
+        memberCardOrder.setCreateTime(System.currentTimeMillis());
+        memberCardOrder.setUpdateTime(System.currentTimeMillis());
+
+        Triple<Boolean, String, Object> assignOrderSourceResult = assignOrderSource(query, memberCardOrder);
+        if (Boolean.FALSE.equals(assignOrderSourceResult.getLeft())) {
+            return assignOrderSourceResult;
+        }
+
+        baseMapper.insert(memberCardOrder);
+
+        //保存订单所使用的优惠券
+        if (CollectionUtils.isNotEmpty(userCouponIds)) {
+            memberCardOrderCouponService.batchInsert(buildMemberCardOrderCoupon(memberCardOrder.getOrderId(), userCouponIds));
+        }
+
+        //支付0元
+        if (memberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            handlerBatteryMembercardZeroPayment(batteryMemberCard, memberCardOrder, userBatteryMemberCard, userInfo);
+            return Triple.of(true, null, null);
+        }
+
+        //修改优惠券状态为正在核销中
+        if (CollectionUtils.isNotEmpty(userCouponIds)) {
+            userCouponService.batchUpdateUserCoupon(buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, memberCardOrder.getOrderId()));
+        }
+
+        try {
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(memberCardOrder.getOrderId())
+                    .uid(userInfo.getUid())
+                    .payAmount(memberCardOrder.getPayAmount())
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_MEMBER_CARD)
+                    .attach(String.valueOf(query.getUserCouponId()))
+                    .description("换电套餐订单收费")
+                    .tenantId(tenantId).build();
+
+            WechatJsapiOrderResultDTO resultDTO = electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return Triple.of(true, null, resultDTO);
+        } catch (WechatPayException e) {
+            log.error("BATTERY MEMBER ORDER ERROR! wechat v3 order error,uid={}", user.getUid(), e);
+        }
+
+        return Triple.of(false, "ELECTRICITY.0099", "下单失败");
     }
 
     @Slave
@@ -1805,7 +1984,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
-        electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+        electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
@@ -2004,7 +2183,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
             electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
             electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
-            electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+            electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
             electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
             electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
             electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
@@ -2201,7 +2380,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
-        electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+        electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId().longValue());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
@@ -2391,7 +2570,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(carMemberCardOrderQuery.getCarModelId());
+        electricityMemberCardOrder.setMemberCardId(carMemberCardOrderQuery.getCarModelId().longValue());
         electricityMemberCardOrder.setUid(user.getUid());
         electricityMemberCardOrder.setMaxUseCount(0L);
         electricityMemberCardOrder.setMemberCardType(0);
@@ -3030,7 +3209,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-        electricityMemberCardOrder.setMemberCardId(memberCardId);
+        electricityMemberCardOrder.setMemberCardId(memberCardId.longValue());
         electricityMemberCardOrder.setUid(userInfo.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
@@ -3269,7 +3448,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     /**
      * 处理套餐绑定的活动
      */
-    @Override
     public Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber) {
         if (Objects.isNull(electricityMemberCard) || Objects.isNull(electricityMemberCard.getActivityId()) || !Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY)) {
             return remainingNumber;
@@ -3358,11 +3536,252 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
         return Triple.of(true, null, payAmount);
     }
 
     @Override
     public Integer checkOrderByMembercardId(Long membercardId) {
         return baseMapper.checkOrderByMembercardId(membercardId);
+    }
+
+    private void handlerBatteryMembercardZeroPayment(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
+        Long remainingNumber = 0L;
+        Long memberCardExpireTime = 0L;
+        if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || Objects.equals(userBatteryMemberCard.getRemainingNumber(), NumberConstant.ZERO)) {
+                remainingNumber = batteryMemberCard.getUseCount();
+            } else {
+                remainingNumber = userBatteryMemberCard.getRemainingNumber() + batteryMemberCard.getUseCount();
+            }
+
+            memberCardExpireTime = System.currentTimeMillis() + (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L));
+        } else {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
+                memberCardExpireTime = System.currentTimeMillis() + (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L));
+            } else {
+                memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() + (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L));
+            }
+
+            remainingNumber = batteryMemberCard.getUseCount();
+        }
+
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        userBatteryMemberCardUpdate.setUid(userInfo.getUid());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+        userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber.intValue());
+        userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+        userBatteryMemberCardUpdate.setMemberCardId(memberCardOrder.getMemberCardId());
+        userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+        userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
+        userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+        userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
+        userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
+            serviceFeeUserInfoInsert.setUid(userInfo.getUid());
+            serviceFeeUserInfoInsert.setServiceFeeGenerateTime(memberCardExpireTime);
+            serviceFeeUserInfoInsert.setDisableMemberCardNo("");
+            serviceFeeUserInfoInsert.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+            serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
+            serviceFeeUserInfoInsert.setFranchiseeId(memberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoInsert.setTenantId(memberCardOrder.getTenantId());
+            serviceFeeUserInfoInsert.setCreateTime(System.currentTimeMillis());
+            serviceFeeUserInfoInsert.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
+        } else {
+            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+            serviceFeeUserInfoUpdate.setUid(userBatteryMemberCardUpdate.getUid());
+            serviceFeeUserInfoUpdate.setFranchiseeId(memberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+        }
+
+        //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
+
+    }
+
+    @Override
+    public void handlerBatteryMembercardPaymentNotify(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo) {
+        Long remainingNumber = 0L;
+        Long memberCardExpireTime = 0L;
+        if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT)) {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getRemainingNumber()) || Objects.equals(userBatteryMemberCard.getRemainingNumber(), NumberConstant.ZERO)) {
+                remainingNumber = batteryMemberCard.getUseCount();
+            } else {
+                remainingNumber = userBatteryMemberCard.getRemainingNumber() + batteryMemberCard.getUseCount();
+            }
+
+            memberCardExpireTime = System.currentTimeMillis() + (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L));
+        } else {
+            if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.equals(userBatteryMemberCard.getMemberCardExpireTime(), NumberConstant.ZERO_L)) {
+                memberCardExpireTime = System.currentTimeMillis() + (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L));
+            } else {
+                memberCardExpireTime = userBatteryMemberCard.getMemberCardExpireTime() + (Objects.equals(batteryMemberCard.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? memberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L) : memberCardOrder.getValidDays() * (60 * 1000L));
+            }
+
+            remainingNumber = batteryMemberCard.getUseCount();
+        }
+
+        UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
+        userBatteryMemberCardUpdate.setUid(userInfo.getUid());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
+        userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber.intValue());
+        userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+        userBatteryMemberCardUpdate.setMemberCardId(memberCardOrder.getMemberCardId());
+        userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
+        userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
+        userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+        userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
+        userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+
+        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
+            serviceFeeUserInfoInsert.setUid(userInfo.getUid());
+            serviceFeeUserInfoInsert.setServiceFeeGenerateTime(memberCardExpireTime);
+            serviceFeeUserInfoInsert.setDisableMemberCardNo("");
+            serviceFeeUserInfoInsert.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
+            serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
+            serviceFeeUserInfoInsert.setFranchiseeId(memberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoInsert.setTenantId(memberCardOrder.getTenantId());
+            serviceFeeUserInfoInsert.setCreateTime(System.currentTimeMillis());
+            serviceFeeUserInfoInsert.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
+        } else {
+            ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
+            serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
+            serviceFeeUserInfoUpdate.setUid(userBatteryMemberCardUpdate.getUid());
+            serviceFeeUserInfoUpdate.setFranchiseeId(memberCardOrder.getFranchiseeId());
+            serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+        }
+
+        //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
+
+    }
+
+    private Triple<Boolean, String, Object> assignOrderSource(ElectricityMemberCardOrderQuery query, ElectricityMemberCardOrder memberCardOrder) {
+        if (StringUtils.isBlank(query.getProductKey()) || StringUtils.isBlank(query.getDeviceName())) {
+            return Triple.of(true, null, null);
+        }
+
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(query.getProductKey(), query.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            log.warn("BATTERY MEMBER ORDER WARN!not found electricityCabinet,p={},d={}", query.getProductKey(), query.getDeviceName());
+            return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        memberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_SCAN);
+        memberCardOrder.setStoreId(electricityCabinet.getStoreId());
+        memberCardOrder.setRefId(electricityCabinet.getId().longValue());
+
+        return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> verifyNonFirstBuyBatteryMemberCard(BatteryMemberCard batteryMemberCard, UserBatteryMemberCard userBatteryMemberCard, Franchisee franchisee) {
+        BatteryMemberCard userBindBatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(userBindBatteryMemberCard)) {
+            log.warn("BATTERY MEMBER ORDER WARN! userBindBatteryMemberCard is null,uid={}", userBatteryMemberCard.getUid());
+            return Triple.of(false, "ELECTRICITY.0087", "套餐不存在");
+        }
+
+        if (!(Objects.equals(BatteryMemberCard.RENT_TYPE_OLD, batteryMemberCard.getRentType()) || Objects.equals(BatteryMemberCard.RENT_TYPE_UNLIMIT, batteryMemberCard.getRentType()))) {
+            log.warn("BATTERY MEMBER ORDER WARN! old batteryMemberCard not available,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100275", "换电套餐不可用");
+        }
+
+        if (!Objects.equals(userBindBatteryMemberCard.getLimitCount(), batteryMemberCard.getLimitCount())) {
+            log.warn("BATTERY MEMBER ORDER WARN! batteryMemberCard limitCount inconformity,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100276", "换电套餐类型不一致");
+        }
+
+        boolean flag = batteryMemberCard.getDeposit().compareTo(userBindBatteryMemberCard.getDeposit()) == 0;
+        if (!flag) {
+            log.warn("BATTERY MEMBER ORDER WARN! batteryMemberCard deposit inconformity,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100277", "换电套餐押金不一致");
+        }
+
+        if (Objects.equals(Franchisee.OLD_MODEL_TYPE, franchisee.getModelType())) {
+            return Triple.of(true, null, null);
+        }
+
+        List<String> oldMembercardBatteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(userBindBatteryMemberCard.getId());
+        if (CollectionUtils.isEmpty(oldMembercardBatteryTypeList)) {
+            log.warn("BATTERY MEMBER ORDER WARN! old batteryMemberCard batteryType illegal,uid={},mid={}", userBatteryMemberCard.getUid(), userBindBatteryMemberCard.getId());
+            return Triple.of(false, "100279", "换电套餐电池型号不存在");
+        }
+
+        List<String> newMembercardBatteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(batteryMemberCard.getId());
+        if (CollectionUtils.isEmpty(newMembercardBatteryTypeList)) {
+            log.warn("BATTERY MEMBER ORDER WARN! new batteryMemberCard batteryType illegal,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100279", "换电套餐电池型号不存在");
+        }
+
+        if (!CollectionUtils.containsAll(newMembercardBatteryTypeList, oldMembercardBatteryTypeList)) {
+            log.warn("BATTERY MEMBER ORDER WARN! batteryType illegal,uid={},mid={}", userBatteryMemberCard.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100278", "换电套餐电池型号不一致");
+        }
+
+        return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> verifyFirstBuyBatteryMemberCard(BatteryMemberCard batteryMemberCard, UserInfo userInfo) {
+        if (!(Objects.equals(BatteryMemberCard.RENT_TYPE_NEW, batteryMemberCard.getRentType()) || Objects.equals(BatteryMemberCard.RENT_TYPE_UNLIMIT, batteryMemberCard.getRentType()))) {
+            log.warn("BATTERY MEMBER ORDER WARN! new batteryMemberCard not available,uid={},mid={}", userInfo.getUid(), batteryMemberCard.getId());
+            return Triple.of(false, "100275", "换电套餐不可用");
+        }
+
+        return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> verifyUserBatteryServicFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard) {
+        if (false) {
+
+        }
+
+        //TODO 电池服务费校验
+
+
+        return Triple.of(true, null, null);
+    }
+
+    private Triple<Boolean, String, Object> verifyUserBatteryInsurance(UserInfo userInfo, UserBattery userBattery, ElectricityMemberCardOrderQuery query) {
+
+        //TODO 保险校验
+
+        //用户当前绑定的保险
+        if (true) {
+            return Triple.of(true, null, null);
+        }
+
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(userInfo.getTenantId());
+        if (Objects.isNull(electricityConfig) || !Objects.equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
+            return Triple.of(true, null, null);
+        }
+
+
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(), userInfo.getTenantId());
+        long now = System.currentTimeMillis();
+        if (Objects.nonNull(franchiseeInsurance) && Objects.equals(franchiseeInsurance.getIsConstraint(), FranchiseeInsurance.CONSTRAINT_FORCE)) {
+            //用户是否没有保险信息或已过期（是进入）
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(insuranceUserInfo) || Objects
+                    .equals(insuranceUserInfo.getIsUse(), InsuranceUserInfo.IS_USE)
+                    || insuranceUserInfo.getInsuranceExpireTime() < now) {
+                log.error("CREATE MEMBER_ORDER ERROR! not pay insurance! uid={}", userInfo.getUid());
+                return Triple.of(false, "100309", "未购买保险或保险已过期");
+            }
+        }
+
+
+        return Triple.of(true, null, null);
     }
 }

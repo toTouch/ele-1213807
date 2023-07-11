@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.MemberCardFailureRecord;
 
 import java.util.List;

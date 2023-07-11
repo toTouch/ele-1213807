@@ -32,7 +32,7 @@ public class ElectricityMemberCardOrder {
     // 0,未支付,1,支付成功 2,支付失败,3取消支付
     private Integer status;
     //月卡id
-    private Integer memberCardId;
+    private Long memberCardId;
     //用户名
     private String userName;
     //月卡类型

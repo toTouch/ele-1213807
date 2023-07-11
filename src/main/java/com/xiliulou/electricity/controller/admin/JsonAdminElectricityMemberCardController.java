@@ -3,10 +3,8 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
-import com.xiliulou.electricity.query.ElectricityMemberCardQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -43,29 +41,29 @@ public class JsonAdminElectricityMemberCardController {
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
-    /**
-     * 新增
-     *
-     * @return
-     */
-    @PostMapping("admin/electricityMemberCard")
-    public R add(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
-        return electricityMemberCardService.add(electricityMemberCard);
-    }
-
-    /**
-     * 修改
-     *
-     * @return
-     */
-    @PutMapping("admin/electricityMemberCard")
-    @Log(title = "修改套餐")
-    public R update(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
-        if (Objects.isNull(electricityMemberCard)) {
-            return R.failMsg("请求参数不能为空!");
-        }
-        return electricityMemberCardService.update(electricityMemberCard);
-    }
+//    /**
+//     * 新增
+//     *
+//     * @return
+//     */
+//    @PostMapping("admin/electricityMemberCard")
+//    public R add(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
+//        return electricityMemberCardService.add(electricityMemberCard);
+//    }
+//
+//    /**
+//     * 修改
+//     *
+//     * @return
+//     */
+//    @PutMapping("admin/electricityMemberCard")
+//    @Log(title = "修改套餐")
+//    public R update(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
+//        if (Objects.isNull(electricityMemberCard)) {
+//            return R.failMsg("请求参数不能为空!");
+//        }
+//        return electricityMemberCardService.update(electricityMemberCard);
+//    }
 
     /**
      * 删除

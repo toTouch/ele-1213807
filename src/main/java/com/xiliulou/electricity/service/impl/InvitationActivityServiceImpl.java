@@ -207,7 +207,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                     }
                 }
 
-                invitationActivityVO.setMemberCardList(memberCardList);
+//                invitationActivityVO.setMemberCardList(memberCardList);
             }
             return invitationActivityVO;
         }).collect(Collectors.toList());
@@ -295,7 +295,7 @@ public class InvitationActivityServiceImpl implements InvitationActivityService 
                 }
             }
 
-            invitationActivityVO.setMemberCardList(memberCardList);
+//            invitationActivityVO.setMemberCardList(memberCardList);
         }
 
         return Triple.of(true, null, invitationActivityVO);

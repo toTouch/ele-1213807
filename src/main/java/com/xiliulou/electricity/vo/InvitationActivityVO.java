@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -60,5 +60,5 @@ public class InvitationActivityVO {
      */
     private Long updateTime;
 
-    private List<ElectricityMemberCard> memberCardList;
+    private List<BatteryMemberCard> memberCardList;
 }

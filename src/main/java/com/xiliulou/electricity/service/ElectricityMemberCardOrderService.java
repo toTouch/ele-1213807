@@ -19,6 +19,8 @@ public interface ElectricityMemberCardOrderService {
 
     R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
+    Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
+
     @Deprecated
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
     
@@ -120,7 +122,7 @@ public interface ElectricityMemberCardOrderService {
     
     R disableMemberCardForRollback();
 
-    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
+//    Long handlerMembercardBindActivity(ElectricityMemberCard electricityMemberCard, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo, Long remainingNumber);
 
     Set<Integer> generateUserCouponIds(Integer userCouponId, List<Integer> userCouponIds);
 
@@ -131,4 +133,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> calculatePayAmount(BigDecimal price, Set<Integer> userCouponIds);
 
     Integer checkOrderByMembercardId(Long membercardId);
+
+    void handlerBatteryMembercardPaymentNotify(BatteryMemberCard batteryMemberCard,ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo);
 }

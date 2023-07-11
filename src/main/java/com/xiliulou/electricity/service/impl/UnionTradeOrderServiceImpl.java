@@ -613,12 +613,7 @@ public class UnionTradeOrderServiceImpl extends
 
 
             //查看月卡是否绑定活动
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrder.getMemberCardId());
-
-            if (Objects.nonNull(electricityMemberCard)) {
-                //月卡是否绑定活动
-                remainingNumber = electricityMemberCardOrderService.handlerMembercardBindActivity(electricityMemberCard, userBatteryMemberCard, userInfo, remainingNumber);
-            }
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrder.getMemberCardId().intValue());
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());

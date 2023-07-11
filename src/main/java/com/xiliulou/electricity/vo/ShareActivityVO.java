@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import lombok.Data;
 
 import java.util.List;
@@ -97,7 +96,7 @@ public class ShareActivityVO {
     /**
      * 领券套餐
      */
-    private List<ElectricityMemberCard> memberCards;
+    private List<BatteryMemberCard> memberCards;
 
 
 

@@ -20,6 +20,11 @@
         where id = #{id}
     </select>
 
+    <select id="selectBatteryTypeByMid" resultType="String">
+        select battery_type from t_member_card_battery_type
+        where mid = #{mid}
+    </select>
+
     <insert id="batchInsert" keyProperty="id" useGeneratedKeys="true">
         insert into t_member_card_battery_type(battery_type, battery_v,mid, create_time, update_time, tenant_id)
         values
