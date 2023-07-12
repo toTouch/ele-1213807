@@ -17,10 +17,6 @@ public class CustomNewIotPlatformServiceImpl implements NewIotPlatformService {
     @Autowired
     NewIotConfig newIotConfig;
 
-    public CustomNewIotPlatformServiceImpl() {
-        log.info("new Custom Iot platform");
-    }
-
     @Override
     public boolean isNeedRequestNewIotInstance(String deviceName) {
         if (newIotConfig.getIsOpenAll()) {
