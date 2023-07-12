@@ -107,10 +107,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     /**
      * 根据用户ID查询正在使用的套餐信息<br />
      * 复合查询，车辆信息、门店信息、GPS信息、电池信息、保险信息
-     *
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return com.xiliulou.core.web.R
+     * @return com.xiliulou.core.web.R<com.xiliulou.electricity.vo.rental.RentalPackageVO>
      * @author xiaohui.song
      **/
     @Override
@@ -135,8 +134,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarInfoDO carInfoDO = electricityCarService.queryByCarId(tenantId, userCar.getCid());
 
         // 5. TODO 查询保险信息，志龙
+        // 车电一体
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType())) {
+            // 6. TODO 电池消息，志龙
 
-        // 6. TODO 电池消息，志龙
+        }
 
         // 7. 滞纳金信息
         String lateFeeAmount = slippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
@@ -768,40 +770,41 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      */
     private CarRentalPackageOrderPO buildCarRentalPackageOrder(CarRentalPackagePO packagePO, BigDecimal rentPayment, Integer tenantId, Long uid, String depositPayOrderNo) {
 
-        CarRentalPackageOrderPO carRentalPackage = new CarRentalPackageOrderPO();
-        carRentalPackage.setUid(uid);
-        carRentalPackage.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, uid));
-        carRentalPackage.setRentalPackageId(packagePO.getId());
-        carRentalPackage.setRentalPackageType(packagePO.getType());
-        carRentalPackage.setConfine(packagePO.getConfine());
-        carRentalPackage.setConfineNum(packagePO.getConfineNum());
-        carRentalPackage.setTenancy(packagePO.getTenancy());
-        carRentalPackage.setTenancyUnit(packagePO.getTenancyUnit());
-        carRentalPackage.setRentUnitPrice(packagePO.getRentUnitPrice());
-        carRentalPackage.setRent(packagePO.getRent());
-        carRentalPackage.setRentPayment(rentPayment);
-        carRentalPackage.setCarModelId(packagePO.getCarModelId());
-        carRentalPackage.setBatteryModelIds(packagePO.getBatteryModelIds());
-        carRentalPackage.setApplicableType(packagePO.getApplicableType());
-        carRentalPackage.setRentRebate(packagePO.getRentRebate());
-        carRentalPackage.setRentRebateTerm(packagePO.getRentRebateTerm());
-        carRentalPackage.setRentRebateEndTime(TimeConstant.DAY_MILLISECOND * packagePO.getRentRebateTerm() + System.currentTimeMillis());
-        carRentalPackage.setDeposit(packagePO.getDeposit());
-        carRentalPackage.setDepositPayOrderNo(depositPayOrderNo);
-        carRentalPackage.setLateFee(packagePO.getLateFee());
-        carRentalPackage.setPayType(PayTypeEnum.ON_LINE.getCode());
-        carRentalPackage.setCouponId(packagePO.getCouponId());
-        carRentalPackage.setPayState(PayStateEnum.UNPAID.getCode());
-        carRentalPackage.setUseState(UseStateEnum.UN_USED.getCode());
-        carRentalPackage.setTenantId(tenantId);
-        carRentalPackage.setFranchiseeId(packagePO.getFranchiseeId());
-        carRentalPackage.setStoreId(packagePO.getStoreId());
-        carRentalPackage.setCreateUid(uid);
-        carRentalPackage.setUpdateUid(uid);
-        carRentalPackage.setCreateTime(System.currentTimeMillis());
-        carRentalPackage.setUpdateTime(System.currentTimeMillis());
-        carRentalPackage.setDelFlag(DelFlagEnum.OK.getCode());
+        CarRentalPackageOrderPO carRentalPackageOrderEntity = new CarRentalPackageOrderPO();
+        carRentalPackageOrderEntity.setUid(uid);
+        carRentalPackageOrderEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, uid));
+        carRentalPackageOrderEntity.setRentalPackageId(packagePO.getId());
+        carRentalPackageOrderEntity.setRentalPackageType(packagePO.getType());
+        carRentalPackageOrderEntity.setConfine(packagePO.getConfine());
+        carRentalPackageOrderEntity.setConfineNum(packagePO.getConfineNum());
+        carRentalPackageOrderEntity.setTenancy(packagePO.getTenancy());
+        carRentalPackageOrderEntity.setTenancyUnit(packagePO.getTenancyUnit());
+        carRentalPackageOrderEntity.setRentUnitPrice(packagePO.getRentUnitPrice());
+        carRentalPackageOrderEntity.setRent(packagePO.getRent());
+        carRentalPackageOrderEntity.setRentPayment(rentPayment);
+        carRentalPackageOrderEntity.setCarModelId(packagePO.getCarModelId());
+        carRentalPackageOrderEntity.setBatteryModelIds(packagePO.getBatteryModelIds());
+        carRentalPackageOrderEntity.setBatteryV(packagePO.getBatteryV());
+        carRentalPackageOrderEntity.setApplicableType(packagePO.getApplicableType());
+        carRentalPackageOrderEntity.setRentRebate(packagePO.getRentRebate());
+        carRentalPackageOrderEntity.setRentRebateTerm(packagePO.getRentRebateTerm());
+        carRentalPackageOrderEntity.setRentRebateEndTime(TimeConstant.DAY_MILLISECOND * packagePO.getRentRebateTerm() + System.currentTimeMillis());
+        carRentalPackageOrderEntity.setDeposit(packagePO.getDeposit());
+        carRentalPackageOrderEntity.setDepositPayOrderNo(depositPayOrderNo);
+        carRentalPackageOrderEntity.setLateFee(packagePO.getLateFee());
+        carRentalPackageOrderEntity.setPayType(PayTypeEnum.ON_LINE.getCode());
+        carRentalPackageOrderEntity.setCouponId(packagePO.getCouponId());
+        carRentalPackageOrderEntity.setPayState(PayStateEnum.UNPAID.getCode());
+        carRentalPackageOrderEntity.setUseState(UseStateEnum.UN_USED.getCode());
+        carRentalPackageOrderEntity.setTenantId(tenantId);
+        carRentalPackageOrderEntity.setFranchiseeId(packagePO.getFranchiseeId());
+        carRentalPackageOrderEntity.setStoreId(packagePO.getStoreId());
+        carRentalPackageOrderEntity.setCreateUid(uid);
+        carRentalPackageOrderEntity.setUpdateUid(uid);
+        carRentalPackageOrderEntity.setCreateTime(System.currentTimeMillis());
+        carRentalPackageOrderEntity.setUpdateTime(System.currentTimeMillis());
+        carRentalPackageOrderEntity.setDelFlag(DelFlagEnum.OK.getCode());
 
-        return carRentalPackage;
+        return carRentalPackageOrderEntity;
     }
 }

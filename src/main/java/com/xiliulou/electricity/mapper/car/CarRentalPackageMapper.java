@@ -16,6 +16,13 @@ import java.util.List;
 public interface CarRentalPackageMapper {
 
     /**
+     * 根据主键ID查询，不区分是否删除
+     * @param idList 主键ID集
+     * @return
+     */
+    List<CarRentalPackagePO> selectByIds(@Param("idList") List<Long> idList);
+
+    /**
      * 检测唯一：租户ID+套餐名称
      * @param tenantId 租户ID
      * @param name 套餐名称

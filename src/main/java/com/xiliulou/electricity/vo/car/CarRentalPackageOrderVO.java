@@ -89,6 +89,11 @@ public class CarRentalPackageOrderVO implements Serializable {
     private String batteryModelIds;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     1-全部
@@ -200,5 +205,10 @@ public class CarRentalPackageOrderVO implements Serializable {
      * 租车套餐名称
      */
     private String carRentalPackageName;
+
+    /**
+     * 车辆型号名称
+     */
+    private String carModelName;
 
 }

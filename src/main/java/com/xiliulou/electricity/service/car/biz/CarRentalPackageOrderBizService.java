@@ -17,8 +17,8 @@ public interface CarRentalPackageOrderBizService {
     /**
      * 根据用户ID查询正在使用的套餐信息<br />
      * 复合查询，车辆信息、门店信息、GPS信息、电池信息、保险信息
-     * @param tenantId
-     * @param uid
+     * @param tenantId 租户ID
+     * @param uid 用户ID
      * @return com.xiliulou.core.web.R<com.xiliulou.electricity.vo.rental.RentalPackageVO>
      * @author xiaohui.song
      **/

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
-import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.FranchiseeQuery;
@@ -110,6 +109,27 @@ public class BasicController {
     }
 
     /**
+     * 根据租车套餐ID集获取套餐信息<br />
+     * K：租车套餐ID<br />
+     * V：租车套餐信息
+     * @param carRentalPackageIds 租车套餐ID集
+     * @return
+     */
+    protected Map<Long, CarRentalPackagePO> getCarRentalPackageByIdsForMap(Set<Long> carRentalPackageIds) {
+
+        List<CarRentalPackagePO> resData = carRentalPackageService.selectByIds(new ArrayList<>(carRentalPackageIds));
+        if (CollectionUtils.isEmpty(resData)) {
+            log.info("BasicController.getCarRentalPackageByIdsForMap response is {}", JSON.toJSONString(resData));
+            return Collections.emptyMap();
+        }
+
+        Map<Long, CarRentalPackagePO> carRentalPackageMap = resData.stream()
+                .collect(Collectors.toMap(CarRentalPackagePO::getId, Function.identity(), (k1, k2) -> k1));
+        return carRentalPackageMap;
+
+    }
+
+    /**
      * 根据租车套餐ID集获取套餐名称<br />
      * K：租车套餐ID<br />
      * V：租车套餐名称
@@ -117,17 +137,10 @@ public class BasicController {
      * @return
      */
     protected Map<Long, String> getCarRentalPackageNameByIdsForMap(Set<Long> carRentalPackageIds) {
-        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
-        qryModel.setIdList(new ArrayList<>(carRentalPackageIds));
 
-        R<List<CarRentalPackagePO>> carPackageRes = carRentalPackageService.listByCondition(qryModel);
-        if (!carPackageRes.isSuccess()) {
-            log.error("BasicController.getCarRentalPackageByIdsForMap error. response is {}", JSON.toJSONString(carPackageRes));
-            return Collections.emptyMap();
-        }
-
-        List<CarRentalPackagePO> resData = carPackageRes.getData();
+        List<CarRentalPackagePO> resData = carRentalPackageService.selectByIds(new ArrayList<>(carRentalPackageIds));
         if (CollectionUtils.isEmpty(resData)) {
+            log.info("BasicController.getCarRentalPackageNameByIdsForMap response is {}", JSON.toJSONString(resData));
             return Collections.emptyMap();
         }
 

@@ -33,7 +33,7 @@ public interface CarRentalPackageOrderService {
      * @param qryModel 查询条件模型
      * @return
      */
-    R<List<CarRentalPackageOrderPO>> page(CarRentalPackageOrderQryModel qryModel);
+    List<CarRentalPackageOrderPO> page(CarRentalPackageOrderQryModel qryModel);
 
     /**
      * 条件查询总数

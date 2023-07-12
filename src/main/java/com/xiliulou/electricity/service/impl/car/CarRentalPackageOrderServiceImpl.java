@@ -73,12 +73,12 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderPO>> page(CarRentalPackageOrderQryModel qryModel) {
+    public List<CarRentalPackageOrderPO> page(CarRentalPackageOrderQryModel qryModel) {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderMapper.page(qryModel));
+        return carRentalPackageOrderMapper.page(qryModel);
     }
 
     /**

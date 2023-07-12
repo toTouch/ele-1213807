@@ -22,6 +22,7 @@
         <result property="deposit" column="deposit" jdbcType="DECIMAL" />
         <result property="carModelId" column="car_model_id" jdbcType="INTEGER" />
         <result property="batteryModelIds" column="battery_model_ids" jdbcType="VARCHAR" />
+        <result property="batteryV" column="battery_v" jdbcType="DECIMAL" />
         <result property="applicableType" column="applicable_type" jdbcType="INTEGER" />
         <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER" />
         <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER" />
@@ -46,7 +47,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_model_ids`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `deposit_exemption`,
+        `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `battery_model_ids`, `battery_v`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `deposit_exemption`,
         `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `remark`
     </sql>
 
@@ -93,6 +94,7 @@
             <if test=" deposit != null "> `deposit`, </if>
             <if test=" carModelId != null "> `car_model_id`, </if>
             <if test=" batteryModelIds != null and batteryModelIds != '' "> `battery_model_ids`, </if>
+            <if test=" batteryV != null "> `battery_v`, </if>
             <if test=" applicableType != null "> `applicable_type`, </if>
             <if test=" rentRebate != null "> `rent_rebate`, </if>
             <if test=" rentRebateTerm != null "> `rent_rebate_term`, </if>
@@ -126,6 +128,7 @@
             <if test=" deposit != null "> #{deposit}, </if>
             <if test=" carModelId != null "> #{carModelId}, </if>
             <if test=" batteryModelIds != null and batteryModelIds != '' "> #{batteryModelIds}, </if>
+            <if test=" batteryV != null "> #{batteryV}, </if>
             <if test=" applicableType != null "> #{applicableType}, </if>
             <if test=" rentRebate != null "> #{rentRebate}, </if>
             <if test=" rentRebateTerm != null "> #{rentRebateTerm}, </if>
@@ -140,6 +143,17 @@
             <if test=" remark != null and remark != '' "> #{remark}, </if>
         </trim>
     </sql>
+
+    <!-- 根据主键ID查询 -->
+    <select id="selectByIds" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `id` IN
+            <foreach collection="idList" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
 
     <!-- 检测唯一：租户ID + 套餐名称 -->
     <select id="uqByTenantIdAndName" resultType="java.lang.Integer">
@@ -177,7 +191,6 @@
         <where>
             `tenant_id` = #{tenantId} AND `del_flag` = 0
             <include refid="where_field" />
-            ORDER BY `create_time` DESC
         </where>
     </select>
 

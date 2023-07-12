@@ -100,6 +100,11 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     private String batteryModelIds;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     1-全部
