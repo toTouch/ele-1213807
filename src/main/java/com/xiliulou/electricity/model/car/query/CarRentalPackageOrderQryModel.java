@@ -65,6 +65,7 @@ public class CarRentalPackageOrderQryModel implements Serializable {
      * <pre>
      *     1-线上
      *     2-线下
+     *     4-赠送
      * </pre>
      * @see PayTypeEnum
      */

@@ -17,6 +17,7 @@ public enum PayTypeEnum implements BasicEnum<Integer, String> {
     ON_LINE(1, "线上"),
     OFF_LINE(2, "线下"),
     EXEMPT(3, "免押"),
+    GIVE(4, "赠送"),
     ;
 
     private final Integer code;

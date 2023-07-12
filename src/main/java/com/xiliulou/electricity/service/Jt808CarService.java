@@ -14,7 +14,22 @@ import java.util.List;
  * @date : 2022/12/29 09:53
  */
 public interface Jt808CarService {
-    
+
+    /**
+     * 根据车辆SN码获取设备信息
+     * @param carSn 车辆SN码
+     * @return
+     */
+    Pair<Boolean, Object> queryDeviceInfo(String carSn);
+
+    /**
+     *
+     * @param carId
+     * @return
+     *
+     * @see Jt808CarService#queryDeviceInfo(java.lang.String)
+     */
+    @Deprecated
     Pair<Boolean, Object> queryDeviceInfo(Integer carId);
     
     Pair<Boolean, Object> controlCar(CarControlRequest request);

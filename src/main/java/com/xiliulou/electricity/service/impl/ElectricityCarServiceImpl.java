@@ -6,23 +6,19 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
-import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCarBindUser;
-import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
-import com.xiliulou.electricity.query.ElectricityCarQuery;
-import com.xiliulou.electricity.query.PictureQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
@@ -30,26 +26,19 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
-import com.xiliulou.electricity.vo.ElectricityCarOverviewVo;
-import com.xiliulou.electricity.vo.CarGpsVo;
-import com.xiliulou.electricity.vo.ElectricityCarVO;
-import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
-import com.xiliulou.electricity.web.query.CarGpsQuery;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -115,7 +104,38 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
-   
+
+    /**
+     * 根据 uid 查询车辆信息<br />
+     * 复合查询，车辆、门店、车辆经纬度
+     * @param tenantId 租户ID
+     * @param carId 车辆ID
+     * @return
+     */
+    @Slave
+    @Override
+    public CarInfoDO queryByCarId(Integer tenantId, Long carId) {
+        if (ObjectUtils.allNotNull(tenantId, carId)) {
+            return null;
+        }
+
+        CarInfoDO carInfoDO = electricityCarMapper.queryByCarId(tenantId, carId);
+        if (ObjectUtils.isEmpty(carInfoDO)) {
+            return null;
+        }
+
+        Pair<Boolean, Object> carDevicePair = jt808CarService.queryDeviceInfo(carInfoDO.getCarSn());
+        if (!carDevicePair.getLeft()) {
+            return carInfoDO;
+        }
+
+        Jt808DeviceInfoVo deviceInfoVo = (Jt808DeviceInfoVo) carDevicePair.getRight();
+        carInfoDO.setLatitude(deviceInfoVo.getLatitude());
+        carInfoDO.setLongitude(deviceInfoVo.getLongitude());
+
+        return carInfoDO;
+    }
+
     /**
      * 通过ID查询单条数据从缓存
      *

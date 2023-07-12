@@ -15,6 +15,14 @@ import java.util.List;
 public interface CarRentalPackageOrderSlippageService {
 
     /**
+     * 根据用户ID查询未支付的逾期订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageOrderSlippagePO selectUnPayByByUid(Integer tenantId, Long uid);
+
+    /**
      * 距当前时间，是否存在未缴纳的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID

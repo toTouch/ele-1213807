@@ -100,6 +100,11 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     private String batteryModelIds;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     1-全部
@@ -150,28 +155,11 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      * <pre>
      *     1-线上
      *     2-线下
+     *     4-赠送
      * </pre>
      * @see PayTypeEnum
      */
     private Integer payType;
-
-    /**
-     * 购买方式
-     * <pre>
-     *     1-线上
-     *     2-线下
-     *     3-赠送
-     * </pre>
-     * @see BuyTypeEnum
-     */
-    @Deprecated
-    private Integer buyType;
-
-    /**
-     * 柜机ID
-     */
-    @Deprecated
-    private Integer cabinetId;
 
     /**
      * 赠送的优惠券ID
@@ -206,21 +194,5 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      * 备注
      */
     private String remark;
-
-    /**
-     * 三方支付单号
-     */
-    @Deprecated
-    private String thirdPayNo;
-
-    /**
-     * 三方支付渠道
-     * <pre>
-     *     1-微信
-     * </pre>
-     * @see ThirdPayChannelEnum
-     */
-    @Deprecated
-    private Integer thirdPayChannel;
 
 }

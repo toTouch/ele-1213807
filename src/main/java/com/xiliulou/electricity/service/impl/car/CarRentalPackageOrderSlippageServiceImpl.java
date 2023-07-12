@@ -3,11 +3,13 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderSlippageMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderSlippageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,22 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
 
     @Resource
     private CarRentalPackageOrderSlippageMapper carRentalPackageOrderSlippageMapper;
+
+    /**
+     * 根据用户ID查询未支付的逾期订单
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return
+     */
+    @Slave
+    @Override
+    public CarRentalPackageOrderSlippagePO selectUnPayByByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderSlippageMapper.selectUnPaidByByUid(tenantId, uid);
+    }
 
     /**
      * 距当前时间，是否存在未缴纳的逾期订单

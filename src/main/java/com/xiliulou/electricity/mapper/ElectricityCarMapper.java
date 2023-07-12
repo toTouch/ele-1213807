@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.vo.ElectricityCarMoveVo;
@@ -18,6 +19,14 @@ import java.util.List;
  */
 public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
 
+    /**
+     * 根据 uid 查询车辆信息<br />
+     * 复合查询，车辆、门店、车辆经纬度
+     * @param tenantId 租户ID
+     * @param carId 车辆ID
+     * @return
+     */
+    CarInfoDO queryByCarId(@Param("tenantId") Integer tenantId, @Param("carId") Long carId);
 
     List<ElectricityCarVO> queryList(@Param("query") ElectricityCarQuery electricityCarQuery);
 

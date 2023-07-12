@@ -15,14 +15,18 @@ import java.util.List;
 public interface CarRentalPackageService {
 
     /**
+     * 根据主键ID查询，不区分是否删除
+     * @param ids 主键ID集
+     * @return
+     */
+    List<CarRentalPackagePO> selectByIds(List<Long> ids);
+
+    /**
      * 根据条件查询<br />
-     * PS：<br />
-     * 1、不区分租户<br />
-     * 2、不区分删除<br />
      * @param qryModel
      * @return
      */
-    R<List<CarRentalPackagePO>> listByCondition(CarRentalPackageQryModel qryModel);
+    List<CarRentalPackagePO> listByCondition(CarRentalPackageQryModel qryModel);
 
     /**
      * 检测唯一：租户ID+套餐名称

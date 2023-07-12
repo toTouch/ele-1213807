@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.MapVo;
@@ -18,6 +17,14 @@ import java.util.List;
  * @since 2020-12-07 14:59:37
  */
 public interface StoreService {
+
+    /**
+     * 根据车辆<code>SN</code>码获取门店信息
+     * @param tenantId
+     * @param sn
+     * @return
+     */
+    Store queryByCarSn(Integer tenantId, String sn);
 
       /**
      * 通过ID查询单条数据从缓存

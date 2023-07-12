@@ -14,11 +14,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.query.CarControlQuery;
-import com.xiliulou.electricity.service.ElectricityCarService;
-import com.xiliulou.electricity.service.Jt808CarService;
-import com.xiliulou.electricity.service.UserCarDepositService;
-import com.xiliulou.electricity.service.UserCarMemberCardService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.retrofit.Jt808RetrofitService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -26,7 +22,6 @@ import com.xiliulou.electricity.vo.CarGpsVo;
 import com.xiliulou.electricity.vo.Jt808DeviceInfoVo;
 import com.xiliulou.electricity.web.query.CarControlRequest;
 import com.xiliulou.electricity.web.query.CarGpsQuery;
-import com.xiliulou.electricity.web.query.jt808.Jt808DeviceControlRequest;
 import com.xiliulou.electricity.web.query.jt808.Jt808GetInfoRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,7 +29,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -67,6 +61,28 @@ public class Jt808CarServiceImpl implements Jt808CarService {
     
     @Autowired
     RedisService redisService;
+
+    /**
+     * 根据车辆SN码获取设备信息
+     * @param carSn 车辆SN码
+     * @return
+     */
+    @Override
+    public Pair<Boolean, Object> queryDeviceInfo(String carSn) {
+
+        if (StrUtil.isEmpty(carSn)) {
+            return Pair.of(false, "车辆sn为空");
+        }
+
+        R<Jt808DeviceInfoVo> result = jt808RetrofitService.getInfo(
+                new Jt808GetInfoRequest(IdUtil.randomUUID(), carSn));
+        if (!result.isSuccess()) {
+            log.error("Jt808 error! queryDevice error! carSn is {}, result is {}", carSn, result);
+            return Pair.of(false, result.getErrMsg());
+        }
+
+        return Pair.of(true, result.getData());
+    }
     
     @Override
     public Pair<Boolean, Object> queryDeviceInfo(Integer carId) {

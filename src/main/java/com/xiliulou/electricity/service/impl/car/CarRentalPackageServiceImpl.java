@@ -22,9 +22,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,17 +49,34 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     private CarRentalPackageMapper carRentalPackageMapper;
 
     /**
-     * 根据条件查询<br />
-     * PS：<br />
-     * 1、不区分租户<br />
-     * 2、不区分删除<br />
+     * 根据主键ID查询，不区分是否删除
      *
-     * @param qryModel
+     * @param ids 主键ID集
      * @return
      */
+    @Slave
     @Override
-    public R<List<CarRentalPackagePO>> listByCondition(CarRentalPackageQryModel qryModel) {
-        return null;
+    public List<CarRentalPackagePO> selectByIds(List<Long> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+
+        return carRentalPackageMapper.selectByIds(ids);
+    }
+
+    /**
+     * 根据条件查询<br />
+     *
+     * @param qryModel 查询条件
+     * @return
+     */
+    @Slave
+    @Override
+    public List<CarRentalPackagePO> listByCondition(CarRentalPackageQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageMapper.list(qryModel);
     }
 
     /**
