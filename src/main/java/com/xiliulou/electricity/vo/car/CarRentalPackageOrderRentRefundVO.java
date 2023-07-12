@@ -2,7 +2,7 @@ package com.xiliulou.electricity.vo.car;
 
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.ThirdPayChannelEnum;
-import com.xiliulou.electricity.enums.TimeUnitEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
@@ -78,7 +78,7 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
      *     1-天
      *     2-分钟
      * </pre>
-     * @see TimeUnitEnum
+     * @see RentalUnitEnum
      */
     private Integer rentUnit;
 

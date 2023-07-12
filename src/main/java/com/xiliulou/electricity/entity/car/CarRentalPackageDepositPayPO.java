@@ -33,7 +33,6 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
     /**
      * 套餐ID
      */
-    @Deprecated
     private Long rentalPackageId;
 
     /**
@@ -44,7 +43,6 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
      * </pre>
      * @see CarRentalPackageTypeEnum
      */
-    @Deprecated
     private Integer rentalPackageType;
 
     /**
@@ -79,17 +77,6 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
     private Integer depositExemption;
 
     /**
-     * 押金返还审批
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
-     */
-    @Deprecated
-    private Integer depositRebateApprove;
-
-    /**
      * 交易方式
      * <pre>
      *     1-线上
@@ -120,20 +107,6 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
      * 来源订单编码
      */
     private String sourceOrderNo;
-
-    /**
-     * 三方支付单号
-     */
-    private String thirdPayNo;
-
-    /**
-     * 三方支付渠道
-     * <pre>
-     *     1-微信
-     * </pre>
-     * @see ThirdPayChannelEnum
-     */
-    private Integer thirdPayChannel;
 
     /**
      * 是否退还

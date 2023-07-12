@@ -33,6 +33,23 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
 
     /**
+     * 根据用户ID和套餐订单编码查询
+     *
+     * @param tenantId       租户ID
+     * @param uid            用户ID
+     * @param packageOrderNo 购买套餐订单编码
+     * @return
+     */
+    @Slave
+    @Override
+    public CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo) {
+        if (ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageMemberTermMapper.selectByUidAndPackageOrderNo(tenantId, uid, packageOrderNo);
+    }
+
+    /**
      * 根据用户ID和租户ID删除
      *
      * @param tenantId 租户ID

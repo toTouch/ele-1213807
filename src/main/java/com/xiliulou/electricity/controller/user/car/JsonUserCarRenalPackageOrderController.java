@@ -42,6 +42,32 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
 
+    /**
+     * 用户根据套餐购买订单编码进行订单退租
+     * @param orderNo
+     * @return
+     */
+    @GetMapping("/refundRentOrder")
+    public R<Boolean> refundRentOrder(String orderNo) {
+        if (StringUtils.isBlank(orderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), orderNo);
+
+        return R.ok(refundFlag);
+    }
+
 
     /**
      * 条件查询列表
@@ -54,7 +80,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             qryReq = new CarRentalPackageOrderQryReq();
         }
 
-        // 赋值租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         // 用户
@@ -174,7 +200,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -203,7 +229,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -232,7 +258,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 

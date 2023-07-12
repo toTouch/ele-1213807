@@ -3,13 +3,15 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderRentRefundMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderRentRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -110,23 +112,28 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
     @Override
-    public R<Long> insert(CarRentalPackageOrderRentRefundOptModel optModel) {
-        CarRentalPackageOrderRentRefundPO entity = new CarRentalPackageOrderRentRefundPO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalPackageOrderRentRefundPO entity) {
+        if (ObjectUtils.isEmpty(entity)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、订单编号
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        if (StringUtils.isBlank(entity.getOrderNo())) {
+            String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_CAR_MEMBERCARD, entity.getUid());
+            entity.setOrderNo(orderNo);
+        }
 
         // 保存入库
         carRentalPackageOrderRentRefundMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

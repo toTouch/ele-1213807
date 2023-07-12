@@ -66,7 +66,7 @@ public class CarRentalPackageServiceImplTest {
         optModel.setName("测试新增租车套餐");
         optModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
         optModel.setTenancy(30);
-        optModel.setTenancyUnit(TimeUnitEnum.DAY.getCode());
+        optModel.setTenancyUnit(RentalUnitEnum.DAY.getCode());
         optModel.setRent(new BigDecimal("90"));
         optModel.setDeposit(new BigDecimal("99"));
         optModel.setCarModelId(1);
@@ -81,7 +81,6 @@ public class CarRentalPackageServiceImplTest {
         optModel.setConfine(RenalPackageConfineEnum.NO.getCode());
         optModel.setGiveCoupon(YesNoEnum.NO.getCode());
         optModel.setStatus(UpDownEnum.DOWN.getCode());
-        optModel.setShowFlag(YesNoEnum.YES.getCode());
         optModel.setRemark("这是备注展示字段");
 
         R<Long> insert = carRentalPackageService.insert(optModel);

@@ -16,6 +16,15 @@ import java.util.List;
 public interface CarRentalPackageMemberTermMapper {
 
     /**
+     * 根据用户ID和套餐订单编码查询
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 套餐购买订单编码
+     * @return
+     */
+    CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
+
+    /**
      * 根据用户ID和租户ID更新状态
      * @param tenantId 租户ID
      * @param uid 用户ID

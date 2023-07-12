@@ -82,6 +82,23 @@ public class DateUtils {
     }
 
     /**
+     * 计算两个时间差的分钟数，不足一分钟，按一分钟处理<br />
+     * TODO 入参为负数的时候，缺少判定
+     * <pre>
+     *     beginTime：1689154972318L(2023-07-12 17:42:52) endTime：1689154972318L(2023-07-12 17:42:52) return：1
+     *     beginTime：1689154972318L(2023-07-12 17:42:52) endTime：1689155033319L(2023-07-12 17:43:53) return：2
+     *     beginTime：1689154972318L(2023-07-12 17:42:52) endTime：1689154973000L(2023-07-12 17:42:53) return：1
+     * </pre>
+     * @param beginTime 开始时间戳，毫秒
+     * @param endTime 结束时间戳，毫秒
+     * @return
+     */
+    public static int diffMinute(long beginTime, long endTime) {
+        Double diffDayValue = Math.ceil((endTime - beginTime) / (1000 * 60 * 60)) + 1;
+        return diffDayValue.intValue();
+    }
+
+    /**
      * 计算两个时间差的天数，不足一天，按一天处理<br />
      * TODO 入参为负数的时候，缺少判定
      * <pre>

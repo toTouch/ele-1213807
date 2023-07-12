@@ -138,11 +138,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         }
 
         // 校验能否删除
-        R<Boolean> checkRes = carRentalPackageOrderService.checkByRentalPackageId(id);
-        if (!checkRes.isSuccess()) {
-            return R.fail(checkRes.getErrCode(), checkRes.getErrMsg());
-        }
-        if (checkRes.getData()) {
+        Boolean checkFlag = carRentalPackageOrderService.checkByRentalPackageId(id);
+        if (checkFlag) {
             return R.fail("300103", "已有购买订单记录，不允许删除");
         }
 

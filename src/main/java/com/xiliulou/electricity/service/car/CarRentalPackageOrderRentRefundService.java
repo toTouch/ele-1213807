@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderRentRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 
 import java.util.List;
@@ -53,8 +52,8 @@ public interface CarRentalPackageOrderRentRefundService {
 
     /**
      * 新增数据，返回主键ID
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
-    R<Long> insert(CarRentalPackageOrderRentRefundOptModel optModel);
+    Long insert(CarRentalPackageOrderRentRefundPO entity);
 }

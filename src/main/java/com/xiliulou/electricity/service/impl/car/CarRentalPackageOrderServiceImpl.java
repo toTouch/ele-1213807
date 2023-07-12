@@ -31,21 +31,75 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
-     * 根据套餐ID查询是否存在购买订单
+     * 根据订单编号更改支付状态、使用状态、使用时间
      *
-     * @param rentalPackageId
+     * @param orderNo  订单编码
+     * @param payState 支付状态
+     * @param useState 使用状态
+     * @return
+     */
+    @Override
+    public Boolean updateStateByOrderNo(String orderNo, Integer payState, Integer useState) {
+        if (!ObjectUtils.allNotNull(orderNo, payState, useState) || !BasicEnum.isExist(payState, PayStateEnum.class) || !BasicEnum.isExist(payState, UseStateEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        Integer num = carRentalPackageOrderMapper.updateStateByOrderNo(orderNo, payState, useState, System.currentTimeMillis());
+        return num >= 0;
+    }
+
+    /**
+     * 根据用户ID查询未使用状态的订单总条数<br />
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
      * @return
      */
     @Slave
     @Override
-    public R<Boolean> checkByRentalPackageId(Long rentalPackageId) {
+    public Integer countByUnUseByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderMapper.countByUnUseByUid(tenantId, uid);
+    }
+
+    /**
+     * 根据用户ID查询是否存在未使用状态的订单<br />
+     * <pre>
+     *     true-存在未使用的订单
+     *     false-不存在未使用的订单
+     * </pre>
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return
+     */
+    @Slave
+    @Override
+    public boolean isExitUnUseByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        Integer count = carRentalPackageOrderMapper.countByUnUseByUid(tenantId, uid);
+        return count > 0;
+    }
+
+    /**
+     * 根据套餐ID查询是否存在购买订单
+     *
+     * @param rentalPackageId 套餐ID
+     * @return
+     */
+    @Slave
+    @Override
+    public Boolean checkByRentalPackageId(Long rentalPackageId) {
         if (rentalPackageId == null || rentalPackageId <=0 ) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         Integer num = carRentalPackageOrderMapper.countByRentalPackageId(rentalPackageId);
 
-        return R.ok(num > 0);
+        return num > 0;
     }
 
     /**

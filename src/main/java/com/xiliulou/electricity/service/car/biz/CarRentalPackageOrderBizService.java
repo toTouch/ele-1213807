@@ -15,6 +15,15 @@ import javax.servlet.http.HttpServletRequest;
 public interface CarRentalPackageOrderBizService {
 
     /**
+     * 根据用户ID及订单编码进行退租购买的订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param orderNo 套餐购买订单编号
+     * @return
+     */
+    Boolean refundRentOrder(Integer tenantId, Long uid, String orderNo);
+
+    /**
      * 根据用户ID查询正在使用的套餐信息<br />
      * 复合查询，车辆信息、门店信息、GPS信息、电池信息、保险信息
      * @param tenantId 租户ID

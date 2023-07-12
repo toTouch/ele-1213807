@@ -97,6 +97,14 @@
         </trim>
     </sql>
 
+    <!-- 根据用户ID和套餐订单编码查询 -->
+    <select id="selectByUidAndPackageOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `rental_package_order_no` = #{packageOrderNo} AND `del_flag` = 0
+        </where>
+    </select>
+
     <!-- 根据用户ID和租户ID删除数据 -->
     <update id="delByUidAndTenantId">
         UPDATE <include refid="table_name" />
@@ -105,7 +113,7 @@
             <if test=" optId != null "> , `update_uid` = #{optId} </if>
         </set>
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid}
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
         </where>
     </update>
 
