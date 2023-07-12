@@ -16,6 +16,27 @@ public class EleEsignConstant {
 
     public static final Integer ESIGN_TURN_OFF = 2;
 
+    /**
+     * 签署流程完成
+     */
+    public static final Integer ESIGN_FLOW_STATUS_COMPLETE = 2;
+
+    /**
+     * 签署状态已完成
+     */
+    public static final Integer ESIGN_STATUS_SUCCESS = 1;
+
+    /**
+     * 签署状态未完成
+     */
+    public static final Integer ESIGN_STATUS_FAILED = 0;
+
+    public static final Integer ESIGN_RESPONSE_SUCCESS_CODE = 0;
+
+    public static final Integer ESIGN_REAL_NAME_STATUS_Y = 1;
+
+    public static final Integer ESIGN_REAL_NAME_STATUS_N = 0;
+
     public static final String PSN_PHOTO_OSS_PATH = "saas/psnPhoto/";
 
 }

@@ -27,18 +27,19 @@ public class JsonUserElectronicSignatureController extends BaseController {
         return returnTripleResult(eleCabinetSignatureService.checkUserEsignFinished());
     }
 
+    @Deprecated
     @GetMapping(value = "/user/identifyAuth")
     public R identifyAuth(){
         return returnTripleResult(eleCabinetSignatureService.personalAuthentication());
     }
 
-    @GetMapping(value = "/user/fileSignature/{authFlowId}")
-    public R fileSignature(@PathVariable("authFlowId") String authFlowId){
-        return returnTripleResult(eleCabinetSignatureService.fileSignatureFlow(authFlowId));
+    @GetMapping(value = "/user/fileSignature")
+    public R fileSignature(){
+        return returnTripleResult(eleCabinetSignatureService.getSignFlowLink());
     }
 
     @GetMapping(value = "/user/querySignFile/{signFlowId}")
-    public R querySignFile(@PathVariable("authFlowId") String signFlowId){
+    public R querySignFile(@PathVariable("signFlowId") String signFlowId){
         return returnTripleResult(eleCabinetSignatureService.getSignatureFile(signFlowId));
     }
 

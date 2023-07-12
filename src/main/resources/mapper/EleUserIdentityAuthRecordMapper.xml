@@ -10,6 +10,7 @@
         <result property="psnAccount" column="psn_account" jdbcType="VARCHAR"/>
         <result property="authFlowId" column="auth_flow_id" jdbcType="VARCHAR"/>
         <result property="realNameStatus" column="real_name_status" jdbcType="INTEGER"/>
+        <result property="authResult" column="auth_result" jdbcType="VARCHAR"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -17,7 +18,7 @@
 
     <!-- 基础字段信息获取 -->
     <sql id="selectUserIdentityAuthRecord">
-        select id, uid, tenant_id, psn_id, psn_account, auth_flow_id, real_name_status, del_flag, create_time, update_time from t_user_identity_auth_record
+        select id, uid, tenant_id, psn_id, psn_account, auth_flow_id, real_name_status, auth_result, del_flag, create_time, update_time from t_user_identity_auth_record
     </sql>
 
     <!--根据用户ID和租户ID查询最新记录-->
@@ -36,6 +37,7 @@
             psn_account,
             auth_flow_id,
             real_name_status,
+            auth_result,
             del_flag,
             create_time,
             update_time,
@@ -47,6 +49,7 @@
             #{psnAccount},
             #{authFlowId},
             #{realNameStatus},
+            #{authResult},
             #{delFlag},
             #{createTime},
             #{updateTime},
@@ -68,6 +71,9 @@
             </if>
             <if test="realNameStatus != null">
                 real_name_status = #{realNameStatus},
+            </if>
+            <if test="authResult != null and authResult != ''">
+                auth_result = #{authResult},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},

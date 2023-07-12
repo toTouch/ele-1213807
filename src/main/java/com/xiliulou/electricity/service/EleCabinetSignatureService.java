@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.core.web.R;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**
@@ -13,10 +12,14 @@ public interface EleCabinetSignatureService {
 
     public Triple<Boolean, String, Object> personalAuthentication();
 
+    public Triple<Boolean, String, Object> getSignFlowLink();
+
     public Triple<Boolean, String, Object> fileSignatureFlow(String authFlowId);
 
     public Triple<Boolean, String, Object> checkUserEsignFinished();
 
     public Triple<Boolean, String, Object> getSignatureFile(String signFlowId);
+
+
 
 }

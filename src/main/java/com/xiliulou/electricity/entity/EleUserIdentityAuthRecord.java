@@ -50,6 +50,11 @@ public class EleUserIdentityAuthRecord {
     private Integer realNameStatus;
 
     /**
+     * 认证结果信息
+     */
+    private String authResult;
+
+    /**
      * 是否删除（0-正常，1-删除）
      */
     private Integer delFlag;

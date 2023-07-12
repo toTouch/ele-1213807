@@ -8,10 +8,7 @@ import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.mapper.EleUserIdentityAuthRecordMapper;
-import com.xiliulou.electricity.service.EleCabinetSignatureService;
-import com.xiliulou.electricity.service.EleEsignConfigService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.SignFlowVO;
@@ -69,6 +66,8 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     @Autowired
     SignatureFileService signatureFileService;
     @Autowired
+    EsignCapacityDataService esignCapacityDataService;
+    @Autowired
     private EsignConfig esignConfig;
     @Autowired
     private EleUserIdentityAuthRecordMapper eleUserIdentityAuthRecordMapper;
@@ -78,6 +77,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     private static ExecutorService savePsnAuthResultExecutor = XllThreadPoolExecutors.newFixedThreadPool("savePsnAuthResult",
             2, "SAVE_PSN_AUTH_RESULT");
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> personalAuthentication() {
 
@@ -149,6 +149,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         return Triple.of(true, "", psnAuthLinkResp.getData());
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> fileSignatureFlow(String authFlowId) {
 
@@ -171,7 +172,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         //查看用户认证详细信息，并检查当前用户是否进行过身份认证。如果已经认证过则将用户的认证信息进行保存。保存之前需要判断是否已经记录过。
         PsnAuthDetailResp psnAuthDetailResp = personalAuthenticationService.queryPsnDetailInfo(authFlowId, esignConfig.getXxlAppId(), esignConfig.getXxlAppSecret());
-        if(psnAuthDetailResp.getCode() == 0 && psnAuthDetailResp.getData().getRealNameStatus() == 1){
+        if(psnAuthDetailResp.getCode() == EleEsignConstant.ESIGN_RESPONSE_SUCCESS_CODE && psnAuthDetailResp.getData().getRealNameStatus() == EleEsignConstant.ESIGN_REAL_NAME_STATUS_Y){
             //认证已通过，开始签署的流程。同时将拿到认证的个人信息，保存在数据库中。异步保存。
             //先判断当前库中是否存在这个用户的记录
             EleUserIdentityAuthRecord eleUserIdentityAuthRecord = eleUserIdentityAuthRecordMapper.selectLatestAuthRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
@@ -217,6 +218,67 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         SignFlowVO signFlowVO = new SignFlowVO();
         signFlowVO.setSignFlowId(signDocsCreateResp.getData().getSignFlowId());
+        signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
+        signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
+
+        return Triple.of(true, "", signFlowVO);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> getSignFlowLink() {
+        //获取当前用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(false, "000100", "未找到用户");
+        }
+
+        //获取用户所属租户的签名配置信息
+        EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(eleEsignConfig)
+                || StringUtils.isBlank(eleEsignConfig.getAppId())
+                || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
+            log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                    TenantContextHolder.getTenantId());
+            return Triple.of(false, "000104", "租户电子签名配置信息不存在");
+        }
+
+        //根据模板id创建签署文件
+        List<ComponentData> componentDataList = new ArrayList<>();
+        FileCreateByTempResp fileCreateByTempResp = signatureFileService.createFileByTemplate(eleEsignConfig.getDocTemplateId(), eleEsignConfig.getSignFileName(),componentDataList, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+        String fileId = fileCreateByTempResp.getData().getFileId();
+
+        //基于文件发起签署流程
+        UserInfoQuery userInfoQuery = new UserInfoQuery();
+        userInfoQuery.setPhone(userInfo.getPhone());
+        userInfoQuery.setUserName(userInfo.getName());
+
+        SignFlowDataQuery signFlowDataQuery = new SignFlowDataQuery();
+        signFlowDataQuery.setFileId(fileId);
+        signFlowDataQuery.setSignFileName(eleEsignConfig.getSignFileName());
+        signFlowDataQuery.setSignFlowName(eleEsignConfig.getSignFlowName());
+        signFlowDataQuery.setTenantAppId(eleEsignConfig.getAppId());
+        signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
+        signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
+
+        //根据模版ID获取组件位置
+        SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+        ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
+
+        signFlowDataQuery.setPositionPage(String.valueOf(componentPosition.getComponentPageNum()));
+        signFlowDataQuery.setPositionX(componentPosition.getComponentPositionX());
+        signFlowDataQuery.setPositionY(componentPosition.getComponentPositionY());
+        SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
+
+        //根据signFlowId获取psnId信息，微信小程序跳转时需要该参数
+        SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signDocsCreateResp.getData().getSignFlowId(), eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+
+        //获取文件签署链接
+        SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signDocsCreateResp.getData().getSignFlowId(), userInfoQuery, signFlowDataQuery);
+
+        SignFlowVO signFlowVO = new SignFlowVO();
+        signFlowVO.setSignFlowId(signDocsCreateResp.getData().getSignFlowId());
+        signFlowVO.setPsnId(signFlowDetailResp.getData().getSigners().get(0).getPsnSigner().getPsnId());
         signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
         signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
 
@@ -280,14 +342,56 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(true, "", "电子签名功能未启用！");
         }
 
+        //获取用户所属租户的签名配置信息
+        EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+        if (Objects.isNull(eleEsignConfig)
+                || StringUtils.isBlank(eleEsignConfig.getAppId())
+                || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
+            log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                    TenantContextHolder.getTenantId());
+            return Triple.of(false, "000104", "租户电子签名配置信息不存在");
+        }
+
         //检查用户是否已经完成签名的操作
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
-        if(Objects.nonNull(eleUserEsignRecord) && eleUserEsignRecord.getSignFinishStatus() == 1){
-            log.info("user esign finished: {}", eleUserEsignRecord);
+        if(Objects.isNull(eleUserEsignRecord)){
+            EleUserEsignRecord esignRecord = new EleUserEsignRecord();
+            esignRecord.setUid(userInfo.getUid());
+            esignRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
+            esignRecord.setSignFinishStatus(EleEsignConstant.ESIGN_STATUS_FAILED);
+
+            return Triple.of(true, "", esignRecord);
+        }
+
+        if(eleUserEsignRecord.getSignFinishStatus() == EleEsignConstant.ESIGN_STATUS_SUCCESS){
             return Triple.of(true, "", eleUserEsignRecord);
         }
 
-        return Triple.of(false, "", "用户签署未完成！");
+        return checkStatusFromThirdParty(eleUserEsignRecord, eleEsignConfig);
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private Triple<Boolean, String, Object> checkStatusFromThirdParty(EleUserEsignRecord eleUserEsignRecord, EleEsignConfig eleEsignConfig){
+
+        String signFlowId = eleUserEsignRecord.getSignFlowId();
+        SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+
+        if(Objects.nonNull(signFlowDetailResp) && signFlowDetailResp.getData().getSignFlowStatus() == EleEsignConstant.ESIGN_FLOW_STATUS_COMPLETE){
+            eleUserEsignRecord.setSignFinishStatus(EleEsignConstant.ESIGN_STATUS_SUCCESS);
+            eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
+            eleUserEsignRecordMapper.updateUserEsignRecord(eleUserEsignRecord);
+            //更新为成功完成状态后，减扣一次签署次数
+            esignCapacityDataService.deductionCapacityByTenantId(TenantContextHolder.getTenantId().longValue());
+            return Triple.of(true, "", eleUserEsignRecord);
+        }
+
+        EleUserEsignRecord esignRecord = new EleUserEsignRecord();
+        esignRecord.setUid(eleUserEsignRecord.getUid());
+        esignRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
+        esignRecord.setSignFinishStatus(EleEsignConstant.ESIGN_STATUS_FAILED);
+
+        return Triple.of(true, "", esignRecord);
     }
 
     @Override
@@ -311,18 +415,15 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         //查询签署流程状态，是否完成签署，如果完成，则将数据同步至数据库中，若未完成，则提示错误
         SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-        if(Objects.nonNull(signFlowDetailResp) && signFlowDetailResp.getData().getSignFlowStatus() == 2){
-            //检查当前库中是否已经存在该用户的签署记录
-            EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
-            if(Objects.isNull(eleUserEsignRecord)){
-                createUserEsignRecord(signFlowDetailResp, userInfo.getUid(), signFlowId);
-            }
+        //将查询的结果保存至数据库
+        createUserEsignRecord(signFlowDetailResp, userInfo.getUid(), signFlowId);
+
+        if(Objects.nonNull(signFlowDetailResp) && signFlowDetailResp.getData().getSignFlowStatus() == EleEsignConstant.ESIGN_FLOW_STATUS_COMPLETE){
+            FileDownLoadResp fileDownLoadResp = signatureFileService.QueryDownLoadLink(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+            return Triple.of(true, "", fileDownLoadResp.getData());
         }else{
             return Triple.of(false, "000107", "签署流程未完成！");
         }
-
-        FileDownLoadResp fileDownLoadResp = signatureFileService.QueryDownLoadLink(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-        return Triple.of(true, "", fileDownLoadResp.getData());
     }
 
     /**
@@ -332,24 +433,28 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
      */
     @Transactional(rollbackFor = Exception.class)
     private void createUserIdentityAuthRecord(PsnAuthDetailResp psnAuthDetailResp, Long uid){
-        EleUserIdentityAuthRecord userIdentityAuthRecord = new EleUserIdentityAuthRecord();
-        userIdentityAuthRecord.setUid(uid);
-        userIdentityAuthRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
-        userIdentityAuthRecord.setAuthFlowId(psnAuthDetailResp.getData().getAuthFlowId());
+        if(Objects.nonNull(psnAuthDetailResp)){
+            EleUserIdentityAuthRecord userIdentityAuthRecord = new EleUserIdentityAuthRecord();
+            userIdentityAuthRecord.setUid(uid);
+            userIdentityAuthRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
+            userIdentityAuthRecord.setAuthFlowId(psnAuthDetailResp.getData().getAuthFlowId());
 
-        PersonResp personResp = psnAuthDetailResp.getData().getAuthInfo().getPerson();
-        userIdentityAuthRecord.setPsnId(personResp.getPsnId());
-        userIdentityAuthRecord.setPsnAccount(personResp.getPsnAccount().getAccountMobile());
-        userIdentityAuthRecord.setRealNameStatus(psnAuthDetailResp.getData().getRealNameStatus());
-        userIdentityAuthRecord.setDelFlag(EleEsignConstant.DEL_NO);
-        userIdentityAuthRecord.setCreateTime(System.currentTimeMillis());
-        userIdentityAuthRecord.setUpdateTime(System.currentTimeMillis());
-        eleUserIdentityAuthRecordMapper.insertUserIdentityAuthRecord(userIdentityAuthRecord);
+            PersonResp personResp = psnAuthDetailResp.getData().getAuthInfo().getPerson();
+            userIdentityAuthRecord.setPsnId(personResp.getPsnId());
+            userIdentityAuthRecord.setPsnAccount(personResp.getPsnAccount().getAccountMobile());
+            userIdentityAuthRecord.setRealNameStatus(psnAuthDetailResp.getData().getRealNameStatus());
+            userIdentityAuthRecord.setAuthResult(JsonUtil.toJson(psnAuthDetailResp));
+            userIdentityAuthRecord.setDelFlag(EleEsignConstant.DEL_NO);
+            userIdentityAuthRecord.setCreateTime(System.currentTimeMillis());
+            userIdentityAuthRecord.setUpdateTime(System.currentTimeMillis());
+            eleUserIdentityAuthRecordMapper.insertUserIdentityAuthRecord(userIdentityAuthRecord);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     private void updateUserIdentityAuthRecord(EleUserIdentityAuthRecord eleUserIdentityAuthRecord, int realNameStatus){
         eleUserIdentityAuthRecord.setRealNameStatus(realNameStatus);
+        eleUserIdentityAuthRecord.setUpdateTime(System.currentTimeMillis());
         eleUserIdentityAuthRecordMapper.updateUserIdentityAuthRecord(eleUserIdentityAuthRecord);
     }
 
@@ -361,19 +466,27 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
      */
     @Transactional(rollbackFor = Exception.class)
     private void createUserEsignRecord(SignFlowDetailResp signFlowDetailResp, Long uid, String signFlowId){
-        EleUserEsignRecord eleUserEsignRecord = new EleUserEsignRecord();
-        eleUserEsignRecord.setUid(uid);
-        eleUserEsignRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
-        eleUserEsignRecord.setSignFlowId(signFlowId);
-        eleUserEsignRecord.setSignFinishStatus(signFlowDetailResp.getData().getSignFlowStatus() == 2 ? 1 : 0);
-        //当前签署文件只有一个，则取第一个文档的信息即可
-        SignDocData signDocData = signFlowDetailResp.getData().getDocs().get(0);
-        eleUserEsignRecord.setFileId(signDocData.getFileId());
-        eleUserEsignRecord.setFileName(signDocData.getFileName());
-        eleUserEsignRecord.setDelFlag(EleEsignConstant.DEL_NO);
-        eleUserEsignRecord.setCreateTime(System.currentTimeMillis());
-        eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
-        eleUserEsignRecordMapper.insertUserEsignRecord(eleUserEsignRecord);
+        if(Objects.nonNull(signFlowDetailResp)){
+            EleUserEsignRecord eleUserEsignRecord = new EleUserEsignRecord();
+            eleUserEsignRecord.setUid(uid);
+            eleUserEsignRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
+            eleUserEsignRecord.setSignFlowId(signFlowId);
+            eleUserEsignRecord.setSignFinishStatus(signFlowDetailResp.getData().getSignFlowStatus() == EleEsignConstant.ESIGN_FLOW_STATUS_COMPLETE ? EleEsignConstant.ESIGN_STATUS_SUCCESS : EleEsignConstant.ESIGN_STATUS_FAILED);
+            //当前签署文件只有一个，则取第一个文档的信息即可
+            SignDocData signDocData = signFlowDetailResp.getData().getDocs().get(0);
+            eleUserEsignRecord.setFileId(signDocData.getFileId());
+            eleUserEsignRecord.setFileName(signDocData.getFileName());
+            eleUserEsignRecord.setSignResult(JsonUtil.toJson(signFlowDetailResp));
+            eleUserEsignRecord.setDelFlag(EleEsignConstant.DEL_NO);
+            eleUserEsignRecord.setCreateTime(System.currentTimeMillis());
+            eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
+
+            if(eleUserEsignRecord.getSignFinishStatus() == EleEsignConstant.ESIGN_STATUS_SUCCESS){
+                esignCapacityDataService.deductionCapacityByTenantId(TenantContextHolder.getTenantId().longValue());
+            }
+
+            eleUserEsignRecordMapper.insertUserEsignRecord(eleUserEsignRecord);
+        }
     }
 
 

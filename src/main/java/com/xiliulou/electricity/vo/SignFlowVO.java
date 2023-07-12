@@ -13,6 +13,8 @@ public class SignFlowVO {
 
     private String signFlowId;
 
+    private String psnId;
+
     private String shortUrl;
 
     private String url;

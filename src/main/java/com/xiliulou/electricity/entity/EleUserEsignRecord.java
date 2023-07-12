@@ -50,6 +50,11 @@ public class EleUserEsignRecord {
     private String fileName;
 
     /**
+     * 签署结果信息
+     */
+    private String signResult;
+
+    /**
      * 是否删除（0-正常，1-删除）
      */
     private Integer delFlag;
