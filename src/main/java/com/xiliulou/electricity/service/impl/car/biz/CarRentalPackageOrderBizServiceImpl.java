@@ -1,7 +1,4 @@
 package com.xiliulou.electricity.service.impl.car.biz;
-import com.xiliulou.electricity.domain.car.CarInfoDO;
-import com.xiliulou.electricity.vo.car.CarVO;
-import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -9,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.TimeConstant;
+import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
@@ -26,8 +24,11 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.SlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
+import com.xiliulou.electricity.vo.car.CarVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -56,13 +57,10 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private SlippageBizService slippageBizService;
+
+    @Resource
     private ElectricityCarService electricityCarService;
-
-    @Resource
-    private StoreService storeService;
-
-    @Resource
-    private Jt808CarService jt808CarService;
 
     @Resource
     private UserCarService userCarService;
@@ -123,7 +121,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 1. 查询会员期限信息
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(memberTermEntity)) {
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             return R.ok();
         }
 
@@ -140,20 +138,22 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 6. TODO 电池消息，志龙
 
-        // 7. TODO 滞纳金信息
-        BigDecimal lateFeeAmount = null;
+        // 7. 滞纳金信息
+        String lateFeeAmount = slippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
 
+        // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTermEntity, carRentalPackageEntity, carInfoDO, lateFeeAmount);
 
         return R.ok(rentalPackageVO);
     }
 
-    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO carRentalPackageEntity, CarInfoDO carInfoDO, BigDecimal lateFeeAmount) {
+    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO carRentalPackageEntity, CarInfoDO carInfoDO, String lateFeeAmount) {
         // 构建返回值
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             return null;
         }
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
+        rentalPackageVO.setStatus(memberTermEntity.getStatus());
         rentalPackageVO.setDeadlineTime(memberTermEntity.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
 

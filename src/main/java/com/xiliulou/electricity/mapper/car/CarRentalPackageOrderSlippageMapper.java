@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,13 +16,21 @@ import java.util.List;
 public interface CarRentalPackageOrderSlippageMapper {
 
     /**
+     * 根据用户ID查询未支付的逾期订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageOrderSlippagePO selectUnPaidByByUid(@Param("tenantId") Integer tenantId, @Param("tenantId") Long uid);
+
+    /**
      * 是否存在未缴纳的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param time 时间
      * @return
      */
-    Integer isExitUnpaid(Integer tenantId, Long uid, Long time);
+    Integer isExitUnpaid(@Param("tenantId") Integer tenantId, @Param("tenantId") Long uid, @Param("tenantId")Long time);
 
     /**
      * 条件查询列表<br />

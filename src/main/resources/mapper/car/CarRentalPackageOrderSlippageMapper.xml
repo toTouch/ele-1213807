@@ -112,6 +112,14 @@
         </trim>
     </sql>
 
+    <!-- 根据用户ID查询未支付的逾期订单 -->
+    <select id="selectUnPaidByByUid"  resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `pay_state` = 1 AND `del_flag` = 0
+        </where>
+    </select>
+
     <!-- 是否存在未缴纳的逾期订单 -->
     <select id="isExitUnpaid" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />

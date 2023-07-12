@@ -45,10 +45,7 @@ public class JsonUserCarRenalPackageOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        // 查询租车套餐会员期限信息
-
-
-        return null;
+        return carRentalPackageOrderBizService.queryUseRentalPackageOrderByUid(tenantId, user.getUid());
     }
 
     /**
