@@ -46,7 +46,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
     @GetMapping("/admin/battery/memberCard/search")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
                   @RequestParam(value = "name", required = false) String name,
-                  @RequestParam(value = "display", required = false) Integer display,
                   @RequestParam(value = "status", required = false) Integer status,
                   @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
@@ -81,7 +80,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
                 .status(status)
-                .display(display)
                 .name(name)
                 .build();
 

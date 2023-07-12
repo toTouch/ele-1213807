@@ -82,4 +82,6 @@ public interface BatteryModelService {
     List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query);
 
     List<BatteryTypeVO> selectBatteryTypeAll();
+
+    List<String> selectBatteryVAll();
 }

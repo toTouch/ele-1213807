@@ -99,7 +99,7 @@ public class BatteryMemberCard {
     /**
      * 是否显示(0:显示,1:隐藏)
      */
-    private Integer display;
+//    private Integer display;
     /**
      *
      */

@@ -102,6 +102,22 @@
         </if>
     </select>
 
+    <select id="selectByFranchiseeIdAndType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,simple_battery_type
+        from t_franchisee_insurance
+        where del_flag=0 and status=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="simpleBatteryType != null and simpleBatteryType != ''">
+            and simple_battery_type = #{simpleBatteryType}
+        </if>
+        <if test="insuranceType != null">
+            and insurance_type = #{insuranceType}
+        </if>
+        order by id desc limit 1
+    </select>
+
     <insert id="batchInsert" >
         insert into t_franchisee_insurance(franchisee_id, cid, name, premium, forehead, valid_days, insurance_type, status,is_constraint,del_flag,create_time,update_time,battery_type,tenant_id) values
         <foreach item="item" index="index" collection="list" separator=",">
@@ -134,5 +150,17 @@
                 and tf.battery_type = #{batteryType}
             </otherwise>
         </choose>
+    </select>
+
+    <select id="checkExistInsurance" resultType="Integer">
+        select 1 from t_franchisee_insurance
+        where franchisee_id=#{franchiseeId}
+        <if test="simpleBatteryType != null and simpleBatteryType != ''">
+            and simple_battery_type = #{simpleBatteryType}
+        </if>
+        <if test="carModelId != null">
+            and car_model_id = #{carModelId}
+        </if>
+        LIMIT 1
     </select>
 </mapper>

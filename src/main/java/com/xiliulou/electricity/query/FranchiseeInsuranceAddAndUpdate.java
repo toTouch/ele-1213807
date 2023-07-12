@@ -92,4 +92,17 @@ public class FranchiseeInsuranceAddAndUpdate {
 
     private List<String> batteryTypeList;
 
+    /**
+     * 门店
+     */
+    private Long storeId;
+    /**
+     * 车辆型号
+     */
+    private Long carModelId;
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
+
 }

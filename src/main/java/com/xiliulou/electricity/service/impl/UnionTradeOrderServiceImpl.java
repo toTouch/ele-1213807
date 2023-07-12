@@ -268,7 +268,7 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "押金订单已处理!");
         }
 
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrder.getInsuranceId());
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceOrder.getInsuranceId());
         if (ObjectUtil.isEmpty(insuranceOrder)) {
             log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", orderIdLIst.get(1));
             return Pair.of(false, "未找到订单!");
@@ -791,7 +791,7 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "押金订单已处理!");
         }
 
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceOrder.getInsuranceId());
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceOrder.getInsuranceId());
         if (ObjectUtil.isEmpty(insuranceOrder)) {
             log.error("NOTIFY_INSURANCE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO={}", orderNo);
             return Pair.of(false, "未找到订单!");

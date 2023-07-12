@@ -41,9 +41,17 @@ public class UserBatteryMemberCard {
     private Long memberCardId;
 
     /**
+     * 套餐订单
+     */
+    private String orderId;
+
+    /**
      * 套餐到期时间
      */
     private Long memberCardExpireTime;
+
+
+    private Long orderExpireTime;
 
     /**
      * 套餐剩余次数
@@ -59,7 +67,6 @@ public class UserBatteryMemberCard {
      * 月卡暂停启用更新时间
      */
     private Long disableMemberCardTime;
-
 
     /**
      * 0:正常，1：删除

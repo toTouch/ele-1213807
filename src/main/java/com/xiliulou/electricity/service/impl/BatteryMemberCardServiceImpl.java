@@ -256,7 +256,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setFreeDeposite(query.getFreeDeposite());
         batteryMemberCardUpdate.setRefundDepositeAudit(query.getRefundDepositeAudit());
         batteryMemberCardUpdate.setServiceCharge(query.getServiceCharge());
-        batteryMemberCardUpdate.setDisplay(query.getDisplay());
         batteryMemberCardUpdate.setRemark(query.getRemark());
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
 

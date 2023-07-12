@@ -29,7 +29,7 @@ public interface FranchiseeInsuranceService {
 
     R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
-    FranchiseeInsurance queryByCache(Integer id);
+    FranchiseeInsurance queryByIdFromCache(Integer id);
 
     FranchiseeInsurance queryByFranchiseeId(Long franchiseeId,String batteryType,Integer tenantId);
 
@@ -42,4 +42,6 @@ public interface FranchiseeInsuranceService {
     void moveInsurance(FranchiseeMoveInfo franchiseeMoveInfo, Franchisee newFranchisee);
 
     R selectInsuranceListByCondition( Integer status, Integer type, Integer tenantId, Long franchiseeId, String batterType);
+
+    FranchiseeInsurance selectByFranchiseeIdAndType(Long franchiseeId, int insuranceTypeBattery, String batteryV);
 }

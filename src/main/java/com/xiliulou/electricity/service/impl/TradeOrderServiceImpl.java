@@ -216,7 +216,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //查询保险
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(unionTradeOrderAdd.getInsuranceId());
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(unionTradeOrderAdd.getInsuranceId());
 
         if (Objects.isNull(franchiseeInsurance)) {
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", unionTradeOrderAdd.getInsuranceId(), user.getUid());
@@ -709,7 +709,7 @@ public class TradeOrderServiceImpl implements TradeOrderService {
         }
 
         //查询保险
-        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByCache(insuranceId);
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceId);
 
         if (Objects.isNull(franchiseeInsurance)) {
             log.error("CREATE INSURANCE_ORDER ERROR,NOT FOUND MEMBER_CARD BY ID={},uid={}", insuranceId, userInfo.getUid());

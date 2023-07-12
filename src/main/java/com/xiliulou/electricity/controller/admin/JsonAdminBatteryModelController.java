@@ -75,6 +75,11 @@ public class JsonAdminBatteryModelController extends BaseController {
         return R.ok(batteryModelService.selectBatteryTypeAll());
     }
 
+    @GetMapping("/admin/battery/model/all")
+    public R selectBatteryVAll() {
+        return R.ok(batteryModelService.selectBatteryVAll());
+    }
+
     /**
      * 获取用户自定义的电池型号
      *

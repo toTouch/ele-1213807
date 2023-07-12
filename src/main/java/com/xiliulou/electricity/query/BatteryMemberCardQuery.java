@@ -91,8 +91,8 @@ public class BatteryMemberCardQuery {
     @NotNull(message = "滞纳金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal serviceCharge;
 
-    @NotNull(message = "套餐显隐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer display;
+//    @NotNull(message = "套餐显隐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+//    private Integer display;
 
     @Range(min = 0, max = 30, message = "备注不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String remark;

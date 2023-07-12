@@ -157,7 +157,22 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return batteryTypeVO;
         }).sorted(Comparator.comparing(item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0"))).collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<String> selectBatteryVAll() {
+        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
+        if (Objects.isNull(tenant)) {
+            return Collections.emptyList();
+        }
+
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().collect(Collectors.toList());
+    }
+
     /**
      * 获取用户自定义电池型号列表
      */

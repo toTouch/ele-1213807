@@ -49,7 +49,6 @@ public class JsonUserBatteryMemberCardController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
                 .batteryV(batteryV)
-                .display(BatteryMemberCard.YES)
                 .status(BatteryMemberCard.STATUS_UP)
                 .rentType(rentType)
                 .name(name)
@@ -67,7 +66,6 @@ public class JsonUserBatteryMemberCardController extends BaseController {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
-                .display(BatteryMemberCard.YES)
                 .status(BatteryMemberCard.STATUS_UP)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .build();

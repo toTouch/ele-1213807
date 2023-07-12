@@ -165,6 +165,8 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
         userBatteryMemberCard.setUid(uid);
         userBatteryMemberCard.setMemberCardId(0L);
+        userBatteryMemberCard.setOrderId("");
+        userBatteryMemberCard.setOrderExpireTime(0L);
         userBatteryMemberCard.setMemberCardExpireTime(0L);
         userBatteryMemberCard.setRemainingNumber(0);
         userBatteryMemberCard.setMemberCardStatus(0);

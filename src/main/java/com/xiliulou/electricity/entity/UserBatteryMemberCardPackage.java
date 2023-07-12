@@ -1,67 +1,58 @@
 package com.xiliulou.electricity.entity;
 
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
-
 /**
- * (UserBattery)表实体类
+ * (UserBatteryMemberCardPackage)实体类
  *
- * @author zzlong
- * @since 2022-12-06 13:39:24
+ * @author Eclair
+ * @since 2023-07-12 14:44:01
  */
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_user_battery")
-public class UserBattery {
-    
+@TableName("t_user_battery_member_card_package")
+public class UserBatteryMemberCardPackage {
     /**
      * 主键
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    
     /**
      * 用户id
      */
     private Long uid;
-    
     /**
-     * 初始电池编号
+     * 套餐id
      */
-    private String initBatterySn;
-    
+    private Long memberCardId;
     /**
-     * 当前电池编号
+     * 套餐订单Id
      */
-    private String nowBatterySn;
-    
-    /**
-     * 电池类型
-     */
-    private String batteryType;
-
-    private String batteryV;
-
-    private Integer delFlag;
+    private String orderId;
 
     private Integer tenantId;
-    
+
     private Long createTime;
-    
+
     private Long updateTime;
-    
+    /**
+     * 套餐到期时间
+     */
+    private Long memberCardExpireTime;
+    /**
+     * 套餐剩余次数
+     */
+    private Integer remainingNumber;
+
+    private Integer status;
+
     public static final Integer DEL_NORMAL = 0;
-    
     public static final Integer DEL_DEL = 1;
-    
+
 }

@@ -235,7 +235,6 @@ public class JsonAdminElectricityMemberCardController {
                 .franchiseeId(id)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .status(BatteryMemberCard.STATUS_UP)
-                .display(BatteryMemberCard.YES)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return R.ok(batteryMemberCardService.selectByQuery(query));
     }

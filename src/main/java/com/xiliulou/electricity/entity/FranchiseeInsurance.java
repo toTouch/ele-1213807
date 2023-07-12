@@ -120,4 +120,11 @@ public class FranchiseeInsurance {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    /**
+     * 保险类型 0--电池 1--车辆 2--车电一体
+     */
+    public static final int INSURANCE_TYPE_BATTERY = 0;
+    public static final int INSURANCE_TYPE_CAR = 1;
+    public static final int INSURANCE_TYPE_BATTERY_CAR = 2;
+
 }
