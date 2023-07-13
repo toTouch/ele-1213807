@@ -15,6 +15,26 @@ import javax.servlet.http.HttpServletRequest;
 public interface CarRentalPackageOrderBizService {
 
     /**
+     * 审批冻结申请单
+     * @param refundRentOrderNo 冻结申请单编码
+     * @param approveFlag 审批标识，true(同意)；false(驳回)
+     * @param apploveDesc 审批意见
+     * @param apploveUid 审批人
+     * @return
+     */
+    Boolean approveFreezeRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
+
+    /**
+     * 审批退租申请单
+     * @param refundRentOrderNo 退租申请单编码
+     * @param approveFlag 审批标识，true(同意)；false(驳回)
+     * @param apploveDesc 审批意见
+     * @param apploveUid 审批人
+     * @return
+     */
+    Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
+
+    /**
      * 启用用户冻结订单申请
      * @param tenantId 租户ID
      * @param uid 用户ID
@@ -45,13 +65,14 @@ public interface CarRentalPackageOrderBizService {
     Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm);
 
     /**
-     * 根据用户ID及订单编码进行退租购买的订单申请
+     * 根据用户ID及订单编码，退租购买的订单申请
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 套餐购买订单编号
+     * @param optUid 操作人ID
      * @return
      */
-    Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo);
+    Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid);
 
     /**
      * 根据用户ID查询正在使用的套餐信息<br />

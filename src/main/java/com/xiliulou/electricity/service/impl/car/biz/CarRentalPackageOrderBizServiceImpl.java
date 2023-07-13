@@ -113,6 +113,40 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageService carRentalPackageService;
 
     /**
+     * 审批冻结申请单
+     *
+     * @param refundRentOrderNo 冻结申请单编码
+     * @param approveFlag       审批标识，true(同意)；false(驳回)
+     * @param apploveDesc       审批意见
+     * @param apploveUid        审批人
+     * @return
+     */
+    @Override
+    public Boolean approveFreezeRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+        return null;
+    }
+
+    /**
+     * 审批退租申请单
+     *
+     * @param refundRentOrderNo 退租申请单编码
+     * @param approveFlag       审批标识，true(同意)；false(驳回)
+     * @param apploveDesc       审批意见
+     * @param apploveUid        审批人
+     * @return
+     */
+    @Override
+    public Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid) {
+        if (ObjectUtils.allNotNull(refundRentOrderNo, approveFlag, apploveUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+
+
+        return null;
+    }
+
+    /**
      * 启用用户冻结订单申请
      *
      * @param tenantId 租户ID
@@ -397,15 +431,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
 
     /**
-     * 根据用户ID及订单编码进行退租购买的订单
+     * 根据用户ID及订单编码，退租购买的订单
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
      * @param packageOrderNo  套餐购买订单编号
+     * @param optUid  操作人ID
      * @return
      */
     @Override
-    public Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo) {
+    public Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
         if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -439,6 +474,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // TODO 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
 
+        CarRentalPackageMemberTermPO memberTermUpdateEntity = null;
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
             if (carRentalPackageOrderService.isExitUnUseByUid(tenantId, uid)) {
                 // TODO 错误编码
@@ -457,16 +493,55 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     throw new BizException("", "存在未归还的电池，不允许退租");
                 }
             }
+            memberTermUpdateEntity = buildRentRefundRentalPackageMemberTerm(tenantId, uid, optUid);
         }
 
         // 计算实际应退金额及余量
         Pair<BigDecimal, Integer> refundAmountPair = calculateRefundAmount(packageOrderEntity, tenantId, uid);
 
         // 生成租金退款审核订单
-        CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = buildRentRefundOrder(packageOrderEntity, refundAmountPair.getLeft(), uid, refundAmountPair.getRight());
-        Long num = carRentalPackageOrderRentRefundService.insert(rentRefundOrderEntity);
+        CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = buildRentRefundOrder(packageOrderEntity, refundAmountPair.getLeft(), uid, refundAmountPair.getRight(), optUid);
 
-        return num > 0;
+        // TX 事务管理
+        saveRentRefundOrderInfoTx(rentRefundOrderEntity, memberTermUpdateEntity);
+
+        return true;
+    }
+
+    /**
+     * 退租申请单的事务处理
+     * @param rentRefundOrderEntity 退租申请单
+     * @param memberTermUpdateEntity 会员期限数据
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveRentRefundOrderInfoTx(CarRentalPackageOrderRentRefundPO rentRefundOrderEntity, CarRentalPackageMemberTermPO memberTermUpdateEntity) {
+        carRentalPackageOrderRentRefundService.insert(rentRefundOrderEntity);
+        if (ObjectUtils.isNotEmpty(memberTermUpdateEntity)) {
+            carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
+        }
+    }
+
+    /**
+     * 退租申请，构建会员期限更新数据
+     * @param tenantId
+     * @param uid
+     * @param optUid
+     * @return
+     */
+    private CarRentalPackageMemberTermPO buildRentRefundRentalPackageMemberTerm(Integer tenantId, Long uid, Long optUid) {
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+            // TODO 错误编码
+            log.error("buildRentRefundRentalPackageMemberTerm faild. not find car_rental_package_member_term or status error. uid is {}", uid);
+            throw new BizException("", "数据异常");
+        }
+
+        CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
+        memberTermUpdateEntity.setId(memberTermEntity.getId());
+        memberTermUpdateEntity.setStatus(MemberTermStatusEnum.APPLY_RENT_REFUND.getCode());
+        memberTermUpdateEntity.setUpdateUid(ObjectUtils.isEmpty(optUid) ? uid : optUid);
+
+        return memberTermUpdateEntity;
     }
 
     /**
@@ -603,10 +678,11 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param refundAmount 应退金额
      * @param uid 用户ID
      * @param residue 余量
+     * @param optUid 操作人ID
      * @return com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO
      * @author xiaohui.song
      **/
-    private CarRentalPackageOrderRentRefundPO buildRentRefundOrder(CarRentalPackageOrderPO packageOrderEntity, BigDecimal refundAmount, Long uid, Integer residue) {
+    private CarRentalPackageOrderRentRefundPO buildRentRefundOrder(CarRentalPackageOrderPO packageOrderEntity, BigDecimal refundAmount, Long uid, Integer residue, Long optUid) {
         CarRentalPackageOrderRentRefundPO rentRefundOrderEntity = new CarRentalPackageOrderRentRefundPO();
         rentRefundOrderEntity.setUid(uid);
         rentRefundOrderEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
@@ -620,7 +696,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         rentRefundOrderEntity.setTenantId(packageOrderEntity.getTenantId());
         rentRefundOrderEntity.setFranchiseeId(packageOrderEntity.getFranchiseeId());
         rentRefundOrderEntity.setStoreId(packageOrderEntity.getStoreId());
-        rentRefundOrderEntity.setCreateUid(uid);
+        rentRefundOrderEntity.setCreateUid(ObjectUtils.isEmpty(optUid) ? uid : optUid);
         rentRefundOrderEntity.setDelFlag(DelFlagEnum.OK.getCode());
         // 设置余量单位
         if (RenalPackageConfineEnum.NUMBER.getCode().equals(packageOrderEntity.getConfine())) {

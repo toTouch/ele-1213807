@@ -85,6 +85,7 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      *     3-冻结
      *     4-申请退押
      *     5-过期
+     *     6-申请退租
      * </pre>
      * @see MemberTermStatusEnum
      */
