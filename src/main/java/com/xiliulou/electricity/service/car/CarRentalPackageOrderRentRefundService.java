@@ -14,6 +14,13 @@ import java.util.List;
 public interface CarRentalPackageOrderRentRefundService {
 
     /**
+     * 根据退租申请单编码进行更新
+     * @param entity 实体数据
+     * @return
+     */
+    boolean updateByOrderNo(CarRentalPackageOrderRentRefundPO entity);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型
@@ -40,14 +47,14 @@ public interface CarRentalPackageOrderRentRefundService {
      * @param orderNo 订单编码
      * @return
      */
-    R<CarRentalPackageOrderRentRefundPO> selectByOrderNo(String orderNo);
+    CarRentalPackageOrderRentRefundPO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    R<CarRentalPackageOrderRentRefundPO> selectById(Long id);
+    CarRentalPackageOrderRentRefundPO selectById(Long id);
 
 
     /**

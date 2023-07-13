@@ -30,6 +30,25 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
     private CarRentalPackageOrderRentRefundMapper carRentalPackageOrderRentRefundMapper;
 
     /**
+     * 根据退租申请单编码进行更新
+     *
+     * @param entity 实体数据
+     * @return
+     */
+    @Override
+    public boolean updateByOrderNo(CarRentalPackageOrderRentRefundPO entity) {
+        if (ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        entity.setUpdateTime(System.currentTimeMillis());
+
+        int num = carRentalPackageOrderRentRefundMapper.updateByOrderNo(entity);
+
+        return num >= 0;
+    }
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      *
@@ -86,12 +105,12 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderRentRefundPO> selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderRentRefundPO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderRentRefundMapper.selectByOrderNo(orderNo));
+        return carRentalPackageOrderRentRefundMapper.selectByOrderNo(orderNo);
     }
 
     /**
@@ -102,12 +121,12 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderRentRefundPO> selectById(Long id) {
+    public CarRentalPackageOrderRentRefundPO selectById(Long id) {
         if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderRentRefundMapper.selectById(id));
+        return carRentalPackageOrderRentRefundMapper.selectById(id);
     }
 
     /**

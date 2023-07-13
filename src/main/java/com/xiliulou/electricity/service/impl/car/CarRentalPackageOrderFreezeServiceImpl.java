@@ -32,6 +32,22 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
     @Resource
     private CarRentalPackageOrderFreezeMapper carRentalPackageOrderFreezeMapper;
 
+    /**
+     * 根据冻结订单编号更新数据
+     *
+     * @param entity 数据模型
+     * @return
+     */
+    @Override
+    public boolean updateByOrderNo(CarRentalPackageOrderFreezePO entity) {
+        if (ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        int num = carRentalPackageOrderFreezeMapper.updateByOrderNo(entity);
+
+        return num >= 0;
+    }
 
     /**
      * 根据 uid 和套餐购买订单编码启用冻结订单
@@ -170,12 +186,12 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderFreezePO> selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderFreezePO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderFreezeMapper.selectByOrderNo(orderNo));
+        return carRentalPackageOrderFreezeMapper.selectByOrderNo(orderNo);
     }
 
     /**
@@ -186,12 +202,12 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderFreezePO> selectById(Long id) {
+    public CarRentalPackageOrderFreezePO selectById(Long id) {
         if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderFreezeMapper.selectById(id));
+        return carRentalPackageOrderFreezeMapper.selectById(id);
     }
 
     /**

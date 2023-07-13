@@ -15,6 +15,13 @@ import java.util.List;
 public interface CarRentalPackageOrderRentRefundMapper {
 
     /**
+     * 根据退租申请单编码进行更新
+     * @param entity 数据实体
+     * @return
+     */
+    int updateByOrderNo(CarRentalPackageOrderRentRefundPO entity);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询条件模型
@@ -56,4 +63,5 @@ public interface CarRentalPackageOrderRentRefundMapper {
      * @return
      */
     int insert(CarRentalPackageOrderRentRefundPO entity);
+
 }

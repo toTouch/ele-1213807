@@ -16,13 +16,13 @@ public interface CarRentalPackageOrderBizService {
 
     /**
      * 审批冻结申请单
-     * @param refundRentOrderNo 冻结申请单编码
+     * @param freezeRentOrderNo 冻结申请单编码
      * @param approveFlag 审批标识，true(同意)；false(驳回)
      * @param apploveDesc 审批意见
      * @param apploveUid 审批人
      * @return
      */
-    Boolean approveFreezeRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
+    Boolean approveFreezeRentOrder(String freezeRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
 
     /**
      * 审批退租申请单

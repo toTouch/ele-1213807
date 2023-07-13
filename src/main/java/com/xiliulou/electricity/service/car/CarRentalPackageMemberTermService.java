@@ -14,6 +14,15 @@ import java.util.List;
 public interface CarRentalPackageMemberTermService {
 
     /**
+     * 根据用户ID和套餐购买订单编码进行退租
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编码
+     * @param optUid 操作人ID
+     * @return
+     */
+    boolean rentRefundByUidAndPackageOrderNo(Long uid, String packageOrderNo, Long optUid);
+
+    /**
      * 根据用户ID和套餐订单编码查询
      * @param tenantId 租户ID
      * @param uid 用户ID

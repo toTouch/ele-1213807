@@ -101,7 +101,6 @@ public class CarRentalPackageOrderRentRefundPO extends BasicCarPO {
      */
     private BigDecimal rentPayment;
 
-
     /**
      * 交易方式
      * <pre>
@@ -111,4 +110,9 @@ public class CarRentalPackageOrderRentRefundPO extends BasicCarPO {
      * @see PayTypeEnum
      */
     private Integer payType;
+
+    /**
+     * 审核时间
+     */
+    private Long auditTime;
 }

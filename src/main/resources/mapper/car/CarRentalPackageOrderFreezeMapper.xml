@@ -118,6 +118,7 @@
         </trim>
     </sql>
 
+    <!-- 根据订单编码进行数据更新 -->
     <update id="updateByOrderNo">
         UPDATE <include refid="table_name" />
         <set>
@@ -126,7 +127,8 @@
             <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
             <if test=" enableTime != null "> , `enable_time` = #{enableTime} </if>
             <if test=" status != null "> , `status` = #{status} </if>
-            <if test=" remark != null and remark != '' "> , `update_uid` = #{optUid} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+            <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
         </set>
         <where>
             `order_no` = #{orderNo}

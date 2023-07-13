@@ -14,6 +14,13 @@ import java.util.List;
 public interface CarRentalPackageOrderFreezeService {
 
     /**
+     * 根据冻结订单编号更新数据
+     * @param entity 数据模型
+     * @return
+     */
+    boolean updateByOrderNo(CarRentalPackageOrderFreezePO entity);
+
+    /**
      * 根据 uid 和套餐购买订单编码启用冻结订单
      * @param packageOrderNo 套餐购买订单编码
      * @param uid 用户ID
@@ -66,14 +73,14 @@ public interface CarRentalPackageOrderFreezeService {
      * @param orderNo 订单编码
      * @return
      */
-    R<CarRentalPackageOrderFreezePO> selectByOrderNo(String orderNo);
+    CarRentalPackageOrderFreezePO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
      * @return
      */
-    R<CarRentalPackageOrderFreezePO> selectById(Long id);
+    CarRentalPackageOrderFreezePO selectById(Long id);
 
     /**
      * 新增数据，返回主键ID

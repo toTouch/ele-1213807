@@ -32,6 +32,25 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
 
     /**
+     * 根据用户ID和套餐购买订单编码进行退租
+     *
+     * @param uid            用户ID
+     * @param packageOrderNo 购买订单编码
+     * @param optUid         操作人ID
+     * @return
+     */
+    @Override
+    public boolean rentRefundByUidAndPackageOrderNo(Long uid, String packageOrderNo, Long optUid) {
+        if (ObjectUtils.allNotNull(uid, packageOrderNo, optUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        int num = carRentalPackageMemberTermMapper.rentRefundByUidAndPackageOrderNo(uid, packageOrderNo, optUid, System.currentTimeMillis());
+
+        return num >= 0;
+    }
+
+    /**
      * 根据用户ID和套餐订单编码查询
      *
      * @param tenantId       租户ID
@@ -103,7 +122,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     /**
      * 根据主键ID更新数据
      *
-     * @param optModel
+     * @param entity 数据实体
      * @return
      */
     @Override
