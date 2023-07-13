@@ -6,7 +6,7 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
         <result property="appId" column="app_id" jdbcType="VARCHAR"/>
-        <result property="appSecret" column="app_secret " jdbcType="VARCHAR"/>
+        <result property="appSecret" column="app_secret" jdbcType="VARCHAR"/>
         <result property="docTemplateId" column="doc_template_id" jdbcType="VARCHAR"/>
         <result property="signFileName" column="sign_file_name" jdbcType="VARCHAR"/>
         <result property="signFlowName" column="sign_flow_name" jdbcType="VARCHAR"/>
@@ -20,7 +20,7 @@
         select id, tenant_id, app_id, app_secret, doc_template_id, sign_file_name, sign_flow_name, del_flag, create_time, update_time from t_tenant_esign_config
     </sql>
 
-    <!--查询单个租户信息-->
+    <!--根据id查询单个租户配置信息-->
     <select id="selectEsignConfigById" resultMap="EsignConfigMap">
         <include refid="selectEsignConfig"/>
         where id = #{id}
