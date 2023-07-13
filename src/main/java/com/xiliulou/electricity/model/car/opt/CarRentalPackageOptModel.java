@@ -101,7 +101,7 @@ public class CarRentalPackageOptModel implements Serializable {
      *     1-天
      *     2-分钟
      * </pre>
-     * @see TimeUnitEnum
+     * @see RentalUnitEnum
      */
     @NotNull(message = "[租期单位]不能为空")
     private Integer tenancyUnit;

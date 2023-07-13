@@ -14,11 +14,40 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
-     * 根据套餐ID查询是否存在购买订单
-     * @param rentalPackageId
+     * 根据订单编号更改支付状态、使用状态、使用时间
+     * @param orderNo 订单编码
+     * @param payState 支付状态
+     * @param useState 使用状态
      * @return
      */
-    R<Boolean> checkByRentalPackageId(Long rentalPackageId);
+    Boolean updateStateByOrderNo(String orderNo, Integer payState, Integer useState);
+
+    /**
+     * 根据用户ID查询未使用状态的订单总条数<br />
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    Integer countByUnUseByUid(Integer tenantId, Long uid);
+
+    /**
+     * 根据用户ID查询是否存在未使用状态的订单<br />
+     * <pre>
+     *     true-存在未使用的订单
+     *     false-不存在未使用的订单
+     * </pre>
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    boolean isExitUnUseByUid(Integer tenantId, Long uid);
+
+    /**
+     * 根据套餐ID查询是否存在购买订单
+     * @param rentalPackageId 套餐ID
+     * @return
+     */
+    Boolean checkByRentalPackageId(Long rentalPackageId);
 
     /**
      * 条件查询列表<br />

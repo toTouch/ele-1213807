@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
 
 import com.xiliulou.electricity.enums.RentalPackageOrderFreezeStatusEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
@@ -53,7 +54,18 @@ public class CarRentalPackageOrderFreezePO extends BasicCarPO {
     /**
      * 余量
      */
-    private String residue;
+    private Integer residue;
+
+    /**
+     * 余量单位
+     * <pre>
+     *     0-次数
+     *     1-天
+     *     2-分钟
+     * </pre>
+     * @see RentalUnitEnum
+     */
+    private Integer residueUnit;
 
     /**
      * 滞纳金(元/天)
@@ -93,6 +105,7 @@ public class CarRentalPackageOrderFreezePO extends BasicCarPO {
      *     3-审核拒绝
      *     4-提前启用
      *     5-自动启用
+     *     6-撤销
      * </pre>
      * @see RentalPackageOrderFreezeStatusEnum
      */

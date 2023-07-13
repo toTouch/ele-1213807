@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-
 import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
+import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.ThirdPayChannelEnum;
-import com.xiliulou.electricity.enums.TimeUnitEnum;
+import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
@@ -55,7 +54,18 @@ public class CarRentalPackageOrderRentRefundPO extends BasicCarPO {
     /**
      * 余量
      */
-    private String residue;
+    private Integer residue;
+
+    /**
+     * 余量单位
+     * <pre>
+     *     0-次数
+     *     1-天
+     *     2-分钟
+     * </pre>
+     * @see RentalUnitEnum
+     */
+    private Integer residueUnit;
 
     /**
      * 退款金额
@@ -82,30 +92,6 @@ public class CarRentalPackageOrderRentRefundPO extends BasicCarPO {
     private String remark;
 
     /**
-     * 三方支付单号
-     */
-    private String thirdPayNo;
-
-    /**
-     * 三方支付渠道
-     * <pre>
-     *     1-微信
-     * </pre>
-     * @see ThirdPayChannelEnum
-     */
-    private Integer thirdPayChannel;
-
-    /**
-     * 租金单价单位
-     * <pre>
-     *     1-天
-     *     2-分钟
-     * </pre>
-     * @see TimeUnitEnum
-     */
-    private Integer rentUnit;
-
-    /**
      * 租金单价
      */
     private BigDecimal rentUnitPrice;
@@ -114,4 +100,15 @@ public class CarRentalPackageOrderRentRefundPO extends BasicCarPO {
      * 租金(支付价格)
      */
     private BigDecimal rentPayment;
+
+
+    /**
+     * 交易方式
+     * <pre>
+     *     1-线上
+     *     2-线下
+     * </pre>
+     * @see PayTypeEnum
+     */
+    private Integer payType;
 }

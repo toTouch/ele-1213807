@@ -11,6 +11,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,11 +57,10 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         BeanUtils.copyProperties(queryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalPackageOrderPO>> listRes = carRentalPackageOrderService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
+        List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
+        if (CollectionUtils.isEmpty(carRentalPackageOrderPOList)) {
+            return R.ok();
         }
-        List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = listRes.getData();
 
         // 获取辅助业务信息（用户信息、套餐名称、加盟商信息、柜机信息）
         Set<Long> uids = new HashSet<>();

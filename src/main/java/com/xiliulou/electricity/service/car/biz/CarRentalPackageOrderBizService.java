@@ -15,6 +15,45 @@ import javax.servlet.http.HttpServletRequest;
 public interface CarRentalPackageOrderBizService {
 
     /**
+     * 启用用户冻结订单申请
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编码
+     * @param autoEnable 自动启用标识，true(自动)，false(手动提前启用)
+     * @param optUid 操作人ID(可为空)
+     * @return
+     */
+    Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Boolean autoEnable, Long optUid);
+
+    /**
+     * 撤销用户冻结订单申请
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编码
+     * @return
+     */
+    Boolean revokeFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo);
+
+    /**
+     * 根据用户ID及订单编码进行冻结订单申请
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 套餐购买订单编号
+     * @param applyTerm 申请期限(天)
+     * @return
+     */
+    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm);
+
+    /**
+     * 根据用户ID及订单编码进行退租购买的订单申请
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param packageOrderNo 套餐购买订单编号
+     * @return
+     */
+    Boolean refundRentOrder(Integer tenantId, Long uid, String packageOrderNo);
+
+    /**
      * 根据用户ID查询正在使用的套餐信息<br />
      * 复合查询，车辆信息、门店信息、GPS信息、电池信息、保险信息
      * @param tenantId 租户ID
@@ -26,12 +65,12 @@ public interface CarRentalPackageOrderBizService {
 
     /**
      * 取消租车套餐订单
-     * @param orderNo 租车套餐购买订单编号
+     * @param packageOrderNo 租车套餐购买订单编号
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return
      */
-    Boolean cancelRentalPackageOrder(String orderNo, Integer tenantId, Long uid);
+    Boolean cancelRentalPackageOrder(String packageOrderNo, Integer tenantId, Long uid);
 
     /**
      * 租车套餐订单，购买/续租

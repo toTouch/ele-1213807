@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderSlippageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 
 import java.util.List;
@@ -69,8 +68,8 @@ public interface CarRentalPackageOrderSlippageService {
 
     /**
      * 新增数据，返回主键ID
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
-    R<Long> insert(CarRentalPackageOrderSlippageOptModel optModel);
+    Long insert(CarRentalPackageOrderSlippagePO entity);
 }

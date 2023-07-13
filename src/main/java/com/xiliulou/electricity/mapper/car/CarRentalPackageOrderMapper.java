@@ -16,8 +16,26 @@ import java.util.List;
 public interface CarRentalPackageOrderMapper {
 
     /**
+     * 根据订单编号更改支付状态、使用状态、使用时间
+     * @param orderNo 订单编号
+     * @param payState 支付状态
+     * @param useState 使用状态
+     * @param useBeginTime 开始使用时间
+     * @return
+     */
+    Integer updateStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("useState") Integer useState, @Param("useState") Long useBeginTime);
+
+    /**
+     * 根据用户ID查询未使用的订单总数
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    Integer countByUnUseByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+
+    /**
      * 根据套餐ID查询购买记录总数
-     * @param rentalPackageId
+     * @param rentalPackageId 套餐ID
      * @return
      */
     Integer countByRentalPackageId(Long rentalPackageId);

@@ -45,7 +45,7 @@ public class CarRentalPackagePO extends BasicCarPO {
      *     1-天
      *     2-分钟
      * </pre>
-     * @see TimeUnitEnum
+     * @see RentalUnitEnum
      */
     private Integer tenancyUnit;
 

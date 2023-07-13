@@ -26,8 +26,6 @@
         <result property="payState" column="pay_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
         <result property="sourceOrderNo" column="source_order_no" jdbcType="VARCHAR" />
-        <result property="thirdPayNo" column="third_pay_no" jdbcType="VARCHAR" />
-        <result property="thirdPayChannel" column="third_pay_channel" jdbcType="INTEGER" />
         <result property="refundFlag" column="refund_flag" jdbcType="INTEGER" />
     </resultMap>
 
@@ -42,7 +40,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `type`, `change_amount`, `deposit`, `deposit_exemption`, `deposit_rebate_approve`,
-        `pay_type`, `pay_state`, `remark`, `source_order_no`, `third_pay_no`, `third_pay_channel`, `refund_flag`
+        `pay_type`, `pay_state`, `remark`, `source_order_no`, `refund_flag`
     </sql>
 
     <!-- 全部字段 -->
@@ -80,13 +78,10 @@
             <if test=" changeAmount != null "> `change_amount`, </if>
             <if test=" deposit != null "> `deposit`, </if>
             <if test=" depositExemption != null "> `deposit_exemption`, </if>
-            <if test=" depositRebateApprove != null "> `deposit_rebate_approve`, </if>
             <if test=" payType != null "> `pay_type`, </if>
             <if test=" payState != null "> `pay_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> `source_order_no`, </if>
-            <if test=" thirdPayNo != null and thirdPayNo != '' "> `third_pay_no`, </if>
-            <if test=" thirdPayChannel != null "> `third_pay_channel`, </if>
             <if test=" refundFlag != null "> `refund_flag`, </if>
         </trim>
     </sql>
@@ -109,13 +104,10 @@
             <if test=" changeAmount != null "> #{changeAmount}`, </if>
             <if test=" deposit != null "> #{deposit}, </if>
             <if test=" depositExemption != null "> #{depositExemption}, </if>
-            <if test=" depositRebateApprove != null "> #{depositRebateApprove}, </if>
             <if test=" payType != null "> #{payType}, </if>
             <if test=" payState != null "> #{payState, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> #{sourceOrderNo}, </if>
-            <if test=" thirdPayNo != null and thirdPayNo != '' "> #{thirdPayNo}, </if>
-            <if test=" thirdPayChannel != null "> #{thirdPayChannel}, </if>
             <if test=" refundFlag != null "> #{refundFlag}, </if>
         </trim>
     </sql>

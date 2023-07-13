@@ -44,6 +44,116 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
 
     /**
+     * 启用冻结套餐订单申请
+     * @param packageOrderNo 购买订单编号
+     * @return
+     */
+    @GetMapping("/enableFreezeRentOrder")
+    public R<Boolean> enableFreezeRentOrder(String packageOrderNo) {
+
+        if (StringUtils.isBlank(packageOrderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean enableFreezeFlag = carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, user.getUid(), packageOrderNo, false, user.getUid());
+
+        return R.ok(enableFreezeFlag);
+    }
+
+    /**
+     * 撤销冻结套餐订单申请
+     * @param packageOrderNo 购买订单编号
+     * @return
+     */
+    @GetMapping("/revokeFreezeRentOrder")
+    public R<Boolean> revokeFreezeRentOrder(String packageOrderNo) {
+
+        if (StringUtils.isBlank(packageOrderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean cancelFreezeFlag = carRentalPackageOrderBizService.revokeFreezeRentOrder(tenantId, user.getUid(), packageOrderNo);
+
+        return R.ok(cancelFreezeFlag);
+    }
+
+    /**
+     * 冻结套餐订单申请
+     * @param packageOrderNo 购买订单编号
+     * @param applyTerm 申请期限(天)
+     * @return
+     */
+    @GetMapping("/freezeRentOrder")
+    public R<Boolean> freezeRentOrder(String packageOrderNo, Integer applyTerm) {
+
+        if (StringUtils.isBlank(packageOrderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, user.getUid(), packageOrderNo, applyTerm);
+
+        return R.ok(freezeFlag);
+
+    }
+
+    /**
+     * 用户根据套餐购买订单编码进行订单退租申请
+     * @param packageOrderNo 购买订单编码
+     * @return
+     */
+    @GetMapping("/refundRentOrder")
+    public R<Boolean> refundRentOrder(String packageOrderNo) {
+        if (StringUtils.isBlank(packageOrderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean refundFlag = carRentalPackageOrderBizService.refundRentOrder(tenantId, user.getUid(), packageOrderNo);
+
+        return R.ok(refundFlag);
+    }
+
+
+    /**
      * 条件查询列表
      * @param qryReq 请求参数类
      * @return
@@ -54,7 +164,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             qryReq = new CarRentalPackageOrderQryReq();
         }
 
-        // 赋值租户
+        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         // 用户
@@ -174,7 +284,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -187,13 +297,13 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
      * <pre>
      *     1. 用户未支付（主动终止流程，未曾真正调用微信支付系统）
      * </pre>
-     * @param orderNo 购买套餐订单编号
+     * @param packageOrderNo 购买套餐订单编号
      * @return com.xiliulou.core.web.R<java.lang.Boolean>
      * @author xiaohui.song
      **/
     @GetMapping("/cancelRentalPackageOrder")
-    public R<Boolean> cancelRentalPackageOrder(String orderNo) {
-        if (StringUtils.isBlank(orderNo)) {
+    public R<Boolean> cancelRentalPackageOrder(String packageOrderNo) {
+        if (StringUtils.isBlank(packageOrderNo)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -203,11 +313,11 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Boolean cancelFlag = carRentalPackageOrderBizService.cancelRentalPackageOrder(orderNo, tenantId, user.getUid());
+        Boolean cancelFlag = carRentalPackageOrderBizService.cancelRentalPackageOrder(packageOrderNo, tenantId, user.getUid());
 
         return R.ok(cancelFlag);
     }
@@ -232,7 +342,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("order  ERROR! not found user ");
+            log.error("not found user.");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 

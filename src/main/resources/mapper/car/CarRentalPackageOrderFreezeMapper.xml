@@ -19,7 +19,8 @@
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
-        <result property="residue" column="residue" jdbcType="VARCHAR" />
+        <result property="residue" column="residue" jdbcType="INTEGER" />
+        <result property="residueUnit" column="residue_unit" jdbcType="INTEGER" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="applyTerm" column="apply_term" jdbcType="INTEGER" />
         <result property="realTerm" column="real_term" jdbcType="INTEGER" />
@@ -40,7 +41,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
         `audit_time`, `enable_time`, `status`, `remark`
     </sql>
 
@@ -76,7 +77,8 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
-            <if test=" residue != null and residue != '' "> `residue`, </if>
+            <if test=" residue != null "> `residue`, </if>
+            <if test=" residueUnit != null "> `residue_unit`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" applyTerm != null "> `apply_term`, </if>
             <if test=" realTerm != null "> `real_term`, </if>
@@ -103,7 +105,8 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
-            <if test=" residue != null and residue != '' "> #{residue}, </if>
+            <if test=" residue != null "> #{residue}, </if>
+            <if test=" residueUnit != null "> #{residueUnit}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" applyTerm != null "> #{applyTerm}, </if>
             <if test=" realTerm != null "> #{realTerm}, </if>
@@ -114,6 +117,60 @@
             <if test=" remark != null and remark != '' "> #{remark}, </if>
         </trim>
     </sql>
+
+    <update id="updateByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{optTime}
+            <if test=" realTerm != null "> , `real_term` = #{realTerm} </if>
+            <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
+            <if test=" enableTime != null "> , `enable_time` = #{enableTime} </if>
+            <if test=" status != null "> , `status` = #{status} </if>
+            <if test=" remark != null and remark != '' "> , `update_uid` = #{optUid} </if>
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
+
+    <!-- 根据用户ID和购买订单编号启用冻结订单 -->
+    <update id="enableByUidAndPackageOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `status` = #{status}, `update_time` = #{optTime}, `enable_time` = #{enableTime}, `real_term` = #{realTerm}
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
+        </set>
+        <where>
+            `uid` = #{uid} AND `rental_package_order_no` = #{rentalPackageOrderNo} AND `status` = 2 AND `del_flag` = 0
+        </where>
+    </update>
+
+    <!-- 根据用户ID和套餐购买订单编号查询冻结中的订单 -->
+    <select id="selectFreezeByUidAndPackageOrderNo" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `uid` = #{uid} AND `rental_package_order_no` = #{packageOrderNo} AND `status` = 2 AND `del_flag` = 0
+        </where>
+    </select>
+
+    <!-- 根据冻结申请单编号，撤销冻结申请 -->
+    <update id="revokeByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `status` = 6, `update_time` = #{optTime}, `update_uid` = #{optUid}
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
+
+    <!-- 根据用户查询待审核的冻结订单 -->
+    <select id="selectPendingApprovalByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `status` = 1 AND `del_flag` = 0
+        </where>
+    </select>
 
     <!-- 条件查询列表 -->
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel" resultMap="entityMap">

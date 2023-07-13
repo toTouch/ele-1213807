@@ -5,14 +5,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMemberTermMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageMemberTermOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,6 +30,23 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
     @Resource
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
+
+    /**
+     * 根据用户ID和套餐订单编码查询
+     *
+     * @param tenantId       租户ID
+     * @param uid            用户ID
+     * @param packageOrderNo 购买套餐订单编码
+     * @return
+     */
+    @Slave
+    @Override
+    public CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo) {
+        if (ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageMemberTermMapper.selectByUidAndPackageOrderNo(tenantId, uid, packageOrderNo);
+    }
 
     /**
      * 根据用户ID和租户ID删除
@@ -91,17 +107,15 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @return
      */
     @Override
-    public Boolean updateById(CarRentalPackageMemberTermOptModel optModel) {
-        if (ObjectUtils.isEmpty(optModel) || ObjectUtils.isEmpty(optModel.getId())) {
+    public Boolean updateById(CarRentalPackageMemberTermPO entity) {
+        if (ObjectUtils.isEmpty(entity) || ObjectUtils.isEmpty(entity.getId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        CarRentalPackageMemberTermPO entity = new CarRentalPackageMemberTermPO();
-        BeanUtils.copyProperties(optModel, entity);
-        entity.setUpdateUid(optModel.getOptUid());
         entity.setUpdateTime(System.currentTimeMillis());
 
         int num = carRentalPackageMemberTermMapper.updateById(entity);
+
         return num >= 0;
     }
 
@@ -212,11 +226,12 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         // 保存入库
         carRentalPackageMemberTermMapper.insert(entity);

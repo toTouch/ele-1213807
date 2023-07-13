@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.mapper.car.CarRentalOrderMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalOrderOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
@@ -118,11 +119,12 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
         CarRentalOrderPO entity = new CarRentalOrderPO();
         BeanUtils.copyProperties(optModel, entity);
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         // 保存入库
         carRentalOrderMapper.insert(entity);
