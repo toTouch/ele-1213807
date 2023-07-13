@@ -80,4 +80,8 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     int unbindMembercardInfoByUid(UserBatteryMemberCard userBatteryMemberCard);
 
     Integer checkUserByMembercardId(@Param("membercardId") Long membercardId);
+
+    Integer deductionExpireTime(@Param("uid") Long uid, @Param("time") Long time, @Param("updateTime") Long updateTime);
+
+    Integer increaseExpireTime(@Param("uid") Long uid, @Param("time") Long time, @Param("updateTime") Long updateTime);
 }

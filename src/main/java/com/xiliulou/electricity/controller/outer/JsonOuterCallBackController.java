@@ -52,4 +52,17 @@ public class JsonOuterCallBackController {
         wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
         return WechatV3CallBackResult.success();
     }
+
+    /**
+     * 微信退款通知(电池租金)
+     *
+     * @return
+     */
+    @PostMapping("/outer/wechat/battery/membercard/refund/notified/{tenantId}")
+    public WechatV3CallBackResult batteryMembercardRefundNotified(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        wechatV3RefundOrderCallBackQuery.setTenantId(tenantId);
+        //TODO
+        wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
+        return WechatV3CallBackResult.success();
+    }
 }

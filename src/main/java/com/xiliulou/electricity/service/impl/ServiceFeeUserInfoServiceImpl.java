@@ -94,6 +94,16 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         return;
     }
 
+    @Override
+    public Integer deleteByUid(Long uid) {
+        int delete = serviceFeeUserInfoMapper.deleteByUid(uid);
+
+        DbUtils.dbOperateSuccessThen(delete, () -> {
+            redisService.delete(CacheConstant.SERVICE_FEE_USER_INFO + uid);
+            return null;
+        });
+        return delete;
+    }
 
     @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {

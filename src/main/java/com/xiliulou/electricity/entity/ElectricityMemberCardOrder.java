@@ -22,7 +22,7 @@ public class ElectricityMemberCardOrder {
     //支付金额
     private BigDecimal payAmount;
     //有效天数
-    private Integer validDays;
+    private Long validDays;
     //最大使用次数
     private Long maxUseCount;
     //
@@ -56,6 +56,8 @@ public class ElectricityMemberCardOrder {
     private Integer isBindActivity;
 
     private Integer payType;
+
+    private Integer useStatus;
 
     /**
      * 活动id
@@ -105,4 +107,12 @@ public class ElectricityMemberCardOrder {
     public static final Integer SOURCE_SCAN = 1;
     public static final Integer SOURCE_NOT_SCAN = 2;
     public static final Integer SOURCE_ARTIFICIAL = 3;
+
+    //套餐订单使用状态，1：未使用，2：使用中，3：已使用, 4:已退租, 5:退租中, 6:退租失败
+    public static final Integer USE_STATUS_NON = 1;
+    public static final Integer USE_STATUS_USING = 2;
+    public static final Integer USE_STATUS_USED = 3;
+    public static final Integer USE_STATUS_REFUND = 4;
+    public static final Integer USE_STATUS_REFUNDING = 5;
+    public static final Integer USE_STATUS_REFUND_FAIL = 6;
 }

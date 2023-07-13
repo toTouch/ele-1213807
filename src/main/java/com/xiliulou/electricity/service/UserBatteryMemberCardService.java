@@ -101,4 +101,8 @@ public interface UserBatteryMemberCardService {
     List<FailureMemberCardVo> queryMemberCardExpireUser(Integer offset, Integer size, Long nowTime);
 
     Integer checkUserByMembercardId(Long id);
+
+    Integer deductionExpireTime(Long uid, Long time,Long updateTime);
+
+    Integer increaseExpireTime(Long uid, Long time,Long updateTime);
 }

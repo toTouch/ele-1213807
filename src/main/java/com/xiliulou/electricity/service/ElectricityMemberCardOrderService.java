@@ -29,9 +29,6 @@ public interface ElectricityMemberCardOrderService {
 
     Triple<Boolean, String, Object> buyBatteryMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
-    @Deprecated
-    R queryUserList(Long offset, Long size, Long startTime, Long endTime);
-    
     List<ElectricityMemberCardOrder> selectUserMemberCardOrderList(ElectricityMemberCardOrderQuery orderQuery);
     
     Integer selectUserMemberCardOrderCount(ElectricityMemberCardOrderQuery orderQuery);
@@ -39,9 +36,6 @@ public interface ElectricityMemberCardOrderService {
     BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId);
 
     List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
-
-    @Deprecated
-    R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
 
@@ -73,8 +67,6 @@ public interface ElectricityMemberCardOrderService {
 
     R renewalUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
 
-    R payRentCarMemberCard(CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request);
-
     Long calcRentCarMemberCardExpireTime(String rentType, Integer rentTime, UserCarMemberCard userCarMemberCard);
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
@@ -93,12 +85,7 @@ public interface ElectricityMemberCardOrderService {
 
     void batteryMemberCardExpireReminder();
 
-    @Deprecated
-    void carMemberCardExpireReminder();
-
     void systemEnableMemberCardTask();
-
-    void expireReminderHandler();
 
     BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, UserInfo userInfo, UserBattery userBattery);
 

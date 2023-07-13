@@ -40,4 +40,8 @@
         where uid = #{uid} and tenant_id = #{tenantId}
     </update>
 
+    <delete id="deleteByUid">
+        delete from t_service_fee_user_info where uid = #{uid}
+    </delete>
+
 </mapper>

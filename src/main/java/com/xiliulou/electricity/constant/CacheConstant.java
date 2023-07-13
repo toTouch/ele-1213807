@@ -98,6 +98,8 @@ public interface CacheConstant {
     //用户集成支付
     String ELE_CACHE_USER_INTEGRATED_PAYMENT_LOCK_KEY = "ele_cache_user_integrated_payment_lock_key:";
 
+    String ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY = "ele_battery_membercard_refund_lock_key:";
+
     //下单周期限制
     String ORDER_TIME_UID = "order_time_uid:";
 

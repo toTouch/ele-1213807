@@ -21,14 +21,6 @@ public interface UserBatteryMemberCardPackageService {
     UserBatteryMemberCardPackage queryByIdFromDB(Long id);
 
     /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserBatteryMemberCardPackage queryByIdFromCache(Long id);
-
-    /**
      * 修改数据
      *
      * @param userBatteryMemberCardPackage 实例对象
@@ -45,4 +37,8 @@ public interface UserBatteryMemberCardPackageService {
     Boolean deleteById(Long id);
 
     Integer insert(UserBatteryMemberCardPackage userBatteryMemberCardPackage);
+
+    Integer deleteByOrderId(String orderId);
+
+    List<UserBatteryMemberCardPackage> selectByUid(Long uid);
 }

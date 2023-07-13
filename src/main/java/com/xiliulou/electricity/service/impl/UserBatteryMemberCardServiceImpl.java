@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -11,17 +10,15 @@ import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FailureMemberCardVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 /**
  * (UserBatteryMemberCard)表服务实现类
@@ -168,7 +165,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         userBatteryMemberCard.setOrderId("");
         userBatteryMemberCard.setOrderExpireTime(0L);
         userBatteryMemberCard.setMemberCardExpireTime(0L);
-        userBatteryMemberCard.setRemainingNumber(0);
+        userBatteryMemberCard.setRemainingNumber(0L);
         userBatteryMemberCard.setMemberCardStatus(0);
         userBatteryMemberCard.setDisableMemberCardTime(null);
         userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
@@ -254,6 +251,28 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         Integer update = userBatteryMemberCardMapper.minCountForOffLineEle(userBatteryMemberCard.getId());
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + userBatteryMemberCard.getUid());
+            return null;
+        });
+
+        return update;
+    }
+
+    @Override
+    public Integer deductionExpireTime(Long uid, Long time, Long updateTime) {
+        Integer update = userBatteryMemberCardMapper.deductionExpireTime(uid, time, updateTime);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
+            return null;
+        });
+
+        return update;
+    }
+
+    @Override
+    public Integer increaseExpireTime(Long uid, Long time, Long updateTime) {
+        Integer update = userBatteryMemberCardMapper.increaseExpireTime(uid, time, updateTime);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_BATTERY_MEMBERCARD + uid);
             return null;
         });
 

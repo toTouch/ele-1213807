@@ -167,22 +167,6 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
     }
 
     /**
-     * 购买租车套餐(旧小程序租车套餐)
-     * @param
-     * @return
-     */
-    @PostMapping("user/memberCard/payRentCarMemberCard")
-    @Deprecated
-    public R payRentCarMemberCard(@RequestBody @Validated CarMemberCardOrderQuery carMemberCardOrderQuery, HttpServletRequest request) {
-        //旧版小程序不允许操作
-        if(Boolean.TRUE){
-            return R.fail("100257","该版本暂不支持租车,请升级小程序");
-        }
-        return electricityMemberCardOrderService.payRentCarMemberCard(carMemberCardOrderQuery, request);
-    }
-
-
-    /**
      * 查询用户是否存在换电和租车套餐
      * @return
      */

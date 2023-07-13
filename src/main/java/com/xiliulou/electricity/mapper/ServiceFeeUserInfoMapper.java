@@ -22,4 +22,5 @@ public interface ServiceFeeUserInfoMapper extends BaseMapper<ServiceFeeUserInfo>
 
     int updateByUid(ServiceFeeUserInfo serviceFeeUserInfo);
 
+    int deleteByUid(Long uid);
 }

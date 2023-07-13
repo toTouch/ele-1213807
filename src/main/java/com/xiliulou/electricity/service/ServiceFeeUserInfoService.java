@@ -28,4 +28,6 @@ public interface ServiceFeeUserInfoService {
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
     
     BigDecimal queryUserBatteryServiceFee(UserInfo userInfo);
+
+    Integer deleteByUid(Long uid);
 }

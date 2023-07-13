@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.BatteryMembercardRefundOrderMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.BatteryMembercardRefundOrder" id="BatteryMembercardRefundOrderMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="mid" column="mid" jdbcType="INTEGER"/>
+        <result property="refundOrderNo" column="refund_order_no" jdbcType="VARCHAR"/>
+        <result property="memberCardOrderNo" column="member_card_order_no" jdbcType="VARCHAR"/>
+        <result property="payAmount" column="pay_amount" jdbcType="NUMERIC"/>
+        <result property="refundAmount" column="refund_amount" jdbcType="NUMERIC"/>
+        <result property="capacity" column="capacity" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="msg" column="msg" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BatteryMembercardRefundOrderMap">
+        select
+          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, capacity, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
+        from t_battery_membercard_refund_order
+        where id = #{id}
+    </select>
+    <select id="selectByPage" resultMap="BatteryMembercardRefundOrderMap">
+        select
+        id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, capacity, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
+        from t_battery_membercard_refund_order
+        <where>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="mid != null">
+                and mid = #{mid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="refundOrderNo != null and refundOrderNo != ''">
+                and refund_order_no like concat('%',#{refundOrderNo,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeIds != null">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectPageCount" resultType="int">
+        select
+        count(*)
+        from t_battery_membercard_refund_order
+        <where>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="mid != null">
+                and mid = #{mid}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="refundOrderNo != null and refundOrderNo != ''">
+                and refund_order_no like concat('%',#{refundOrderNo,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeIds != null">
+                and store_id in
+                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="franchiseeIds != null">
+                and franchisee_id in
+                <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_battery_membercard_refund_order
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="mid != null">
+                mid = #{mid},
+            </if>
+            <if test="refundOrderNo != null and refundOrderNo != ''">
+                refund_order_no = #{refundOrderNo},
+            </if>
+            <if test="memberCardOrderNo != null and memberCardOrderNo != ''">
+                member_card_order_no = #{memberCardOrderNo},
+            </if>
+            <if test="payAmount != null">
+                pay_amount = #{payAmount},
+            </if>
+            <if test="refundAmount != null">
+                refund_amount = #{refundAmount},
+            </if>
+            <if test="capacity != null">
+                capacity = #{capacity},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="msg != null and msg != ''">
+                msg = #{msg},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_battery_membercard_refund_order where id = #{id}
+    </delete>
+
+</mapper>

@@ -35,15 +35,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         return this.userBatteryMemberCardPackageMapper.queryById(id);
     }
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
     @Override
-    public UserBatteryMemberCardPackage queryByIdFromCache(Long id) {
-        return null;
+    public List<UserBatteryMemberCardPackage> selectByUid(Long uid) {
+        return this.userBatteryMemberCardPackageMapper.selectByUid(uid);
     }
 
     @Override
@@ -61,7 +55,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserBatteryMemberCardPackage userBatteryMemberCardPackage) {
         return this.userBatteryMemberCardPackageMapper.update(userBatteryMemberCardPackage);
-
     }
 
     /**
@@ -74,5 +67,10 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userBatteryMemberCardPackageMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public Integer deleteByOrderId(String orderId) {
+        return this.userBatteryMemberCardPackageMapper.deleteByOrderId(orderId);
     }
 }
