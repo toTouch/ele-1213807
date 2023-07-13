@@ -27,6 +27,12 @@
         where uid=#{uid} and tenant_id = #{tenantId} and del_flag = 0 order by create_time desc limit 1
     </select>
 
+    <!--根据签署流程ID查询签署记录-->
+    <select id="selectEsignRecordBySignFlowId" resultType="com.xiliulou.electricity.entity.EleUserEsignRecord">
+        <include refid="selectUserEsignRecord"/>
+        where sign_flow_id = #{signFlowId}
+    </select>
+
     <!--新增数据-->
     <insert id="insertUserEsignRecord" parameterType="com.xiliulou.electricity.entity.EleUserEsignRecord" useGeneratedKeys="true" keyProperty="id">
         insert into t_user_esign_record

@@ -6,7 +6,6 @@ import com.xiliulou.electricity.service.EleCabinetSignatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -38,9 +37,5 @@ public class JsonUserElectronicSignatureController extends BaseController {
         return returnTripleResult(eleCabinetSignatureService.getSignFlowLink());
     }
 
-    @GetMapping(value = "/user/querySignFile/{signFlowId}")
-    public R querySignFile(@PathVariable("signFlowId") String signFlowId){
-        return returnTripleResult(eleCabinetSignatureService.getSignatureFile(signFlowId));
-    }
 
 }

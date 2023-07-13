@@ -28,7 +28,7 @@
         <include refid="selectEsignCapacityRechargeRecord"/>
         where tenant_id = #{tenantId}
         order by create_time desc
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <select id="selectByPageCount" resultType="Integer">

@@ -18,6 +18,8 @@ public interface EleUserEsignRecordMapper extends BaseMapper<EleUserEsignRecord>
     int updateUserEsignRecord(EleUserEsignRecord eleUserEsignRecord);
     EleUserEsignRecord selectLatestEsignRecordByUser(@Param("uid") Long uid, @Param("tenantId") Long tenantId);
 
+    EleUserEsignRecord selectEsignRecordBySignFlowId(@Param("signFlowId") String signFlowId);
+
     List<EleUserEsignRecordVO> selectByPage(EleUserEsignRecordQuery query);
 
     Integer selectByPageCount(EleUserEsignRecordQuery query);

@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleEsignConfigQuery;
 import com.xiliulou.electricity.query.EleUserEsignRecordQuery;
 import com.xiliulou.electricity.query.EsignCapacityDataQuery;
 import com.xiliulou.electricity.query.EsignCapacityRechargeRecordQuery;
+import com.xiliulou.electricity.service.EleCabinetSignatureService;
 import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.EsignCapacityDataService;
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
-public class JsonAdminElectronicSignatureController {
+public class JsonAdminElectronicSignatureController extends BaseController {
 
     @Autowired
     EleEsignConfigService eleEsignConfigService;
@@ -33,6 +35,9 @@ public class JsonAdminElectronicSignatureController {
 
     @Autowired
     EsignCapacityDataService esignCapacityDataService;
+
+    @Autowired
+    private EleCabinetSignatureService eleCabinetSignatureService;
 
     @GetMapping(value = "/admin/esign/config")
     public R getEsignConfig() {
@@ -87,7 +92,7 @@ public class JsonAdminElectronicSignatureController {
         return R.ok(esignCapacityDataService.addEsignCapacityData(esignCapacityDataQuery));
     }
 
-    @PostMapping("/admin/queryEsignCapacity")
+    @GetMapping("/admin/queryEsignCapacity")
     public R queryEsignCapacity(){
         return R.ok(esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue()));
     }
@@ -117,6 +122,12 @@ public class JsonAdminElectronicSignatureController {
         EsignCapacityRechargeRecordQuery esignCapacityRechargeRecordQuery = new EsignCapacityRechargeRecordQuery();
         esignCapacityRechargeRecordQuery.setTenantId(tenantId);
         return R.ok(esignCapacityDataService.queryRecordsCount(esignCapacityRechargeRecordQuery));
+    }
+
+    @GetMapping(value = "/admin/querySignFile/{signFlowId}")
+    public R querySignFile(@PathVariable("signFlowId") String signFlowId){
+        return returnTripleResult(eleCabinetSignatureService.getSignatureFile(signFlowId));
+
     }
 
 }
