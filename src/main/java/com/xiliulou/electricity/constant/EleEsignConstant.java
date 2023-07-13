@@ -37,6 +37,8 @@ public class EleEsignConstant {
 
     public static final Integer ESIGN_REAL_NAME_STATUS_N = 0;
 
+    public static final Integer ESIGN_MIN_CAPACITY = 0;
+
     public static final String PSN_PHOTO_OSS_PATH = "saas/psnPhoto/";
 
 }

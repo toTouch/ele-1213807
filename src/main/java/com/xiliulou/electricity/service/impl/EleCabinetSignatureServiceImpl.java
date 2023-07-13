@@ -175,6 +175,17 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }
 
+        //校验租户签名次数
+        EsignCapacityData esignCapacityData = esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue());
+        if (Objects.isNull(esignCapacityData)) {
+            log.error("ELE ERROR! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            return Triple.of(false, "000106", "未购买签名资源包，请联系管理员");
+        }
+        if (esignCapacityData.getEsignCapacity() <= EleEsignConstant.ESIGN_MIN_CAPACITY) {
+            log.error("ELE ERROR! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+            return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
+        }
+
         //根据模板id创建签署文件
         List<ComponentData> componentDataList = new ArrayList<>();
         FileCreateByTempResp fileCreateByTempResp = signatureFileService.createFileByTemplate(eleEsignConfig.getDocTemplateId(), eleEsignConfig.getSignFileName(),componentDataList, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
@@ -334,19 +345,13 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
     @Override
     public Triple<Boolean, String, Object> getSignatureFile(String signFlowId) {
-        //获取当前用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
-            return Triple.of(false, "000100", "未找到用户");
-        }
 
         //获取用户所属租户的签名配置信息
         EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(eleEsignConfig)
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
                 || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
-            log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+            log.error("ELE ERROR! esign config is null,tenantId={}",
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }
