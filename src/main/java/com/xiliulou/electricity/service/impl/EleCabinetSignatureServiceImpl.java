@@ -361,7 +361,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         if(signFlowDetailResp.getData().getSignFlowStatus() == EleEsignConstant.ESIGN_FLOW_STATUS_COMPLETE){
             FileDownLoadResp fileDownLoadResp = signatureFileService.QueryDownLoadLink(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-            return Triple.of(true, "", fileDownLoadResp.getData());
+            return Triple.of(true, "", fileDownLoadResp);
         }else{
             return Triple.of(false, "000107", "签署流程未完成！");
         }
