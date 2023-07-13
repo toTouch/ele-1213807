@@ -349,26 +349,26 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         if (Objects.nonNull(newUserActivity)) {
 
 
-            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
-                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
-
-                UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
-
-                userBatteryMemberCard.setUid(userInfo.getUid());
-                userBatteryMemberCard.setCreateTime(System.currentTimeMillis());
-                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
-                userBatteryMemberCard.setTenantId(tenantId);
-                userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
-                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
-                userBatteryMemberCard.setMemberCardId(UserBatteryMemberCard.SEND_REMAINING_NUMBER);
-                userBatteryMemberCard.setCardPayCount(NumberConstant.ZERO);
-
-
-                userBatteryMemberCard.setRemainingNumber(newUserActivity.getCount());
-                userBatteryMemberCard.setMemberCardExpireTime(
-                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
-                userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCard);
-            }
+//            if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT) && Objects.nonNull(
+//                    newUserActivity.getCount()) && Objects.nonNull(newUserActivity.getDays())) {
+//
+//                UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
+//
+//                userBatteryMemberCard.setUid(userInfo.getUid());
+//                userBatteryMemberCard.setCreateTime(System.currentTimeMillis());
+//                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+//                userBatteryMemberCard.setTenantId(tenantId);
+//                userBatteryMemberCard.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
+//                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
+//                userBatteryMemberCard.setMemberCardId(UserBatteryMemberCard.SEND_REMAINING_NUMBER);
+//                userBatteryMemberCard.setCardPayCount(NumberConstant.ZERO);
+//
+//
+//                userBatteryMemberCard.setRemainingNumber(newUserActivity.getCount());
+//                userBatteryMemberCard.setMemberCardExpireTime(
+//                        System.currentTimeMillis() + (newUserActivity.getDays() * (24 * 60 * 60 * 1000L)));
+//                userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCard);
+//            }
 
             //优惠券
             if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(

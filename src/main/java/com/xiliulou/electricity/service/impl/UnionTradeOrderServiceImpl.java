@@ -639,7 +639,7 @@ public class UnionTradeOrderServiceImpl extends
 
 
             userBatteryMemberCardUpdate.setMemberCardExpireTime(memberCardExpireTime);
-            userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber.intValue());
+            userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber);
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId().longValue());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());

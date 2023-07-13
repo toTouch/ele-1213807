@@ -489,7 +489,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                    userBatteryMemberCard.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER.intValue());
+                    userBatteryMemberCard.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER);
                 }
                 if (Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
                     memberCardExpireTime = System.currentTimeMillis();
@@ -2039,7 +2039,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
-        vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+//TODO        vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
         vo.setMemberCardExpireTime(userBatteryMemberCard.getDisableMemberCardTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));

@@ -357,7 +357,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
             if (Objects.nonNull(bindElectricityMemberCard)) {
                 if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(userBatteryMemberCard.getRemainingNumber()) && userBatteryMemberCard.getRemainingNumber() < 0) {
-                    memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber());
+                    memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber().intValue());
                     packageOwe = UserBatteryMemberCard.MEMBER_CARD_OWE;
                 }
             }
@@ -2177,7 +2177,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                             ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects
                             .nonNull(userBatteryMemberCard.getRemainingNumber())
                             && userBatteryMemberCard.getRemainingNumber() < 0) {
-                        memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber());
+                        memberCardOweNumber = Math.abs(userBatteryMemberCard.getRemainingNumber().intValue());
                         //packageOwe = UserBatteryMemberCard.MEMBER_CARD_OWE;
                     }
                 }
