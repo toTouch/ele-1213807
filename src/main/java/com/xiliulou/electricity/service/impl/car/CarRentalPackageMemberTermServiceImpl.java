@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMemberTermMapper;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageMemberTermOptModel;
@@ -229,11 +230,12 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         // 保存入库
         carRentalPackageMemberTermMapper.insert(entity);

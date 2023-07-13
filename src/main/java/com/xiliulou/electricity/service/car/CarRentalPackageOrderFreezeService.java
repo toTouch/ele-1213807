@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderFreezeOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 
 import java.util.List;
@@ -50,12 +49,11 @@ public interface CarRentalPackageOrderFreezeService {
      */
     R<CarRentalPackageOrderFreezePO> selectById(Long id);
 
-
     /**
      * 新增数据，返回主键ID
-     * @param optModel 操作模型
+     * @param entity 实体模型
      * @return
      */
-    R<Long> insert(CarRentalPackageOrderFreezeOptModel optModel);
+    Long insert(CarRentalPackageOrderFreezePO entity);
     
 }

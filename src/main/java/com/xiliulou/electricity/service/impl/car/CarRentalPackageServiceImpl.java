@@ -324,11 +324,13 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             entity.setBatteryModelIds(batteryModelIds);
         }
 
-        // 赋值操作人及时间
+
+        // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         // 保存入库
         carRentalPackageMapper.insert(entity);

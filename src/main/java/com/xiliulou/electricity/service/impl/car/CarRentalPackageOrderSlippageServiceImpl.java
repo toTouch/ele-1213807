@@ -3,15 +3,16 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderSlippageMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderSlippageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -141,23 +142,29 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作模型
+     * @param entity 操作实体
      * @return
      */
     @Override
-    public R<Long> insert(CarRentalPackageOrderSlippageOptModel optModel) {
-        CarRentalPackageOrderSlippagePO entity = new CarRentalPackageOrderSlippagePO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalPackageOrderSlippagePO entity) {
+        if (ObjectUtils.isEmpty(entity)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、删除标记、订单编号
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
+
+        if (StringUtils.isBlank(entity.getOrderNo())) {
+            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_STAGNATE, entity.getUid()));
+        }
 
         // 保存入库
         carRentalPackageOrderSlippageMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

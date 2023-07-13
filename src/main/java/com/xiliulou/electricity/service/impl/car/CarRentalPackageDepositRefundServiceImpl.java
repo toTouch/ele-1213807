@@ -1,19 +1,23 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
-import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositRefundMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
-import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
-import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.List;
+import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.Slave;
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositRefundMapper;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
+import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 租车套餐押金退款表 ServiceImpl
@@ -117,11 +121,12 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         CarRentalPackageDepositRefundPO entity = new CarRentalPackageDepositRefundPO();
         BeanUtils.copyProperties(optModel, entity);
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         // 保存入库
         carRentalPackageDepositRefundMapper.insert(entity);

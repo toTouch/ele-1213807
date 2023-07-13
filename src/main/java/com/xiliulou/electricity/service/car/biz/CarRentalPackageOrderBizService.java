@@ -14,8 +14,19 @@ import javax.servlet.http.HttpServletRequest;
  **/
 public interface CarRentalPackageOrderBizService {
 
+
     /**
-     * 根据用户ID及订单编码进行退租购买的订单
+     * 根据用户ID及订单编码进行冻结订单申请
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @param orderNo 套餐购买订单编号
+     * @param applyTerm 申请期限(天)
+     * @return
+     */
+    Boolean freezeRentOrder(Integer tenantId, Long uid, String orderNo, Integer applyTerm);
+
+    /**
+     * 根据用户ID及订单编码进行退租购买的订单申请
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param orderNo 套餐购买订单编号

@@ -19,7 +19,8 @@
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
-        <result property="residue" column="residue" jdbcType="VARCHAR" />
+        <result property="residue" column="residue" jdbcType="INTEGER" />
+        <result property="residueUnit" column="residue_unit" jdbcType="INTEGER" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="applyTerm" column="apply_term" jdbcType="INTEGER" />
         <result property="realTerm" column="real_term" jdbcType="INTEGER" />
@@ -40,7 +41,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
         `audit_time`, `enable_time`, `status`, `remark`
     </sql>
 
@@ -76,7 +77,8 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
             <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
-            <if test=" residue != null and residue != '' "> `residue`, </if>
+            <if test=" residue != null "> `residue`, </if>
+            <if test=" residueUnit != null "> `residue_unit`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" applyTerm != null "> `apply_term`, </if>
             <if test=" realTerm != null "> `real_term`, </if>
@@ -103,7 +105,8 @@
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
-            <if test=" residue != null and residue != '' "> #{residue}, </if>
+            <if test=" residue != null "> #{residue}, </if>
+            <if test=" residueUnit != null "> #{residueUnit}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" applyTerm != null "> #{applyTerm}, </if>
             <if test=" realTerm != null "> #{realTerm}, </if>

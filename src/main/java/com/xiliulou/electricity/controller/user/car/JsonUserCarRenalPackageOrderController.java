@@ -43,7 +43,36 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
 
     /**
-     * 用户根据套餐购买订单编码进行订单退租
+     * 冻结套餐订单申请
+     * @param orderNo 购买订单编号
+     * @param applyTerm 申请期限(天)
+     * @return
+     */
+    @GetMapping("/freezeRentOrder")
+    public R<Boolean> freezeRentOrder(String orderNo, Integer applyTerm) {
+
+        if (StringUtils.isBlank(orderNo)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        // 用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Boolean freezeFlag = carRentalPackageOrderBizService.freezeRentOrder(tenantId, user.getUid(), orderNo, applyTerm);
+
+        return R.ok(freezeFlag);
+
+    }
+
+    /**
+     * 用户根据套餐购买订单编码进行订单退租申请
      * @param orderNo
      * @return
      */

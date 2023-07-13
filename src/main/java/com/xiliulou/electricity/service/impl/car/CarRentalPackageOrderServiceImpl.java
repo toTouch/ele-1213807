@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
@@ -298,11 +299,12 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 赋值操作人及时间
+        // 赋值操作人、时间、删除标记、订单编号
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
 
         carRentalPackageOrderMapper.insert(entity);
 

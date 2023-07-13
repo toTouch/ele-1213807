@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderRentRefundMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
@@ -121,11 +122,13 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 赋值操作人、时间、订单编号
+        // 赋值操作人、时间、删除标记、订单编号
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
+        entity.setDelFlag(DelFlagEnum.OK.getCode());
+
         if (StringUtils.isBlank(entity.getOrderNo())) {
             String orderNo = OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_CAR_MEMBERCARD, entity.getUid());
             entity.setOrderNo(orderNo);
