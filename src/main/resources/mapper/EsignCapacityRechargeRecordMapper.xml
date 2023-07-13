@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EsignCapacityRechargeRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EsignCapacityRechargeRecord" id="EsignCapacityRechargeRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="esignCapacity" column="esign_capacity" jdbcType="INTEGER"/>
+        <result property="operator" column="operator" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectEsignCapacityRechargeRecord">
+        select id, esign_capacity, operator, tenantId, del_flag, create_time, update_time from t_esign_capacity_recharge_record
+    </sql>
+
+    <!--查询单条记录-->
+    <select id="selectById" resultMap="EsignCapacityRechargeRecordMap">
+        <include refid="selectEsignCapacityRechargeRecord"/>
+        where id = #{id}
+    </select>
+
+    <!--根据租户id查询签署充值记录-->
+    <select id="selectByPage" resultType="com.xiliulou.electricity.entity.EsignCapacityRechargeRecord">
+        <include refid="selectEsignCapacityRechargeRecord"/>
+        where tenant_id = #{tenantId}
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectByPageCount" resultType="Integer">
+        select count(1)
+        from t_esign_capacity_recharge_record
+        where tenant_id = #{tenantId}
+    </select>
+
+    <!--新增数据-->
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.EsignCapacityRechargeRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into t_esign_capacity_recharge_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            esign_capacity,
+            operator,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{esignCapacity},
+            #{operator},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+
+</mapper>
