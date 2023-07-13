@@ -81,7 +81,7 @@ public class SignUtils {
             reqBody = new String(buffer, CHARSETS_UTF8);
 
         } catch (IOException e) {
-           log.error("读取request body信息异常： {}", e);
+           log.error("get request body info error： {}", e);
         }
         return reqBody;
     }
@@ -105,7 +105,7 @@ public class SignUtils {
             String value = request.getParameter(key);
             requestQuery += value == null ? "" : value;
         }
-        log.debug("获取的query请求字符串是："+requestQuery);
+        log.debug("get request query str is：" + requestQuery);
         return  requestQuery;
     }
 
@@ -117,8 +117,8 @@ public class SignUtils {
             mac.init(secretKey);
             mac.update(data.getBytes(CHARSETS_UTF8));
         } catch (Exception e) {
-            log.error("加密签名信息异常！{}", e);
-            throw new EsignException("加密签名信息异常！");
+            log.error("encryption signature info error: {}, data: {}, key: {}", e, data, key);
+            throw new EsignException("加密签名信息异常！", e);
         }
         return byte2hex(mac.doFinal());
     }

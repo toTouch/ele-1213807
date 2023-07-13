@@ -11,6 +11,7 @@ import com.xiliulou.electricity.service.EleEsignConfigService;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
 import com.xiliulou.electricity.service.EsignCapacityDataService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +108,11 @@ public class JsonAdminElectronicSignatureController extends BaseController {
 
         if (offset < 0) {
             offset = 0L;
+        }
+
+        if (!SecurityUtils.isAdmin()) {
+            log.warn("USER PERMISSION ERROR! No authority.");
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
         EsignCapacityRechargeRecordQuery esignCapacityRechargeRecordQuery = new EsignCapacityRechargeRecordQuery();

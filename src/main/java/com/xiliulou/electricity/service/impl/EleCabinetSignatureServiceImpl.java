@@ -15,6 +15,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.SignUtils;
 import com.xiliulou.electricity.vo.SignFlowVO;
 import com.xiliulou.esign.config.EsignConfig;
+import com.xiliulou.esign.constant.EsignConstant;
 import com.xiliulou.esign.entity.query.ComponentData;
 import com.xiliulou.esign.entity.query.EsignCallBackQuery;
 import com.xiliulou.esign.entity.query.SignFlowDataQuery;
@@ -149,7 +150,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         try {
             psnAuthLinkResp = personalAuthenticationService.queryPsnAuthLink(userInfoQuery, esignConfig.getRedirectUrlAfterAuth(), esignConfig.getXxlAppId(), esignConfig.getXxlAppSecret());
         } catch (Exception e) {
-            log.error("获取个人认证链接异常!", e);
+            log.error("get personal auth link error!", e);
             return Triple.of(false, "000105", "签署流程获取用户认证信息失败！");
         }
         return Triple.of(true, "", psnAuthLinkResp.getData());
@@ -299,7 +300,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(true, "", esignRecord);
         }
 
-        if(eleUserEsignRecord.getSignFinishStatus() == EleEsignConstant.ESIGN_STATUS_SUCCESS){
+        if(EleEsignConstant.ESIGN_STATUS_SUCCESS.equals(eleUserEsignRecord.getSignFinishStatus())){
             return Triple.of(true, "", eleUserEsignRecord);
         }
 
@@ -308,12 +309,12 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private Triple<Boolean, String, Object> checkStatusFromThirdParty(EleUserEsignRecord eleUserEsignRecord, EleEsignConfig eleEsignConfig){
+    public Triple<Boolean, String, Object> checkStatusFromThirdParty(EleUserEsignRecord eleUserEsignRecord, EleEsignConfig eleEsignConfig){
         String signFlowId = eleUserEsignRecord.getSignFlowId();
-        log.info("开始从第三方验证签署状态， signFlowId: {}",signFlowId);
+        log.info("start check sign status from third party, signFlowId: {}", signFlowId);
         SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
         if(signFlowDetailResp.getData().getSignFlowStatus() == EleEsignConstant.ESIGN_FLOW_STATUS_COMPLETE){
-            log.info("签署状态未同步，更新数据库记录为已完成。signFlowId: {}",signFlowId);
+            log.info("The signing status is not synchronized, updating the database record as completed, signFlowId: {}", signFlowId);
             eleUserEsignRecord.setSignFinishStatus(EleEsignConstant.ESIGN_STATUS_SUCCESS);
             eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
             eleUserEsignRecordMapper.updateUserEsignRecord(eleUserEsignRecord);
@@ -402,42 +403,47 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
     @Override
     public void handleCallBackReq(Integer esignConfigId, HttpServletRequest request){
+
         boolean flag = false;
-        String signature =  request.getHeader("X-Tsign-Open-SIGNATURE");
+        String signature =  request.getHeader(EsignConstant.CALL_BACK_X_TSIGN_OPEN_SIGNATURE);
         //获取时间戳的字节流
-        String timestamp = request.getHeader("X-Tsign-Open-TIMESTAMP");
+        String timestamp = request.getHeader(EsignConstant.CALL_BACK_X_Tsign_Open_TIMESTAMP);
+
+        log.info("Esign call back start, signature: {}, timestamp: {}", signature, timestamp);
 
         EleEsignConfig esignConfig = esignConfigMapper.selectEsignConfigById(esignConfigId);
         if(Objects.isNull(esignConfig)){
-            log.error("签名回调流程参数有错, esignConfigId : {}", esignConfigId);
+            log.error("Esign call back parameters error, esignConfigId: {}", esignConfigId);
             return;
         }
         //获取query请求字符串
         String requestQuery = SignUtils.getRequestQueryStr(request);
         //获取body的数据
         String reqBody =SignUtils.getRequestBody(request);
+        log.info("The request of esign call back flow, requestQuery: {}, reqBody：{}", requestQuery, reqBody);
         //按照规则进行加密
         StringBuilder builder = new StringBuilder().append(timestamp).append(requestQuery).append(reqBody);
         String signData = builder.toString();
         String encryptionSignature = SignUtils.getSignature(signData, esignConfig.getAppSecret());
-        log.info("签名回调请求信息, {}", reqBody);
+        log.info("The request of esign call back request body: {}", reqBody);
         if(encryptionSignature.equals(signature)) {
             EsignCallBackQuery esignCallBackQuery = JsonUtil.fromJson(reqBody, EsignCallBackQuery.class);
-            log.info("签名回调请求通知类型, {}", esignCallBackQuery.getAction());
-            if(esignCallBackQuery.getAction().equals("SIGN_MISSON_COMPLETE")){
+            log.info("Esign call back notice type is: {}", esignCallBackQuery.getAction());
+            if(EsignConstant.CALL_BACK_ACTION_MISSON_COMPLETE.equals(esignCallBackQuery.getAction())){
                 saveSignResultInfo(esignCallBackQuery.getSignFlowId(), esignConfig);
             }
         }else{
-            log.error("签名回调流程验签失败, signature : {}, encryptionSignature: ", signature, encryptionSignature);
+            log.error(" validate signature error for esign call back flow, signature: {}, encryptionSignature: {}", signature, encryptionSignature);
         }
 
     }
     @Transactional(rollbackFor = Exception.class)
-    private void saveSignResultInfo(String signFlowId, EleEsignConfig esignConfig){
+    public void saveSignResultInfo(String signFlowId, EleEsignConfig esignConfig){
         SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, esignConfig.getAppId(), esignConfig.getAppSecret());
         EleUserEsignRecord userEsignRecord = eleUserEsignRecordMapper.selectEsignRecordBySignFlowId(signFlowId);
-        log.info("签名回调流程ID：{}, 用户签署信息: {}", signFlowId, userEsignRecord);
+        log.info("Esign call back flow ID：{}, user sign info: {}", signFlowId, userEsignRecord);
         if(Objects.nonNull(userEsignRecord)){
+            log.info("update user esign record, user sign status: {}", signFlowDetailResp.getData().getSignFlowStatus());
             userEsignRecord.setSignFinishStatus(signFlowDetailResp.getData().getSignFlowStatus() == EleEsignConstant.ESIGN_FLOW_STATUS_COMPLETE ? EleEsignConstant.ESIGN_STATUS_SUCCESS : EleEsignConstant.ESIGN_STATUS_FAILED);
             userEsignRecord.setSignResult(JsonUtil.toJson(signFlowDetailResp));
             userEsignRecord.setUpdateTime(System.currentTimeMillis());

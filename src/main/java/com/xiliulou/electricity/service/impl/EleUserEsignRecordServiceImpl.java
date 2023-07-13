@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.electricity.entity.EleUserEsignRecord;
 import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.query.EleUserEsignRecordQuery;
 import com.xiliulou.electricity.service.EleUserEsignRecordService;
@@ -26,7 +25,9 @@ public class EleUserEsignRecordServiceImpl implements EleUserEsignRecordService 
 
     @Override
     public List<EleUserEsignRecordVO> queryUserEsignRecords(EleUserEsignRecordQuery eleUserEsignRecordQuery) {
-        return eleUserEsignRecordMapper.selectByPage(eleUserEsignRecordQuery);
+        List<EleUserEsignRecordVO> eleUserEsignRecordVOList = eleUserEsignRecordMapper.selectByPage(eleUserEsignRecordQuery);
+        log.info("get user esign record list: {}", eleUserEsignRecordVOList);
+        return eleUserEsignRecordVOList;
     }
 
     @Override
