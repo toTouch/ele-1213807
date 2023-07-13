@@ -317,6 +317,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             log.info("The signing status is not synchronized, updating the database record as completed, signFlowId: {}", signFlowId);
             eleUserEsignRecord.setSignFinishStatus(EleEsignConstant.ESIGN_STATUS_SUCCESS);
             eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
+            eleUserEsignRecord.setSignResult(JsonUtil.toJson(signFlowDetailResp));
             eleUserEsignRecordMapper.updateUserEsignRecord(eleUserEsignRecord);
             //更新为成功完成状态后，减扣一次签署次数
             esignCapacityDataService.deductionCapacityByTenantId(TenantContextHolder.getTenantId().longValue());
