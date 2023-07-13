@@ -55,7 +55,7 @@
             #{signFinishStatus},
             #{fileId},
             #{fileName},
-            #{signResult}
+            #{signResult, jdbcType=VARCHAR},
             #{delFlag},
             #{createTime},
             #{updateTime},
