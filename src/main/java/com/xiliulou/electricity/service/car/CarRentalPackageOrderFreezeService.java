@@ -14,6 +14,32 @@ import java.util.List;
 public interface CarRentalPackageOrderFreezeService {
 
     /**
+     * 根据 uid 和套餐购买订单编码启用冻结订单
+     * @param packageOrderNo 套餐购买订单编码
+     * @param uid 用户ID
+     * @param autoEnable 是否自动启用
+     * @param optUid 操作人ID(可为空)
+     * @return
+     */
+    boolean enableFreezeRentOrderByUidAndPackageOrderNo(String packageOrderNo, Long uid, Boolean autoEnable, Long optUid);
+
+    /**
+     * 根据冻结申请单编号，撤销冻结申请
+     * @param orderNo 冻结申请单编号
+     * @param optUid 操作人ID
+     * @return
+     */
+    Boolean revokeByOrderNo(String orderNo, Long optUid);
+
+    /**
+     * 查询待审核的冻结订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageOrderFreezePO selectPendingApprovalByUid(Integer tenantId, Long uid);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型

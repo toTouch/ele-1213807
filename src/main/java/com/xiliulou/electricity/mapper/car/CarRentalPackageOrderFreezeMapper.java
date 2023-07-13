@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper.car;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,6 +14,53 @@ import java.util.List;
  **/
 @Mapper
 public interface CarRentalPackageOrderFreezeMapper {
+
+    /**
+     * 根据订单编码进行数据更新
+     * @param entity 实体数据
+     * @return
+     */
+    int updateByOrderNo(CarRentalPackageOrderFreezePO entity);
+
+    /**
+     * 根据用户ID和购买订单编号启用冻结订单
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编号
+     * @param status 状态
+     * @param optUid 操作人(可为空)
+     * @param optTime 操作时间
+     * @param enableTime 启用时间
+     * @param realTerm 实际期限(天)
+     * @return int
+     * @author xiaohui.song
+     **/
+    int enableByUidAndPackageOrderNo(@Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo, @Param("status") Integer status, @Param("optUid") Long optUid,
+                                     @Param("optTime") Long optTime, @Param("enableTime") Long enableTime, @Param("realTerm") Integer realTerm);
+
+    /**
+     * 根据用户ID和套餐购买订单编号查询冻结中的订单
+     * @param uid 用户ID
+     * @param packageOrderNo 购买订单编码
+     * @return
+     */
+    CarRentalPackageOrderFreezePO selectFreezeByUidAndPackageOrderNo(@Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
+
+    /**
+     * 根据冻结申请单编号，撤销冻结申请
+     * @param orderNo 冻结申请单编号
+     * @param optUid 操作人ID
+     * @param optTime 操作时间
+     * @return
+     */
+    int revokeByOrderNo(@Param("orderNo") String orderNo, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
+
+    /**
+     * 根据用户查询待审核的冻结订单
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return
+     */
+    CarRentalPackageOrderFreezePO selectPendingApprovalByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />
@@ -56,4 +104,5 @@ public interface CarRentalPackageOrderFreezeMapper {
      * @return
      */
     int insert(CarRentalPackageOrderFreezePO entity);
+
 }

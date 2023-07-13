@@ -105,6 +105,7 @@ public class CarRentalPackageOrderFreezePO extends BasicCarPO {
      *     3-审核拒绝
      *     4-提前启用
      *     5-自动启用
+     *     6-撤销
      * </pre>
      * @see RentalPackageOrderFreezeStatusEnum
      */

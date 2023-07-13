@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageMemberTermOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 
 import java.util.List;
@@ -53,10 +52,10 @@ public interface CarRentalPackageMemberTermService {
 
     /**
      * 根据主键ID更新数据
-     * @param optModel
+     * @param entity 实体数据
      * @return
      */
-    Boolean updateById(CarRentalPackageMemberTermOptModel optModel);
+    Boolean updateById(CarRentalPackageMemberTermPO entity);
 
     /**
      * 根据租户ID和用户ID查询租车套餐会员限制信息<br />
