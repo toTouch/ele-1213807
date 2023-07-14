@@ -16,7 +16,6 @@
         <!-- 私有映射 -->
         <result property="uid" column="uid" jdbcType="BIGINT" />
         <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
-        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="type" column="type" jdbcType="INTEGER" />
         <result property="changeAmount" column="change_amount" jdbcType="DECIMAL" />
@@ -39,7 +38,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `type`, `change_amount`, `deposit`, `deposit_exemption`, `deposit_rebate_approve`,
+        `uid`, `order_no`, `rental_package_type`, `type`, `change_amount`, `deposit`, `deposit_exemption`, `deposit_rebate_approve`,
         `pay_type`, `pay_state`, `remark`, `source_order_no`, `refund_flag`
     </sql>
 
@@ -72,7 +71,6 @@
             <if test=" delFlag != null "> `del_flag`, </if>
             <if test=" uid != null "> `uid`, </if>
             <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
-            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" rentalPackageType != null "> `rental_package_type`, </if>
             <if test=" type != null "> `type`, </if>
             <if test=" changeAmount != null "> `change_amount`, </if>
@@ -98,7 +96,6 @@
             <if test=" delFlag != null "> #{delFlag}, </if>
             <if test=" uid != null "> #{uid}, </if>
             <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
-            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" type != null "> #{type}, </if>
             <if test=" changeAmount != null "> #{changeAmount}`, </if>
@@ -125,11 +122,11 @@
         </where>
     </update>
 
-    <!-- 根据租户ID和用户ID查询租车套餐押金缴纳订单 -->
-    <select id="selectByTenantIdAndUid" resultMap="entityMap">
+    <!-- 根据用户ID和租户ID查询支付成功且未退的押金信息 -->
+    <select id="selectUnRefundCarDeposit" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `del_flag` = 0
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `refund_flag` = 2 AND `pay_state` = 2 AND `del_flag` = 0
         </where>
     </select>
 

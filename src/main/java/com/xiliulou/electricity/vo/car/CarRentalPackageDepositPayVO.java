@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo.car;
 import com.xiliulou.electricity.enums.DepositTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,6 +23,17 @@ public class CarRentalPackageDepositPayVO implements Serializable {
      * 订单编码
      */
     private String orderNo;
+
+
+    /**
+     * 套餐类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see CarRentalPackageTypeEnum
+     */
+    private Integer rentalPackageType;
 
     /**
      * 类型
@@ -62,6 +74,11 @@ public class CarRentalPackageDepositPayVO implements Serializable {
     private Integer payState;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 创建时间，时间戳
      */
     private Long createTime;
@@ -77,10 +94,5 @@ public class CarRentalPackageDepositPayVO implements Serializable {
      * 用户手机号
      */
     private String userPhone;
-
-    /**
-     * 租车套餐名称
-     */
-    private String carRentalPackageName;
 
 }

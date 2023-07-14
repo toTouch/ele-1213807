@@ -2,10 +2,8 @@ package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
-
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.ThirdPayChannelEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -32,28 +30,9 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
     private String orderNo;
 
     /**
-     * 套餐ID
-     */
-    private Long rentalPackageId;
-
-    /**
      * 押金缴纳订单编号
      */
     private String depositPayOrderNo;
-
-    /**
-     * 三方支付单号
-     */
-    private String thirdPayNo;
-
-    /**
-     * 三方支付渠道
-     * <pre>
-     *     1-微信
-     * </pre>
-     * @see ThirdPayChannelEnum
-     */
-    private Integer thirdPayChannel;
 
     /**
      * 申请金额
@@ -93,4 +72,5 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
      * 备注
      */
     private String remark;
+
 }

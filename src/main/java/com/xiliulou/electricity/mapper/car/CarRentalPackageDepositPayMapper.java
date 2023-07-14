@@ -27,13 +27,13 @@ public interface CarRentalPackageDepositPayMapper {
     int updatePayStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("remark") String remark, @Param("uid") Long uid, @Param("optTime") Long optTime);
 
     /**
-     * 根据租户ID和用户ID查询租车套餐押金缴纳订单
+     * 根据用户ID和租户ID查询支付成功且未退的押金信息
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
      * @return
      */
-    CarRentalPackageDepositPayPO selectByTenantIdAndUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    CarRentalPackageDepositPayPO selectUnRefundCarDeposit(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 条件查询列表<br />

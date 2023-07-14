@@ -6,4 +6,5 @@ package com.xiliulou.electricity.service.car.biz;
  * @author xiaohui.song
  **/
 public interface CarRenalPackageDepositBizService {
+
 }

@@ -1,23 +1,21 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageDepositRefundMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
-
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 租车套餐押金退款表 ServiceImpl
@@ -39,12 +37,12 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageDepositRefundPO>> list(CarRentalPackageDepositRefundQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageDepositRefundPO> list(CarRentalPackageDepositRefundQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageDepositRefundMapper.list(qryModel));
+        return carRentalPackageDepositRefundMapper.list(qryModel);
     }
 
     /**
@@ -55,12 +53,12 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageDepositRefundPO>> page(CarRentalPackageDepositRefundQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageDepositRefundPO> page(CarRentalPackageDepositRefundQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageDepositRefundMapper.page(qryModel));
+        return carRentalPackageDepositRefundMapper.page(qryModel);
     }
 
     /**
@@ -71,12 +69,12 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalPackageDepositRefundQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalPackageDepositRefundQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageDepositRefundMapper.count(qryModel));
+        return carRentalPackageDepositRefundMapper.count(qryModel);
     }
 
     /**
@@ -87,12 +85,12 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Slave
     @Override
-    public R<CarRentalPackageDepositRefundPO> selectByOrderNo(String orderNo) {
+    public CarRentalPackageDepositRefundPO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageDepositRefundMapper.selectByOrderNo(orderNo));
+        return carRentalPackageDepositRefundMapper.selectByOrderNo(orderNo);
     }
 
     /**
@@ -101,25 +99,27 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * @param id 主键ID
      * @return
      */
+    @Slave
     @Override
-    public R<CarRentalPackageDepositRefundPO> selectById(Long id) {
-        if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public CarRentalPackageDepositRefundPO selectById(Long id) {
+        if (ObjectUtils.isEmpty(id)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageDepositRefundMapper.selectById(id));
+        return carRentalPackageDepositRefundMapper.selectById(id);
     }
 
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作模型
+     * @param entity 实体数据
      * @return
      */
     @Override
-    public R<Long> insert(CarRentalPackageDepositRefundOptModel optModel) {
-        CarRentalPackageDepositRefundPO entity = new CarRentalPackageDepositRefundPO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalPackageDepositRefundPO entity) {
+        if (!ObjectUtils.allNotNull(entity, entity.getTenantId(), entity.getUid())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
         // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
@@ -128,9 +128,14 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
         entity.setUpdateTime(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
 
+        // 订单编号
+        if (StringUtils.isBlank(entity.getOrderNo())) {
+            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT_REFUND, entity.getId()));
+        }
+
         // 保存入库
         carRentalPackageDepositRefundMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

@@ -9,9 +9,10 @@ import com.xiliulou.electricity.query.car.CarRentalPackageDepositRefundQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
+import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,7 +66,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      * @return
      */
     @PostMapping("/page")
-    public R<List<CarRentalPackageDepositPayVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
+    public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
@@ -79,34 +80,33 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         BeanUtils.copyProperties(queryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalPackageDepositRefundPO>> listRes = carRentalPackageDepositRefundService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
+        List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
+        if (CollectionUtils.isEmpty(depositRefundEntityList)) {
+            return R.ok();
         }
-        List<CarRentalPackageDepositRefundPO> depositRefundPOList = listRes.getData();
 
         // 获取辅助业务信息（用户信息）
-        Set<Long> uids = depositRefundPOList.stream().map(CarRentalPackageDepositRefundPO::getUid).collect(Collectors.toSet());
+        Set<Long> uids = depositRefundEntityList.stream().map(CarRentalPackageDepositRefundPO::getUid).collect(Collectors.toSet());
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositPayVO> depositPayVOList = depositRefundPOList.stream().map(depositRefundPO -> {
+        List<CarRentalPackageDepositRefundVO> depositRefundVoList = depositRefundEntityList.stream().map(depositRefundEntity -> {
 
-            CarRentalPackageDepositPayVO depositPayVO = new CarRentalPackageDepositPayVO();
-            BeanUtils.copyProperties(depositRefundPO, depositPayVO);
+            CarRentalPackageDepositRefundVO depositRefundVO = new CarRentalPackageDepositRefundVO();
+            BeanUtils.copyProperties(depositRefundEntity, depositRefundVO);
 
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(depositRefundPO.getUid(), new UserInfo());
-                depositPayVO.setUserRelName(userInfo.getName());
-                depositPayVO.setUserPhone(userInfo.getPhone());
+                UserInfo userInfo = userInfoMap.getOrDefault(depositRefundEntity.getUid(), new UserInfo());
+                depositRefundVO.setUserRelName(userInfo.getName());
+                depositRefundVO.setUserPhone(userInfo.getPhone());
             }
 
-            return depositPayVO;
+            return depositRefundVO;
         }).collect(Collectors.toList());
 
-        return R.ok(depositPayVOList);
+        return R.ok(depositRefundVoList);
     }
 
     /**
@@ -129,7 +129,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalPackageDepositRefundService.count(qryModel);
+        return R.ok(carRentalPackageDepositRefundService.count(qryModel));
     }
 
 }

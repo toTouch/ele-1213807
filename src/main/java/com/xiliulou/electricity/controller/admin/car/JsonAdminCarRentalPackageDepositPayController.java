@@ -11,6 +11,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -75,28 +76,23 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         BeanUtils.copyProperties(queryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalPackageDepositPayPO>> listRes = carRentalPackageDepositPayService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
+        List<CarRentalPackageDepositPayPO> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
+        if (CollectionUtils.isEmpty(depositPayEntityList)) {
+            return R.ok();
         }
-        List<CarRentalPackageDepositPayPO> depositPayPOList = listRes.getData();
 
-        // 获取辅助业务信息（用户信息、套餐名称）
+
+        // 获取辅助业务信息（用户信息）
         Set<Long> uids = new HashSet<>();
-        Set<Long> rentalPackageIds = new HashSet<>();
-        depositPayPOList.forEach(carRentalPackageOrder -> {
+        depositPayEntityList.forEach(carRentalPackageOrder -> {
             uids.add(carRentalPackageOrder.getUid());
-            rentalPackageIds.add(carRentalPackageOrder.getRentalPackageId());
         });
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
-        // 套餐信息
-        Map<Long, String> carRentalPackageMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
-
         // 模型转换，封装返回
-        List<CarRentalPackageDepositPayVO> depositPayVOList = depositPayPOList.stream().map(depositPayPO -> {
+        List<CarRentalPackageDepositPayVO> depositPayVOList = depositPayEntityList.stream().map(depositPayPO -> {
             CarRentalPackageDepositPayVO depositPayVO = new CarRentalPackageDepositPayVO();
             BeanUtils.copyProperties(depositPayPO, depositPayVO);
 
@@ -104,10 +100,6 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
                 UserInfo userInfo = userInfoMap.getOrDefault(depositPayPO.getUid(), new UserInfo());
                 depositPayVO.setUserRelName(userInfo.getName());
                 depositPayVO.setUserPhone(userInfo.getPhone());
-            }
-
-            if (!carRentalPackageMap.isEmpty()) {
-                depositPayVO.setCarRentalPackageName(carRentalPackageMap.getOrDefault(depositPayPO.getRentalPackageId(), ""));
             }
 
             return depositPayVO;
@@ -136,7 +128,7 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalPackageDepositPayService.count(qryModel);
+        return R.ok(carRentalPackageDepositPayService.count(qryModel));
     }
 
 }

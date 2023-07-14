@@ -1124,7 +1124,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageDepositPayPO depositPayInsertEntity = null;
             // 押金缴纳订单编码
             String depositPayOrderNo = null;
-            CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByTenantIdAndUid(tenantId, uid);
+            CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
             if (ObjectUtils.isEmpty(depositPayEntity)) {
                 if (YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType())) {
@@ -1132,7 +1132,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     return R.fail("ELECTRICITY.0042", "未缴纳押金");
                 }
                 // 生成押金缴纳订单，准备 insert
-                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, packageEntity.getDeposit(), DepositExemptionEnum.NO.getCode(), packageEntity.getFranchiseeId(), packageEntity.getStoreId());
+                depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, packageEntity.getDeposit(), DepositExemptionEnum.NO.getCode(), packageEntity.getFranchiseeId(), packageEntity.getStoreId(), packageEntity.getType());
                 depositPayOrderNo = depositPayInsertEntity.getOrderNo();
             }
 
@@ -1447,14 +1447,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param depositExemption 免押
      * @param franchiseeId 加盟商ID
      * @param storeId 门店ID
+     * @param rentalPackageType 套餐类型
      * @return
      */
-    private CarRentalPackageDepositPayPO buildCarRentalPackageDepositPay(Integer tenantId, Long uid, BigDecimal deposit, Integer depositExemption, Integer franchiseeId, Integer storeId) {
+    private CarRentalPackageDepositPayPO buildCarRentalPackageDepositPay(Integer tenantId, Long uid, BigDecimal deposit, Integer depositExemption, Integer franchiseeId, Integer storeId, Integer rentalPackageType) {
         CarRentalPackageDepositPayPO carRentalPackageDepositPayEntity = new CarRentalPackageDepositPayPO();
         carRentalPackageDepositPayEntity.setUid(uid);
         carRentalPackageDepositPayEntity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_DEPOSIT, uid));
-        carRentalPackageDepositPayEntity.setRentalPackageId(0L);
-        carRentalPackageDepositPayEntity.setRentalPackageType(0);
+        carRentalPackageDepositPayEntity.setRentalPackageType(rentalPackageType);
         carRentalPackageDepositPayEntity.setType(DepositTypeEnum.NORMAL.getCode());
         carRentalPackageDepositPayEntity.setChangeAmount(BigDecimal.ZERO);
         carRentalPackageDepositPayEntity.setDeposit(deposit);

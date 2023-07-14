@@ -16,10 +16,7 @@
         <!-- 私有映射 -->
         <result property="uid" column="uid" jdbcType="BIGINT" />
         <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
-        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
-        <result property="thirdPayNo" column="third_pay_no" jdbcType="VARCHAR" />
-        <result property="thirdPayChannel" column="third_pay_channel" jdbcType="INTEGER" />
         <result property="applyAmount" column="apply_amount" jdbcType="DECIMAL" />
         <result property="realAmount" column="real_amount" jdbcType="DECIMAL" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
@@ -37,7 +34,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_id`, `deposit_pay_order_no`, `third_pay_no`, `third_pay_channel`, `apply_amount`, `real_amount`, `pay_type`,
+        `uid`, `order_no`, `deposit_pay_order_no`, `apply_amount`, `real_amount`, `pay_type`,
         `refund_state`, `remark`
     </sql>
 
@@ -71,10 +68,7 @@
             <if test=" delFlag != null "> `del_flag`, </if>
             <if test=" uid != null "> `uid`, </if>
             <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
-            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
-            <if test=" thirdPayNo != null and thirdPayNo != '' "> `third_pay_no`, </if>
-            <if test=" thirdPayChannel != null  "> `third_pay_channel`, </if>
             <if test=" applyAmount != null "> `apply_amount`, </if>
             <if test=" realAmount != null "> `real_amount`, </if>
             <if test=" payType != null "> `pay_type`, </if>
@@ -95,10 +89,7 @@
             <if test=" delFlag != null "> #{delFlag}, </if>
             <if test=" uid != null "> #{uid}, </if>
             <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
-            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
-            <if test=" thirdPayNo != null and thirdPayNo != '' "> #{thirdPayNo}, </if>
-            <if test=" thirdPayChannel != null  "> #{thirdPayChannel}, </if>
             <if test=" applyAmount != null "> #{applyAmount}, </if>
             <if test=" realAmount != null "> #{realAmount}, </if>
             <if test=" payType != null "> #{payType}, </if>
