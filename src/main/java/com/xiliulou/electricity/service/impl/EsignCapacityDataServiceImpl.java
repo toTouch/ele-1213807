@@ -53,9 +53,11 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer addEsignCapacityData(EsignCapacityDataQuery esignCapacityDataQuery) {
+
         EsignCapacityData capacityData = queryCapacityDataByTenantId(esignCapacityDataQuery.getTenantId());
 
         if(Objects.isNull(capacityData)){
+            log.info("add esign capacity data: {}", esignCapacityDataQuery);
             EsignCapacityData esignCapacityData = new EsignCapacityData();
             esignCapacityData.setTenantId(TenantContextHolder.getTenantId().longValue());
             esignCapacityData.setEsignCapacity(esignCapacityDataQuery.getEsignCapacity());
@@ -65,6 +67,7 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
             esignCapacityData.setUpdateTime(System.currentTimeMillis());
             esignCapacityDataMapper.insertOne(esignCapacityData);
         }else{
+            log.info("update esign capacity data: {}", esignCapacityDataQuery);
             int currentCapacity = capacityData.getEsignCapacity();
             EsignCapacityData capacityDataModel = new EsignCapacityData();
             capacityDataModel.setId(capacityData.getId());
