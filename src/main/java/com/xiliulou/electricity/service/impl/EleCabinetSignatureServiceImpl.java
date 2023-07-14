@@ -301,7 +301,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         }
 
         //检查用户是否已经完成签名的操作
-        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectEsignFinishedRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
         if(Objects.isNull(eleUserEsignRecord)){
             EleUserEsignRecord esignRecord = new EleUserEsignRecord();
             esignRecord.setUid(userInfo.getUid());
@@ -311,14 +311,10 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(true, "", esignRecord);
         }
 
-        if(EleEsignConstant.ESIGN_STATUS_SUCCESS.equals(eleUserEsignRecord.getSignFinishStatus())){
-            return Triple.of(true, "", eleUserEsignRecord);
-        }
-
-        return checkStatusFromThirdParty(eleUserEsignRecord, eleEsignConfig);
-
+        return Triple.of(true, "", eleUserEsignRecord);
     }
 
+    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> checkStatusFromThirdParty(EleUserEsignRecord eleUserEsignRecord, EleEsignConfig eleEsignConfig){
         String signFlowId = eleUserEsignRecord.getSignFlowId();
