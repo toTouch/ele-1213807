@@ -18,7 +18,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
-import com.xiliulou.electricity.service.car.biz.SlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -65,7 +65,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
 
     @Resource
-    private SlippageBizService slippageBizService;
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     @Resource
     private ElectricityCarService carService;
@@ -208,9 +208,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 2. 更新会员期限信息
             carRentalPackageMemberTermService.updateStatusByUidAndTenantId(freezeEntity.getTenantId(), freezeEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
         }
-
-
-
 
     }
 
@@ -872,7 +869,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 7. 滞纳金信息
-        String lateFeeAmount = slippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+        String lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
 
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTermEntity, carRentalPackageEntity, carInfoDO, lateFeeAmount);

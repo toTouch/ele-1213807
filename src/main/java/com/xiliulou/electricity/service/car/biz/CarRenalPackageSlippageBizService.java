@@ -5,7 +5,7 @@ package com.xiliulou.electricity.service.car.biz;
  *
  * @author xiaohui.song
  **/
-public interface SlippageBizService {
+public interface CarRenalPackageSlippageBizService {
 
     /**
      * 根据用户ID查询车辆租赁套餐订单未支付的滞纳金金额
@@ -17,7 +17,7 @@ public interface SlippageBizService {
 
     /**
      * 是否存在未支付的滞纳金<br />
-     * 包含换电(单电)、租车(单车、车电一体)
+     * 租车(单车、车电一体)
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return

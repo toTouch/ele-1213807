@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.constant.StringConstant;
@@ -12,14 +11,12 @@ import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -86,15 +83,16 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @param name     套餐名称
      * @return
      */
+    @Slave
     @Override
-    public R<Boolean> uqByTenantIdAndName(Integer tenantId, String name) {
-        if (null == tenantId || null == name) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean uqByTenantIdAndName(Integer tenantId, String name) {
+        if (ObjectUtils.allNotNull(tenantId, name)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         int num = carRentalPackageMapper.uqByTenantIdAndName(tenantId, name);
 
-        return R.ok(num >= 0);
+        return num > 0;
     }
 
     /**
@@ -106,22 +104,17 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @return
      */
     @Override
-    public R<Boolean> updateStatusById(Long id, Integer status, Long uid) {
-        if (!ObjectUtils.allNotNull(id, status, uid)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        if (!BasicEnum.isExist(status, UpDownEnum.class)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean updateStatusById(Long id, Integer status, Long uid) {
+        if (!ObjectUtils.allNotNull(id, status, uid) || !BasicEnum.isExist(status, UpDownEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 操作 DB
-        long updateTime = System.currentTimeMillis();
-        int num = carRentalPackageMapper.updateStatusById(id, status, uid, updateTime);
+        int num = carRentalPackageMapper.updateStatusById(id, status, uid, System.currentTimeMillis());
 
         // 删除缓存
         delCache(String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id));
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**
@@ -132,25 +125,23 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      * @return
      */
     @Override
-    public R<Boolean> delById(Long id, Long uid) {
+    public Boolean delById(Long id, Long uid) {
         if (!ObjectUtils.allNotNull(id, uid)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         // 校验能否删除
-        Boolean checkFlag = carRentalPackageOrderService.checkByRentalPackageId(id);
-        if (checkFlag) {
-            return R.fail("300103", "已有购买订单记录，不允许删除");
+        if (carRentalPackageOrderService.checkByRentalPackageId(id)) {
+            // TODO 错误编码
+            throw new BizException("", "已有购买订单记录，不允许删除");
         }
 
-        // 操作 DB
-        long delTime = System.currentTimeMillis();
-        int num = carRentalPackageMapper.delById(id, uid, delTime);
+        int num = carRentalPackageMapper.delById(id, uid, System.currentTimeMillis());
 
         // 删除缓存
         delCache(String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id));
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**
@@ -195,14 +186,14 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalPackageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalPackageQryModel qryModel) {
+        if (ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         handleQryModel(qryModel);
 
-        return R.ok(carRentalPackageMapper.count(qryModel));
+        return carRentalPackageMapper.count(qryModel);
     }
 
     /**
@@ -255,67 +246,67 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
     /**
      * 根据ID修改数据
-     * @param optModel 操作模型
+     * @param entity 实体数据
      * @return
      */
     @Override
-    public R<Boolean> updateById(CarRentalPackageOptModel optModel) {
-        if (optModel == null || optModel.getId() == null || optModel.getId() <= 0 || optModel.getUpdateUid() == null || optModel.getUpdateUid() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean updateById(CarRentalPackagePO entity) {
+        if (!ObjectUtils.allNotNull(entity, entity.getId(), entity.getUpdateUid(), entity.getTenantId(), entity.getName())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         // 检测原始套餐状态
-        CarRentalPackagePO oriEntity = carRentalPackageMapper.selectById(optModel.getId());
+        CarRentalPackagePO oriEntity = carRentalPackageMapper.selectById(entity.getId());
         if (oriEntity == null || DelFlagEnum.DEL.getCode().equals(oriEntity.getDelFlag())) {
-            return R.fail("300101", "套餐不存在");
+            // TODO 错误编码
+            throw new BizException("", "数据有误");
         }
         if (UpDownEnum.UP.getCode().equals(oriEntity.getStatus())) {
-            return R.fail("300102", "请先下架套餐再进行编辑操作");
+            // TODO 错误编码
+            throw new BizException("", "请先下架套餐再进行编辑操作");
         }
 
-        Integer tenantId = optModel.getTenantId();
-        String name = optModel.getName();
+        Integer tenantId = entity.getTenantId();
+        String name = entity.getName();
 
         // 检测唯一
         if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
-            return R.fail("300100", "套餐名称已存在");
+            // TODO 错误编码
+            throw new BizException("", "套餐名称已存在");
         }
 
-        CarRentalPackagePO entity = new CarRentalPackagePO();
-        BeanUtils.copyProperties(optModel, entity);
-
-        // 赋值修改时间
-        long now = System.currentTimeMillis();
-        entity.setUpdateTime(now);
+        entity.setUpdateTime(System.currentTimeMillis());
 
         int num = carRentalPackageMapper.updateById(entity);
 
         // 删除缓存
-        String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, optModel.getId());
+        String cacheEky = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, entity.getId());
         redisService.delete(cacheEky);
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**
      * 新增数据，返回主键ID<br />
      * 若为车电一体，则会联动调用换电套餐的逻辑
-     * @param optModel 操作模型
+     * @param entity 实体数据
      * @return
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R<Long> insert(CarRentalPackageOptModel optModel) {
-        Integer tenantId = optModel.getTenantId();
-        String name = optModel.getName();
+    public Long insert(CarRentalPackagePO entity) {
+        if (!ObjectUtils.allNotNull(entity, entity.getId(), entity.getCreateUid(), entity.getTenantId(), entity.getName())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = entity.getTenantId();
+        String name = entity.getName();
 
         // 检测唯一
         if (carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
-            return R.fail("300100", "套餐名称已存在");
+            // TODO 错误编码
+            throw new BizException("", "套餐名称已存在");
         }
-
-        CarRentalPackagePO entity = new CarRentalPackagePO();
-        BeanUtils.copyProperties(optModel, entity);
 
         // 保底处理电池型号ID连接字符串
         String batteryModelIds = entity.getBatteryModelIds();
@@ -332,13 +323,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         entity.setUpdateTime(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
 
-        // 保存入库
         carRentalPackageMapper.insert(entity);
 
         // 后续处理逻辑
         afterInsert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 
     /**

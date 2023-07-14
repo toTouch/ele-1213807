@@ -175,18 +175,6 @@ public class CarRentalPackageOptModel implements Serializable {
     private Integer depositExemption;
 
     /**
-     * 押金返还审批
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
-     */
-    @NotNull(message = "[押金返还审批]不能为空")
-    @Deprecated
-    private Integer depositRebateApprove;
-
-    /**
      * 租金单价，单位同租期单位
      */
     @NotNull(message = "[租金单价]不能为空")
