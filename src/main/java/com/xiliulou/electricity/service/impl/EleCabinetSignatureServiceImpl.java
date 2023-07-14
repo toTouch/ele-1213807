@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -213,14 +214,15 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         signFlowDataQuery.setPositionPage(String.valueOf(componentPosition.getComponentPageNum()));
         signFlowDataQuery.setPositionX(componentPosition.getComponentPositionX());
         signFlowDataQuery.setPositionY(componentPosition.getComponentPositionY());
-        SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
+
+        //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
+        String signFlowId = getSignFlowId(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
 
         //根据signFlowId获取psnId信息，微信小程序跳转时需要该参数
-        SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signDocsCreateResp.getData().getSignFlowId(), eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+        SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
 
         //获取文件签署链接
-        SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signDocsCreateResp.getData().getSignFlowId(), userInfoQuery, signFlowDataQuery);
-        String signFlowId = signDocsCreateResp.getData().getSignFlowId();
+        SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signFlowId, userInfoQuery, signFlowDataQuery);
 
         SignFlowVO signFlowVO = new SignFlowVO();
         signFlowVO.setSignFlowId(signFlowId);
@@ -231,6 +233,26 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         createUserEsignRecord(userInfo.getUid(), signFlowId, fileId, fileName);
 
         return Triple.of(true, "", signFlowVO);
+    }
+
+    private String getSignFlowId(Long uid, UserInfoQuery userInfoQuery, SignFlowDataQuery signFlowDataQuery){
+        String signFlowId = StringUtils.EMPTY;
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
+        if(Objects.nonNull(eleUserEsignRecord)){
+            log.info("Signing process already exist, sign flow id: {}", eleUserEsignRecord.getSignFlowId());
+            Long createTime = eleUserEsignRecord.getCreateTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(createTime);
+            calendar.add(Calendar.DATE, EleEsignConstant.ESIGN_FLOW_EXPIRED_DATE);
+            if(System.currentTimeMillis() <= calendar.getTimeInMillis()){
+                signFlowId = eleUserEsignRecord.getSignFlowId();
+            }
+        }else{
+            SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
+            signFlowId = signDocsCreateResp.getData().getSignFlowId();
+            log.info("create new signing process, sign flow id: {}", signFlowId);
+        }
+        return signFlowId;
     }
 
     private void savePsnAuthResult(UserInfo userInfo, PsnAuthDetailResp psnAuthDetailResp){
