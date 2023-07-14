@@ -372,8 +372,9 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
      * @param psnAuthDetailResp
      * @param uid
      */
+    @Deprecated
     @Transactional(rollbackFor = Exception.class)
-    private void createUserIdentityAuthRecord(PsnAuthDetailResp psnAuthDetailResp, Long uid){
+    public void createUserIdentityAuthRecord(PsnAuthDetailResp psnAuthDetailResp, Long uid){
         if(Objects.nonNull(psnAuthDetailResp)){
             EleUserIdentityAuthRecord userIdentityAuthRecord = new EleUserIdentityAuthRecord();
             userIdentityAuthRecord.setUid(uid);
@@ -393,7 +394,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private void createUserEsignRecord(Long uid, String signFlowId, String fileId, String fileName){
+    public void createUserEsignRecord(Long uid, String signFlowId, String fileId, String fileName){
         EleUserEsignRecord eleUserEsignRecord = new EleUserEsignRecord();
         eleUserEsignRecord.setUid(uid);
         eleUserEsignRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
