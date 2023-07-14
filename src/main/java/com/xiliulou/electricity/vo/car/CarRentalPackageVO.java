@@ -110,18 +110,7 @@ public class CarRentalPackageVO implements Serializable {
     private Integer depositExemption;
 
     /**
-     * 押金返还审批
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
-     */
-    @Deprecated
-    private Integer depositRebateApprove;
-
-    /**
-     * 租金单价，单位同租期单位
+     * 租金单价
      */
     private BigDecimal rentUnitPrice;
 
@@ -169,16 +158,6 @@ public class CarRentalPackageVO implements Serializable {
      * @see UpDownEnum
      */
     private Integer status;
-
-    /**
-     * C端展示
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
-     */
-    private Integer showFlag;
 
     /**
      * 备注

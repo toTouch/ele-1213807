@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 
@@ -32,12 +31,12 @@ public interface CarRentalPackageDepositPayService {
     Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
 
     /**
-     * 根据租户ID和用户ID查询租车套餐押金缴纳订单
+     * 根据用户ID和租户ID查询支付成功且未退的押金信息
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return
      */
-    CarRentalPackageDepositPayPO selectByTenantIdAndUid(Integer tenantId, Long uid);
+    CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid);
 
     /**
      * 条件查询列表<br />
@@ -45,21 +44,21 @@ public interface CarRentalPackageDepositPayService {
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackageDepositPayPO>> list(CarRentalPackageDepositPayQryModel qryModel);
+    List<CarRentalPackageDepositPayPO> list(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackageDepositPayPO>> page(CarRentalPackageDepositPayQryModel qryModel);
+    List<CarRentalPackageDepositPayPO> page(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询模型
      * @return
      */
-    R<Integer> count(CarRentalPackageDepositPayQryModel qryModel);
+    Integer count(CarRentalPackageDepositPayQryModel qryModel);
 
     /**
      * 根据订单编码查询
@@ -73,7 +72,7 @@ public interface CarRentalPackageDepositPayService {
      * @param id 主键ID
      * @return
      */
-    R<CarRentalPackageDepositPayPO> selectById(Long id);
+    CarRentalPackageDepositPayPO selectById(Long id);
 
 
     /**

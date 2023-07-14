@@ -68,7 +68,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         // 调用服务
-        return carRentalPackageService.uqByTenantIdAndName(tenantId, name);
+        return R.ok(carRentalPackageService.uqByTenantIdAndName(tenantId, name));
     }
 
     /**
@@ -87,7 +87,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         TokenUser user = SecurityUtils.getUserInfo();
 
         // 调用服务
-        return carRentalPackageService.updateStatusById(id, status, user.getUid());
+        return R.ok(carRentalPackageService.updateStatusById(id, status, user.getUid()));
     }
 
     /**
@@ -167,7 +167,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalPackageService.count(qryModel);
+        return R.ok(carRentalPackageService.count(qryModel));
     }
 
     /**
@@ -183,6 +183,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         // 调用服务
         CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(id);
+        if (ObjectUtils.isEmpty(carRentalPackagePO)) {
+            return R.ok();
+        }
 
         // 查询加盟商
         Long franchiseeId = Long.valueOf(carRentalPackagePO.getFranchiseeId());
@@ -201,9 +204,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         BeanUtils.copyProperties(carRentalPackagePO, carRentalPackageVO);
 
         // 赋值辅助业务数据
-        carRentalPackageVO.setFranchiseeName(franchisee.getName());
-        carRentalPackageVO.setStoreName(store.getName());
-        carRentalPackageVO.setCarModelName(carModel.getName());
+        carRentalPackageVO.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
+        carRentalPackageVO.setStoreName(ObjectUtils.isNotEmpty(store) ? store.getName() : null);
+        carRentalPackageVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
 
         return R.ok(carRentalPackageVO);
     }
@@ -219,11 +222,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 登录态获取用户信息
         TokenUser user = SecurityUtils.getUserInfo();
 
-        // 调用服务
-        return carRentalPackageService.delById(id, user.getUid());
+        return R.ok(carRentalPackageService.delById(id, user.getUid()));
     }
 
     /**
@@ -233,18 +234,18 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @PostMapping("/modifyById")
     public R<Boolean> modifyById(@RequestBody @Valid CarRentalPackageOptModel optModel) {
-        if (optModel == null || optModel.getId() <= 0L) {
+        if (ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 登录态获取用户信息
         TokenUser user = SecurityUtils.getUserInfo();
 
-        // 赋值操作人
         optModel.setUpdateUid(user.getUid());
 
-        // 调用服务
-        return carRentalPackageService.updateById(optModel);
+        CarRentalPackagePO entity = new CarRentalPackagePO();
+        BeanUtils.copyProperties(optModel, entity);
+
+        return R.ok(carRentalPackageService.updateById(entity));
     }
 
     /**
@@ -253,15 +254,18 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * @return
      */
     @PostMapping("/insert")
-    public R<Long> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
-        // 赋值租户及操作人
+    public R<Boolean> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
+
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
+
         optModel.setTenantId(tenantId);
         optModel.setCreateUid(user.getUid());
 
-        // 调用服务
-        return carRentalPackageService.insert(optModel);
+        CarRentalPackagePO entity = new CarRentalPackagePO();
+        BeanUtils.copyProperties(optModel, entity);
+
+        return R.ok(carRentalPackageService.insert(entity) > 0);
     }
 
 }

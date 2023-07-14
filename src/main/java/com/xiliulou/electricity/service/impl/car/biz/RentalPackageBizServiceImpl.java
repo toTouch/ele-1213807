@@ -16,7 +16,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
-import com.xiliulou.electricity.service.car.biz.SlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -57,7 +57,7 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
     private UserCouponService userCouponService;
     
     @Resource
-    private SlippageBizService slippageBizService;
+    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     @Resource
     private UserOauthBindService userOauthBindService;
@@ -207,9 +207,10 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
         }
 
         // 2. 判定滞纳金
-        if (slippageBizService.isExitUnpaid(tenantId, uid)) {
-            log.error("CheckBuyPackageCommon failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-            throw new BizException("存在滞纳金，请先缴纳");
+        if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
+            log.error("CheckBuyPackageCommon failed. Late fee not paid. uid is {}", uid);
+            // TODO 错误编码
+            throw new BizException("", "存在滞纳金，请先缴纳");
         }
 
         // 3.

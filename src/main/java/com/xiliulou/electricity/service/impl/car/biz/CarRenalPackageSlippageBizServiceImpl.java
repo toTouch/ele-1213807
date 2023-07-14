@@ -4,7 +4,7 @@ import cn.hutool.core.util.NumberUtil;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
-import com.xiliulou.electricity.service.car.biz.SlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -20,7 +20,7 @@ import java.math.BigDecimal;
  **/
 @Slf4j
 @Service
-public class SlippageBizServiceImpl implements SlippageBizService {
+public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSlippageBizService {
 
     @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
@@ -62,7 +62,7 @@ public class SlippageBizServiceImpl implements SlippageBizService {
 
     /**
      * 是否存在未支付的滞纳金<br />
-     * 包含换电(单电)、租车(单车、车电一体)
+     * 租车(单车、车电一体)
      *
      * @param tenantId 租户ID
      * @param uid 用户ID
@@ -73,12 +73,6 @@ public class SlippageBizServiceImpl implements SlippageBizService {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        // TODO 找志龙提供接口，是否存在换电滞纳金
-        Boolean batterySlippage = Boolean.TRUE;
-        if (batterySlippage) {
-            return Boolean.TRUE;
-        }
-        Boolean carSlippage = carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid);
-        return carSlippage;
+        return carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid);
     }
 }

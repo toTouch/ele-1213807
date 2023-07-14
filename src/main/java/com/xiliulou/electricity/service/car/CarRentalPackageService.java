@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
-import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 
 import java.util.List;
@@ -34,7 +32,7 @@ public interface CarRentalPackageService {
      * @param name 套餐名称
      * @return
      */
-    R<Boolean> uqByTenantIdAndName(Integer tenantId, String name);
+    Boolean uqByTenantIdAndName(Integer tenantId, String name);
 
     /**
      * 根据ID修改上下架状态
@@ -43,7 +41,7 @@ public interface CarRentalPackageService {
      * @param uid 操作人ID
      * @return
      */
-    R<Boolean> updateStatusById(Long id, Integer status, Long uid);
+    Boolean updateStatusById(Long id, Integer status, Long uid);
 
     /**
      * 根据ID删除
@@ -51,7 +49,7 @@ public interface CarRentalPackageService {
      * @param uid 操作人ID
      * @return
      */
-    R<Boolean> delById(Long id, Long uid);
+    Boolean delById(Long id, Long uid);
 
     /**
      * 条件查询列表<br />
@@ -73,7 +71,7 @@ public interface CarRentalPackageService {
      * @param qryModel 查询模型
      * @return
      */
-    R<Integer> count(CarRentalPackageQryModel qryModel);
+    Integer count(CarRentalPackageQryModel qryModel);
 
     /**
      * 根据ID查询<br />
@@ -86,17 +84,17 @@ public interface CarRentalPackageService {
 
     /**
      * 根据ID更新
-     * @param optModel 操作模型
+     * @param entity 实体数据
      * @return
      */
-    R<Boolean> updateById(CarRentalPackageOptModel optModel);
+    Boolean updateById(CarRentalPackagePO entity);
 
     /**
      * 新增数据，返回主键ID<br />
      * 若为车电一体，则会联动调用换电套餐的逻辑
-     * @param optModel 操作模型
+     * @param entity 实体数据
      * @return
      */
-    R<Long> insert(CarRentalPackageOptModel optModel);
+    Long insert(CarRentalPackagePO entity);
 
 }
