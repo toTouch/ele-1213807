@@ -347,8 +347,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
             eleUserEsignRecord.setSignResult(JsonUtil.toJson(signFlowDetailResp));
             eleUserEsignRecordMapper.updateUserEsignRecord(eleUserEsignRecord);
-            //更新为成功完成状态后，减扣一次签署次数
-            esignCapacityDataService.deductionCapacityByTenantId(TenantContextHolder.getTenantId().longValue());
             return Triple.of(true, "", eleUserEsignRecord);
         }
 
@@ -423,6 +421,8 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         eleUserEsignRecord.setCreateTime(System.currentTimeMillis());
         eleUserEsignRecord.setUpdateTime(System.currentTimeMillis());
         eleUserEsignRecordMapper.insertUserEsignRecord(eleUserEsignRecord);
+        //同时减除一次签名次数
+        esignCapacityDataService.deductionCapacityByTenantId(TenantContextHolder.getTenantId().longValue());
     }
 
     @Override
@@ -472,9 +472,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             userEsignRecord.setSignResult(JsonUtil.toJson(signFlowDetailResp));
             userEsignRecord.setUpdateTime(System.currentTimeMillis());
             eleUserEsignRecordMapper.updateUserEsignRecord(userEsignRecord);
-            if(userEsignRecord.getSignFinishStatus() == EleEsignConstant.ESIGN_STATUS_SUCCESS){
-                esignCapacityDataService.deductionCapacityByTenantId(esignConfig.getTenantId().longValue());
-            }
         }
     }
 
