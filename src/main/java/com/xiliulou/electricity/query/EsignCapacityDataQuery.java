@@ -25,6 +25,7 @@ public class EsignCapacityDataQuery {
 
     private Long rechargeTime;
 
+    @NotNull(message = "租户不能为空!", groups = {CreateGroup.class, UpdateGroup.class})
     private Long tenantId;
 
     private String tenantName;

@@ -59,7 +59,7 @@ public class EsignCapacityDataServiceImpl implements EsignCapacityDataService {
         if(Objects.isNull(capacityData)){
             log.info("add esign capacity data: {}", esignCapacityDataQuery);
             EsignCapacityData esignCapacityData = new EsignCapacityData();
-            esignCapacityData.setTenantId(TenantContextHolder.getTenantId().longValue());
+            esignCapacityData.setTenantId(esignCapacityDataQuery.getTenantId());
             esignCapacityData.setEsignCapacity(esignCapacityDataQuery.getEsignCapacity());
             esignCapacityData.setDelFlag(EleEsignConstant.DEL_NO);
             esignCapacityData.setRechargeTime(System.currentTimeMillis());
