@@ -230,8 +230,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
         signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
 
-        createUserEsignRecord(userInfo.getUid(), signFlowId, fileId, fileName);
-
         return Triple.of(true, "", signFlowVO);
     }
 
@@ -250,6 +248,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         }else{
             SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
             signFlowId = signDocsCreateResp.getData().getSignFlowId();
+            createUserEsignRecord(uid, signFlowId, signFlowDataQuery.getFileId(), signFlowDataQuery.getSignFileName());
             log.info("create new signing process, sign flow id: {}", signFlowId);
         }
         return signFlowId;
