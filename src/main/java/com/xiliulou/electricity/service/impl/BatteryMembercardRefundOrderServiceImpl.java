@@ -73,6 +73,9 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
 
+    @Autowired
+    UserCouponService userCouponService;
+
     @Override
     public List<BatteryMembercardRefundOrderVO> selectByPage(BatteryMembercardRefundOrderQuery query) {
         List<BatteryMembercardRefundOrder> list = this.batteryMembercardRefundOrderMapper.selectByPage(query);
@@ -214,6 +217,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
             if (Objects.nonNull(batteryMembercardRefundOrder) && Objects.equals(batteryMembercardRefundOrder.getStatus(), BatteryMembercardRefundOrder.STATUS_SUCCESS)) {
                 return Triple.of(false, "100283", "电池套餐已退租");
+            }
+
+            //校验套餐赠送的优惠券
+            UserCoupon userCoupon = userCouponService.selectBySourceOrderId(electricityMemberCardOrder.getOrderId());
+            if(Objects.nonNull(userCoupon) && (Objects.equals( userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals( userCoupon.getStatus(),UserCoupon.STATUS_USED ))){
+                log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", user.getUid());
+                return Triple.of(false, "100291", "套餐绑定的优惠券已使用，无法退租");
             }
 
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());

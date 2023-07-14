@@ -34,13 +34,6 @@ public class JsonUserUnionTradeOrderController extends BaseController{
     @Autowired
     FranchiseeService franchiseeService;
 
-    //缴纳保险和押金
-    @PostMapping("/user/payInsuranceAndDeposit")
-    @Deprecated
-    public R payDeposit(@RequestBody @Validated(value = CreateGroup.class) UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request) {
-        return tradeOrderService.createOrder(unionTradeOrderAdd, request);
-    }
-
 
     //集成支付
     @PostMapping("/user/integratedPayment")

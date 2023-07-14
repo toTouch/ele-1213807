@@ -65,6 +65,10 @@ public class UserCoupon {
      */
     private String orderId;
     /**
+     * 优惠券来源的订单id
+     */
+    private String sourceOrderId;
+    /**
      * 加盟商id
      */
     private Integer franchiseeId;

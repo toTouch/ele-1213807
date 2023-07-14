@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -41,4 +42,10 @@ public interface UserBatteryMemberCardPackageService {
     Integer deleteByOrderId(String orderId);
 
     List<UserBatteryMemberCardPackage> selectByUid(Long uid);
+
+    UserBatteryMemberCardPackage selectNearestByUid(Long uid);
+
+    void handlerTransferBatteryMemberCardPackage();
+
+    Triple<Boolean, String, Object> batteryMembercardTransform(Long uid);
 }

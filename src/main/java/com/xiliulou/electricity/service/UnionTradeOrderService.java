@@ -18,9 +18,6 @@ public interface UnionTradeOrderService {
                                                                     HttpServletRequest request) throws WechatPayException;
 
 
-    //押金保险混合回调
-    Pair<Boolean, Object> notifyUnionDepositAndInsurance(WechatJsapiOrderCallBackResource callBackResource);
-
     //集成支付回调
     Pair<Boolean, Object> notifyIntegratedPayment(WechatJsapiOrderCallBackResource callBackResource);
 

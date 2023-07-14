@@ -41,15 +41,6 @@ public class JsonUserEleDepositOrderController {
     @Autowired
     UserInfoService userInfoService;
 
-    //缴纳押金
-    @PostMapping("/user/payDeposit")
-    public R payDeposit(@RequestParam(value = "productKey", required = false) String productKey,
-                        @RequestParam(value = "deviceName", required = false) String deviceName,
-                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                        @RequestParam(value = "model", required = false) Integer model,
-                        HttpServletRequest request) {
-        return eleDepositOrderService.payDeposit(productKey, deviceName, franchiseeId, model, request);
-    }
 
     //退还押金
     @PostMapping("/user/returnDeposit")
@@ -164,24 +155,6 @@ public class JsonUserEleDepositOrderController {
     @PostMapping("/user/payBatteryServiceFee")
     public R payBatteryServiceFee(HttpServletRequest request) {
         return eleDepositOrderService.payBatteryServiceFee(request);
-    }
-
-
-    /**
-     * 缴纳租车押金(旧小程序)
-     *
-     * @return
-     */
-    @PostMapping("/user/payRentCarDeposit")
-    @Deprecated
-    public R payRentCarDeposit(@RequestParam(value = "storeId") Long storeId,
-                               @RequestParam(value = "carModelId") Integer carModelId,
-                               HttpServletRequest request) {
-        //旧版小程序不允许操作
-        if(Boolean.TRUE){
-            return R.fail("100257","该版本暂不支持租车,请升级小程序");
-        }
-        return eleDepositOrderService.payRentCarDeposit(storeId, carModelId, request);
     }
 
     //用户查询租车押金

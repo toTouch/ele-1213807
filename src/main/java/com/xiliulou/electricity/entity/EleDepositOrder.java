@@ -93,6 +93,11 @@ public class EleDepositOrder {
      */
     private Integer payType;
 
+    /**
+     * 套餐Id
+     */
+    private Long mid;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;

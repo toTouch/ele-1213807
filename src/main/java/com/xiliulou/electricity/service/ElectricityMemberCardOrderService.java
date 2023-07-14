@@ -130,4 +130,6 @@ public interface ElectricityMemberCardOrderService {
     Integer checkOrderByMembercardId(Long membercardId);
 
     void handlerBatteryMembercardPaymentNotify(BatteryMemberCard batteryMemberCard,ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo);
+
+    Integer updateStatusByOrderNo(ElectricityMemberCardOrder oldMemberCardOrder);
 }

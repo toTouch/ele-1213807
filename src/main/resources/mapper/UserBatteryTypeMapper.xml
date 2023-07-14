@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserBatteryTypeMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.UserBatteryType" id="UserBatteryTypeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserBatteryTypeMap">
+        select
+          id, uid, battery_type, del_flag, create_time, update_time, tenant_id
+        from t_user_battery_type
+        where id = #{id}
+    </select>
+
+    <insert id="batchInsert">
+        insert into t_user_battery_type(uid, battery_type, del_flag, create_time, update_time, tenant_id) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.uid}, #{item.batteryType}, #{item.delFlag}, #{item.createTime}, #{item.updateTime}, #{item.tenantId})
+        </foreach>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_user_battery_type
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="batteryType != null and batteryType != ''">
+                battery_type = #{batteryType},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_user_battery_type where id = #{id}
+    </delete>
+
+</mapper>

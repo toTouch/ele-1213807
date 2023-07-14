@@ -321,6 +321,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
 
     @Override
+    public List<UserBatteryMemberCard> selectList(int offset, int size) {
+        return userBatteryMemberCardMapper.selectByList(offset, size);
+    }
+
+    @Override
     public Integer checkUserByMembercardId(Long id) {
         return userBatteryMemberCardMapper.checkUserByMembercardId(id);
     }

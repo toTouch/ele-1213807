@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
+import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
@@ -14,6 +16,7 @@ import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
 import com.xiliulou.electricity.service.UserBatteryMemberCardService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMemberCardSearchVO;
 import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.extern.slf4j.Slf4j;
@@ -158,6 +161,13 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+        if(Objects.isNull(userBatteryMemberCard) || Objects.equals( userBatteryMemberCard.getCardPayCount(), NumberConstant.ZERO)){
+            query.setRentType(BatteryMemberCard.RENT_TYPE_NEW);
+        }else{
+            query.setRentType(BatteryMemberCard.RENT_TYPE_OLD);
+        }
+
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
 
         return list.parallelStream().map(item -> {
@@ -244,7 +254,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setDeposit(query.getDeposit());
         batteryMemberCardUpdate.setRentPrice(query.getRentPrice());
         batteryMemberCardUpdate.setRentPriceUnit(query.getRentPriceUnit());
-// TODO       batteryMemberCardUpdate.setValidDays(query.getValidDays());
+        batteryMemberCardUpdate.setValidDays(calculateValidDays(query));
         batteryMemberCardUpdate.setRentUnit(query.getRentUnit());
         batteryMemberCardUpdate.setRentType(query.getRentType());
         batteryMemberCardUpdate.setSendCoupon(query.getSendCoupon());
@@ -318,4 +328,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         return Triple.of(true, null, null);
     }
+
+    private Long calculateValidDays(BatteryMemberCardQuery query) {
+        return Objects.equals(query.getRentUnit(), BatteryMemberCard.RENT_UNIT_DAY) ? query.getValidDays() * 24 * 60 * 60 * 1000L : query.getValidDays() * 60 * 1000L;
+    }
+
 }

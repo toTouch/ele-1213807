@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.InsuranceOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InsuranceOrderAdd;
@@ -19,8 +20,6 @@ import java.util.List;
  * @since 2022-11-03 13:37:11
  */
 public interface TradeOrderService {
-
-    R createOrder(UnionTradeOrderAdd unionTradeOrderAdd, HttpServletRequest request);
 
     Triple<Boolean, String, Object> integratedPayment(IntegratedPaymentAdd integratedPaymentAdd, HttpServletRequest request);
 

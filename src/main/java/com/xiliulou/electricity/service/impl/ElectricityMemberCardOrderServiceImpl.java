@@ -3331,6 +3331,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public Integer updateStatusByOrderNo(ElectricityMemberCardOrder memberCardOrder) {
+        return this.baseMapper.updateStatusByOrderNo(memberCardOrder);
+    }
+
+    @Override
     public Integer checkOrderByMembercardId(Long membercardId) {
         return baseMapper.checkOrderByMembercardId(membercardId);
     }
@@ -3345,8 +3350,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
         userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardPackage.setMemberCardExpireTime(memberCardOrder.getValidDays());
-        userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getLimitCount());
+        userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
         userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
+
+        //更新用户套餐总的过期时间
+
+
+        //更新用户电池型号
+
 
 
         //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关
@@ -3363,8 +3374,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
         userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardPackage.setMemberCardExpireTime(memberCardOrder.getValidDays());
-        userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getLimitCount());
+        userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
         userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
+
+        //更新用户套餐总的过期时间
+
+
+        //更新用户电池型号
 
 
         //TODO 发送MQ 更新优惠券状态 处理活动 分帐 相关

@@ -62,4 +62,6 @@ public interface UserCouponService {
     Integer batchUpdateUserCoupon(List<UserCoupon> buildUserCouponList);
 
     Integer updateUserCouponStatus(UserCoupon userCoupon);
+
+    UserCoupon selectBySourceOrderId(String orderId);
 }

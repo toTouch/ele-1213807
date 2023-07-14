@@ -236,4 +236,10 @@
         select 1 from t_user_battery_member_card where del_flag=0 and member_card_id=#{membercardId} LIMIT 1
     </select>
 
+    <select id="selectByList" resultMap="UserBatteryMemberCardMap">
+        <include refid="selectUserBatteryMemberCard"/>
+        where uid = #{uid}
+        limit #{offset},#{size}
+    </select>
+
 </mapper>

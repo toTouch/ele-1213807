@@ -1,0 +1,61 @@
+package com.xiliulou.electricity.service.impl;
+
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.UserBattery;
+import com.xiliulou.electricity.entity.UserBatteryType;
+import com.xiliulou.electricity.mapper.UserBatteryTypeMapper;
+import com.xiliulou.electricity.service.UserBatteryTypeService;
+import org.springframework.stereotype.Service;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
+
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * (UserBatteryType)表服务实现类
+ *
+ * @author zzlong
+ * @since 2023-07-14 16:02:42
+ */
+@Service("userBatteryTypeService")
+@Slf4j
+public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
+    @Resource
+    private UserBatteryTypeMapper userBatteryTypeMapper;
+
+    @Override
+    public UserBatteryType queryByIdFromDB(Long id) {
+        return this.userBatteryTypeMapper.queryById(id);
+    }
+
+    @Override
+    public UserBatteryType queryByIdFromCache(Long id) {
+        return null;
+    }
+
+    @Override
+    public Integer insert(UserBatteryType userBatteryType) {
+        return this.userBatteryTypeMapper.insert(userBatteryType);
+    }
+
+    @Override
+    public Integer batchInsert(List<UserBatteryType> userBatteryType) {
+        return this.userBatteryTypeMapper.batchInsert(userBatteryType);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer update(UserBatteryType userBatteryType) {
+        return this.userBatteryTypeMapper.update(userBatteryType);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteById(Long id) {
+        return this.userBatteryTypeMapper.deleteById(id) > 0;
+    }
+}

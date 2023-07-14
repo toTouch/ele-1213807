@@ -89,17 +89,9 @@ public class BatteryMemberCard {
      */
     private Integer freeDeposite;
     /**
-     * 退押是否需要审核 0--是 1--否
-     */
-    private Integer refundDepositeAudit;
-    /**
      * 服务费
      */
     private BigDecimal serviceCharge;
-    /**
-     * 是否显示(0:显示,1:隐藏)
-     */
-//    private Integer display;
     /**
      *
      */

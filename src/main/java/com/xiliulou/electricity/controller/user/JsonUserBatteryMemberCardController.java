@@ -50,7 +50,6 @@ public class JsonUserBatteryMemberCardController extends BaseController {
                 .franchiseeId(franchiseeId)
                 .batteryV(batteryV)
                 .status(BatteryMemberCard.STATUS_UP)
-                .rentType(rentType)
                 .name(name)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .build();

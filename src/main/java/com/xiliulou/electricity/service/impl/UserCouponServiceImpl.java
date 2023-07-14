@@ -550,4 +550,9 @@ public class UserCouponServiceImpl implements UserCouponService {
     public Integer updateUserCouponStatus(UserCoupon userCoupon) {
         return userCouponMapper.updateUserCouponStatus(userCoupon);
     }
+
+    @Override
+    public UserCoupon selectBySourceOrderId(String orderId) {
+        return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>().eq(UserCoupon::getSourceOrderId,orderId));
+    }
 }

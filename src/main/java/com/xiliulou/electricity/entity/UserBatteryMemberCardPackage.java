@@ -48,9 +48,9 @@ public class UserBatteryMemberCardPackage {
     /**
      * 套餐剩余次数
      */
-    private Integer remainingNumber;
+    private Long remainingNumber;
 
-    private Integer status;
+//    private Integer status;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
