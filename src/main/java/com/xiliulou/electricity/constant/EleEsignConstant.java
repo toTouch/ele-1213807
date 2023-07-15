@@ -39,11 +39,6 @@ public class EleEsignConstant {
 
     public static final Integer ESIGN_MIN_CAPACITY = 0;
 
-    /**
-     * 签署流程有效期为90天，判断时将时间提前一天
-     */
-    public static final Integer ESIGN_FLOW_EXPIRED_DATE = 89;
-
     public static final String PSN_PHOTO_OSS_PATH = "saas/psnPhoto/";
 
 }
