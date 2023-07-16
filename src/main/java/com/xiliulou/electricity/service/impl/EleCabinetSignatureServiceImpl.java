@@ -320,7 +320,8 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(eleEsignConfig)
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
-                || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
+                || StringUtils.isBlank(eleEsignConfig.getAppSecret())
+                || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
             log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
@@ -329,6 +330,13 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         //检查用户是否已经完成签名的操作
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectEsignFinishedRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
         if(Objects.isNull(eleUserEsignRecord)){
+            //检查用户是否存在最近却未被及时修改为完成状态的记录
+            EleUserEsignRecord latestEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(userInfo.getUid(), TenantContextHolder.getTenantId().longValue());
+            if(Objects.nonNull(latestEsignRecord)){
+                return checkStatusFromThirdParty(latestEsignRecord, eleEsignConfig);
+            }
+
+            //不存在，则直接返回未完成状态
             EleUserEsignRecord esignRecord = new EleUserEsignRecord();
             esignRecord.setUid(userInfo.getUid());
             esignRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
@@ -340,7 +348,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         return Triple.of(true, "", eleUserEsignRecord);
     }
 
-    @Deprecated
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> checkStatusFromThirdParty(EleUserEsignRecord eleUserEsignRecord, EleEsignConfig eleEsignConfig){
         String signFlowId = eleUserEsignRecord.getSignFlowId();
