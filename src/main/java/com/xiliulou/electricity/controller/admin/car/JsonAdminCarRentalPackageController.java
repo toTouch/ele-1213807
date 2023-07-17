@@ -13,6 +13,7 @@ import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
@@ -49,6 +50,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
     @Resource
     private FranchiseeService franchiseeService;
+
+    @Resource
+    private CarRentalPackageBizService carRentalPackageBizService;
 
     @Resource
     private CarRentalPackageService carRentalPackageService;
@@ -262,10 +266,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         optModel.setTenantId(tenantId);
         optModel.setCreateUid(user.getUid());
 
-        CarRentalPackagePO entity = new CarRentalPackagePO();
-        BeanUtils.copyProperties(optModel, entity);
-
-        return R.ok(carRentalPackageService.insert(entity) > 0);
+        return R.ok(carRentalPackageBizService.insertPackage(optModel));
     }
 
 }

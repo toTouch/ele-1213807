@@ -9,6 +9,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 租车套餐，操作模型<br />
@@ -125,9 +126,9 @@ public class CarRentalPackageOptModel implements Serializable {
     private Integer carModelId;
 
     /**
-     * 电池型号ID集，用英文逗号分割
+     * 电池型号编码集
      */
-    private String batteryModelIds;
+    private List<String> batteryModelTypes;
 
     /**
      * 电池型号对应的电压伏数

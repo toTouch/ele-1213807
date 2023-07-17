@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.car.CarRentalPackageCarBatteryRelMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO" id="entityMap">
+        <!--基础映射 -->
+        <result property="id" column="id" jdbcType="BIGINT" />
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER" />
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER" />
+        <result property="storeId" column="store_id" jdbcType="INTEGER" />
+        <result property="createUid" column="create_uid" jdbcType="BIGINT" />
+        <result property="updateUid" column="update_uid" jdbcType="BIGINT" />
+        <result property="createTime" column="create_time" jdbcType="BIGINT" />
+        <result property="updateTime" column="update_time" jdbcType="BIGINT" />
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER" />
+        <!-- 私有映射 -->
+        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
+        <result property="carModelId" column="car_model_id" jdbcType="INTEGER" />
+        <result property="batteryModelType" column="battery_model_type" jdbcType="VARCHAR" />
+        <result property="batteryV" column="battery_v" jdbcType="DECIMAL" />
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="table_name">`t_car_rental_package_car_battery_rel`</sql>
+
+    <!-- 基础字段 -->
+    <sql id="basic_field">
+        `id`, `tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `del_flag`,
+    </sql>
+
+    <!-- 私有字段 -->
+    <sql id="private_field">
+        `rental_package_id`, `car_model_id`, `battery_model_type`, `battery_v`
+    </sql>
+
+    <!-- 全部字段 -->
+    <sql id="all_field">
+        <include refid="basic_field" />
+        <include refid="private_field" />
+    </sql>
+
+    <!-- 根据套餐ID删除(逻辑删除) -->
+    <update id="delByRentalPackageId">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_uid` = #{uid}, `update_time` = #{optTime}, `del_flag` = 1
+        </set>
+        <where>
+            `rental_package_id` = #{rentalPackageId}
+        </where>
+    </update>
+
+    <!-- 根据套餐ID查询 -->
+    <select id="selectByRentalPackageId" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `rental_package_id` = #{rentalPackageId}
+        </where>
+    </select>
+
+
+    <!-- 批量新增 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO <include refid="table_name" />
+            (`tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `rental_package_id`, `car_model_id`, `battery_model_type`, `battery_v`)
+        VALUES
+        <foreach collection="entityList" item="entity" open="(" close=")" separator=",">
+            #{entity.tenantId}, #{entity.franchiseeId}, #{entity.storeId}, #{entity.createUid}, #{entity.updateUid}, #{entity.createTime}, #{entity.updateTime}, #{entity.rentalPackageId},
+            #{entity.carModelId}, #{entity.batteryModelType}, #{entity.batteryV}
+        </foreach>
+    </insert>
+
+</mapper>

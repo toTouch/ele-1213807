@@ -8,7 +8,6 @@ import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
-import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
@@ -308,14 +307,6 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             throw new BizException("", "套餐名称已存在");
         }
 
-        // 保底处理电池型号ID连接字符串
-        String batteryModelIds = entity.getBatteryModelIds();
-        if (StringUtils.isNotBlank(batteryModelIds)) {
-            batteryModelIds = Arrays.asList(batteryModelIds.split(StringConstant.COMMA_EN)).stream().sorted().collect(Collectors.joining(StringConstant.COMMA_EN));
-            entity.setBatteryModelIds(batteryModelIds);
-        }
-
-
         // 赋值操作人、时间、删除标记
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
@@ -325,21 +316,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         carRentalPackageMapper.insert(entity);
 
-        // 后续处理逻辑
-        afterInsert(entity);
-
         return entity.getId();
-    }
-
-    /**
-     * 新增之后的后续操作
-     * @param entity
-     */
-    private void afterInsert(CarRentalPackagePO entity) {
-        // TODO 若为车电一体的套餐，需要调用换电套餐的接口，志龙
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(entity.getType())) {
-
-        }
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPO;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
@@ -69,16 +69,6 @@ public class CarRentalPackagePO extends BasicCarPO {
      * 车辆型号ID
      */
     private Integer carModelId;
-
-    /**
-     * 电池型号ID集，用英文逗号分割
-     */
-    private String batteryModelIds;
-
-    /**
-     * 电池型号对应的电压伏数
-     */
-    private BigDecimal batteryV;
 
     /**
      * 适用类型

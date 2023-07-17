@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.entity.car.basic;
+package com.xiliulou.electricity.entity.basic;
 
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import lombok.Data;

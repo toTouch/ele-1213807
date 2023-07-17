@@ -66,10 +66,10 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
      *
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return true(存在)、false(不存在)
      */
     @Override
-    public Boolean isExitUnpaid(Integer tenantId, Long uid) {
+    public boolean isExitUnpaid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

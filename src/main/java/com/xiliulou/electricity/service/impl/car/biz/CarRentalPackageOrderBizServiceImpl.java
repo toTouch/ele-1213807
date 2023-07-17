@@ -16,9 +16,9 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
-import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
-import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
@@ -29,7 +29,6 @@ import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -39,7 +38,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -104,7 +102,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     @Resource
-    private RentalPackageBizService rentalPackageBizService;
+    private CarRentalPackageBizService carRentalPackageBizService;
 
     @Resource
     private RedisService redisService;
@@ -1007,7 +1005,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             // 下单前的统一拦截校验
-            rentalPackageBizService.checkBuyPackageCommon(tenantId, uid);
+            carRentalPackageBizService.checkBuyPackageCommon(tenantId, uid);
 
             // 2. 支付相关
             ElectricityPayParams payParamsEntity = electricityPayParamsService.queryFromCache(tenantId);
@@ -1085,7 +1083,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
 
             // 未退租
-            if (StringUtils.isNotBlank(rentalPackageOrderNo)) {
+            /*if (StringUtils.isNotBlank(rentalPackageOrderNo)) {
                 // 根据套餐购买订单编号，获取套餐购买订单表，读取其中的套餐快照信息
                 CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
 
@@ -1099,7 +1097,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 Integer buyCarModelId = packageEntity.getCarModelId();
                 BigDecimal buyDeposit = packageEntity.getDeposit();
                 Integer buyConfine = packageEntity.getConfine();
-                List<String> buyBatteryModelIds = Arrays.asList(packageEntity.getBatteryModelIds().split(","));
+                List<String> buyBatteryModelIds = Arrays.asList(*//*packageEntity.getBatteryModelIds().split(",")*//*);
 
                 // 车辆型号、押金、套餐限制，任意一个不一致，则判定为不一致套餐
                 if (!buyCarModelId.equals(oriCarModelId) || buyDeposit.compareTo(oriDeposit) != 0 || !buyConfine.equals(oriConfine)) {
@@ -1110,7 +1108,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 if (buyBatteryModelIds.size() < oriBatteryModelIds.size() || !buyBatteryModelIds.containsAll(oriBatteryModelIds)) {
                     return R.fail("300205", "套餐不匹配");
                 }
-            }
+            }*/
 
             // 退租未退押，押金不一致
             if (deposit.compareTo(packageEntity.getDeposit()) != 0) {
@@ -1156,7 +1154,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 11. 计算金额（叠加优惠券、押金、保险）
             // 优惠券只抵扣租金
-            Triple<BigDecimal, List<Long>, Boolean> couponTriple = rentalPackageBizService.calculatePaymentAmount(packageEntity.getRent(), buyOptModel.getUserCouponIds(), uid);
+            Triple<BigDecimal, List<Long>, Boolean> couponTriple = carRentalPackageBizService.calculatePaymentAmount(packageEntity.getRent(), buyOptModel.getUserCouponIds(), uid);
 
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
@@ -1517,9 +1515,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderEntity.setRentUnitPrice(packagePO.getRentUnitPrice());
         carRentalPackageOrderEntity.setRent(packagePO.getRent());
         carRentalPackageOrderEntity.setRentPayment(rentPayment);
-        carRentalPackageOrderEntity.setCarModelId(packagePO.getCarModelId());
-        carRentalPackageOrderEntity.setBatteryModelIds(packagePO.getBatteryModelIds());
-        carRentalPackageOrderEntity.setBatteryV(packagePO.getBatteryV());
         carRentalPackageOrderEntity.setApplicableType(packagePO.getApplicableType());
         carRentalPackageOrderEntity.setRentRebate(packagePO.getRentRebate());
         carRentalPackageOrderEntity.setRentRebateTerm(packagePO.getRentRebateTerm());

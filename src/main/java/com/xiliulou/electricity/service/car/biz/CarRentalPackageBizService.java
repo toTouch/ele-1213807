@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.car.biz;
 
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -12,7 +13,14 @@ import java.util.List;
  *
  * @author xiaohui.song
  **/
-public interface RentalPackageBizService {
+public interface CarRentalPackageBizService {
+
+    /**
+     * 新增套餐
+     * @param optModel
+     * @return
+     */
+    boolean insertPackage(CarRentalPackageOptModel optModel);
 
     /**
      * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐

@@ -118,7 +118,7 @@
     <select id="isExitUnpaid" resultType="java.lang.Integer">
         SELECT COUNT(1) FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `late_fee_start_time` <![CDATA[>=]]> #{time} AND `del_flag` = 0
+            `tenant_id` = #{tenantId} AND `uid` = #{uid} AND `late_fee_start_time` <![CDATA[<=]]> #{time} AND `pay_state` <![CDATA[<>]]> 2 AND `del_flag` = 0
         </where>
     </select>
 
