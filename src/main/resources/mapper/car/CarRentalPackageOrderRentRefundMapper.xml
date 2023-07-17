@@ -117,6 +117,7 @@
         </trim>
     </sql>
 
+    <!-- 根据退租申请单编码进行更新 -->
     <update id="updateByOrderNo">
         UPDATE <include refid="table_name" />
         <set>

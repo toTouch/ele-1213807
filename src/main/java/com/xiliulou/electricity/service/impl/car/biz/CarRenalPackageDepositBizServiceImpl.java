@@ -58,6 +58,71 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     /**
+     * 审批退还押金申请单
+     *
+     * @param refundDepositOrderNo 退押申请单
+     * @param approveFlag          审批状态
+     * @param apploveDesc          审批意见
+     * @param apploveUid           审批人
+     * @param refundAmount         退款金额
+     * @return
+     */
+    @Override
+    public boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount) {
+        if (ObjectUtils.allNotNull(refundDepositOrderNo, approveFlag, apploveUid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        CarRentalPackageDepositRefundPO depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(refundDepositOrderNo);
+        if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(depositRefundEntity.getRefundState())) {
+            log.error("approveRefundDepositOrder faild. not find car_rental_package_deposit_refund or status error. refundDepositOrderNo is {}", refundDepositOrderNo);
+            // TODO 错误编码
+            throw new BizException("", "数据有误");
+        }
+
+        // TX 事务落库
+        saveApproveRefundDepositOrderTx(refundDepositOrderNo, approveFlag, apploveDesc, apploveUid, depositRefundEntity, refundAmount);
+
+        return true;
+    }
+
+    /**
+     * 退押审批，TX事务处理
+     * @param refundDepositOrderNo 退押申请订单号
+     * @param approveFlag          审批状态
+     * @param apploveDesc          审批意见
+     * @param apploveUid           审批人
+     * @param refundAmount         退款金额
+     * @param depositRefundEntity         退押申请单信息
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveApproveRefundDepositOrderTx(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, CarRentalPackageDepositRefundPO depositRefundEntity, BigDecimal refundAmount) {
+
+        CarRentalPackageDepositRefundPO depositRefundUpdateEntity = new CarRentalPackageDepositRefundPO();
+        depositRefundUpdateEntity.setOrderNo(refundDepositOrderNo);
+        depositRefundUpdateEntity.setAuditTime(System.currentTimeMillis());
+        depositRefundUpdateEntity.setRemark(apploveDesc);
+        depositRefundUpdateEntity.setUpdateUid(apploveUid);
+        depositRefundUpdateEntity.setRealAmount(refundAmount);
+
+        if (approveFlag) {
+            // 1. 更新退押申请单
+            depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
+            carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+
+            // 2. 删除会员期限
+            carRentalPackageMemberTermService.delByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), apploveUid);
+        } else {
+            // 1. 更新退租申请单状态
+            depositRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
+            carRentalPackageDepositRefundService.updateByOrderNo(depositRefundUpdateEntity);
+
+            // 2. 更新会员期限
+            carRentalPackageMemberTermService.updateStatusByUidAndTenantId(depositRefundEntity.getTenantId(), depositRefundEntity.getUid(), MemberTermStatusEnum.NORMAL.getCode(), apploveUid);
+        }
+    }
+
+    /**
      * 退押申请
      *
      * @param tenantId 租户ID
@@ -66,7 +131,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @return
      */
     @Override
-    public boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo) {
+    public boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo, SystemDefinitionEnum systemDefinition) {
         if (!ObjectUtils.allNotNull(tenantId, uid, depositPayOrderNo)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

@@ -73,4 +73,10 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
      */
     private String remark;
 
+    /**
+     * 审核时间
+     */
+    private Long auditTime;
+
+
 }

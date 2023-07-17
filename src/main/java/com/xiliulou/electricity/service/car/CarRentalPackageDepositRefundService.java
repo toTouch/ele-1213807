@@ -13,6 +13,13 @@ import java.util.List;
 public interface CarRentalPackageDepositRefundService {
 
     /**
+     * 根据退押申请单编码进行更新
+     * @param entity 实体数据
+     * @return
+     */
+    boolean updateByOrderNo(CarRentalPackageDepositRefundPO entity);
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型

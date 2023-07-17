@@ -101,5 +101,10 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      */
     private BigDecimal deposit;
 
+    /**
+     * 当前使用的保险订单号
+     */
+    private String insuranceOrderId;
+
 
 }
