@@ -166,6 +166,18 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(false, "000100", "未找到用户");
         }
 
+        //用户是否被限制
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELE ERROR! user is unUsable,uid={}", userInfo.getUid());
+            return Triple.of(false, "000101", "用户已被禁用");
+        }
+
+        //用户是否审核通过
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ORDER ERROR! userinfo is UN AUTH! uid={}", userInfo.getUid());
+            return Triple.of(false, "100109", "用户未审核");
+        }
+
         //获取用户所属租户的签名配置信息
         EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(eleEsignConfig)
@@ -303,6 +315,12 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(false, "000101", "用户已被禁用");
         }
 
+        //用户是否审核通过
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("ORDER ERROR! userinfo is UN AUTH! uid={}", userInfo.getUid());
+            return Triple.of(false, "000109", "用户未审核");
+        }
+
         //对应的租户是否已经开启电子签署功能
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
@@ -390,7 +408,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             FileDownLoadResp fileDownLoadResp = signatureFileService.QueryDownLoadLink(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
             return Triple.of(true, "", fileDownLoadResp);
         }else{
-            return Triple.of(false, "000107", "签署流程未完成！");
+            return Triple.of(false, "000108", "签署流程未完成！");
         }
     }
 
