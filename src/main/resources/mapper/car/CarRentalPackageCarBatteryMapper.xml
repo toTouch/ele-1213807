@@ -43,7 +43,7 @@
     <update id="delByRentalPackageId">
         UPDATE <include refid="table_name" />
         <set>
-            `update_uid` = #{uid}, `update_time` = #{optTime}, `del_flag` = 1
+            `update_uid` = #{optId}, `update_time` = #{optTime}, `del_flag` = 1
         </set>
         <where>
             `rental_package_id` = #{rentalPackageId}

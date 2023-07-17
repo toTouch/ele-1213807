@@ -13,9 +13,10 @@ public interface CarRentalPackageCarBatteryRelService {
     /**
      * 根据套餐ID删除(逻辑删除)
      * @param rentalPackageId 套餐ID
+     * @param optId 操作人ID
      * @return
      */
-    boolean delByRentalPackageId(Long rentalPackageId);
+    boolean delByRentalPackageId(Long rentalPackageId, Long optId);
 
     /**
      * 根据套餐ID查询

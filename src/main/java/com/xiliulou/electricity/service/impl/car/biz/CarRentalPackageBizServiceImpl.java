@@ -79,6 +79,23 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     private UserInfoService userInfoService;
 
     /**
+     * 根据套餐ID删除套餐信息
+     * @param packageId 套餐ID
+     * @param optId 操作人ID
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean delPackageById(Long packageId, Long optId) {
+        if (ObjectUtils.isEmpty(packageId)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        carRentalPackageService.delById(packageId, optId);
+        carRentalPackageCarBatteryRelService.delByRentalPackageId(packageId, optId);
+        return false;
+    }
+
+    /**
      * 新增套餐
      *
      * @param optModel

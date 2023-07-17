@@ -26,14 +26,15 @@ public class CarRentalPackageCarBatteryRelServiceImpl implements CarRentalPackag
      * 根据套餐ID删除(逻辑删除)
      *
      * @param rentalPackageId 套餐ID
+     * @param optId 操作人ID
      * @return
      */
     @Override
-    public boolean delByRentalPackageId(Long rentalPackageId) {
-        if (ObjectUtils.isEmpty(rentalPackageId)) {
+    public boolean delByRentalPackageId(Long rentalPackageId, Long optId) {
+        if (!ObjectUtils.allNotNull(rentalPackageId, optId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        carRentalPackageCarBatteryRelMapper.delByRentalPackageId(rentalPackageId);
+        carRentalPackageCarBatteryRelMapper.delByRentalPackageId(rentalPackageId, optId, System.currentTimeMillis());
         return true;
     }
 

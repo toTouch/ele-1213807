@@ -5,13 +5,16 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -41,6 +44,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin/car/carRentalPackage")
 public class JsonAdminCarRentalPackageController extends BasicController {
+
+    @Resource
+    private CarRentalPackageCarBatteryRelService carRentalPackageCarBatteryRelService;
 
     @Resource
     private ElectricityCarModelService electricityCarModelService;
@@ -199,7 +205,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Long storeId = Long.valueOf(carRentalPackagePO.getStoreId());
         Store store = storeService.queryByIdFromCache(storeId);
 
-        // 查询型号
+        // 查询车辆型号
         Integer carModelId = carRentalPackagePO.getCarModelId();
         ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(carModelId);
 
@@ -211,6 +217,13 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         carRentalPackageVO.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
         carRentalPackageVO.setStoreName(ObjectUtils.isNotEmpty(store) ? store.getName() : null);
         carRentalPackageVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
+
+        // 查询电池型号
+        if (carRentalPackagePO.getType().equals(CarRentalPackageTypeEnum.CAR_BATTERY.getCode())) {
+            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(carRentalPackagePO.getId());
+            List<String> batteryModelTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+            carRentalPackageVO.setBatteryModelTypes(batteryModelTypes);
+        }
 
         return R.ok(carRentalPackageVO);
     }
@@ -228,7 +241,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         TokenUser user = SecurityUtils.getUserInfo();
 
-        return R.ok(carRentalPackageService.delById(id, user.getUid()));
+        return R.ok(carRentalPackageBizService.delPackageById(id, user.getUid()));
     }
 
     /**

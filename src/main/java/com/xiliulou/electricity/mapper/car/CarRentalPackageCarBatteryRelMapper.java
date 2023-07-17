@@ -18,7 +18,7 @@ public interface CarRentalPackageCarBatteryRelMapper {
      * @param rentalPackageId 套餐ID
      * @return
      */
-    Integer delByRentalPackageId(Long rentalPackageId);
+    Integer delByRentalPackageId(@Param("rentalPackageId") Long rentalPackageId, @Param("optId") Long optId, @Param("optTime") Long optTime);
 
     /**
      * 根据套餐ID查询

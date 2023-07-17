@@ -16,6 +16,14 @@ import java.util.List;
 public interface CarRentalPackageBizService {
 
     /**
+     * 根据套餐ID删除套餐信息
+     * @param packageId 套餐ID
+     * @param optId 操作人ID
+     * @return
+     */
+    boolean delPackageById(Long packageId, Long optId);
+
+    /**
      * 新增套餐
      * @param optModel
      * @return
