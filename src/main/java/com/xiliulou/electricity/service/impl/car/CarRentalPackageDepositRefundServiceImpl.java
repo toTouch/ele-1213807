@@ -29,6 +29,25 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
     private CarRentalPackageDepositRefundMapper carRentalPackageDepositRefundMapper;
 
     /**
+     * 根据退押申请单编码进行更新
+     *
+     * @param entity 实体数据
+     * @return
+     */
+    @Override
+    public boolean updateByOrderNo(CarRentalPackageDepositRefundPO entity) {
+        if (ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        entity.setUpdateTime(System.currentTimeMillis());
+
+        int num = carRentalPackageDepositRefundMapper.updateByOrderNo(entity);
+
+        return num >= 0;
+    }
+
+    /**
      * 条件查询列表<br />
      * 全表扫描，慎用
      *

@@ -5,7 +5,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
-import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public class JsonUserCarRenalPackageController extends BasicController {
 
     @Resource
-    private RentalPackageBizService rentalPackageBizService;
+    private CarRentalPackageBizService carRentalPackageBizService;
 
     /**
      * 根据车辆型号获取<code>C</code>端能够展示的套餐
@@ -53,7 +53,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
         // 重新赋值租户ID
         qryReq.setTenantId(tenantId);
 
-        List<CarRentalPackagePO> entityList = rentalPackageBizService.queryByCarModel(qryReq, user.getUid());
+        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryByCarModel(qryReq, user.getUid());
 
         // 获取优惠券ID集
         List<Long> couponIdList = entityList.stream()
@@ -89,7 +89,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
             packageVO.setConfineNum(entity.getConfineNum());
             packageVO.setGiveCoupon(entity.getGiveCoupon());
             packageVO.setRemark(entity.getRemark());
-            packageVO.setBatteryV(entity.getBatteryV());
+            /*packageVO.setBatteryV(entity.getBatteryV());*/
             // 设置辅助业务信息
             packageVO.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
             return packageVO;

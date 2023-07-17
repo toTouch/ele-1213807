@@ -25,9 +25,9 @@ public interface CarRentalPackageOrderSlippageService {
      * 距当前时间，是否存在未缴纳的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return true(存在)、false(不存在)
      */
-    Boolean isExitUnpaid(Integer tenantId, Long uid);
+    boolean isExitUnpaid(Integer tenantId, Long uid);
     
     /**
      * 条件查询列表<br />

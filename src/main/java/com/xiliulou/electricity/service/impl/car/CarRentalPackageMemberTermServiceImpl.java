@@ -111,7 +111,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @return
      */
     @Override
-    public Boolean updateStatusById(Long id, Integer status, Long optId) {
+    public boolean updateStatusById(Long id, Integer status, Long optId) {
         if (ObjectUtils.isEmpty(id) || ObjectUtils.isEmpty(status)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

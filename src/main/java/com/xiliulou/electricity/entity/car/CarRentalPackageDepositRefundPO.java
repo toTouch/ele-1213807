@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPO;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import lombok.Data;
@@ -72,5 +72,11 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
      * 备注
      */
     private String remark;
+
+    /**
+     * 审核时间
+     */
+    private Long auditTime;
+
 
 }

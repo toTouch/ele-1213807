@@ -191,7 +191,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
         carRentalPackageOrderPOList.forEach(carRentalPackageOrder -> {
             rentalPackageIds.add(carRentalPackageOrder.getRentalPackageId());
-            carModelIds.add(carRentalPackageOrder.getCarModelId());
+            /*carModelIds.add(carRentalPackageOrder.getCarModelId());*/
         });
 
         // 套餐名称信息
@@ -212,7 +212,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             carRentalPackageOrderVO.setTenancy(carRentalPackageOrder.getTenancy());
             carRentalPackageOrderVO.setTenancyUnit(carRentalPackageOrder.getTenancyUnit());
             carRentalPackageOrderVO.setRent(carRentalPackageOrder.getRent());
-            carRentalPackageOrderVO.setBatteryV(carRentalPackageOrder.getBatteryV());
+            /*carRentalPackageOrderVO.setBatteryV(carRentalPackageOrder.getBatteryV());*/
             carRentalPackageOrderVO.setPayState(carRentalPackageOrder.getPayState());
             carRentalPackageOrderVO.setUseState(carRentalPackageOrder.getUseState());
             carRentalPackageOrderVO.setCreateTime(carRentalPackageOrder.getCreateTime());
@@ -228,7 +228,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
             // 赋值业务属性信息
             carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageNameMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), ""));
-            carRentalPackageOrderVO.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageOrder.getCarModelId(), ""));
+            /*carRentalPackageOrderVO.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageOrder.getCarModelId(), ""));*/
 
             return carRentalPackageOrderVO;
         }).collect(Collectors.toList());

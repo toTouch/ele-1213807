@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 租车套餐展示层数据模型
@@ -62,16 +63,6 @@ public class CarRentalPackageVO implements Serializable {
      * 车辆型号ID
      */
     private Integer carModelId;
-
-    /**
-     * 电池型号ID集，用英文逗号分割
-     */
-    private String batteryModelIds;
-
-    /**
-     * 电池型号对应的电压伏数
-     */
-    private BigDecimal batteryV;
 
     /**
      * 适用类型
@@ -190,5 +181,10 @@ public class CarRentalPackageVO implements Serializable {
      * 赠送优惠券金额
      */
     private BigDecimal giveCouponAmount;
+
+    /**
+     * 电池型号编码集
+     */
+    private List<String> batteryModelTypes;
 
 }

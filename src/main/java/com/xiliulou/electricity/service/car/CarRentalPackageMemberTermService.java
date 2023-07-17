@@ -57,7 +57,7 @@ public interface CarRentalPackageMemberTermService {
      * @param optId 操作人（可以为空）
      * @return
      */
-    Boolean updateStatusById(Long id, Integer status, Long optId);
+    boolean updateStatusById(Long id, Integer status, Long optId);
 
     /**
      * 根据主键ID更新数据

@@ -46,17 +46,6 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
     }
 
     /**
-     * 根据订单编号退押
-     * @param orderNo 订单编号
-     * @return
-     */
-    @GetMapping("/refundDeposit")
-    public R<Boolean> refundDeposit(String orderNo) {
-        // TODO 实现逻辑
-        return null;
-    }
-
-    /**
      * 条件分页查询
      * @param queryReq 请求参数类
      * @return

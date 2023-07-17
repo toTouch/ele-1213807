@@ -5,6 +5,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
@@ -32,7 +33,27 @@ import java.util.stream.Collectors;
 public class JsonUserCarDepositRefundController extends BasicController {
 
     @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
+
+    @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
+
+    /**
+     * 退押申请
+     * @param depositPayOrderNo 押金缴纳订单编码
+     * @return
+     */
+    @GetMapping("/refundDeposit")
+    public R<Boolean> refundDeposit(String depositPayOrderNo) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRenalPackageDepositBizService.refundDeposit(tenantId, user.getUid(), depositPayOrderNo));
+    }
 
     /**
      * 分页查询
@@ -40,9 +61,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
      */
     @GetMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(Integer offset, Integer size) {
-
         Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -78,9 +97,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
      */
     @GetMapping("/count")
     public R<Integer> count() {
-
         Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");

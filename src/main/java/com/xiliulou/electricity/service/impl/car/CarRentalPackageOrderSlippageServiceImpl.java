@@ -51,11 +51,11 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
-     * @return
+     * @return true(存在)、false(不存在)
      */
     @Slave
     @Override
-    public Boolean isExitUnpaid(Integer tenantId, Long uid) {
+    public boolean isExitUnpaid(Integer tenantId, Long uid) {
         return carRentalPackageOrderSlippageMapper.isExitUnpaid(tenantId, uid, System.currentTimeMillis()) > 0;
     }
 

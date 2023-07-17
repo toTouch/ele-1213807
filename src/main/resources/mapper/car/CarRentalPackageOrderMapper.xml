@@ -25,9 +25,6 @@
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />
         <result property="rent" column="rent" jdbcType="DECIMAL" />
         <result property="rentPayment" column="rent_payment" jdbcType="DECIMAL" />
-        <result property="carModelId" column="car_model_id" jdbcType="INTEGER" />
-        <result property="batteryModelIds" column="battery_model_ids" jdbcType="VARCHAR" />
-        <result property="batteryV" column="battery_v" jdbcType="DECIMAL" />
         <result property="applicableType" column="applicable_type" jdbcType="INTEGER" />
         <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER" />
         <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER" />
@@ -53,8 +50,8 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `confine`, `deposit`, `confine_num`, `tenancy`, `tenancy_unit`, `rent_unit_price`, `rent`, `rent_payment`, `car_model_id`,
-        `battery_model_ids`, `battery_v`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `rent_rebate_end_time`, `deposit_pay_order_no`, `late_fee`, `pay_type`, `coupon_id`,
+        `uid`, `order_no`, `rental_package_id`, `rental_package_type`, `confine`, `deposit`, `confine_num`, `tenancy`, `tenancy_unit`, `rent_unit_price`, `rent`, `rent_payment`,
+        `applicable_type`, `rent_rebate`, `rent_rebate_term`, `rent_rebate_end_time`, `deposit_pay_order_no`, `late_fee`, `pay_type`, `coupon_id`,
         `pay_state`, `use_state`, `remark`, `use_begin_time`
     </sql>
 
@@ -96,9 +93,6 @@
             <if test=" rentUnitPrice != null "> `rent_unit_price`, </if>
             <if test=" rent != null "> `rent`, </if>
             <if test=" rentPayment != null "> `rent_payment`, </if>
-            <if test=" carModelId != null "> `car_model_id`, </if>
-            <if test=" batteryModelIds != null and batteryModelIds != '' "> `battery_model_ids`, </if>
-            <if test=" batteryV != null "> `battery_v`, </if>
             <if test=" applicableType != null "> `applicable_type`, </if>
             <if test=" rentRebate != null "> `rent_rebate`, </if>
             <if test=" rentRebateTerm != null "> `rent_rebate_term`, </if>
@@ -135,9 +129,6 @@
             <if test=" rentUnitPrice != null "> #{rentUnitPrice}, </if>
             <if test=" rent != null "> #{rent}, </if>
             <if test=" rentPayment != null "> #{rentPayment}, </if>
-            <if test=" carModelId != null "> #{carModelId}, </if>
-            <if test=" batteryModelIds != null and batteryModelIds != '' "> #{batteryModelIds}, </if>
-            <if test=" batteryV != null "> #{batteryV}, </if>
             <if test=" applicableType != null "> #{applicableType}, </if>
             <if test=" rentRebate != null "> #{rentRebate}, </if>
             <if test=" rentRebateTerm != null "> #{rentRebateTerm}, </if>

@@ -20,8 +20,8 @@ public interface CarRenalPackageSlippageBizService {
      * 租车(单车、车电一体)
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return true(存在)、false(不存在)
      */
-    Boolean isExitUnpaid(Integer tenantId, Long uid);
+    boolean isExitUnpaid(Integer tenantId, Long uid);
 
 }

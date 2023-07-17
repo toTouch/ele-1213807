@@ -22,6 +22,7 @@
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
         <result property="refundState" column="refund_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="auditTime" column="audit_time" jdbcType="BIGINT" />
     </resultMap>
 
     <!-- 表名 -->
@@ -35,7 +36,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `deposit_pay_order_no`, `apply_amount`, `real_amount`, `pay_type`,
-        `refund_state`, `remark`
+        `refund_state`, `remark`, `audit_time`
     </sql>
 
     <!-- 全部字段 -->
@@ -74,6 +75,7 @@
             <if test=" payType != null "> `pay_type`, </if>
             <if test=" refundState != null "> `refund_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" auditTime != null "> `audit_time`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -95,8 +97,25 @@
             <if test=" payType != null "> #{payType}, </if>
             <if test=" refundState != null "> #{refundState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" auditTime != null "> #{auditTime}, </if>
         </trim>
     </sql>
+
+    <!-- 根据退押申请单编码进行更新 -->
+    <update id="updateByOrderNo">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{updateTime}
+            <if test=" refundState != null "> , `refund_state` = #{refundState} </if>
+            <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+            <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
+            <if test=" auditTime != null "> , `audit_time` = #{auditTime} </if>
+            <if test=" realAmount != null "> , `real_amount` = #{realAmount} </if>
+        </set>
+        <where>
+            `order_no` = #{orderNo}
+        </where>
+    </update>
 
     <!-- 条件查询列表 -->
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel" resultMap="entityMap">

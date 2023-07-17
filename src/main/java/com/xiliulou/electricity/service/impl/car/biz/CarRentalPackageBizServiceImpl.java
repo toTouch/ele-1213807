@@ -4,24 +4,31 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.enums.basic.BasicEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
-import com.xiliulou.electricity.service.car.biz.RentalPackageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -39,7 +46,10 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 @Service
-public class RentalPackageBizServiceImpl implements RentalPackageBizService {
+public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
+
+    @Resource
+    private CarRentalPackageCarBatteryRelService carRentalPackageCarBatteryRelService;
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
@@ -67,6 +77,91 @@ public class RentalPackageBizServiceImpl implements RentalPackageBizService {
 
     @Resource
     private UserInfoService userInfoService;
+
+    /**
+     * 根据套餐ID删除套餐信息
+     * @param packageId 套餐ID
+     * @param optId 操作人ID
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean delPackageById(Long packageId, Long optId) {
+        if (ObjectUtils.isEmpty(packageId)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        carRentalPackageService.delById(packageId, optId);
+        carRentalPackageCarBatteryRelService.delByRentalPackageId(packageId, optId);
+        return false;
+    }
+
+    /**
+     * 新增套餐
+     *
+     * @param optModel
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean insertPackage(CarRentalPackageOptModel optModel) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getCreateUid(), optModel.getTenantId(), optModel.getName())
+                || !BasicEnum.isExist(optModel.getType(), CarRentalPackageTypeEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = optModel.getTenantId();
+        String name = optModel.getName();
+
+        // 检测唯一
+        if (carRentalPackageService.uqByTenantIdAndName(tenantId, name)) {
+            // TODO 错误编码
+            throw new BizException("", "套餐名称已存在");
+        }
+
+        // 新增租车套餐
+        CarRentalPackagePO entity = new CarRentalPackagePO();
+        BeanUtils.copyProperties(optModel, entity);
+        Long packageId = carRentalPackageService.insert(entity);
+
+        // 车电一体
+        if (CarRentalPackageTypeEnum.CAR.getCode().equals(optModel.getType())) {
+            return true;
+        }
+
+        // 车电一体
+        List<String> batteryModelTypes = optModel.getBatteryModelTypes();
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
+            if (CollectionUtils.isEmpty(batteryModelTypes)) {
+                log.error("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");
+                // TODO 错误编码
+                throw new BizException("ELECTRICITY.0007", "不合法的参数");
+            }
+        }
+
+        // 1. 保存关联表
+        List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = batteryModelTypes.stream().map(batteryModelType -> {
+            CarRentalPackageCarBatteryRelPO carBatteryRelEntity = new CarRentalPackageCarBatteryRelPO();
+            carBatteryRelEntity.setRentalPackageId(packageId);
+            carBatteryRelEntity.setCarModelId(entity.getCarModelId());
+            carBatteryRelEntity.setBatteryModelType(batteryModelType);
+            carBatteryRelEntity.setBatteryV(optModel.getBatteryV());
+            carBatteryRelEntity.setTenantId(entity.getTenantId());
+            carBatteryRelEntity.setFranchiseeId(entity.getFranchiseeId());
+            carBatteryRelEntity.setStoreId(entity.getStoreId());
+            carBatteryRelEntity.setCreateUid(entity.getCreateUid());
+            carBatteryRelEntity.setUpdateUid(entity.getUpdateUid());
+            carBatteryRelEntity.setCreateTime(entity.getCreateTime());
+            carBatteryRelEntity.setUpdateTime(entity.getUpdateTime());
+
+            return carBatteryRelEntity;
+
+        }).collect(Collectors.toList());
+        carRentalPackageCarBatteryRelService.batchInsert(carBatteryRelEntityList);
+
+        // TODO 2. 调用租电套餐设置接口
+
+        return true;
+    }
 
     /**
      * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐

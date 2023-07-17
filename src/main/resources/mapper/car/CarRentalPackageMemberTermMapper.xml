@@ -24,6 +24,7 @@
         <result property="residueTotal" column="residue_total" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="insuranceOrderId" column="insurance_order_id" jdbcType="VARCHAR" />
     </resultMap>
 
     <!-- 表名 -->
@@ -36,7 +37,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `residue_total`, `status`, `remark`
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `residue_total`, `status`, `remark`, `insurance_order_id`
     </sql>
 
     <!-- 全部字段 -->
@@ -71,6 +72,7 @@
             <if test=" residueTotal != null "> `residue_total`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" insuranceOrderId != null and insuranceOrderId != '' "> `insurance_order_id`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -94,6 +96,7 @@
             <if test=" residueTotal != null "> #{residueTotal}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" insuranceOrderId != null and insuranceOrderId != '' "> #{insuranceOrderId}, </if>
         </trim>
     </sql>
 
@@ -168,6 +171,7 @@
             <if test=" status != null "> , `status` = #{status} </if>
             <if test=" deposit != null "> , `deposit` = #{deposit} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
+            <if test=" insuranceOrderId != null and insuranceOrderId != '' "> , `insurance_order_id` = #{insuranceOrderId} </if>
         </set>
         <where>
             `id` = #{id}

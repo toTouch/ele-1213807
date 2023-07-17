@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.entity.car;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.entity.car.basic.BasicCarPO;
+import com.xiliulou.electricity.entity.basic.BasicCarPO;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
@@ -100,6 +100,11 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      * 押金金额(元)
      */
     private BigDecimal deposit;
+
+    /**
+     * 当前使用的保险订单号
+     */
+    private String insuranceOrderId;
 
 
 }

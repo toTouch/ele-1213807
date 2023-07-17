@@ -62,7 +62,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             return R.ok();
         }
 
-        // 获取辅助业务信息（用户信息、套餐名称、加盟商信息、柜机信息）
+        // 获取辅助业务信息（用户信息、套餐名称、加盟商信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
