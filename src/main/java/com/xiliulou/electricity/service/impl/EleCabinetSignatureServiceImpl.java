@@ -315,12 +315,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(false, "000101", "用户已被禁用");
         }
 
-        //用户是否审核通过
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ORDER ERROR! userinfo is UN AUTH! uid={}", userInfo.getUid());
-            return Triple.of(false, "000109", "用户未审核");
-        }
-
         //对应的租户是否已经开启电子签署功能
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(electricityConfig)) {
