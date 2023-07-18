@@ -37,6 +37,8 @@ public interface BatteryMemberCardService {
 
     Integer insert(BatteryMemberCard batteryMemberCard);
 
+    Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard,List<String> batteryModels);
+
     Integer update(BatteryMemberCard batteryMemberCard);
 
     /**

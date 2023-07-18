@@ -99,6 +99,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels) {
+
+        this.batteryMemberCardMapper.insert(batteryMemberCard);
+
+        return memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(batteryModels, batteryMemberCard.getId()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryMemberCard batteryMemberCard) {
         int update = this.batteryMemberCardMapper.update(batteryMemberCard);
         DbUtils.dbOperateSuccessThenHandleCache(update, i -> {
