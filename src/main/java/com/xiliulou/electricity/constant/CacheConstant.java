@@ -314,6 +314,11 @@ public interface CacheConstant {
     String CACHE_ELE_CABINET_ESIGN_AUTH_LOCK_KEY = "electricity_cabinet_esign_auth_lock_key:";
 
     /**
+     * 电子签署个人签署缓存锁
+     */
+    String CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY = "electricity_cabinet_esign_sign_lock_key:";
+
+    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";

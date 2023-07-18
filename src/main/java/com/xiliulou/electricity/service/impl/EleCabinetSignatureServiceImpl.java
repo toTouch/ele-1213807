@@ -159,6 +159,12 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
     @Override
     public Triple<Boolean, String, Object> getSignFlowLink() {
+
+        if (!redisService
+                .setNx(CacheConstant.CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+        }
+
         //获取当前用户信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         if (Objects.isNull(userInfo)) {
@@ -199,35 +205,44 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
         }
 
-        //根据模板id创建签署文件
-        List<ComponentData> componentDataList = new ArrayList<>();
-        FileCreateByTempResp fileCreateByTempResp = signatureFileService.createFileByTemplate(eleEsignConfig.getDocTemplateId(), eleEsignConfig.getSignFileName(),componentDataList, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-        String fileId = fileCreateByTempResp.getData().getFileId();
-        String fileName = eleEsignConfig.getSignFileName();
+        SignFlowVO signFlowVO = null;
+        try{
+            //根据模板id创建签署文件
+            List<ComponentData> componentDataList = new ArrayList<>();
+            FileCreateByTempResp fileCreateByTempResp = signatureFileService.createFileByTemplate(eleEsignConfig.getDocTemplateId(), eleEsignConfig.getSignFileName(),componentDataList, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+            String fileId = fileCreateByTempResp.getData().getFileId();
+            String fileName = eleEsignConfig.getSignFileName();
 
-        //基于文件发起签署流程
-        UserInfoQuery userInfoQuery = new UserInfoQuery();
-        userInfoQuery.setPhone(userInfo.getPhone());
-        userInfoQuery.setUserName(userInfo.getName());
+            //基于文件发起签署流程
+            UserInfoQuery userInfoQuery = new UserInfoQuery();
+            userInfoQuery.setPhone(userInfo.getPhone());
+            userInfoQuery.setUserName(userInfo.getName());
 
-        SignFlowDataQuery signFlowDataQuery = new SignFlowDataQuery();
-        signFlowDataQuery.setFileId(fileId);
-        signFlowDataQuery.setSignFileName(fileName);
-        signFlowDataQuery.setSignFlowName(eleEsignConfig.getSignFlowName());
-        signFlowDataQuery.setTenantAppId(eleEsignConfig.getAppId());
-        signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
-        signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
-        signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
+            SignFlowDataQuery signFlowDataQuery = new SignFlowDataQuery();
+            signFlowDataQuery.setFileId(fileId);
+            signFlowDataQuery.setSignFileName(fileName);
+            signFlowDataQuery.setSignFlowName(eleEsignConfig.getSignFlowName());
+            signFlowDataQuery.setTenantAppId(eleEsignConfig.getAppId());
+            signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
+            signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
+            signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
 
-        //根据模版ID获取组件位置
-        SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-        ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
+            //根据模版ID获取组件位置
+            SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+            ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
 
-        signFlowDataQuery.setPositionPage(String.valueOf(componentPosition.getComponentPageNum()));
-        signFlowDataQuery.setPositionX(componentPosition.getComponentPositionX());
-        signFlowDataQuery.setPositionY(componentPosition.getComponentPositionY());
+            signFlowDataQuery.setPositionPage(String.valueOf(componentPosition.getComponentPageNum()));
+            signFlowDataQuery.setPositionX(componentPosition.getComponentPositionX());
+            signFlowDataQuery.setPositionY(componentPosition.getComponentPositionY());
 
-        SignFlowVO signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+            signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+
+        }catch(Exception e){
+            log.error("ELE ERROR! get sign flow link error,uid={},ex={}", userInfo.getUid(), e);
+            return Triple.of(false, "000109", "获取签署链接失败");
+        }finally {
+            redisService.delete(CacheConstant.CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY + SecurityUtils.getUid());
+        }
 
         return Triple.of(true, "", signFlowVO);
     }
