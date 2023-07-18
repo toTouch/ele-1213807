@@ -165,6 +165,12 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
 
+    @Autowired
+    ServiceFeeUserInfoService serviceFeeUserInfoService;
+
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -2520,7 +2526,7 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         //处理电池免押解冻退款中订单
         batteryFreeDepositRefundingOrder();
 
-        //处理电池免押解冻退款中订单
+        //处理车辆免押解冻退款中订单
         carFreeDepositRefundingOrder();
     }
 
@@ -2579,23 +2585,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                                 .eq(EleRefundOrder::getRefundOrderType, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER)
                                 .in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
 
-                //如果车电一起免押，解绑用户车辆信息
-                if (Objects.nonNull(carRefundOrder) && Objects.equals(freeDepositOrder.getDepositType(), FreeDepositOrder.DEPOSIT_TYPE_CAR_BATTERY)) {
-                    EleRefundOrder carRefundOrderUpdate = new EleRefundOrder();
-                    carRefundOrderUpdate.setId(carRefundOrder.getId());
-                    carRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
-                    carRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-                    eleRefundOrderService.update(carRefundOrderUpdate);
-
-                    updateUserInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_NO);
-
-                    userCarService.deleteByUid(freeDepositOrder.getUid());
-
-                    userCarDepositService.logicDeleteByUid(freeDepositOrder.getUid());
-
-                    userCarMemberCardService.deleteByUid(freeDepositOrder.getUid());
-                }
-
                 updateUserInfo.setUid(freeDepositOrder.getUid());
                 updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_NO);
                 updateUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -2611,6 +2600,15 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 }
 
                 userInfoService.unBindUserFranchiseeId(freeDepositOrder.getUid());
+
+                //删除用户电池套餐资源包
+                userBatteryMemberCardPackageService.deleteByUid(freeDepositOrder.getUid());
+
+                //删除用户电池型号
+                userBatteryTypeService.deleteByUid(freeDepositOrder.getUid());
+
+                //删除用户电池服务费
+                serviceFeeUserInfoService.deleteByUid(freeDepositOrder.getUid());
             }
         }
     }

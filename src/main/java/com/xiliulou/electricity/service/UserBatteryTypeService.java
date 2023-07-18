@@ -26,4 +26,6 @@ public interface UserBatteryTypeService {
     Integer batchInsert(List<UserBatteryType> buildUserBatteryType);
 
     List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo);
+
+    Integer deleteByUid(Long uid);
 }

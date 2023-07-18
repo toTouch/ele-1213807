@@ -40,4 +40,6 @@ public interface UserBatteryTypeMapper extends BaseMapper<UserBatteryType> {
     int deleteById(Long id);
 
     Integer batchInsert(List<UserBatteryType> userBatteryType);
+
+    Integer deleteByUid(Long uid);
 }

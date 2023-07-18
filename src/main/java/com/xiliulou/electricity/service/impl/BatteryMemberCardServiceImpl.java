@@ -92,12 +92,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return batteryMemberCard;
     }
 
-    /**
-     * 修改数据
-     *
-     * @param batteryMemberCard 实例对象
-     * @return 实例对象
-     */
+    @Override
+    public Integer insert(BatteryMemberCard batteryMemberCard) {
+        return this.batteryMemberCardMapper.insert(batteryMemberCard);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryMemberCard batteryMemberCard) {

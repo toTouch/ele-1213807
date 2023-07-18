@@ -2014,6 +2014,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //若租车和租电押金都退了，则解绑用户所属加盟商
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(uid);
+        updateUserInfo.setStoreId(NumberConstant.ZERO_L);
         updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
 

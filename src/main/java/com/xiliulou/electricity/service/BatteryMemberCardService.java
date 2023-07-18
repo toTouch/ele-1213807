@@ -35,12 +35,8 @@ public interface BatteryMemberCardService {
      */
     BatteryMemberCard queryByIdFromCache(Long id);
 
-    /**
-     * 修改数据
-     *
-     * @param batteryMemberCard 实例对象
-     * @return 实例对象
-     */
+    Integer insert(BatteryMemberCard batteryMemberCard);
+
     Integer update(BatteryMemberCard batteryMemberCard);
 
     /**

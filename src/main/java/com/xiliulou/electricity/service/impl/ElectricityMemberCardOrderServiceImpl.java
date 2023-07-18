@@ -3099,9 +3099,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
         userBatteryMemberCardUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
-        userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + electricityMemberCardOrder.getValidDays());
+        userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + batteryMemberCardService.calculateBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
         userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
-        userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + electricityMemberCardOrder.getValidDays());
+        userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + batteryMemberCardService.calculateBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
         userBatteryMemberCardUpdate.setOrderRemainingNumber(batteryMemberCard.getUseCount());
         userBatteryMemberCardUpdate.setRemainingNumber(batteryMemberCard.getUseCount());
         userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
@@ -3114,7 +3114,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
         ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
-        serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + electricityMemberCardOrder.getValidDays());
+        serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.calculateBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
         serviceFeeUserInfoInsert.setUid(userBatteryMemberCardUpdate.getUid());
         serviceFeeUserInfoInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         serviceFeeUserInfoInsert.setUpdateTime(System.currentTimeMillis());
@@ -3122,7 +3122,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoInsert.setCreateTime(System.currentTimeMillis());
         serviceFeeUserInfoInsert.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
         serviceFeeUserInfoInsert.setDisableMemberCardNo("");
-//        serviceFeeUserInfoInsert.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
         serviceFeeUserInfoService.insert(serviceFeeUserInfoInsert);
 
         return Triple.of(true, null, null);
