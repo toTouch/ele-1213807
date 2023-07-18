@@ -248,6 +248,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
     public SignFlowVO getSignFlowResp(Long uid, UserInfoQuery userInfoQuery, SignFlowDataQuery signFlowDataQuery){
         SignFlowVO signFlowVO = new SignFlowVO();
+        
         //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
         if(Objects.nonNull(eleUserEsignRecord)){
