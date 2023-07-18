@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
-import com.xiliulou.electricity.enums.SystemDefinitionEnum;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 
 import java.math.BigDecimal;
 
@@ -10,6 +10,13 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 public interface CarRenalPackageDepositBizService {
+
+    /**
+     * 运营商端创建退押
+     * @param optModel 租户ID
+     * @return
+     */
+    boolean refundDepositCreate(CarRentalPackageDepositRefundOptModel optModel);
 
     /**
      * 审批退还押金申请单
@@ -23,13 +30,13 @@ public interface CarRenalPackageDepositBizService {
     boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount);
 
     /**
-     * 退押申请
+     * C端退押申请
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param depositPayOrderNo 押金缴纳支付订单编码
      * @param systemDefinition 操作系统来源
      * @return
      */
-    boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo, SystemDefinitionEnum systemDefinition);
+    boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo);
 
 }

@@ -103,14 +103,4 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
      */
     private String sourceOrderNo;
 
-    /**
-     * 是否退还
-     * <pre>
-     *     1-是
-     *     2-否
-     * </pre>
-     * @see YesNoEnum
-     */
-    private Integer refundFlag;
-
 }

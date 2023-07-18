@@ -1459,7 +1459,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageDepositPayEntity.setDepositExemption(depositExemption);
         carRentalPackageDepositPayEntity.setPayType(PayTypeEnum.ON_LINE.getCode());
         carRentalPackageDepositPayEntity.setPayState(PayStateEnum.UNPAID.getCode());
-        carRentalPackageDepositPayEntity.setRefundFlag(YesNoEnum.NO.getCode());
         carRentalPackageDepositPayEntity.setTenantId(tenantId);
         carRentalPackageDepositPayEntity.setFranchiseeId(franchiseeId);
         carRentalPackageDepositPayEntity.setStoreId(storeId);

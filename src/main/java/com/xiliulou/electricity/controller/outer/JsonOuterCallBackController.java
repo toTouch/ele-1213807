@@ -1,5 +1,9 @@
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
+import com.xiliulou.electricity.factory.paycallback.WxRefundPayServiceFactory;
+import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
@@ -22,7 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
  **/
 @RestController
 @Slf4j
-public class JsonOuterCallBackController {
+public class JsonOuterCallBackController extends JsonOuterCallBackBasicController {
+
     @Autowired
     WechatV3PostProcessHandler wechatV3PostProcessHandler;
     @Qualifier("newRedisTemplate")
@@ -63,6 +68,35 @@ public class JsonOuterCallBackController {
         wechatV3RefundOrderCallBackQuery.setTenantId(tenantId);
         //TODO
         wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
+        return WechatV3CallBackResult.success();
+    }
+
+
+    /**
+     * 微信退款回调(租车押金)
+     * @param tenantId
+     * @param wechatV3RefundOrderCallBackQuery
+     * @return
+     */
+    @PostMapping("/outer/wechat/refund/car/deposit/notified/{tenantId}")
+    public WechatV3CallBackResult carDepositRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
+        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode());
+        service.process(callBackParam);
+        return WechatV3CallBackResult.success();
+    }
+
+    /**
+     * 微信退款回调(租车租金)
+     * @param tenantId
+     * @param wechatV3RefundOrderCallBackQuery
+     * @return
+     */
+    @PostMapping("/outer/wechat/refund/car/rent/notified/{tenantId}")
+    public WechatV3CallBackResult carRentRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
+        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode());
+        service.process(callBackParam);
         return WechatV3CallBackResult.success();
     }
 }

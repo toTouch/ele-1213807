@@ -4,23 +4,26 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositRefundPO;
+import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositRefundQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageDepositRefundQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositRefundService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +38,33 @@ import java.util.stream.Collectors;
 public class JsonAdminCarRentalPackageDepositRefundController extends BasicController {
 
     @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositResource;
+
+    @Resource
     private CarRentalPackageDepositRefundService carRentalPackageDepositRefundService;
+
+    /**
+     * 创建退押
+     * @param optModel 操作实体类
+     * @return
+     */
+    @GetMapping("/create")
+    public R<Boolean> create(@RequestBody CarRentalPackageDepositRefundOptModel optModel) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getUid(), optModel.getRealAmount(), optModel.getDepositPayOrderNo())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        optModel.setTenantId(tenantId);
+
+        return R.ok(carRenalPackageDepositResource.refundDepositCreate(optModel));
+    }
 
     /**
      * 审核拒绝
@@ -44,8 +73,18 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
-        // TODO 实现逻辑
-        return null;
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo(), optReq.getReason())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRenalPackageDepositResource.approveRefundDepositOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid(), null));
     }
 
     /**
@@ -55,8 +94,18 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/approved")
     public R<Boolean> approved(@RequestBody AuditOptReq optReq) {
-        // TODO 实现逻辑
-        return null;
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo(), optReq.getAmount())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRenalPackageDepositResource.approveRefundDepositOrder(optReq.getOrderNo(), true, null, user.getUid(), optReq.getAmount()));
     }
 
     /**
@@ -66,12 +115,17 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
 
-        // 赋值租户
-        Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
 
         // 转换请求体
@@ -115,12 +169,17 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalPackageDepositRefundQryReq qryReq) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         if (null == qryReq) {
             qryReq = new CarRentalPackageDepositRefundQryReq();
         }
 
-        // 赋值租户
-        Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
         // 转换请求体
