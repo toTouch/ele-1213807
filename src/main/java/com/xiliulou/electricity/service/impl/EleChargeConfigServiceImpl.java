@@ -177,7 +177,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
 
     @Override
     public Pair<Boolean, Object> saveConfig(ChargeConfigQuery chargeConfigQuery) {
-        if (checkParamsIllegal(chargeConfigQuery)) {
+        if (!checkParamsIllegal(chargeConfigQuery)) {
             return Pair.of(false, "参数不合法");
         }
 
@@ -211,7 +211,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             return Pair.of(false, "查询不到相关电量配置");
         }
 
-        if (checkParamsIllegal(chargeConfigQuery)) {
+        if (!checkParamsIllegal(chargeConfigQuery)) {
             return Pair.of(false, "参数不合法");
         }
 

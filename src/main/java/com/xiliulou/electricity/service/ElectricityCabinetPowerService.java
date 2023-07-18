@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author makejava
  * @since 2021-01-27 16:22:44
  */
+@Deprecated
 public interface ElectricityCabinetPowerService {
 
 
