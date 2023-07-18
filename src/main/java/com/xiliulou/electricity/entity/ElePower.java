@@ -61,9 +61,9 @@ public class ElePower {
     
     private Long eid;
     
-    private Integer storeId;
+    private Long storeId;
     
-    private Integer franchiseeId;
+    private Long franchiseeId;
     
     private Integer tenantId;
     /**

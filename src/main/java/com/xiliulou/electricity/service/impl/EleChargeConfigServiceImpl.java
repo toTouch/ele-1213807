@@ -166,7 +166,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             configVo.setName(e.getName());
             configVo.setId(e.getId());
             configVo.setJsonRule(e.getJsonRule());
-            configVo.setFranchiseeName(franchiseeService.queryByIdFromCache(e.getFranchiseeId()).getName());
+            configVo.setFranchiseeName(Optional.ofNullable(franchiseeService.queryByIdFromCache(e.getFranchiseeId())).orElse(new Franchisee()).getName());
             configVo.setStoreName(Optional.ofNullable(storeService.queryByIdFromCache(e.getStoreId())).orElse(new Store()).getName());
             configVo.setCupboardName(Optional.ofNullable(electricityCabinetService.queryByIdFromCache(e.getEid().intValue())).orElse(new ElectricityCabinet()).getName());
             configVo.setCreateTime(e.getCreateTime());
