@@ -69,9 +69,9 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setEid(electricityCabinet.getId().longValue());
         power.setStoreId(electricityCabinet.getStoreId());
         power.setFranchiseeId(store.getFranchiseeId());
-//        power.setTenantId();
-//        power.setReportTime();
-//        power.setCreateTime();
+        power.setTenantId(electricityCabinet.getTenantId());
+        power.setReportTime(cabinetPowerReport.createTime);
+        power.setCreateTime(System.currentTimeMillis());
 //        power.setType();
 //        power.setSumPower();
 //        power.setHourPower();
@@ -86,7 +86,6 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         private String powerConsumption;
         private String sumConsumption;
         private Long createTime;
-        private String date;
     }
 }
 

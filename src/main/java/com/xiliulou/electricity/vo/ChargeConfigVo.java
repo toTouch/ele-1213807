@@ -12,8 +12,11 @@ public class ChargeConfigVo {
     private Long id;
     private String jsonRule;
     private String franchiseeName;
+    private Long franchiseeId;
     private String storeName;
-    private String cupboardName;
+    private Long storeId;
+    private String electricityName;
+    private Long eid;
     private Long createTime;
     private Integer type;
 }
