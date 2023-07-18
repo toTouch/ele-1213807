@@ -1,9 +1,5 @@
 package com.xiliulou.electricity.constant;
 
-import com.google.common.collect.Lists;
-
-import java.util.List;
-
 /**
  * @author: Kenneth
  * @Date: 2023/7/7 23:40
@@ -42,11 +38,6 @@ public class EleEsignConstant {
     public static final Integer ESIGN_REAL_NAME_STATUS_N = 0;
 
     public static final Integer ESIGN_MIN_CAPACITY = 0;
-
-    /**
-     * 签署状态，0 - 草稿,  1 - 签署中, 2 - 完成, 3 - 撤销, 5 - 过期, 7 - 拒签
-     */
-    public static final List<Integer> ESIGN_FLOW_STATUS = Lists.newArrayList(0,1);
 
     public static final String PSN_PHOTO_OSS_PATH = "saas/psnPhoto/";
 
