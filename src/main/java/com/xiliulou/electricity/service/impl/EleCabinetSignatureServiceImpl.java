@@ -39,7 +39,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -257,7 +256,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             //根据signFlowId获取psnId信息，并获取有效期信息。
             SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, signFlowDataQuery.getTenantAppId(), signFlowDataQuery.getTenantAppSecret());
             Long expiredTime = signFlowDetailResp.getData().getSignFlowConfig().getSignFlowExpireTime();
-            if(System.currentTimeMillis() < expiredTime){
+            if(System.currentTimeMillis() < expiredTime && EleEsignConstant.ESIGN_FLOW_STATUS.contains(signFlowDetailResp.getData().getSignFlowStatus())){
                 signFlowVO.setSignFlowId(signFlowId);
                 signFlowVO.setPsnId(signFlowDetailResp.getData().getSigners().get(0).getPsnSigner().getPsnId());
                 //获取文件签署链接
