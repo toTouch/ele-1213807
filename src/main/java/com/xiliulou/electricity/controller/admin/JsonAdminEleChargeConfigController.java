@@ -3,11 +3,13 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
+import com.xiliulou.electricity.query.ChargeConfigQuery;
 import com.xiliulou.electricity.service.EleChargeConfigService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
@@ -30,7 +32,23 @@ public class JsonAdminEleChargeConfigController extends BaseController {
             chargeConfigListQuery.setOffset(0);
         }
 
+        chargeConfigListQuery.setTenantId(TenantContextHolder.getTenantId());
         return returnPairResult(eleChargeConfigService.queryList(chargeConfigListQuery));
+    }
+
+    @PostMapping("/admin/charge/config/save")
+    public R saveConfig(@RequestBody @Validated ChargeConfigQuery chargeConfigQuery) {
+        return returnPairResult(eleChargeConfigService.saveConfig(chargeConfigQuery));
+    }
+
+    @PostMapping("/admin/charge/config/modify")
+    public R modifyConfig(@RequestBody @Validated(UpdateGroup.class) ChargeConfigQuery chargeConfigQuery) {
+        return returnPairResult(eleChargeConfigService.modifyConfig(chargeConfigQuery));
+    }
+
+    @PostMapping("/admin/charge/config/del/{id}")
+    public R delConfig(@PathVariable("id") Long id) {
+        return returnPairResult(eleChargeConfigService.delConfig(id));
     }
 
 

@@ -15,4 +15,5 @@ public class ChargeConfigVo {
     private String storeName;
     private String cupboardName;
     private Long createTime;
+    private Integer type;
 }

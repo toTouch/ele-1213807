@@ -383,4 +383,6 @@ public interface CacheConstant {
     String CACHE_INVITATION_ACTIVITY = "invitation_activity:";
 
     String CACHE_GET_COUPON = "get_coupon:";
+
+    String CACHE_CHARGE_CONFIG="c_charge_config:";
 }

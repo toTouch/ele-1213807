@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.EleChargeConfig;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
+import com.xiliulou.electricity.query.ChargeConfigQuery;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -51,18 +52,25 @@ public interface EleChargeConfigService {
      * 修改数据
      *
      * @param eleChargeConfig 实例对象
+     * @param config
      * @return 实例对象
      */
-    Integer update(EleChargeConfig eleChargeConfig);
+    Integer update(EleChargeConfig eleChargeConfig, EleChargeConfig config);
 
     /**
      * 通过主键删除数据
      *
-     * @param id 主键
+     * @param id     主键
+     * @param config
      * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    Boolean deleteById(Long id, EleChargeConfig config);
 
     Pair<Boolean, Object> queryList(ChargeConfigListQuery chargeConfigListQuery);
 
+    Pair<Boolean, Object> saveConfig(ChargeConfigQuery chargeConfigQuery);
+
+    Pair<Boolean, Object> modifyConfig(ChargeConfigQuery chargeConfigQuery);
+
+    Pair<Boolean, Object> delConfig(Long id);
 }
