@@ -263,7 +263,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setDeposit(query.getDeposit());
         batteryMemberCardUpdate.setRentPrice(query.getRentPrice());
         batteryMemberCardUpdate.setRentPriceUnit(query.getRentPriceUnit());
-        batteryMemberCardUpdate.setValidDays(calculateValidDays(query));
+        batteryMemberCardUpdate.setValidDays(query.getValidDays());
         batteryMemberCardUpdate.setRentUnit(query.getRentUnit());
         batteryMemberCardUpdate.setRentType(query.getRentType());
         batteryMemberCardUpdate.setSendCoupon(query.getSendCoupon());

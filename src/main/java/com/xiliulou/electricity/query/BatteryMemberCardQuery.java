@@ -47,7 +47,7 @@ public class BatteryMemberCardQuery {
     private BigDecimal rentPriceUnit;
 
     @NotNull(message = "租期不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Long validDays;
+    private Integer  validDays;
 
     @NotNull(message = "租期单位不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer rentUnit;

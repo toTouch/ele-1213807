@@ -397,7 +397,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
         //未使用
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
-            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays(), System.currentTimeMillis());
+            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue(), System.currentTimeMillis());
             userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
         }
 
@@ -467,7 +467,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.YES)) {
                 result = electricityMemberCardOrder.getMaxUseCount();
             } else {
-                result = electricityMemberCardOrder.getValidDays();
+                result = electricityMemberCardOrder.getValidDays().longValue();
             }
         }
 

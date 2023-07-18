@@ -468,7 +468,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(payAmount);
         electricityMemberCardOrder.setUserName(userInfo.getName());
-        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays().longValue());
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(franchiseeId);
         electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
@@ -670,10 +670,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
             }
 
-//            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-//                log.warn("BATTERY MEMBER ORDER WARN! not pay deposit,uid={}", user.getUid());
-//                return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
-//            }
+            if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+                log.warn("BATTERY MEMBER ORDER WARN! not pay deposit,uid={}", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+            }
 
             Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
             if (Objects.isNull(franchisee)) {
@@ -746,7 +746,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             memberCardOrder.setCardName(batteryMemberCard.getName());
             memberCardOrder.setPayAmount(payAmount);
             memberCardOrder.setUserName(userInfo.getName());
-            memberCardOrder.setValidDays(calculateMembercardTime(batteryMemberCard,memberCardOrder));
+            memberCardOrder.setValidDays(batteryMemberCard.getValidDays());
             memberCardOrder.setTenantId(TenantContextHolder.getTenantId());
             memberCardOrder.setFranchiseeId(franchisee.getId());
             memberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
@@ -1809,7 +1809,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getName());
-        electricityMemberCardOrder.setValidDays(0L);
+        electricityMemberCardOrder.setValidDays(0);
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
         electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
@@ -1821,7 +1821,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //计算套餐剩余天数
         if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
             Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
-            electricityMemberCardOrder.setValidDays(validDays.longValue());
+            electricityMemberCardOrder.setValidDays(validDays.intValue());
         }
 
         baseMapper.insert(electricityMemberCardOrder);
@@ -2008,7 +2008,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
             electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
             electricityMemberCardOrder.setUserName(userInfo.getName());
-            electricityMemberCardOrder.setValidDays(0L);
+            electricityMemberCardOrder.setValidDays(0);
             electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
             electricityMemberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
             electricityMemberCardOrder.setStoreId(userInfo.getStoreId());
@@ -2021,7 +2021,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             //计算套餐剩余天数
             if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
                 Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
-                electricityMemberCardOrder.setValidDays(validDays.longValue());
+                electricityMemberCardOrder.setValidDays(validDays.intValue());
             }
 
             baseMapper.insert(electricityMemberCardOrder);
@@ -2212,7 +2212,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
-        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays().longValue());
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setPayCount(payCount + 1);
         electricityMemberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_ARTIFICIAL);
         baseMapper.insert(electricityMemberCardOrder);
@@ -2833,7 +2833,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(payAmount);
         electricityMemberCardOrder.setUserName(userInfo.getName());
-        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays().longValue());
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
         electricityMemberCardOrder.setFranchiseeId(electricityMemberCard.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
@@ -3503,7 +3503,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardPackage.setTenantId(userInfo.getTenantId());
         userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
         userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
-        userBatteryMemberCardPackage.setMemberCardExpireTime(memberCardOrder.getValidDays());
+        userBatteryMemberCardPackage.setMemberCardExpireTime(memberCardOrder.getValidDays().longValue());
         userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
         userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
 
@@ -3527,7 +3527,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardPackage.setTenantId(userInfo.getTenantId());
         userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
         userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
-        userBatteryMemberCardPackage.setMemberCardExpireTime(memberCardOrder.getValidDays());
+        userBatteryMemberCardPackage.setMemberCardExpireTime(memberCardOrder.getValidDays().longValue());
         userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
         userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
 

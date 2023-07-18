@@ -28,7 +28,7 @@ public class ElectricityMemberCardOrder {
     //支付金额
     private BigDecimal payAmount;
     //有效天数
-    private Long validDays;
+    private Integer validDays;
     //最大使用次数
     private Long maxUseCount;
     //
