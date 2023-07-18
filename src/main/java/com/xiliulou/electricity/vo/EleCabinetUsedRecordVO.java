@@ -23,7 +23,7 @@ public class EleCabinetUsedRecordVO {
     /**
      * 类型
      */
-    private String type;
+    private Integer type;
 
     /**
      * 订单编号
@@ -38,7 +38,7 @@ public class EleCabinetUsedRecordVO {
     /**
      * 归还舱仓门
      */
-    private String returnCellNo;
+    private Integer returnCellNo;
 
     /**
      * 租借编号
@@ -48,11 +48,11 @@ public class EleCabinetUsedRecordVO {
     /**
      * 租借仓门
      */
-    private String leaseCellNo;
+    private Integer leaseCellNo;
 
     /**
      * 创建时间
      */
-    private String createTime;
+    private Long createTime;
 
 }

@@ -1347,6 +1347,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return cabinetUsedRecordVOList;
     }
 
+    @Slave
     @Override
     public Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
         return rentBatteryOrderMapper.selectCabinetUsedRecordsCount(eleCabinetUsedRecordQuery);

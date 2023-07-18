@@ -186,6 +186,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setTenantId(tenantId);
         franchisee.setUid(uid);
         franchisee.setCid(franchiseeAddAndUpdate.getCityId());
+        franchisee.setDisableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME);
         int insert = franchiseeMapper.insert(franchisee);
 
         //新增加盟商账户
@@ -250,6 +251,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         BeanUtil.copyProperties(franchiseeAddAndUpdate, updateFranchisee);
         updateFranchisee.setUpdateTime(System.currentTimeMillis());
         updateFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
+        updateFranchisee.setDisableCardTimeType(EleDisableMemberCardRecord.DISABLE_CARD_LIMIT_TIME);
         int update = this.franchiseeMapper.editFranchisee(updateFranchisee);
         DbUtils.dbOperateSuccessThen(update, () -> {
             redisService.delete(CacheConstant.CACHE_FRANCHISEE + updateFranchisee.getId());

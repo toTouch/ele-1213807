@@ -21,18 +21,18 @@ public class EleCabinetUsedRecord {
 
     private String phone;
 
-    private String type;
+    private Integer type;
 
     private String orderId;
 
     private String returnBatterySn;
 
-    private String returnCellNo;
+    private Integer returnCellNo;
 
     private String leaseBatterySn;
 
-    private String leaseCellNo;
+    private Integer leaseCellNo;
 
-    private String createTime;
+    private Long createTime;
 
 }

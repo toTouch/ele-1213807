@@ -44,4 +44,12 @@ public interface CommonConstant {
     String APP_SAAS = "SAAS";
 
     String APP_SAAS_AES_KEY = "123abc*@saasxab$";
+
+    /**
+     * 删除状态 0：正常，1：删除
+     */
+    Integer DEL_N = 0;
+
+    Integer DEL_Y = 1;
+
 }

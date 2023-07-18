@@ -105,12 +105,12 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="phone" column="phone" jdbcType="VARCHAR"/>
-        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="returnBatterySn" column="old_electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="returnCellNo" column="old_cell_no" jdbcType="VARCHAR" />
+        <result property="returnCellNo" column="old_cell_no" jdbcType="INTEGER" />
         <result property="leaseBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR" />
-        <result property="leaseCellNo" column="new_cell_no" jdbcType="VARCHAR" />
+        <result property="leaseCellNo" column="new_cell_no" jdbcType="INTEGER" />
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
 
@@ -133,7 +133,7 @@
                 create_time
             from t_rent_battery_order
             union all
-            select tu.name, tu.phone, 'electricity' type, teco.order_id,
+            select tu.name, tu.phone, 9 type, teco.order_id,
                 teco.old_electricity_battery_sn ,
                 teco.old_cell_no ,
                 teco.new_electricity_battery_sn,
