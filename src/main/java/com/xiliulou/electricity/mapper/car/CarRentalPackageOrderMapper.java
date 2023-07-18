@@ -16,6 +16,18 @@ import java.util.List;
 public interface CarRentalPackageOrderMapper {
 
     /**
+     * 根据用户ID进行退押操作<br />
+     * 将使用中、未使用的订单全部设置为已失效
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param optId    操作人ID（可为空）
+     * @param optTime    操作时间
+     * @return
+     */
+    Integer refundDepositByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("optId") Long optId, @Param("optTime") Long optTime);
+
+    /**
      * 根据订单编号更改支付状态、使用状态、使用时间
      * @param orderNo 订单编号
      * @param payState 支付状态

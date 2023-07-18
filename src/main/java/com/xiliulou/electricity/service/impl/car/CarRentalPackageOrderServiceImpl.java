@@ -32,6 +32,26 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
+     * 根据用户ID进行退押操作<br />
+     * 将使用中、未使用的订单全部设置为已失效
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @param optId    操作人ID（可为空）
+     * @return
+     */
+    @Override
+    public boolean refundDepositByUid(Integer tenantId, Long uid, Long optId) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer num = carRentalPackageOrderMapper.refundDepositByUid(tenantId, uid, optId, System.currentTimeMillis());
+
+        return num >= 0;
+    }
+
+    /**
      * 根据订单编号更改支付状态、使用状态、使用时间
      *
      * @param orderNo  订单编码
