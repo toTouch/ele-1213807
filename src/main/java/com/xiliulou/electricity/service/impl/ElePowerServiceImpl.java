@@ -6,9 +6,12 @@ import com.xiliulou.electricity.service.ElePowerService;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * (ElePower)表服务实现类
  *
@@ -31,15 +34,15 @@ public class ElePowerServiceImpl implements ElePowerService {
     public ElePower queryByIdFromDB(Long id) {
         return this.elePowerMapper.queryById(id);
     }
-    
-        /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
     @Override
-    public  ElePower queryByIdFromCache(Long id) {
+    public ElePower queryByIdFromCache(Long id) {
         return null;
     }
 
@@ -48,7 +51,7 @@ public class ElePowerServiceImpl implements ElePowerService {
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
@@ -78,8 +81,8 @@ public class ElePowerServiceImpl implements ElePowerService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElePower elePower) {
-       return this.elePowerMapper.update(elePower);
-         
+        return this.elePowerMapper.update(elePower);
+
     }
 
     /**
@@ -92,5 +95,10 @@ public class ElePowerServiceImpl implements ElePowerService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.elePowerMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public int insertOrUpdate(ElePower power) {
+        return this.elePowerMapper.insertOrUpdate(power);
     }
 }

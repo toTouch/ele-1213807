@@ -56,12 +56,19 @@ public class EleChargeConfig {
      */
     private String jsonRule;
 
-
+    public static final int TYPE_NONE = -1;
     public static final int TYPE_ALL_FRANCHISEE = 0;
     public static final int TYPE_ALL_STORE = 1;
     public static final int TYPE_ALL_CABINET = 2;
     public static final int TYPE_SINGLE_CABINET = 3;
 
+    /**
+     * 加盟商，柜机，门店如果没有指定，就是默认0
+     */
     public static final Long DEFAULT_ALL = 0L;
+
+
+
+
 
 }

@@ -60,4 +60,5 @@ public interface ElePowerService {
      */
     Boolean deleteById(Long id);
 
+    int insertOrUpdate(ElePower power);
 }

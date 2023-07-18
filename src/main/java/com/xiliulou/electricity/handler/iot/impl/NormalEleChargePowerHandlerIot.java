@@ -2,24 +2,28 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.ElePower;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetPower;
-import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Objects;
+import java.util.UUID;
 
 
 @Service(value = ElectricityIotConstant.NORMAL_ELE_CHARGE_POWER_HANDLER)
@@ -39,6 +43,9 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
 
     @Autowired
     StoreService storeService;
+
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN);
 
@@ -63,6 +70,15 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
             return;
         }
 
+
+        Double unitPrice = 0.0;
+        Integer chargeConfigType = EleChargeConfig.TYPE_NONE;
+        EleChargeConfig eleChargeConfig = eleChargeConfigService.queryConfigByEid(electricityCabinet.getId());
+        if (Objects.nonNull(eleChargeConfig)) {
+
+        }
+
+
         ElePower power = new ElePower();
         power.setSn(electricityCabinet.getSn());
         power.setEName(electricityCabinet.getName());
@@ -70,23 +86,40 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setStoreId(electricityCabinet.getStoreId());
         power.setFranchiseeId(store.getFranchiseeId());
         power.setTenantId(electricityCabinet.getTenantId());
-        power.setReportTime(cabinetPowerReport.createTime);
+        power.setReportTime(cabinetPowerReport.getCreateTime());
         power.setCreateTime(System.currentTimeMillis());
-//        power.setType();
-//        power.setSumPower();
-//        power.setHourPower();
-//        power.setElectricCharge();
+        power.setType(chargeConfigType);
+        power.setSumPower(cabinetPowerReport.getSumConsumption());
+        power.setHourPower(cabinetPowerReport.getPowerConsumption());
+        power.setElectricCharge(unitPrice);
+        elePowerService.insertOrUpdate(power);
+
+
+        //发送锁仓命令
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("time", cabinetPowerReport.getCreateTime());
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", "")).data(dataMap)
+                .productKey(electricityCabinet.getProductKey()).deviceName(electricityCabinet.getDeviceName())
+                .command(ElectricityIotConstant.CALC_ELE_POWER_REPORT_ACK).build();
+
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        if (!sendResult.getLeft()) {
+            log.error("NORMAL POWER ERROR! send command error! sessionid:{}", receiverMessage.getSessionId());
+        }
 
 
     }
 
 
-    @Data
-    class CabinetPowerReport {
-        private String powerConsumption;
-        private String sumConsumption;
-        private Long createTime;
-    }
 }
 
 
+@Data
+class CabinetPowerReport {
+    private Double powerConsumption;
+    private Double sumConsumption;
+    private Long createTime;
+}

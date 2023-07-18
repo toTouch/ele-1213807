@@ -73,4 +73,6 @@ public interface EleChargeConfigService {
     Pair<Boolean, Object> modifyConfig(ChargeConfigQuery chargeConfigQuery);
 
     Pair<Boolean, Object> delConfig(Long id);
+
+    EleChargeConfig queryConfigByEid(Integer id);
 }

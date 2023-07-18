@@ -63,4 +63,5 @@ public interface ElePowerMapper  extends BaseMapper<ElePower>{
      */
     int deleteById(Long id);
 
+    int insertOrUpdate(ElePower power);
 }

@@ -252,6 +252,11 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         return Pair.of(true, null);
     }
 
+    @Override
+    public EleChargeConfig queryConfigByEid(Integer id) {
+        return null;
+    }
+
     private Pair<Boolean, String> handleChargeConfigDetail(String jsonRule) {
         List<EleChargeConfigCalcDetailDto> list = JsonUtil.fromJsonArray(jsonRule, EleChargeConfigCalcDetailDto.class);
         if (!DataUtil.collectionIsUsable(list)) {
@@ -330,5 +335,11 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         }
 
         return EleChargeConfig.TYPE_SINGLE_CABINET;
+    }
+
+    public static void main(String[] args) {
+        String jsonRule = "[{\"type\":1,\"startHour\":0,\"endHour\":20,\"price\":5},{\"type\":0,\"startHour\":20,\"endHour\":24,\"price\":1}]";
+        Pair<Boolean, String> booleanStringPair = new EleChargeConfigServiceImpl().handleChargeConfigDetail(jsonRule);
+        System.out.println(booleanStringPair.getLeft());
     }
 }

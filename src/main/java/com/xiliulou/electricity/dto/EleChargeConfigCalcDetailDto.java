@@ -22,6 +22,6 @@ public class EleChargeConfigCalcDetailDto implements Comparable<EleChargeConfigC
 
     @Override
     public int compareTo(EleChargeConfigCalcDetailDto o) {
-        return Integer.compare(o.startHour, this.startHour);
+        return Integer.compare(this.startHour, o.startHour);
     }
 }
