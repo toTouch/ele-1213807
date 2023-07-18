@@ -3456,9 +3456,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             //优惠券是否使用
-            if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
+            if (!Objects.equals(UserCoupon.STATUS_UNUSED, userCoupon.getStatus())) {
                 log.error("ELE ERROR! userCoupon is used,userCouponId={}", userCouponId);
-                return Triple.of(false, "ELECTRICITY.0090", "您的优惠券已被使用");
+                return Triple.of(false, "ELECTRICITY.0090", "优惠券不可用");
             }
 
             //优惠券是否过期

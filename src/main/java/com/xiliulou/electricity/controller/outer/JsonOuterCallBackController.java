@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.electricity.service.EleCabinetSignatureService;
+import com.xiliulou.esign.entity.resp.EsignCallBackResp;
 import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
 import com.xiliulou.electricity.factory.paycallback.WxRefundPayServiceFactory;
 import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 
 /**
  * @program: XILIULOU
@@ -33,6 +37,9 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
     @Qualifier("newRedisTemplate")
     @Autowired
     RedisTemplate redisTemplate;
+
+    @Autowired
+    private EleCabinetSignatureService eleCabinetSignatureService;
 
     /**
      * 微信支付通知
@@ -98,5 +105,11 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
         WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode());
         service.process(callBackParam);
         return WechatV3CallBackResult.success();
+    }
+
+    @PostMapping("/outer/esign/signNotice/{esignConfigId}")
+    public EsignCallBackResp signResultNotice(@PathVariable("esignConfigId") Integer esignConfigId, HttpServletRequest request){
+        eleCabinetSignatureService.handleCallBackReq(esignConfigId, request);
+        return EsignCallBackResp.success();
     }
 }

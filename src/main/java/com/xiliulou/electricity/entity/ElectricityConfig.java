@@ -126,6 +126,11 @@ public class ElectricityConfig {
      */
     private Integer isOpenCarControl;
 
+    /**
+     * 是否开启电子签名 0--是 1--否 2--功能关闭
+     */
+    private Integer isEnableEsign;
+
     public static Integer MOVE_FRANCHISEE_CLOSE = 1;
 
     public static Integer MOVE_FRANCHISEE_OPEN = 0;

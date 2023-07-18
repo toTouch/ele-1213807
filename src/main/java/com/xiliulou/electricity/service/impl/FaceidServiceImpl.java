@@ -54,6 +54,7 @@ public class FaceidServiceImpl implements FaceidService {
             2, "SAVE_IDCARD_PICTURE");
 
 
+
     @Autowired
     private FaceidConfigService faceidConfigService;
 

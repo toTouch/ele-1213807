@@ -307,6 +307,16 @@ public interface CacheConstant {
     String CACHE_FACEID_CONFIG ="faceidConfig:";
 
     /**
+     * 电子签署配置缓存
+     */
+    String CACHE_ELE_CABINET_ESIGN_CONFIG ="electricity_cabinet_esign_config:";
+
+    /**
+     * 电子签署个人认证缓存锁
+     */
+    String CACHE_ELE_CABINET_ESIGN_AUTH_LOCK_KEY = "electricity_cabinet_esign_auth_lock_key:";
+
+    /**
      * 购买套餐下单缓存锁
      */
     String ELE_CACHE_USER_BATTERY_MEMBER_CARD_LOCK_KEY = "user_battery_member_card_lock_key:";

@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.EleEsignConstant;
 import com.xiliulou.electricity.dto.FranchiseeBatteryModelDTO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
@@ -62,6 +63,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     FaceRecognizeDataService faceRecognizeDataService;
     @Autowired
     PxzConfigService pxzConfigService;
+    @Autowired
+    EleEsignConfigService eleEsignConfigService;
 
 
     @Override
@@ -138,6 +141,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             }
         }
 
+        //若开启签名功能，需要检查签名相关信息是否已经配置
+        if(Objects.equals(electricityConfigAddAndUpdateQuery.getIsEnableEsign(), EleEsignConstant.ESIGN_ENABLE)){
+            EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.isNull(eleEsignConfig) || StringUtils.isBlank(eleEsignConfig.getAppId()) || StringUtils.isBlank(eleEsignConfig.getAppSecret())){
+                return R.fail("100500", "电子签名功能未配置相关信息,请检查");
+            }
+        }
 
         ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityConfig)) {
@@ -162,6 +172,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
             electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
             electricityConfig.setIsZeroDepositAuditEnabled(ElectricityConfig.DISABLE_ZERO_DEPOSIT_AUDIT);
+            electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -186,6 +197,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setIsOpenCarBatteryBind(electricityConfigAddAndUpdateQuery.getIsOpenCarBatteryBind());
         electricityConfig.setIsOpenCarControl(electricityConfigAddAndUpdateQuery.getIsOpenCarControl());
         electricityConfig.setIsZeroDepositAuditEnabled(electricityConfigAddAndUpdateQuery.getIsZeroDepositAuditEnabled());
+        electricityConfig.setIsEnableEsign(electricityConfigAddAndUpdateQuery.getIsEnableEsign());
         int updateResult = electricityConfigMapper.update(electricityConfig);
         if (updateResult > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + TenantContextHolder.getTenantId());

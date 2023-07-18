@@ -162,6 +162,13 @@
             <version>${xiliulou.version}</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.xiliulou</groupId>
+            <artifactId>xiliulou-common-esign</artifactId>
+            <version>${xiliulou.version}</version>
+            <scope>compile</scope>
+        </dependency>
     
         <dependency>
             <groupId>com.github.lianjiatech</groupId>
