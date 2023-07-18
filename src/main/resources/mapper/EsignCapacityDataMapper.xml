@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EsignCapacityDataMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EsignCapacityData" id="EsignCapacityDataMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="esignCapacity" column="esign_capacity" jdbcType="INTEGER"/>
+        <result property="rechargeTime" column="recharge_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectEsignCapacityData">
+        select id, esign_capacity, recharge_time, tenant_id, del_flag, create_time, update_time from t_esign_capacity_data
+    </sql>
+
+    <!--查询单个租户信息-->
+    <select id="selectByTenantId" resultMap="EsignCapacityDataMap">
+        <include refid="selectEsignCapacityData"/>
+        where tenant_id = #{tenantId}
+    </select>
+
+    <!--新增数据-->
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.EsignCapacityData" useGeneratedKeys="true" keyProperty="id">
+        insert into t_esign_capacity_data
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            esign_capacity,
+            recharge_time,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{esignCapacity},
+            #{rechargeTime},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="updateOne">
+        update t_esign_capacity_data
+        <set>
+            <if test="esignCapacity != null">
+                esign_capacity = #{esignCapacity},
+            </if>
+            <if test="rechargeTime != null">
+                recharge_time = #{rechargeTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <update id="deductionCapacity">
+        update t_esign_capacity_data
+        set esign_capacity = esign_capacity - 1,
+            update_time = #{updateTime}
+        where tenant_id = #{tenantId}
+    </update>
+
+</mapper>

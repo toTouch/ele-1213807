@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.electricity.service.EleCabinetSignatureService;
+import com.xiliulou.esign.entity.resp.EsignCallBackResp;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -28,6 +32,9 @@ public class JsonOuterCallBackController {
     @Qualifier("newRedisTemplate")
     @Autowired
     RedisTemplate redisTemplate;
+
+    @Autowired
+    private EleCabinetSignatureService eleCabinetSignatureService;
 
     /**
      * 微信支付通知
@@ -51,5 +58,11 @@ public class JsonOuterCallBackController {
         wechatV3RefundOrderCallBackQuery.setTenantId(tenantId);
         wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
         return WechatV3CallBackResult.success();
+    }
+
+    @PostMapping("/outer/esign/signNotice/{esignConfigId}")
+    public EsignCallBackResp signResultNotice(@PathVariable("esignConfigId") Integer esignConfigId, HttpServletRequest request){
+        eleCabinetSignatureService.handleCallBackReq(esignConfigId, request);
+        return EsignCallBackResp.success();
     }
 }

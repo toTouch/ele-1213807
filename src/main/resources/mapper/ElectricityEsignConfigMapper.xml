@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityEsignConfigMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EleEsignConfig" id="EsignConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="appId" column="app_id" jdbcType="VARCHAR"/>
+        <result property="appSecret" column="app_secret" jdbcType="VARCHAR"/>
+        <result property="docTemplateId" column="doc_template_id" jdbcType="VARCHAR"/>
+        <result property="signFileName" column="sign_file_name" jdbcType="VARCHAR"/>
+        <result property="signFlowName" column="sign_flow_name" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectEsignConfig">
+        select id, tenant_id, app_id, app_secret, doc_template_id, sign_file_name, sign_flow_name, del_flag, create_time, update_time from t_tenant_esign_config
+    </sql>
+
+    <!--根据id查询单个租户配置信息-->
+    <select id="selectEsignConfigById" resultMap="EsignConfigMap">
+        <include refid="selectEsignConfig"/>
+        where id = #{id}
+    </select>
+
+    <!--根据租户id查询配置信息-->
+    <select id="selectEsignConfigByTenantId" resultType="com.xiliulou.electricity.entity.EleEsignConfig">
+        <include refid="selectEsignConfig"/>
+        where tenant_id = #{tenantId}
+    </select>
+
+    <!--根据租户id查询最新记录-->
+    <select id="selectLatestByTenantId" resultType="com.xiliulou.electricity.entity.EleEsignConfig">
+        <include refid="selectEsignConfig"/>
+        where tenant_id = #{tenantId} and del_flag=0 order by create_time desc limit 1
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectEsignConfigByPage" resultMap="EsignConfigMap">
+        <include refid="selectEsignConfig"/>
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectEsignConfigByQuery" resultMap="EsignConfigMap">
+        <include refid="selectEsignConfig"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增数据-->
+    <insert id="insertEsignConfig" parameterType="com.xiliulou.electricity.entity.EleEsignConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into t_tenant_esign_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            tenant_id,
+            app_id,
+            app_secret,
+            doc_template_id,
+            sign_file_name,
+            sign_flow_name,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{tenantId},
+            #{appId},
+            #{appSecret},
+            #{docTemplateId},
+            #{signFileName},
+            #{signFlowName},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="updateEsignConfig">
+        update t_tenant_esign_config
+        <set>
+            <if test="appId != null and appId != ''">
+                app_id = #{appId},
+            </if>
+            <if test="appSecret != null and appSecret != ''">
+                app_secret = #{appSecret},
+            </if>
+            <if test="docTemplateId != null and docTemplateId != ''">
+                doc_template_id = #{docTemplateId},
+            </if>
+            <if test="signFileName != null and signFileName != ''">
+                sign_file_name = #{signFileName},
+            </if>
+            <if test="signFlowName != null and signFlowName != ''">
+                sign_flow_name = #{signFlowName},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteEsignConfigById">
+        delete from t_tenant_esign_config where id = #{id}
+    </delete>
+
+</mapper>
