@@ -19,7 +19,7 @@
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="confine" column="confine" jdbcType="INTEGER" />
-        <result property="confineNum" column="confine_num" jdbcType="INTEGER" />
+        <result property="confineNum" column="confine_num" jdbcType="BIGINT" />
         <result property="tenancy" column="tenancy" jdbcType="INTEGER" />
         <result property="tenancyUnit" column="tenancy_unit" jdbcType="INTEGER" />
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />

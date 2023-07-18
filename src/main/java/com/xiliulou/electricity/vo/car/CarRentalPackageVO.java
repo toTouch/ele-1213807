@@ -43,7 +43,7 @@ public class CarRentalPackageVO implements Serializable {
      * 租期单位
      * <pre>
      *     1-天
-     *     2-分钟
+     *     0-分钟
      * </pre>
      * @see RentalUnitEnum
      */
@@ -67,9 +67,9 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 适用类型
      * <pre>
-     *     1-全部
-     *     2-新租套餐
-     *     3-续租套餐
+     *     0-全部
+     *     1-新租套餐
+     *     2-续租套餐
      * </pre>
      * @see ApplicableTypeEnum
      */
@@ -78,8 +78,8 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 租金可退
      * <pre>
-     *     1-是
-     *     2-否
+     *     0-是
+     *     1-否
      * </pre>
      * @see YesNoEnum
      */
@@ -93,12 +93,12 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 免押
      * <pre>
+     *     0-是
      *     1-否
-     *     2-芝麻信用
      * </pre>
-     * @see DepositExemptionEnum
+     * @see YesNoEnum
      */
-    private Integer depositExemption;
+    private Integer freeDeposit;
 
     /**
      * 租金单价
@@ -113,7 +113,7 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 套餐限制
      * <pre>
-     *     1-不限制
+     *     0-不限制
      *     2-次数
      * </pre>
      * @see RenalPackageConfineEnum
@@ -123,13 +123,13 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 限制数量
      */
-    private Integer confineNum;
+    private Long confineNum;
 
     /**
      * 优惠券赠送
      * <pre>
-     *     1-是
-     *     2-否
+     *     0-是
+     *     1-否
      * </pre>
      * @see YesNoEnum
      */
@@ -143,8 +143,8 @@ public class CarRentalPackageVO implements Serializable {
     /**
      * 上下架状态
      * <pre>
-     *     1-上架
-     *     2-下架
+     *     0-上架
+     *     1-下架
      * </pre>
      * @see UpDownEnum
      */

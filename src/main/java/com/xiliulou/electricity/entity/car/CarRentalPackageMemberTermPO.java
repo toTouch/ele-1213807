@@ -49,8 +49,8 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
     /**
      * 套餐限制
      * <pre>
-     *     1-不限制
-     *     2-次数
+     *     0-不限制
+     *     1-次数
      * </pre>
      * @see RenalPackageConfineEnum
      */
@@ -69,12 +69,12 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
     /**
      * 当前余量
      */
-    private Integer residue;
+    private Long residue;
 
     /**
      * 总计余量
      */
-    private Integer residueTotal;
+    private Long residueTotal;
 
     /**
      * 状态
@@ -84,8 +84,7 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      *     2-申请冻结
      *     3-冻结
      *     4-申请退押
-     *     5-过期
-     *     6-申请退租
+     *     5-申请退租
      * </pre>
      * @see MemberTermStatusEnum
      */

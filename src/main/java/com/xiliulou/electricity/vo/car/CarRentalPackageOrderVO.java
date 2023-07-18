@@ -22,7 +22,6 @@ public class CarRentalPackageOrderVO implements Serializable {
      */
     private String orderNo;
 
-
     /**
      * 套餐类型
      * <pre>
@@ -36,8 +35,8 @@ public class CarRentalPackageOrderVO implements Serializable {
     /**
      * 套餐限制
      * <pre>
-     *     1-不限制
-     *     2-次数
+     *     0-不限制
+     *     1-次数
      * </pre>
      * @see RenalPackageConfineEnum
      */
@@ -46,7 +45,7 @@ public class CarRentalPackageOrderVO implements Serializable {
     /**
      * 限制数量
      */
-    private Integer confineNum;
+    private Long confineNum;
 
     /**
      * 租期
@@ -57,7 +56,7 @@ public class CarRentalPackageOrderVO implements Serializable {
      * 租期单位
      * <pre>
      *     1-天
-     *     2-分钟
+     *     0-分钟
      * </pre>
      * @see RentalUnitEnum
      */
@@ -79,26 +78,11 @@ public class CarRentalPackageOrderVO implements Serializable {
     private BigDecimal rentPayment;
 
     /**
-     * 车辆型号ID
-     */
-    private Integer carModelId;
-
-    /**
-     * 电池型号ID集，用英文逗号分割
-     */
-    private String batteryModelIds;
-
-    /**
-     * 电池型号对应的电压伏数
-     */
-    private BigDecimal batteryV;
-
-    /**
      * 适用类型
      * <pre>
-     *     1-全部
-     *     2-新租套餐
-     *     3-续租套餐
+     *     0-全部
+     *     1-新租套餐
+     *     2-续租套餐
      * </pre>
      * @see ApplicableTypeEnum
      */
@@ -107,8 +91,8 @@ public class CarRentalPackageOrderVO implements Serializable {
     /**
      * 租金可退
      * <pre>
-     *     1-是
-     *     2-否
+     *     0-是
+     *     1-否
      * </pre>
      * @see YesNoEnum
      */
@@ -139,7 +123,6 @@ public class CarRentalPackageOrderVO implements Serializable {
      * <pre>
      *     1-线上
      *     2-线下
-     *     4-赠送
      * </pre>
      * @see PayTypeEnum
      */

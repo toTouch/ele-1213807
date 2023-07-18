@@ -53,7 +53,7 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
         }
 
         // 转换天
-        int diffDay = DateUtils.diffDay(now, lateFeeStartTime);
+        long diffDay = DateUtils.diffDay(now, lateFeeStartTime);
         // 计算滞纳金金额
         BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
 

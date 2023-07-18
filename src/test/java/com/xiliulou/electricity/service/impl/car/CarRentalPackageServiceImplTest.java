@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.alibaba.fastjson.JSON;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.ElectricityCabinetApplication;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
@@ -74,7 +72,7 @@ public class CarRentalPackageServiceImplTest {
         optModel.setApplicableType(ApplicableTypeEnum.ALL.getCode());
         optModel.setRentRebate(YesNoEnum.YES.getCode());
         optModel.setRentRebateTerm(7);
-        optModel.setDepositExemption(DepositExemptionEnum.NO.getCode());
+        //optModel.setDepositExemption(DepositExemptionEnum.NO.getCode());
 //        optModel.setDepositRebateApprove(YesNoEnum.YES.getCode());
         optModel.setRentUnitPrice(new BigDecimal("3"));
         optModel.setLateFee(new BigDecimal("5"));

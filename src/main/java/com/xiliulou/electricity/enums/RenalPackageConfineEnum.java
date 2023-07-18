@@ -14,8 +14,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RenalPackageConfineEnum implements BasicEnum<Integer, String> {
 
-    NO(1, "不限制"),
-    NUMBER(2, "次数"),
+    NO(0, "不限制"),
+    NUMBER(1, "次数"),
     ;
 
     private final Integer code;

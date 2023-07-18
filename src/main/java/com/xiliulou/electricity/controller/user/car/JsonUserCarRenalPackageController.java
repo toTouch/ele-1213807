@@ -84,7 +84,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
             packageVO.setRent(entity.getRent());
             packageVO.setRentRebateTerm(entity.getRentRebateTerm());
             packageVO.setDeposit(entity.getDeposit());
-            packageVO.setDepositExemption(entity.getDepositExemption());
+            packageVO.setFreeDeposit(entity.getFreeDeposit());
             packageVO.setConfine(entity.getConfine());
             packageVO.setConfineNum(entity.getConfineNum());
             packageVO.setGiveCoupon(entity.getGiveCoupon());

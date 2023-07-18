@@ -19,7 +19,7 @@
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
-        <result property="residue" column="residue" jdbcType="VARCHAR" />
+        <result property="residue" column="residue" jdbcType="BIGINT" />
         <result property="residueUnit" column="residue_unit" jdbcType="INTEGER" />
         <result property="refundAmount" column="refund_amount" jdbcType="DECIMAL" />
         <result property="refundState" column="refund_state" jdbcType="INTEGER" />

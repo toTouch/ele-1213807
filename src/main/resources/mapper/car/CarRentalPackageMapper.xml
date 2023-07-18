@@ -24,11 +24,11 @@
         <result property="applicableType" column="applicable_type" jdbcType="INTEGER" />
         <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER" />
         <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER" />
-        <result property="depositExemption" column="deposit_exemption" jdbcType="INTEGER" />
+        <result property="freeDeposit" column="free_deposit" jdbcType="INTEGER" />
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="confine" column="confine" jdbcType="INTEGER" />
-        <result property="confineNum" column="confine_num" jdbcType="INTEGER" />
+        <result property="confineNum" column="confine_num" jdbcType="BIGINT" />
         <result property="giveCoupon" column="give_coupon" jdbcType="INTEGER" />
         <result property="couponId" column="coupon_id" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
@@ -45,7 +45,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `deposit_exemption`,
+        `name`, `type`, `tenancy`, `tenancy_unit`, `rent`, `deposit`, `car_model_id`, `applicable_type`, `rent_rebate`, `rent_rebate_term`, `free_deposit`,
         `rent_unit_price`, `late_fee`, `confine`, `confine_num`, `give_coupon`, `coupon_id`, `status`, `remark`
     </sql>
 
@@ -92,7 +92,7 @@
             <if test=" applicableType != null "> `applicable_type`, </if>
             <if test=" rentRebate != null "> `rent_rebate`, </if>
             <if test=" rentRebateTerm != null "> `rent_rebate_term`, </if>
-            <if test=" depositExemption != null "> `deposit_exemption`, </if>
+            <if test=" freeDeposit != null "> `free_deposit`, </if>
             <if test=" rentUnitPrice != null "> `rent_unit_price`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" confine != null "> `confine`, </if>
@@ -124,7 +124,7 @@
             <if test=" applicableType != null "> #{applicableType}, </if>
             <if test=" rentRebate != null "> #{rentRebate}, </if>
             <if test=" rentRebateTerm != null "> #{rentRebateTerm}, </if>
-            <if test=" depositExemption != null "> #{depositExemption}, </if>
+            <if test=" freeDeposit != null "> #{freeDeposit}, </if>
             <if test=" rentUnitPrice != null "> #{rentUnitPrice}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" confine != null "> #{confine}, </if>
@@ -227,7 +227,7 @@
             <if test=" applicableType != null "> , `applicable_type` = #{applicableType} </if>
             <if test=" rentRebate != null "> , `rent_rebate` = #{rentRebate} </if>
             <if test=" rentRebateTerm != null "> , `rent_rebate_term` = #{rentRebateTerm} </if>
-            <if test=" depositExemption != null "> , `deposit_exemption` = #{depositExemption} </if>
+            <if test=" freeDeposit != null "> , `free_deposit` = #{freeDeposit} </if>
             <if test=" rentUnitPrice != null "> , `rent_unit_price` = #{rentUnitPrice} </if>
             <if test=" lateFee != null "> , `late_fee` = #{lateFee} </if>
             <if test=" giveCoupon != null "> , `give_coupon` = #{giveCoupon} </if>

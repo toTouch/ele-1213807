@@ -89,7 +89,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         if (!autoEnable) {
             status = RentalPackageOrderFreezeStatusEnum.EARLY_ENABLE.getCode();
             enableTime = nowTime;
-            realTerm = DateUtils.diffDay(nowTime, auditTime);
+            realTerm = Integer.valueOf(String.valueOf(DateUtils.diffDay(nowTime, auditTime)));
         }
 
         int num = carRentalPackageOrderFreezeMapper.enableByUidAndPackageOrderNo(uid, packageOrderNo, status, optUid, nowTime, enableTime, realTerm);

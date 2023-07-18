@@ -64,12 +64,12 @@ public class CarRentalPackageDepositPayPO extends BasicCarPO {
     /**
      * 免押
      * <pre>
+     *     0-是
      *     1-否
-     *     2-芝麻信用
      * </pre>
-     * @see DepositExemptionEnum
+     * @see YesNoEnum
      */
-    private Integer depositExemption;
+    private Integer freeDeposit;
 
     /**
      * 交易方式

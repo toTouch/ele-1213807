@@ -18,8 +18,7 @@ public enum MemberTermStatusEnum implements BasicEnum<Integer, String> {
     APPLY_FREEZE(2, "申请冻结"),
     FREEZE(3, "冻结"),
     APPLY_REFUND_DEPOSIT(4, "申请退押"),
-    EXPIRE(5, "过期"),
-    APPLY_RENT_REFUND(6, "申请退租"),
+    APPLY_RENT_REFUND(5, "申请退租"),
     ;
 
     private final Integer code;

@@ -55,16 +55,6 @@ public class CarRentalOrderPO extends BasicCarPO {
     private String carSn;
 
     /**
-     * 电池型号ID
-     */
-    private Long batteryModelId;
-
-    /**
-     * 电池SN码
-     */
-    private String batterySn;
-
-    /**
      * 交易方式
      * <pre>
      *     1-线上

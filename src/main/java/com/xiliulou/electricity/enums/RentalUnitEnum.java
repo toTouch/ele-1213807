@@ -16,9 +16,9 @@ import java.util.List;
 @AllArgsConstructor
 public enum RentalUnitEnum implements BasicEnum<Integer, String> {
 
-    NUMBER(0, "次数"),
+    NUMBER(-1, "次数"),
+    MINUTE(0, "分钟"),
     DAY(1, "天"),
-    MINUTE(2, "分钟"),
     ;
 
     private final Integer code;

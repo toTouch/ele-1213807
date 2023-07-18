@@ -14,8 +14,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum YesNoEnum implements BasicEnum<Integer, String> {
 
-    YES(1, "是"),
-    NO(2, "否"),
+    YES(0, "是"),
+    NO(1, "否"),
     ;
 
     private final Integer code;

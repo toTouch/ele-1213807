@@ -81,8 +81,8 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
 
     /**
      * 微信退款回调(租车押金)
-     * @param tenantId
-     * @param wechatV3RefundOrderCallBackQuery
+     * @param tenantId 租户ID
+     * @param wechatV3RefundOrderCallBackQuery 微信回调参数
      * @return
      */
     @PostMapping("/outer/wechat/refund/car/deposit/notified/{tenantId}")
@@ -95,8 +95,8 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
 
     /**
      * 微信退款回调(租车租金)
-     * @param tenantId
-     * @param wechatV3RefundOrderCallBackQuery
+     * @param tenantId 租户ID
+     * @param wechatV3RefundOrderCallBackQuery 微信回调参数
      * @return
      */
     @PostMapping("/outer/wechat/refund/car/rent/notified/{tenantId}")
