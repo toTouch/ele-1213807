@@ -139,4 +139,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     public BigDecimal queryAllTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime) {
         return eleBatteryServiceFeeOrderMapper.queryAllTurnOver(tenantId, franchiseeId, beginTime, endTime);
     }
+
+    @Override
+    public EleBatteryServiceFeeOrder selectByOrderNo(String orderNo) {
+        return eleBatteryServiceFeeOrderMapper.selectOne(new LambdaQueryWrapper<EleBatteryServiceFeeOrder>().eq(EleBatteryServiceFeeOrder::getOrderId,orderNo));
+    }
 }

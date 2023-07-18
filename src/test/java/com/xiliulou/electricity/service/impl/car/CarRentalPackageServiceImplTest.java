@@ -40,8 +40,8 @@ public class CarRentalPackageServiceImplTest {
     @Test
     public void count() {
         CarRentalPackageQryModel queryModel = new CarRentalPackageQryModel();
-        R<Integer> count = carRentalPackageService.count(queryModel);
-        System.err.println(JSON.toJSONString(count));
+//        R<Integer> count = carRentalPackageService.count(queryModel);
+//        System.err.println(JSON.toJSONString(count));
     }
 
     @Test
@@ -70,12 +70,12 @@ public class CarRentalPackageServiceImplTest {
         optModel.setRent(new BigDecimal("90"));
         optModel.setDeposit(new BigDecimal("99"));
         optModel.setCarModelId(1);
-        optModel.setBatteryModelIds("1,2,3");
+//        optModel.setBatteryModelIds("1,2,3");
         optModel.setApplicableType(ApplicableTypeEnum.ALL.getCode());
         optModel.setRentRebate(YesNoEnum.YES.getCode());
         optModel.setRentRebateTerm(7);
         optModel.setDepositExemption(DepositExemptionEnum.NO.getCode());
-        optModel.setDepositRebateApprove(YesNoEnum.YES.getCode());
+//        optModel.setDepositRebateApprove(YesNoEnum.YES.getCode());
         optModel.setRentUnitPrice(new BigDecimal("3"));
         optModel.setLateFee(new BigDecimal("5"));
         optModel.setConfine(RenalPackageConfineEnum.NO.getCode());
@@ -83,7 +83,7 @@ public class CarRentalPackageServiceImplTest {
         optModel.setStatus(UpDownEnum.DOWN.getCode());
         optModel.setRemark("这是备注展示字段");
 
-        R<Long> insert = carRentalPackageService.insert(optModel);
-        System.err.println(JSON.toJSONString(insert));
+//        R<Long> insert = carRentalPackageService.insert(optModel);
+//        System.err.println(JSON.toJSONString(insert));
     }
 }

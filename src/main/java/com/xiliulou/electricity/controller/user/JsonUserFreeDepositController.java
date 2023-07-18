@@ -47,6 +47,15 @@ public class JsonUserFreeDepositController extends BaseController {
     }
 
     /**
+     * 电池免押订单V2
+     *
+     */
+    @PostMapping("/user/free/batteryDeposit/v2")
+    public R freeBatteryDepositOrder(@RequestBody @Validated FreeBatteryDepositQueryV2 query) {
+        return returnTripleResult(freeDepositOrderService.freeBatteryDepositOrderV2(query));
+    }
+
+    /**
      * 查询电池免押是否成功
      */
     @GetMapping("/user/free/batteryDeposit/order/status")

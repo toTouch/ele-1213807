@@ -17,6 +17,7 @@ import java.math.BigDecimal;
  **/
 @Data
 @TableName("t_electricity_member_card")
+@Deprecated
 public class ElectricityMemberCard {
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -78,7 +79,6 @@ public class ElectricityMemberCard {
      */
     @NotNull(message = "是否绑定活动不能为空!")
     private Integer isBindActivity;
-
 
     /**
      * 活动id

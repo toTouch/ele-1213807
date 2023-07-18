@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserBattery;
 import com.xiliulou.electricity.entity.UserBatteryType;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryTypeMapper;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,5 +59,24 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.userBatteryTypeMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo) {
+        List<UserBatteryType> list = new ArrayList<>(batteryTypeList.size());
+
+        for (String batteryType : batteryTypeList) {
+            UserBatteryType userBatteryType = new UserBatteryType();
+            userBatteryType.setUid(userInfo.getUid());
+            userBatteryType.setBatteryType(batteryType);
+            userBatteryType.setTenantId(userInfo.getTenantId());
+            userBatteryType.setDelFlag(UserBatteryType.DEL_NORMAL);
+            userBatteryType.setCreateTime(System.currentTimeMillis());
+            userBatteryType.setUpdateTime(System.currentTimeMillis());
+
+            list.add(userBatteryType);
+        }
+
+        return list;
     }
 }

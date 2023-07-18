@@ -81,4 +81,5 @@ public interface EleBatteryServiceFeeOrderService {
     BigDecimal queryAllTurnOver(Integer tenantId, List<Long> franchiseeId, Long beginTime, Long endTime);
 
 
+    EleBatteryServiceFeeOrder selectByOrderNo(String orderNo);
 }

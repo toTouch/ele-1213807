@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserBatteryType;
+import com.xiliulou.electricity.entity.UserInfo;
 
 import java.util.List;
 
@@ -23,4 +24,6 @@ public interface UserBatteryTypeService {
     Boolean deleteById(Long id);
 
     Integer batchInsert(List<UserBatteryType> buildUserBatteryType);
+
+    List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo);
 }

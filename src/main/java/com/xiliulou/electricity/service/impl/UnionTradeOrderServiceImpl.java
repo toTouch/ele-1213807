@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UnionTradeOrderMapper;
 import com.xiliulou.electricity.service.*;
@@ -28,7 +27,6 @@ import shaded.org.apache.commons.lang3.StringUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -166,6 +164,9 @@ public class UnionTradeOrderServiceImpl extends
 
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
     @Override
     public WechatJsapiOrderResultDTO unionCreateTradeOrderAndGetPayParams(UnionPayOrder unionPayOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -361,13 +362,14 @@ public class UnionTradeOrderServiceImpl extends
             updateUserInfo.setUid(userInfo.getUid());
             updateUserInfo.setBatteryDepositStatus(UserInfo.BATTERY_DEPOSIT_STATUS_YES);
             updateUserInfo.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+            updateUserInfo.setStoreId(eleDepositOrder.getStoreId());
             updateUserInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(updateUserInfo);
 
             UserBatteryDeposit userBatteryDeposit = new UserBatteryDeposit();
             userBatteryDeposit.setUid(userInfo.getUid());
             userBatteryDeposit.setOrderId(eleDepositOrder.getOrderId());
-            userBatteryDeposit.setDid(eleDepositOrder.getId());
+            userBatteryDeposit.setDid(eleDepositOrder.getMid());
             userBatteryDeposit.setBatteryDeposit(eleDepositOrder.getPayAmount());
             userBatteryDeposit.setCreateTime(System.currentTimeMillis());
             userBatteryDeposit.setDelFlag(UserBatteryDeposit.DEL_NORMAL);
@@ -377,6 +379,11 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
+            //保存用户押金对应的电池型号
+            List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
+            if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+            }
         }
 
         //押金订单
@@ -417,6 +424,12 @@ public class UnionTradeOrderServiceImpl extends
             return Pair.of(false, "用户不存在");
         }
 
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("NOTIFY_MEMBER_ORDER ERROR!batteryMemberCard is null,uid={},mid={}", electricityMemberCardOrder.getUid(),electricityMemberCardOrder.getMemberCardId());
+            return Pair.of(false, "套餐不存在");
+        }
+
         //获取套餐订单优惠券
         List<Long> userCouponIds = memberCardOrderCouponService.selectCouponIdsByOrderId(electricityMemberCardOrder.getOrderId());
 
@@ -432,7 +445,11 @@ public class UnionTradeOrderServiceImpl extends
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
             userBatteryMemberCardUpdate.setUid(electricityMemberCardOrder.getUid());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + electricityMemberCardOrder.getValidDays());
+            userBatteryMemberCardUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + batteryMemberCardService.calculateBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
+            userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + batteryMemberCardService.calculateBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
+            userBatteryMemberCardUpdate.setOrderRemainingNumber(remainingNumber);
             userBatteryMemberCardUpdate.setRemainingNumber(remainingNumber);
             userBatteryMemberCardUpdate.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
             userBatteryMemberCardUpdate.setMemberCardId(electricityMemberCardOrder.getMemberCardId());
@@ -443,15 +460,9 @@ public class UnionTradeOrderServiceImpl extends
             userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
 
-            //保存电池型号
-            List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(electricityMemberCardOrder.getMemberCardId());
-            if(CollectionUtils.isNotEmpty(batteryTypeList)){
-                userBatteryTypeService.batchInsert(buildUserBatteryType(batteryTypeList,userInfo));
-            }
-
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userBatteryMemberCardUpdate.getUid());
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
-            serviceFeeUserInfoInsertOrUpdate.setServiceFeeGenerateTime(System.currentTimeMillis() + electricityMemberCardOrder.getValidDays());
+            serviceFeeUserInfoInsertOrUpdate.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.calculateBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
             serviceFeeUserInfoInsertOrUpdate.setUid(userBatteryMemberCardUpdate.getUid());
             serviceFeeUserInfoInsertOrUpdate.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             serviceFeeUserInfoInsertOrUpdate.setUpdateTime(System.currentTimeMillis());
@@ -460,7 +471,6 @@ public class UnionTradeOrderServiceImpl extends
                 serviceFeeUserInfoInsertOrUpdate.setCreateTime(System.currentTimeMillis());
                 serviceFeeUserInfoInsertOrUpdate.setDelFlag(ServiceFeeUserInfo.DEL_NORMAL);
                 serviceFeeUserInfoInsertOrUpdate.setDisableMemberCardNo("");
-                serviceFeeUserInfoInsertOrUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
                 serviceFeeUserInfoService.insert(serviceFeeUserInfoInsertOrUpdate);
             } else {
                 serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoInsertOrUpdate);
@@ -478,15 +488,11 @@ public class UnionTradeOrderServiceImpl extends
             //TODO MQ消息 分帐 活动
 
         }else{
-            //更新优惠券状态
+            //支付失败 更新优惠券状态
             if(CollectionUtils.isNotEmpty(userCouponIds)){
                 Set<Integer> couponIds=userCouponIds.parallelStream().map(Long::intValue).collect(Collectors.toSet());
                 userCouponService.batchUpdateUserCoupon(electricityMemberCardOrderService.buildUserCouponList(couponIds, UserCoupon.STATUS_UNUSED, electricityMemberCardOrder.getOrderId()));
             }
-
-            //支付失败 清除套餐来源
-            electricityMemberCardOrderUpdate.setRefId(NumberConstant.ZERO_L);
-            electricityMemberCardOrderUpdate.setSource(NumberConstant.ZERO);
         }
 
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
@@ -724,21 +730,4 @@ public class UnionTradeOrderServiceImpl extends
         return baseMapper.selectById(id);
     }
 
-    private List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo) {
-        List<UserBatteryType> list = new ArrayList<>(batteryTypeList.size());
-
-        for (String batteryType : batteryTypeList) {
-            UserBatteryType userBatteryType = new UserBatteryType();
-            userBatteryType.setUid(userInfo.getUid());
-            userBatteryType.setBatteryType(batteryType);
-            userBatteryType.setTenantId(userInfo.getTenantId());
-            userBatteryType.setDelFlag(UserBatteryType.DEL_NORMAL);
-            userBatteryType.setCreateTime(System.currentTimeMillis());
-            userBatteryType.setUpdateTime(System.currentTimeMillis());
-
-            list.add(userBatteryType);
-        }
-
-        return list;
-    }
 }

@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
@@ -162,9 +163,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
-        if(Objects.isNull(userBatteryMemberCard) || Objects.equals( userBatteryMemberCard.getCardPayCount(), NumberConstant.ZERO)){
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getCardPayCount(), NumberConstant.ZERO)) {
             query.setRentType(BatteryMemberCard.RENT_TYPE_NEW);
-        }else{
+        } else {
             query.setRentType(BatteryMemberCard.RENT_TYPE_OLD);
         }
 
@@ -181,7 +182,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public List<String> selectMembercardBatteryV(BatteryMemberCardQuery query) {
         List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
-        if(CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
 
@@ -297,6 +298,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(query.getBatteryModels(), batteryMemberCard.getId()));
 
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public Long calculateBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
+        return Objects.equals(BatteryMemberCard.RENT_UNIT_MINUTES, batteryMemberCard.getRentUnit()) ? memberCardOrder.getValidDays() * 60 * 1000L : memberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
     }
 
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {
