@@ -45,4 +45,6 @@ public class TenantVO {
 
     private Integer freeDepositCapacity;
 
+    private Integer esignCapacity;
+
 }

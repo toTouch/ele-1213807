@@ -20,8 +20,6 @@
         <result property="type" column="type" jdbcType="INTEGER" />
         <result property="carModelId" column="car_model_id" jdbcType="INTEGER" />
         <result property="carSn" column="car_sn" jdbcType="VARCHAR" />
-        <result property="batteryModelId" column="battery_model_id" jdbcType="BIGINT" />
-        <result property="batterySn" column="battery_sn" jdbcType="VARCHAR" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
         <result property="rentalState" column="rental_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
@@ -37,7 +35,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `battery_model_id`, `battery_sn`, `pay_type`, `rental_state`, `remark`
+        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_model_id`, `car_sn`, `pay_type`, `rental_state`, `remark`
     </sql>
 
     <!-- 全部字段 -->
@@ -73,8 +71,6 @@
             <if test=" type != null "> `type`, </if>
             <if test=" carModelId != null "> `car_model_id`, </if>
             <if test=" carSn != null and carSn != '' "> `car_sn`, </if>
-            <if test=" batteryModelId != null "> `battery_model_id`, </if>
-            <if test=" batterySn != null and batterySn != '' "> `battery_sn`, </if>
             <if test=" payType != null "> `pay_type`, </if>
             <if test=" rentalState != null "> `rental_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
@@ -97,8 +93,6 @@
             <if test=" type != null "> #{type}, </if>
             <if test=" carModelId != null "> #{carModelId}, </if>
             <if test=" carSn != null and carSn != '' "> #{carSn}, </if>
-            <if test=" batteryModelId != null "> #{batteryModelId}, </if>
-            <if test=" batterySn != null and batterySn != '' "> #{batterySn}, </if>
             <if test=" payType != null "> #{payType}, </if>
             <if test=" rentalState != null "> #{rentalState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>

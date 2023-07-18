@@ -83,7 +83,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R updateInsuranceStatus(Long uid, Integer insuranceStatus) {
+    public R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -126,18 +126,9 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     public InsuranceUserInfo queryByUidFromCache(Long uid) {
 
         InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid, InsuranceUserInfo.class);
-//        if (Objects.nonNull(cache)) {
-//            if (Objects.nonNull(cache.getInsuranceExpireTime()) && cache.getInsuranceExpireTime() < System.currentTimeMillis()) {
-//                redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + uid);
-//            } else {
-//                return cache;
-//            }
-//        }
-
         if (Objects.nonNull(cache)) {
             return cache;
         }
-
 
         InsuranceUserInfo insuranceUserInfo = insuranceUserInfoMapper.selectOne(new LambdaQueryWrapper<InsuranceUserInfo>().eq(InsuranceUserInfo::getUid, uid).eq(InsuranceUserInfo::getDelFlag, InsuranceUserInfo.DEL_NORMAL));
         if (Objects.isNull(insuranceUserInfo)) {
@@ -310,7 +301,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R insertUserInsurance(InsuranceUserInfo insuranceOrder) {
+    public R insertUserBatteryInsurance(InsuranceUserInfo insuranceOrder) {
 
         if (Objects.isNull(insuranceOrder)) {
             log.error("INSERT USER INSURANCEORDER ERROR! PARAM IS NULL");
@@ -477,7 +468,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R renewalUserInsurance(InsuranceUserInfo insuranceOrder) {
+    public R renewalUserBatteryInsurance(InsuranceUserInfo insuranceOrder) {
 
         if (Objects.isNull(insuranceOrder)) {
             log.error("INSERT USER INSURANCEORDER ERROR! PARAM IS NULL");

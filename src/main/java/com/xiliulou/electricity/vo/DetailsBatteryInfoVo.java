@@ -68,7 +68,7 @@ public class DetailsBatteryInfoVo {
     /**
      * 套餐次数
      */
-    private Integer remainingNumber;
+    private Long remainingNumber;
     
     /**
      * 套餐时间

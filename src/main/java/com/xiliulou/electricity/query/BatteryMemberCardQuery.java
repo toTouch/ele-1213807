@@ -47,7 +47,7 @@ public class BatteryMemberCardQuery {
     private BigDecimal rentPriceUnit;
 
     @NotNull(message = "租期不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer validDays;
+    private Integer  validDays;
 
     @NotNull(message = "租期单位不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer rentUnit;
@@ -85,8 +85,8 @@ public class BatteryMemberCardQuery {
     @NotNull(message = "是否免押不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer freeDeposite;
 
-    @NotNull(message = "退押审核不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    private Integer refundDepositeAudit;
+//    @NotNull(message = "退押审核不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+//    private Integer refundDepositeAudit;
 
     @NotNull(message = "滞纳金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal serviceCharge;

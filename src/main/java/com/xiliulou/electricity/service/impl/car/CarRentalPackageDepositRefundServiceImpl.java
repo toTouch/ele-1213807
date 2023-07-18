@@ -32,7 +32,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 根据退押申请单编码进行更新
      *
      * @param entity 实体数据
-     * @return
+     * @return true/false
      */
     @Override
     public boolean updateByOrderNo(CarRentalPackageDepositRefundPO entity) {
@@ -52,7 +52,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 全表扫描，慎用
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 押金返还订单数据集
      */
     @Slave
     @Override
@@ -68,7 +68,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 条件查询分页
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 押金返回订单数据集
      */
     @Slave
     @Override
@@ -84,7 +84,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 条件查询总数
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
     @Slave
     @Override
@@ -100,7 +100,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 根据订单编码查询
      *
      * @param orderNo 订单编码
-     * @return
+     * @return 押金返还订单信息
      */
     @Slave
     @Override
@@ -116,7 +116,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 根据ID查询
      *
      * @param id 主键ID
-     * @return
+     * @return 押金返还订单信息
      */
     @Slave
     @Override
@@ -132,7 +132,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      * 新增数据，返回主键ID
      *
      * @param entity 实体数据
-     * @return
+     * @return 主键ID
      */
     @Override
     public Long insert(CarRentalPackageDepositRefundPO entity) {

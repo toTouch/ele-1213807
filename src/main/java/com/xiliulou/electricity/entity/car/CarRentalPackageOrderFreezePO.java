@@ -54,14 +54,14 @@ public class CarRentalPackageOrderFreezePO extends BasicCarPO {
     /**
      * 余量
      */
-    private Integer residue;
+    private Long residue;
 
     /**
      * 余量单位
      * <pre>
-     *     0-次数
+     *     -1-次数
      *     1-天
-     *     2-分钟
+     *     0-分钟
      * </pre>
      * @see RentalUnitEnum
      */

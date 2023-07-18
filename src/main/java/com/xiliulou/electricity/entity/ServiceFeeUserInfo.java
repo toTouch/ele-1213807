@@ -33,7 +33,7 @@ public class ServiceFeeUserInfo {
     /**
      * 是否存在电池服务费 (1--存在电池服务费)
      */
-    private Integer existBatteryServiceFee;
+//    private Integer existBatteryServiceFee;
 
     /**
      * 用户Id

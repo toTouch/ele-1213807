@@ -1,5 +1,11 @@
 package com.xiliulou.electricity.controller.outer;
 
+import com.xiliulou.electricity.service.EleCabinetSignatureService;
+import com.xiliulou.esign.entity.resp.EsignCallBackResp;
+import com.xiliulou.electricity.enums.WxRefundPayOptTypeEnum;
+import com.xiliulou.electricity.factory.paycallback.WxRefundPayServiceFactory;
+import com.xiliulou.electricity.service.wxrefund.WxRefundPayService;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
@@ -13,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+
 
 /**
  * @program: XILIULOU
@@ -22,12 +30,16 @@ import org.springframework.web.bind.annotation.RestController;
  **/
 @RestController
 @Slf4j
-public class JsonOuterCallBackController {
+public class JsonOuterCallBackController extends JsonOuterCallBackBasicController {
+
     @Autowired
     WechatV3PostProcessHandler wechatV3PostProcessHandler;
     @Qualifier("newRedisTemplate")
     @Autowired
     RedisTemplate redisTemplate;
+
+    @Autowired
+    private EleCabinetSignatureService eleCabinetSignatureService;
 
     /**
      * 微信支付通知
@@ -64,5 +76,40 @@ public class JsonOuterCallBackController {
         //TODO
         wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
         return WechatV3CallBackResult.success();
+    }
+
+
+    /**
+     * 微信退款回调(租车押金)
+     * @param tenantId 租户ID
+     * @param wechatV3RefundOrderCallBackQuery 微信回调参数
+     * @return
+     */
+    @PostMapping("/outer/wechat/refund/car/deposit/notified/{tenantId}")
+    public WechatV3CallBackResult carDepositRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
+        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode());
+        service.process(callBackParam);
+        return WechatV3CallBackResult.success();
+    }
+
+    /**
+     * 微信退款回调(租车租金)
+     * @param tenantId 租户ID
+     * @param wechatV3RefundOrderCallBackQuery 微信回调参数
+     * @return
+     */
+    @PostMapping("/outer/wechat/refund/car/rent/notified/{tenantId}")
+    public WechatV3CallBackResult carRentRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
+        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_RENT_REFUND_CALL_BACK.getCode());
+        service.process(callBackParam);
+        return WechatV3CallBackResult.success();
+    }
+
+    @PostMapping("/outer/esign/signNotice/{esignConfigId}")
+    public EsignCallBackResp signResultNotice(@PathVariable("esignConfigId") Integer esignConfigId, HttpServletRequest request){
+        eleCabinetSignatureService.handleCallBackReq(esignConfigId, request);
+        return EsignCallBackResp.success();
     }
 }

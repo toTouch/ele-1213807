@@ -2,23 +2,20 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.mapper.ServiceFeeUserInfoMapper;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -54,6 +51,9 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Autowired
     BatteryModelService batteryModelService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
     @Override
     public int insert(ServiceFeeUserInfo serviceFeeUserInfo) {
@@ -107,6 +107,7 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
 
     @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {
+/*
 
         //获取新用户所绑定的加盟商的电池服务费
         Franchisee franchisee = franchiseeService.queryByUserId(uid);
@@ -177,6 +178,38 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         }
         eleBatteryServiceFeeVO.setMemberCardStatus(memberCardStatus);
         eleBatteryServiceFeeVO.setUserBatteryServiceFee(userChangeServiceFee);
+*/
+
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.warn("BATTERY SERVICE FEE WARN! not found userInfo,uid={}", uid);
+            return eleBatteryServiceFeeVO;
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(uid);
+        if(Objects.isNull(userBatteryMemberCard)){
+            log.warn("BATTERY SERVICE FEE WARN! not found userBatteryMemberCard,uid={}", uid);
+            return eleBatteryServiceFeeVO;
+        }
+
+        ServiceFeeUserInfo serviceFeeUserInfo = this.queryByUidFromCache(uid);
+        if(Objects.isNull(serviceFeeUserInfo)){
+            log.warn("BATTERY SERVICE FEE WARN! not found serviceFeeUserInfo,uid={}", uid);
+            return eleBatteryServiceFeeVO;
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.warn("BATTERY SERVICE FEE WARN! not found batteryMemberCard,uid={}", uid);
+            return eleBatteryServiceFeeVO;
+        }
+
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = this.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+
+        eleBatteryServiceFeeVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
+        eleBatteryServiceFeeVO.setUserBatteryServiceFee(acquireUserBatteryServiceFeeResult.getLeft()?acquireUserBatteryServiceFeeResult.getRight():BigDecimal.ZERO);
 
         return eleBatteryServiceFeeVO;
     }
@@ -224,5 +257,29 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
         }
         
         return userChangeServiceFee;
+    }
+
+    @Override
+    public Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo) {
+
+        if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
+            return Triple.of(false, null, null);
+        }
+
+        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return Triple.of(false, null, null);
+        }
+
+        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
+            int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
+            return Triple.of(true, EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD, batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays)));
+        }
+
+        if (System.currentTimeMillis() - userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > 0) {
+            int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
+            return Triple.of(true, EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE, batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays)));
+        }
+
+        return Triple.of(false, null, null);
     }
 }

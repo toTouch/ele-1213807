@@ -60,8 +60,8 @@ public class CarRentalPackageQryReq implements Serializable {
     /**
      * 上下架状态
      * <pre>
-     *     1-上架
-     *     2-下架
+     *     0-上架
+     *     1-下架
      * </pre>
      * @see UpDownEnum
      */

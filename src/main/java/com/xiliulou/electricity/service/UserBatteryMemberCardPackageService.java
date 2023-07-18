@@ -48,4 +48,6 @@ public interface UserBatteryMemberCardPackageService {
     void handlerTransferBatteryMemberCardPackage();
 
     Triple<Boolean, String, Object> batteryMembercardTransform(Long uid);
+
+    Integer deleteByUid(Long uid);
 }

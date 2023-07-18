@@ -111,6 +111,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否启用0元退押审核
      */
     private Integer isZeroDepositAuditEnabled;
+
+    /**
+     * 是否开启电子签名 0--是 1--否 2--功能关闭
+     */
+    private Integer isEnableEsign;
 }
 
 

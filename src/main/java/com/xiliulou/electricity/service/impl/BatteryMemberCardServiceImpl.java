@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.MemberCardBatteryType;
 import com.xiliulou.electricity.entity.UserBatteryMemberCard;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
@@ -91,12 +92,20 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return batteryMemberCard;
     }
 
-    /**
-     * 修改数据
-     *
-     * @param batteryMemberCard 实例对象
-     * @return 实例对象
-     */
+    @Override
+    public Integer insert(BatteryMemberCard batteryMemberCard) {
+        return this.batteryMemberCardMapper.insert(batteryMemberCard);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard, List<String> batteryModels) {
+
+        this.batteryMemberCardMapper.insert(batteryMemberCard);
+
+        return memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(batteryModels, batteryMemberCard.getId()));
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryMemberCard batteryMemberCard) {
@@ -162,9 +171,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
-        if(Objects.isNull(userBatteryMemberCard) || Objects.equals( userBatteryMemberCard.getCardPayCount(), NumberConstant.ZERO)){
+        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getCardPayCount(), NumberConstant.ZERO)) {
             query.setRentType(BatteryMemberCard.RENT_TYPE_NEW);
-        }else{
+        } else {
             query.setRentType(BatteryMemberCard.RENT_TYPE_OLD);
         }
 
@@ -181,7 +190,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Override
     public List<String> selectMembercardBatteryV(BatteryMemberCardQuery query) {
         List<BatteryMemberCardVO> list = this.batteryMemberCardMapper.selectMembercardBatteryV(query);
-        if(CollectionUtils.isEmpty(list)){
+        if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
 
@@ -254,7 +263,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         batteryMemberCardUpdate.setDeposit(query.getDeposit());
         batteryMemberCardUpdate.setRentPrice(query.getRentPrice());
         batteryMemberCardUpdate.setRentPriceUnit(query.getRentPriceUnit());
-        batteryMemberCardUpdate.setValidDays(calculateValidDays(query));
+        batteryMemberCardUpdate.setValidDays(query.getValidDays());
         batteryMemberCardUpdate.setRentUnit(query.getRentUnit());
         batteryMemberCardUpdate.setRentType(query.getRentType());
         batteryMemberCardUpdate.setSendCoupon(query.getSendCoupon());
@@ -297,6 +306,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(query.getBatteryModels(), batteryMemberCard.getId()));
 
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public Long calculateBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
+        return Objects.equals(BatteryMemberCard.RENT_UNIT_MINUTES, batteryMemberCard.getRentUnit()) ? memberCardOrder.getValidDays() * 60 * 1000L : memberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
     }
 
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {

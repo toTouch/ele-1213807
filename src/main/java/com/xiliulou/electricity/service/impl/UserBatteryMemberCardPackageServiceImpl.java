@@ -97,6 +97,11 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         return this.userBatteryMemberCardPackageMapper.deleteByOrderId(orderId);
     }
 
+    @Override
+    public Integer deleteByUid(Long uid) {
+        return this.userBatteryMemberCardPackageMapper.deleteByUid(uid);
+    }
+
     /**
      * 用户端懒加载处理换电套餐资源包转换
      */

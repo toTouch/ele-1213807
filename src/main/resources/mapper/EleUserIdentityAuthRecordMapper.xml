@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleUserIdentityAuthRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EleUserIdentityAuthRecord" id="userIdentityAuthMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="psnId" column="psn_id" jdbcType="VARCHAR"/>
+        <result property="psnAccount" column="psn_account" jdbcType="VARCHAR"/>
+        <result property="authFlowId" column="auth_flow_id" jdbcType="VARCHAR"/>
+        <result property="realNameStatus" column="real_name_status" jdbcType="INTEGER"/>
+        <result property="authResult" column="auth_result" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段信息获取 -->
+    <sql id="selectUserIdentityAuthRecord">
+        select id, uid, tenant_id, psn_id, psn_account, auth_flow_id, real_name_status, auth_result, del_flag, create_time, update_time from t_user_identity_auth_record
+    </sql>
+
+    <!--根据用户ID和租户ID查询最新记录-->
+    <select id="selectLatestRecordByUser" resultType="com.xiliulou.electricity.entity.EleUserEsignRecord">
+        <include refid="selectUserIdentityAuthRecord"/>
+        where uid=#{uid} and tenant_id = #{tenantId} and del_flag = 0 order by create_time desc limit 1
+    </select>
+
+    <!--新增数据-->
+    <insert id="insertUserIdentityAuthRecord" parameterType="com.xiliulou.electricity.entity.EleUserIdentityAuthRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user_identity_auth_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            uid,
+            tenant_id,
+            psn_id,
+            psn_account,
+            auth_flow_id,
+            real_name_status,
+            auth_result,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{uid},
+            #{tenantId},
+            #{psnId},
+            #{psnAccount},
+            #{authFlowId},
+            #{realNameStatus},
+            #{authResult},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+    <!--根据条件修改数据-->
+    <update id="updateUserIdentityAuthRecord">
+        update t_user_identity_auth_record
+        <set>
+            <if test="psnId != null and psnId != ''">
+                psnId = #{psnId},
+            </if>
+            <if test="psnAccount != null and psnAccount != ''">
+                psn_account = #{psnAccount},
+            </if>
+            <if test="authFlowId != null and authFlowId != ''">
+                auth_flow_id = #{authFlowId},
+            </if>
+            <if test="realNameStatus != null">
+                real_name_status = #{realNameStatus},
+            </if>
+            <if test="authResult != null and authResult != ''">
+                auth_result = #{authResult},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and uid = #{uid} and tenant_id = #{tenantId}
+    </update>
+
+
+
+
+</mapper>

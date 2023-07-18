@@ -3,7 +3,10 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -14,7 +17,10 @@ import java.math.BigDecimal;
  * @create: 2020-12-03 09:45
  **/
 @Data
+@Builder
 @TableName("t_electricity_member_card_order")
+@AllArgsConstructor
+@NoArgsConstructor
 public class ElectricityMemberCardOrder {
 
     @TableId(value = "id", type = IdType.AUTO)
@@ -22,7 +28,7 @@ public class ElectricityMemberCardOrder {
     //支付金额
     private BigDecimal payAmount;
     //有效天数
-    private Long validDays;
+    private Integer validDays;
     //最大使用次数
     private Long maxUseCount;
     //

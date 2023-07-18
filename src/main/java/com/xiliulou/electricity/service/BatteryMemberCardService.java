@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.BatteryModelQuery;
@@ -34,12 +35,10 @@ public interface BatteryMemberCardService {
      */
     BatteryMemberCard queryByIdFromCache(Long id);
 
-    /**
-     * 修改数据
-     *
-     * @param batteryMemberCard 实例对象
-     * @return 实例对象
-     */
+    Integer insert(BatteryMemberCard batteryMemberCard);
+
+    Integer insertBatteryMemberCardAndBatteryType(BatteryMemberCard batteryMemberCard,List<String> batteryModels);
+
     Integer update(BatteryMemberCard batteryMemberCard);
 
     /**
@@ -65,6 +64,8 @@ public interface BatteryMemberCardService {
     Triple<Boolean, String, Object> modify(BatteryMemberCardQuery query);
 
     Triple<Boolean, String, Object> save(BatteryMemberCardQuery query);
+
+    Long calculateBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
 
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
 

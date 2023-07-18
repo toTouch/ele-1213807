@@ -19,7 +19,7 @@
         <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
         <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="confine" column="confine" jdbcType="INTEGER" />
-        <result property="confineNum" column="confine_num" jdbcType="INTEGER" />
+        <result property="confineNum" column="confine_num" jdbcType="BIGINT" />
         <result property="tenancy" column="tenancy" jdbcType="INTEGER" />
         <result property="tenancyUnit" column="tenancy_unit" jdbcType="INTEGER" />
         <result property="rentUnitPrice" column="rent_unit_price" jdbcType="DECIMAL" />
@@ -143,6 +143,18 @@
             <if test=" useBeginTime != null "> #{useBeginTime}, </if>
         </trim>
     </sql>
+
+    <!-- 根据用户ID进行退押操作, 将使用中、未使用的订单全部设置为已失效 -->
+    <update id="refundDepositByUid">
+        UPDATE <include refid="table_name" />
+        <set>
+            `use_state` = 3, `update_time` = #{optTime}
+            <if test=" optId != null "> , `update_uid` = #{optId} </if>
+        </set>
+        <where>
+            `tenant_id` = #{orderNo} AND `uid` = #{uid} AND `use_state` IN (1, 2) AND `del_flag` = 0
+        </where>
+    </update>
 
     <!-- 根据订单编号更改支付状态、使用状态、使用时间 -->
     <update id="updateStateByOrderNo">

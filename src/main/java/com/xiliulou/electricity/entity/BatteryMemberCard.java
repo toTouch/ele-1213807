@@ -45,7 +45,7 @@ public class BatteryMemberCard {
     /**
      * 租期
      */
-    private Long validDays;
+    private Integer validDays;
     /**
      * 租期单位 0：分钟，1：天
      */

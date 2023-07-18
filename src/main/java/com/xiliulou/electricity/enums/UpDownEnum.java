@@ -13,8 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum UpDownEnum implements BasicEnum<Integer, String> {
 
-    UP(1, "上架"),
-    DOWN(2, "下架"),
+    UP(0, "上架"),
+    DOWN(1, "下架"),
     ;
 
     private final Integer code;

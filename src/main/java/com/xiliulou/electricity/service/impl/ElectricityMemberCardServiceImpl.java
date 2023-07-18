@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
  **/
 @Service
 @Slf4j
+@Deprecated
 public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMemberCardMapper, ElectricityMemberCard> implements ElectricityMemberCardService {
 
     @Autowired

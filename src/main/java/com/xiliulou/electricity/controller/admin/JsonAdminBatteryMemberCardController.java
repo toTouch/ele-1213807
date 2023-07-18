@@ -79,6 +79,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
                 .franchiseeIds(franchiseeIds)
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
                 .status(status)
                 .name(name)
                 .build();

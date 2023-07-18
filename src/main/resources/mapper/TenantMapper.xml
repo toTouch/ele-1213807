@@ -14,9 +14,11 @@
 		tt.create_time,
 		tt.update_time,
 		tt.expire_time,
-		tfrd.face_recognize_capacity
+		tfrd.face_recognize_capacity,
+		tecd.esign_capacity
 		from t_tenant tt
 		left join t_face_recognize_data tfrd on tt.id=tfrd.tenant_id
+		left join t_esign_capacity_data tecd on tt.id=tecd.tenant_id
 		where tt.del_flag=0
 		<if test="name != null and name != ''">
 			and tt.name like concat('%',#{name},'%')

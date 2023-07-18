@@ -21,7 +21,7 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfo queryByUid(Long uid, Integer tenantId);
 
-    R updateInsuranceStatus(Long uid, Integer insuranceStatus);
+    R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus);
 
     InsuranceUserInfo queryByUidFromCache(Long uid);
 
@@ -37,10 +37,10 @@ public interface InsuranceUserInfoService {
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
 
-    R insertUserInsurance(InsuranceUserInfo insuranceOrder);
+    R insertUserBatteryInsurance(InsuranceUserInfo insuranceOrder);
 
     R editUserInsuranceInfo(InsuranceUserInfo order);
 
-    R renewalUserInsurance(InsuranceUserInfo insuranceOrder);
+    R renewalUserBatteryInsurance(InsuranceUserInfo insuranceOrder);
 
 }

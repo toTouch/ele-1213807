@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.query.car;
 
-import com.xiliulou.electricity.enums.BuyTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import lombok.Data;
@@ -59,7 +58,6 @@ public class CarRentalPackageOrderQryReq implements Serializable {
      */
     private Integer payState;
 
-
     /**
      * 交易方式
      * <pre>
@@ -69,17 +67,6 @@ public class CarRentalPackageOrderQryReq implements Serializable {
      * @see PayTypeEnum
      */
     private Integer payType;
-
-    /**
-     * 购买方式
-     * <pre>
-     *     1-线上
-     *     2-线下
-     *     3-赠送
-     * </pre>
-     * @see BuyTypeEnum
-     */
-    private Integer buyType;
 
     /**
      * 购买时间开始

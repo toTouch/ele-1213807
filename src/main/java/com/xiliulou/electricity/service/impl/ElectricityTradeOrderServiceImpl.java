@@ -540,7 +540,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, eleBatteryServiceFeeOrder.getStatus())) {
             log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, orderNo={}", electricityTradeOrder.getOrderNo());
-            return Pair.of(false, "押金订单已处理!");
+            return Pair.of(false, "订单已处理!");
         }
 
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
@@ -551,10 +551,9 @@ public class ElectricityTradeOrderServiceImpl extends
             eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_SUCCESS;
             result = true;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO={}" + tradeOrderNo);
         }
 
-        //用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(eleBatteryServiceFeeOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID={},orderNo={}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
@@ -562,10 +561,22 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryMemberCard)){
+            log.error("BATTERY SERVICE FEE NOTIFY ERROR!not found userBatteryMemberCard,uid={},orderNo={}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
+            return Pair.of(false, "未找到用户信息!");
+        }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(batteryMemberCard)){
+            log.error("BATTERY SERVICE FEE NOTIFY ERROR!not found batteryMemberCard,uid={},mid={}", eleBatteryServiceFeeOrder.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Pair.of(false, "未找到套餐信息!");
+        }
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(serviceFeeUserInfo)){
+            log.error("BATTERY SERVICE FEE NOTIFY ERROR!not found serviceFeeUserInfo,uid={},orderNo={}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
+            return Pair.of(false, "未找到用户信息!");
+        }
 
         //电池服务费订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
@@ -575,7 +586,7 @@ public class ElectricityTradeOrderServiceImpl extends
         if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
             UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(userInfo.getUid(), userInfo.getTenantId());
+            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryByDisableMemberCardNo(serviceFeeUserInfo.getDisableMemberCardNo(),userInfo.getTenantId());
 
             //如果是限时间停卡，服务费的开始产生时间应拿当时停卡记录的停卡时间
             if (Objects.nonNull(eleDisableMemberCardRecord) && Objects.nonNull(serviceFeeUserInfo) && Objects.equals(eleDisableMemberCardRecord.getDisableMemberCardNo(), serviceFeeUserInfo.getDisableMemberCardNo())) {
@@ -602,7 +613,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 if (Objects.isNull(enableMemberCardRecord)) {
                     EnableMemberCardRecord enableMemberCardRecordInsert = EnableMemberCardRecord.builder()
                             .disableMemberCardNo(eleDisableMemberCardRecord.getDisableMemberCardNo())
-                            .memberCardName(electricityMemberCard.getName())
+                            .memberCardName(batteryMemberCard.getName())
                             .enableTime(System.currentTimeMillis())
                             .enableType(EnableMemberCardRecord.ARTIFICIAL_ENABLE)
                             .batteryServiceFeeStatus(EnableMemberCardRecord.STATUS_SUCCESS)
@@ -637,10 +648,10 @@ public class ElectricityTradeOrderServiceImpl extends
 
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
+            serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-                serviceFeeUserInfoUpdate.setExistBatteryServiceFee(ServiceFeeUserInfo.NOT_EXIST_SERVICE_FEE);
                 Long memberCardExpireTime = System.currentTimeMillis() + (userBatteryMemberCard.getMemberCardExpireTime() - userBatteryMemberCard.getDisableMemberCardTime());
                 serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
             } else {
@@ -687,8 +698,7 @@ public class ElectricityTradeOrderServiceImpl extends
         eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
 
         //小程序虚拟发货
-        shippingManagerService
-                .uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
+        shippingManagerService.uploadShippingInfo(userInfo.getUid(), userInfo.getPhone(), transactionId, userInfo.getTenantId());
 
         return Pair.of(result, null);
     }

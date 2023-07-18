@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.query.UserBatteryDepositAndMembercardQuery;
+import com.xiliulou.electricity.query.UserBatteryMembercardQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -31,7 +34,7 @@ import java.util.Objects;
  **/
 @RestController
 @Slf4j
-public class JsonAdminElectricityMemberCardOrderController {
+public class JsonAdminElectricityMemberCardOrderController extends BaseController {
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     @Autowired
@@ -239,6 +242,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      *
      * @return
      */
+    @Deprecated
     @PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
     @Log(title = "用户绑定套餐")
     public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
@@ -250,6 +254,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      *
      * @return
      */
+    @Deprecated
     @PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
 	@Log(title = "编辑用户套餐")
 	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
@@ -261,6 +266,7 @@ public class JsonAdminElectricityMemberCardOrderController {
      *
      * @return
      */
+    @Deprecated
     @PutMapping(value = "/admin/electricityMemberCard/renewalUserMemberCard")
     @Log(title = "用户套餐续费")
     public R renewalUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate) {
@@ -298,6 +304,34 @@ public class JsonAdminElectricityMemberCardOrderController {
 	@Log(title = "清除用户电池服务费")
 	public R cleanBatteryServiceFee(@RequestParam("uid") Long uid) {
         return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
+    }
+
+    /**
+     * 用户交押金绑定套餐(3.0)
+     *
+     */
+    @PostMapping(value = "/admin/electricityMemberCard/addUserDepositAndMemberCard")
+    @Log(title = "用户交押金绑定套餐")
+    public R addUserDepositAndMemberCard(@RequestBody @Validated UserBatteryDepositAndMembercardQuery query) {
+        return returnTripleResult(electricityMemberCardOrderService.addUserDepositAndMemberCard(query));
+    }
+
+    /**
+     * 编辑用户套餐(3.0)
+     */
+    @PutMapping(value = "/admin/electricityMemberCard/editUserBatteryMemberCard")
+    @Log(title = "编辑用户套餐")
+    public R editUserBatteryMemberCard(@RequestBody @Validated UserBatteryMembercardQuery query) {
+        return returnTripleResult(electricityMemberCardOrderService.editUserBatteryMemberCard(query));
+    }
+
+    /**
+     * 续费用户套餐(3.0)
+     */
+    @PutMapping(value = "/admin/electricityMemberCard/renewalUserBatteryMemberCard")
+    @Log(title = "用户套餐续费")
+    public R renewalUserBatteryMemberCard(@RequestBody @Validated UserBatteryMembercardQuery query) {
+        return returnTripleResult(electricityMemberCardOrderService.renewalUserBatteryMemberCard(query));
     }
 
 }

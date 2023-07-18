@@ -93,9 +93,9 @@ public class DateUtils {
      * @param endTime 结束时间戳，毫秒
      * @return
      */
-    public static int diffMinute(long beginTime, long endTime) {
+    public static long diffMinute(long beginTime, long endTime) {
         Double diffDayValue = Math.ceil((endTime - beginTime) / (1000 * 60 * 60)) + 1;
-        return diffDayValue.intValue();
+        return diffDayValue.longValue();
     }
 
     /**
@@ -110,8 +110,8 @@ public class DateUtils {
      * @param endTime 结束时间戳，毫秒
      * @return
      */
-    public static int diffDay(long beginTime, long endTime) {
+    public static long diffDay(long beginTime, long endTime) {
         Double diffDayValue = Math.ceil((endTime - beginTime) / (1000 * 60 * 60 * 24)) + 1;
-        return diffDayValue.intValue();
+        return diffDayValue.longValue();
     }
 }

@@ -77,6 +77,10 @@
         delete from t_user_battery_member_card_package where id = #{id}
     </delete>
 
+    <delete id="deleteByUid">
+        delete from t_user_battery_member_card_package where uid = #{uid}
+    </delete>
+
     <delete id="deleteByOrderId">
         delete from t_user_battery_member_card_package where order_id = #{orderId}
     </delete>

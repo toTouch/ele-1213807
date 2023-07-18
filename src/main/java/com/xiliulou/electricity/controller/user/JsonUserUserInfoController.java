@@ -33,12 +33,7 @@ public class JsonUserUserInfoController extends BaseController {
     @Autowired
     UserExtraService userExtraService;
 
-    //查看用户状态
-    @GetMapping(value = "/user/userInfo/queryUserInfo")
-    @Deprecated
-    public R queryUserInfo() {
-        return userInfoService.queryUserInfo();
-    }
+    //TODO  这三个接口都要优化
 
     /**
      * 小程序首页获取用户详情

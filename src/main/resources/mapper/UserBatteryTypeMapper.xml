@@ -58,4 +58,8 @@
         delete from t_user_battery_type where id = #{id}
     </delete>
 
+    <delete id="deleteByUid">
+        delete from t_user_battery_type where uid = #{uid}
+    </delete>
+
 </mapper>

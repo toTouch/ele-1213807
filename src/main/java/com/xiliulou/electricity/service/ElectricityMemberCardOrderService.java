@@ -89,8 +89,10 @@ public interface ElectricityMemberCardOrderService {
 
     BigDecimal checkDifferentModelBatteryServiceFee(Franchisee franchisee, UserInfo userInfo, UserBattery userBattery);
 
+    @Deprecated
     BigDecimal checkUserDisableCardBatteryService(UserInfo userInfo, Long uid, Long cardDays, EleDisableMemberCardRecord eleDisableMemberCardRecord, ServiceFeeUserInfo serviceFeeUserInfo);
 
+    @Deprecated
     BigDecimal checkUserMemberCardExpireBatteryService(UserInfo userInfo, Franchisee franchisee, Long cardDays);
 
     int insert(ElectricityMemberCardOrder electricityMemberCardOrder);
@@ -132,4 +134,10 @@ public interface ElectricityMemberCardOrderService {
     void handlerBatteryMembercardPaymentNotify(BatteryMemberCard batteryMemberCard,ElectricityMemberCardOrder memberCardOrder, UserBatteryMemberCard userBatteryMemberCard, UserInfo userInfo);
 
     Integer updateStatusByOrderNo(ElectricityMemberCardOrder oldMemberCardOrder);
+
+    Triple<Boolean, String, Object> addUserDepositAndMemberCard(UserBatteryDepositAndMembercardQuery query);
+
+    Triple<Boolean, String, Object> editUserBatteryMemberCard(UserBatteryMembercardQuery query);
+
+    Triple<Boolean, String, Object> renewalUserBatteryMemberCard(UserBatteryMembercardQuery query);
 }

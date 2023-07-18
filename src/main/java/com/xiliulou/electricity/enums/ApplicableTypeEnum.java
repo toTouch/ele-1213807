@@ -22,9 +22,9 @@ import java.util.List;
 @AllArgsConstructor
 public enum ApplicableTypeEnum implements BasicEnum<Integer, String> {
 
-    ALL(1, "全部"),
-    NEW(2, "新租套餐"),
-    OLD(3, "续租套餐"),
+    ALL(0, "全部"),
+    NEW(1, "新租套餐"),
+    OLD(2, "续租套餐"),
     ;
 
     private final Integer code;

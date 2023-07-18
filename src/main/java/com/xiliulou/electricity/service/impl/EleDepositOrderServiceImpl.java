@@ -32,6 +32,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +132,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     ElectricityConfigService electricityConfigService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
     @Autowired
     FreeDepositAlipayHistoryService freeDepositAlipayHistoryService;
@@ -917,17 +923,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R payBatteryServiceFee(HttpServletRequest request) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("pay battery service fee  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
@@ -941,13 +944,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
-
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("pay battery service fee CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID={}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
         }
 
-        //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("pay battery service fee  ERROR! not found user UID={}", user.getUid());
@@ -966,47 +967,23 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBattery)) {
-            log.error("ELE ERROR! not found userBattery,uid={}", user.getUid());
-//            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.error("PAY BATTERY SERVICE FEE ERROR! memberCard  is not exit,uid={},memberCardId={}", user.getUid(), userBatteryMemberCard.getMemberCardId());
+            return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
-
-        BigDecimal payAmount = null;
-        BigDecimal batteryServiceFee = null;
-        Long now = System.currentTimeMillis();
-        long cardDays = 0;
-        Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
 
         ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-
-            BigDecimal chargeRate = electricityMemberCardOrderService.checkDifferentModelBatteryServiceFee(franchisee, userInfo, userBattery);
-            batteryServiceFee = chargeRate;
-
-            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, franchisee, cardDays);
-            payAmount = serviceFee;
+        if (Objects.isNull(serviceFeeUserInfo)) {
+            log.error("PAY BATTERY SERVICE FEE ERROR! not found user,uid={}", user.getUid());
+            return R.fail("100247", "用户信息不存在");
         }
 
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE) || Objects.nonNull(userBatteryMemberCard.getDisableMemberCardTime())) {
-            source = EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD;
-            cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-            //不足一天按一天计算
-            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1;
-            }
-
-            EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordService.queryCreateTimeMaxEleDisableMemberCardRecord(user.getUid(), userInfo.getTenantId());
-
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, user.getUid(), cardDays, eleDisableMemberCardRecord, serviceFeeUserInfo);
-            payAmount = serviceFee;
-
-            batteryServiceFee = eleDisableMemberCardRecord.getChargeRate();
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+        if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.error("admin saveUserMemberCard ERROR! user not exist battery service fee,uid={}", userInfo.getUid());
+            return R.fail("ELECTRICITY.100000", "不存在电池服务费");
         }
-
 
         String nowBattery = "";
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
@@ -1014,34 +991,31 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             nowBattery = electricityBattery.getSn();
         }
 
-
-        String orderId = generateOrderId(user.getUid());
-        //创建订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                .orderId(orderId)
+                .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
                 .uid(user.getUid())
                 .phone(userInfo.getPhone())
                 .name(userInfo.getName())
-                .payAmount(payAmount)
+                .payAmount(acquireUserBatteryServiceFeeResult.getRight())
                 .status(EleDepositOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(tenantId)
-                .source(source)
+                .source(acquireUserBatteryServiceFeeResult.getMiddle())
                 .franchiseeId(franchisee.getId())
                 .storeId(userInfo.getStoreId())
                 .modelType(franchisee.getModelType())
-                .batteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType())
+                .batteryType("")
                 .sn(nowBattery)
-                .batteryServiceFee(batteryServiceFee).build();
+                .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
         //调起支付
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()
-                    .orderId(orderId)
+                    .orderId(eleBatteryServiceFeeOrder.getOrderId())
                     .uid(user.getUid())
-                    .payAmount(payAmount)
+                    .payAmount(eleBatteryServiceFeeOrder.getPayAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_BATTERY_SERVICE_FEE)
                     .attach(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)
                     .description("电池服务费收费")

@@ -89,4 +89,14 @@ public class WechatConfig {
      */
     private String maintenanceQr;
 
+    /**
+     * 租车套餐押金退款回调
+     */
+    private String carDepositRefundCallBackUrl;
+
+    /**
+     * 租车套餐租金退款回调
+     */
+    private String carRentRefundCallBackUrl;
+
 }

@@ -47,8 +47,8 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     /**
      * 套餐限制
      * <pre>
-     *     1-不限制
-     *     2-次数
+     *     0-不限制
+     *     1-次数
      * </pre>
      * @see RenalPackageConfineEnum
      */
@@ -57,7 +57,7 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     /**
      * 限制数量
      */
-    private Integer confineNum;
+    private Long confineNum;
 
     /**
      * 租期
@@ -68,14 +68,14 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      * 租期单位
      * <pre>
      *     1-天
-     *     2-分钟
+     *     0-分钟
      * </pre>
      * @see RentalUnitEnum
      */
     private Integer tenancyUnit;
 
     /**
-     * 租金单价，单位同租期单位
+     * 租金单价
      */
     private BigDecimal rentUnitPrice;
 
@@ -92,9 +92,9 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     /**
      * 适用类型
      * <pre>
-     *     1-全部
-     *     2-新租套餐
-     *     3-续租套餐
+     *     0-全部
+     *     1-新租套餐
+     *     2-续租套餐
      * </pre>
      * @see ApplicableTypeEnum
      */
@@ -103,8 +103,8 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
     /**
      * 租金可退
      * <pre>
-     *     1-是
-     *     2-否
+     *     0-是
+     *     1-否
      * </pre>
      * @see YesNoEnum
      */
@@ -140,7 +140,6 @@ public class CarRentalPackageOrderPO extends BasicCarPO {
      * <pre>
      *     1-线上
      *     2-线下
-     *     4-赠送
      * </pre>
      * @see PayTypeEnum
      */

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
@@ -16,7 +18,10 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
-import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -49,6 +54,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
 
     @Resource
+    private BatteryMemberCardService batteryMemberCardService;
+
+    @Resource
     private CarRentalPackageCarBatteryRelService carRentalPackageCarBatteryRelService;
 
     @Resource
@@ -68,12 +76,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     
     @Resource
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
-
-    @Resource
-    private UserOauthBindService userOauthBindService;
-
-    @Resource
-    private ElectricityPayParamsService electricityPayParamsService;
 
     @Resource
     private UserInfoService userInfoService;
@@ -158,9 +160,40 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }).collect(Collectors.toList());
         carRentalPackageCarBatteryRelService.batchInsert(carBatteryRelEntityList);
 
-        // TODO 2. 调用租电套餐设置接口
+        // 2. 调用租电套餐设置接口
+        BatteryMemberCard batteryMemberCard = buildBatteryMemberCardEntity(entity);
+        batteryMemberCardService.insertBatteryMemberCardAndBatteryType(batteryMemberCard, batteryModelTypes);
 
         return true;
+    }
+
+    private BatteryMemberCard buildBatteryMemberCardEntity(CarRentalPackagePO entity) {
+        BatteryMemberCard batteryMemberCardEntity = new BatteryMemberCard();
+        batteryMemberCardEntity.setName(entity.getName());
+        batteryMemberCardEntity.setDeposit(entity.getDeposit());
+        batteryMemberCardEntity.setRentPrice(entity.getRent());
+        batteryMemberCardEntity.setRentPriceUnit(entity.getRentUnitPrice());
+        batteryMemberCardEntity.setValidDays(entity.getTenancy());
+        batteryMemberCardEntity.setRentUnit(entity.getTenancyUnit());
+        batteryMemberCardEntity.setFranchiseeId(Long.valueOf(entity.getFranchiseeId()));
+        batteryMemberCardEntity.setRentType(entity.getApplicableType());
+        batteryMemberCardEntity.setSendCoupon(entity.getGiveCoupon());
+        batteryMemberCardEntity.setStatus(entity.getStatus());
+        batteryMemberCardEntity.setLimitCount(entity.getConfine());
+        batteryMemberCardEntity.setUseCount(entity.getConfineNum());
+        batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+        batteryMemberCardEntity.setIsRefund(entity.getRentRebate());
+        batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());
+        batteryMemberCardEntity.setFreeDeposite(entity.getFreeDeposit());
+        batteryMemberCardEntity.setServiceCharge(entity.getLateFee());
+        batteryMemberCardEntity.setRemark(entity.getRemark());
+        batteryMemberCardEntity.setBusinessType(BatteryMemberCard.BUSINESS_TYPE_BATTERY_CAR);
+        batteryMemberCardEntity.setDelFlag(DelFlagEnum.OK.getCode());
+        batteryMemberCardEntity.setTenantId(entity.getTenantId());
+        batteryMemberCardEntity.setCreateTime(entity.getCreateTime());
+        batteryMemberCardEntity.setUpdateTime(entity.getUpdateTime());
+
+        return batteryMemberCardEntity;
     }
 
     /**

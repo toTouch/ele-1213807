@@ -163,13 +163,6 @@ public class UserExtraServiceImpl implements UserExtraService {
 
         this.update(userExtraUpdate);
 
-        if (Objects.nonNull(storeId)) {
-            UserInfo userInfo = new UserInfo();
-            userInfo.setUid(userExtra.getUid());
-            userInfo.setStoreId(storeId);
-            userInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.updateByUid(userInfo);
-        }
 
 //        if (Objects.isNull(userExtra)) {
 //            UserExtra userExtraInsert = new UserExtra();

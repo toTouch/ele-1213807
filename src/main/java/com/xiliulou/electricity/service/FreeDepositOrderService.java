@@ -90,4 +90,6 @@ public interface FreeDepositOrderService {
     Triple<Boolean, String, Object> freeCarBatteryCarDepositHybridOrder(FreeCarBatteryDepositOrderQuery query, HttpServletRequest request);
 
     Triple<Boolean, String, Object> selectFreeDepositOrderDetail();
+
+    Triple<Boolean, String, Object> freeBatteryDepositOrderV2(FreeBatteryDepositQueryV2 query);
 }

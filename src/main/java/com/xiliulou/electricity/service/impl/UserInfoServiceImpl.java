@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sun.xml.bind.v2.TODO;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
@@ -575,120 +576,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         ownMemberCardInfoVo.setCardId(electricityMemberCard.getId());
         return R.ok(ownMemberCardInfoVo);
-    }
-
-    @Override
-    public R queryUserInfo() {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        //2.判断用户是否有电池是否有月卡
-        UserInfo userInfo = queryByUidFromCache(user.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-        //用户是否可用
-        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
-            return R.fail("ELECTRICITY.0024", "用户已被禁用");
-        }
-
-        //未实名认证
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ELECTRICITY  ERROR! not auth! uid={} ", user.getUid());
-            return R.fail("ELECTRICITY.0041", "未实名认证");
-        }
-
-//        //是否缴纳押金，是否绑定电池
-//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-//        //未找到用户
-//        if (Objects.isNull(franchiseeUserInfo)) {
-//            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
-//            return R.fail("ELECTRICITY.0001", "未找到用户");
-//
-//        }
-        //判断是否缴纳押金
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            log.warn("ELE WARN! not pay deposit,uid={} ", userInfo.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
-
-
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardExpireTime()) || Objects.isNull(userBatteryMemberCard.getRemainingNumber())) {
-            log.warn("HOME WARN! user haven't memberCard uid={}", user.getUid());
-            return R.fail("100210", "用户未开通套餐");
-        }
-
-        BigDecimal userChangeServiceFee = BigDecimal.valueOf(0);
-        Long now = System.currentTimeMillis();
-        long cardDays = 0;
-
-        ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
-
-        //用户套餐过期服务费
-        if (Objects.nonNull(serviceFeeUserInfo) && Objects.nonNull(serviceFeeUserInfo.getServiceFeeGenerateTime())) {
-            cardDays = (now - serviceFeeUserInfo.getServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserMemberCardExpireBatteryService(userInfo, null, cardDays);
-            userChangeServiceFee = serviceFee;
-        }
-
-        //判断用户是否产生停卡电池服务费
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            cardDays = (now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
-
-            //不足一天按一天计算
-            double time = Math.ceil((now - userBatteryMemberCard.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1;
-            }
-            BigDecimal serviceFee = electricityMemberCardOrderService.checkUserDisableCardBatteryService(userInfo, userInfo.getUid(), cardDays, null, serviceFeeUserInfo);
-            userChangeServiceFee = serviceFee;
-        }
-
-        if (BigDecimal.valueOf(0).compareTo(userChangeServiceFee) != 0) {
-            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", userChangeServiceFee);
-        }
-
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
-            log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.100004", "月卡已暂停");
-        }
-
-        if (userBatteryMemberCard.getMemberCardExpireTime() < now
-                || userBatteryMemberCard.getRemainingNumber() == 0) {
-            log.error("ELECTRICITY  ERROR! memberCard is  Expire ! uid:{} ", userInfo.getUid());
-            return R.fail("ELECTRICITY.0023", "月卡已过期");
-        }
-
-        if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE_REVIEW)) {
-            log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
-        }
-
-        //未租电池
-        if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
-            log.error("ELECTRICITY  ERROR! not rent battery! uid={} ", user.getUid());
-            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
-        }
-
-        //租车未购买套餐
-        if (!Objects.equals(userInfo.getCarRentStatus(), UserInfo.CAR_RENT_STATUS_YES)) {
-            log.error("order ERROR! not rent car member card! uid:{}", user.getUid());
-            return R.fail("100012", "未购买租车套餐");
-        }
-
-//
-//        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR) && Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
-//            log.error("order ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
-//            return R.fail("100013", "租车套餐已过期");
-//        }
-
-        return R.ok(userInfo);
     }
 
     @Override
@@ -2039,7 +1926,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         
         vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
-//TODO        vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+        vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
         vo.setMemberCardExpireTime(userBatteryMemberCard.getDisableMemberCardTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
@@ -2063,7 +1950,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             
             if (Objects
                     .equals(ElectricityMemberCard.UN_LIMITED_COUNT.intValue(), electricityMemberCard.getLimitCount())) {
-                vo.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER.intValue());
+                vo.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER);
             }
         }
     
@@ -2127,6 +2014,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //若租车和租电押金都退了，则解绑用户所属加盟商
         UserInfo updateUserInfo = new UserInfo();
         updateUserInfo.setUid(uid);
+        updateUserInfo.setStoreId(NumberConstant.ZERO_L);
         updateUserInfo.setFranchiseeId(NumberConstant.ZERO_L);
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
 
