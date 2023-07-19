@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.ElePowerMonthRecord;
 import com.xiliulou.electricity.mapper.ElePowerMonthRecordMapper;
+import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -92,5 +94,11 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.elePowerMonthRecordMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query) {
+        List<ElePowerMonthRecord> list = this.elePowerMonthRecordMapper.queryPartAttrList(query);
+        return null;
     }
 }

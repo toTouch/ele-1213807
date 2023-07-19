@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElePowerMonthRecord;
+import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 
 /**
@@ -59,5 +62,7 @@ public interface ElePowerMonthRecordService {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
+
+    Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query);
 
 }

@@ -5,10 +5,13 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.ElePowerMapper;
 import com.xiliulou.electricity.query.ElePowerListQuery;
+import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
+import com.xiliulou.electricity.service.ElePowerMonthRecordService;
 import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.vo.ElePowerDayVo;
 import com.xiliulou.electricity.vo.ElePowerVo;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ElePowerServiceImpl implements ElePowerService {
     @Resource
     private ElePowerMapper elePowerMapper;
+
+    @Autowired
+    ElePowerMonthRecordService monthRecordService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -144,5 +150,7 @@ public class ElePowerServiceImpl implements ElePowerService {
     public Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.elePowerMapper.queryMonthDetail(eid, startTime, endTime, tenantId));
     }
+
+
 
 }

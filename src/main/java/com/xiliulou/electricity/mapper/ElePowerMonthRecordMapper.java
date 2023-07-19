@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElePowerMonthRecord;
 import java.util.List;
+
+import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -63,4 +65,5 @@ public interface ElePowerMonthRecordMapper  extends BaseMapper<ElePowerMonthReco
      */
     int deleteById(Long id);
 
+    List<ElePowerMonthRecord> queryPartAttrList(PowerMonthStatisticsQuery query);
 }

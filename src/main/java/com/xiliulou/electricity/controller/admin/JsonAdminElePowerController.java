@@ -3,6 +3,8 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElePowerListQuery;
+import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
+import com.xiliulou.electricity.service.ElePowerMonthRecordService;
 import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ import java.util.concurrent.TimeUnit;
 public class JsonAdminElePowerController extends BaseController {
     @Autowired
     ElePowerService elePowerService;
+
+    @Autowired
+    ElePowerMonthRecordService monthRecordService;
 
     @GetMapping("/admin/power/list")
     public R getList(@RequestParam("size") Integer size,
@@ -93,6 +98,32 @@ public class JsonAdminElePowerController extends BaseController {
         }
 
         return returnPairResult(elePowerService.queryMonthDetail(eid, startTime, endTime, TenantContextHolder.getTenantId()));
+    }
+
+    @GetMapping("/admin/power/month/statistics")
+    public R monthStatistics(@RequestParam("date") String date,
+                             @RequestParam(value = "eid", required = false) Long eid,
+                             @RequestParam(value = "storeId", required = false) Long storeId,
+                             @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                             @RequestParam(value = "offset") Integer offset,
+                             @RequestParam(value = "size") Integer size) {
+        if (size > 50 || size < 0) {
+            size = 10;
+        }
+
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
+                .storeId(storeId)
+                .date(date)
+                .size(size)
+                .offset(offset)
+                .franchiseeId(franchiseeId)
+                .eid(eid).build();
+        return returnPairResult(monthRecordService.queryMonthStatistics(query));
+
     }
 
 }

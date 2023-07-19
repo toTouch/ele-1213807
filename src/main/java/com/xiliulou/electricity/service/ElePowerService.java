@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.query.ElePowerListQuery;
+import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -75,4 +76,5 @@ public interface ElePowerService {
     Pair<Boolean, Object> queryDayDetail(Long eid, Long startTime, Long endTime, Integer tenantId);
 
     Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId);
+
 }
