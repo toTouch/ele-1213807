@@ -283,15 +283,18 @@ public class JsonAdminRentBatteryOrderController {
      * 电柜使用记录，（租，换，退）电池订单列表信息查询
      * @param size
      * @param offset
-     * @param name
-     * @param createTime
+     * @param userName
+     * @param beginTime
+     * @param endTime
      * @return
      */
     @GetMapping("/admin/rentBatteryOrder/usedRecords")
     public R usedRecords(@RequestParam("size") Long size,
-                            @RequestParam("offset") Long offset,
-                            @RequestParam(value = "name", required = false) String name,
-                            @RequestParam(value = "createTime", required = false) Long createTime) {
+                         @RequestParam("offset") Long offset,
+                         @RequestParam(value = "id", required = true) Long id,
+                         @RequestParam(value = "userName", required = false) String userName,
+                         @RequestParam(value = "beginTime", required = false) Long beginTime,
+                         @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -303,23 +306,30 @@ public class JsonAdminRentBatteryOrderController {
         EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
                 .offset(offset)
                 .size(size)
-                .name(name)
-                .createTime(createTime).build();
+                .id(id)
+                .userName(userName)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
         return R.ok(rentBatteryOrderService.findEleCabinetUsedRecords(eleCabinetUsedRecordQuery));
     }
 
     /**
      * 电柜使用记录，（租，换，退）电池订单列表总数
-     * @param name
-     * @param createTime
+     * @param userName
+     * @param beginTime
+     * @param endTime
      * @return
      */
     @GetMapping("/admin/rentBatteryOrder/usedRecordsTotalCount")
-    public R usedRecordsTotalCount(@RequestParam(value = "name", required = false) String name,
-                         @RequestParam(value = "createTime", required = false) Long createTime) {
+    public R usedRecordsTotalCount(@RequestParam(value = "id", required = true) Long id,
+                                   @RequestParam(value = "userName", required = false) String userName,
+                                   @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                   @RequestParam(value = "endTime", required = false) Long endTime) {
         EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery = EleCabinetUsedRecordQuery.builder()
-                .name(name)
-                .createTime(createTime).build();
+                .id(id)
+                .userName(userName)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
         return R.ok(rentBatteryOrderService.findUsedRecordsTotalCount(eleCabinetUsedRecordQuery));
     }
 

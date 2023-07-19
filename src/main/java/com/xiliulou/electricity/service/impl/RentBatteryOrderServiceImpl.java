@@ -1350,7 +1350,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Slave
     @Override
     public Integer findUsedRecordsTotalCount(EleCabinetUsedRecordQuery eleCabinetUsedRecordQuery) {
-        return rentBatteryOrderMapper.selectCabinetUsedRecordsCount(eleCabinetUsedRecordQuery);
+        return rentBatteryOrderMapper.selectUsedRecordsTotalCount(eleCabinetUsedRecordQuery);
     }
 
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {

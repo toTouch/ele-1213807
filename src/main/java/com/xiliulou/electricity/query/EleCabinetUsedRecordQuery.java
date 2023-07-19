@@ -21,8 +21,21 @@ public class EleCabinetUsedRecordQuery {
 
     private Long offset;
 
-    private String name;
+    /**
+     * 换电柜ID
+     */
+
+    private Long id;
+
+    /**
+     * 用户名
+     */
+    private String userName;
 
     private Long createTime;
+
+    private Long beginTime;
+
+    private Long endTime;
 
 }
