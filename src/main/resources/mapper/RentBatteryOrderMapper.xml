@@ -162,7 +162,7 @@
 
         </where>
         order by temp.create_time desc
-        limit #{offset}, #{size}
+        limit #{query.offset}, #{query.size}
     </select>
 
     <select id="selectUsedRecordsTotalCount" resultType="java.lang.Integer">
