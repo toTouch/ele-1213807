@@ -200,6 +200,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     @Override
     public Pair<Boolean, Object> queryListCount(ChargeConfigListQuery chargeConfigListQuery) {
         Integer count = this.eleChargeConfigMapper.queryListCount(chargeConfigListQuery);
+        return Pair.of(true, count);
     }
 
     @Override
