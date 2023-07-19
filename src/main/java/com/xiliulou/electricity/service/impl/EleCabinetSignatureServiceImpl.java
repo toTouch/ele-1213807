@@ -82,6 +82,8 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     @Autowired
     private ElectricityEsignConfigMapper esignConfigMapper;
 
+    private StopWatch stopWatch = new StopWatch("get sign flow link");
+
     private static ExecutorService savePsnAuthResultExecutor = XllThreadPoolExecutors.newFixedThreadPool("savePsnAuthResult",
             2, "SAVE_PSN_AUTH_RESULT");
 
@@ -166,7 +168,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         }
 
         //获取当前用户信息
-        StopWatch stopWatch = new StopWatch("get sign flow link");
         stopWatch.start("get user info");
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
         stopWatch.stop();
@@ -265,7 +266,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         SignFlowVO signFlowVO = new SignFlowVO();
 
         //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
-        StopWatch stopWatch = new StopWatch("get sign flow resp");
+
         stopWatch.start("get latest esign record");
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
         stopWatch.stop();
@@ -312,10 +313,6 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         stopWatch.start("create sign flow info to DB");
         createUserEsignRecord(uid, signFlowId, signFlowDataQuery.getFileId(), signFlowDataQuery.getSignFileName());
         stopWatch.stop();
-
-        log.error("get sign flow resp cost time detail info: " + stopWatch.prettyPrint());
-        log.error("get sign flow resp cost time short info: " + stopWatch.shortSummary());
-
         return signFlowVO;
     }
 
