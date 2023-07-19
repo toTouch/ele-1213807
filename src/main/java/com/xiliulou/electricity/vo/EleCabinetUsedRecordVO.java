@@ -11,6 +11,11 @@ import lombok.Data;
 public class EleCabinetUsedRecordVO {
 
     /**
+     * 换电柜ID
+     */
+    private Long id;
+
+    /**
      * 用户名
      */
     private String name;

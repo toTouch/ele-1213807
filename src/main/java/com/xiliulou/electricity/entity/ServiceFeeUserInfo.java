@@ -31,6 +31,11 @@ public class ServiceFeeUserInfo {
     private String disableMemberCardNo;
 
     /**
+     * 电池服务费单号
+     */
+    private String orderNo;
+
+    /**
      * 是否存在电池服务费 (1--存在电池服务费)
      */
 //    private Integer existBatteryServiceFee;

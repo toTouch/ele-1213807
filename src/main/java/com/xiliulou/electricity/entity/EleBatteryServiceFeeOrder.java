@@ -107,6 +107,7 @@ public class EleBatteryServiceFeeOrder {
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;
+    public static final Integer STATUS_CLEAN = 3;
 
     public static final Integer MEMBER_CARD_OVERDUE = 0;
     public static final Integer DISABLE_MEMBER_CARD = 1;

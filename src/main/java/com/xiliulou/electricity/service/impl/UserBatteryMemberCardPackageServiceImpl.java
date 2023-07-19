@@ -159,7 +159,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         int size = 200;
 
         while (true) {
-            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectList(offset, size);
+            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableList(offset, size);
             if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
                 return;
             }

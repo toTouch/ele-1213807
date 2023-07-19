@@ -921,6 +921,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R payBatteryServiceFee(HttpServletRequest request) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -985,32 +986,33 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.100000", "不存在电池服务费");
         }
 
-        String nowBattery = "";
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        if (!Objects.isNull(electricityBattery)) {
-            nowBattery = electricityBattery.getSn();
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder;
+        if(StringUtils.isNotBlank(serviceFeeUserInfo.getOrderNo())){
+            eleBatteryServiceFeeOrder=eleBatteryServiceFeeOrderService.selectByOrderNo(serviceFeeUserInfo.getOrderNo());
+        }else{
+
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+
+            eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                    .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
+                    .uid(user.getUid())
+                    .phone(userInfo.getPhone())
+                    .name(userInfo.getName())
+                    .payAmount(acquireUserBatteryServiceFeeResult.getRight())
+                    .status(EleDepositOrder.STATUS_INIT)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .tenantId(tenantId)
+                    .source(acquireUserBatteryServiceFeeResult.getMiddle())
+                    .franchiseeId(franchisee.getId())
+                    .storeId(userInfo.getStoreId())
+                    .modelType(franchisee.getModelType())
+                    .batteryType("")
+                    .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                    .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+            eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
         }
 
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
-                .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
-                .uid(user.getUid())
-                .phone(userInfo.getPhone())
-                .name(userInfo.getName())
-                .payAmount(acquireUserBatteryServiceFeeResult.getRight())
-                .status(EleDepositOrder.STATUS_INIT)
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(tenantId)
-                .source(acquireUserBatteryServiceFeeResult.getMiddle())
-                .franchiseeId(franchisee.getId())
-                .storeId(userInfo.getStoreId())
-                .modelType(franchisee.getModelType())
-                .batteryType("")
-                .sn(nowBattery)
-                .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
-        eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
-
-        //调起支付
         try {
             CommonPayOrder commonPayOrder = CommonPayOrder.builder()
                     .orderId(eleBatteryServiceFeeOrder.getOrderId())

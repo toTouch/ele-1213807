@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
-import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -41,7 +40,6 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
 
     /**
      * 搜索
-     *
      */
     @GetMapping("/admin/battery/memberCard/search")
     public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
@@ -243,5 +241,20 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         return returnTripleResult(batteryMemberCardService.delete(id));
     }
 
+    /**
+     * 后台绑定套餐 下拉列表
+     * @return
+     */
+    @GetMapping("/admin/battery/memberCardByUid")
+    public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                                       @RequestParam("uid") long uid) {
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .build();
+        return R.ok(batteryMemberCardService.selectUserBatteryMembercardList(query));
+    }
 
 }

@@ -82,4 +82,8 @@ public interface EleBatteryServiceFeeOrderService {
 
 
     EleBatteryServiceFeeOrder selectByOrderNo(String orderNo);
+
+    Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
+
+    void membercardExpireGenerateServiceFeeOrder();
 }

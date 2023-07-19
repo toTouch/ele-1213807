@@ -326,6 +326,11 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     }
 
     @Override
+    public List<UserBatteryMemberCard> selectUseableList(int offset, int size) {
+        return userBatteryMemberCardMapper.selectUseableList(offset, size);
+    }
+
+    @Override
     public Integer checkUserByMembercardId(Long id) {
         return userBatteryMemberCardMapper.checkUserByMembercardId(id);
     }

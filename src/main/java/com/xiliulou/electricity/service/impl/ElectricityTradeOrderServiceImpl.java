@@ -649,6 +649,7 @@ public class ElectricityTradeOrderServiceImpl extends
             ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
             serviceFeeUserInfoUpdate.setDisableMemberCardNo("");
+            serviceFeeUserInfoUpdate.setOrderNo("");
             serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             serviceFeeUserInfoUpdate.setTenantId(serviceFeeUserInfo.getTenantId());
             if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
@@ -690,7 +691,6 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
         baseMapper.updateById(electricityTradeOrderUpdate);
-
 
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);

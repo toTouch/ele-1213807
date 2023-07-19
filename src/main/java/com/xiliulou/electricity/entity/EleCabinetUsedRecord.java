@@ -17,6 +17,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class EleCabinetUsedRecord {
 
+    private Long id;
+
     private String name;
 
     private String phone;
