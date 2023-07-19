@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,7 +120,7 @@ public class ElePowerServiceImpl implements ElePowerService {
     public Pair<Boolean, Object> queryList(ElePowerListQuery query) {
         List<ElePower> powerList = this.elePowerMapper.queryPartAttList(query);
         if (!DataUtil.collectionIsUsable(powerList)) {
-            return Pair.of(true, null);
+            return Pair.of(true, Collections.EMPTY_LIST);
         }
 
         List<ElePowerVo> list = powerList.parallelStream().map(e -> {

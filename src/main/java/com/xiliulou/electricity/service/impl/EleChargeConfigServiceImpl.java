@@ -178,7 +178,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     public Pair<Boolean, Object> queryList(ChargeConfigListQuery chargeConfigListQuery) {
         List<EleChargeConfig> list = this.eleChargeConfigMapper.queryList(chargeConfigListQuery);
         if (!DataUtil.collectionIsUsable(list)) {
-            return Pair.of(true, null);
+            return Pair.of(true, Collections.EMPTY_LIST);
         }
 
         return Pair.of(true, list.parallelStream().map(e -> {

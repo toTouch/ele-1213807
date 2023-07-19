@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.entity.ElePowerMonthRecord;
 import com.xiliulou.electricity.mapper.ElePowerMonthRecordMapper;
 import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
@@ -8,9 +10,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * (ElePowerMonthRecord)表服务实现类
  *
@@ -33,15 +40,15 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     public ElePowerMonthRecord queryByIdFromDB(Long id) {
         return this.elePowerMonthRecordMapper.queryById(id);
     }
-    
-        /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
     @Override
-    public  ElePowerMonthRecord queryByIdFromCache(Long id) {
+    public ElePowerMonthRecord queryByIdFromCache(Long id) {
         return null;
     }
 
@@ -50,7 +57,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
@@ -80,8 +87,8 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElePowerMonthRecord elePowerMonthRecord) {
-       return this.elePowerMonthRecordMapper.update(elePowerMonthRecord);
-         
+        return this.elePowerMonthRecordMapper.update(elePowerMonthRecord);
+
     }
 
     /**
@@ -99,6 +106,14 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     @Override
     public Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query) {
         List<ElePowerMonthRecord> list = this.elePowerMonthRecordMapper.queryPartAttrList(query);
-        return null;
+        if (DataUtil.collectionIsUsable(list)) {
+            return Pair.of(true, Collections.EMPTY_LIST);
+        }
+
+        return Pair.of(true, list.parallelStream().map(e -> {
+            ElePowerMonthRecord elePowerMonthRecord = new ElePowerMonthRecord();
+            BeanUtil.copyProperties(e, elePowerMonthRecord);
+            return elePowerMonthRecord;
+        }).collect(Collectors.toList()));
     }
 }
