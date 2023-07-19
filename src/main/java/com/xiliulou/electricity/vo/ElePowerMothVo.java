@@ -13,6 +13,6 @@ public class ElePowerMothVo {
 
     private String date;
 
-    private Double sum
+    private Double sum;
 
 }
