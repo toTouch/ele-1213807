@@ -75,7 +75,7 @@ public class JsonAdminBatteryModelController extends BaseController {
         return R.ok(batteryModelService.selectBatteryTypeAll());
     }
 
-    @GetMapping("/admin/battery/model/all")
+    @GetMapping("/admin/simple/battery/model/all")
     public R selectBatteryVAll() {
         return R.ok(batteryModelService.selectBatteryVAll());
     }
