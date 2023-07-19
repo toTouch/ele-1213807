@@ -37,6 +37,12 @@ public class JsonAdminEleChargeConfigController extends BaseController {
         return returnPairResult(eleChargeConfigService.queryList(chargeConfigListQuery));
     }
 
+    @GetMapping("/admin/charge/config/list/count")
+    public R getListCount(ChargeConfigListQuery chargeConfigListQuery) {
+        chargeConfigListQuery.setTenantId(TenantContextHolder.getTenantId());
+        return returnPairResult(eleChargeConfigService.queryListCount(chargeConfigListQuery));
+    }
+
     @PostMapping("/admin/charge/config/save")
     @Log(title = "增加电费规则")
     public R saveConfig(@RequestBody @Validated ChargeConfigQuery chargeConfigQuery) {

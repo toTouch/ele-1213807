@@ -70,4 +70,6 @@ public interface EleChargeConfigMapper extends BaseMapper<EleChargeConfig> {
 
     @Select("select 1 from t_ele_charge_config where name = #{name} and tenant_id = #{tenantId}")
     Integer queryExistsName(@Param("name") String name, @Param("tenantId") Integer tenantId);
+
+    Integer queryListCount(ChargeConfigListQuery chargeConfigListQuery);
 }

@@ -198,6 +198,11 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     }
 
     @Override
+    public Pair<Boolean, Object> queryListCount(ChargeConfigListQuery chargeConfigListQuery) {
+        Integer count = this.eleChargeConfigMapper.queryListCount(chargeConfigListQuery);
+    }
+
+    @Override
     public Pair<Boolean, Object> saveConfig(ChargeConfigQuery chargeConfigQuery) {
         if (!redisService.setNx(CacheConstant.CACHE_CHARGE_CONFIG_OPERATE_LIMIT + TenantContextHolder.getTenantId(), "1", TimeUnit.SECONDS.toMillis(3), false)) {
             return Pair.of(false, "频繁调用");
@@ -292,7 +297,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
                 return Pair.of(false, "参数不合法");
             }
 
-            if(!config.getName().equalsIgnoreCase(chargeConfigQuery.getName())) {
+            if (!config.getName().equalsIgnoreCase(chargeConfigQuery.getName())) {
                 Integer existsName = queryExistsName(chargeConfigQuery.getName(), TenantContextHolder.getTenantId());
                 if (Objects.nonNull(existsName)) {
                     return Pair.of(false, "电费名称不可以重复");

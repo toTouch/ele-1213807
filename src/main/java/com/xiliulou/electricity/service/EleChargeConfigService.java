@@ -92,4 +92,7 @@ public interface EleChargeConfigService {
 
 
     EleChargeConfigCalcDetailDto acquireConfigTypeAndUnitPriceAccrodingTime(EleChargeConfig eleChargeConfig, Long createTime);
+
+    Pair<Boolean, Object> queryListCount(ChargeConfigListQuery chargeConfigListQuery);
+
 }

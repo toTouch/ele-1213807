@@ -174,5 +174,24 @@
         order by id desc
         limit #{offset},#{size}
     </select>
-
+    <select id="queryListCount" resultType="java.lang.Integer">
+        select
+            count(1)
+        from t_ele_charge_config
+        <where>
+            tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+        </where>
+    </select>
 </mapper>
