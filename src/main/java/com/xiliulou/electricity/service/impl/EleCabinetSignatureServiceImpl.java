@@ -197,7 +197,8 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             stopWatch.stop();
             if (Objects.isNull(eleEsignConfig)
                     || StringUtils.isBlank(eleEsignConfig.getAppId())
-                    || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
+                    || StringUtils.isBlank(eleEsignConfig.getAppSecret())
+                    || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
                 log.error("Create File error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                         TenantContextHolder.getTenantId());
                 return Triple.of(false, "000104", "租户电子签名配置信息不存在");
@@ -285,7 +286,8 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
             EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
             if (Objects.isNull(eleEsignConfig)
                     || StringUtils.isBlank(eleEsignConfig.getAppId())
-                    || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
+                    || StringUtils.isBlank(eleEsignConfig.getAppSecret())
+                    || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
                 log.error("get sign flow link error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                         TenantContextHolder.getTenantId());
                 return Triple.of(false, "000104", "租户电子签名配置信息不存在");
