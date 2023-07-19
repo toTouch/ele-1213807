@@ -27,12 +27,15 @@ public interface EleChargeConfigService {
 
     EleChargeConfig queryFromDb(Long franchiseeId, Long storeId, Long eid, Integer typeAllCabinet);
 
+    Integer queryExistsName(String name, Integer tenantId);
+
     EleChargeConfig queryConfigByStoreIdFromCache(Long storeId, Long id);
 
     EleChargeConfig queryConfigByFranchiseeIdFromCache(Long franchiseeId);
 
     EleChargeConfig queryConfigByTenantIdFromCache(Integer tenantId);
-     EleChargeConfig queryByTenantIdFromDb(Integer tenantId);
+
+    EleChargeConfig queryByTenantIdFromDb(Integer tenantId);
 
     /**
      * 通过ID查询单条数据从缓存

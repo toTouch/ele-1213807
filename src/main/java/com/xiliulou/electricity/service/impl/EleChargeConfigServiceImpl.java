@@ -77,6 +77,10 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         return this.eleChargeConfigMapper.queryByCondition(franchiseeId, storeId, eid, type);
     }
 
+    public Integer queryExistsName(String name, Integer tenantId) {
+        return this.eleChargeConfigMapper.queryExistsName(name, tenantId);
+    }
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -207,6 +211,11 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             //处理价格类型
             Integer configType = checkConfigBelongType(chargeConfigQuery);
 
+            Integer existsName = queryExistsName(chargeConfigQuery.getName(), TenantContextHolder.getTenantId());
+            if (Objects.nonNull(existsName)) {
+                return Pair.of(false, "电费名称不可以重复");
+            }
+
             if (checkConfigTypeExists(configType, chargeConfigQuery, TenantContextHolder.getTenantId(), null)) {
                 return Pair.of(false, "不能重复创建同种类型的规则");
             }
@@ -281,6 +290,13 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
 
             if (!checkParamsIllegal(chargeConfigQuery)) {
                 return Pair.of(false, "参数不合法");
+            }
+
+            if(!config.getName().equalsIgnoreCase(chargeConfigQuery.getName())) {
+                Integer existsName = queryExistsName(chargeConfigQuery.getName(), TenantContextHolder.getTenantId());
+                if (Objects.nonNull(existsName)) {
+                    return Pair.of(false, "电费名称不可以重复");
+                }
             }
 
             //处理价格类型

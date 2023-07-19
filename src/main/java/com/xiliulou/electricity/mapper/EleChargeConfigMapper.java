@@ -7,6 +7,7 @@ import java.util.List;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.security.core.parameters.P;
 
 /**
@@ -66,4 +67,7 @@ public interface EleChargeConfigMapper extends BaseMapper<EleChargeConfig> {
     EleChargeConfig queryByCondition(@Param("franchiseeId") Long franchiseeId, @Param("storeId") Long storeId, @Param("eid") Long eid, @Param("type") Integer type);
 
     EleChargeConfig queryByTenantId(@Param("tenantId") Integer tenantId);
+
+    @Select("select 1 from t_ele_charge_config where name = #{name} and tenant_id = #{tenantId}")
+    Integer queryExistsName(@Param("name") String name, @Param("tenantId") Integer tenantId);
 }
