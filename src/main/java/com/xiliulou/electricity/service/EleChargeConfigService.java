@@ -25,7 +25,7 @@ public interface EleChargeConfigService {
      */
     EleChargeConfig queryByIdFromDb(Long id);
 
-    EleChargeConfig queryFromDb(Long franchiseeId, Long storeId, Long eid, int typeAllCabinet);
+    EleChargeConfig queryFromDb(Long franchiseeId, Long storeId, Long eid, Integer typeAllCabinet);
 
     EleChargeConfig queryConfigByStoreIdFromCache(Long storeId, Long id);
 

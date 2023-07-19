@@ -124,4 +124,10 @@ public class ElePowerServiceImpl implements ElePowerService {
         return Pair.of(true, list);
     }
 
+    @Override
+    public Pair<Boolean, Object> queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId) {
+//        this.elePowerMapper.queryDayList(eid,startTime,endTime,tenantId);
+        return null;
+    }
+
 }

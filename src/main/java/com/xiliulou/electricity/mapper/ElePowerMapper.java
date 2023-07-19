@@ -68,4 +68,6 @@ public interface ElePowerMapper  extends BaseMapper<ElePower>{
     int insertOrUpdate(ElePower power);
 
     List<ElePower> queryPartAttList(ElePowerListQuery query);
+
+//    void queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId);
 }

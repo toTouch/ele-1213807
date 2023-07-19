@@ -67,4 +67,6 @@ public interface ElePowerService {
 
 
     Pair<Boolean, Object> queryList(ElePowerListQuery query);
+
+    Pair<Boolean, Object> queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId);
 }

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author : eclair
  * @date : 2023/7/19 10:16
@@ -42,6 +44,18 @@ public class JsonAdminElePowerController extends BaseController {
                 .endTime(endTime)
                 .build();
         return returnPairResult(elePowerService.queryList(query));
-
     }
+
+    @GetMapping("/admin/power/day/list")
+    public R getList(@RequestParam(value = "eid") Long eid,
+                     @RequestParam(value = "startTime") Long startTime,
+                     @RequestParam(value = "endTime") Long endTime) {
+
+        if (endTime - startTime > TimeUnit.DAYS.toMillis(31)) {
+            return R.fail("时间跨度不可以超过31");
+        }
+
+        return returnPairResult(elePowerService.queryDayList(eid, startTime, endTime,TenantContextHolder.getTenantId()));
+    }
+
 }

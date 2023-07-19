@@ -73,7 +73,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     }
 
     @Override
-    public EleChargeConfig queryFromDb(Long franchiseeId, Long storeId, Long eid, int type) {
+    public EleChargeConfig queryFromDb(Long franchiseeId, Long storeId, Long eid, Integer type) {
         return this.eleChargeConfigMapper.queryByCondition(franchiseeId, storeId, eid, type);
     }
 
