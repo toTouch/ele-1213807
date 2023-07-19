@@ -159,7 +159,7 @@
         <where>
             tenant_id = #{tenantId}
             <if test="name != null and name != ''">
-                and name = #{name}
+                and name like concat('%', #{name}, '%')
             </if>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
