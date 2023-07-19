@@ -22,7 +22,7 @@ public class JsonAdminElePowerController extends BaseController {
     @GetMapping("/admin/power/list")
     public R getList(@RequestParam("size") Integer size,
                      @RequestParam("offset") Integer offset,
-                     @RequestParam(value = "eid", required = false) Integer eid,
+                     @RequestParam(value = "eid", required = false) Long eid,
                      @RequestParam(value = "startTime", required = false) Long startTime,
                      @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size > 50 || size < 0) {
@@ -36,6 +36,7 @@ public class JsonAdminElePowerController extends BaseController {
         ElePowerListQuery query = ElePowerListQuery.builder()
                 .tenantId(TenantContextHolder.getTenantId())
                 .size(size)
+                .eid(eid)
                 .offset(offset)
                 .startTime(startTime)
                 .endTime(endTime)
