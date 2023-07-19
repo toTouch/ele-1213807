@@ -3,21 +3,21 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
-import com.xiliulou.electricity.service.BatteryModelService;
-import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -43,6 +43,17 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    UserBatteryMemberCardService userBatteryMemberCardService;
+
+    @Autowired
+    UserInfoService userInfoService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
+
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
 
     @Override
     public EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo) {
@@ -143,5 +154,71 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Override
     public EleBatteryServiceFeeOrder selectByOrderNo(String orderNo) {
         return eleBatteryServiceFeeOrderMapper.selectOne(new LambdaQueryWrapper<EleBatteryServiceFeeOrder>().eq(EleBatteryServiceFeeOrder::getOrderId,orderNo));
+    }
+
+    @Override
+    public Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder) {
+        return eleBatteryServiceFeeOrderMapper.updateByOrderNo(eleBatteryServiceFeeOrder);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void membercardExpireGenerateServiceFeeOrder() {
+        int offset = 0;
+        int size = 200;
+
+        while (true) {
+            List<UserBatteryMemberCard> userBatteryMemberCardList = userBatteryMemberCardService.selectUseableList(offset, size);
+            if (CollectionUtils.isEmpty(userBatteryMemberCardList)) {
+                return;
+            }
+
+            userBatteryMemberCardList.parallelStream().forEach(item -> {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+                if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+                    return;
+                }
+
+                if (item.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > System.currentTimeMillis()) {
+                    return;
+                }
+
+                Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+                if (Objects.isNull(franchisee)) {
+                    log.warn("BATTERY SERVICE FEE ORDER WARN! not found user,uid={}", item.getUid());
+                    return;
+                }
+
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    log.warn("BATTERY SERVICE FEE ORDER WARN! memberCard is not exit,uid={},memberCardId={}", item.getUid(), item.getMemberCardId());
+                    return;
+                }
+
+               //套餐过期生成滞纳金订单
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+
+                EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                        .orderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_STAGNATE,userInfo.getUid()))
+                        .uid(item.getUid())
+                        .phone(userInfo.getPhone())
+                        .name(userInfo.getName())
+                        .payAmount(BigDecimal.ZERO)
+                        .status(EleDepositOrder.STATUS_INIT)
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .tenantId(userInfo.getTenantId())
+                        .source(EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE)
+                        .franchiseeId(userInfo.getFranchiseeId())
+                        .storeId(userInfo.getStoreId())
+                        .modelType(franchisee.getModelType())
+                        .batteryType("")
+                        .sn(Objects.isNull(electricityBattery) ? "" : electricityBattery.getSn())
+                        .batteryServiceFee(batteryMemberCard.getServiceCharge()).build();
+                eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
+            });
+
+            offset += size;
+        }
     }
 }

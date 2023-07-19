@@ -21,6 +21,9 @@
             <if test="existBatteryServiceFee != null">
                 exist_battery_service_fee = #{existBatteryServiceFee},
             </if>
+            <if test="orderNo != null">
+                order_no = #{orderNo},
+            </if>
             <if test="disableMemberCardNo != null">
                 disable_member_card_no = #{disableMemberCardNo},
             </if>

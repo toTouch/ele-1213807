@@ -40,4 +40,6 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
     List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
     BigDecimal queryAllTurnOver(@Param("tenantId") Integer tenantId, @Param("franchiseeIds") List<Long> franchiseeIds, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
+    Integer updateByOrderNo(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
 }

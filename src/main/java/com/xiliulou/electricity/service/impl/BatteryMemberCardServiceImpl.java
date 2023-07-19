@@ -3,18 +3,11 @@ package com.xiliulou.electricity.service.impl;
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.MemberCardBatteryType;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.MemberCardBatteryTypeService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -57,6 +50,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Autowired
     private MemberCardBatteryTypeService memberCardBatteryTypeService;
+
+    @Autowired
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private UserBatteryTypeService userBatteryTypeService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -146,6 +145,38 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
 
     @Override
+    public List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query) {
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(query.getUid());
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Collections.emptyList();
+        }
+
+        BatteryMemberCardQuery batteryMemberCardQuery = new BatteryMemberCardQuery();
+        batteryMemberCardQuery.setStatus(BatteryMemberCard.STATUS_UP);
+        batteryMemberCardQuery.setFranchiseeId(userInfo.getFranchiseeId());
+        batteryMemberCardQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
+        if(CollectionUtils.isNotEmpty(userBatteryTypes)){
+            String batteryModel=userBatteryTypes.get(0);
+            batteryMemberCardQuery.setBatteryV(batteryModel.substring(batteryModel.indexOf("_") + 1).substring(0, batteryModel.substring(batteryModel.indexOf("_") + 1).indexOf("_")));
+        }
+
+        List<BatteryMemberCardVO> batteryMemberCardVOS = this.selectByPageForUser(batteryMemberCardQuery);
+        if (CollectionUtils.isEmpty(batteryMemberCardVOS)) {
+            return Collections.emptyList();
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
+            return batteryMemberCardVOS.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_NEW) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).collect(Collectors.toList());
+        }
+
+        return batteryMemberCardVOS.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_OLD) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).collect(Collectors.toList());
+    }
+
+    @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);
 
@@ -170,21 +201,22 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Override
     public List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query) {
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.equals(userBatteryMemberCard.getCardPayCount(), NumberConstant.ZERO)) {
-            query.setRentType(BatteryMemberCard.RENT_TYPE_NEW);
-        } else {
-            query.setRentType(BatteryMemberCard.RENT_TYPE_OLD);
-        }
 
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPageForUser(query);
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
+            return list.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_NEW) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).map(item -> {
+                BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+                BeanUtils.copyProperties(item, batteryMemberCardVO);
+                return batteryMemberCardVO;
+            }).collect(Collectors.toList());
+        }
 
-        return list.parallelStream().map(item -> {
+        return list.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_OLD) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
-
     }
 
     @Override

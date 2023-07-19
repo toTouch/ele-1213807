@@ -106,4 +106,6 @@ public class BatteryMemberCardQuery {
 
     private String batteryV;
 
+    private Long uid;
+
 }
