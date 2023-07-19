@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElePower;
+import com.xiliulou.electricity.query.ElePowerListQuery;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.List;
 
 /**
@@ -61,4 +64,7 @@ public interface ElePowerService {
     Boolean deleteById(Long id);
 
     int insertOrUpdate(ElePower power);
+
+
+    Pair<Boolean, Object> queryList(ElePowerListQuery query);
 }

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElePower;
 import java.util.List;
+
+import com.xiliulou.electricity.query.ElePowerListQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -64,4 +66,6 @@ public interface ElePowerMapper  extends BaseMapper<ElePower>{
     int deleteById(Long id);
 
     int insertOrUpdate(ElePower power);
+
+    List<ElePower> queryPartAttList(ElePowerListQuery query);
 }

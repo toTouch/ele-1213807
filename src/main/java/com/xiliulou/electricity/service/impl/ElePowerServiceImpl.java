@@ -1,14 +1,20 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.ElePowerMapper;
+import com.xiliulou.electricity.query.ElePowerListQuery;
 import com.xiliulou.electricity.service.ElePowerService;
+import com.xiliulou.electricity.vo.ElePowerVo;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -101,4 +107,21 @@ public class ElePowerServiceImpl implements ElePowerService {
     public int insertOrUpdate(ElePower power) {
         return this.elePowerMapper.insertOrUpdate(power);
     }
+
+    @Override
+    public Pair<Boolean, Object> queryList(ElePowerListQuery query) {
+        List<ElePower> powerList = this.elePowerMapper.queryPartAttList(query);
+        if (!DataUtil.collectionIsUsable(powerList)) {
+            return Pair.of(true, null);
+        }
+
+        List<ElePowerVo> list = powerList.parallelStream().map(e -> {
+            ElePowerVo elePowerVo = new ElePowerVo();
+            BeanUtil.copyProperties(e, elePowerVo);
+            return elePowerVo;
+
+        }).collect(Collectors.toList());
+        return Pair.of(true, list);
+    }
+
 }

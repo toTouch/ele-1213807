@@ -20,24 +20,46 @@
 
     <!--查询单个-->
     <select id="queryById" resultMap="ElePowerMap">
-        select
-          id, sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power, electric_charge
+        select id,
+               sn,
+               e_name,
+               eid,
+               store_id,
+               franchisee_id,
+               tenant_id,
+               report_time,
+               create_time,
+               type,
+               sum_power,
+               hour_power,
+               electric_charge
         from t_ele_power
         where id = #{id}
     </select>
 
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="ElePowerMap">
-        select
-          id, sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power, electric_charge
-        from t_ele_power
-        limit #{offset}, #{limit}
+        select id,
+               sn,
+               e_name,
+               eid,
+               store_id,
+               franchisee_id,
+               tenant_id,
+               report_time,
+               create_time,
+               type,
+               sum_power,
+               hour_power,
+               electric_charge
+        from t_ele_power limit #{offset}, #{limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElePowerMap">
         select
-          id, sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power, electric_charge
+        id, sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power,
+        electric_charge
         from t_ele_power
         <where>
             <if test="id != null">
@@ -82,16 +104,40 @@
         </where>
     </select>
 
+    <select id="queryPartAttList" resultMap="ElePowerMap">
+        select
+        e_name, eid, report_time, create_time, type, sum_power, hour_power, electric_charge
+        from t_ele_power
+        <where>
+            tenant_id = #{tenantId}
+            <if test="startTime != null">
+                and report_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and report_time &lt;= #{endTime}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+        </where>
+        order by report_time desc
+        limit #{offset}, #{size}
+    </select>
+
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power, electric_charge)
-        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime}, #{type}, #{sumPower}, #{hourPower}, #{electricCharge})
+        insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
+                                sum_power, hour_power, electric_charge)
+        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime},
+                #{type}, #{sumPower}, #{hourPower}, #{electricCharge})
     </insert>
 
     <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power, electric_charge)
-        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime}, #{type}, #{sumPower}, #{hourPower}, #{electricCharge})
-         on duplicate key updateon duplicate key update sum_power=#{sumPower},hour_power=#{hourPower},create_time=#{createTime},electric_charge=#{electricCharge},type=#{type}
+        insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
+                                sum_power, hour_power, electric_charge)
+        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime},
+                #{type}, #{sumPower}, #{hourPower}, #{electricCharge}) on duplicate key updateon duplicate key
+        update sum_power=#{sumPower},hour_power=#{hourPower},create_time=#{createTime},electric_charge=#{electricCharge}, type =#{type}
 
     </insert>
 
@@ -141,7 +187,9 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from t_ele_power where id = #{id}
+        delete
+        from t_ele_power
+        where id = #{id}
     </delete>
 
 </mapper>
