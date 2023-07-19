@@ -258,6 +258,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         log.error("get sign flow link cost time detail info: " + stopWatch.prettyPrint());
         log.error("get sign flow link cost time short info: " + stopWatch.shortSummary());
+        log.error("get sign flow link cost total time: " + stopWatch.getTotalTimeMillis());
 
         return Triple.of(true, "", signFlowVO);
     }
