@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
 import com.xiliulou.electricity.query.ChargeConfigQuery;
 import com.xiliulou.electricity.service.EleChargeConfigService;
@@ -37,16 +38,19 @@ public class JsonAdminEleChargeConfigController extends BaseController {
     }
 
     @PostMapping("/admin/charge/config/save")
+    @Log(title = "增加电费规则")
     public R saveConfig(@RequestBody @Validated ChargeConfigQuery chargeConfigQuery) {
         return returnPairResult(eleChargeConfigService.saveConfig(chargeConfigQuery));
     }
 
     @PostMapping("/admin/charge/config/modify")
+    @Log(title = "修改电费规则")
     public R modifyConfig(@RequestBody @Validated(UpdateGroup.class) ChargeConfigQuery chargeConfigQuery) {
         return returnPairResult(eleChargeConfigService.modifyConfig(chargeConfigQuery));
     }
 
     @PostMapping("/admin/charge/config/del/{id}")
+    @Log(title = "删除电费规则")
     public R delConfig(@PathVariable("id") Long id) {
         return returnPairResult(eleChargeConfigService.delConfig(id));
     }
