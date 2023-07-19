@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-@JobHandler(value = "transferPayQuery")
-public class TransferUserBatteryMembercardPackage extends IJobHandler {
+@JobHandler(value = "transferUserBatteryMembercardPackageTask")
+public class TransferUserBatteryMembercardPackageTask extends IJobHandler {
 
     @Autowired
     private UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
