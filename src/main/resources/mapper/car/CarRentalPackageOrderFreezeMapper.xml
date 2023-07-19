@@ -29,6 +29,7 @@
         <result property="enableTime" column="enable_time" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
+        <result property="applyReason" column="apply_reason" jdbcType="VARCHAR" />
     </resultMap>
 
     <!-- 表名 -->
@@ -42,7 +43,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `late_fee`, `apply_term`, `real_term`, `apply_time`,
-        `audit_time`, `enable_time`, `status`, `remark`
+        `audit_time`, `enable_time`, `status`, `remark`, `apply_reason`
     </sql>
 
     <!-- 全部字段 -->
@@ -87,6 +88,7 @@
             <if test=" enableTime != null "> `enable_time`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
+            <if test=" applyReason != null and applyReason != '' "> `apply_reason`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -115,6 +117,7 @@
             <if test=" enableTime != null "> #{enableTime}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
+            <if test=" applyReason != null and applyReason != '' "> #{applyReason}, </if>
         </trim>
     </sql>
 

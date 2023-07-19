@@ -55,6 +55,7 @@
         <if test=" franchiseeId != null "> AND `uid` = #{franchisee_id} </if>
         <if test=" storeId != null "> AND `uid` = #{store_id} </if>
         <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
+        <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> AND `rental_package_order_no` = #{rentalPackageOrderNo} </if>
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" rentalPackageId != null "> AND `rental_package_id` = #{rentalPackageId} </if>
         <if test=" rentalPackageType != null "> AND `rental_package_type` = #{rentalPackageType} </if>
@@ -107,6 +108,7 @@
             <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" residue != null and residue != '' "> #{residue}, </if>
+            <if test=" residueUnit != null "> #{residueUnit}, </if>
             <if test=" refundAmount != null "> #{refundAmount}, </if>
             <if test=" refundState != null "> #{refundState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>

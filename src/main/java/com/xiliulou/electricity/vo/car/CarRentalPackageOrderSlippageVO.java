@@ -54,11 +54,17 @@ public class CarRentalPackageOrderSlippageVO implements Serializable {
     private Long lateFeeStartTime;
 
     /**
+     * 滞纳金缴纳金额
+     */
+    private BigDecimal lateFeePay;
+
+    /**
      * 支付状态
      * <pre>
      *     1-未支付
      *     2-支付成功
      *     3-支付失败
+     *     5-已清除
      * </pre>
      * @see PayStateEnum
      */

@@ -81,8 +81,14 @@ public class CarRentalPackageOrderSlippagePO extends BasicCarPO {
      *     1-未支付
      *     2-支付成功
      *     3-支付失败
+     *     5-已清除
      * </pre>
      * @see PayStateEnum
      */
     private Integer payState;
+
+    /**
+     * 支付时间
+     */
+    private Long payTime;
 }
