@@ -148,7 +148,7 @@
             where electricity_cabinet_id = #{id}) temp
         <where>
 
-            <if test="query.name != null and query.name != ''">
+            <if test="query.userName != null and query.userName != ''">
                 and temp.name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
             </if>
 
@@ -187,7 +187,7 @@
             left join t_user tu on tu.uid = teco.uid
             where electricity_cabinet_id = #{id}) temp
         <where>
-            <if test="query.name != null and query.name != ''">
+            <if test="query.userName != null and query.userName != ''">
                 and temp.name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
             </if>
             <if test="query.beginTime != null">
