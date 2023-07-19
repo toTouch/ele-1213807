@@ -18,6 +18,7 @@ public enum PayStateEnum implements BasicEnum<Integer, String> {
     SUCCESS(2, "支付成功"),
     FAILED(3, "支付失败"),
     CANCEL(4, "取消支付"),
+    CLEAN_UP(5, "已清除"),
     ;
 
     private final Integer code;

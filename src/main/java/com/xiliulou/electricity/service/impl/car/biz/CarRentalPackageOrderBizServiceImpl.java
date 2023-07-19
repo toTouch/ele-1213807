@@ -226,7 +226,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(refundRentOrderNo);
         if (ObjectUtils.isEmpty(rentRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(rentRefundEntity.getRefundState())) {
-            log.error("approveRefundRentOrder faild. not find car_rental_package_order_freeze or status error. refundRentOrderNo is {}", refundRentOrderNo);
+            log.error("approveRefundRentOrder faild. not find car_rental_package_order_rent_refund or status error. refundRentOrderNo is {}", refundRentOrderNo);
             // TODO 错误编码
             throw new BizException("", "数据有误");
         }
@@ -234,10 +234,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // TX 事务落库
         saveApproveRefundRentOrderTx(refundRentOrderNo, approveFlag, apploveDesc, apploveUid, rentRefundEntity);
 
-        // TODO 异步处理
-        // TODO 该订单赠送的优惠券，直接置为已失效
-        // TODO 分账数据，分账金额需要撤回
-        // TODO 活动相关的数据
+        if (approveFlag) {
+            // 非 0 元退租
+            if (BigDecimal.ZERO.compareTo(rentRefundEntity.getRefundAmount()) > 0) {
+                // TODO 异步处理
+                // TODO 该订单赠送的优惠券，直接置为已失效
+                // TODO 分账数据，分账金额需要撤回
+                // TODO 活动相关的数据
+            }
+        }
+
         return true;
     }
 
@@ -263,6 +269,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (approveFlag) {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_PASS.getCode());
+            // 0 元退租
+            if (BigDecimal.ZERO.compareTo(rentRefundEntity.getRefundAmount()) == 0) {
+                rentRefundUpdateEntity.setRefundState(RefundStateEnum.SUCCESS.getCode());
+            }
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
 
             // 2. 更新会员期限

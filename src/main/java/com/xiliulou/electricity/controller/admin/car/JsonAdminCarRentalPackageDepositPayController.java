@@ -39,8 +39,8 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
      * @param orderNo
      * @return
      */
-    @GetMapping("/syncExemptState")
-    public R<Boolean> syncExemptState(String orderNo) {
+    @GetMapping("/syncFreeState")
+    public R<Boolean> syncFreeState(String orderNo) {
         // TODO 实现逻辑
         return null;
     }
