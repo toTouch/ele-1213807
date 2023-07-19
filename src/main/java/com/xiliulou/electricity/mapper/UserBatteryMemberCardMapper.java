@@ -86,4 +86,6 @@ public interface UserBatteryMemberCardMapper extends BaseMapper<UserBatteryMembe
     Integer increaseExpireTime(@Param("uid") Long uid, @Param("time") Long time, @Param("updateTime") Long updateTime);
 
     List<UserBatteryMemberCard> selectByList(@Param("offset") int offset, @Param("size") int size);
+
+    List<UserBatteryMemberCard> selectUseableList(@Param("offset") int offset, @Param("size") int size);
 }

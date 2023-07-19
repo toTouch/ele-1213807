@@ -242,4 +242,21 @@
         limit #{offset},#{size}
     </select>
 
+    <select id="selectUseableList" resultMap="UserBatteryMemberCardMap">
+        select
+        tui.uid,
+        tui.member_card_id,
+        tui.member_card_expire_time,
+        tui.order_expire_time,
+        tui.remaining_number,
+        tui.member_card_status,
+        tui.disable_member_card_time,
+        tui.card_pay_count
+        from t_user_battery_member_card ubmc
+        left join t_user_info tui on tui.uid=ubmc.uid
+        where tui.uid = #{uid}
+        and tui.battery_deposit_status=1
+        limit #{offset},#{size}
+    </select>
+
 </mapper>

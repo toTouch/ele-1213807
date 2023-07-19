@@ -107,4 +107,6 @@ public interface UserBatteryMemberCardService {
     Integer increaseExpireTime(Long uid, Long time,Long updateTime);
 
     List<UserBatteryMemberCard> selectList(int offset, int size);
+
+    List<UserBatteryMemberCard> selectUseableList(int offset, int size);
 }

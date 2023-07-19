@@ -70,4 +70,6 @@ public interface BatteryMemberCardService {
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
 
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query);
 }
