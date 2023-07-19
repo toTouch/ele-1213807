@@ -43,8 +43,8 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
     /**
      * 是否选择免押
      * <pre>
-     *     1-是
-     *     2-否
+     *     0-是
+     *     1-否
      * </pre>
      * @see com.xiliulou.electricity.enums.YesNoEnum
      */

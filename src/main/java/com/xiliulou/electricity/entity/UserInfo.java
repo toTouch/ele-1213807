@@ -116,7 +116,6 @@ public class UserInfo {
     //租户
     private Integer tenantId;
 
-
     public static final Integer DEL_NORMAL = 0;
 
     public static final Integer DEL_DEL = 1;
@@ -176,5 +175,8 @@ public class UserInfo {
     public static final Integer AUTH_TYPE_PERSON = 1;
     public static final Integer AUTH_TYPE_SYSTEM = 2;
     public static final Integer AUTH_TYPE_FACE = 3;
+
+    /** 虚拟门店ID */
+    public static final Long VIRTUALLY_STORE_ID = 0L;
 
 }
