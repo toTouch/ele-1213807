@@ -16,9 +16,45 @@
     </resultMap>
 
     <!--查询单个-->
+    <select id="queryByCondition" resultMap="EleChargeConfigMap">
+        select
+        id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+        from t_ele_charge_config
+        <where>
+           type = #{type}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+
+        </where>
+        where eid = #{id} order by id desc limit 1
+    </select>
+
+    <select id="queryByTenantId" resultMap="EleChargeConfigMap">
+        select id,
+               name,
+               franchisee_id,
+               store_id,
+               eid,
+               tenant_id,
+               type,
+               create_time,
+               update_time,
+               json_rule
+        from t_ele_charge_config
+        where tenant_id = #{tenantId} order by id desc  limit 1
+    </select>
+
     <select id="queryById" resultMap="EleChargeConfigMap">
         select
-          id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+            id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
         from t_ele_charge_config
         where id = #{id}
     </select>

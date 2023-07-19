@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
@@ -18,8 +19,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
@@ -70,14 +69,18 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
             return;
         }
 
-
+        //电费单价
         Double unitPrice = 0.0;
         Integer chargeConfigType = EleChargeConfig.TYPE_NONE;
-        EleChargeConfig eleChargeConfig = eleChargeConfigService.queryConfigByEid(electricityCabinet.getId());
+
+        EleChargeConfig eleChargeConfig = eleChargeConfigService.queryConfigByCabinetWithLayer(electricityCabinet,store.getFranchiseeId());
         if (Objects.nonNull(eleChargeConfig)) {
-
+            EleChargeConfigCalcDetailDto dto = eleChargeConfigService.acquireConfigTypeAndUnitPriceAccrodingTime(eleChargeConfig, cabinetPowerReport.getCreateTime());
+            if (Objects.nonNull(dto)) {
+                unitPrice = dto.getPrice();
+                chargeConfigType = dto.getType();
+            }
         }
-
 
         ElePower power = new ElePower();
         power.setSn(electricityCabinet.getSn());
@@ -95,8 +98,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         elePowerService.insertOrUpdate(power);
 
 
-        //发送锁仓命令
-        //发送命令
+        //发送命令确认
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("time", cabinetPowerReport.getCreateTime());
 

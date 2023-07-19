@@ -145,15 +145,17 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
                 || Objects.equals(command, TAKE_BATTERY_MODE)
-                || Objects.equals(command, CUPBOARD_OPERATING_RECORD) || Objects.equals(command, OTA_OPERATE) || Objects
-                .equals(command, OTA_OPERATE_RSP)
+                || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
+                || Objects.equals(command, OTA_OPERATE)
+                || Objects.equals(command, OTA_OPERATE_RSP)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
                 || Objects.equals(command, RESTART_APP)
                 || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY)
-                || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING) || Objects
-                .equals(command, ELE_BATTERY_MULTI_PARAMS_READ) || Objects
-                .equals(command, OTHER_SETTING_PARAM_TEMPLATE);
+                || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING)
+                || Objects.equals(command, ELE_BATTERY_MULTI_PARAMS_READ)
+                || Objects.equals(command, OTHER_SETTING_PARAM_TEMPLATE)
+                || Objects.equals(command, CALC_ELE_POWER_REPORT_ACK);
 
     }
 
@@ -547,8 +549,8 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(TEMPERATURE_WARNING, NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER);
 
-        COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT,NORMAL_ELE_CHARGE_POWER_HANDLER);
-        COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT_ACK,NORMAL_ELE_CHARGE_POWER_HANDLER);
+        COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT, NORMAL_ELE_CHARGE_POWER_HANDLER);
+        COMMAND_HANDLER_MAPS.put(CALC_ELE_POWER_REPORT_ACK, NORMAL_ELE_CHARGE_POWER_HANDLER);
 
     }
 }

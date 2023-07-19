@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
 import com.xiliulou.electricity.entity.EleChargeConfig;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ChargeConfigListQuery;
 import com.xiliulou.electricity.query.ChargeConfigQuery;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,9 +23,18 @@ public interface EleChargeConfigService {
      * @param id 主键
      * @return 实例对象
      */
-    EleChargeConfig queryByIdFromDB(Long id);
-    
-      /**
+    EleChargeConfig queryByIdFromDb(Long id);
+
+    EleChargeConfig queryFromDb(Long franchiseeId, Long storeId, Long eid, int typeAllCabinet);
+
+    EleChargeConfig queryConfigByStoreIdFromCache(Long storeId, Long id);
+
+    EleChargeConfig queryConfigByFranchiseeIdFromCache(Long franchiseeId);
+
+    EleChargeConfig queryConfigByTenantIdFromCache(Integer tenantId);
+     EleChargeConfig queryByTenantIdFromDb(Integer tenantId);
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -35,7 +46,7 @@ public interface EleChargeConfigService {
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     List<EleChargeConfig> queryAllByLimit(int offset, int limit);
@@ -74,5 +85,8 @@ public interface EleChargeConfigService {
 
     Pair<Boolean, Object> delConfig(Long id);
 
-    EleChargeConfig queryConfigByEid(Integer id);
+    EleChargeConfig queryConfigByCabinetWithLayer(ElectricityCabinet electricityCabinet, Long id);
+
+
+    EleChargeConfigCalcDetailDto acquireConfigTypeAndUnitPriceAccrodingTime(EleChargeConfig eleChargeConfig, Long createTime);
 }
