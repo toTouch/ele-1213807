@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.ElePowerMapper;
 import com.xiliulou.electricity.query.ElePowerListQuery;
 import com.xiliulou.electricity.service.ElePowerService;
+import com.xiliulou.electricity.vo.ElePowerDayVo;
 import com.xiliulou.electricity.vo.ElePowerVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -126,8 +127,22 @@ public class ElePowerServiceImpl implements ElePowerService {
 
     @Override
     public Pair<Boolean, Object> queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId) {
-//        this.elePowerMapper.queryDayList(eid,startTime,endTime,tenantId);
-        return null;
+        return Pair.of(true, this.elePowerMapper.queryDayList(eid, startTime, endTime, tenantId));
+    }
+
+    @Override
+    public Pair<Boolean, Object> queryMonthList(Long eid, Long startTime, Long endTime, Integer tenantId) {
+        return Pair.of(true, this.elePowerMapper.queryMonthList(eid, startTime, endTime, tenantId));
+    }
+
+    @Override
+    public Pair<Boolean, Object> queryDayDetail(Long eid, Long startTime, Long endTime, Integer tenantId) {
+        return Pair.of(true, this.elePowerMapper.queryDayDetail(eid, startTime, endTime, tenantId));
+    }
+
+    @Override
+    public Pair<Boolean, Object> queryMonthDetail(Long eid, Long startTime, Long endTime, Integer tenantId) {
+        return Pair.of(true, this.elePowerMapper.queryMonthDetail(eid, startTime, endTime, tenantId));
     }
 
 }

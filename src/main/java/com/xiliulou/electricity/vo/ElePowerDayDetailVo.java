@@ -4,15 +4,10 @@ import lombok.Data;
 
 /**
  * @author : eclair
- * @date : 2023/7/19 13:23
+ * @date : 2023/7/19 14:57
  */
 @Data
-public class ElePowerMothVo {
-
+public class ElePowerDayDetailVo {
+    private Integer type;
     private Double sumPower;
-
-    private String date;
-
-    private Double sumElectricCharge;
-
 }

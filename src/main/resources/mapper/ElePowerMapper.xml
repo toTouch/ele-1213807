@@ -124,6 +124,49 @@
         limit #{offset}, #{size}
     </select>
 
+    <select id="queryDayList" resultType="com.xiliulou.electricity.vo.ElePowerDayVo">
+        select from_unixtime(report_time/1000, '%Y-%m-%d') date,sum(hour_power) sumPower
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by date
+        order by date
+    </select>
+
+    <select id="queryMonthList" resultType="com.xiliulou.electricity.vo.ElePowerMothVo">
+        select from_unixtime(report_time / 1000, '%Y-%m') date,sum(hour_power) sumPower,sum(electric_charge) sumElectricCharge
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by date;
+        order by date
+    </select>
+
+    <select id="queryDayDetail" resultType="com.xiliulou.electricity.vo.ElePowerDayDetailVo">
+        select type, sum(hour_power) sumPower
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by type;
+    </select>
+
+
+    <select id="queryMonthDetail" resultType="com.xiliulou.electricity.vo.ElePowerMonthDetailVo">
+        select type, sum(hour_power) sumPower, sum(electric_charge) sumElectricCharge
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by type;
+    </select>
+
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,

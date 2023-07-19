@@ -47,15 +47,52 @@ public class JsonAdminElePowerController extends BaseController {
     }
 
     @GetMapping("/admin/power/day/list")
-    public R getList(@RequestParam(value = "eid") Long eid,
-                     @RequestParam(value = "startTime") Long startTime,
-                     @RequestParam(value = "endTime") Long endTime) {
+    public R getDayList(@RequestParam(value = "eid") Long eid,
+                        @RequestParam(value = "startTime") Long startTime,
+                        @RequestParam(value = "endTime") Long endTime) {
 
         if (endTime - startTime > TimeUnit.DAYS.toMillis(31)) {
             return R.fail("时间跨度不可以超过31");
         }
 
-        return returnPairResult(elePowerService.queryDayList(eid, startTime, endTime,TenantContextHolder.getTenantId()));
+        return returnPairResult(elePowerService.queryDayList(eid, startTime, endTime, TenantContextHolder.getTenantId()));
+    }
+
+    @GetMapping("/admin/power/day/detail")
+    public R getDayDetail(@RequestParam(value = "eid") Long eid,
+                          @RequestParam(value = "startTime") Long startTime,
+                          @RequestParam(value = "endTime") Long endTime) {
+
+        if (endTime - startTime > TimeUnit.DAYS.toMillis(31)) {
+            return R.fail("时间跨度不可以超过31");
+        }
+
+        return returnPairResult(elePowerService.queryDayDetail(eid, startTime, endTime, TenantContextHolder.getTenantId()));
+    }
+
+
+    @GetMapping("/admin/power/month/list")
+    public R getMonthList(@RequestParam(value = "eid") Long eid,
+                          @RequestParam(value = "startTime") Long startTime,
+                          @RequestParam(value = "endTime") Long endTime) {
+
+        if (endTime - startTime > TimeUnit.DAYS.toMillis(356 * 2)) {
+            return R.fail("时间跨度不可以超过31");
+        }
+
+        return returnPairResult(elePowerService.queryMonthList(eid, startTime, endTime, TenantContextHolder.getTenantId()));
+    }
+
+    @GetMapping("/admin/power/month/detail")
+    public R getMonthDetail(@RequestParam(value = "eid") Long eid,
+                            @RequestParam(value = "startTime") Long startTime,
+                            @RequestParam(value = "endTime") Long endTime) {
+
+        if (endTime - startTime > TimeUnit.DAYS.toMillis(356 * 2)) {
+            return R.fail("时间跨度不可以超过31");
+        }
+
+        return returnPairResult(elePowerService.queryMonthDetail(eid, startTime, endTime, TenantContextHolder.getTenantId()));
     }
 
 }

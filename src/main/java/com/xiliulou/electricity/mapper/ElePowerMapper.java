@@ -1,9 +1,14 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElePower;
+
 import java.util.List;
 
 import com.xiliulou.electricity.query.ElePowerListQuery;
+import com.xiliulou.electricity.vo.ElePowerDayDetailVo;
+import com.xiliulou.electricity.vo.ElePowerDayVo;
+import com.xiliulou.electricity.vo.ElePowerMonthDetailVo;
+import com.xiliulou.electricity.vo.ElePowerMothVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -13,7 +18,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2023-07-18 10:20:44
  */
-public interface ElePowerMapper  extends BaseMapper<ElePower>{
+public interface ElePowerMapper extends BaseMapper<ElePower> {
 
     /**
      * 通过ID查询单条数据
@@ -27,7 +32,7 @@ public interface ElePowerMapper  extends BaseMapper<ElePower>{
      * 查询指定行数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     List<ElePower> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
@@ -68,6 +73,18 @@ public interface ElePowerMapper  extends BaseMapper<ElePower>{
     int insertOrUpdate(ElePower power);
 
     List<ElePower> queryPartAttList(ElePowerListQuery query);
+
+    List<ElePowerDayVo> queryDayList(@Param("eid") Long eid, @Param("startTime") Long startTime,
+                                     @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
+
+    List<ElePowerMothVo> queryMonthList(@Param("eid") Long eid, @Param("startTime") Long startTime,
+                                        @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
+
+    List<ElePowerDayDetailVo> queryDayDetail(@Param("eid") Long eid, @Param("startTime") Long startTime,
+                                             @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
+
+    List<ElePowerMonthDetailVo> queryMonthDetail(@Param("eid") Long eid, @Param("startTime") Long startTime,
+                                                          @Param("endTime") Long endTime, @Param("tenantId") Integer tenantId);
 
 //    void queryDayList(Long eid, Long startTime, Long endTime, Integer tenantId);
 }
