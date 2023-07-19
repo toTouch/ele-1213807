@@ -8,9 +8,13 @@ import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryMo
 import com.xiliulou.electricity.query.car.CarRentalPackageOrderFreezeQryReq;
 import com.xiliulou.electricity.query.car.audit.AuditOptReq;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderFreezeService;
+import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,10 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,9 @@ import java.util.stream.Collectors;
 public class JsonAdminCarRentalPackageOrderFreezeController extends BasicController {
 
     @Resource
+    private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
+
+    @Resource
     private CarRentalPackageOrderFreezeService carRentalPackageOrderFreezeService;
 
 
@@ -45,8 +49,18 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
-        // TODO 实现逻辑
-        return null;
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo(), optReq.getReason())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), false, optReq.getReason(), user.getUid()));
     }
 
     /**
@@ -56,8 +70,18 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
      */
     @PostMapping("/approved")
     public R<Boolean> approved(@RequestBody AuditOptReq optReq) {
-        // TODO 实现逻辑
-        return null;
+        if (!ObjectUtils.allNotNull(optReq, optReq.getOrderNo())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return R.ok(carRentalPackageOrderBizService.approveFreezeRentOrder(optReq.getOrderNo(), true, optReq.getReason(), user.getUid()));
     }
 
     /**

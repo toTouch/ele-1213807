@@ -65,7 +65,7 @@ public interface BatteryMemberCardService {
 
     Triple<Boolean, String, Object> save(BatteryMemberCardQuery query);
 
-    Long calculateBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
+    Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
 
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
 

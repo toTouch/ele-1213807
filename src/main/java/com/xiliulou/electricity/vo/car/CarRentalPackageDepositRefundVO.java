@@ -42,6 +42,7 @@ public class CarRentalPackageDepositRefundVO implements Serializable {
      * <pre>
      *     1-线上
      *     2-线下
+     *     3-免押
      * </pre>
      * @see PayTypeEnum
      */

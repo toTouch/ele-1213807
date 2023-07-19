@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel;
 
@@ -26,21 +25,21 @@ public interface CarRentalPackageOrderRentRefundService {
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackageOrderRentRefundPO>> list(CarRentalPackageOrderRentRefundQryModel qryModel);
+    List<CarRentalPackageOrderRentRefundPO> list(CarRentalPackageOrderRentRefundQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackageOrderRentRefundPO>> page(CarRentalPackageOrderRentRefundQryModel qryModel);
+    List<CarRentalPackageOrderRentRefundPO> page(CarRentalPackageOrderRentRefundQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询模型
      * @return
      */
-    R<Integer> count(CarRentalPackageOrderRentRefundQryModel qryModel);
+    Integer count(CarRentalPackageOrderRentRefundQryModel qryModel);
 
     /**
      * 根据订单编码查询

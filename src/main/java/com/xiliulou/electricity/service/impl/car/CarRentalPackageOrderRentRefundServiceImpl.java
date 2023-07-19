@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -57,12 +56,12 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderRentRefundPO>> list(CarRentalPackageOrderRentRefundQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageOrderRentRefundPO> list(CarRentalPackageOrderRentRefundQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderRentRefundMapper.list(qryModel));
+        return carRentalPackageOrderRentRefundMapper.list(qryModel);
     }
 
     /**
@@ -73,12 +72,12 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderRentRefundPO>> page(CarRentalPackageOrderRentRefundQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageOrderRentRefundPO> page(CarRentalPackageOrderRentRefundQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderRentRefundMapper.page(qryModel));
+        return carRentalPackageOrderRentRefundMapper.page(qryModel);
     }
 
     /**
@@ -89,12 +88,12 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalPackageOrderRentRefundQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalPackageOrderRentRefundQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderRentRefundMapper.count(qryModel));
+        return carRentalPackageOrderRentRefundMapper.count(qryModel);
     }
 
     /**

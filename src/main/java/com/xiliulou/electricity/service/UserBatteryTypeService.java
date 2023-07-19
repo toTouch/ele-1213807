@@ -28,4 +28,7 @@ public interface UserBatteryTypeService {
     List<UserBatteryType> buildUserBatteryType(List<String> batteryTypeList, UserInfo userInfo);
 
     Integer deleteByUid(Long uid);
+
+    List<String> selectByUid(Long uid);
+
 }

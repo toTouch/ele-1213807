@@ -42,7 +42,7 @@ public class UserBatteryMemberCardPackage {
 
     private Long updateTime;
     /**
-     * 套餐有效时间
+     * 套餐有效时长
      */
     private Long memberCardExpireTime;
     /**

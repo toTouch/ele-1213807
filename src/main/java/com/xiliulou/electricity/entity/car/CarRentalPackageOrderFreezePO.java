@@ -116,4 +116,9 @@ public class CarRentalPackageOrderFreezePO extends BasicCarPO {
      */
     private String remark;
 
+    /**
+     * 申请原因
+     */
+    private String applyReason;
+
 }

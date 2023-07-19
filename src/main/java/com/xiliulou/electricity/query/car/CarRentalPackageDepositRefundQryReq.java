@@ -46,6 +46,11 @@ public class CarRentalPackageDepositRefundQryReq implements Serializable {
     private String orderNo;
 
     /**
+     * 押金缴纳订单编码
+     */
+    private String depositPayOrderNo;
+
+    /**
      * 用户ID
      */
     private Long uid;
@@ -55,6 +60,7 @@ public class CarRentalPackageDepositRefundQryReq implements Serializable {
      * <pre>
      *     1-线上
      *     2-线下
+     *     3-免押
      * </pre>
      * @see PayTypeEnum
      */

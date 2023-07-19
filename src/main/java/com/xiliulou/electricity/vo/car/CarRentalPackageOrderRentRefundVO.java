@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.vo.car;
 
 import com.xiliulou.electricity.enums.RefundStateEnum;
-import com.xiliulou.electricity.enums.ThirdPayChannelEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
@@ -25,18 +24,9 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
     private String orderNo;
 
     /**
-     * 三方支付单号
+     * 购买订单编号
      */
-    private String thirdPayNo;
-
-    /**
-     * 三方支付渠道
-     * <pre>
-     *     1-微信
-     * </pre>
-     * @see ThirdPayChannelEnum
-     */
-    private Integer thirdPayChannel;
+    private String rentalPackageOrderNo;
 
     /**
      * 套餐类型
@@ -51,7 +41,18 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
     /**
      * 余量
      */
-    private String residue;
+    private Long residue;
+
+    /**
+     * 余量单位
+     * <pre>
+     *     -1-次数
+     *     1-天
+     *     0-分钟
+     * </pre>
+     * @see RentalUnitEnum
+     */
+    private Integer residueUnit;
 
     /**
      * 退款金额
@@ -73,16 +74,6 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
     private Integer refundState;
 
     /**
-     * 租金单价单位
-     * <pre>
-     *     1-天
-     *     2-分钟
-     * </pre>
-     * @see RentalUnitEnum
-     */
-    private Integer rentUnit;
-
-    /**
      * 租金单价
      */
     private BigDecimal rentUnitPrice;
@@ -96,6 +87,16 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
      * 备注
      */
     private String remark;
+
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
 
 
     // ++++++++++ 辅助业务数据 ++++++++++

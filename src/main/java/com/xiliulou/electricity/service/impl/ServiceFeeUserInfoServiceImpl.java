@@ -9,7 +9,6 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -260,13 +259,17 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
     }
 
     @Override
-    public Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo) {
+    public Triple<Boolean, Integer, BigDecimal> acquireUserBatteryServiceFee(UserInfo userInfo, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ServiceFeeUserInfo serviceFeeUserInfo) {
 
         if (BigDecimal.valueOf(0).compareTo(batteryMemberCard.getServiceCharge()) == 0) {
             return Triple.of(false, null, null);
         }
 
         if (!Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
+            return Triple.of(false, null, null);
+        }
+
+        if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(serviceFeeUserInfo)){
             return Triple.of(false, null, null);
         }
 

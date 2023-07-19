@@ -25,6 +25,7 @@
         <result property="lateFeeEndTime" column="late_fee_end_time" jdbcType="BIGINT" />
         <result property="lateFeePay" column="late_fee_pay" jdbcType="DECIMAL" />
         <result property="payState" column="pay_state" jdbcType="INTEGER" />
+        <result property="payTime" column="pay_time" jdbcType="BIGINT" />
     </resultMap>
 
     <!-- 表名 -->
@@ -38,7 +39,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `type`, `car_sn`, `battery_sn`, `late_fee`, `late_fee_start_time`,
-        `late_fee_end_time`, `late_fee_pay`, `pay_state`
+        `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`
     </sql>
 
     <!-- 全部字段 -->
@@ -79,6 +80,7 @@
             <if test=" lateFeeEndTime != null "> `late_fee_end_time`, </if>
             <if test=" lateFeePay != null "> `late_fee_pay`, </if>
             <if test=" payState != null "> `pay_state`, </if>
+            <if test=" payTime != null "> `pay_time`, </if>
         </trim>
     </sql>
     <!-- 条件新增字段值 -->
@@ -103,6 +105,7 @@
             <if test=" lateFeeEndTime != null "> #{lateFeeEndTime}, </if>
             <if test=" lateFeePay != null "> #{lateFeePay}, </if>
             <if test=" payState != null "> #{payState}, </if>
+            <if test=" payTime != null "> #{payTime}, </if>
         </trim>
     </sql>
 

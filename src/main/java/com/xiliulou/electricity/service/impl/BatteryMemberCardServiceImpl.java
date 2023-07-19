@@ -309,7 +309,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
 
     @Override
-    public Long calculateBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
+    public Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder) {
         return Objects.equals(BatteryMemberCard.RENT_UNIT_MINUTES, batteryMemberCard.getRentUnit()) ? memberCardOrder.getValidDays() * 60 * 1000L : memberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
     }
 
