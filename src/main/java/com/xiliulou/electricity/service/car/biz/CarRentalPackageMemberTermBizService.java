@@ -10,8 +10,8 @@ public interface CarRentalPackageMemberTermBizService {
     /**
      * 套餐购买订单过期处理<br />
      * 用于定时任务
-     * @param offset
-     * @param size
+     * @param offset 偏移量
+     * @param size 取值数量
      */
     void expirePackageOrder(Integer offset, Integer size);
 }

@@ -32,6 +32,18 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
 
     /**
+     * 分页查询过期的会员套餐信息
+     *
+     * @param offset 偏移量
+     * @param size   取值数量
+     * @return 会员套餐信息集
+     */
+    @Override
+    public List<CarRentalPackageMemberTermPO> pageExpire(Integer offset, Integer size) {
+        return null;
+    }
+
+    /**
      * 根据用户ID和套餐购买订单编码进行退租<br />
      * 用于退掉最后一个订单的时候，即当前正在使用的订单进行退租
      *
