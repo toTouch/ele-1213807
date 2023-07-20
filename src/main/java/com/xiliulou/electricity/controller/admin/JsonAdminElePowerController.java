@@ -120,6 +120,7 @@ public class JsonAdminElePowerController extends BaseController {
                 .date(date)
                 .size(size)
                 .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
                 .eid(eid).build();
         return returnPairResult(monthRecordService.queryMonthStatistics(query));
