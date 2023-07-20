@@ -71,4 +71,6 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
     List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
     
     EleCabinetCoreData selectById( @Param("id") Integer id, @Param("tenantId")  Integer tenantId);
+
+    EleCabinetCoreData selectByEid(Integer eid);
 }
