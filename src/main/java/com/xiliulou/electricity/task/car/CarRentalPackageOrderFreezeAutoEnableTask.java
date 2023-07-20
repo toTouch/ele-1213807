@@ -20,7 +20,7 @@ import javax.annotation.Resource;
  **/
 @Slf4j
 @Component
-@JobHandler
+@JobHandler("carRentalPackageOrderFreezeAutoEnableTask")
 public class CarRentalPackageOrderFreezeAutoEnableTask extends IJobHandler {
 
     @Resource

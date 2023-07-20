@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  **/
 @Slf4j
 @Component
-@JobHandler
+@JobHandler("carRentalPackageOrderFreezeAutoEnableTask")
 public class CarRentalPackageOrderExpireTask extends IJobHandler {
 
     /**
@@ -24,7 +24,9 @@ public class CarRentalPackageOrderExpireTask extends IJobHandler {
      */
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        // 1. 查询会员套餐表中，套餐购买订单已过期的数据（不限制，时间到 或者 限制）
+        // 1. 查询会员套餐表中，套餐购买订单已过期的数据（不限制，时间到 或者 限制次数，次数为 0）
+        // 2. 若有续接的套餐订单，直接覆盖，同时将原订单设置为已失效
+        // 3. 若没有续接订单，查询是否存在设备，若存在，
         log.info("CarRentalPackageOrderExpireTask begin.");
         try {
         } catch (Exception e) {
