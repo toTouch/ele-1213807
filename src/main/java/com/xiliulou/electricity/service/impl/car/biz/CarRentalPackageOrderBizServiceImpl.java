@@ -1360,6 +1360,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 memberTermUpdateEntity.setResidueTotal(memberTermEntity.getResidueTotal() + carRentalPackageOrderEntity.getConfineNum());
             }
 
+            // 套餐购买总次数
+            memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
+
             carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
         }
 
@@ -1382,10 +1385,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             userInfoService.update(updateWrapper);
         }
 
-        // 5. 处理用户优惠券的使用状态
+        // 5. 处理用户套餐购买次数叠加
+        UserInfo userInfoUpdateEntity = new UserInfo();
+        userInfoUpdateEntity.setUid(uid);
+        userInfoUpdateEntity.setPayCount(userInfo.getPayCount() + 1);
+        userInfoService.updateByUid(userInfoUpdateEntity);
+
+
+        // 6. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_USED);
 
-        // TODO 套餐购买次数叠加
 
         // 6. TODO 车辆断启电
 
