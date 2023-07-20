@@ -21,6 +21,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
+import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -117,8 +118,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Slave
     @Override
-    public List<SearchVo> search(FranchiseeQuery franchiseeQuery) {
-        List<SearchVo>  list=franchiseeMapper.search(franchiseeQuery);
+    public List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery) {
+        List<FranchiseeSearchVO>  list=franchiseeMapper.search(franchiseeQuery);
         if(CollectionUtils.isEmpty(list)){
             return Collections.emptyList();
         }
