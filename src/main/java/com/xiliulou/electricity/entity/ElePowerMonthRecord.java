@@ -1,50 +1,11 @@
 package com.xiliulou.electricity.entity;
 
 
-    
-
-
-
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-
-                                                                import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
  * (ElePowerMonthRecord)实体类
@@ -97,7 +58,7 @@ public class ElePowerMonthRecord {
     /**
     * 日期
     */
-    private Object date;
+    private String date;
     
     private Integer tenantId;
     
