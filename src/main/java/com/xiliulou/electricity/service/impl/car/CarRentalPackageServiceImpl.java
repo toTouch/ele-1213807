@@ -81,7 +81,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public Boolean uqByTenantIdAndName(Integer tenantId, String name) {
-        if (ObjectUtils.allNotNull(tenantId, name)) {
+        if (!ObjectUtils.allNotNull(tenantId, name)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -266,7 +266,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long insert(CarRentalPackagePO entity) {
-        if (!ObjectUtils.allNotNull(entity, entity.getId(), entity.getCreateUid(), entity.getTenantId(), entity.getName())) {
+        if (!ObjectUtils.allNotNull(entity, entity.getCreateUid(), entity.getTenantId(), entity.getName())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 

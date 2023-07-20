@@ -32,6 +32,25 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
     private CarRentalPackageMemberTermMapper carRentalPackageMemberTermMapper;
 
     /**
+     * 分页查询过期的会员套餐信息<br />
+     * nowTime 若传入，以传入为准<br />
+     * nowTime 不传入，以系统时间为准
+     * @param offset 偏移量
+     * @param size   取值数量
+     * @param nowTime 当前时间戳(可为空)
+     * @return 会员套餐信息集
+     */
+    @Override
+    public List<CarRentalPackageMemberTermPO> pageExpire(Integer offset, Integer size, Long nowTime) {
+
+        offset = ObjectUtils.isEmpty(offset) ? 0: offset;
+        size = ObjectUtils.isEmpty(size) ? 10: size;
+        nowTime = ObjectUtils.isEmpty(nowTime) ? System.currentTimeMillis(): nowTime;
+
+        return carRentalPackageMemberTermMapper.pageExpire(offset, size, nowTime);
+    }
+
+    /**
      * 根据用户ID和套餐购买订单编码进行退租<br />
      * 用于退掉最后一个订单的时候，即当前正在使用的订单进行退租
      *

@@ -116,13 +116,13 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 押金
      */
-    @NotNull(message = "[押金]不能为空")
+    @NotNull(message = "[押金]不能为空", groups = {CreateGroup.class})
     private BigDecimal deposit;
 
     /**
      * 车辆型号ID
      */
-    @NotNull(message = "[车辆型号]不能为空")
+    @NotNull(message = "[车辆型号]不能为空", groups = {CreateGroup.class})
     private Integer carModelId;
 
     /**
