@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
@@ -273,13 +274,15 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     @PostMapping("/insert")
     public R<Boolean> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
 
-        Integer tenantId = TenantContextHolder.getTenantId();
+        throw new BizException( "我是故意的");
+
+        /*Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
 
         optModel.setTenantId(tenantId);
         optModel.setCreateUid(user.getUid());
 
-        return R.ok(carRentalPackageBizService.insertPackage(optModel));
+        return R.ok(carRentalPackageBizService.insertPackage(optModel));*/
     }
 
 }
