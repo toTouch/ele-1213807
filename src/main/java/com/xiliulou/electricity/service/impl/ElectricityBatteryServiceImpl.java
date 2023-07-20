@@ -493,6 +493,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
             Franchisee franchisee = franchiseeService.queryByIdFromDB(item.getFranchiseeId());
             electricityBatteryVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+            electricityBatteryVO.setFranchiseeId(item.getFranchiseeId());
 
             if (Objects.equals(item.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.nonNull(item.getUid())) {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
@@ -989,6 +990,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @param batteryQuery
      * @return
      */
+
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindFranchisee(BindElectricityBatteryQuery batteryQuery) {
@@ -1006,6 +1009,31 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         electricitybatterymapper.bindFranchiseeId(batteryQuery);
         return R.ok();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R bindFranchiseeForBattery(BindElectricityBatteryQuery batteryQuery){
+        //检查是否存在选中的电池信息
+        if (CollectionUtils.isEmpty(batteryQuery.getElectricityBatteryIdList())) {
+            return R.ok();
+        }
+
+        if(Objects.nonNull(batteryQuery.getFranchiseeId())){
+            //进入电池绑定流程
+            log.info("bind franchisee for battery. franchisee id: {}", batteryQuery.getFranchiseeId());
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(batteryQuery.getFranchiseeId().longValue());
+            if(Objects.isNull(franchisee)){
+                log.error("Franchisee id is invalid! franchisee id = {}", batteryQuery.getFranchiseeId());
+                return R.fail("000038", "未找到加盟商!");
+            }
+        }else{
+            //进入电池解绑流程
+            log.info("unbind franchisee for battery. battery ids: {}", batteryQuery.getElectricityBatteryIdList());
+            batteryQuery.setFranchiseeId(null);
+        }
+
+        return R.ok(electricitybatterymapper.bindFranchiseeId(batteryQuery));
     }
 
     @Override

@@ -52,6 +52,14 @@
             <if test="newStoreId != null">
                 and new_store_id = #{newStoreId}
             </if>
+
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+
+            <if test="query.endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{limit}
@@ -81,6 +89,15 @@
             <if test="newStoreId != null">
                 and new_store_id = #{newStoreId}
             </if>
+
+            <if test="beginTime != null">
+                and create_time &gt;= #{beginTime}
+            </if>
+
+            <if test="query.endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+
         </where>
     </select>
 
