@@ -1385,6 +1385,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 5. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_USED);
 
+        // TODO 套餐购买次数叠加
+
         // 6. TODO 车辆断启电
 
         rocketMqService.sendAsyncMsg("topic", "msg");

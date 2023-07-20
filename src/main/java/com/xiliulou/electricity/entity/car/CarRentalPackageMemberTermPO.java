@@ -105,5 +105,9 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
      */
     private String insuranceOrderId;
 
+    /**
+     * 套餐购买次数
+     */
+    private Integer payCount;
 
 }

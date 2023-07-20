@@ -14,11 +14,12 @@ import java.util.List;
 public interface CarRentalPackageMemberTermService {
 
     /**
-     * 根据用户ID和套餐购买订单编码进行退租
+     * 根据用户ID和套餐购买订单编码进行退租<br />
+     * 用于退掉最后一个订单的时候，即当前正在使用的订单进行退租
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
      * @param optUid 操作人ID
-     * @return
+     * @return true(成功)、false(失败)
      */
     boolean rentRefundByUidAndPackageOrderNo(Long uid, String packageOrderNo, Long optUid);
 

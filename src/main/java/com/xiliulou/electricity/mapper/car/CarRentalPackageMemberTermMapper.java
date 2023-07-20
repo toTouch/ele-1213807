@@ -16,12 +16,13 @@ import java.util.List;
 public interface CarRentalPackageMemberTermMapper {
 
     /**
-     * 根据用户ID和套餐购买订单编码进行退租
+     * 根据用户ID和套餐购买订单编码进行退租<br >
+     * 用于退掉最后一个订单的时候，即当前正在使用的订单进行退租
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
      * @param optUid 操作人ID
      * @param optTime 操作时间
-     * @return
+     * @return 操作总条数
      */
     int rentRefundByUidAndPackageOrderNo(@Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
 

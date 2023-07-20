@@ -584,6 +584,9 @@
             <if test="carBatteryDepositStatus != null">
                 `car_battery_deposit_status` = #{carBatteryDepositStatus},
             </if>
+            <if test="payCout != null">
+                `pay_count` = #{payCout},
+            </if>
         </set>
         where uid = #{uid}
     </update>
@@ -639,6 +642,9 @@
             <if test="carBatteryDepositStatus != null">
                 `car_battery_deposit_status` = #{carBatteryDepositStatus},
             </if>
+            <if test="payCout != null">
+                `pay_count` = #{payCout},
+            </if>
         </set>
         where uid = #{uid} and tenant_id=#{tenantId}
     </update>
@@ -647,7 +653,7 @@
       select
           uid, phone, user_name, name, id_number, auth_status, usable_status,
           service_status, del_flag, create_time, update_time, tenant_id, battery_rent_status,
-          battery_deposit_status,franchisee_id, car_rent_status, car_deposit_status, `car_battery_deposit_status`
+          battery_deposit_status,franchisee_id, car_rent_status, car_deposit_status, `car_battery_deposit_status`, `pay_count`
       from t_user_info
       where del_flag = 0 and id_number = #{idNumber} and tenant_id = #{tenantId}
   </select>

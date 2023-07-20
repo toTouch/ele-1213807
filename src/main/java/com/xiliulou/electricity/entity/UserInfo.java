@@ -116,6 +116,11 @@ public class UserInfo {
     //租户
     private Integer tenantId;
 
+    /**
+     * 套餐购买次数(所有套餐类型的总次数，包含：换电、车、车电一体)
+     */
+    private Integer payCount;
+
     public static final Integer DEL_NORMAL = 0;
 
     public static final Integer DEL_DEL = 1;
