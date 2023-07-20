@@ -120,9 +120,6 @@
             <if test="status != null">
                 and status = #{status}
             </if>
-            <if test="display != null">
-                and display = #{display}
-            </if>
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
@@ -176,9 +173,6 @@
             <if test="status != null">
                 and bmc.status = #{status}
             </if>
-            <if test="display != null">
-                and bmc.display = #{display}
-            </if>
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
@@ -215,9 +209,6 @@
             <if test="status != null">
                 and bmc.status = #{status}
             </if>
-            <if test="display != null">
-                and display = #{display}
-            </if>
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
@@ -246,9 +237,6 @@
             </if>
             <if test="status != null">
                 and status = #{status}
-            </if>
-            <if test="display != null">
-                and display = #{display}
             </if>
             <if test="name != null and name != ''">
                 and name like concat('%',#{name,jdbcType=VARCHAR},'%')
@@ -332,9 +320,6 @@
             </if>
             <if test="serviceCharge != null">
                 service_charge = #{serviceCharge},
-            </if>
-            <if test="display != null">
-                display = #{display},
             </if>
             <if test="type != null">
                 type = #{type},
