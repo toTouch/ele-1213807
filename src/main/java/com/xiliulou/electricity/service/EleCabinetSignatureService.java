@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.electricity.query.SignFileQuery;
+import com.xiliulou.esign.entity.query.UserInfoQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +16,9 @@ public interface EleCabinetSignatureService {
 
     public Triple<Boolean, String, Object> personalAuthentication();
 
-    public Triple<Boolean, String, Object> getSignFlowLink();
+    public Triple<Boolean, String, Object> createFileByTemplate();
+
+    public Triple<Boolean, String, Object> getSignFlowLink(SignFileQuery signFileQuery);
 
     public Triple<Boolean, String, Object> checkUserEsignFinished();
 

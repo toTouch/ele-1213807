@@ -2,10 +2,14 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.SignFileQuery;
 import com.xiliulou.electricity.service.EleCabinetSignatureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -32,9 +36,14 @@ public class JsonUserElectronicSignatureController extends BaseController {
         return returnTripleResult(eleCabinetSignatureService.personalAuthentication());
     }
 
-    @GetMapping(value = "/user/fileSignature")
-    public R fileSignature(){
-        return returnTripleResult(eleCabinetSignatureService.getSignFlowLink());
+    @GetMapping(value = "/user/createSignFile")
+    public R createSignFile(){
+        return returnTripleResult(eleCabinetSignatureService.createFileByTemplate());
+    }
+
+    @PostMapping(value = "/user/fileSignature")
+    public R fileSignature(@RequestBody @Validated SignFileQuery signFileQuery){
+        return returnTripleResult(eleCabinetSignatureService.getSignFlowLink(signFileQuery));
     }
 
 
