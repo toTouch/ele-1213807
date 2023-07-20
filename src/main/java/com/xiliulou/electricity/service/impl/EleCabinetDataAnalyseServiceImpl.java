@@ -163,7 +163,7 @@ public class EleCabinetDataAnalyseServiceImpl implements EleCabinetDataAnalyseSe
             ElectricityCabinetModel cabinetModel = eleCabinetModelService.queryByIdFromCache(item.getModelId());
             item.setModelName(Objects.nonNull(cabinetModel) ? cabinetModel.getName() : "");
 
-            EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.queryByIdFromDB(item.getId().longValue());
+            EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEid(item.getId());
             item.setTemp(Objects.nonNull(eleCabinetCoreData) ? eleCabinetCoreData.getTemp() : 0);
 
             ElectricityCabinetServer eleCabinetServer = eleCabinetServerService.selectByEid(item.getId());

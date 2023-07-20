@@ -9,10 +9,12 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleUserEsignRecordMapper;
 import com.xiliulou.electricity.mapper.EleUserIdentityAuthRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityEsignConfigMapper;
+import com.xiliulou.electricity.query.SignFileQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.SignUtils;
+import com.xiliulou.electricity.vo.CreateFileVO;
 import com.xiliulou.electricity.vo.SignFlowVO;
 import com.xiliulou.esign.config.EsignConfig;
 import com.xiliulou.esign.constant.EsignConstant;
@@ -39,7 +41,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -158,97 +159,256 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
     }
 
     @Override
-    public Triple<Boolean, String, Object> getSignFlowLink() {
-        //获取当前用户信息
+    public Triple<Boolean, String, Object> createFileByTemplate(){
+        if (!redisService
+                .setNx(CacheConstant.CACHE_ELE_CABINET_ESIGN_CREATE_FILE_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+        }
+        UserInfo userInfo = null;
+        CreateFileVO createFileVO = new CreateFileVO();
+
+        try{
+            //获取当前用户信息
+            userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.error("Create File error! not found userInfo,uid={}", SecurityUtils.getUid());
+                return Triple.of(false, "000100", "未找到用户");
+            }
+
+            //用户是否被限制
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.error("Create File error! user is unUsable,uid={}", userInfo.getUid());
+                return Triple.of(false, "000101", "用户已被禁用");
+            }
+
+            //用户是否审核通过
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.error("Create File error! userinfo is UN AUTH! uid={}", userInfo.getUid());
+                return Triple.of(false, "100109", "用户未审核");
+            }
+
+            //获取用户所属租户的签名配置信息
+            EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.isNull(eleEsignConfig)
+                    || StringUtils.isBlank(eleEsignConfig.getAppId())
+                    || StringUtils.isBlank(eleEsignConfig.getAppSecret())
+                    || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
+                log.error("Create File error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                        TenantContextHolder.getTenantId());
+                return Triple.of(false, "000104", "租户电子签名配置信息不存在");
+            }
+
+            //校验租户签名次数
+            EsignCapacityData esignCapacityData = esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue());
+            if (Objects.isNull(esignCapacityData)) {
+                log.error("Create File error! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                return Triple.of(false, "000106", "未购买签名资源包，请联系管理员");
+            }
+            if (esignCapacityData.getEsignCapacity() <= EleEsignConstant.ESIGN_MIN_CAPACITY) {
+                log.error("Create File error! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
+            }
+
+            //根据模板id创建签署文件
+            List<ComponentData> componentDataList = new ArrayList<>();
+            FileCreateByTempResp fileCreateByTempResp = signatureFileService.createFileByTemplate(eleEsignConfig.getDocTemplateId(), eleEsignConfig.getSignFileName(),componentDataList, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+            String fileId = fileCreateByTempResp.getData().getFileId();
+
+            //根据模版ID获取组件位置
+            SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+            ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
+
+            createFileVO.setFileId(fileId);
+            createFileVO.setComponentPageNum(componentPosition.getComponentPageNum());
+            createFileVO.setComponentPositionX(componentPosition.getComponentPositionX());
+            createFileVO.setComponentPositionY(componentPosition.getComponentPositionY());
+
+        }catch(Exception e){
+            log.error("Create File error! create file by template error,uid={},ex={}", userInfo.getUid(), e);
+            return Triple.of(false, "000110", "根据模板创建文件失败");
+
+        }finally {
+            redisService.delete(CacheConstant.CACHE_ELE_CABINET_ESIGN_CREATE_FILE_LOCK_KEY + SecurityUtils.getUid());
+        }
+
+        return Triple.of(true, "", createFileVO);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> getSignFlowLink(SignFileQuery signFileQuery) {
+
+        if (!redisService
+                .setNx(CacheConstant.CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY + SecurityUtils.getUid(), "1", 5 * 1000L, false)) {
+            return Triple.of(false, "000000", "操作频繁，请稍后再试！");
+        }
+
+        String signFlowId = null;
+        UserInfo userInfo = null;
+
+        try{
+            userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+            if (Objects.isNull(userInfo)) {
+                log.error("get sign flow link error! not found userInfo,uid={}", SecurityUtils.getUid());
+                return Triple.of(false, "000100", "未找到用户");
+            }
+
+            //用户是否被限制
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.error("get sign flow link error! user is unUsable,uid={}", userInfo.getUid());
+                return Triple.of(false, "000101", "用户已被禁用");
+            }
+
+            //用户是否审核通过
+            if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+                log.error("get sign flow link error! userinfo is UN AUTH! uid={}", userInfo.getUid());
+                return Triple.of(false, "100109", "用户未审核");
+            }
+
+            //获取用户所属租户的签名配置信息
+            EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
+            if (Objects.isNull(eleEsignConfig)
+                    || StringUtils.isBlank(eleEsignConfig.getAppId())
+                    || StringUtils.isBlank(eleEsignConfig.getAppSecret())
+                    || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
+                log.error("get sign flow link error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                        TenantContextHolder.getTenantId());
+                return Triple.of(false, "000104", "租户电子签名配置信息不存在");
+            }
+
+            //校验租户签名次数
+            EsignCapacityData esignCapacityData = esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue());
+            if (Objects.isNull(esignCapacityData)) {
+                log.error("get sign flow link error! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                return Triple.of(false, "000106", "未购买签名资源包，请联系管理员");
+            }
+            if (esignCapacityData.getEsignCapacity() <= EleEsignConstant.ESIGN_MIN_CAPACITY) {
+                log.error("get sign flow link error! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
+                return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
+            }
+
+            String fileName = eleEsignConfig.getSignFileName();
+
+            //基于文件发起签署流程
+            UserInfoQuery userInfoQuery = new UserInfoQuery();
+            userInfoQuery.setPhone(userInfo.getPhone());
+            userInfoQuery.setUserName(userInfo.getName());
+
+            SignFlowDataQuery signFlowDataQuery = new SignFlowDataQuery();
+            signFlowDataQuery.setFileId(signFileQuery.getFileId());
+            signFlowDataQuery.setSignFileName(fileName);
+            signFlowDataQuery.setSignFlowName(eleEsignConfig.getSignFlowName());
+            signFlowDataQuery.setTenantAppId(eleEsignConfig.getAppId());
+            signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
+            signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
+            signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
+
+            signFlowDataQuery.setPositionPage(String.valueOf(signFileQuery.getComponentPageNum()));
+            signFlowDataQuery.setPositionX(signFileQuery.getComponentPositionX());
+            signFlowDataQuery.setPositionY(signFileQuery.getComponentPositionY());
+
+            //signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+            signFlowId = getSignFlowId(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+
+        }catch(Exception e){
+            log.error("get sign flow link error! get sign flow link error,uid={},ex={}", userInfo.getUid(), e);
+            return Triple.of(false, "000109", "获取签署链接失败");
+        }finally {
+            redisService.delete(CacheConstant.CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY + SecurityUtils.getUid());
+        }
+
+        return Triple.of(true, "", signFlowId);
+    }
+
+    public String getSignFlowId(Long uid, UserInfoQuery userInfoQuery, SignFlowDataQuery signFlowDataQuery){
+        String signFlowId = StringUtils.EMPTY;
+        //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
+        EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
+        if(Objects.nonNull(eleUserEsignRecord)){
+            log.info("Signing process already exist, sign flow id: {}", eleUserEsignRecord.getSignFlowId());
+            signFlowId = eleUserEsignRecord.getSignFlowId();
+
+            //根据signFlowId获取psnId信息，并获取有效期信息。
+            SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, signFlowDataQuery.getTenantAppId(), signFlowDataQuery.getTenantAppSecret());
+            Long expiredTime = signFlowDetailResp.getData().getSignFlowConfig().getSignFlowExpireTime();
+            if(System.currentTimeMillis() < expiredTime){
+                return signFlowId;
+            }
+        }
+
+        //数据库中没有记录，则基于文件发起新的签署流程
+        SignDocsCreateResp signDocsCreateResp = electronicSignatureService.createByFileFlow(userInfoQuery, signFlowDataQuery);
+        signFlowId = signDocsCreateResp.getData().getSignFlowId();
+        log.info("create new signing process, sign flow id: {}", signFlowId);
+
+        //创建新的签署流程记录
+        createUserEsignRecord(uid, signFlowId, signFlowDataQuery.getFileId(), signFlowDataQuery.getSignFileName());
+        return signFlowId;
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> getSignFlowUrl(String signFlowId){
+        SignFlowVO signFlowVO = new SignFlowVO();
+
         UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+
         if (Objects.isNull(userInfo)) {
-            log.error("ELE ERROR! not found userInfo,uid={}", SecurityUtils.getUid());
+            log.error("get sign flow url error! not found userInfo,uid={}", SecurityUtils.getUid());
             return Triple.of(false, "000100", "未找到用户");
-        }
-
-        //用户是否被限制
-        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELE ERROR! user is unUsable,uid={}", userInfo.getUid());
-            return Triple.of(false, "000101", "用户已被禁用");
-        }
-
-        //用户是否审核通过
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("ORDER ERROR! userinfo is UN AUTH! uid={}", userInfo.getUid());
-            return Triple.of(false, "100109", "用户未审核");
         }
 
         //获取用户所属租户的签名配置信息
         EleEsignConfig eleEsignConfig = eleEsignConfigService.selectLatestByTenantId(TenantContextHolder.getTenantId());
         if (Objects.isNull(eleEsignConfig)
                 || StringUtils.isBlank(eleEsignConfig.getAppId())
-                || StringUtils.isBlank(eleEsignConfig.getAppSecret())) {
-            log.error("ELE ERROR! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
+                || StringUtils.isBlank(eleEsignConfig.getAppSecret())
+                || StringUtils.isBlank(eleEsignConfig.getDocTemplateId())) {
+            log.error("get sign flow url error! esign config is null,uid={},tenantId={}", SecurityUtils.getUid(),
                     TenantContextHolder.getTenantId());
             return Triple.of(false, "000104", "租户电子签名配置信息不存在");
         }
 
-        //校验租户签名次数
-        EsignCapacityData esignCapacityData = esignCapacityDataService.queryCapacityDataByTenantId(TenantContextHolder.getTenantId().longValue());
-        if (Objects.isNull(esignCapacityData)) {
-            log.error("ELE ERROR! eSign capacity data is null, uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-            return Triple.of(false, "000106", "未购买签名资源包，请联系管理员");
-        }
-        if (esignCapacityData.getEsignCapacity() <= EleEsignConstant.ESIGN_MIN_CAPACITY) {
-            log.error("ELE ERROR! eSign capacity is not enough,uid={}, tenantId={}", SecurityUtils.getUid(), TenantContextHolder.getTenantId());
-            return Triple.of(false, "000107", "签名资源包余额不足，请联系管理员");
-        }
-
-        //根据模板id创建签署文件
-        List<ComponentData> componentDataList = new ArrayList<>();
-        FileCreateByTempResp fileCreateByTempResp = signatureFileService.createFileByTemplate(eleEsignConfig.getDocTemplateId(), eleEsignConfig.getSignFileName(),componentDataList, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-        String fileId = fileCreateByTempResp.getData().getFileId();
-        String fileName = eleEsignConfig.getSignFileName();
-
-        //基于文件发起签署流程
         UserInfoQuery userInfoQuery = new UserInfoQuery();
         userInfoQuery.setPhone(userInfo.getPhone());
         userInfoQuery.setUserName(userInfo.getName());
 
         SignFlowDataQuery signFlowDataQuery = new SignFlowDataQuery();
-        signFlowDataQuery.setFileId(fileId);
-        signFlowDataQuery.setSignFileName(fileName);
-        signFlowDataQuery.setSignFlowName(eleEsignConfig.getSignFlowName());
+        signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
         signFlowDataQuery.setTenantAppId(eleEsignConfig.getAppId());
         signFlowDataQuery.setTenantAppSecret(eleEsignConfig.getAppSecret());
-        signFlowDataQuery.setRedirectUrl(esignConfig.getRedirectUrlAfterSign());
-        signFlowDataQuery.setNotifyUrl(esignConfig.getSignFlowNotifyUrl() + eleEsignConfig.getId());
 
-        //根据模版ID获取组件位置
-        SignComponentResp signComponentResp = signatureFileService.findComponentsLocation(eleEsignConfig.getDocTemplateId(),eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
-        ComponentPosition componentPosition = signComponentResp.getData().getComponents().get(0).getComponentPosition();
+        SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, eleEsignConfig.getAppId(), eleEsignConfig.getAppSecret());
+        signFlowVO.setPsnId(signFlowDetailResp.getData().getSigners().get(0).getPsnSigner().getPsnId());
 
-        signFlowDataQuery.setPositionPage(String.valueOf(componentPosition.getComponentPageNum()));
-        signFlowDataQuery.setPositionX(componentPosition.getComponentPositionX());
-        signFlowDataQuery.setPositionY(componentPosition.getComponentPositionY());
-
-        SignFlowVO signFlowVO = getSignFlowResp(userInfo.getUid(), userInfoQuery, signFlowDataQuery);
+        SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signFlowId, userInfoQuery, signFlowDataQuery);
+        signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
+        signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
+        signFlowVO.setSignFlowId(signFlowId);
 
         return Triple.of(true, "", signFlowVO);
     }
 
+    @Deprecated
     public SignFlowVO getSignFlowResp(Long uid, UserInfoQuery userInfoQuery, SignFlowDataQuery signFlowDataQuery){
         SignFlowVO signFlowVO = new SignFlowVO();
+
         //基于文件发起签署流程, 每发起一次签署流程都需要计费，则需要判断之前是否有发起过签署。如果有，则从数据库中拿出signFlowId
         EleUserEsignRecord eleUserEsignRecord = eleUserEsignRecordMapper.selectLatestEsignRecordByUser(uid, TenantContextHolder.getTenantId().longValue());
         if(Objects.nonNull(eleUserEsignRecord)){
             log.info("Signing process already exist, sign flow id: {}", eleUserEsignRecord.getSignFlowId());
             String signFlowId = eleUserEsignRecord.getSignFlowId();
+
             //根据signFlowId获取psnId信息，并获取有效期信息。
             SignFlowDetailResp signFlowDetailResp = electronicSignatureService.querySignFlowDetailInfo(signFlowId, signFlowDataQuery.getTenantAppId(), signFlowDataQuery.getTenantAppSecret());
             Long expiredTime = signFlowDetailResp.getData().getSignFlowConfig().getSignFlowExpireTime();
             if(System.currentTimeMillis() < expiredTime){
                 signFlowVO.setSignFlowId(signFlowId);
                 signFlowVO.setPsnId(signFlowDetailResp.getData().getSigners().get(0).getPsnSigner().getPsnId());
+
                 //获取文件签署链接
                 SignFlowUrlResp signFlowUrlResp = electronicSignatureService.querySignFlowLink(signFlowId, userInfoQuery, signFlowDataQuery);
                 signFlowVO.setUrl(signFlowUrlResp.getData().getUrl());
                 signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
+
                 return signFlowVO;
             }
         }
@@ -267,10 +427,10 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
         signFlowVO.setShortUrl(signFlowUrlResp.getData().getShortUrl());
         //创建新的签署流程记录
         createUserEsignRecord(uid, signFlowId, signFlowDataQuery.getFileId(), signFlowDataQuery.getSignFileName());
-
         return signFlowVO;
     }
 
+    @Deprecated
     private void savePsnAuthResult(UserInfo userInfo, PsnAuthDetailResp psnAuthDetailResp){
 
         savePsnAuthResultExecutor.execute(() -> {

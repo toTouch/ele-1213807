@@ -71,5 +71,8 @@ public interface EleCabinetCoreDataService {
 
     List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
 
+    @Deprecated
     EleCabinetCoreData selectByEleCabinetId(Integer id);
+
+    EleCabinetCoreData selectByEid(Integer id);
 }

@@ -4,7 +4,7 @@ server:
     context-path: /electricityCabinet
   undertow:
     threads:
-      worker: 50
+      worker: 200
 spring:
   application:
     name: @artifactId@
