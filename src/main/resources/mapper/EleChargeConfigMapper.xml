@@ -49,7 +49,7 @@
                update_time,
                json_rule
         from t_ele_charge_config
-        where tenant_id = #{tenantId} order by id desc  limit 1
+        where tenant_id = #{tenantId}  and type = 0 order by id desc  limit 1
     </select>
 
     <select id="queryById" resultMap="EleChargeConfigMap">

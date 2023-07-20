@@ -40,7 +40,7 @@ public class ElePower {
     
     private Long createTime;
     /**
-    * 耗电类别 0--平用电 1--峰用电 3--谷用电
+    * 耗电类别 0--平用电 1--峰用电 2--谷用电
     */
     private Integer type;
     /**
