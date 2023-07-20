@@ -254,9 +254,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-
+        Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
 
+        optModel.setTenantId(tenantId);
         optModel.setUpdateUid(user.getUid());
 
         CarRentalPackagePO entity = new CarRentalPackagePO();
