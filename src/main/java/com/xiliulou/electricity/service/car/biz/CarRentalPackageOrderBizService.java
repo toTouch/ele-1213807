@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
  **/
 public interface CarRentalPackageOrderBizService {
 
+    /*void expirePackageOrderHand();*/
+
     /**
      * 审批冻结申请单
      * @param freezeRentOrderNo 冻结申请单编码

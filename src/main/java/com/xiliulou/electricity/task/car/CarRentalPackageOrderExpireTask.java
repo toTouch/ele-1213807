@@ -1,12 +1,10 @@
 package com.xiliulou.electricity.task.car;
 
 import com.xxl.job.core.biz.model.ReturnT;
-import org.springframework.stereotype.Component;
-
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 /**
  * 租车套餐购买订单过期 Job
@@ -26,6 +24,14 @@ public class CarRentalPackageOrderExpireTask extends IJobHandler {
      */
     @Override
     public ReturnT<String> execute(String param) throws Exception {
-        return null;
+        // 1. 查询会员套餐表中，套餐购买订单已过期的数据（不限制，时间到 或者 限制）
+        log.info("CarRentalPackageOrderExpireTask begin.");
+        try {
+        } catch (Exception e) {
+            log.info("CarRentalPackageOrderExpireTask error. ", e);
+        }
+        log.info("CarRentalPackageOrderExpireTask end.");
+
+        return IJobHandler.SUCCESS;
     }
 }
