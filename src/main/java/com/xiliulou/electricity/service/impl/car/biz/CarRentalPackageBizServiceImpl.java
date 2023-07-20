@@ -244,7 +244,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setType(rentalPackageType);
         qryModel.setConfine(rentalPackageConfine);
         qryModel.setCarModelId(carModelId);
-        qryModel.setBatteryModelIdsLeftLike(batteryModelIds);
         List<CarRentalPackagePO> entityList = carRentalPackageService.list(qryModel);
 
         return entityList;

@@ -65,7 +65,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Boolean enableFreezeFlag = carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, user.getUid(), packageOrderNo, false, user.getUid());
+        Boolean enableFreezeFlag = carRentalPackageOrderBizService.enableFreezeRentOrder(tenantId, user.getUid(), packageOrderNo, user.getUid());
 
         return R.ok(enableFreezeFlag);
     }
