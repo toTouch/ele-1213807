@@ -106,7 +106,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
     @Override
     public Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query) {
         List<ElePowerMonthRecord> list = this.elePowerMonthRecordMapper.queryPartAttrList(query);
-        if (DataUtil.collectionIsUsable(list)) {
+        if (!DataUtil.collectionIsUsable(list)) {
             return Pair.of(true, Collections.EMPTY_LIST);
         }
 
