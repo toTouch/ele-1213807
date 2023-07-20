@@ -35,15 +35,23 @@ public interface CarRentalPackageOrderBizService {
     Boolean approveRefundRentOrder(String refundRentOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid);
 
     /**
-     * 启用用户冻结订单申请
+     * 启用用户冻结订单<br />
+     * 自动启用
+     * @param offset 偏移量
+     * @param size 取值数量
+     */
+    void enableFreezeRentOrderAuto(Integer offset, Integer size);
+
+    /**
+     * 启用用户冻结订单<br />
+     * 手动启用
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
-     * @param autoEnable 自动启用标识，true(自动)，false(手动提前启用)
-     * @param optUid 操作人ID(可为空)
-     * @return
+     * @param optUid 操作人ID
+     * @return true(成功)、false(失败)
      */
-    Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Boolean autoEnable, Long optUid);
+    Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid);
 
     /**
      * 撤销用户冻结订单申请

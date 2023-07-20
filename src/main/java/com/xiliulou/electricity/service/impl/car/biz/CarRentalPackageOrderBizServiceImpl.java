@@ -14,6 +14,7 @@ import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.*;
 import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -292,18 +294,75 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     }
 
     /**
-     * 启用用户冻结订单申请
+     * 启用用户冻结订单<br />
+     * 自动启用
      *
+     * @param offset 偏移量
+     * @param size 取值数量
+     */
+    @Override
+    public void enableFreezeRentOrderAuto(Integer offset, Integer size) {
+        // 初始化定义
+        offset = ObjectUtils.isEmpty(offset) ? 0: offset;
+        size = ObjectUtils.isEmpty(size) ? 500: size;
+
+        boolean lookFlag = true;
+
+        CarRentalPackageOrderFreezeQryModel qryModel = new CarRentalPackageOrderFreezeQryModel();
+        qryModel.setStatus(RentalPackageOrderFreezeStatusEnum.AUDIT_PASS.getCode());
+        qryModel.setSize(size);
+
+        while (lookFlag) {
+            qryModel.setOffset(offset);
+
+            List<CarRentalPackageOrderFreezePO> pageEntityList = carRentalPackageOrderFreezeService.page(qryModel);
+            if (CollectionUtils.isEmpty(pageEntityList)) {
+                lookFlag = false;
+                break;
+            }
+
+            // 当前时间
+            long nowTime = System.currentTimeMillis();
+            // 比对时间，进行数据处理
+            for (CarRentalPackageOrderFreezePO freezeEntity : pageEntityList) {
+
+                Integer applyTerm = freezeEntity.getApplyTerm();
+                Long auditTime = freezeEntity.getAuditTime();
+                // 到期时间
+                long expireTime = auditTime + (TimeConstant.DAY_MILLISECOND * applyTerm);
+
+                if (nowTime < expireTime) {
+                    continue;
+                }
+
+                // 二次保险
+                CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByUidAndPackageOrderNo(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo());
+                if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
+                    continue;
+                }
+
+                // TODO  此处后续需要优化，目前是循环调用IO，需要考虑批量调用，批量调用的时候，需要考虑在更新的时候，数据状态不一致的情况
+                // 事务处理
+                enableFreezeRentOrderTx(freezeEntity.getTenantId(), freezeEntity.getUid(), freezeEntity.getRentalPackageOrderNo(), true, null);
+
+            }
+            offset += size;
+        }
+
+    }
+
+    /**
+     * 启用用户冻结订单申请<br />
+     * 手动启用
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 购买订单编码
-     * @param autoEnable 自动启用标识，true(自动)，false(手动提前启用)
-     * @param optUid 操作人ID(可为空)
-     * @return
+     * @param optUid 操作人ID
+     * @return true(成功)、false(失败)
      */
     @Override
-    public Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Boolean autoEnable, Long optUid) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo, autoEnable)) {
+    public Boolean enableFreezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -331,7 +390,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // TX 事务
-        enableFreezeRentOrderTx(tenantId, uid, packageOrderNo, autoEnable, optUid);
+        enableFreezeRentOrderTx(tenantId, uid, packageOrderNo, false, optUid);
 
         return true;
     }
@@ -351,8 +410,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageOrderFreezeService.enableFreezeRentOrderByUidAndPackageOrderNo(packageOrderNo, uid, autoEnable, optUid);
 
         // 2. 更改会员期限表数据
-        Long updateUserId = ObjectUtils.isEmpty(optUid) ? uid : optUid;
-        carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), updateUserId);
+        carRentalPackageMemberTermService.updateStatusByUidAndTenantId(tenantId, uid, MemberTermStatusEnum.NORMAL.getCode(), optUid);
     }
 
     /**

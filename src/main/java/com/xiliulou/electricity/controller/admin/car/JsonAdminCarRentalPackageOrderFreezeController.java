@@ -16,6 +16,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -104,16 +105,15 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         BeanUtils.copyProperties(queryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalPackageOrderFreezePO>> listRes = carRentalPackageOrderFreezeService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
+        List<CarRentalPackageOrderFreezePO> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
+        if (CollectionUtils.isEmpty(freezeEntityList)) {
+            return R.ok();
         }
-        List<CarRentalPackageOrderFreezePO> freezePOList = listRes.getData();
 
         // 获取辅助业务信息（用户信息、套餐信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
-        freezePOList.forEach(freezePO -> {
+        freezeEntityList.forEach(freezePO -> {
             uids.add(freezePO.getUid());
             rentalPackageIds.add(freezePO.getRentalPackageId());
         });
@@ -125,7 +125,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         Map<Long, String> packageNameMap = getCarRentalPackageNameByIdsForMap(rentalPackageIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderFreezeVO> freezeVOList = freezePOList.stream().map(freezePO -> {
+        List<CarRentalPackageOrderFreezeVO> freezeVOList = freezeEntityList.stream().map(freezePO -> {
 
             CarRentalPackageOrderFreezeVO freezeVO = new CarRentalPackageOrderFreezeVO();
             BeanUtils.copyProperties(freezePO, freezeVO);
@@ -166,7 +166,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalPackageOrderFreezeService.count(qryModel);
+        return R.ok(carRentalPackageOrderFreezeService.count(qryModel));
     }
 
 }

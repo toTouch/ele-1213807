@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
-import com.xiliulou.electricity.constant.StringConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
@@ -15,16 +14,13 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 租车套餐表 ServiceImpl
@@ -156,8 +152,6 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        handleQryModel(qryModel);
-
         return carRentalPackageMapper.list(qryModel);
     }
 
@@ -172,8 +166,6 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-
-        handleQryModel(qryModel);
 
         return carRentalPackageMapper.page(qryModel);
     }
@@ -190,27 +182,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        handleQryModel(qryModel);
-
         return carRentalPackageMapper.count(qryModel);
-    }
-
-    /**
-     * 处理请求参数
-     * @param qryModel
-     */
-    private void handleQryModel(CarRentalPackageQryModel qryModel) {
-        // 处理电池型号，保底
-        String batteryModelIds = qryModel.getBatteryModelIds();
-        String batteryModelIdsLeftLike = qryModel.getBatteryModelIdsLeftLike();
-        if (StringUtils.isNotBlank(batteryModelIds)) {
-            batteryModelIds = Arrays.asList(batteryModelIds.split(StringConstant.COMMA_EN)).stream().sorted().collect(Collectors.joining(StringConstant.COMMA_EN));
-            qryModel.setBatteryModelIds(batteryModelIds);
-        }
-        if (StringUtils.isNotBlank(batteryModelIdsLeftLike)) {
-            batteryModelIdsLeftLike = Arrays.asList(batteryModelIdsLeftLike.split(StringConstant.COMMA_EN)).stream().sorted().collect(Collectors.joining(StringConstant.COMMA_EN));
-            qryModel.setBatteryModelIdsLeftLike(batteryModelIdsLeftLike);
-        }
     }
 
     /**
