@@ -324,7 +324,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100104", "套餐名称已存在");
         }
 
-        Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query);
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            return Triple.of(false, "", "加盟商不存在");
+        }
+
+        Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query, franchisee);
         if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
             return verifyBatteryMemberCardResult;
         }
@@ -338,7 +343,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         this.batteryMemberCardMapper.insert(batteryMemberCard);
 
-        memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(query.getBatteryModels(), batteryMemberCard.getId()));
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && CollectionUtils.isNotEmpty(query.getBatteryModels())) {
+            memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(query.getBatteryModels(), batteryMemberCard.getId()));
+        }
 
         return Triple.of(true, null, null);
     }
@@ -367,12 +374,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return memberCardBatteryTypeList;
     }
 
-    private Triple<Boolean, String, Object> verifyBatteryMemberCardQuery(BatteryMemberCardQuery query) {
-
-        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
-        if(Objects.isNull(franchisee)){
-            return Triple.of(false, "", "加盟商不存在");
-        }
+    private Triple<Boolean, String, Object> verifyBatteryMemberCardQuery(BatteryMemberCardQuery query,Franchisee franchisee) {
 
         if(Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)){
             return Triple.of(true, null, null);
