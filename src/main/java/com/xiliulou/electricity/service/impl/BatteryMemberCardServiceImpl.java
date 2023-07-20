@@ -57,6 +57,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private UserBatteryTypeService userBatteryTypeService;
 
+    @Autowired
+    private FranchiseeService franchiseeService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -365,6 +368,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     }
 
     private Triple<Boolean, String, Object> verifyBatteryMemberCardQuery(BatteryMemberCardQuery query) {
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            return Triple.of(false, "", "加盟商不存在");
+        }
+
+        if(Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)){
+            return Triple.of(true, null, null);
+        }
 
         List<String> list = query.getBatteryModels().stream().map(item -> item.substring(item.indexOf("_") + 1).substring(0, item.substring(item.indexOf("_") + 1).indexOf("_"))).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(list) || list.size() != 1) {
