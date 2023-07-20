@@ -136,7 +136,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     private void delConfigCache(EleChargeConfig originalConfig) {
         switch (originalConfig.getType()) {
             case EleChargeConfig.TYPE_ALL_FRANCHISEE:
-                redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(originalConfig.getTenantId());
+                redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(originalConfig.getTenantId())));
                 redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(originalConfig.getTenantId())));
                 break;
             case EleChargeConfig.TYPE_ALL_STORE:
