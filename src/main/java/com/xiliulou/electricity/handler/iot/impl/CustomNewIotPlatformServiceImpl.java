@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 @Service()
 @Slf4j
 public class CustomNewIotPlatformServiceImpl implements NewIotPlatformService {
+    public CustomNewIotPlatformServiceImpl() {
+        log.info("new Custom Iot platform");
+    }
+
     @Autowired
     NewIotConfig newIotConfig;
 
