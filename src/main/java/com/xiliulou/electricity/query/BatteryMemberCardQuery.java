@@ -88,7 +88,6 @@ public class BatteryMemberCardQuery {
 
     private String remark;
 
-    @NotEmpty(message = "电池型号不能为空", groups = {CreateGroup.class})
     private List<String> batteryModels;
 
     private Integer delFlag;
