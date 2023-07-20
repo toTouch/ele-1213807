@@ -522,10 +522,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-//                return Triple.of(true, null, "同步成功");
-//            }
-
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
                 //扣减免押次数
@@ -547,11 +543,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 userInfoService.updateByUid(userInfoUpdate);
 
                 //绑定电池型号
-                UserBattery userBattery = new UserBattery();
-                userBattery.setUid(userInfo.getUid());
-                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
-                userBattery.setUpdateTime(System.currentTimeMillis());
-                userBatteryService.insertOrUpdate(userBattery);
+                List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
+                if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                    userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+                }
             }
         }
 
@@ -615,9 +610,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-//                return Triple.of(true, null, "同步成功");
-//            }
 
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
@@ -720,10 +712,6 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             freeDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
             this.update(freeDepositOrderUpdate);
 
-//            if (Objects.equals(freeDepositOrder.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
-//                return Triple.of(true, null, "同步成功");
-//            }
-
             //冻结成功
             if (Objects.equals(queryOrderRspData.getAuthStatus(), FreeDepositOrder.AUTH_FROZEN)) {
                 //扣减免押次数
@@ -746,11 +734,10 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
                 eleDepositOrderService.update(eleDepositOrderUpdate);
 
                 //绑定电池型号
-                UserBattery userBattery = new UserBattery();
-                userBattery.setUid(userInfo.getUid());
-                userBattery.setBatteryType(eleDepositOrder.getBatteryType());
-                userBattery.setUpdateTime(System.currentTimeMillis());
-                userBatteryService.insertOrUpdate(userBattery);
+                List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
+                if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                    userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+                }
 
                 //更新租车押金订单状态
                 CarDepositOrder carDepositOrderUpdate = new CarDepositOrder();
@@ -1739,12 +1726,11 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
             userCar.setUpdateTime(System.currentTimeMillis());
             userCarService.insertOrUpdate(userCar);
 
-            //用户绑定电池型号
-            UserBattery userBattery = new UserBattery();
-            userBattery.setUid(uid);
-            userBattery.setBatteryType(eleDepositOrder.getBatteryType());
-            userBattery.setUpdateTime(System.currentTimeMillis());
-            userBatteryService.insertOrUpdate(userBattery);
+            //绑定电池型号
+            List<String> batteryTypeList = memberCardBatteryTypeService.selectBatteryTypeByMid(eleDepositOrder.getMid());
+            if (CollectionUtils.isNotEmpty(batteryTypeList)) {
+                userBatteryTypeService.batchInsert(userBatteryTypeService.buildUserBatteryType(batteryTypeList, userInfo));
+            }
 
             //更新电池押金订单状态
             EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
@@ -2339,17 +2325,17 @@ public class FreeDepositOrderServiceImpl implements FreeDepositOrderService {
         }
 
         //换电免押成功
-        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBattery)) {
-            log.error("FREE DEPOSIT ERROR! not found userBattery! uid={}", uid);
-            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
-        }
-
-        //免押电池型号与前端传过来的型号是否一致
-        if (Objects.nonNull(query.getModel()) && !Objects.equals(batteryModelService.acquireBatteryShort(query.getModel(),userInfo.getTenantId()), userBattery.getBatteryType())) {
-            log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},batteryType={},model={}", uid, userBattery.getBatteryType(), query.getModel());
-            return Triple.of(false, "100416", "电池型号不一致");
-        }
+//        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
+//        if (Objects.isNull(userBattery)) {
+//            log.error("FREE DEPOSIT ERROR! not found userBattery! uid={}", uid);
+//            return Triple.of(false, "ELECTRICITY.0001", "未能查到用户信息");
+//        }
+//
+//        //免押电池型号与前端传过来的型号是否一致
+//        if (Objects.nonNull(query.getModel()) && !Objects.equals(batteryModelService.acquireBatteryShort(query.getModel(),userInfo.getTenantId()), userBattery.getBatteryType())) {
+//            log.error("FREE DEPOSIT ERROR! batteryType illegal! uid={},batteryType={},model={}", uid, userBattery.getBatteryType(), query.getModel());
+//            return Triple.of(false, "100416", "电池型号不一致");
+//        }
 
         //免押加盟商与前端传过来的型号是否一致
         if (Objects.nonNull(query.getFranchiseeId()) && !Objects.equals(query.getFranchiseeId(), userInfo.getFranchiseeId())) {

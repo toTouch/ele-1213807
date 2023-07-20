@@ -480,16 +480,6 @@ public class ElectricityTradeOrderServiceImpl extends
             userBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(userBatteryDeposit);
 
-
-            UserBattery userBattery = new UserBattery();
-            userBattery.setUid(userInfo.getUid());
-            userBattery.setBatteryType(eleDepositOrder.getBatteryType());
-            userBattery.setTenantId(eleDepositOrder.getTenantId());
-            userBattery.setCreateTime(System.currentTimeMillis());
-            userBattery.setUpdateTime(System.currentTimeMillis());
-            userBattery.setDelFlag(UserBattery.DEL_NORMAL);
-            userBatteryService.insertOrUpdate(userBattery);
-
         }
 
         //交易订单

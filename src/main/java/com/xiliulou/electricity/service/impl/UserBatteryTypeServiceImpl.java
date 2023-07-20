@@ -12,10 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.CollectionUtils;
 
 /**
  * (UserBatteryType)表服务实现类
@@ -69,6 +72,16 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
     @Override
     public List<String> selectByUid(Long uid) {
         return this.userBatteryTypeMapper.selectByUid(uid);
+    }
+
+    @Override
+    public String selectUserMaxBatteryType(Long uid) {
+        List<String> batteryTypes = this.selectByUid(uid);
+        if(CollectionUtils.isEmpty(batteryTypes)){
+            return null;
+        }
+
+        return batteryTypes.stream().sorted(Comparator.comparing(item -> item.substring(item.length() - 2))).reduce((first, second) -> second).orElse(null);
     }
 
     @Override

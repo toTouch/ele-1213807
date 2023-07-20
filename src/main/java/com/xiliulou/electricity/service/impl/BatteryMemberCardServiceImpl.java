@@ -183,6 +183,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }

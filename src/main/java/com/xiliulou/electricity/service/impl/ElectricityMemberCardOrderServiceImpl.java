@@ -226,6 +226,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * @param electricityMemberCardOrderQuery
      * @return
      */
+    @Deprecated
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
@@ -300,7 +301,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .equals(electricityConfig.getIsOpenInsurance(), ElectricityConfig.ENABLE_INSURANCE)) {
             //保险是否强制购买（是进入）
             FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService
-                    .queryByFranchiseeId(userInfo.getFranchiseeId(), userBattery.getBatteryType(),
+                    .queryByFranchiseeId(userInfo.getFranchiseeId(), null,
                             userInfo.getTenantId());
             long now = System.currentTimeMillis();
             if (Objects.nonNull(franchiseeInsurance) && Objects
@@ -2587,7 +2588,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Integer modelType = franchisee.getModelType();
 
         if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
-            Integer model = batteryModelService.acquireBatteryModel(userBattery.getBatteryType(), userInfo.getTenantId());
+            Integer model = batteryModelService.acquireBatteryModel(null, userInfo.getTenantId());
             List<ModelBatteryDeposit> list = JsonUtil.fromJsonArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : list) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {

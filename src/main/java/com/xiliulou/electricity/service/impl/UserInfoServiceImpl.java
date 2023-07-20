@@ -163,6 +163,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     InvitationActivityJoinHistoryService invitationActivityJoinHistoryService;
 
+    @Autowired
+    BatteryModelService batteryModelService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -269,9 +272,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 //获取用户电池型号
-                UserBattery userBattery = userBatteryService.selectByUidFromCache(item.getUid());
-                if (Objects.nonNull(userBattery)) {
-                    item.setModel(userBattery.getBatteryType());
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                if (Objects.nonNull(electricityBattery)) {
+                    item.setModel(batteryModelService.analysisBatteryTypeByBatteryName(electricityBattery.getSn()));
                 }
 
                 //获取用户电池押金
@@ -787,13 +790,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         updateUserInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = updateByUid(updateUserInfo);
 
-        UserBattery updateUserBattery = new UserBattery();
-        updateUserBattery.setUid(oldUserInfo.getUid());
-        updateUserBattery.setInitBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
-        updateUserBattery.setUpdateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(updateUserBattery);
-
-
         //之前有电池，将原来的电池解绑
         ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
@@ -814,7 +810,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(oldUserInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-            rentBatteryOrder.setElectricityBatterySn(updateUserBattery.getInitBatterySn());
+            rentBatteryOrder.setElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(userBatteryDeposit.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());

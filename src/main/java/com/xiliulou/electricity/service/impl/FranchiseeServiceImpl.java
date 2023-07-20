@@ -702,6 +702,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return result;
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
         Franchisee franchisee = this.queryByIdFromCache(id);
@@ -718,11 +719,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(true, null, null);
         }
 
-        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
-        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
-        if (batteryList.contains(batteryType)) {
-            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
-        }
+//        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
+//        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
+//        if (batteryList.contains(batteryType)) {
+//            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
+//        }
 
         return Triple.of(true, null, null);
     }
@@ -855,11 +856,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         userInfoService.update(updateUserInfo);
 
         //更新用户绑定的电池型号
-        UserBattery userBatteryUpdate = new UserBattery();
-        userBatteryUpdate.setUid(userInfo.getUid());
-        userBatteryUpdate.setBatteryType(batteryType);
-        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(userBatteryUpdate);
+//        UserBattery userBatteryUpdate = new UserBattery();
+//        userBatteryUpdate.setUid(userInfo.getUid());
+//        userBatteryUpdate.setBatteryType(batteryType);
+//        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
+//        userBatteryService.updateByUid(userBatteryUpdate);
 
         //生成迁移记录
         franchiseeMoveRecordService.insert(buildFranchiseeMoveRecord(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType));
