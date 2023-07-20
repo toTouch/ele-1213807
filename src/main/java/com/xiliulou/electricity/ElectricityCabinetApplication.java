@@ -48,20 +48,9 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableFreeDeposit
 @EnableEsign
 @Slf4j
-public class ElectricityCabinetApplication implements CommandLineRunner {
+public class ElectricityCabinetApplication {
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);
 
-    }
-
-    /**
-     * Callback used to run the bean.
-     *
-     * @param args incoming main method arguments
-     * @throws Exception on error
-     */
-    @Override
-    public void run(String... args) throws Exception {
-        log.info("ElectricityCabinetApplication start success.");
     }
 }

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  **/
 @Slf4j
 @Component
-@JobHandler("carRentalPackageOrderFreezeAutoEnableTask")
+@JobHandler("carRentalPackageOrderExpireTask")
 public class CarRentalPackageOrderExpireTask extends IJobHandler {
 
     /**
