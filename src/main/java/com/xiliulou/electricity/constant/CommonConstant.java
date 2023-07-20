@@ -55,6 +55,6 @@ public interface CommonConstant {
     /**
      * 链路ID
      */
-    String TRACE_ID = "trace_id";
+    String TRACE_ID = "traceId";
 
 }
