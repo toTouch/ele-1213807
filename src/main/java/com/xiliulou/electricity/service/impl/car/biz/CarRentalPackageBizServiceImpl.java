@@ -104,7 +104,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean insertPackage(CarRentalPackageOptModel optModel) {
-        if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getCreateUid(), optModel.getTenantId(), optModel.getName())
+        if (!ObjectUtils.allNotNull(optModel, optModel.getCreateUid(), optModel.getTenantId(), optModel.getName())
                 || !BasicEnum.isExist(optModel.getType(), CarRentalPackageTypeEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }

@@ -35,6 +35,7 @@ public class CarRentalPackageOrderFreezeAutoEnableTask extends IJobHandler {
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         log.info("CarRentalPackageOrderFreezeAutoEnableTask begin.");
+
         Integer offset = 0;
         Integer size = 500;
         if (!StringUtils.isBlank(param)) {
@@ -42,11 +43,13 @@ public class CarRentalPackageOrderFreezeAutoEnableTask extends IJobHandler {
             offset = ObjectUtils.isEmpty(jsonObjectParam.getInteger("offset")) ? offset : jsonObjectParam.getInteger("offset");
             size = ObjectUtils.isEmpty(jsonObjectParam.getInteger("size")) ? size : jsonObjectParam.getInteger("size");
         }
+
         try {
             carRentalPackageOrderBizService.enableFreezeRentOrderAuto(offset, size);
         } catch (Exception e) {
             log.info("CarRentalPackageOrderFreezeAutoEnableTask error. ", e);
         }
+
         log.info("CarRentalPackageOrderFreezeAutoEnableTask end.");
 
         return IJobHandler.SUCCESS;

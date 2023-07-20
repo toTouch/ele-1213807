@@ -161,7 +161,6 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 租金退还期限(天)
      */
-    @NotNull(message = "[租金退还期限]不能为空")
     private Integer rentRebateTerm;
 
     /**
@@ -178,7 +177,6 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 租金单价，单位同租期单位
      */
-    @NotNull(message = "[租金单价]不能为空")
     private BigDecimal rentUnitPrice;
 
     /**
