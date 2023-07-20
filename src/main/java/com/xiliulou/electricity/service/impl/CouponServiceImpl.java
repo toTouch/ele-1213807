@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -222,6 +223,11 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public R queryCount(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryCount(couponQuery));
+    }
+
+    @Override
+    public List<SearchVo> search(CouponQuery query) {
+        return couponMapper.search(query);
     }
 
     @Override

@@ -134,7 +134,7 @@
                 electricity_cabinet_id,
                 create_time
             from t_rent_battery_order
-            where electricity_cabinet_id = #{id}
+            where electricity_cabinet_id = #{query.id}
             union all
             select tu.name, tu.phone, 9 type, teco.order_id,
                 teco.old_electricity_battery_sn ,
@@ -145,10 +145,10 @@
                 teco.create_time
             from t_electricity_cabinet_order teco
             left join t_user tu on tu.uid = teco.uid
-            where electricity_cabinet_id = #{id}) temp
+            where electricity_cabinet_id = #{query.id}) temp
         <where>
 
-            <if test="query.name != null and query.name != ''">
+            <if test="query.userName != null and query.userName != ''">
                 and temp.name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
             </if>
 
@@ -162,7 +162,7 @@
 
         </where>
         order by temp.create_time desc
-        limit #{offset}, #{size}
+        limit #{query.offset}, #{query.size}
     </select>
 
     <select id="selectUsedRecordsTotalCount" resultType="java.lang.Integer">
@@ -175,7 +175,7 @@
                 case when type = 2 then cell_no else null end as new_cell_no,
                 create_time
             from t_rent_battery_order
-            where electricity_cabinet_id = #{id}
+            where electricity_cabinet_id = #{query.id}
             union all
             select tu.name, tu.phone, 'electricity' type, teco.order_id,
                 teco.old_electricity_battery_sn,
@@ -185,9 +185,9 @@
                 teco.create_time
             from t_electricity_cabinet_order teco
             left join t_user tu on tu.uid = teco.uid
-            where electricity_cabinet_id = #{id}) temp
+            where electricity_cabinet_id = #{query.id}) temp
         <where>
-            <if test="query.name != null and query.name != ''">
+            <if test="query.userName != null and query.userName != ''">
                 and temp.name like concat('%',#{query.userName, jdbcType=VARCHAR},'%')
             </if>
             <if test="query.beginTime != null">

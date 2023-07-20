@@ -32,13 +32,29 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
+     * 根据用户ID查找最后一条的购买记录信息
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 购买订单信息
+     */
+    @Slave
+    @Override
+    public CarRentalPackageOrderPO seletLastByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderMapper.seletLastByUid(tenantId, uid);
+    }
+
+    /**
      * 根据用户ID进行退押操作<br />
      * 将使用中、未使用的订单全部设置为已失效
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
      * @param optId    操作人ID（可为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public boolean refundDepositByUid(Integer tenantId, Long uid, Long optId) {
@@ -57,7 +73,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @param orderNo  订单编码
      * @param payState 支付状态
      * @param useState 使用状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public Boolean updateStateByOrderNo(String orderNo, Integer payState, Integer useState) {
@@ -73,7 +89,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
-     * @return
+     * @return 总数
      */
     @Slave
     @Override
@@ -86,14 +102,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
 
     /**
      * 根据用户ID查询是否存在未使用状态的订单<br />
-     * <pre>
-     *     true-存在未使用的订单
-     *     false-不存在未使用的订单
-     * </pre>
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
-     * @return
+     * @return true(存在未使用的订单)、false(不存在未使用的订单)
      */
     @Slave
     @Override
@@ -109,12 +121,12 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * 根据套餐ID查询是否存在购买订单
      *
      * @param rentalPackageId 套餐ID
-     * @return
+     * @return true(存在)、false(不存在)
      */
     @Slave
     @Override
     public Boolean checkByRentalPackageId(Long rentalPackageId) {
-        if (rentalPackageId == null || rentalPackageId <=0 ) {
+        if (ObjectUtils.isEmpty(rentalPackageId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -128,28 +140,28 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * 全表扫描，慎用
      *
      * @param qryModel 查询条件模型
-     * @return
+     * @return 套餐购买订单集
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderPO>> list(CarRentalPackageOrderQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageOrderPO> list(CarRentalPackageOrderQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderMapper.list(qryModel));
+        return carRentalPackageOrderMapper.list(qryModel);
     }
 
     /**
      * 条件查询分页
      *
      * @param qryModel 查询条件模型
-     * @return
+     * @return 套餐购买订单集
      */
     @Slave
     @Override
     public List<CarRentalPackageOrderPO> page(CarRentalPackageOrderQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -160,7 +172,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * 条件查询总数
      *
      * @param qryModel 查询条件模型
-     * @return
+     * @return 总数
      */
     @Slave
     @Override
@@ -176,7 +188,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * 根据订单编码查询
      *
      * @param orderNo 订单编码
-     * @return
+     * @return 套餐购买订单
      */
     @Slave
     @Override
@@ -192,7 +204,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * 根据ID查询
      *
      * @param id 主键ID
-     * @return
+     * @return 套餐购买订单
      */
     @Slave
     @Override
@@ -209,7 +221,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      *
      * @param orderNo  订单编码
      * @param payState 支付状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public Boolean updatePayStateByOrderNo(String orderNo, Integer payState) {
@@ -223,7 +235,7 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @param payState 支付状态
      * @param remark   备注
      * @param uid      操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid) {
@@ -244,21 +256,18 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @param payState 支付状态
      * @param remark   备注
      * @param uid      操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
-    public R<Boolean> updatePayStateById(Long id, Integer payState, String remark, Long uid) {
-        if (id == null || id <= 0 || payState == null) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        if (!BasicEnum.isExist(payState, PayStateEnum.class)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean updatePayStateById(Long id, Integer payState, String remark, Long uid) {
+        if (!ObjectUtils.allNotNull(id, payState) || !BasicEnum.isExist(payState, PayStateEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updatePayStateById(id, payState, remark, uid, now);
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**
@@ -267,21 +276,18 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @param orderNo  订单编码
      * @param useState 使用状态
      * @param uid      操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
-    public R<Boolean> updateUseStateByOrderNo(String orderNo, Integer useState, Long uid) {
-        if (StringUtils.isBlank(orderNo) || useState == null) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        if (!BasicEnum.isExist(useState, PayStateEnum.class)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long uid) {
+        if (!ObjectUtils.allNotNull(orderNo, useState) || !BasicEnum.isExist(useState, UseStateEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updateUseStateByOrderNo(orderNo, useState, uid, now);
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**
@@ -290,28 +296,25 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      * @param id       主键ID
      * @param useState 使用状态
      * @param uid      操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
-    public R<Boolean> updateUseStateById(Long id, Integer useState, Long uid) {
-        if (id == null || id <= 0 || useState == null) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        if (!BasicEnum.isExist(useState, UseStateEnum.class)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Boolean updateUseStateById(Long id, Integer useState, Long uid) {
+        if (!ObjectUtils.allNotNull(id, useState) || !BasicEnum.isExist(useState, UseStateEnum.class)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         long now = System.currentTimeMillis();
         int num = carRentalPackageOrderMapper.updateUseStateById(id, useState, uid, now);
 
-        return R.ok(num >= 0);
+        return num >= 0;
     }
 
     /**
      * 新增数据，返回主键ID
      *
      * @param entity 操作实体
-     * @return
+     * @return 主键ID
      */
     @Override
     public Long insert(CarRentalPackageOrderPO entity) {

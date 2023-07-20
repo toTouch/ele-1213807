@@ -46,11 +46,4 @@ public interface CarRentalPackageBizService {
      */
     Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid);
 
-    /**
-     * 购买套餐订单统一检测
-      * @param tenantId 租户ID
-     * @param uid 用户ID
-     */
-    void checkBuyPackageCommon(Integer tenantId, Long uid);
-
 }

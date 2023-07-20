@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.Coupon;
 import java.util.List;
 
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
@@ -31,4 +32,6 @@ public interface CouponMapper extends BaseMapper<Coupon>{
     Integer queryCount(@Param("query") CouponQuery couponQuery);
     
     int deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
+
+    List<SearchVo> search(CouponQuery query);
 }

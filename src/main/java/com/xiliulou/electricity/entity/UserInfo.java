@@ -116,6 +116,10 @@ public class UserInfo {
     //租户
     private Integer tenantId;
 
+    /**
+     * 套餐购买次数(所有套餐类型的总次数，包含：换电、车、车电一体)
+     */
+    private Integer payCount;
 
     public static final Integer DEL_NORMAL = 0;
 
@@ -176,5 +180,8 @@ public class UserInfo {
     public static final Integer AUTH_TYPE_PERSON = 1;
     public static final Integer AUTH_TYPE_SYSTEM = 2;
     public static final Integer AUTH_TYPE_FACE = 3;
+
+    /** 虚拟门店ID */
+    public static final Long VIRTUALLY_STORE_ID = 0L;
 
 }

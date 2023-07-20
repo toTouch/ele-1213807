@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
@@ -41,7 +40,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -246,7 +244,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setType(rentalPackageType);
         qryModel.setConfine(rentalPackageConfine);
         qryModel.setCarModelId(carModelId);
-        qryModel.setBatteryModelIdsLeftLike(batteryModelIds);
         List<CarRentalPackagePO> entityList = carRentalPackageService.list(qryModel);
 
         return entityList;
@@ -290,7 +287,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("使用优惠券有误");
         }
 
-        // TODO 校验优惠券的使用，是否指定这个套餐
+        // TODO 校验优惠券的使用，是否指定这个套餐，暴煜
 
         // 真正使用的用户优惠券ID
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());
@@ -305,43 +302,5 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         BigDecimal payAmount = amount.subtract(discountAmount);
 
         return Triple.of(payAmount, userCouponIdList, true) ;
-    }
-
-    /**
-     * 购买套餐订单统一检测
-     *
-     * @param tenantId 租户ID
-     * @param uid      用户ID
-     */
-    @Override
-    public void checkBuyPackageCommon(Integer tenantId, Long uid) {
-        // 1 获取用户信息
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("CheckBuyPackageCommon failed. Not found user. uid is {} ", uid);
-            throw new BizException("未找到用户");
-        }
-
-        // 1.1 用户可用状态
-        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("CheckBuyPackageCommon failed. User is unUsable. uid is {} ", uid);
-            throw new BizException("用户已被禁用");
-        }
-
-        // 1.2 用户实名认证状态
-        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
-            log.error("CheckBuyPackageCommon failed. User not auth. uid is {}", uid);
-            throw new BizException("用户尚未实名认证");
-        }
-
-        // 2. 判定滞纳金
-        if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
-            log.error("CheckBuyPackageCommon failed. Late fee not paid. uid is {}", uid);
-            // TODO 错误编码
-            throw new BizException("", "存在滞纳金，请先缴纳");
-        }
-
-        // 3.
-
     }
 }

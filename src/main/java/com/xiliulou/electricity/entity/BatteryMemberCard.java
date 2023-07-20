@@ -95,7 +95,7 @@ public class BatteryMemberCard {
     /**
      *
      */
-    private Integer type;
+//    private Integer type;
     /**
      * 备注
      */
