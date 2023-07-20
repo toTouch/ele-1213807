@@ -5,10 +5,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.ElectricityCarAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCarBindUser;
-import com.xiliulou.electricity.query.ElectricityCarMoveQuery;
-import com.xiliulou.electricity.query.ElectricityCarQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -50,6 +47,8 @@ public class JsonAdminElectricityCarController {
     
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    CarMoveRecordService carMoveRecordService;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -295,4 +294,67 @@ public class JsonAdminElectricityCarController {
             @RequestBody @Validated(value = UpdateGroup.class) ElectricityCarMoveQuery electricityCarMoveQuery) {
         return electricityCarService.electricityCarMove(electricityCarMoveQuery);
     }
+
+    @GetMapping(value = "/admin/electricityCar/moveCarRecords")
+    public R queryMoveCarRecords(@RequestParam("size") Long size,
+                                 @RequestParam("offset") Long offset,
+                                 @RequestParam(value = "carSn", required = false) String carSn,
+                                 @RequestParam(value = "newFranchiseeId", required = false) Long newFranchiseeId,
+                                 @RequestParam(value = "newStoreId", required = false) Long newStoreId,
+                                 @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                 @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        CarMoveRecordQuery carMoveRecordQuery = CarMoveRecordQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId().longValue())
+                .carSn(carSn)
+                .newFranchiseeId(newFranchiseeId)
+                .newStoreId(newStoreId)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+        return R.ok(carMoveRecordService.queryCarMoveRecords(carMoveRecordQuery));
+
+    }
+
+    @GetMapping(value = "/admin/electricityCar/moveCarRecordsCount")
+    public R queryMoveCarRecordsCount(@RequestParam(value = "carSn", required = false) String carSn,
+                                      @RequestParam(value = "newFranchiseeId", required = false) Long newFranchiseeId,
+                                      @RequestParam(value = "newStoreId", required = false) Long newStoreId,
+                                      @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                      @RequestParam(value = "endTime", required = false) Long endTime){
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        CarMoveRecordQuery carMoveRecordQuery = CarMoveRecordQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId().longValue())
+                .carSn(carSn)
+                .newFranchiseeId(newFranchiseeId)
+                .newStoreId(newStoreId)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+        return R.ok(carMoveRecordService.queryCarMoveRecordsCount(carMoveRecordQuery));
+
+    }
+
 }

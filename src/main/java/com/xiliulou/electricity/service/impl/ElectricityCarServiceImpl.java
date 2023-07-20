@@ -12,11 +12,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
+import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.jt808.CarPositionReportQuery;
@@ -104,6 +106,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
+
+    @Autowired
+    private CarMoveRecordMapper carMoveRecordMapper;
 
     /**
      * 根据 uid 查询车辆信息<br />
@@ -550,10 +555,43 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
                 this.update(updateElectricityCar);
             });
         });
+
+        saveCarMoveRecords(queryList, sourceStore, targetStore);
     
         return R.ok();
     }
-    
+
+    /**
+     * 保存车辆迁移信息
+     * @param queryList
+     * @param sourceStore
+     * @param targetStore
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveCarMoveRecords(List<ElectricityCar> queryList, Store sourceStore, Store targetStore){
+        //记录迁移的车辆数据信息
+        List<CarMoveRecord> carMoveRecords = new ArrayList<>();
+        for(ElectricityCar electricityCar : queryList){
+            CarMoveRecord carMoveRecord = new CarMoveRecord();
+            carMoveRecord.setTenantId(TenantContextHolder.getTenantId().longValue());
+            carMoveRecord.setCarId(electricityCar.getId().longValue());
+            carMoveRecord.setCarSn(electricityCar.getSn());
+            carMoveRecord.setCarModelId(electricityCar.getModelId().longValue());
+            carMoveRecord.setOldFranchiseeId(sourceStore.getFranchiseeId());
+            carMoveRecord.setOldStoreId(sourceStore.getId());
+            carMoveRecord.setNewFranchiseeId(targetStore.getFranchiseeId());
+            carMoveRecord.setNewStoreId(targetStore.getId());
+            carMoveRecord.setOperator(SecurityUtils.getUid());
+            carMoveRecord.setDelFlag(CommonConstant.DEL_N);
+            carMoveRecord.setCreateTime(System.currentTimeMillis());
+            carMoveRecord.setUpdateTime(System.currentTimeMillis());
+            carMoveRecords.add(carMoveRecord);
+        }
+
+        if(CollectionUtils.isNotEmpty(carMoveRecords)){
+            carMoveRecordMapper.batchInsertCarMoveRecord(carMoveRecords);
+        }
+    }
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {

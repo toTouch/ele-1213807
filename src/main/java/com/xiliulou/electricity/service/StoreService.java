@@ -94,5 +94,5 @@ public interface StoreService {
 
     List<StoreVO> selectByAddress(StoreQuery storeQuery);
     
-    R storeSearch(Long size, Long offset, String name , Integer tenantId);
+    R storeSearch(Long size, Long offset, Long franchiseeId, String name , Integer tenantId);
 }

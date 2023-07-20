@@ -92,6 +92,12 @@ public class ElectricityBatteryVO {
      * 所属换电柜柜
      */
     private String electricityCabinetName;
+
+    /**
+     * 所属加盟商ID
+     */
+    private Long franchiseeId;
+
     /**
      * 所属加盟商
      */

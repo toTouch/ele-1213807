@@ -79,4 +79,8 @@ public class CarMoveRecordQuery {
 
     private Long size;
 
+    private Long beginTime;
+
+    private Long endTime;
+
 }

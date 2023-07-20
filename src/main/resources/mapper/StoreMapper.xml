@@ -276,6 +276,9 @@
         <if test="name != null and name != ''">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
