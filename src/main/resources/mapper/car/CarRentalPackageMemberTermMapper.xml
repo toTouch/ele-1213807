@@ -103,6 +103,16 @@
         </trim>
     </sql>
 
+    <!-- 分页查询过期的会员套餐信息 -->
+    <select id="pageExpire" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `del_flag` = 0 AND `due_time` <![CDATA[ <= ]]> #{nowTime}
+        </where>
+        ORDER BY `create_time` DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
     <!-- 根据用户ID和套餐购买订单编码进行退租，用于退掉最后一个订单的时候，即当前正在使用的订单进行退租 -->
     <update id="rentRefundByUidAndPackageOrderNo">
         UPDATE <include refid="table_name" />

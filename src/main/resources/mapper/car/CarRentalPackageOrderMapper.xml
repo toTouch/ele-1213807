@@ -144,11 +144,16 @@
         </trim>
     </sql>
 
-    <!-- 根据用户ID查找最后一条的购买记录信息 -->
+    <!-- 根据用户ID集查询每一个用户第一条未使用的支付成功的订单信息 -->
+    <select id="selectFirstUnUsedByUids" resultMap="entityMap">
+
+    </select>
+
+    <!-- 根据用户ID查找最后一条成功的购买记录信息 -->
     <select id="seletLastByUid" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{id} AND `uid` = #{uid} AND `del_flag` = 0
+            `tenant_id` = #{id} AND `uid` = #{uid} AND `pay_state` = 2 AND `del_flag` = 0
         </where>
         ORDER BY `id` DESC LIMIT 1
     </select>

@@ -251,7 +251,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      */
     @PostMapping("/modifyById")
     public R<Boolean> modifyById(@RequestBody @Valid CarRentalPackageOptModel optModel) {
-        if (ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
+        if (!ObjectUtils.allNotNull(optModel, optModel.getId(), optModel.getName())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 

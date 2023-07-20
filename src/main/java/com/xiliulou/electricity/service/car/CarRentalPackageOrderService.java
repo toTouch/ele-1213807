@@ -14,7 +14,14 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
-     * 根据用户ID查找最后一条的购买记录信息
+     * 根据用户ID集查询每一个用户第一条未使用的支付成功的订单信息
+     * @param uidList 用户ID集
+     * @return 套餐购买订单集
+     */
+    List<CarRentalPackageOrderPO> selectFirstUnUsedByUids(List<Long> uidList);
+
+    /**
+     * 根据用户ID查找最后一条成功的购买记录信息
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @return 购买订单信息
