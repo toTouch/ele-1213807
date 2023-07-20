@@ -142,7 +142,7 @@
           and report_time &lt;= #{endTime}
           and tenant_id = #{tenantId}
           and eid = #{eid}
-        group by date;
+        group by date
         order by date
     </select>
 
