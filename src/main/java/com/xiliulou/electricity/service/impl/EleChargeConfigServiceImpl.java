@@ -136,16 +136,21 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     private void delConfigCache(EleChargeConfig originalConfig) {
         switch (originalConfig.getType()) {
             case EleChargeConfig.TYPE_ALL_FRANCHISEE:
-                redisService.delete(generateCacheKey(originalConfig.getType(), originalConfig.getId()));
+                redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(originalConfig.getTenantId());
+                redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(originalConfig.getTenantId())));
                 break;
             case EleChargeConfig.TYPE_ALL_STORE:
-                redisService.delete(generateCacheKey(originalConfig.getType(), originalConfig.getFranchiseeId()));
+                redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_STORE, originalConfig.getFranchiseeId()));
+                redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_ALL_STORE, originalConfig.getFranchiseeId()));
+
                 break;
             case EleChargeConfig.TYPE_ALL_CABINET:
-                redisService.delete(generateCacheKey(originalConfig.getType(), originalConfig.getStoreId()));
+                redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_CABINET, originalConfig.getStoreId()));
+                redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_ALL_CABINET, originalConfig.getStoreId()));
                 break;
             case EleChargeConfig.TYPE_SINGLE_CABINET:
-                redisService.delete(generateCacheKey(originalConfig.getType(), originalConfig.getEid()));
+                redisService.delete(generateCacheKey(EleChargeConfig.TYPE_SINGLE_CABINET, originalConfig.getEid()));
+                redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_SINGLE_CABINET, originalConfig.getEid()));
                 break;
 
         }
