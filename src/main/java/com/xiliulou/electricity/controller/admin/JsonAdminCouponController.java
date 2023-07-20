@@ -4,7 +4,6 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -14,13 +13,10 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -40,6 +36,30 @@ public class JsonAdminCouponController extends BaseController {
 
     @Autowired
     UserDataScopeService userDataScopeService;
+
+    /**
+     * 搜索
+     */
+    @GetMapping("/admin/coupon/search")
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                  @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        CouponQuery query = CouponQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .name(name)
+                .build();
+
+        return R.ok(couponService.search(query));
+    }
 
     //新增
     @PostMapping(value = "/admin/coupon")

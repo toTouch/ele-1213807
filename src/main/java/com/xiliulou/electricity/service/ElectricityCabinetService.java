@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.Message;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.vo.CabinetBatteryVO;
@@ -117,11 +115,9 @@ public interface ElectricityCabinetService {
 
     R queryCabinetBelongFranchisee(Integer id);
 
-    Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
-
     Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
-    @Deprecated
-    void unlockElectricityCabinet(Integer eid);
+
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV3(Integer eid, Franchisee franchisee, Double fullyCharged, ElectricityBattery electricityBattery, Long uid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
 

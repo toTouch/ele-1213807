@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderFreezeQryModel;
 
@@ -52,21 +51,21 @@ public interface CarRentalPackageOrderFreezeService {
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackageOrderFreezePO>> list(CarRentalPackageOrderFreezeQryModel qryModel);
+    List<CarRentalPackageOrderFreezePO> list(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
      * @return
      */
-    R<List<CarRentalPackageOrderFreezePO>> page(CarRentalPackageOrderFreezeQryModel qryModel);
+    List<CarRentalPackageOrderFreezePO> page(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询模型
      * @return
      */
-    R<Integer> count(CarRentalPackageOrderFreezeQryModel qryModel);
+    Integer count(CarRentalPackageOrderFreezeQryModel qryModel);
 
     /**
      * 根据订单编码查询

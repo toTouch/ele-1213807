@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
@@ -33,7 +34,7 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
 
     int editFranchisee(Franchisee updateFranchisee);
 
-    List<SearchVo> search(FranchiseeQuery franchiseeQuery);
+    List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery);
 
     Integer checkBatteryModelIsUse(@Param("batteryModel") Integer batteryModel, @Param("tenantId") Integer tenantId);
 }

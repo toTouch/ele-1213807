@@ -667,19 +667,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok(null);
         }
 
-        UserBattery userBattery = userBatteryService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBattery)) {
-            log.info("ELE DEPOSIT INFO! not found userBattery,uid={}", user.getUid());
-            return R.ok(null);
-        }
-
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());
         if (Objects.isNull(userBatteryDeposit)) {
             log.error("ELE DEPOSIT ERROR! not found userBatteryDeposit,uid={}", user.getUid());
             return R.fail("100247", "用户信息不存在");
         }
 
-        String batteryType = userBattery.getBatteryType();
+        String batteryType = null;
         if (Objects.nonNull(batteryType)) {
             Integer acquireBattery = batteryModelService.acquireBatteryModel(batteryType,TenantContextHolder.getTenantId());
             map.put("batteryType", Objects.isNull(acquireBattery) ? null : String.valueOf(acquireBattery));
@@ -720,8 +714,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 }
 
                 map.put("deposit", userBatteryDeposit.getBatteryDeposit().toString());
-                //最后一次缴纳押金时间
-//                map.put("time", this.queryByOrderId(userBatteryDeposit.getOrderId()).getUpdateTime().toString());
 
                 map.put("franchiseeName", franchisee.getName());
                 map.put("franchiseeId", String.valueOf(franchisee.getId()));
@@ -1495,15 +1487,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             updateUserBatteryDeposit.setCreateTime(System.currentTimeMillis());
             updateUserBatteryDeposit.setUpdateTime(System.currentTimeMillis());
             userBatteryDepositService.insertOrUpdate(updateUserBatteryDeposit);
-
-            UserBattery userBattery = new UserBattery();
-            userBattery.setUid(userInfo.getUid());
-            userBattery.setBatteryType(batteryType);
-            userBattery.setTenantId(userInfo.getTenantId());
-            userBattery.setCreateTime(System.currentTimeMillis());
-            userBattery.setUpdateTime(System.currentTimeMillis());
-            userBattery.setDelFlag(UserBattery.DEL_NORMAL);
-            userBatteryService.insertOrUpdate(userBattery);
 
             return null;
         });

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -45,6 +46,8 @@ public class BatteryMemberCardVO {
     private Integer rentUnit;
 
     private Long franchiseeId;
+
+    private String franchiseeName;
     /**
      * 租赁类型
      */
@@ -111,4 +114,6 @@ public class BatteryMemberCardVO {
     private Long updateTime;
 
     private String batteryV;
+
+    private List<String> batteryModels;
 }

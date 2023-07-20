@@ -31,4 +31,5 @@ public interface UserBatteryTypeService {
 
     List<String> selectByUid(Long uid);
 
+    String selectUserMaxBatteryType(Long uid);
 }

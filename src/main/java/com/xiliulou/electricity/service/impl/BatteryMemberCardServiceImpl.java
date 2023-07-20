@@ -57,6 +57,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private UserBatteryTypeService userBatteryTypeService;
 
+    @Autowired
+    private FranchiseeService franchiseeService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -183,6 +186,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return list.parallelStream().map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+
+            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                batteryMemberCardVO.setBatteryModels(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()));
+            }
+
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }
@@ -321,7 +332,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Triple.of(false, "100104", "套餐名称已存在");
         }
 
-        Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query);
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(query.getFranchiseeId());
+        if(Objects.isNull(franchisee)){
+            return Triple.of(false, "", "加盟商不存在");
+        }
+
+        Triple<Boolean, String, Object> verifyBatteryMemberCardResult = verifyBatteryMemberCardQuery(query, franchisee);
         if (Boolean.FALSE.equals(verifyBatteryMemberCardResult.getLeft())) {
             return verifyBatteryMemberCardResult;
         }
@@ -335,7 +351,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         this.batteryMemberCardMapper.insert(batteryMemberCard);
 
-        memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(query.getBatteryModels(), batteryMemberCard.getId()));
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && CollectionUtils.isNotEmpty(query.getBatteryModels())) {
+            memberCardBatteryTypeService.batchInsert(buildMemberCardBatteryTypeList(query.getBatteryModels(), batteryMemberCard.getId()));
+        }
 
         return Triple.of(true, null, null);
     }
@@ -364,11 +382,15 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return memberCardBatteryTypeList;
     }
 
-    private Triple<Boolean, String, Object> verifyBatteryMemberCardQuery(BatteryMemberCardQuery query) {
+    private Triple<Boolean, String, Object> verifyBatteryMemberCardQuery(BatteryMemberCardQuery query,Franchisee franchisee) {
+
+        if(Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)){
+            return Triple.of(true, null, null);
+        }
 
         List<String> list = query.getBatteryModels().stream().map(item -> item.substring(item.indexOf("_") + 1).substring(0, item.substring(item.indexOf("_") + 1).indexOf("_"))).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(list) || list.size() != 1) {
-            return Triple.of(false, "100273", "套餐电池型号不合法");
+            return Triple.of(false, "100273", "套餐电池型号电压不一致");
         }
 
         return Triple.of(true, null, null);

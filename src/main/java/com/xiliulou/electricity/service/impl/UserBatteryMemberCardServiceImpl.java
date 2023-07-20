@@ -179,57 +179,6 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
         });
         return update;
     }
-    
-    //处理失效套餐
-    public void saveMemberCardFailureRecord(Long uid) {
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo)) {
-            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found user,uid={}", uid);
-            return;
-        }
-
-        UserBatteryMemberCard userBatteryMemberCard = this.selectByUidFromCache(uid);
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarMemberCard,uid={}", uid);
-            return;
-        }
-
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUidAndSuccess(uid, userInfo.getFranchiseeId(), userInfo.getTenantId());
-
-        if (Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
-            log.warn("ELE FAILURE CAR MEMBERCARD WARN! memberCard is typeCount,uid={}", uid);
-            return;
-        }
-
-        List<MemberCardFailureRecord> memberCardFailureRecords = memberCardFailureRecordService.selectByCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
-
-        if (!CollectionUtils.isEmpty(memberCardFailureRecords)) {
-            return;
-        }
-
-        UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(uid);
-        if (Objects.isNull(userBatteryDeposit)) {
-            log.warn("ELE FAILURE CAR MEMBERCARD WARN! not found userCarDeposit,uid={}", uid);
-            return;
-        }
-
-        UserBattery userBattery = userBatteryService.selectByUidFromCache(uid);
-
-        MemberCardFailureRecord memberCardFailureRecord = new MemberCardFailureRecord();
-        memberCardFailureRecord.setUid(userInfo.getUid());
-        memberCardFailureRecord.setCardName(electricityMemberCardOrder.getCardName());
-        memberCardFailureRecord.setDeposit(userBatteryDeposit.getBatteryDeposit());
-        memberCardFailureRecord.setCarMemberCardOrderId(electricityMemberCardOrder.getOrderId());
-        memberCardFailureRecord.setMemberCardExpireTime(System.currentTimeMillis());
-        memberCardFailureRecord.setType(MemberCardFailureRecord.FAILURE_TYPE_FOR_BATTERY);
-        memberCardFailureRecord.setBatteryType(Objects.isNull(userBattery) ? "" : userBattery.getBatteryType());
-        memberCardFailureRecord.setTenantId(userInfo.getTenantId());
-        memberCardFailureRecord.setCreateTime(System.currentTimeMillis());
-        memberCardFailureRecord.setUpdateTime(System.currentTimeMillis());
-
-        memberCardFailureRecordService.insert(memberCardFailureRecord);
-    }
 
     @Override
     public Integer minCount(UserBatteryMemberCard userBatteryMemberCard) {

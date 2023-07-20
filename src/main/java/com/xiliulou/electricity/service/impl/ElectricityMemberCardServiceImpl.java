@@ -338,10 +338,10 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                 return R.fail("ELECTRICITY.0033", "用户未绑定电池型号");
             }
 
-            if (Objects.isNull(userBattery.getBatteryType())) {
-                return R.ok();
-            }
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, userBattery.getBatteryType(), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
+//            if (Objects.isNull(userBattery.getBatteryType())) {
+//                return R.ok();
+//            }
+//            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, userBattery.getBatteryType(), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         } else {
             electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }

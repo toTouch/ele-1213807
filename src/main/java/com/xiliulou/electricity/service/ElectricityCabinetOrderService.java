@@ -31,9 +31,6 @@ public interface ElectricityCabinetOrderService {
 
     void insertOrder(ElectricityCabinetOrder electricityCabinetOrder);
 
-    @Deprecated
-    R order(OrderQuery orderQuery);
-
     R openDoor(OpenDoorQuery openDoorQuery);
 
     R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);

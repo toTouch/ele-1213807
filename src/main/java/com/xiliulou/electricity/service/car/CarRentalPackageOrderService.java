@@ -14,21 +14,29 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
+     * 根据用户ID查找最后一条的购买记录信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 购买订单信息
+     */
+    CarRentalPackageOrderPO seletLastByUid(Integer tenantId, Long uid);
+
+    /**
      * 根据用户ID进行退押操作<br />
      * 将使用中、未使用的订单全部设置为已失效
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param optId 操作人ID
-     * @return
+     * @return true(成功)、false(失败)
      */
     boolean refundDepositByUid(Integer tenantId, Long uid, Long optId);
 
     /**
-     * 根据订单编号更改支付状态、使用状态、使用时间
+     * 根据订单编号更改支付状态、使用状态、使用时间<br />
      * @param orderNo 订单编码
      * @param payState 支付状态
      * @param useState 使用状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updateStateByOrderNo(String orderNo, Integer payState, Integer useState);
 
@@ -36,26 +44,22 @@ public interface CarRentalPackageOrderService {
      * 根据用户ID查询未使用状态的订单总条数<br />
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return 总数
      */
     Integer countByUnUseByUid(Integer tenantId, Long uid);
 
     /**
      * 根据用户ID查询是否存在未使用状态的订单<br />
-     * <pre>
-     *     true-存在未使用的订单
-     *     false-不存在未使用的订单
-     * </pre>
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return true(存在未使用的订单)、false(不存在未使用的订单)
      */
     boolean isExitUnUseByUid(Integer tenantId, Long uid);
 
     /**
      * 根据套餐ID查询是否存在购买订单
      * @param rentalPackageId 套餐ID
-     * @return
+     * @return true(存在)、false(不存在)
      */
     Boolean checkByRentalPackageId(Long rentalPackageId);
 
@@ -63,35 +67,35 @@ public interface CarRentalPackageOrderService {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询条件模型
-     * @return
+     * @return 套餐购买订单集
      */
-    R<List<CarRentalPackageOrderPO>> list(CarRentalPackageOrderQryModel qryModel);
+    List<CarRentalPackageOrderPO> list(CarRentalPackageOrderQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
-     * @return
+     * @return 套餐购买订单集
      */
     List<CarRentalPackageOrderPO> page(CarRentalPackageOrderQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param queryModel 查询条件模型
-     * @return
+     * @return 总数
      */
     Integer count(CarRentalPackageOrderQryModel queryModel);
 
     /**
      * 根据订单编码查询
      * @param orderNo 订单编码
-     * @return
+     * @return 套餐购买订单
      */
     CarRentalPackageOrderPO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 套餐购买订单
      */
     R<CarRentalPackageOrderPO> selectById(Long id);
 
@@ -99,7 +103,7 @@ public interface CarRentalPackageOrderService {
      * 根据订单编号更新支付状态
      * @param orderNo 订单编码
      * @param payState 支付状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updatePayStateByOrderNo(String orderNo, Integer payState);
 
@@ -109,7 +113,7 @@ public interface CarRentalPackageOrderService {
      * @param payState 支付状态
      * @param remark 备注
      * @param uid 操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
 
@@ -119,32 +123,32 @@ public interface CarRentalPackageOrderService {
      * @param payState 支付状态
      * @param remark 备注
      * @param uid 操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
-    R<Boolean> updatePayStateById(Long id, Integer payState, String remark, Long uid);
+    Boolean updatePayStateById(Long id, Integer payState, String remark, Long uid);
 
     /**
      * 根据ID更新使用状态
      * @param orderNo 订单编码
      * @param useState 使用状态
      * @param uid 操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
-    R<Boolean> updateUseStateByOrderNo(String orderNo, Integer useState, Long uid);
+    Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long uid);
 
     /**
      * 根据ID更新使用状态
      * @param id 主键ID
      * @param useState 使用状态
      * @param uid 操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
-    R<Boolean> updateUseStateById(Long id, Integer useState, Long uid);
+    Boolean updateUseStateById(Long id, Integer useState, Long uid);
 
     /**
      * 新增数据，返回主键ID
      * @param entity 操作实体
-     * @return
+     * @return 主键ID
      */
     Long insert(CarRentalPackageOrderPO entity);
 

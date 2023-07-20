@@ -19,7 +19,7 @@ public class SaaSGlobalExceptionAdvice {
     @ResponseBody
     @ExceptionHandler(BizException.class)
     public R handlerBizException(BizException e) {
-        log.error("全局异常拦截业务 BizException error: ", e);
+        log.error("BizException error: ", e);
         return R.fail(e.getErrCode(), e.getMessage());
     }
 

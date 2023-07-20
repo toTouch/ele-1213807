@@ -23,6 +23,8 @@ public class CouponQuery {
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
     private Integer discountType;
+
+    private Integer status;
     /**
      * 加盟商Id
      */

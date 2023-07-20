@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.TimeConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderFreezePO;
@@ -138,12 +137,12 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderFreezePO>> list(CarRentalPackageOrderFreezeQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageOrderFreezePO> list(CarRentalPackageOrderFreezeQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderFreezeMapper.list(qryModel));
+        return carRentalPackageOrderFreezeMapper.list(qryModel);
     }
 
     /**
@@ -154,12 +153,12 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderFreezePO>> page(CarRentalPackageOrderFreezeQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageOrderFreezePO> page(CarRentalPackageOrderFreezeQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderFreezeMapper.page(qryModel));
+        return carRentalPackageOrderFreezeMapper.page(qryModel);
     }
 
     /**
@@ -170,12 +169,12 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalPackageOrderFreezeQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalPackageOrderFreezeQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderFreezeMapper.count(qryModel));
+        return carRentalPackageOrderFreezeMapper.count(qryModel);
     }
 
     /**

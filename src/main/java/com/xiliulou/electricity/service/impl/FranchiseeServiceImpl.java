@@ -21,6 +21,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.FranchiseeAreaVO;
+import com.xiliulou.electricity.vo.FranchiseeSearchVO;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -117,8 +118,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Slave
     @Override
-    public List<SearchVo> search(FranchiseeQuery franchiseeQuery) {
-        List<SearchVo>  list=franchiseeMapper.search(franchiseeQuery);
+    public List<FranchiseeSearchVO> search(FranchiseeQuery franchiseeQuery) {
+        List<FranchiseeSearchVO>  list=franchiseeMapper.search(franchiseeQuery);
         if(CollectionUtils.isEmpty(list)){
             return Collections.emptyList();
         }
@@ -702,6 +703,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return result;
     }
 
+    @Deprecated
     @Override
     public Triple<Boolean, String, Object> checkBatteryType(Long id, Integer batteryModel) {
         Franchisee franchisee = this.queryByIdFromCache(id);
@@ -718,11 +720,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return Triple.of(true, null, null);
         }
 
-        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
-        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
-        if (batteryList.contains(batteryType)) {
-            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
-        }
+//        String batteryType=BatteryConstant.acquireBatteryShort(batteryModel);
+//        List<String> batteryList = userBatteryList.parallelStream().map(UserBattery::getBatteryType).collect(Collectors.toList());
+//        if (batteryList.contains(batteryType)) {
+//            return Triple.of(false, "100372", "删除失败，已有用户绑定该型号");
+//        }
 
         return Triple.of(true, null, null);
     }
@@ -855,11 +857,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         userInfoService.update(updateUserInfo);
 
         //更新用户绑定的电池型号
-        UserBattery userBatteryUpdate = new UserBattery();
-        userBatteryUpdate.setUid(userInfo.getUid());
-        userBatteryUpdate.setBatteryType(batteryType);
-        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
-        userBatteryService.updateByUid(userBatteryUpdate);
+//        UserBattery userBatteryUpdate = new UserBattery();
+//        userBatteryUpdate.setUid(userInfo.getUid());
+//        userBatteryUpdate.setBatteryType(batteryType);
+//        userBatteryUpdate.setUpdateTime(System.currentTimeMillis());
+//        userBatteryService.updateByUid(userBatteryUpdate);
 
         //生成迁移记录
         franchiseeMoveRecordService.insert(buildFranchiseeMoveRecord(franchiseeMoveInfo, userInfo, userBatteryMemberCard, batteryType));
