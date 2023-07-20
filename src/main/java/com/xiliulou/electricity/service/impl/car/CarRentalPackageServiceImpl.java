@@ -148,8 +148,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         return carRentalPackageMapper.list(qryModel);
@@ -163,8 +163,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public List<CarRentalPackagePO> page(CarRentalPackageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         return carRentalPackageMapper.page(qryModel);
@@ -178,7 +178,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public Integer count(CarRentalPackageQryModel qryModel) {
-        if (ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
