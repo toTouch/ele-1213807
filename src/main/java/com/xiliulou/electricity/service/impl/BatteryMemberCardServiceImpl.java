@@ -187,6 +187,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
 
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
+
+            if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                batteryMemberCardVO.setBatteryModels(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()));
+            }
 
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
