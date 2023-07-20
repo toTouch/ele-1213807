@@ -33,7 +33,7 @@ public class BatteryMemberCardQuery {
     private Long id;
 
     @NotBlank(message = "套餐名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 0, max = 8, message = "套餐名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    @Range(min = 0, max = 20, message = "套餐名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
 
     @NotNull(message = "押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
@@ -85,16 +85,9 @@ public class BatteryMemberCardQuery {
     @NotNull(message = "是否免押不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer freeDeposite;
 
-//    @NotNull(message = "退押审核不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-//    private Integer refundDepositeAudit;
-
     @NotNull(message = "滞纳金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal serviceCharge;
 
-//    @NotNull(message = "套餐显隐不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-//    private Integer display;
-
-    @Range(min = 0, max = 30, message = "备注不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String remark;
 
     @NotEmpty(message = "电池型号不能为空", groups = {CreateGroup.class})

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.vo.SearchVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -48,4 +49,6 @@ public interface CouponService {
     R queryCount(CouponQuery couponQuery);
     
     Triple<Boolean, String, Object> deleteById(Long id);
+
+    List<SearchVo> search(CouponQuery query);
 }

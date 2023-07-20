@@ -3,8 +3,10 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
@@ -40,6 +42,30 @@ public class JsonAdminCouponController extends BaseController {
 
     @Autowired
     UserDataScopeService userDataScopeService;
+
+    /**
+     * 搜索
+     */
+    @GetMapping("/admin/coupon/search")
+    public R page(@RequestParam("size") long size, @RequestParam("offset") long offset,
+                  @RequestParam(value = "name", required = false) String name) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        CouponQuery query = CouponQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .name(name)
+                .build();
+
+        return R.ok(couponService.search(query));
+    }
 
     //新增
     @PostMapping(value = "/admin/coupon")
