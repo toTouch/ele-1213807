@@ -3074,7 +3074,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .memberCardId(batteryMemberCard.getId())
                 .uid(userInfo.getUid())
                 .maxUseCount(batteryMemberCard.getUseCount())
-                .memberCardType(batteryMemberCard.getType())
                 .cardName(batteryMemberCard.getName())
                 .payAmount(batteryMemberCard.getRentPrice())
                 .userName(userInfo.getName())
