@@ -33,11 +33,9 @@ public class BatteryMemberCardQuery {
     private Long id;
 
     @NotBlank(message = "套餐名称不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 0, max = 20, message = "套餐名称不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
 
     @NotNull(message = "押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 0, max = 8, message = "押金不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private BigDecimal deposit;
 
     @NotNull(message = "租金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
