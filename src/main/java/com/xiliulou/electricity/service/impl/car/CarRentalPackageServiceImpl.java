@@ -266,7 +266,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long insert(CarRentalPackagePO entity) {
-        if (!ObjectUtils.allNotNull(entity, entity.getId(), entity.getCreateUid(), entity.getTenantId(), entity.getName())) {
+        if (!ObjectUtils.allNotNull(entity, entity.getCreateUid(), entity.getTenantId(), entity.getName())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
