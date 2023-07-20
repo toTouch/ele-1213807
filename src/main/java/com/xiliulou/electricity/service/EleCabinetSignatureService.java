@@ -24,6 +24,8 @@ public interface EleCabinetSignatureService {
 
     public Triple<Boolean, String, Object> getSignatureFile(String signFlowId);
 
+    public Triple<Boolean, String, Object> getSignFlowUrl(String signFlowId);
+
     public void handleCallBackReq(Integer esignConfigId, HttpServletRequest request);
 
 
