@@ -38,10 +38,16 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
         return eleCabinetCoreDataMapper.selectListByQuery(eleCabinetCoreDataQuery);
     }
 
+    @Deprecated
     @Slave
     @Override
     public EleCabinetCoreData selectByEleCabinetId(Integer id) {
         return eleCabinetCoreDataMapper.selectById(id, TenantContextHolder.getTenantId());
+    }
+
+    @Override
+    public EleCabinetCoreData selectByEid(Integer eid) {
+        return eleCabinetCoreDataMapper.selectByEid(eid);
     }
 
     /**
