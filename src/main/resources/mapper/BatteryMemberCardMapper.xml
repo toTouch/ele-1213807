@@ -21,7 +21,6 @@
         <result property="refundLimit" column="refund_limit" jdbcType="INTEGER"/>
         <result property="freeDeposite" column="free_deposite" jdbcType="INTEGER"/>
         <result property="serviceCharge" column="service_charge" jdbcType="NUMERIC"/>
-        <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="businessType" column="business_type" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
@@ -33,7 +32,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMemberCardMap">
         select
-          id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon, status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, type, remark, business_type, del_flag, tenant_id, create_time, update_time
+          id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon, status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
         from t_battery_member_card
         where id = #{id}
     </select>
@@ -76,7 +75,7 @@
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
         status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite,
-        service_charge, type, remark, business_type, del_flag, tenant_id, create_time, update_time
+        service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
         from t_battery_member_card
         <where>
             <if test="franchiseeId != null">
@@ -111,7 +110,7 @@
     <select id="selectByQuery" resultMap="BatteryMemberCardMap">
         select
         id, name, deposit, rent_price, rent_price_unit, valid_days, rent_unit, franchisee_id, rent_type, send_coupon,
-        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, type, remark, business_type, del_flag, tenant_id, create_time, update_time
+        status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
         from t_battery_member_card
         <where>
             <if test="franchiseeId != null">
@@ -320,9 +319,6 @@
             </if>
             <if test="serviceCharge != null">
                 service_charge = #{serviceCharge},
-            </if>
-            <if test="type != null">
-                type = #{type},
             </if>
             <if test="remark != null and remark != ''">
                 remark = #{remark},

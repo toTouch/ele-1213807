@@ -380,7 +380,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         List<String> list = query.getBatteryModels().stream().map(item -> item.substring(item.indexOf("_") + 1).substring(0, item.substring(item.indexOf("_") + 1).indexOf("_"))).distinct().collect(Collectors.toList());
         if (CollectionUtils.isEmpty(list) || list.size() != 1) {
-            return Triple.of(false, "100273", "套餐电池型号不合法");
+            return Triple.of(false, "100273", "套餐电池型号电压不一致");
         }
 
         return Triple.of(true, null, null);
