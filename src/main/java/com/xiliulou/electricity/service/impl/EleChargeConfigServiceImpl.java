@@ -307,7 +307,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
 
             //处理价格类型
             Integer configType = checkConfigBelongType(chargeConfigQuery);
-            if (checkConfigTypeExists(configType, chargeConfigQuery, TenantContextHolder.getTenantId(), null)) {
+            if (checkConfigTypeExists(configType, chargeConfigQuery, TenantContextHolder.getTenantId(), config.getId())) {
                 return Pair.of(false, "不能重复创建同种类型的规则");
             }
 
