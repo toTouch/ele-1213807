@@ -180,4 +180,23 @@
         limit #{offset},#{size}
     </select>
 
+    <select id="queryCount" resultType="java.lang.Integer">
+        select
+            count(1)
+        from t_ele_power_month_record
+        <where>
+            date = #{date}
+            and tenant_id = #{tenantId}
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+        </where>
+    </select>
+
 </mapper>

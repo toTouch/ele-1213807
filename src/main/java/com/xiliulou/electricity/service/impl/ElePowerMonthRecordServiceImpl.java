@@ -116,4 +116,9 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
             return elePowerMonthRecord;
         }).collect(Collectors.toList()));
     }
+
+    @Override
+    public Pair<Boolean, Object> queryMonthStatisticsCount(PowerMonthStatisticsQuery query) {
+        return Pair.of(true,this.elePowerMonthRecordMapper.queryCount(query));
+    }
 }

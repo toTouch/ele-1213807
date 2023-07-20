@@ -65,4 +65,5 @@ public interface ElePowerMonthRecordService {
 
     Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query);
 
+    Pair<Boolean, Object> queryMonthStatisticsCount(PowerMonthStatisticsQuery query);
 }

@@ -66,4 +66,7 @@ public interface ElePowerMonthRecordMapper  extends BaseMapper<ElePowerMonthReco
     int deleteById(Long id);
 
     List<ElePowerMonthRecord> queryPartAttrList(PowerMonthStatisticsQuery query);
+
+    Integer queryCount(PowerMonthStatisticsQuery query);
+
 }
