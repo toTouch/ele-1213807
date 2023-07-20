@@ -411,7 +411,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             return null;
         }
 
-        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_ALL_CABINET, storeId), chargeConfig);
+        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_ALL_CABINET, storeId), config);
         return config;
     }
 
@@ -433,7 +433,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             return null;
         }
 
-        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_ALL_STORE, franchiseeId), chargeConfig);
+        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_ALL_STORE, franchiseeId), config);
         return config;
     }
 
@@ -455,7 +455,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             return null;
         }
 
-        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(tenantId)), chargeConfig);
+        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_ALL_FRANCHISEE, Long.valueOf(tenantId)), config);
         return config;
     }
 
@@ -481,7 +481,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             return null;
         }
 
-        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_SINGLE_CABINET, eid), chargeConfig);
+        redisService.saveWithHash(generateCacheKey(EleChargeConfig.TYPE_SINGLE_CABINET, eid), config);
         return config;
     }
 
