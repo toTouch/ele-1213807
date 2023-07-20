@@ -81,7 +81,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public Boolean uqByTenantIdAndName(Integer tenantId, String name) {
-        if (ObjectUtils.allNotNull(tenantId, name)) {
+        if (!ObjectUtils.allNotNull(tenantId, name)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
