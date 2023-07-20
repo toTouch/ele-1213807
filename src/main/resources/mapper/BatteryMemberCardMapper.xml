@@ -314,9 +314,6 @@
             <if test="freeDeposite != null">
                 free_deposite = #{freeDeposite},
             </if>
-            <if test="refundDepositeAudit != null">
-                refund_deposite_audit = #{refundDepositeAudit},
-            </if>
             <if test="serviceCharge != null">
                 service_charge = #{serviceCharge},
             </if>
