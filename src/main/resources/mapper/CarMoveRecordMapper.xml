@@ -136,7 +136,7 @@
     </insert>
 
     <!--批量新增车辆转移记录-->
-    <insert id="batchInsertCarMoveRecord" >
+    <insert id="batchInsertCarMoveRecord" keyProperty="id" useGeneratedKeys="true">
         insert into t_car_move_record
         <trim prefix="(" suffix=")" suffixOverrides=",">
             tenant_id,
