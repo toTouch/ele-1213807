@@ -98,10 +98,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R save(ElectricityCarModelQuery query) {
-        Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
+       /* Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
         if (!verifyResult.getLeft()) {
             return R.failMsg(verifyResult.getRight());
-        }
+        }*/
 
         //校验当前加盟商是否为待迁移加盟商，若是  不允许新建
         ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
@@ -139,6 +139,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         electricityCarModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
         electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
+        //页面移除车辆押金输入项，数据库有约束，设置默认值为0
+        electricityCarModel.setCarDeposit(BigDecimal.ZERO);
         int insert = electricityCarModelMapper.insert(electricityCarModel);
 
         DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -157,10 +159,10 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R edit(ElectricityCarModelQuery query) {
-        Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
+        /*Pair<Boolean, String> verifyResult = verifyCarModelQuery(query);
         if (!verifyResult.getLeft()) {
             return R.failMsg(verifyResult.getRight());
-        }
+        }*/
 
         ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(query.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
@@ -175,6 +177,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
         updateCarModel.setUpdateTime(System.currentTimeMillis());
         updateCarModel.setTenantId(TenantContextHolder.getTenantId());
+
         int update = electricityCarModelMapper.update(updateCarModel);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
@@ -433,13 +436,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         this.updateFranchiseeById(electricityCarModels,franchiseeMoveInfo.getToFranchiseeId());
     }
 
-    private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
+    /*private Pair<Boolean, String> verifyCarModelQuery(ElectricityCarModelQuery query) {
         if (NumberConstant.ZERO_BD.compareTo(query.getCarDeposit()) == NumberConstant.ONE) {
             return Pair.of(false, "车辆押金不合法！");
         }
 
         return Pair.of(true, "");
-    }
+    }*/
 
     private List<CarModelTag> buildCarModelTagList(ElectricityCarModelQuery query, ElectricityCarModel carModel) {
         List<CarModelTag> list = Lists.newArrayList();
