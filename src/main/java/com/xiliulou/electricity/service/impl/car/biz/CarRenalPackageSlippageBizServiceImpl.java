@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 
 /**
  * 逾期业务聚合 BizServiceImpl
@@ -33,31 +35,39 @@ public class CarRenalPackageSlippageBizServiceImpl implements CarRenalPackageSli
      * @return 滞纳金金额，保留两位小数，四舍五入
      */
     @Override
-    public String queryCarPackageUnpaidAmountByUid(Integer tenantId, Long uid) {
+    public BigDecimal queryCarPackageUnpaidAmountByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        CarRentalPackageOrderSlippagePO slippageEntity = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(slippageEntity)) {
+        List<CarRentalPackageOrderSlippagePO> slippageEntityList = carRentalPackageOrderSlippageService.selectUnPayByByUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(slippageEntityList)) {
             return null;
         }
 
-        // 时间比对
-        long lateFeeStartTime = slippageEntity.getLateFeeStartTime().longValue();
+        BigDecimal totalAmount = BigDecimal.ZERO;
         long now = System.currentTimeMillis();
+        for (CarRentalPackageOrderSlippagePO slippageEntity : slippageEntityList) {
+            // 时间比对
+            long lateFeeStartTime = slippageEntity.getLateFeeStartTime().longValue();
 
-        // 没有滞纳金产生
-        if (lateFeeStartTime < now) {
+            // 没有滞纳金产生
+            if (lateFeeStartTime < now) {
+                continue;
+            }
+
+            // 转换天
+            long diffDay = DateUtils.diffDay(now, lateFeeStartTime);
+            // 计算滞纳金金额
+            BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
+            totalAmount.add(amount);
+        }
+
+        if (BigDecimal.ZERO.compareTo(totalAmount) == 0) {
             return null;
         }
 
-        // 转换天
-        long diffDay = DateUtils.diffDay(now, lateFeeStartTime);
-        // 计算滞纳金金额
-        BigDecimal amount = NumberUtil.mul(diffDay, slippageEntity.getLateFee());
-
-        return String.format("%.2f", amount);
+        return totalAmount.setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
