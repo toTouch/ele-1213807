@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.car;
 
+import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.RentalUnitEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
@@ -82,6 +83,16 @@ public class CarRentalPackageOrderRentRefundVO implements Serializable {
      * 租金(支付价格)
      */
     private BigDecimal rentPayment;
+
+    /**
+     * 交易方式
+     * <pre>
+     *     1-线上
+     *     2-线下
+     * </pre>
+     * @see PayTypeEnum
+     */
+    private Integer payType;
 
     /**
      * 备注
