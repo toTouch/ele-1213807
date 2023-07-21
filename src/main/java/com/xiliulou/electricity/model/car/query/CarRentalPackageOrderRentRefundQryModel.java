@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.model.car.query;
 
+import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
@@ -47,6 +48,11 @@ public class CarRentalPackageOrderRentRefundQryModel implements Serializable {
     private String orderNo;
 
     /**
+     * 购买订单编号
+     */
+    private String rentalPackageOrderNo;
+
+    /**
      * 用户ID
      */
     private Long uid;
@@ -65,6 +71,17 @@ public class CarRentalPackageOrderRentRefundQryModel implements Serializable {
      * @see CarRentalPackageTypeEnum
      */
     private Integer rentalPackageType;
+
+    /**
+     * 交易方式
+     * <pre>
+     *     1-线上
+     *     2-线下
+     * </pre>
+     * @see PayTypeEnum
+     */
+    private Integer payType;
+
 
     /**
      * 退款订单状态
