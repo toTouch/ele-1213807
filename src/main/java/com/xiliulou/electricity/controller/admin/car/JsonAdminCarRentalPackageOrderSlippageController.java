@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -43,6 +44,37 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
     public R<List<CarRentalPackageOrderSlippageVO>> page(@RequestBody CarRentalPackageOrderSlippageQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderSlippageQryReq();
+            // TODO mock数据
+            String mockString = "[\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"2637284938717263\",\n" +
+                    "        \"type\":1,\n" +
+                    "        \"carSn\":\"172839212\",\n" +
+                    "        \"batterySn\":\"7382042\",\n" +
+                    "        \"lateFee\":122,\n" +
+                    "        \"lateFeeStartTime\":1690267754000,\n" +
+                    "        \"payState\":1,\n" +
+                    "        \"createTime\":1690267754000,\n" +
+                    "        \"franchiseeName\":\"加盟商名称\",\n" +
+                    "        \"userRelName\":\"张三\",\n" +
+                    "        \"userPhone\":\"18726279384\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"9837283400912893\",\n" +
+                    "        \"type\":2,\n" +
+                    "        \"carSn\":\"98264929s8\",\n" +
+                    "        \"batterySn\":\"sjshd8292\",\n" +
+                    "        \"lateFee\":230,\n" +
+                    "        \"lateFeeStartTime\":1690267754000,\n" +
+                    "        \"lateFeePay\":256,\n" +
+                    "        \"payState\":2,\n" +
+                    "        \"createTime\":1690267754000,\n" +
+                    "        \"franchiseeName\":\"加盟商名称\",\n" +
+                    "        \"userRelName\":\"李四\",\n" +
+                    "        \"userPhone\":\"198273683167\"\n" +
+                    "    }\n" +
+                    "]";
+            return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderSlippageVO.class));
         }
 
         // 赋值租户

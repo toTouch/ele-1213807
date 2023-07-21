@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -51,6 +52,35 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
     public R<List<CarRentalPackageDepositPayVO>> page(@RequestBody CarRentalPackageDepositPayQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositPayQryReq();
+            // TODO mock数据
+            String mockString = "[\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"1234567890123456\",\n" +
+                    "        \"rentalPackageType\":1,\n" +
+                    "        \"type\":1,\n" +
+                    "        \"deposit\":99,\n" +
+                    "        \"payType\":1,\n" +
+                    "        \"payState\":1,\n" +
+                    "        \"remark\":\"\",\n" +
+                    "        \"createTime\":1689922154000,\n" +
+                    "        \"userRelName\":\"张三\",\n" +
+                    "        \"userPhone\":\"13129400876\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"0987654321234567\",\n" +
+                    "        \"rentalPackageType\":2,\n" +
+                    "        \"type\":1,\n" +
+                    "        \"deposit\":199,\n" +
+                    "        \"payType\":2,\n" +
+                    "        \"payState\":2,\n" +
+                    "        \"remark\":\"\",\n" +
+                    "        \"createTime\":1689749354000,\n" +
+                    "        \"userRelName\":\"李四\",\n" +
+                    "        \"userPhone\":\"1378294839\"\n" +
+                    "    },\n" +
+                    "]\n" +
+                    "\n";
+            return R.ok(JSON.parseArray(mockString, CarRentalPackageDepositPayVO.class));
         }
 
         // 赋值租户

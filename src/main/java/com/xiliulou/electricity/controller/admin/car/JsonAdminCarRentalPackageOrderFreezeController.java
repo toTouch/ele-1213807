@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -94,6 +95,47 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
     public R<List<CarRentalPackageOrderFreezeVO>> page(@RequestBody CarRentalPackageOrderFreezeQryReq queryReq) {
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderFreezeQryReq();
+            // TODO mock数据
+            String mockString = "[\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"7364728293847382\",\n" +
+                    "        \"rentalPackageType\":1,\n" +
+                    "        \"residue\":123,\n" +
+                    "        \"residueUnit\":0,\n" +
+                    "        \"status\":1,\n" +
+                    "        \"remark\":\"备注\",\n" +
+                    "        \"lateFee\":230,\n" +
+                    "        \"createTime\":1690267754000,\n" +
+                    "        \"updateTime\":1690267754000,\n" +
+                    "        \"applyTerm\":5,\n" +
+                    "        \"applyTime\":1690267754000,\n" +
+                    "        \"applyReason\":\"申请原因\",\n" +
+                    "        \"userRelName\":\"张三\",\n" +
+                    "        \"userPhone\":\"18726372897\",\n" +
+                    "        \"carRentalPackageName\":\"单车套餐\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"8762738492837162\",\n" +
+                    "        \"rentalPackageType\":2,\n" +
+                    "        \"residue\":987,\n" +
+                    "        \"residueUnit\":1,\n" +
+                    "        \"status\":2,\n" +
+                    "        \"remark\":\"备注啊\",\n" +
+                    "        \"lateFee\":22,\n" +
+                    "        \"createTime\":1690267754000,\n" +
+                    "        \"updateTime\":1690267754000,\n" +
+                    "        \"applyTerm\":56,\n" +
+                    "        \"realTerm\":4,\n" +
+                    "        \"applyTime\":1690267754000,\n" +
+                    "        \"auditTime\":1690267754000,\n" +
+                    "        \"enableTime\":1690267754000,\n" +
+                    "        \"applyReason\":\"李四\",\n" +
+                    "        \"userRelName\":\"李四\",\n" +
+                    "        \"userPhone\":\"16273627876\",\n" +
+                    "        \"carRentalPackageName\":\"车电一体套餐\"\n" +
+                    "    }\n" +
+                    "]";
+            return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderFreezeVO.class));
         }
 
         // 赋值租户
