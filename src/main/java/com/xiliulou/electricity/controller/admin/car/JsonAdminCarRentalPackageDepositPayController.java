@@ -50,9 +50,8 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositPayVO>> page(@RequestBody CarRentalPackageDepositPayQryReq queryReq) {
-        if (null == queryReq) {
-            queryReq = new CarRentalPackageDepositPayQryReq();
-            // TODO mock数据
+        // TODO mock数据
+        if (true) {
             String mockString = "[\n" +
                     "    {\n" +
                     "        \"orderNo\":\"1234567890123456\",\n" +
@@ -81,6 +80,9 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
                     "]\n" +
                     "\n";
             return R.ok(JSON.parseArray(mockString, CarRentalPackageDepositPayVO.class));
+        }
+        if (null == queryReq) {
+            queryReq = new CarRentalPackageDepositPayQryReq();
         }
 
         // 赋值租户

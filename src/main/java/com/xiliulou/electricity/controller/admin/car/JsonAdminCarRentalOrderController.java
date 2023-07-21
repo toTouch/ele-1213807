@@ -65,9 +65,8 @@ public class JsonAdminCarRentalOrderController extends BasicController {
      */
     @PostMapping("/page")
     public R<List<CarRentalOrderVO>> page(@RequestBody CarRentalOrderQryReq queryReq) {
-        if (null == queryReq) {
-            queryReq = new CarRentalOrderQryReq();
-            // TODO mock数据
+        // TODO mock数据
+        if (true) {
             String mockString = "[\n" +
                     "    {\n" +
                     "        \"orderNo\":\"17283162734829387654\",\n" +
@@ -95,6 +94,9 @@ public class JsonAdminCarRentalOrderController extends BasicController {
                     "    }\n" +
                     "]";
             return R.ok(JSON.parseArray(mockString, CarRentalOrderVO.class));
+        }
+        if (null == queryReq) {
+            queryReq = new CarRentalOrderQryReq();
         }
 
         // 赋值租户

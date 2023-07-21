@@ -42,9 +42,8 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderSlippageVO>> page(@RequestBody CarRentalPackageOrderSlippageQryReq queryReq) {
-        if (null == queryReq) {
-            queryReq = new CarRentalPackageOrderSlippageQryReq();
-            // TODO mock数据
+        // TODO mock数据
+        if (true) {
             String mockString = "[\n" +
                     "    {\n" +
                     "        \"orderNo\":\"2637284938717263\",\n" +
@@ -75,6 +74,9 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
                     "    }\n" +
                     "]";
             return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderSlippageVO.class));
+        }
+        if (null == queryReq) {
+            queryReq = new CarRentalPackageOrderSlippageQryReq();
         }
 
         // 赋值租户

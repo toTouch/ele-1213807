@@ -93,9 +93,8 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderFreezeVO>> page(@RequestBody CarRentalPackageOrderFreezeQryReq queryReq) {
-        if (null == queryReq) {
-            queryReq = new CarRentalPackageOrderFreezeQryReq();
-            // TODO mock数据
+        // TODO mock数据
+        if (true) {
             String mockString = "[\n" +
                     "    {\n" +
                     "        \"orderNo\":\"7364728293847382\",\n" +
@@ -136,6 +135,9 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
                     "    }\n" +
                     "]";
             return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderFreezeVO.class));
+        }
+        if (null == queryReq) {
+            queryReq = new CarRentalPackageOrderFreezeQryReq();
         }
 
         // 赋值租户

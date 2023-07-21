@@ -111,16 +111,8 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("not found user.");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (null == queryReq) {
-            queryReq = new CarRentalPackageDepositRefundQryReq();
-            // TODO mock数据
+        // TODO mock数据
+        if (true) {
             String mockString = "[\n" +
                     "    {\n" +
                     "        \"orderNo\":\"111111111\",\n" +
@@ -148,6 +140,17 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
                     "    }\n" +
                     "]";
             return R.ok(JSON.parseArray(mockString, CarRentalPackageDepositRefundVO.class));
+        }
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("not found user.");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (null == queryReq) {
+            queryReq = new CarRentalPackageDepositRefundQryReq();
         }
 
         queryReq.setTenantId(tenantId);
