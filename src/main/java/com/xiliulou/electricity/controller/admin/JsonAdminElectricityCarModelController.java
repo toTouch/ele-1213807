@@ -135,7 +135,7 @@ public class JsonAdminElectricityCarModelController {
     //列表查询
     @GetMapping(value = "/admin/electricityCarModel/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "storeId", required = false) Long storeId,) {
+                        @RequestParam(value = "storeId", required = false) Long storeId) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
