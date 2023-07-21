@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin.car;
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
@@ -68,6 +69,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
                     "        \"userPhone\":\"15426374839\",\n" +
                     "        \"carRentalPackageName\":\"我是单车套餐\",\n" +
                     "        \"carModelName\":\"我是车辆型号\"\n" +
+                    "        \"couponName\":\"我是赠送优惠券\"\n" +
                     "    },\n" +
                     "    {\n" +
                     "        \"orderNo\":\"2637485039281738\",\n" +
@@ -96,6 +98,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
                     "        \"userPhone\":\"17672637489\",\n" +
                     "        \"carRentalPackageName\":\"我是车电一体套餐\",\n" +
                     "        \"carModelName\":\"我是车辆型号啊\"\n" +
+                    "        \"couponName\":\"我是赠送优惠券\"\n" +
                     "    }\n" +
                     "]";
             return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderVO.class));
@@ -118,14 +121,16 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
             return R.ok(Collections.emptyList());
         }
 
-        // 获取辅助业务信息（用户信息、套餐名称、加盟商信息）
+        // 获取辅助业务信息（用户信息、套餐名称、加盟商信息，优惠券信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> rentalPackageIds = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
+        List<Long> couponIds = new ArrayList<>();
         carRentalPackageOrderPOList.forEach(carRentalPackageOrder -> {
             uids.add(carRentalPackageOrder.getUid());
             rentalPackageIds.add(carRentalPackageOrder.getRentalPackageId());
             franchiseeIds.add(Long.valueOf(carRentalPackageOrder.getFranchiseeId()));
+            couponIds.add(carRentalPackageOrder.getCouponId());
         });
 
         // 用户信息
@@ -136,6 +141,9 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
         // 加盟商信息
         Map<Long, String> franchiseeMap = getFranchiseeNameByIdsForMap(franchiseeIds);
+
+        // 优惠券信息
+        Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
         List<CarRentalPackageOrderVO> carRentalPackageVOList = carRentalPackageOrderPOList.stream().map(carRentalPackageOrder -> {
@@ -155,6 +163,10 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
 
             if (!franchiseeMap.isEmpty()) {
                 carRentalPackageOrderVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageOrder.getFranchiseeId()), ""));
+            }
+
+            if (!couponMap.isEmpty()) {
+                carRentalPackageOrderVO.setCouponName(couponMap.getOrDefault(carRentalPackageOrder.getCouponId(), new Coupon()).getName());
             }
 
             return carRentalPackageOrderVO;
