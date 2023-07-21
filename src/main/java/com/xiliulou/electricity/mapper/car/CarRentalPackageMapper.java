@@ -26,7 +26,7 @@ public interface CarRentalPackageMapper {
      * 检测唯一：租户ID+套餐名称
      * @param tenantId 租户ID
      * @param name 套餐名称
-     * @return
+     * @return 总数
      */
     int uqByTenantIdAndName(@Param("tenantId") Integer tenantId, @Param("name") String name);
 

@@ -57,10 +57,6 @@ public class CarRentalPackageOrderRentRefundServiceImpl implements CarRentalPack
     @Slave
     @Override
     public List<CarRentalPackageOrderRentRefundPO> list(CarRentalPackageOrderRentRefundQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-
         return carRentalPackageOrderRentRefundMapper.list(qryModel);
     }
 

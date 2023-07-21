@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
-import com.xiliulou.electricity.model.car.opt.CarRentalOrderOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 
 import java.util.List;
@@ -17,44 +15,44 @@ public interface CarRentalOrderService {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型
-     * @return
+     * @return 车辆租赁订单集
      */
-    R<List<CarRentalOrderPO>> list(CarRentalOrderQryModel qryModel);
+    List<CarRentalOrderPO> list(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
-     * @return
+     * @return 车辆租赁订单集
      */
-    R<List<CarRentalOrderPO>> page(CarRentalOrderQryModel qryModel);
+    List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
-    R<Integer> count(CarRentalOrderQryModel qryModel);
+    Integer count(CarRentalOrderQryModel qryModel);
 
     /**
      * 根据订单编码查询
      * @param orderNo 订单编码
-     * @return
+     * @return 车辆租赁订单
      */
-    R<CarRentalOrderPO> selectByOrderNo(String orderNo);
+    CarRentalOrderPO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 车辆租赁订单
      */
-    R<CarRentalOrderPO> selectById(Long id);
+    CarRentalOrderPO selectById(Long id);
 
 
     /**
      * 新增数据，返回主键ID
-     * @param optModel 操作模型
-     * @return
+     * @param entity 操作模型
+     * @return 主键ID
      */
-    R<Long> insert(CarRentalOrderOptModel optModel);
+    Long insert(CarRentalOrderPO entity);
 
 }

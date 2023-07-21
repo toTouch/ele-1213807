@@ -14,11 +14,12 @@ import java.util.List;
 public interface CarRentalPackageOrderService {
 
     /**
-     * 根据用户ID集查询每一个用户第一条未使用的支付成功的订单信息
-     * @param uidList 用户ID集
-     * @return 套餐购买订单集
+     * 根据用户ID查询第一条未使用的支付成功的订单信息
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 套餐购买订单
      */
-    List<CarRentalPackageOrderPO> selectFirstUnUsedByUids(List<Long> uidList);
+    CarRentalPackageOrderPO selectFirstUnUsedByUid(Integer tenantId, Long uid);
 
     /**
      * 根据用户ID查找最后一条成功的购买记录信息
@@ -119,38 +120,38 @@ public interface CarRentalPackageOrderService {
      * @param orderNo 订单编码
      * @param payState 支付状态
      * @param remark 备注
-     * @param uid 操作人
+     * @param optUid 操作人ID（可为空）
      * @return true(成功)、false(失败)
      */
-    Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
+    Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long optUid);
 
     /**
      * 根据ID更新支付状态
      * @param id 主键ID
      * @param payState 支付状态
      * @param remark 备注
-     * @param uid 操作人
+     * @param optUid 操作人（可为空）
      * @return true(成功)、false(失败)
      */
-    Boolean updatePayStateById(Long id, Integer payState, String remark, Long uid);
+    Boolean updatePayStateById(Long id, Integer payState, String remark, Long optUid);
 
     /**
      * 根据ID更新使用状态
      * @param orderNo 订单编码
      * @param useState 使用状态
-     * @param uid 操作人
+     * @param optUid 操作人（可为空）
      * @return true(成功)、false(失败)
      */
-    Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long uid);
+    Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long optUid);
 
     /**
      * 根据ID更新使用状态
      * @param id 主键ID
      * @param useState 使用状态
-     * @param uid 操作人
+     * @param optUid 操作人（可为空）
      * @return true(成功)、false(失败)
      */
-    Boolean updateUseStateById(Long id, Integer useState, Long uid);
+    Boolean updateUseStateById(Long id, Integer useState, Long optUid);
 
     /**
      * 新增数据，返回主键ID

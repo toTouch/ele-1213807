@@ -30,7 +30,7 @@ public interface CarRentalPackageService {
      * 检测唯一：租户ID+套餐名称
      * @param tenantId 租户ID
      * @param name 套餐名称
-     * @return
+     * @return true(存在)、false(不存在)
      */
     Boolean uqByTenantIdAndName(Integer tenantId, String name);
 

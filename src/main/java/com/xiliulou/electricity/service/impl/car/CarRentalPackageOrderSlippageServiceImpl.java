@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -35,11 +34,11 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
      *
      * @param tenantId 租户ID
      * @param uid      用户ID
-     * @return
+     * @return 逾期订单信息集
      */
     @Slave
     @Override
-    public CarRentalPackageOrderSlippagePO selectUnPayByByUid(Integer tenantId, Long uid) {
+    public List<CarRentalPackageOrderSlippagePO> selectUnPayByByUid(Integer tenantId, Long uid) {
         if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
@@ -64,87 +63,83 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
      * 全表扫描，慎用
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 逾期订单信息集
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderSlippagePO>> list(CarRentalPackageOrderSlippageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-
-        return R.ok(carRentalPackageOrderSlippageMapper.list(qryModel));
+    public List<CarRentalPackageOrderSlippagePO> list(CarRentalPackageOrderSlippageQryModel qryModel) {
+        return carRentalPackageOrderSlippageMapper.list(qryModel);
     }
 
     /**
      * 条件查询分页
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 逾期订单信息集
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageOrderSlippagePO>> page(CarRentalPackageOrderSlippageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageOrderSlippagePO> page(CarRentalPackageOrderSlippageQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderSlippageMapper.page(qryModel));
+        return carRentalPackageOrderSlippageMapper.page(qryModel);
     }
 
     /**
      * 条件查询总数
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalPackageOrderSlippageQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalPackageOrderSlippageQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderSlippageMapper.count(qryModel));
+        return carRentalPackageOrderSlippageMapper.count(qryModel);
     }
 
     /**
      * 根据订单编码查询
      *
      * @param orderNo 订单编码
-     * @return
+     * @return 逾期订单信息
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderSlippagePO> selectByOrderNo(String orderNo) {
+    public CarRentalPackageOrderSlippagePO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderSlippageMapper.selectByOrderNo(orderNo));
+        return carRentalPackageOrderSlippageMapper.selectByOrderNo(orderNo);
     }
 
     /**
      * 根据ID查询
      *
      * @param id 主键ID
-     * @return
+     * @return 逾期订单信息
      */
     @Slave
     @Override
-    public R<CarRentalPackageOrderSlippagePO> selectById(Long id) {
+    public CarRentalPackageOrderSlippagePO selectById(Long id) {
         if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageOrderSlippageMapper.selectById(id));
+        return carRentalPackageOrderSlippageMapper.selectById(id);
     }
 
     /**
      * 新增数据，返回主键ID
      *
      * @param entity 操作实体
-     * @return
+     * @return 主键ID
      */
     @Override
     public Long insert(CarRentalPackageOrderSlippagePO entity) {

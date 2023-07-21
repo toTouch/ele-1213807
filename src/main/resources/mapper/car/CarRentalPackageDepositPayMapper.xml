@@ -20,7 +20,7 @@
         <result property="type" column="type" jdbcType="INTEGER" />
         <result property="changeAmount" column="change_amount" jdbcType="DECIMAL" />
         <result property="deposit" column="deposit" jdbcType="DECIMAL" />
-        <result property="depositExemption" column="deposit_exemption" jdbcType="INTEGER" />
+        <result property="freeDeposit" column="free_deposit" jdbcType="INTEGER" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
         <result property="payState" column="pay_state" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
@@ -37,7 +37,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_type`, `type`, `change_amount`, `deposit`, `deposit_exemption`, `deposit_rebate_approve`,
+        `uid`, `order_no`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`, `deposit_rebate_approve`,
         `pay_type`, `pay_state`, `remark`, `source_order_no`
     </sql>
 
@@ -55,6 +55,8 @@
         <if test=" uid != null "> AND `uid` = #{uid} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
+        <if test=" rentalPackageType != null "> AND `rental_package_type` = #{rentalPackageType} </if>
+        <if test=" createTimeBegin != null and createTimeEnd != null "> AND `create_time` BETWEEN #{createTimeBegin} AND #{createTimeEnd} </if>
     </sql>
 
     <!-- 条件新增字段 -->
@@ -74,7 +76,7 @@
             <if test=" type != null "> `type`, </if>
             <if test=" changeAmount != null "> `change_amount`, </if>
             <if test=" deposit != null "> `deposit`, </if>
-            <if test=" depositExemption != null "> `deposit_exemption`, </if>
+            <if test=" freeDeposit != null "> `free_deposit`, </if>
             <if test=" payType != null "> `pay_type`, </if>
             <if test=" payState != null "> `pay_state`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
@@ -98,7 +100,7 @@
             <if test=" type != null "> #{type}, </if>
             <if test=" changeAmount != null "> #{changeAmount}`, </if>
             <if test=" deposit != null "> #{deposit}, </if>
-            <if test=" depositExemption != null "> #{depositExemption}, </if>
+            <if test=" freeDeposit != null "> #{freeDeposit}, </if>
             <if test=" payType != null "> #{payType}, </if>
             <if test=" payState != null "> #{payState, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
@@ -131,9 +133,8 @@
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
-            ORDER BY `create_time` DESC
         </where>
     </select>
 

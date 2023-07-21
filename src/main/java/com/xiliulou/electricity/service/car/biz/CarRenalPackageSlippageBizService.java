@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.car.biz;
 
+import java.math.BigDecimal;
+
 /**
  * 逾期业务聚合 BizService
  *
@@ -13,7 +15,7 @@ public interface CarRenalPackageSlippageBizService {
      * @param uid 用户ID
      * @return
      */
-    String queryCarPackageUnpaidAmountByUid(Integer tenantId, Long uid);
+    BigDecimal queryCarPackageUnpaidAmountByUid(Integer tenantId, Long uid);
 
     /**
      * 是否存在未支付的滞纳金<br />

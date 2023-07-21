@@ -18,42 +18,42 @@ public interface CarRentalOrderMapper {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询条件模型
-     * @return
+     * @return 车辆租赁订单集
      */
     List<CarRentalOrderPO> list(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
-     * @return
+     * @return 车辆租赁订单集
      */
     List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询条件模型
-     * @return
+     * @return 总数
      */
     Integer count(CarRentalOrderQryModel qryModel);
 
     /**
      * 根据订单编码查询
      * @param orderNo 订单编码
-     * @return
+     * @return 车辆租赁订单
      */
     CarRentalOrderPO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 车辆租赁订单
      */
     CarRentalOrderPO selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
-     * @return
+     * @return 操作条数
      */
     int insert(CarRentalOrderPO entity);
 }

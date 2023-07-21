@@ -19,16 +19,16 @@ public interface CarRentalPackageOrderSlippageMapper {
      * 根据用户ID查询未支付的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return 逾期订单信息集
      */
-    CarRentalPackageOrderSlippagePO selectUnPaidByByUid(@Param("tenantId") Integer tenantId, @Param("tenantId") Long uid);
+    List<CarRentalPackageOrderSlippagePO> selectUnPaidByByUid(@Param("tenantId") Integer tenantId, @Param("tenantId") Long uid);
 
     /**
      * 是否存在未缴纳的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param time 时间
-     * @return
+     * @return 总条数
      */
     Integer isExitUnpaid(@Param("tenantId") Integer tenantId, @Param("tenantId") Long uid, @Param("tenantId")Long time);
 
@@ -36,42 +36,42 @@ public interface CarRentalPackageOrderSlippageMapper {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询条件模型
-     * @return
+     * @return 逾期订单信息集
      */
     List<CarRentalPackageOrderSlippagePO> list(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
-     * @return
+     * @return 逾期订单信息集
      */
     List<CarRentalPackageOrderSlippagePO> page(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询条件模型
-     * @return
+     * @return 总数
      */
     Integer count(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 根据订单编码查询
      * @param orderNo 订单编码
-     * @return
+     * @return 逾期订单信息
      */
     CarRentalPackageOrderSlippagePO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 逾期订单信息
      */
     CarRentalPackageOrderSlippagePO selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
-     * @return
+     * @return 操作条数
      */
     int insert(CarRentalPackageOrderSlippagePO entity);
 }

@@ -21,7 +21,6 @@
         <result property="dueTime" column="due_time" jdbcType="BIGINT" />
         <result property="dueTimeTotal" column="due_time_total" jdbcType="BIGINT" />
         <result property="residue" column="residue" jdbcType="BIGINT" />
-        <result property="residueTotal" column="residue_total" jdbcType="BIGINT" />
         <result property="status" column="status" jdbcType="INTEGER" />
         <result property="remark" column="remark" jdbcType="VARCHAR" />
         <result property="insuranceOrderId" column="insurance_order_id" jdbcType="VARCHAR" />
@@ -38,7 +37,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `residue_total`, `status`, `remark`, `insurance_order_id`, `pay_count`
+        `uid`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `due_time`, `due_time_total`, `residue`, `status`, `remark`, `insurance_order_id`, `pay_count`
     </sql>
 
     <!-- 全部字段 -->
@@ -70,7 +69,6 @@
             <if test=" dueTime != null "> `due_time`, </if>
             <if test=" dueTimeTotal != null "> `due_time_total`, </if>
             <if test=" residue != null "> `residue`, </if>
-            <if test=" residueTotal != null "> `residue_total`, </if>
             <if test=" status != null "> `status`, </if>
             <if test=" remark != null and remark != '' "> `remark`, </if>
             <if test=" insuranceOrderId != null and insuranceOrderId != '' "> `insurance_order_id`, </if>
@@ -95,7 +93,6 @@
             <if test=" dueTime != null "> #{dueTime}, </if>
             <if test=" dueTimeTotal != null "> #{dueTimeTotal}, </if>
             <if test=" residue != null "> #{residue}, </if>
-            <if test=" residueTotal != null "> #{residueTotal}, </if>
             <if test=" status != null "> #{status}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
             <if test=" insuranceOrderId != null and insuranceOrderId != '' "> #{insuranceOrderId}, </if>
@@ -117,7 +114,7 @@
     <update id="rentRefundByUidAndPackageOrderNo">
         UPDATE <include refid="table_name" />
         <set>
-            `update_time` = #{optTime}, `update_uid` = #{optUid}, `rental_package_order_no` = NULL, `rental_package_id` = NULL, `rental_package_confine` = NULL, `due_time` = NULL, `due_time_total` = NULL, `residue` = NULL, `residue_total` = NULL, `status` = 1
+            `update_time` = #{optTime}, `update_uid` = #{optUid}, `rental_package_order_no` = NULL, `rental_package_id` = NULL, `rental_package_confine` = NULL, `due_time` = NULL, `due_time_total` = NULL, `residue` = NULL, `status` = 1
         </set>
         <where>
             `uid` = #{uid} AND `rental_package_order_no` = #{packageOrderNo} AND `del_flag` = 0
@@ -180,11 +177,11 @@
             <if test=" dueTime != null "> , `due_time` = #{dueTime} </if>
             <if test=" dueTimeTotal != null "> , `due_time_total` = #{dueTimeTotal} </if>
             <if test=" residue != null "> , `residue` = #{residue} </if>
-            <if test=" dueTimeTotal != null "> , `residue_total` = #{residueTotal} </if>
             <if test=" status != null "> , `status` = #{status} </if>
             <if test=" deposit != null "> , `deposit` = #{deposit} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
             <if test=" insuranceOrderId != null and insuranceOrderId != '' "> , `insurance_order_id` = #{insuranceOrderId} </if>
+            <if test=" payCount != null "> , `pay_count` = #{payCount} </if>
         </set>
         <where>
             `id` = #{id}
@@ -203,9 +200,8 @@
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
-            ORDER BY `create_time` DESC
         </where>
     </select>
 

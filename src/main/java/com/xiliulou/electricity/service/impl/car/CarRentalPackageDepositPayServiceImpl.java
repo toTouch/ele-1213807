@@ -89,10 +89,6 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     @Slave
     @Override
     public List<CarRentalPackageDepositPayPO> list(CarRentalPackageDepositPayQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-
         return carRentalPackageDepositPayMapper.list(qryModel);
     }
 

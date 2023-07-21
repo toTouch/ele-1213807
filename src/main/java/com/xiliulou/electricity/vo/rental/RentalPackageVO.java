@@ -6,6 +6,7 @@ import com.xiliulou.electricity.vo.car.CarVO;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 租赁套餐展示层数据模型
@@ -41,7 +42,7 @@ public class RentalPackageVO implements Serializable {
     /**
      * 滞纳金金额
      */
-    private String lateFeeAmount;
+    private BigDecimal lateFeeAmount;
 
     /**
      * 状态

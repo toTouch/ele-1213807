@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -33,18 +32,19 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     private CarRentalPackageOrderMapper carRentalPackageOrderMapper;
 
     /**
-     * 根据用户ID集查询每一个用户第一条未使用的支付成功的订单信息
+     * 根据用户ID查询第一条未使用的支付成功的订单信息
      *
-     * @param uidList 用户ID集
-     * @return 套餐购买订单集
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 套餐购买订单
      */
     @Slave
     @Override
-    public List<CarRentalPackageOrderPO> selectFirstUnUsedByUids(List<Long> uidList) {
-        if (CollectionUtils.isEmpty(uidList)) {
+    public CarRentalPackageOrderPO selectFirstUnUsedByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
-        return carRentalPackageOrderMapper.selectFirstUnUsedByUids(uidList);
+        return carRentalPackageOrderMapper.selectFirstUnUsedByUid(tenantId, uid);
     }
 
     /**
@@ -161,10 +161,6 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
     @Slave
     @Override
     public List<CarRentalPackageOrderPO> list(CarRentalPackageOrderQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-
         return carRentalPackageOrderMapper.list(qryModel);
     }
 
@@ -291,17 +287,17 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
      *
      * @param orderNo  订单编码
      * @param useState 使用状态
-     * @param uid      操作人
+     * @param optUid      操作人ID（可为空）
      * @return true(成功)、false(失败)
      */
     @Override
-    public Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long uid) {
+    public Boolean updateUseStateByOrderNo(String orderNo, Integer useState, Long optUid) {
         if (!ObjectUtils.allNotNull(orderNo, useState) || !BasicEnum.isExist(useState, UseStateEnum.class)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         long now = System.currentTimeMillis();
-        int num = carRentalPackageOrderMapper.updateUseStateByOrderNo(orderNo, useState, uid, now);
+        int num = carRentalPackageOrderMapper.updateUseStateByOrderNo(orderNo, useState, optUid, now);
 
         return num >= 0;
     }

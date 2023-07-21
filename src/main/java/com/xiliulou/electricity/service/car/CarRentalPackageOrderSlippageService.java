@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderSlippageQryModel;
 
@@ -17,9 +16,9 @@ public interface CarRentalPackageOrderSlippageService {
      * 根据用户ID查询未支付的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return 逾期订单信息集
      */
-    CarRentalPackageOrderSlippagePO selectUnPayByByUid(Integer tenantId, Long uid);
+    List<CarRentalPackageOrderSlippagePO> selectUnPayByByUid(Integer tenantId, Long uid);
 
     /**
      * 距当前时间，是否存在未缴纳的逾期订单
@@ -33,43 +32,43 @@ public interface CarRentalPackageOrderSlippageService {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型
-     * @return
+     * @return 逾期订单信息集
      */
-    R<List<CarRentalPackageOrderSlippagePO>> list(CarRentalPackageOrderSlippageQryModel qryModel);
+    List<CarRentalPackageOrderSlippagePO> list(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
-     * @return
+     * @return 逾期订单信息集
      */
-    R<List<CarRentalPackageOrderSlippagePO>> page(CarRentalPackageOrderSlippageQryModel qryModel);
+    List<CarRentalPackageOrderSlippagePO> page(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
-    R<Integer> count(CarRentalPackageOrderSlippageQryModel qryModel);
+    Integer count(CarRentalPackageOrderSlippageQryModel qryModel);
 
     /**
      * 根据订单编码查询
      * @param orderNo 订单编码
-     * @return
+     * @return 逾期订单信息
      */
-    R<CarRentalPackageOrderSlippagePO> selectByOrderNo(String orderNo);
+    CarRentalPackageOrderSlippagePO selectByOrderNo(String orderNo);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 逾期订单信息
      */
-    R<CarRentalPackageOrderSlippagePO> selectById(Long id);
+    CarRentalPackageOrderSlippagePO selectById(Long id);
 
 
     /**
      * 新增数据，返回主键ID
      * @param entity 操作实体
-     * @return
+     * @return 主键ID
      */
     Long insert(CarRentalPackageOrderSlippagePO entity);
 }

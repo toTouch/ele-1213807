@@ -939,7 +939,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 7. 滞纳金信息
-        String lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
+        BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
 
         // 构建返回信息
         RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTermEntity, carRentalPackageEntity, carInfoDO, lateFeeAmount);
@@ -947,7 +947,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return R.ok(rentalPackageVO);
     }
 
-    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO carRentalPackageEntity, CarInfoDO carInfoDO, String lateFeeAmount) {
+    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackagePO carRentalPackageEntity, CarInfoDO carInfoDO, BigDecimal lateFeeAmount) {
         // 构建返回值
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             return null;
@@ -1413,11 +1413,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + dueTime);
 
-            // 计算总套餐余量
-            if (ObjectUtils.isNotEmpty(memberTermEntity.getResidueTotal())) {
-                memberTermUpdateEntity.setResidueTotal(memberTermEntity.getResidueTotal() + carRentalPackageOrderEntity.getConfineNum());
-            }
-
             // 套餐购买总次数
             memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
@@ -1533,7 +1528,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setRentalPackageType(packageEntity.getType());
         carRentalPackageMemberTermEntity.setRentalPackageConfine(packageEntity.getConfine());
         carRentalPackageMemberTermEntity.setResidue(packageEntity.getConfineNum());
-        carRentalPackageMemberTermEntity.setResidueTotal(carRentalPackageMemberTermEntity.getResidue());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermEntity.setDeposit(carRentalPackageOrderEntity.getDeposit());
         carRentalPackageMemberTermEntity.setTenantId(tenantId);

@@ -138,9 +138,8 @@
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderRentRefundQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
-            ORDER BY `create_time` DESC
         </where>
     </select>
 
