@@ -62,7 +62,7 @@
             </if>
         </where>
         order by create_time desc
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <!--根据条件查询总记录数-->
