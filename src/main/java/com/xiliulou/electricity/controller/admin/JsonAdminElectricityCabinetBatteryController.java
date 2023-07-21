@@ -210,7 +210,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
                         @RequestParam(value = "model", required = false) String model,
                         @RequestParam(value = "power", required = false) Double power,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                        @RequestParam(value = "bindStatus", required = false) Integer bindStatus) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -242,6 +243,11 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
+
+        //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
+        if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
+            electricityBatteryQuery.setBindStatus(bindStatus);
+        }
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
 
