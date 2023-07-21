@@ -41,7 +41,7 @@
     <!-- 私有字段 -->
     <sql id="private_field">
         `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `residue`, `residue_unit`, `refund_amount`, `refund_state`, `remark`,
-        `rent_payment`, `rent_unit`, `rent_unit_price`, `pay_type`, `audit_time`
+        `rent_payment`, `rent_unit_price`, `pay_type`, `audit_time`
     </sql>
 
     <!-- 全部字段 -->

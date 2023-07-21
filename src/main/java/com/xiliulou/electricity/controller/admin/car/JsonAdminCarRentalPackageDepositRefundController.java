@@ -43,7 +43,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     /**
      * 创建退押
      * @param optModel 操作实体类
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/create")
     public R<Boolean> create(@RequestBody CarRentalPackageDepositRefundOptModel optModel) {
@@ -66,7 +66,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     /**
      * 审核拒绝
      * @param optReq 审核操作数据
-     * @return
+     * @return true(成功)、false(失败)
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
@@ -74,7 +74,6 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -87,7 +86,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     /**
      * 审核通过
      * @param optReq 审核操作数据
-     * @return
+     * @return true(成功)、false(失败)
      */
     @PostMapping("/approved")
     public R<Boolean> approved(@RequestBody AuditOptReq optReq) {
@@ -95,7 +94,6 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -108,7 +106,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     /**
      * 条件分页查询
      * @param queryReq 请求参数类
-     * @return
+     * @return 退押订单集
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
