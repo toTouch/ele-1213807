@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.entity.basic.BasicCarPO;
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -33,6 +34,16 @@ public class CarRentalPackageDepositRefundPO extends BasicCarPO {
      * 押金缴纳订单编号
      */
     private String depositPayOrderNo;
+
+    /**
+     * 套餐类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see CarRentalPackageTypeEnum
+     */
+    private Integer rentalPackageType;
 
     /**
      * 申请金额

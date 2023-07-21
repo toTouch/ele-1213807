@@ -321,6 +321,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         refundDepositInsertEntity.setStoreId(memberTermEntity.getStoreId());
         refundDepositInsertEntity.setCreateUid(memberTermEntity.getUid());
         refundDepositInsertEntity.setPayType(payType);
+        refundDepositInsertEntity.setRentalPackageType(memberTermEntity.getRentalPackageType());
         // 默认状态，待审核
         refundDepositInsertEntity.setRefundState(RefundStateEnum.PENDING_APPROVAL.getCode());
 

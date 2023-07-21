@@ -63,13 +63,13 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
                     "        \"payState\":2,\n" +
                     "        \"useState\":2,\n" +
                     "        \"remark\":\"\",\n" +
+                    "        \"couponName\":\"赠送优惠券名称\",\n" +
                     "        \"createTime\":1689749354000,\n" +
                     "        \"franchiseeName\":\"我是加盟商\",\n" +
                     "        \"userRelName\":\"张三\",\n" +
                     "        \"userPhone\":\"15426374839\",\n" +
                     "        \"carRentalPackageName\":\"我是单车套餐\",\n" +
                     "        \"carModelName\":\"我是车辆型号\"\n" +
-                    "        \"couponName\":\"我是赠送优惠券\"\n" +
                     "    },\n" +
                     "    {\n" +
                     "        \"orderNo\":\"2637485039281738\",\n" +
@@ -92,13 +92,13 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
                     "        \"payState\":2,\n" +
                     "        \"useState\":1,\n" +
                     "        \"remark\":\"我是备注啊\",\n" +
+                    "        \"couponName\":\"赠送优惠券名称\",\n" +
                     "        \"createTime\":1689749354000,\n" +
                     "        \"franchiseeName\":\"我是加盟商啊\",\n" +
                     "        \"userRelName\":\"李四\",\n" +
                     "        \"userPhone\":\"17672637489\",\n" +
                     "        \"carRentalPackageName\":\"我是车电一体套餐\",\n" +
                     "        \"carModelName\":\"我是车辆型号啊\"\n" +
-                    "        \"couponName\":\"我是赠送优惠券\"\n" +
                     "    }\n" +
                     "]";
             return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderVO.class));
