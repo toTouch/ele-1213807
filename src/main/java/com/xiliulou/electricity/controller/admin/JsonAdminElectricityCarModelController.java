@@ -55,9 +55,9 @@ public class JsonAdminElectricityCarModelController {
     //新增换电柜车辆型号
     @PostMapping(value = "/admin/electricityCarModel")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
-        if (verifyParams(electricityCarModelQuery)) {
+       /* if (verifyParams(electricityCarModelQuery)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
+        }*/
 
         return electricityCarModelService.save(electricityCarModelQuery);
     }
@@ -66,9 +66,6 @@ public class JsonAdminElectricityCarModelController {
     @PutMapping(value = "/admin/electricityCarModel")
     @Log(title = "修改换电柜车辆型号")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
-        if (verifyParams(electricityCarModelQuery)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
 
         return electricityCarModelService.edit(electricityCarModelQuery);
     }
@@ -187,10 +184,10 @@ public class JsonAdminElectricityCarModelController {
     /**
      * 校验金额不能为0
      *
-     * @param electricityCarModelQuery
+     * @param 
      * @return
      */
-    private boolean verifyParams(ElectricityCarModelQuery electricityCarModelQuery) {
+    /*private boolean verifyParams(ElectricityCarModelQuery electricityCarModelQuery) {
         //校验押金
         if (NumberConstant.ZERO_BD.compareTo(electricityCarModelQuery.getCarDeposit()) == NumberConstant.ONE) {
             return Boolean.TRUE;
@@ -209,7 +206,7 @@ public class JsonAdminElectricityCarModelController {
         }
 
         return Boolean.FALSE;
-    }
+    }*/
     
     @GetMapping(value = "/admin/electricityCarModel/pull")
     public R queryPull(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
