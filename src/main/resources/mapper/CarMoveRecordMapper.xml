@@ -57,12 +57,12 @@
                 and create_time &gt;= #{beginTime}
             </if>
 
-            <if test="query.endTime != null">
+            <if test="endTime != null">
                 and create_time &lt;= #{endTime}
             </if>
         </where>
         order by create_time desc
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <!--根据条件查询总记录数-->
@@ -94,7 +94,7 @@
                 and create_time &gt;= #{beginTime}
             </if>
 
-            <if test="query.endTime != null">
+            <if test="endTime != null">
                 and create_time &lt;= #{endTime}
             </if>
 
