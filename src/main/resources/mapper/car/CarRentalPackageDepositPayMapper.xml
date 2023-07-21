@@ -37,7 +37,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`, `deposit_rebate_approve`,
+        `uid`, `order_no`, `rental_package_type`, `type`, `change_amount`, `deposit`, `free_deposit`,
         `pay_type`, `pay_state`, `remark`, `source_order_no`
     </sql>
 
