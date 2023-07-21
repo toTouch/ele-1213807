@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -64,6 +65,36 @@ public class JsonAdminCarRentalOrderController extends BasicController {
      */
     @PostMapping("/page")
     public R<List<CarRentalOrderVO>> page(@RequestBody CarRentalOrderQryReq queryReq) {
+        // TODO mock数据
+        if (true) {
+            String mockString = "[\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"17283162734829387654\",\n" +
+                    "        \"type\":1,\n" +
+                    "        \"carSn\":\"38dhns345\",\n" +
+                    "        \"rentalState\":2,\n" +
+                    "        \"remark\":\"备注\",\n" +
+                    "        \"createTime\":1690267754000,\n" +
+                    "        \"userRelName\":\"张三\",\n" +
+                    "        \"userPhone\":\"13253648976\",\n" +
+                    "        \"carModelName\":\"车辆型号名称\",\n" +
+                    "        \"storeName\":\"门店名称\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"17283162734829387653\",\n" +
+                    "        \"type\":2,\n" +
+                    "        \"carSn\":\"sjsid8262\",\n" +
+                    "        \"rentalState\":1,\n" +
+                    "        \"remark\":\"备注\",\n" +
+                    "        \"createTime\":1690267754000,\n" +
+                    "        \"userRelName\":\"李四\",\n" +
+                    "        \"userPhone\":\"17625364897\",\n" +
+                    "        \"carModelName\":\"车辆型号名称\",\n" +
+                    "        \"storeName\":\"门店名称\"\n" +
+                    "    }\n" +
+                    "]";
+            return R.ok(JSON.parseArray(mockString, CarRentalOrderVO.class));
+        }
         if (null == queryReq) {
             queryReq = new CarRentalOrderQryReq();
         }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -110,6 +111,37 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
+        // TODO mock数据
+        if (true) {
+            String mockString = "[\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"111111111\",\n" +
+                    "        \"depositPayOrderNo\":\"111111111\",\n" +
+                    "        \"applyAmount\":99,\n" +
+                    "        \"realAmount\":90,\n" +
+                    "        \"payType\":1,\n" +
+                    "        \"refundState\":1,\n" +
+                    "        \"createTime\":1689749354000,\n" +
+                    "        \"remark\":\"\",\n" +
+                    "        \"userRelName\":\"张三\",\n" +
+                    "        \"userPhone\":\"13384937843\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "        \"orderNo\":\"\",\n" +
+                    "        \"depositPayOrderNo\":\"\",\n" +
+                    "        \"applyAmount\":0,\n" +
+                    "        \"realAmount\":0,\n" +
+                    "        \"payType\":0,\n" +
+                    "        \"refundState\":0,\n" +
+                    "        \"createTime\":1689404354000,\n" +
+                    "        \"remark\":\"我是备注\",\n" +
+                    "        \"userRelName\":\"李四\",\n" +
+                    "        \"userPhone\":\"13243256746\"\n" +
+                    "    }\n" +
+                    "]";
+            return R.ok(JSON.parseArray(mockString, CarRentalPackageDepositRefundVO.class));
+        }
+
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
