@@ -127,7 +127,8 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
                                        @RequestParam(value = "model", required = false) String model,
                                        @RequestParam(value = "power", required = false) Double power,
                                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-                                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                                       @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                                       @RequestParam(value = "bindStatus", required = false) Integer bindStatus) {
 
         if (Objects.isNull(size) || size < 0 || size > 50) {
             size = 10L;
@@ -167,6 +168,12 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
         electricityBatteryQuery.setFranchiseeIds(franchiseeIds);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeName(franchiseeName);
+
+        //当运营商信息不存在的时候，才可以查看绑定与未绑定运营商的数据信息
+        if(Objects.isNull(franchiseeId) && CollectionUtils.isEmpty(franchiseeIds)){
+            electricityBatteryQuery.setBindStatus(bindStatus);
+        }
+
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
@@ -358,10 +365,10 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel")
     @Transactional(rollbackFor = Exception.class)
-    public R upload(@RequestParam("file") MultipartFile file) {
+    public R upload(@RequestParam("file") MultipartFile file, @RequestParam("franchiseeId") Long franchiseeId) {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListener(electricityBatteryService)).sheet().doRead();
+                    new BatteryExcelListener(electricityBatteryService, franchiseeId)).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -376,10 +383,10 @@ public class JsonAdminElectricityCabinetBatteryController extends BaseController
      */
     @PostMapping("/admin/battery/excel/v2")
     @Transactional(rollbackFor = Exception.class)
-    public R uploadV2(@RequestParam("file") MultipartFile file) {
+    public R uploadV2(@RequestParam("file") MultipartFile file,  @RequestParam("franchiseeId") Long franchiseeId) {
         try {
             EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class,
-                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode())).sheet().doRead();
+                    new BatteryExcelListenerV2(electricityBatteryService, batteryPlatRetrofitService, tenantService.queryByIdFromCache(TenantContextHolder.getTenantId()).getCode(), franchiseeId)).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }

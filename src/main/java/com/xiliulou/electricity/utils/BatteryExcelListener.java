@@ -30,6 +30,8 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 	 */
 	private ElectricityBatteryService electricityBatteryService;
 
+	private Long franchiseeId;
+
 
 	public BatteryExcelListener() {
 		// 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
@@ -42,6 +44,15 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 	 */
 	public BatteryExcelListener(ElectricityBatteryService electricityBatteryService) {
 		this.electricityBatteryService = electricityBatteryService;
+	}
+
+	/**
+	 * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来, 扩展新的参数, 运营商ID
+	 *
+	 */
+	public BatteryExcelListener(ElectricityBatteryService electricityBatteryService, Long franchiseeId) {
+		this.electricityBatteryService = electricityBatteryService;
+		this.franchiseeId = franchiseeId;
 	}
 
 
@@ -113,6 +124,7 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 				electricityBattery.setCreateTime(System.currentTimeMillis());
 				electricityBattery.setUpdateTime(System.currentTimeMillis());
 				electricityBattery.setTenantId(tenantId);
+				electricityBattery.setFranchiseeId(franchiseeId);
 				electricityBatteryService.insert(electricityBattery);
 			}
 		}

@@ -58,6 +58,7 @@ import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -512,6 +513,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 if (Boolean.TRUE.equals(result.getLeft()) && Objects.nonNull(result.getRight())) {
                     electricityBatteryVO.setPower(Objects.nonNull(result.getRight().getSoc()) ? result.getRight().getSoc() : 0.0);
                 }
+            }
+
+            String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), tenantId);
+            if(StringUtils.isNotEmpty(batteryShortType)){
+                electricityBatteryVO.setModel(batteryShortType);
             }
 
             return electricityBatteryVO;

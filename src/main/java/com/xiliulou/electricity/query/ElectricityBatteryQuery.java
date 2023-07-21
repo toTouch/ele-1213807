@@ -49,4 +49,10 @@ public class ElectricityBatteryQuery {
     private String franchiseeName;
 
     private Double power;
+
+    /**
+     * 绑定加盟商状态， 0-未绑定 1-已绑定
+     */
+    private Integer bindStatus;
+
 }

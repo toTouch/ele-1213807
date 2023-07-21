@@ -132,6 +132,15 @@
                 #{id}
             </foreach>
         </if>
+
+        <if test="query.bindStatus != null and query.bindStatus == 0">
+            and (franchisee_id is null or franchisee_id = 0)
+        </if>
+
+        <if test="query.bindStatus != null and query.bindStatus == 1">
+            and franchisee_id is not null and franchisee_id != 0
+        </if>
+
         order by create_time desc
         limit #{offset}, #{size}
     </select>
