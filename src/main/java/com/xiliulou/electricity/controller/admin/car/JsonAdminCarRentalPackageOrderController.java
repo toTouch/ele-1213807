@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +56,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         // 调用服务
         List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageOrderPOList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（用户信息、套餐名称、加盟商信息）

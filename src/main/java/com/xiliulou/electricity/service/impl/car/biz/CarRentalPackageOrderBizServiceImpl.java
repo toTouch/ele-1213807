@@ -1413,11 +1413,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
             memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + dueTime);
 
-            // 计算总套餐余量
-            if (ObjectUtils.isNotEmpty(memberTermEntity.getResidueTotal())) {
-                memberTermUpdateEntity.setResidueTotal(memberTermEntity.getResidueTotal() + carRentalPackageOrderEntity.getConfineNum());
-            }
-
             // 套餐购买总次数
             memberTermUpdateEntity.setPayCount(memberTermEntity.getPayCount() + 1);
 
@@ -1533,7 +1528,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         carRentalPackageMemberTermEntity.setRentalPackageType(packageEntity.getType());
         carRentalPackageMemberTermEntity.setRentalPackageConfine(packageEntity.getConfine());
         carRentalPackageMemberTermEntity.setResidue(packageEntity.getConfineNum());
-        carRentalPackageMemberTermEntity.setResidueTotal(carRentalPackageMemberTermEntity.getResidue());
         carRentalPackageMemberTermEntity.setStatus(MemberTermStatusEnum.PENDING_EFFECTIVE.getCode());
         carRentalPackageMemberTermEntity.setDeposit(carRentalPackageOrderEntity.getDeposit());
         carRentalPackageMemberTermEntity.setTenantId(tenantId);

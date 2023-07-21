@@ -76,7 +76,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
      *
      * @param tenantId 租户ID
      * @param name     套餐名称
-     * @return
+     * @return true(存在)、false(不存在)
      */
     @Slave
     @Override
@@ -148,10 +148,6 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
     @Slave
     @Override
     public List<CarRentalPackagePO> list(CarRentalPackageQryModel qryModel) {
-        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-
         return carRentalPackageMapper.list(qryModel);
     }
 

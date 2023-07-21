@@ -144,9 +144,13 @@
         </trim>
     </sql>
 
-    <!-- 根据用户ID集查询每一个用户第一条未使用的支付成功的订单信息 -->
-    <select id="selectFirstUnUsedByUids" resultMap="entityMap">
-
+    <!-- 根据用户ID查询第一条未使用的支付成功的订单信息 -->
+    <select id="selectFirstUnUsedByUid" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `tenant_id` = #{id} AND `uid` = #{uid} AND `pay_state` = 2 AND `del_flag` = 0
+        </where>
+        ORDER BY `id` ASC LIMIT 1
     </select>
 
     <!-- 根据用户ID查找最后一条成功的购买记录信息 -->
@@ -201,9 +205,8 @@
     <select id="list" parameterType="com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
         <where>
-            `tenant_id` = #{tenantId} AND `del_flag` = 0
+            `del_flag` = 0
             <include refid="where_field" />
-            ORDER BY `create_time` DESC
         </where>
     </select>
 
@@ -248,7 +251,7 @@
         UPDATE <include refid="table_name" />
         <set>
             `pay_state` = #{payState}, `update_time` = #{optTime}
-            <if test=" uid != null "> , `uid` = #{uid} </if>
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
         </set>
         <where>
@@ -261,7 +264,7 @@
         UPDATE <include refid="table_name" />
         <set>
             `pay_state` = #{payState}, `update_time` = #{optTime}
-            <if test=" uid != null "> , `uid` = #{uid} </if>
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
             <if test=" remark != null and remark != '' "> , `remark` = #{remark} </if>
         </set>
         <where>
@@ -274,7 +277,7 @@
         UPDATE <include refid="table_name" />
         <set>
             `use_state` = #{useState}, `update_time` = #{optTime}
-            <if test=" uid != null "> , `uid` = #{uid} </if>
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
         </set>
         <where>
             `order_no` = #{orderNo}
@@ -286,7 +289,7 @@
         UPDATE <include refid="table_name" />
         <set>
             `use_state` = #{useState}, `update_time` = #{optTime}
-            <if test=" uid != null "> , `uid` = #{uid} </if>
+            <if test=" optUid != null "> , `update_uid` = #{optUid} </if>
         </set>
         <where>
             `id` = #{id}

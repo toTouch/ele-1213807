@@ -72,11 +72,6 @@ public class CarRentalPackageMemberTermPO extends BasicCarPO {
     private Long residue;
 
     /**
-     * 总计余量
-     */
-    private Long residueTotal;
-
-    /**
      * 状态
      * <pre>
      *     0-待生效

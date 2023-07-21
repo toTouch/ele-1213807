@@ -16,12 +16,13 @@ import java.util.List;
 public interface CarRentalPackageOrderMapper {
 
     /**
-     * 根据用户ID集查询每一个用户第一条未使用的支付成功的订单信息
+     * 根据用户ID查询第一条未使用的支付成功的订单信息
      *
-     * @param uidList 用户ID集
-     * @return 套餐购买订单集
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 套餐购买订单
      */
-    List<CarRentalPackageOrderPO> selectFirstUnUsedByUids(@Param("uidList") List<Long> uidList);
+    CarRentalPackageOrderPO selectFirstUnUsedByUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     /**
      * 根据用户ID查找最后一条成功的购买记录信息
@@ -110,42 +111,42 @@ public interface CarRentalPackageOrderMapper {
      * @param orderNo 订单编码
      * @param payState 支付状态
      * @param remark 备注
-     * @param uid 操作人
+     * @param optUid 操作人ID（可为空）
      * @param optTime 操作时间
      * @return 操作总条数
      */
-    int updatePayStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("remark") String remark, @Param("uid") Long uid, @Param("optTime") Long optTime);
+    int updatePayStateByOrderNo(@Param("orderNo") String orderNo, @Param("payState") Integer payState, @Param("remark") String remark, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
 
     /**
      * 根据ID更新支付状态
      * @param id 主键ID
      * @param payState 支付状态
      * @param remark 备注
-     * @param uid 操作人
+     * @param optUid 操作人ID（可为空）
      * @param optTime 操作时间
      * @return 操作总条数
      */
-    int updatePayStateById(@Param("id") Long id, @Param("payState") Integer payState, @Param("remark") String remark, @Param("uid") Long uid, @Param("optTime") Long optTime);
+    int updatePayStateById(@Param("id") Long id, @Param("payState") Integer payState, @Param("remark") String remark, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
 
     /**
      * 根据ID更新使用状态
      * @param orderNo 订单编码
      * @param useState 使用状态
-     * @param uid 操作人
+     * @param optUid 操作人ID（可为空）
      * @param optTime 操作时间
      * @return 操作总条数
      */
-    int updateUseStateByOrderNo(@Param("orderNo") String orderNo, @Param("useState") Integer useState, @Param("uid") Long uid, @Param("optTime") Long optTime);
+    int updateUseStateByOrderNo(@Param("orderNo") String orderNo, @Param("useState") Integer useState, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
 
     /**
      * 根据ID更新使用状态
      * @param id 主键ID
      * @param useState 使用状态
-     * @param uid 操作人
+     * @param optUid 操作人ID（可为空）
      * @param optTime 操作时间
      * @return 操作总条数
      */
-    int updateUseStateById(@Param("id") Long id, @Param("useState") Integer useState, @Param("uid") Long uid, @Param("optTime") Long optTime);
+    int updateUseStateById(@Param("id") Long id, @Param("useState") Integer useState, @Param("optUid") Long optUid, @Param("optTime") Long optTime);
 
     /**
      * 插入

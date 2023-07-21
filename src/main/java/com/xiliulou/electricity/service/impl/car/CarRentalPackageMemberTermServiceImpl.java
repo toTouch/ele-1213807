@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl.car;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
@@ -76,7 +75,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @param tenantId       租户ID
      * @param uid            用户ID
      * @param packageOrderNo 购买套餐订单编码
-     * @return
+     * @return 租车套餐会员期限信息
      */
     @Slave
     @Override
@@ -93,7 +92,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @param tenantId 租户ID
      * @param uid      用户ID
      * @param optId    操作人ID（可以为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public Boolean delByUidAndTenantId(Integer tenantId, Long uid, Long optId) {
@@ -111,7 +110,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @param uid      用户ID
      * @param status   状态
      * @param optId    操作人ID（可以为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public Boolean updateStatusByUidAndTenantId(Integer tenantId, Long uid, Integer status, Long optId) {
@@ -128,7 +127,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * @param id     主键ID
      * @param status 状态
      * @param optId  操作人（可以为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public boolean updateStatusById(Long id, Integer status, Long optId) {
@@ -143,7 +142,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * 根据主键ID更新数据
      *
      * @param entity 数据实体
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public Boolean updateById(CarRentalPackageMemberTermPO entity) {
@@ -163,7 +162,7 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * 可能返回<code>null</code>
      * @param tenantId 租户ID
      * @param uid      用户ID
-     * @return
+     * @return 租车套餐会员期限信息
      */
     @Slave
     @Override
@@ -193,71 +192,67 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * 全表扫描，慎用
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 租车套餐会员期限信息集
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageMemberTermPO>> list(CarRentalPackageMemberTermQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-
-        return R.ok(carRentalPackageMemberTermMapper.list(qryModel));
+    public List<CarRentalPackageMemberTermPO> list(CarRentalPackageMemberTermQryModel qryModel) {
+        return carRentalPackageMemberTermMapper.list(qryModel);
     }
 
     /**
      * 条件查询分页
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 租车套餐会员期限信息集
      */
     @Slave
     @Override
-    public R<List<CarRentalPackageMemberTermPO>> page(CarRentalPackageMemberTermQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalPackageMemberTermPO> page(CarRentalPackageMemberTermQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageMemberTermMapper.page(qryModel));
+        return carRentalPackageMemberTermMapper.page(qryModel);
     }
 
     /**
      * 条件查询总数
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalPackageMemberTermQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalPackageMemberTermQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageMemberTermMapper.count(qryModel));
+        return carRentalPackageMemberTermMapper.count(qryModel);
     }
 
     /**
      * 根据ID查询
      *
      * @param id 主键ID
-     * @return
+     * @return 租车套餐会员期限信息
      */
     @Slave
     @Override
-    public R<CarRentalPackageMemberTermPO> selectById(Long id) {
+    public CarRentalPackageMemberTermPO selectById(Long id) {
         if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalPackageMemberTermMapper.selectById(id));
+        return carRentalPackageMemberTermMapper.selectById(id);
     }
 
     /**
      * 新增数据，返回主键ID
      *
      * @param entity 操作实体
-     * @return
+     * @return 主键ID
      */
     @Override
     public Long insert(CarRentalPackageMemberTermPO entity) {

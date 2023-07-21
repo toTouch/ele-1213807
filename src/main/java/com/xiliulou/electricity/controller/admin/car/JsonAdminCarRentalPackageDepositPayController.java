@@ -15,10 +15,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,8 +33,8 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
 
     /**
      * 根据订单编号同步免押状态
-     * @param orderNo
-     * @return
+     * @param orderNo 押金缴纳订单编码
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/syncFreeState")
     public R<Boolean> syncFreeState(String orderNo) {
@@ -48,7 +45,7 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
     /**
      * 条件分页查询
      * @param queryReq 请求参数类
-     * @return
+     * @return 押金缴纳订单集
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositPayVO>> page(@RequestBody CarRentalPackageDepositPayQryReq queryReq) {
@@ -67,26 +64,23 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         // 调用服务
         List<CarRentalPackageDepositPayPO> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
         if (CollectionUtils.isEmpty(depositPayEntityList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
 
         // 获取辅助业务信息（用户信息）
-        Set<Long> uids = new HashSet<>();
-        depositPayEntityList.forEach(carRentalPackageOrder -> {
-            uids.add(carRentalPackageOrder.getUid());
-        });
+        Set<Long> uids = depositPayEntityList.stream().map(CarRentalPackageDepositPayPO::getUid).collect(Collectors.toSet());
 
         // 用户信息
         Map<Long, UserInfo> userInfoMap = getUserInfoByUidsForMap(uids);
 
         // 模型转换，封装返回
-        List<CarRentalPackageDepositPayVO> depositPayVOList = depositPayEntityList.stream().map(depositPayPO -> {
+        List<CarRentalPackageDepositPayVO> depositPayVOList = depositPayEntityList.stream().map(depositPayEntity -> {
             CarRentalPackageDepositPayVO depositPayVO = new CarRentalPackageDepositPayVO();
-            BeanUtils.copyProperties(depositPayPO, depositPayVO);
+            BeanUtils.copyProperties(depositPayEntity, depositPayVO);
 
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(depositPayPO.getUid(), new UserInfo());
+                UserInfo userInfo = userInfoMap.getOrDefault(depositPayEntity.getUid(), new UserInfo());
                 depositPayVO.setUserRelName(userInfo.getName());
                 depositPayVO.setUserPhone(userInfo.getPhone());
             }
@@ -100,7 +94,7 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
     /**
      * 条件查询总数
      * @param qryReq 请求参数类
-     * @return
+     * @return 总数
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalPackageDepositPayQryReq qryReq) {

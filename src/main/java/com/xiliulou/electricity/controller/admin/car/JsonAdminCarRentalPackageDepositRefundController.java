@@ -21,10 +21,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -135,7 +132,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
         // 调用服务
         List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(depositRefundEntityList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（用户信息）

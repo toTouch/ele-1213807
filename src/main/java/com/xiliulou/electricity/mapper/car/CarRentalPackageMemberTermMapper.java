@@ -42,7 +42,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 套餐购买订单编码
-     * @return
+     * @return 会员套餐信息
      */
     CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("packageOrderNo") String packageOrderNo);
 
@@ -52,7 +52,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param uid 用户ID
      * @param optId 操作人ID（可以为空）
      * @param optTime 操作时间
-     * @return
+     * @return 操作条数
      */
     int delByUidAndTenantId(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("optId") Long optId, @Param("optTime") Long optTime);
 
@@ -63,7 +63,7 @@ public interface CarRentalPackageMemberTermMapper {
      * @param status 状态
      * @param optId 操作人ID（可以为空）
      * @param optTime 操作时间
-     * @return
+     * @return 操作条数
      */
     int updateStatusByUidAndTenantId(@Param("tenantId") Integer tenantId, @Param("uid") Long uid, @Param("status") Integer status, @Param("optId") Long optId, @Param("optTime") Long optTime);
 
@@ -73,14 +73,14 @@ public interface CarRentalPackageMemberTermMapper {
      * @param status 状态
      * @param optId 操作人（可以为空）
      * @param optTime 操作时间
-     * @return
+     * @return 操作条数
      */
     int updateStatusById(@Param("id") Long id, @Param("status") Integer status, @Param("optId") Long optId, @Param("optTime") Long optTime);
 
     /**
      * 根据主键ID更新数据
-     * @param entity
-     * @return
+     * @param entity 实体数据
+     * @return 操作条数
      */
     int updateById(CarRentalPackageMemberTermPO entity);
 
@@ -88,7 +88,7 @@ public interface CarRentalPackageMemberTermMapper {
      * 根据租户ID和用户ID查询租车套餐会员限制信息
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return 操作条数
      */
     CarRentalPackageMemberTermPO selectByTenantIdAndUid(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
@@ -96,35 +96,35 @@ public interface CarRentalPackageMemberTermMapper {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询条件模型
-     * @return
+     * @return 会员套餐信息集
      */
     List<CarRentalPackageMemberTermPO> list(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询条件模型
-     * @return
+     * @return 会员套餐信息集
      */
     List<CarRentalPackageMemberTermPO> page(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询条件模型
-     * @return
+     * @return 总数
      */
     Integer count(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 会员套餐信息
      */
     CarRentalPackageMemberTermPO selectById(Long id);
 
     /**
      * 插入
      * @param entity 实体类
-     * @return
+     * @return 操作条数
      */
     int insert(CarRentalPackageMemberTermPO entity);
 

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.model.car.query;
 
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -50,6 +51,16 @@ public class CarRentalPackageDepositPayQryModel implements Serializable {
      */
     private Long uid;
 
+    /**
+     * 套餐类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see CarRentalPackageTypeEnum
+     */
+    private Integer rentalPackageType;
+
 
     /**
      * 交易方式
@@ -72,4 +83,15 @@ public class CarRentalPackageDepositPayQryModel implements Serializable {
      * @see PayStateEnum
      */
     private Integer payState;
+
+
+    /**
+     * 创建时间开始
+     */
+    private Long createTimeBegin;
+
+    /**
+     * 创建时间截止
+     */
+    private Long createTimeEnd;
 }

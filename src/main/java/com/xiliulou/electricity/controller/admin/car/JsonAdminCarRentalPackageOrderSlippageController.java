@@ -11,16 +11,14 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderSlippageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -56,16 +54,15 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
         BeanUtils.copyProperties(queryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalPackageOrderSlippagePO>> listRes = carRentalPackageOrderSlippageService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
+        List<CarRentalPackageOrderSlippagePO> slippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
+        if (CollectionUtils.isEmpty(slippageEntityList)) {
+            return R.ok(Collections.emptyList());
         }
-        List<CarRentalPackageOrderSlippagePO> slippagePOList = listRes.getData();
 
         // 获取辅助业务信息（用户信息、加盟商信息）
         Set<Long> uids = new HashSet<>();
         Set<Long> franchiseeIds = new HashSet<>();
-        slippagePOList.forEach(slippagePO -> {
+        slippageEntityList.forEach(slippagePO -> {
             uids.add(slippagePO.getUid());
             franchiseeIds.add(Long.valueOf(slippagePO.getFranchiseeId()));
         });
@@ -77,22 +74,22 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
         Map<Long, String> franchiseeNameMap = getFranchiseeNameByIdsForMap(franchiseeIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageOrderSlippageVO> slippageVOList = slippagePOList.stream().map(slippagePO -> {
+        List<CarRentalPackageOrderSlippageVO> slippageVOList = slippageEntityList.stream().map(slippageEntity -> {
 
-            CarRentalPackageOrderSlippageVO slippageVO = new CarRentalPackageOrderSlippageVO();
-            BeanUtils.copyProperties(slippagePO, slippageVO);
+            CarRentalPackageOrderSlippageVO slippageVo = new CarRentalPackageOrderSlippageVO();
+            BeanUtils.copyProperties(slippageEntity, slippageVo);
 
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(slippagePO.getUid(), new UserInfo());
-                slippageVO.setUserRelName(userInfo.getName());
-                slippageVO.setUserPhone(userInfo.getPhone());
+                UserInfo userInfo = userInfoMap.getOrDefault(slippageEntity.getUid(), new UserInfo());
+                slippageVo.setUserRelName(userInfo.getName());
+                slippageVo.setUserPhone(userInfo.getPhone());
             }
 
             if (!franchiseeNameMap.isEmpty()) {
-                slippageVO.setFranchiseeName(franchiseeNameMap.getOrDefault(Long.valueOf(slippagePO.getStoreId()), ""));
+                slippageVo.setFranchiseeName(franchiseeNameMap.getOrDefault(Long.valueOf(slippageEntity.getStoreId()), ""));
             }
 
-            return slippageVO;
+            return slippageVo;
         }).collect(Collectors.toList());
 
         return R.ok(slippageVOList);
@@ -118,7 +115,7 @@ public class JsonAdminCarRentalPackageOrderSlippageController extends BasicContr
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalPackageOrderSlippageService.count(qryModel);
+        return R.ok(carRentalPackageOrderSlippageService.count(qryModel));
     }
 
 }

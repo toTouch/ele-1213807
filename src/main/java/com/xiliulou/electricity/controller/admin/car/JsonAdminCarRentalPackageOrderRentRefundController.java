@@ -106,7 +106,7 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         // 调用服务
         List<CarRentalPackageOrderRentRefundPO> refundPOList = carRentalPackageOrderRentRefundService.page(qryModel);
         if (CollectionUtils.isEmpty(refundPOList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（用户信息、租车套餐信息）

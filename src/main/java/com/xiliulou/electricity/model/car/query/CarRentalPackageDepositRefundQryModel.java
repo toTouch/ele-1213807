@@ -47,6 +47,11 @@ public class CarRentalPackageDepositRefundQryModel implements Serializable {
     private String orderNo;
 
     /**
+     * 押金缴纳订单编码
+     */
+    private String depositPayOrderNo;
+
+    /**
      * 用户ID
      */
     private Long uid;

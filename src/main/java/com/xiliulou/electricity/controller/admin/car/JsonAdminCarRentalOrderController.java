@@ -12,16 +12,14 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalOrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -79,20 +77,19 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         BeanUtils.copyProperties(queryReq, qryModel);
 
         // 调用服务
-        R<List<CarRentalOrderPO>> listRes = carRentalOrderService.page(qryModel);
-        if (!listRes.isSuccess()) {
-            return R.fail(listRes.getErrCode(), listRes.getErrMsg());
+        List<CarRentalOrderPO> rentalOrderEntityList = carRentalOrderService.page(qryModel);
+        if (CollectionUtils.isEmpty(rentalOrderEntityList)) {
+            return R.ok(Collections.emptyList());
         }
-        List<CarRentalOrderPO> rentalOrderPOList = listRes.getData();
 
         // 获取辅助业务信息（用户信息、车辆型号信息、门店信息）
         Set<Long> uids = new HashSet<>();
         Set<Integer> carModelIds = new HashSet<>();
         Set<Long> storeIds = new HashSet<>();
-        rentalOrderPOList.forEach(rentalOrderPO -> {
-            uids.add(rentalOrderPO.getUid());
-            carModelIds.add(rentalOrderPO.getCarModelId());
-            storeIds.add(Long.valueOf(rentalOrderPO.getStoreId()));
+        rentalOrderEntityList.forEach(rentalOrderEntity -> {
+            uids.add(rentalOrderEntity.getUid());
+            carModelIds.add(rentalOrderEntity.getCarModelId());
+            storeIds.add(Long.valueOf(rentalOrderEntity.getStoreId()));
         });
 
         // 用户信息
@@ -105,26 +102,26 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         Map<Long, String> storeMap = getStoreNameByIdsForMap(storeIds);
 
         // 模型转换，封装返回
-        List<CarRentalOrderVO> carRentalPackageVOList = rentalOrderPOList.stream().map(rentalOrderPO -> {
+        List<CarRentalOrderVO> carRentalPackageVOList = rentalOrderEntityList.stream().map(rentalOrderEntity -> {
 
-            CarRentalOrderVO rentalOrderVO = new CarRentalOrderVO();
-            BeanUtils.copyProperties(rentalOrderPO, rentalOrderVO);
+            CarRentalOrderVO rentalOrderVo = new CarRentalOrderVO();
+            BeanUtils.copyProperties(rentalOrderEntity, rentalOrderVo);
 
             if (!userInfoMap.isEmpty()) {
-                UserInfo userInfo = userInfoMap.getOrDefault(rentalOrderPO.getUid(), new UserInfo());
-                rentalOrderVO.setUserRelName(userInfo.getName());
-                rentalOrderVO.setUserPhone(userInfo.getPhone());
+                UserInfo userInfo = userInfoMap.getOrDefault(rentalOrderEntity.getUid(), new UserInfo());
+                rentalOrderVo.setUserRelName(userInfo.getName());
+                rentalOrderVo.setUserPhone(userInfo.getPhone());
             }
 
             if (!carModelMap.isEmpty()) {
-                rentalOrderVO.setCarModelName(carModelMap.getOrDefault(rentalOrderPO.getCarModelId(), ""));
+                rentalOrderVo.setCarModelName(carModelMap.getOrDefault(rentalOrderEntity.getCarModelId(), ""));
             }
 
             if (!storeMap.isEmpty()) {
-                rentalOrderVO.setStoreName(storeMap.getOrDefault(Long.valueOf(rentalOrderPO.getStoreId()), ""));
+                rentalOrderVo.setStoreName(storeMap.getOrDefault(Long.valueOf(rentalOrderEntity.getStoreId()), ""));
             }
 
-            return rentalOrderVO;
+            return rentalOrderVo;
         }).collect(Collectors.toList());
 
         return R.ok(carRentalPackageVOList);
@@ -150,7 +147,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        return carRentalOrderService.count(qryModel);
+        return R.ok(carRentalOrderService.count(qryModel));
     }
 
 }

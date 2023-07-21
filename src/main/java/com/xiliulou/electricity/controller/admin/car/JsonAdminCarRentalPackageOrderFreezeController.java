@@ -107,7 +107,7 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         // 调用服务
         List<CarRentalPackageOrderFreezePO> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
         if (CollectionUtils.isEmpty(freezeEntityList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（用户信息、套餐信息）

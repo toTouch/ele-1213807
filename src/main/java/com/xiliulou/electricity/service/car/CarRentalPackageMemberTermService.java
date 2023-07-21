@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageMemberTermQryModel;
 
@@ -39,7 +38,7 @@ public interface CarRentalPackageMemberTermService {
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param packageOrderNo 购买套餐订单编码
-     * @return
+     * @return 租车套餐会员期限信息
      */
     CarRentalPackageMemberTermPO selectByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo);
 
@@ -48,7 +47,7 @@ public interface CarRentalPackageMemberTermService {
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param optId 操作人ID（可以为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean delByUidAndTenantId(Integer tenantId, Long uid, Long optId);
 
@@ -58,7 +57,7 @@ public interface CarRentalPackageMemberTermService {
      * @param uid 用户ID
      * @param status 状态
      * @param optId 操作人ID（可以为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updateStatusByUidAndTenantId(Integer tenantId, Long uid, Integer status, Long optId);
 
@@ -67,14 +66,14 @@ public interface CarRentalPackageMemberTermService {
      * @param id 主键ID
      * @param status 状态
      * @param optId 操作人（可以为空）
-     * @return
+     * @return true(成功)、false(失败)
      */
     boolean updateStatusById(Long id, Integer status, Long optId);
 
     /**
      * 根据主键ID更新数据
      * @param entity 实体数据
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updateById(CarRentalPackageMemberTermPO entity);
 
@@ -84,7 +83,7 @@ public interface CarRentalPackageMemberTermService {
      * 可能返回<code>null</code>
      * @param tenantId 租户ID
      * @param uid 用户ID
-     * @return
+     * @return 租车套餐会员期限信息
      */
     CarRentalPackageMemberTermPO selectByTenantIdAndUid(Integer tenantId, Long uid);
 
@@ -92,36 +91,36 @@ public interface CarRentalPackageMemberTermService {
      * 条件查询列表<br />
      * 全表扫描，慎用
      * @param qryModel 查询模型
-     * @return
+     * @return 租车套餐会员期限信息集
      */
-    R<List<CarRentalPackageMemberTermPO>> list(CarRentalPackageMemberTermQryModel qryModel);
+    List<CarRentalPackageMemberTermPO> list(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询分页
      * @param qryModel 查询模型
-     * @return
+     * @return 租车套餐会员期限信息集
      */
-    R<List<CarRentalPackageMemberTermPO>> page(CarRentalPackageMemberTermQryModel qryModel);
+    List<CarRentalPackageMemberTermPO> page(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 条件查询总数
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
-    R<Integer> count(CarRentalPackageMemberTermQryModel qryModel);
+    Integer count(CarRentalPackageMemberTermQryModel qryModel);
 
     /**
      * 根据ID查询
      * @param id 主键ID
-     * @return
+     * @return 租车套餐会员期限信息
      */
-    R<CarRentalPackageMemberTermPO> selectById(Long id);
+    CarRentalPackageMemberTermPO selectById(Long id);
 
 
     /**
      * 新增数据，返回主键ID
      * @param entity 操作实体
-     * @return
+     * @return 主键ID
      */
     Long insert(CarRentalPackageMemberTermPO entity);
     

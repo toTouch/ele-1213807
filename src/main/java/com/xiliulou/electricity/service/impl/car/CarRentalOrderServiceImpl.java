@@ -1,16 +1,17 @@
 package com.xiliulou.electricity.service.impl.car;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalOrderPO;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalOrderMapper;
-import com.xiliulou.electricity.model.car.opt.CarRentalOrderOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalOrderQryModel;
 import com.xiliulou.electricity.service.car.CarRentalOrderService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -32,103 +33,105 @@ public class CarRentalOrderServiceImpl implements CarRentalOrderService {
      * 全表扫描，慎用
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 车辆租赁订单集
      */
     @Slave
     @Override
-    public R<List<CarRentalOrderPO>> list(CarRentalOrderQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-
-        return R.ok(carRentalOrderMapper.list(qryModel));
+    public List<CarRentalOrderPO> list(CarRentalOrderQryModel qryModel) {
+        return carRentalOrderMapper.list(qryModel);
     }
 
     /**
      * 条件查询分页
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 车辆租赁订单集
      */
     @Slave
     @Override
-    public R<List<CarRentalOrderPO>> page(CarRentalOrderQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public List<CarRentalOrderPO> page(CarRentalOrderQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalOrderMapper.page(qryModel));
+        return carRentalOrderMapper.page(qryModel);
     }
 
     /**
      * 条件查询总数
      *
      * @param qryModel 查询模型
-     * @return
+     * @return 总数
      */
     @Slave
     @Override
-    public R<Integer> count(CarRentalOrderQryModel qryModel) {
-        if (null == qryModel || null == qryModel.getTenantId() || qryModel.getTenantId() <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+    public Integer count(CarRentalOrderQryModel qryModel) {
+        if (!ObjectUtils.allNotNull(qryModel, qryModel.getTenantId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalOrderMapper.count(qryModel));
+        return carRentalOrderMapper.count(qryModel);
     }
 
     /**
      * 根据订单编码查询
      *
      * @param orderNo 订单编码
-     * @return
+     * @return 车辆租赁订单
      */
     @Slave
     @Override
-    public R<CarRentalOrderPO> selectByOrderNo(String orderNo) {
+    public CarRentalOrderPO selectByOrderNo(String orderNo) {
         if (StringUtils.isBlank(orderNo)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalOrderMapper.selectByOrderNo(orderNo));
+        return carRentalOrderMapper.selectByOrderNo(orderNo);
     }
 
     /**
      * 根据ID查询
      *
      * @param id 主键ID
-     * @return
+     * @return 车辆租赁订单
      */
     @Slave
     @Override
-    public R<CarRentalOrderPO> selectById(Long id) {
+    public CarRentalOrderPO selectById(Long id) {
         if (null == id || id <= 0) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return R.ok(carRentalOrderMapper.selectById(id));
+        return carRentalOrderMapper.selectById(id);
     }
 
     /**
      * 新增数据，返回主键ID
      *
-     * @param optModel 操作模型
-     * @return
+     * @param entity 操作模型
+     * @return 主键ID
      */
     @Override
-    public R<Long> insert(CarRentalOrderOptModel optModel) {
-        CarRentalOrderPO entity = new CarRentalOrderPO();
-        BeanUtils.copyProperties(optModel, entity);
+    public Long insert(CarRentalOrderPO entity) {
+        if (ObjectUtils.isEmpty(entity)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
-        // 赋值操作人、时间、删除标记
+        // 赋值操作人、时间、删除标记、订单编码
         long now = System.currentTimeMillis();
         entity.setUpdateUid(entity.getCreateUid());
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
 
+        if (StringUtils.isBlank(entity.getOrderNo())) {
+            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.RETURN_CAR, entity.getUid()));
+        }
+
+
         // 保存入库
         carRentalOrderMapper.insert(entity);
 
-        return R.ok(entity.getId());
+        return entity.getId();
     }
 }

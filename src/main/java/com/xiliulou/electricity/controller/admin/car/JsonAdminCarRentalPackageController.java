@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
@@ -29,10 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +64,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     /**
      * 检测唯一：租户ID+套餐名称
      * @param name 套餐名称
-     * @return
+     * @return true(存在)、false(不存在)
      */
     @GetMapping("/uqByTenantIdAndName")
     public R<Boolean> uqByTenantIdAndName(String name) {
@@ -85,7 +83,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
      * 根据ID修改上下架状态
      * @param id 主键ID
      * @param status 上下架状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/modifyStatusById")
     public R<Boolean> modifyStatusById(Long id, Integer status) {
@@ -95,6 +93,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         // 获取用户
         TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("BasicController.checkPermission failed. not found user.");
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
 
         // 调用服务
         return R.ok(carRentalPackageService.updateStatusById(id, status, user.getUid()));
@@ -103,7 +105,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     /**
      * 条件查询列表
      * @param qryReq 请求参数类
-     * @return
+     * @return 车辆套餐信息集
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageVO>> page(@RequestBody CarRentalPackageQryReq qryReq) {
@@ -120,14 +122,17 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         BeanUtils.copyProperties(qryReq, qryModel);
 
         // 调用服务
-        List<CarRentalPackagePO> carRentalPackagePOList = carRentalPackageService.page(qryModel);
+        List<CarRentalPackagePO> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
+        if (ObjectUtils.isEmpty(carRentalPackageEntityList)) {
+            return R.ok(Collections.emptyList());
+        }
 
         // 获取辅助业务信息（加盟商、车辆型号）
         Set<Long> franchiseeIds = new HashSet<>();
         Set<Integer> carModelIds = new HashSet<>();
-        carRentalPackagePOList.forEach(carRentalPackage -> {
-            franchiseeIds.add(Long.valueOf(carRentalPackage.getFranchiseeId()));
-            carModelIds.add(carRentalPackage.getCarModelId());
+        carRentalPackageEntityList.forEach(carRentalPackageEntity -> {
+            franchiseeIds.add(Long.valueOf(carRentalPackageEntity.getFranchiseeId()));
+            carModelIds.add(carRentalPackageEntity.getCarModelId());
         });
 
         // 获取辅助业务信息（加盟商、车辆型号）
@@ -138,20 +143,20 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Map<Integer, String> carModelMap = getCarModelNameByIdsForMap(carModelIds);
 
         // 模型转换，封装返回
-        List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackagePOList.stream().map(carRentalPackage -> {
+        List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
 
-            CarRentalPackageVO carRentalPackageVO = new CarRentalPackageVO();
-            BeanUtils.copyProperties(carRentalPackage, carRentalPackageVO);
+            CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
+            BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
 
             if (!franchiseeMap.isEmpty()) {
-                carRentalPackageVO.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackage.getFranchiseeId()), ""));
+                carRentalPackageVo.setFranchiseeName(franchiseeMap.getOrDefault(Long.valueOf(carRentalPackageEntity.getFranchiseeId()), ""));
             }
 
             if (!carModelMap.isEmpty()) {
-                carRentalPackageVO.setCarModelName(carModelMap.getOrDefault(carRentalPackage.getCarModelId(), ""));
+                carRentalPackageVo.setCarModelName(carModelMap.getOrDefault(carRentalPackageEntity.getCarModelId(), ""));
             }
 
-            return carRentalPackageVO;
+            return carRentalPackageVo;
         }).collect(Collectors.toList());
 
         return R.ok(carRentalPackageVOList);
@@ -160,7 +165,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     /**
      * 条件查询总数
      * @param qryReq 请求参数类
-     * @return
+     * @return 总数
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalPackageQryReq qryReq) {
@@ -183,7 +188,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     /**
      * 根据ID查询套餐详情
      * @param id 主键ID
-     * @return
+     * @return 车辆套餐信息
      */
     @GetMapping("/queryById")
     public R<CarRentalPackageVO> queryById(Long id) {
@@ -192,46 +197,46 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         }
 
         // 调用服务
-        CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(id);
-        if (ObjectUtils.isEmpty(carRentalPackagePO)) {
+        CarRentalPackagePO carRentalPackageEntity = carRentalPackageService.selectById(id);
+        if (ObjectUtils.isEmpty(carRentalPackageEntity)) {
             return R.ok();
         }
 
         // 查询加盟商
-        Long franchiseeId = Long.valueOf(carRentalPackagePO.getFranchiseeId());
+        Long franchiseeId = Long.valueOf(carRentalPackageEntity.getFranchiseeId());
         Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeId);
 
         // 查询门店
-        Long storeId = Long.valueOf(carRentalPackagePO.getStoreId());
+        Long storeId = Long.valueOf(carRentalPackageEntity.getStoreId());
         Store store = storeService.queryByIdFromCache(storeId);
 
         // 查询车辆型号
-        Integer carModelId = carRentalPackagePO.getCarModelId();
+        Integer carModelId = carRentalPackageEntity.getCarModelId();
         ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(carModelId);
 
         // 转换模型，组装返回值
-        CarRentalPackageVO carRentalPackageVO = new CarRentalPackageVO();
-        BeanUtils.copyProperties(carRentalPackagePO, carRentalPackageVO);
+        CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
+        BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
 
         // 赋值辅助业务数据
-        carRentalPackageVO.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
-        carRentalPackageVO.setStoreName(ObjectUtils.isNotEmpty(store) ? store.getName() : null);
-        carRentalPackageVO.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
+        carRentalPackageVo.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
+        carRentalPackageVo.setStoreName(ObjectUtils.isNotEmpty(store) ? store.getName() : null);
+        carRentalPackageVo.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
 
         // 查询电池型号
-        if (carRentalPackagePO.getType().equals(CarRentalPackageTypeEnum.CAR_BATTERY.getCode())) {
-            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(carRentalPackagePO.getId());
+        if (carRentalPackageEntity.getType().equals(CarRentalPackageTypeEnum.CAR_BATTERY.getCode())) {
+            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(carRentalPackageEntity.getId());
             List<String> batteryModelTypes = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
-            carRentalPackageVO.setBatteryModelTypes(batteryModelTypes);
+            carRentalPackageVo.setBatteryModelTypes(batteryModelTypes);
         }
 
-        return R.ok(carRentalPackageVO);
+        return R.ok(carRentalPackageVo);
     }
 
     /**
      * 根据ID删除套餐
      * @param id 主键ID
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/delById")
     public R<Boolean> delById(Long id) {
@@ -240,6 +245,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         }
 
         TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("BasicController.checkPermission failed. not found user.");
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
 
         return R.ok(carRentalPackageBizService.delPackageById(id, user.getUid()));
     }
@@ -247,7 +256,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     /**
      * 根据ID修改租车套餐
      * @param optModel 操作模型
-     * @return
+     * @return true(成功)、false(失败)
      */
     @PostMapping("/modifyById")
     public R<Boolean> modifyById(@RequestBody @Valid CarRentalPackageOptModel optModel) {
@@ -256,6 +265,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         }
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("BasicController.checkPermission failed. not found user.");
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
 
         optModel.setTenantId(tenantId);
         optModel.setUpdateUid(user.getUid());
@@ -267,15 +280,19 @@ public class JsonAdminCarRentalPackageController extends BasicController {
     }
 
     /**
-     * 新增租车套餐
+     * 新增租车套餐设置
      * @param optModel 操作模型
-     * @return
+     * @return true(成功)、false(失败)
      */
     @PostMapping("/insert")
     public R<Boolean> insert(@RequestBody @Valid CarRentalPackageOptModel optModel) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("BasicController.checkPermission failed. not found user.");
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
 
         optModel.setTenantId(tenantId);
         optModel.setCreateUid(user.getUid());
