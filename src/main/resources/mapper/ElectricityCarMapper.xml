@@ -237,7 +237,7 @@
     </select>
     
     <select id="queryModelIdBySidAndIds" resultType="com.xiliulou.electricity.entity.ElectricityCar">
-        select id, model_id from t_electricity_car
+        select id, sn, model_id from t_electricity_car
         <where>
             del_flag = 0
             and tenant_id = #{tenantId}

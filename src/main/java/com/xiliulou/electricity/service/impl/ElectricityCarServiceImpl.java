@@ -587,7 +587,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             carMoveRecord.setUpdateTime(System.currentTimeMillis());
             carMoveRecords.add(carMoveRecord);
         }
-        log.info("move car records is : {}", carMoveRecords);
+        log.error("move car records is : {}", carMoveRecords);
         if(CollectionUtils.isNotEmpty(carMoveRecords)){
             carMoveRecordMapper.batchInsertCarMoveRecord(carMoveRecords);
         }
