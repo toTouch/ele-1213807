@@ -71,6 +71,11 @@ public class CarRentalPackagePO extends BasicCarPO {
     private Integer carModelId;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     0-全部

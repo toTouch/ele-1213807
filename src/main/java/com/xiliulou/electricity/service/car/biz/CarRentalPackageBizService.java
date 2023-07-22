@@ -16,26 +16,27 @@ import java.util.List;
 public interface CarRentalPackageBizService {
 
     /**
+     * 获取用户可以购买的套餐
+     * @param qryReq 查询模型
+     * @param uid 用户ID
+     * @return 可购买的套餐数据集
+     */
+    List<CarRentalPackagePO> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid);
+
+    /**
      * 根据套餐ID删除套餐信息
      * @param packageId 套餐ID
      * @param optId 操作人ID
-     * @return
+     * @return true(成功)、false(失败)
      */
     boolean delPackageById(Long packageId, Long optId);
 
     /**
      * 新增套餐
-     * @param optModel
-     * @return
+     * @param optModel 操作数据模型
+     * @return true(成功)、false(失败)
      */
     boolean insertPackage(CarRentalPackageOptModel optModel);
-
-    /**
-     * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐
-     * @param qryReq 查询模型
-     * @param uid 用户ID
-     */
-    List<CarRentalPackagePO> queryByCarModel(CarRentalPackageQryReq qryReq, Long uid);
 
     /**
      * 计算需要支付的金额

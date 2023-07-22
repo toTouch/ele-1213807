@@ -9,7 +9,6 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
-import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -20,11 +19,9 @@ import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
-import com.xiliulou.electricity.service.car.biz.CarRenalPackageSlippageBizService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +35,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -71,12 +69,108 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
     @Resource
     private UserCouponService userCouponService;
-    
-    @Resource
-    private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
-    @Resource
-    private UserInfoService userInfoService;
+    /**
+     * 获取用户可以购买的套餐
+     *
+     * @param qryReq 查询模型
+     * @param uid    用户ID
+     * @return
+     */
+    @Override
+    public List<CarRentalPackagePO> queryCanPurchasePackage(CarRentalPackageQryReq qryReq, Long uid) {
+        if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId(), uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        Integer tenantId = qryReq.getTenantId();
+        Integer franchiseeId = qryReq.getFranchiseeId();
+        Integer storeId = qryReq.getStoreId();
+        Integer carModelId = qryReq.getCarModelId();
+
+        Boolean oldUserFlag = false;
+        BigDecimal deposit = null;
+        Integer rentalPackageType = null;
+        List<String> batteryModelTypeList = null;
+
+
+        // 1、查询是否存在会员期限信息(代表是否存在过套餐购买)
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        // 存在数据，则代表押金已经缴纳，即租户、加盟商、门店、套餐类型、押金全都定下来了
+        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
+            // 所属机构不匹配
+            if (!memberTermEntity.getFranchiseeId().equals(franchiseeId) || !memberTermEntity.getStoreId().equals(storeId)) {
+                log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's organization does not match. return empty list.");
+                return Collections.emptyList();
+            }
+
+            Long rentalPackageId = memberTermEntity.getRentalPackageId();
+
+            // 必定是老用户
+            if (ObjectUtils.isNotEmpty(rentalPackageId)) {
+                // 查询套餐对应的车辆型号
+                CarRentalPackagePO packageEntity = carRentalPackageService.selectById(rentalPackageId);
+
+                // 车辆型号不匹配
+                if (!packageEntity.getCarModelId().equals(carModelId)) {
+                    log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's carModel does not match. return empty list.");
+                    return Collections.emptyList();
+                }
+                oldUserFlag = true;
+            } else {
+                oldUserFlag = userBizService.isOldUser(tenantId, uid);
+            }
+
+            // 车电一体且存在订单
+            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
+                // 查询电池型号信息
+                List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
+                batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+            }
+
+            deposit = memberTermEntity.getDeposit();
+            rentalPackageType = memberTermEntity.getRentalPackageType();
+
+        }
+
+        // 结合如上两点，从数据库中筛选合适的套餐
+        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+        qryModel.setOffset(qryReq.getOffset());
+        qryModel.setSize(qryReq.getSize());
+        qryModel.setTenantId(tenantId);
+        qryModel.setFranchiseeId(franchiseeId);
+        qryModel.setStoreId(storeId);
+        qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
+        qryModel.setDeposit(deposit);
+        qryModel.setType(rentalPackageType);
+        qryModel.setCarModelId(carModelId);
+        List<CarRentalPackagePO> packageEntityList = carRentalPackageService.page(qryModel);
+        if (CollectionUtils.isEmpty(packageEntityList)) {
+            return Collections.emptyList();
+        }
+
+        // 车电一体，需要二次处理
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            // 查询型号关联关系
+            List<Long> packageIdList = packageEntityList.stream().map(CarRentalPackagePO::getId).collect(Collectors.toList());
+            List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageIds(packageIdList);
+            Map<Long, List<CarRentalPackageCarBatteryRelPO>> carBatteryRelMap = carBatteryRelEntityList.stream().collect(Collectors.groupingBy(CarRentalPackageCarBatteryRelPO::getRentalPackageId));
+
+            List<String> batteryModelTypeDbList = null;
+
+            // 迭代器处理
+            Iterator<CarRentalPackagePO> iterator = packageEntityList.iterator();
+            while (iterator.hasNext()) {
+                CarRentalPackagePO carRentalPackage = iterator.next();
+                batteryModelTypeDbList = carBatteryRelMap.get(carRentalPackage.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                if (!batteryModelTypeDbList.containsAll(batteryModelTypeList)) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        return packageEntityList;
+    }
 
     /**
      * 根据套餐ID删除套餐信息
@@ -133,7 +227,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
             if (CollectionUtils.isEmpty(batteryModelTypes)) {
                 log.error("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");
-                // TODO 错误编码
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }
         }
@@ -192,61 +285,6 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setUpdateTime(entity.getUpdateTime());
 
         return batteryMemberCardEntity;
-    }
-
-    /**
-     * 根据车辆型号、用户ID、租户ID获取C端能够展示购买的套餐
-     *
-     * @param uid        用户ID
-     * @param qryReq     查询模型
-     */
-    @Override
-    public List<CarRentalPackagePO> queryByCarModel(CarRentalPackageQryReq qryReq, Long uid) {
-        if (!ObjectUtils.allNotNull(qryReq, uid)) {
-            throw new BizException("ELECTRICITY.0007", "不合法的参数");
-        }
-
-        Integer tenantId = qryReq.getTenantId();
-        Integer franchiseeId = qryReq.getFranchiseeId();
-        Integer storeId = qryReq.getStoreId();
-
-        // 判定用户是否是老用户
-        Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
-
-        BigDecimal deposit = null;
-        Integer rentalPackageType = null;
-        Integer rentalPackageConfine = null;
-        Integer carModelId = null;
-        String batteryModelIds = null;
-
-        // 判定用户名下是否存在正在使用的套餐
-        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isNotEmpty(memberTermEntity)) {
-            if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-                return Collections.emptyList();
-            }
-            deposit = memberTermEntity.getDeposit();
-            rentalPackageType = memberTermEntity.getRentalPackageType();
-            rentalPackageConfine = memberTermEntity.getRentalPackageConfine();
-            franchiseeId = memberTermEntity.getFranchiseeId();
-            storeId = memberTermEntity.getStoreId();
-        }
-
-        // 结合如上两点，从数据库中筛选合适的套餐
-        CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
-        qryModel.setOffset(qryReq.getOffset());
-        qryModel.setSize(qryReq.getSize());
-        qryModel.setTenantId(tenantId);
-        qryModel.setFranchiseeId(franchiseeId);
-        qryModel.setStoreId(storeId);
-        qryModel.setApplicableTypeList(oldUserFlag ? ApplicableTypeEnum.oldUserApplicable() : ApplicableTypeEnum.newUserApplicable());
-        qryModel.setDeposit(deposit);
-        qryModel.setType(rentalPackageType);
-        qryModel.setConfine(rentalPackageConfine);
-        qryModel.setCarModelId(carModelId);
-        List<CarRentalPackagePO> entityList = carRentalPackageService.list(qryModel);
-
-        return entityList;
     }
 
     /**

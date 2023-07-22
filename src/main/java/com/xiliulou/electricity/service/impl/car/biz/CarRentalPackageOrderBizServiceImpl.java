@@ -194,7 +194,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 计算总的订单到期时间及当前订单到期时间
             // 计算规则：审核通过的时间 + 申请期限
-            Long extendTime = freezeUpdateEntity.getAuditTime() + (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
+            // Long extendTime = freezeUpdateEntity.getAuditTime() + (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
+            // 计算规则：原有的时间 + 申请期限
+            Long extendTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
             memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() + extendTime);
             memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + extendTime);
 
