@@ -16,7 +16,7 @@ public interface CarRentalPackageDepositPayService {
      * 根据订单编号更新支付状态
      * @param orderNo 订单编码
      * @param payState 支付状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updatePayStateByOrderNo(String orderNo, Integer payState);
 
@@ -26,7 +26,7 @@ public interface CarRentalPackageDepositPayService {
      * @param payState 支付状态
      * @param remark 备注
      * @param uid 操作人
-     * @return
+     * @return true(成功)、false(失败)
      */
     Boolean updatePayStateByOrderNo(String orderNo, Integer payState, String remark, Long uid);
 

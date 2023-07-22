@@ -39,7 +39,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
     /**
      * 条件查询列表
      * @param queryReq 请求参数类
-     * @return
+     * @return 租车套餐购买订单集
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderVO>> page(@RequestBody CarRentalPackageOrderQryReq queryReq) {
@@ -178,7 +178,7 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
     /**
      * 条件查询总数
      * @param qryReq 请求参数类
-     * @return
+     * @return 总数
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalPackageOrderQryReq qryReq) {
