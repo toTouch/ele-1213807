@@ -161,7 +161,7 @@
         bmc.refund_limit,
         bmc.free_deposite,
         bmc.service_charge
-        from t_battery_member_card bmc left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
+        from t_battery_member_card bmc left join (select battery_v,mid from t_member_card_battery_type group by battery_v,mid ) mcbt on bmc.id=mcbt.mid
         <where>
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
