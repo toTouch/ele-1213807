@@ -1,10 +1,13 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ServiceFeeUserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,7 +61,18 @@ public class JsonUserBatteryServiceFeeController {
     public R queryBatteryServiceFeeOrder(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
                                          @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                                          @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-        return eleBatteryServiceFeeOrderService.queryList(offset, size, queryStartTime, queryEndTime);
+
+        BatteryServiceFeeOrderQuery query = BatteryServiceFeeOrderQuery.builder()
+                .size(size)
+                .offset(offset)
+                .tenantId(TenantContextHolder.getTenantId())
+                .uid(SecurityUtils.getUid())
+                .status(EleBatteryServiceFeeOrderVo.STATUS_SUCCESS)
+                .queryStartTime(queryStartTime)
+                .queryEndTime(queryEndTime)
+                .build();
+
+        return eleBatteryServiceFeeOrderService.queryList(query);
     }
 
 }
