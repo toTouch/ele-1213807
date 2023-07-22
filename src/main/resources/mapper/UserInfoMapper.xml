@@ -584,8 +584,8 @@
             <if test="carBatteryDepositStatus != null">
                 `car_battery_deposit_status` = #{carBatteryDepositStatus},
             </if>
-            <if test="payCout != null">
-                `pay_count` = #{payCout},
+            <if test="payCount != null">
+                `pay_count` = #{payCount},
             </if>
         </set>
         where uid = #{uid}
