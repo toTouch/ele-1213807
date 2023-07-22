@@ -61,6 +61,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private FranchiseeService franchiseeService;
 
+    @Autowired
+    private CouponService couponService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -220,6 +223,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return list.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_NEW) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).map(item -> {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+                if(Objects.nonNull(item.getCouponId())){
+                    batteryMemberCardVO.setCoupon(couponService.queryByIdFromCache(item.getCouponId()));
+                }
+
                 return batteryMemberCardVO;
             }).collect(Collectors.toList());
         }
@@ -227,6 +235,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return list.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_OLD) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+            if(Objects.nonNull(item.getCouponId())){
+                batteryMemberCardVO.setCoupon(couponService.queryByIdFromCache(item.getCouponId()));
+            }
+
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }
@@ -237,8 +250,6 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
-        log.error("=========================1111{}", JsonUtil.toJson(list));
-        log.error("=========================2222{}",JsonUtil.toJson(list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList())));
 
         return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
     }

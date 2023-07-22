@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import com.xiliulou.electricity.entity.Coupon;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -116,4 +117,6 @@ public class BatteryMemberCardVO {
     private String batteryV;
 
     private List<String> batteryModels;
+
+    private Coupon coupon;
 }
