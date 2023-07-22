@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -12,7 +13,10 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -34,16 +38,17 @@ public class JsonUserCarRenalPackageController extends BasicController {
     private CarRentalPackageBizService carRentalPackageBizService;
 
     /**
-     * 根据车辆型号获取<code>C</code>端能够展示的套餐
+     * 获取用户可以购买的套餐
      * @param qryReq 查询数据模型
-     * @return
+     * @return 可购买的套餐数据集，包含赠送优惠券信息
      */
-    @PostMapping("/queryByCarModel")
-    public R<List<CarRentalPackageVO>> queryByCarModel(@RequestBody CarRentalPackageQryReq qryReq) {
-        // 租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+    @PostMapping("/queryCanPurchasePackage")
+    public R<List<CarRentalPackageVO>> queryCanPurchasePackage(@RequestBody CarRentalPackageQryReq qryReq) {
+        if (!ObjectUtils.allNotNull(qryReq, qryReq.getFranchiseeId(), qryReq.getStoreId(), qryReq.getCarModelId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
 
-        // 用户
+        Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("order  ERROR! not found user ");
@@ -53,11 +58,11 @@ public class JsonUserCarRenalPackageController extends BasicController {
         // 重新赋值租户ID
         qryReq.setTenantId(tenantId);
 
-        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryByCarModel(qryReq, user.getUid());
+        List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());
 
         // 获取优惠券ID集
         List<Long> couponIdList = entityList.stream()
-                .filter(entity -> ObjectUtils.isEmpty(entity.getCouponId()) && entity.getCouponId().longValue() > 0)
+                .filter(entity -> ObjectUtils.isNotEmpty(entity.getCouponId()) && entity.getCouponId().longValue() > 0)
                 .map(CarRentalPackagePO::getCouponId).distinct().collect(Collectors.toList());
 
         // 查询赠送的优惠券信息
@@ -89,7 +94,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
             packageVO.setConfineNum(entity.getConfineNum());
             packageVO.setGiveCoupon(entity.getGiveCoupon());
             packageVO.setRemark(entity.getRemark());
-            /*packageVO.setBatteryV(entity.getBatteryV());*/
+            packageVO.setBatteryV(entity.getBatteryV());
             // 设置辅助业务信息
             packageVO.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
             return packageVO;

@@ -19,6 +19,13 @@ public interface CarRentalPackageCarBatteryRelService {
     boolean delByRentalPackageId(Long rentalPackageId, Long optId);
 
     /**
+     * 根据套餐ID集查询
+     * @param rentalPackageIdList 套餐ID集
+     * @return 套餐车辆电池关联数据集
+     */
+    List<CarRentalPackageCarBatteryRelPO> selectByRentalPackageIds(List<Long> rentalPackageIdList);
+
+    /**
      * 根据套餐ID查询
      * @param rentalPackageId 套餐ID
      * @return 套餐车辆电池关联数据集

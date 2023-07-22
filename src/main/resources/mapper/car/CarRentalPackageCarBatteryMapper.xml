@@ -50,6 +50,17 @@
         </where>
     </update>
 
+    <!-- 根据套餐ID集查询 -->
+    <select id="selectByRentalPackageIds" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `rental_package_id` IN
+            <foreach collection="rentalPackageIdList" item="rentalPackageId" open="(" close=")" separator=",">
+                #{rentalPackageId}
+            </foreach>
+        </where>
+    </select>
+
     <!-- 根据套餐ID查询 -->
     <select id="selectByRentalPackageId" resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />
