@@ -34,8 +34,8 @@ public class JsonAdminElePowerController extends BaseController {
     public R getList(@RequestParam("size") Integer size,
                      @RequestParam("offset") Integer offset,
                      @RequestParam(value = "eid", required = false) Long eid,
-                     @RequestParam(value = "startTime", required = false) Long startTime,
-                     @RequestParam(value = "endTime", required = false) Long endTime) {
+                     @RequestParam(value = "startTime") Long startTime,
+                     @RequestParam(value = "endTime") Long endTime) {
         if (endTime - startTime > TimeUnit.DAYS.toMillis(31)) {
             throw new CustomBusinessException("时间跨度不可以超过31");
         }
@@ -152,6 +152,25 @@ public class JsonAdminElePowerController extends BaseController {
                 .franchiseeId(franchiseeId)
                 .eid(eid).build();
         return returnPairResult(monthRecordService.queryMonthStatistics(query));
+
+    }
+
+    @PostMapping("/admin/power/month/statistics")
+    public void monthStatisticsExport(@RequestParam("date") String date,
+                                      @RequestParam(value = "eid", required = false) Long eid,
+                                      @RequestParam(value = "storeId", required = false) Long storeId,
+                                      @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                                      HttpServletResponse response) {
+
+        PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
+                .storeId(storeId)
+                .date(date)
+                .size(NumberConstant.ZERO)
+                .offset(Integer.MAX_VALUE)
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId)
+                .eid(eid).build();
+        monthRecordService.exportMonthStatistics(query,response);
 
     }
 

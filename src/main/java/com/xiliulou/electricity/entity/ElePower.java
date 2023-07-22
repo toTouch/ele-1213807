@@ -59,4 +59,8 @@ public class ElePower {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    public static final int ORDINARY_TYPE = 0;
+    public static final int PEEK_TYPE = 1;
+    public static final int VALLEY_TYPE = 2;
+    public static final int NORMAL_TYPE = -1;
 }

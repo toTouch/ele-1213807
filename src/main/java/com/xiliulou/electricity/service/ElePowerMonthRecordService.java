@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.ElePowerMonthRecord;
 import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -21,8 +22,8 @@ public interface ElePowerMonthRecordService {
      * @return 实例对象
      */
     ElePowerMonthRecord queryByIdFromDB(Long id);
-    
-      /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -34,7 +35,7 @@ public interface ElePowerMonthRecordService {
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     List<ElePowerMonthRecord> queryAllByLimit(int offset, int limit);
@@ -66,4 +67,6 @@ public interface ElePowerMonthRecordService {
     Pair<Boolean, Object> queryMonthStatistics(PowerMonthStatisticsQuery query);
 
     Pair<Boolean, Object> queryMonthStatisticsCount(PowerMonthStatisticsQuery query);
+
+    void exportMonthStatistics(PowerMonthStatisticsQuery query, HttpServletResponse response);
 }

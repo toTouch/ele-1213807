@@ -1,17 +1,31 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.excel.EasyExcel;
+import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.electricity.dto.EleMonthPowerGroupDto;
+import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.entity.ElePowerMonthRecord;
 import com.xiliulou.electricity.mapper.ElePowerMonthRecordMapper;
 import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
+import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
+import com.xiliulou.electricity.vo.ElePowerMonthRecordExcelVo;
+import com.xiliulou.electricity.vo.ElePowerMonthRecordVo;
+import com.xiliulou.electricity.vo.ElectricityBatteryExcelVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -119,6 +133,68 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
 
     @Override
     public Pair<Boolean, Object> queryMonthStatisticsCount(PowerMonthStatisticsQuery query) {
-        return Pair.of(true,this.elePowerMonthRecordMapper.queryCount(query));
+        return Pair.of(true, this.elePowerMonthRecordMapper.queryCount(query));
+    }
+
+    @Override
+    public void exportMonthStatistics(PowerMonthStatisticsQuery query, HttpServletResponse response) {
+        List<ElePowerMonthRecord> list = this.elePowerMonthRecordMapper.queryPartAttrList(query);
+        if (!DataUtil.collectionIsUsable(list)) {
+            throw new CustomBusinessException("没有耗电月记录，无法导出");
+        }
+
+        List<ElePowerMonthRecordExcelVo> vos = list.parallelStream().map(e -> {
+            ElePowerMonthRecordExcelVo vo = new ElePowerMonthRecordExcelVo();
+            vo.setEName(e.getEName());
+            vo.setStoreName(e.getStoreName());
+            vo.setFranchiseeName(e.getFranchiseeName());
+            vo.setMonthStartPower(e.getMonthStartPower());
+            vo.setMonthEndPower(e.getMonthEndPower());
+            vo.setMonthSumPower(e.getMonthSumPower());
+            vo.setMonthSumCharge(e.getMonthSumCharge());
+            vo.setTypeDetail(generatePowerTypeDetail(e.getJsonCharge()));
+            vo.setDate(e.getDate());
+            return vo;
+        }).collect(Collectors.toList());
+
+
+        String fileName = "耗电量月记录.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+            EasyExcel.write(outputStream, ElePowerMonthRecordExcelVo.class).sheet("sheet").registerWriteHandler(new AutoHeadColumnWidthStyleStrategy()).doWrite(vos);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+    }
+
+    private String generatePowerTypeDetail(String jsonCharge) {
+        List<EleMonthPowerGroupDto> eleMonthPowerGroupDtos = JsonUtil.fromJsonArray(jsonCharge, EleMonthPowerGroupDto.class);
+        if (!DataUtil.collectionIsUsable(eleMonthPowerGroupDtos)) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (EleMonthPowerGroupDto eleMonthPowerGroupDto : eleMonthPowerGroupDtos) {
+            sb.append(queryPowerType(eleMonthPowerGroupDto.getType()))
+                    .append("[").append("月耗电量:").append(eleMonthPowerGroupDto.getSumPower())
+                    .append("月电费:").append(eleMonthPowerGroupDto.getSumCharge()).append("]");
+        }
+        return sb.toString();
+    }
+
+    public String queryPowerType(Integer type) {
+        switch (type) {
+            case ElePower.ORDINARY_TYPE:
+                return "平用电";
+            case ElePower.PEEK_TYPE:
+                return "峰用电";
+            case ElePower.VALLEY_TYPE:
+                return "谷用电";
+            default:
+                return "";
+        }
     }
 }
