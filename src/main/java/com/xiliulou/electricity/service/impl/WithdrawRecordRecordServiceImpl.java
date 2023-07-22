@@ -218,6 +218,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 //			withdrawRecordVO.setBankNumber(DesensitizationUtil.bankCard(withdrawRecordVO.getBankNumber()));
 			withdrawRecordVO.setBankNumber(withdrawRecordVO.getBankNumber());
 
+			//设置请求提现金额
+			BigDecimal amount = BigDecimal.valueOf(withdrawRecord.getAmount());
+			BigDecimal handlingFee = BigDecimal.valueOf(withdrawRecord.getHandlingFee());
+			BigDecimal requestAmount = amount.add(handlingFee).setScale(2, BigDecimal.ROUND_HALF_UP);
+			withdrawRecordVO.setRequestAmount(requestAmount.doubleValue());
+
 			//查询用户名称
 			User user = userService.queryByUidFromCache(withdrawRecordVO.getUid());
 			if (Objects.nonNull(user)) {

@@ -4,7 +4,7 @@
 
 
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.UserAmountVO">
-		select tua.id as id,tua.uid as uid,tua.create_time as createTime,
+		select tua.id as id,tua.uid as uid,tui.name, tua.create_time as createTime,
 		tua.update_time as updateTime,tua.total_income as totalIncome,
 		tua.balance as balance,tua.withdraw as withdraw,tua.tenant_id as tenantId,
 		tua.del_flg as delFlg,tui.phone as phone
