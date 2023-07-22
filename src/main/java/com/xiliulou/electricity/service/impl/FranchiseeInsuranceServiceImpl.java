@@ -78,6 +78,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0007", "不合法的参数！");
         }
 
+        if(Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))){
+            return R.fail("100293", "已存在相同型号保险");
+        }
+
         Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
         if (count > 0) {
             return R.fail("100304", "保险名称已存在！");
@@ -106,11 +110,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, franchiseeInsurance);
 
         //填充参数
+        franchiseeInsurance.setCid(franchisee.getCid());
         franchiseeInsurance.setCreateTime(System.currentTimeMillis());
         franchiseeInsurance.setUpdateTime(System.currentTimeMillis());
         franchiseeInsurance.setStatus(FranchiseeInsurance.STATUS_UN_USABLE);
         franchiseeInsurance.setTenantId(tenantId);
-        franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
+        franchiseeInsurance.setDelFlag(FranchiseeInsurance.DEL_NORMAL);
 
         InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
@@ -128,6 +133,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         }
 
         return R.fail("ELECTRICITY.0086", "操作失败");
+    }
+
+    private Integer checkInsuranceExist(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
+        return baseMapper.checkInsuranceExist(franchiseeInsuranceAddAndUpdate);
     }
 
     @Override
