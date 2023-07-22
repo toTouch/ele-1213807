@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
@@ -236,6 +237,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         if (CollectionUtils.isEmpty(list)) {
             return Collections.emptyList();
         }
+        log.error("=========================1111{}", JsonUtil.toJson(list));
+        log.error("=========================2222{}",JsonUtil.toJson(list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList())));
 
         return list.stream().map(BatteryMemberCardVO::getBatteryV).distinct().collect(Collectors.toList());
     }
