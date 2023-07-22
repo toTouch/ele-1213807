@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.BatteryMemberCardMapper;
@@ -59,6 +60,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
     @Autowired
     private FranchiseeService franchiseeService;
+
+    @Autowired
+    private CouponService couponService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -219,6 +223,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return list.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_NEW) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).map(item -> {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+                if(Objects.nonNull(item.getCouponId())){
+                    Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                    batteryMemberCardVO.setCouponName(Objects.isNull(coupon)?"":coupon.getName());
+                }
+
                 return batteryMemberCardVO;
             }).collect(Collectors.toList());
         }
@@ -226,6 +236,12 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return list.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_OLD) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).map(item -> {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
+
+            if(Objects.nonNull(item.getCouponId())){
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon)?"":coupon.getName());
+            }
+
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }
@@ -281,7 +297,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
         batteryMemberCardUpdate.setId(id);
-        batteryMemberCardUpdate.setStatus(BatteryMemberCard.DEL_DEL);
+        batteryMemberCardUpdate.setDelFlag(BatteryMemberCard.DEL_DEL);
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(batteryMemberCardUpdate);
 

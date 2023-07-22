@@ -39,7 +39,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
     /**
      * 审核拒绝
      * @param optReq 审核操作数据
-     * @return
+     * @return true(成功)、false(失败）
      */
     @PostMapping("/auditReject")
     public R<Boolean> auditReject(@RequestBody AuditOptReq optReq) {
@@ -50,7 +50,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
     /**
      * 审核通过
      * @param optReq 审核操作数据
-     * @return
+     * @return true(成功)、false(失败）
      */
     @PostMapping("/approved")
     public R<Boolean> approved(@RequestBody AuditOptReq optReq) {
@@ -61,7 +61,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
     /**
      * 条件查询列表
      * @param queryReq 请求参数类
-     * @return
+     * @return 租车订单集
      */
     @PostMapping("/page")
     public R<List<CarRentalOrderVO>> page(@RequestBody CarRentalOrderQryReq queryReq) {
@@ -161,7 +161,7 @@ public class JsonAdminCarRentalOrderController extends BasicController {
     /**
      * 条件查询总数
      * @param qryReq 请求参数类
-     * @return
+     * @return 总数
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalOrderQryReq qryReq) {
