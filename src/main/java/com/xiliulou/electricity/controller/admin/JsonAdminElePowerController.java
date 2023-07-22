@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.query.ElePowerListQuery;
 import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
@@ -9,9 +11,11 @@ import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,6 +36,10 @@ public class JsonAdminElePowerController extends BaseController {
                      @RequestParam(value = "eid", required = false) Long eid,
                      @RequestParam(value = "startTime", required = false) Long startTime,
                      @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (endTime - startTime > TimeUnit.DAYS.toMillis(31)) {
+            throw new CustomBusinessException("时间跨度不可以超过31");
+        }
+
         if (size > 50 || size < 0) {
             size = 10;
         }
@@ -49,6 +57,26 @@ public class JsonAdminElePowerController extends BaseController {
                 .endTime(endTime)
                 .build();
         return returnPairResult(elePowerService.queryList(query));
+    }
+
+    @PostMapping("/admin/power/list/export")
+    public void exportPowerListExcel(HttpServletResponse response, @RequestParam(value = "eid") Long eid,
+                                     @RequestParam(value = "startTime") Long startTime,
+                                     @RequestParam(value = "endTime") Long endTime) {
+        if (endTime - startTime > TimeUnit.DAYS.toMillis(31)) {
+            throw new CustomBusinessException("时间跨度不可以超过31");
+        }
+
+        ElePowerListQuery query = ElePowerListQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .eid(eid)
+                .offset(NumberConstant.ZERO)
+                .size(Integer.MAX_VALUE)
+                .startTime(startTime)
+                .endTime(endTime)
+                .build();
+
+        elePowerService.exportList(query, response);
     }
 
     @GetMapping("/admin/power/day/list")
@@ -133,7 +161,7 @@ public class JsonAdminElePowerController extends BaseController {
                              @RequestParam(value = "eid", required = false) Long eid,
                              @RequestParam(value = "storeId", required = false) Long storeId,
                              @RequestParam(value = "franchiseeId", required = false) Long franchiseeId
-                             ) {
+    ) {
 
         PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
                 .storeId(storeId)
