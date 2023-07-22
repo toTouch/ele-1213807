@@ -165,8 +165,8 @@ public class JsonAdminElePowerController extends BaseController {
         PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
                 .storeId(storeId)
                 .date(date)
-                .size(NumberConstant.ZERO)
-                .offset(Integer.MAX_VALUE)
+                .size(Integer.MAX_VALUE)
+                .offset(NumberConstant.ZERO)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
                 .eid(eid).build();
