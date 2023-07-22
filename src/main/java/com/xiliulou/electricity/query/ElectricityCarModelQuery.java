@@ -49,7 +49,7 @@ public class ElectricityCarModelQuery {
      * 租赁方式
      */
     //@NotBlank(message = "租赁方式不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    //private String rentType;
+    private String rentType;
 
     /**
      * 租赁周期
@@ -59,7 +59,7 @@ public class ElectricityCarModelQuery {
      * 租车押金
      */
     //@NotNull(message = "租车押金不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    //private BigDecimal carDeposit;
+    private BigDecimal carDeposit;
 
     /**
      * 车辆型号标签
