@@ -118,5 +118,5 @@ public class BatteryMemberCardVO {
 
     private List<String> batteryModels;
 
-    private Coupon coupon;
+    private String couponName;
 }

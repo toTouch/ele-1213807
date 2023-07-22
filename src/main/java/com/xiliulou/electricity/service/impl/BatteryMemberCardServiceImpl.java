@@ -225,7 +225,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 BeanUtils.copyProperties(item, batteryMemberCardVO);
 
                 if(Objects.nonNull(item.getCouponId())){
-                    batteryMemberCardVO.setCoupon(couponService.queryByIdFromCache(item.getCouponId()));
+                    Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                    batteryMemberCardVO.setCouponName(Objects.isNull(coupon)?"":coupon.getName());
                 }
 
                 return batteryMemberCardVO;
@@ -237,7 +238,8 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BeanUtils.copyProperties(item, batteryMemberCardVO);
 
             if(Objects.nonNull(item.getCouponId())){
-                batteryMemberCardVO.setCoupon(couponService.queryByIdFromCache(item.getCouponId()));
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon)?"":coupon.getName());
             }
 
             return batteryMemberCardVO;
