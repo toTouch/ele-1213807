@@ -1,26 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.excel.EasyExcel;
-import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElePower;
 import com.xiliulou.electricity.mapper.ElePowerMapper;
 import com.xiliulou.electricity.query.ElePowerListQuery;
-import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
 import com.xiliulou.electricity.service.ElePowerService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.utils.DateUtils;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElePowerDayVo;
 import com.xiliulou.electricity.vo.ElePowerExcelVo;
 import com.xiliulou.electricity.vo.ElePowerVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryExcelVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,10 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -185,7 +176,7 @@ public class ElePowerServiceImpl implements ElePowerService {
             vo.setHourPower(e.getHourPower());
             vo.setSumPower(e.getSumPower());
             vo.setElectricCharge(e.getElectricCharge());
-            vo.setEName(e.getEName());
+            vo.setCabinetName(e.getEName());
             vo.setReportTime(DateUtils.parseTimeToStringDate(e.getReportTime()));
             return vo;
         }).collect(Collectors.toList());

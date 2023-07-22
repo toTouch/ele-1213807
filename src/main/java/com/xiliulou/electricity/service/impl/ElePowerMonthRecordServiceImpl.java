@@ -13,8 +13,6 @@ import com.xiliulou.electricity.query.PowerMonthStatisticsQuery;
 import com.xiliulou.electricity.service.ElePowerMonthRecordService;
 import com.xiliulou.electricity.service.excel.AutoHeadColumnWidthStyleStrategy;
 import com.xiliulou.electricity.vo.ElePowerMonthRecordExcelVo;
-import com.xiliulou.electricity.vo.ElePowerMonthRecordVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryExcelVO;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -145,7 +143,7 @@ public class ElePowerMonthRecordServiceImpl implements ElePowerMonthRecordServic
 
         List<ElePowerMonthRecordExcelVo> vos = list.parallelStream().map(e -> {
             ElePowerMonthRecordExcelVo vo = new ElePowerMonthRecordExcelVo();
-            vo.setEName(e.getEName());
+            vo.setCabinetName(e.getEName());
             vo.setStoreName(e.getStoreName());
             vo.setFranchiseeName(e.getFranchiseeName());
             vo.setMonthStartPower(e.getMonthStartPower());

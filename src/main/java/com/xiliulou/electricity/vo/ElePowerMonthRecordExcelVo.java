@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class ElePowerMonthRecordExcelVo {
     @ExcelProperty("柜机名称")
-    private String eName;
+    private String cabinetName;
 
     @ExcelProperty("门店名称")
     private String storeName;
