@@ -192,7 +192,7 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
     /**
      * 条件查询总数
      * @param qryReq 请求参数类
-     * @return
+     * @return 总数
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalPackageDepositRefundQryReq qryReq) {

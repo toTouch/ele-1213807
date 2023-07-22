@@ -23,14 +23,14 @@ import java.util.UUID;
  **/
 @Slf4j
 @Component
-@JobHandler("carRentalPackageOrderExpireTask")
-public class CarRentalPackageOrderExpireTask extends IJobHandler {
+@JobHandler("carRentalPackageMemberTermExpireTask")
+public class CarRentalPackageMemberTermExpireTask extends IJobHandler {
 
     @Resource
     private CarRentalPackageMemberTermBizService carRentalPackageMemberTermBizService;
 
     /**
-     * 车辆套餐购买订单过期任务
+     * 会员期限订单过期任务
      * @param param
      * @return
      * @throws Exception
