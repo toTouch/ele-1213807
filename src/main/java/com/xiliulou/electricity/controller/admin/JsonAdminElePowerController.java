@@ -155,7 +155,7 @@ public class JsonAdminElePowerController extends BaseController {
 
     }
 
-    @PostMapping("/admin/power/month/statistics")
+    @PostMapping("/admin/power/month/statistics/export")
     public void monthStatisticsExport(@RequestParam("date") String date,
                                       @RequestParam(value = "eid", required = false) Long eid,
                                       @RequestParam(value = "storeId", required = false) Long storeId,
