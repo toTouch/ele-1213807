@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeMoveInfo;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -66,4 +67,6 @@ public interface ElectricityCarModelService {
     List<Long> selectByStoreIds(List<Long> storeIds);
 
     List<ElectricityCarModel> selectListByFranchiseeId(Long franchiseeId);
+
+    List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery);
 }

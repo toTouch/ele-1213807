@@ -219,4 +219,26 @@
             #{id}
         </foreach>
     </select>
+
+    <select id="search" resultType="com.xiliulou.electricity.vo.BatteryMemberCardSearchVO">
+        select id,name from t_electricity_car_model
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name,jdbcType=VARCHAR},'%')
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+        </where>
+    </select>
+
 </mapper>
