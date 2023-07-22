@@ -41,15 +41,15 @@
         <if test="startTime != null">
             and te.create_time BETWEEN #{startTime} and #{endTime}
         </if>
-        <if test="query.franchiseeIds != null">
+        <if test="franchiseeIds != null">
             and te.franchisee_id in
-            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
-        <if test="query.storeIds != null">
+        <if test="storeIds != null">
             and te.store_id in
-            <foreach collection="query.storeIds" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>

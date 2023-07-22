@@ -281,7 +281,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
 
         BatteryMemberCard batteryMemberCardUpdate = new BatteryMemberCard();
         batteryMemberCardUpdate.setId(id);
-        batteryMemberCardUpdate.setStatus(BatteryMemberCard.DEL_DEL);
+        batteryMemberCardUpdate.setDelFlag(BatteryMemberCard.DEL_DEL);
         batteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         this.update(batteryMemberCardUpdate);
 

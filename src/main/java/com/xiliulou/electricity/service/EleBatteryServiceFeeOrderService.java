@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.query.BatteryServiceFeeOrderQuery;
 import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
@@ -33,13 +34,9 @@ public interface EleBatteryServiceFeeOrderService {
     /**
      * 用户查询电池服务费支付记录
      *
-     * @param offset
-     * @param size
-     * @param startTime
-     * @param endTime
      * @return
      */
-    R queryList(Long offset, Long size, Long startTime, Long endTime);
+    R queryList(BatteryServiceFeeOrderQuery query);
 
     /**
      * 后台查询电池服务费支付记录

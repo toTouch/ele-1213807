@@ -65,6 +65,11 @@ public class UserInfoQuery {
     
     private Long userCreateEndTime;
 
+    /**
+     * 套餐购买次数(所有套餐类型的总次数，包含：换电、车、车电一体)
+     */
+    private Integer payCount;
+
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     public static final Integer SORT_TYPE_AUTH_TIME = 1;
 }
