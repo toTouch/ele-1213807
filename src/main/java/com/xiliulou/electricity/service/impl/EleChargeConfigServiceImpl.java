@@ -198,6 +198,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             configVo.setStoreId(e.getStoreId());
             configVo.setCreateTime(e.getCreateTime());
             configVo.setType(e.getType());
+            configVo.setEid(e.getEid());
             return configVo;
         }).collect(Collectors.toList()));
     }
