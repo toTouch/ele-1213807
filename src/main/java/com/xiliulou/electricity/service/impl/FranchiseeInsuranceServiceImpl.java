@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -328,11 +329,18 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
+        return R.ok(franchiseeInsuranceVoList);
+    }
+
+    @Slave
+    @Override
+    public List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query) {
+        List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.selectByPage(query);
         if(CollectionUtils.isEmpty(franchiseeInsuranceVoList)){
-            return R.ok(Collections.emptyList());
+            return Collections.emptyList();
         }
 
-        franchiseeInsuranceVoList=franchiseeInsuranceVoList.parallelStream().peek(item->{
+        return franchiseeInsuranceVoList.parallelStream().peek(item->{
             Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
             item.setFranchiseeName(Objects.isNull(franchisee)?"":franchisee.getName());
 
@@ -346,8 +354,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                 item.setCarModelName(Objects.nonNull(electricityCarModel)?electricityCarModel.getName():"");
             }
         }).collect(Collectors.toList());
+    }
 
-        return R.ok(franchiseeInsuranceVoList);
+    @Slave
+    @Override
+    public Integer selectPageCount(FranchiseeInsuranceQuery query) {
+        return baseMapper.selectPageCount(query);
     }
 
     @Slave
