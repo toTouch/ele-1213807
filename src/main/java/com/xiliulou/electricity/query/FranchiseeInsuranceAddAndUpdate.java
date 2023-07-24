@@ -26,12 +26,13 @@ public class FranchiseeInsuranceAddAndUpdate {
     /**
      * 加盟商id
      */
+    @NotNull(message = "加盟商不能为空!")
     private Long franchiseeId;
 
     /**
      * 城市Id
      */
-    @NotNull(message = "城市不能为空!")
+//    @NotNull(message = "城市不能为空!")
     private Integer cid;
 
     /**
