@@ -50,4 +50,6 @@ public interface FranchiseeInsuranceService {
     List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query);
 
     Integer selectPageCount(FranchiseeInsuranceQuery query);
+
+    FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query);
 }

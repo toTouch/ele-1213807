@@ -163,6 +163,34 @@
         order by id desc limit 1
     </select>
 
+    <select id="selectInsuranceByType" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
+        select id,franchisee_id,cid,name,premium,forehead,valid_days,insurance_type,status,is_constraint,simple_battery_type
+        from t_franchisee_insurance
+        where del_flag=0
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="insuranceType != null">
+            and insurance_type = #{insuranceType}
+        </if>
+        <if test="simpleBatteryType != null and simpleBatteryType != ''">
+            and simple_battery_type = #{simpleBatteryType}
+        </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+        <if test="carModelId != null">
+            and car_model_id = #{carModelId}
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        order by id desc limit 1
+    </select>
+
     <select id="checkInsuranceExist" resultType="Integer">
         SELECT 1 FROM t_franchisee_insurance
         where del_flag=0 and status=0

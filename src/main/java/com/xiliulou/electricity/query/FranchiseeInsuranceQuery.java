@@ -20,5 +20,15 @@ public class FranchiseeInsuranceQuery {
     private Long franchiseeId;
     private Integer insuranceType;
     private Integer status;
+    private Long storeId;
+
+    /**
+     * 车辆型号
+     */
+    private Long carModelId;
+    /**
+     * 电池型号
+     */
+    private String simpleBatteryType;
 
 }

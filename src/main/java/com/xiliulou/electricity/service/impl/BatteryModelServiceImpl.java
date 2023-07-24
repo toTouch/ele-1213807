@@ -135,11 +135,6 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     
     @Override
     public List<BatteryTypeVO> selectBatteryTypeAll() {
-        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(tenant)) {
-            return Collections.emptyList();
-        }
-        
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
@@ -160,17 +155,12 @@ public class BatteryModelServiceImpl implements BatteryModelService {
 
     @Override
     public List<String> selectBatteryVAll() {
-        Tenant tenant = tenantService.queryByIdFromCache(TenantContextHolder.getTenantId());
-        if (Objects.isNull(tenant)) {
-            return Collections.emptyList();
-        }
-
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(batteryModels)) {
             return Collections.emptyList();
         }
 
-        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().collect(Collectors.toList());
+        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().sorted().collect(Collectors.toList());
     }
 
     /**
