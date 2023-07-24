@@ -82,6 +82,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
     private List<CarRentalPackageVO> buildVOList(List<CarRentalPackagePO> entityList, Map<Long, Coupon> couponMap) {
         return entityList.stream().map(entity -> {
             CarRentalPackageVO packageVO = new CarRentalPackageVO();
+            packageVO.setId(entity.getId());
             packageVO.setName(entity.getName());
             packageVO.setType(entity.getType());
             packageVO.setTenancy(entity.getConfine());

@@ -124,7 +124,7 @@ public class CarRentalPackageVO implements Serializable {
      * 套餐限制
      * <pre>
      *     0-不限制
-     *     2-次数
+     *     1-次数
      * </pre>
      * @see RenalPackageConfineEnum
      */
