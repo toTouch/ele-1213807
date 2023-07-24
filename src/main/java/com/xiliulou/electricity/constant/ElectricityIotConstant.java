@@ -5,11 +5,6 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * @author: lxc
- * @Date: 2020/12/28 13:34
- * @Description:
- */
 public class ElectricityIotConstant {
     /**
      * 命令映射处理的handler
@@ -65,7 +60,12 @@ public class ElectricityIotConstant {
     public static final String NORMAL_BATTERY_MULTI_SETTING_HANDLER = "normalEleBatteryMultiSettingHandler";
     
     public static final String NORMAL_OTHER_SETTING_PARAM_TEMPLATE_HANDLER = "normalOtherSettingParamTemplateHandler";
-    
+
+    /**
+     * 电池满仓提醒
+     */
+    public static final String FULL_BATTERY_WARNING_HANDLER = "fullBatteryWarningHandler";
+
 
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
@@ -405,6 +405,11 @@ public class ElectricityIotConstant {
      */
     public static final String TEMPERATURE_WARNING = "temperature_warning";
 
+    /**
+     * 满仓提醒
+     */
+    public static final String FULL_BATTERY_WARNING = "full_battery_warning";
+
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -535,5 +540,9 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(TEMPERATURE_WARNING, NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER);
 
+        /**
+         * 满仓提醒
+         */
+        COMMAND_HANDLER_MAPS.put(FULL_BATTERY_WARNING, FULL_BATTERY_WARNING_HANDLER);
     }
 }

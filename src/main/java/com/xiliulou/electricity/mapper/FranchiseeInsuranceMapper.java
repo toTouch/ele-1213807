@@ -3,9 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -35,4 +33,12 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
     Integer checkExistInsurance(@Param("franchiseeId") Long franchiseeId, @Param("simpleBatteryType") String simpleBatteryType, @Param("carModelId") Long carModelId);
 
     FranchiseeInsurance selectByFranchiseeIdAndType(@Param("franchiseeId") Long franchiseeId, @Param("insuranceType") int insuranceType, @Param("batteryV") String batteryV);
+
+    Integer checkInsuranceExist(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate);
+
+    Integer selectPageCount(FranchiseeInsuranceQuery query);
+
+    List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query);
+
+    FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query);
 }

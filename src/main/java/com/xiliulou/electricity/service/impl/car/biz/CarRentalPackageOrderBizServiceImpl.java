@@ -194,7 +194,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 计算总的订单到期时间及当前订单到期时间
             // 计算规则：审核通过的时间 + 申请期限
-            Long extendTime = freezeUpdateEntity.getAuditTime() + (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
+            // Long extendTime = freezeUpdateEntity.getAuditTime() + (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
+            // 计算规则：原有的时间 + 申请期限
+            Long extendTime = (freezeEntity.getApplyTerm() * TimeConstant.DAY_MILLISECOND);
             memberTermUpdateEntity.setDueTime(memberTermEntity.getDueTime() + extendTime);
             memberTermUpdateEntity.setDueTimeTotal(memberTermEntity.getDueTimeTotal() + extendTime);
 
@@ -462,11 +464,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param uid      用户ID
      * @param packageOrderNo  套餐购买订单编号
      * @param applyTerm 申请期限(天)
+     * @param applyReason 申请理由
      * @return
      */
     @Override
-    public Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm) {
-        if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo)) {
+    public Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason) {
+        if (!ObjectUtils.allNotNull(tenantId, uid, packageOrderNo, applyTerm, applyReason)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -484,7 +487,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 生成冻结申请
         Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), packageOrderEntity.getUseBeginTime().longValue(), packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
-        CarRentalPackageOrderFreezePO freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity, applyTerm, residue);
+        CarRentalPackageOrderFreezePO freezeEntity = buildCarRentalPackageOrderFreeze(uid, packageOrderEntity, applyTerm, residue, applyReason);
 
         // TX 事务
         saveFreezeInfoTx(freezeEntity, tenantId, uid);
@@ -517,7 +520,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @param residue 余量
      * @return
      */
-    private CarRentalPackageOrderFreezePO buildCarRentalPackageOrderFreeze(Long uid, CarRentalPackageOrderPO packageOrderEntity, Integer applyTerm, Long residue) {
+    private CarRentalPackageOrderFreezePO buildCarRentalPackageOrderFreeze(Long uid, CarRentalPackageOrderPO packageOrderEntity, Integer applyTerm, Long residue, String applyReason) {
         CarRentalPackageOrderFreezePO freezeEntity = new CarRentalPackageOrderFreezePO();
         freezeEntity.setUid(uid);
         freezeEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
@@ -526,6 +529,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         freezeEntity.setResidue(residue);
         freezeEntity.setLateFee(packageOrderEntity.getLateFee());
         freezeEntity.setApplyTerm(applyTerm);
+        freezeEntity.setApplyReason(applyReason);
         freezeEntity.setApplyTime(System.currentTimeMillis());
         freezeEntity.setStatus(RentalPackageOrderFreezeStatusEnum.PENDING_APPROVAL.getCode());
         freezeEntity.setTenantId(packageOrderEntity.getTenantId());
@@ -666,7 +670,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             throw new BizException("", "订单状态异常不允许退租");
         }
 
-        // TODO 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
+        // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
+        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(packageOrderEntity.getOrderNo());
+        if (ObjectUtils.isNotEmpty(userCoupon)) {
+            Integer status = userCoupon.getStatus();
+            if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status)) {
+                // TODO 错误编码
+                throw new BizException("", "订单赠送优惠券状态异常不允许退租");
+            }
+        }
 
         CarRentalPackageMemberTermPO memberTermUpdateEntity = null;
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
@@ -674,7 +686,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // TODO 错误编码
                 throw new BizException("", "存在未使用的订单，不允许退租正在使用中的订单");
             }
-            // TODO 查询设备信息，存在设备，不允许退租
+            // 查询设备信息，存在设备，不允许退租
             UserCar userCar = userCarService.selectByUidFromCache(uid);
             if (ObjectUtils.isNotEmpty(userCar) && ObjectUtils.isNotEmpty(userCar.getSn()) ) {
                 // TODO 错误编码
@@ -1039,7 +1051,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageMemberTermService.delByUidAndTenantId(tenantId, uid, uid);
         }
 
-        // 4. 处理用户押金支付信息（保持原样，不做处理）
+        // 4. TODO 处理用户押金支付信息（订单取消）
+
 
         // 5. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(packageOrderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);

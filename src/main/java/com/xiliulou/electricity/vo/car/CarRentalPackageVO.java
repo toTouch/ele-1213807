@@ -70,6 +70,11 @@ public class CarRentalPackageVO implements Serializable {
     private Integer carModelId;
 
     /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
+
+    /**
      * 适用类型
      * <pre>
      *     0-全部
@@ -119,7 +124,7 @@ public class CarRentalPackageVO implements Serializable {
      * 套餐限制
      * <pre>
      *     0-不限制
-     *     2-次数
+     *     1-次数
      * </pre>
      * @see RenalPackageConfineEnum
      */

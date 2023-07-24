@@ -76,6 +76,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     UserCouponService userCouponService;
 
+    @Autowired
+    MemberCardBatteryTypeService memberCardBatteryTypeService;
+
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
     @Override
     public List<BatteryMembercardRefundOrderVO> selectByPage(BatteryMembercardRefundOrderQuery query) {
         List<BatteryMembercardRefundOrder> list = this.batteryMembercardRefundOrderMapper.selectByPage(query);
@@ -237,9 +243,17 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100289", "电池套餐暂停中");
             }
 
-            //TODO 判断是否有电池服务费
+            ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
+            if (Objects.isNull(serviceFeeUserInfo)) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! not found serviceFeeUserInfo,uid={}", user.getUid());
+                return Triple.of(false, "100247", "用户信息不存在");
+            }
 
-            //TODO 判断套餐送的优惠券是否使用,若已使用  则不允许退
+            Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
+            if (Boolean.FALSE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
+                return Triple.of(false, "100220", "用户存在电池服务费");
+            }
 
             if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.equals(userInfo.getBatteryRentStatus(), UserInfo.BATTERY_RENT_STATUS_YES)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", user.getUid());
@@ -264,13 +278,20 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
             this.insert(batteryMembercardRefundOrderInsert);
 
-            //TODO 若套餐使用中,发起退租不能再使用
-            if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
+            ElectricityMemberCardOrder electricityMemberCardOrderUpdate=new ElectricityMemberCardOrder();
+            electricityMemberCardOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+            electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
+            electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            batteryMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdate);
 
-
-            } else {
-                //更新状态为退租中
+            //若套餐使用中,发起退租不能再使用
+            if (Objects.equals(orderNo, userBatteryMemberCard.getOrderId())) {
+                userBatteryMemberCard.setUid(userInfo.getUid());
+                userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_REFUND);
+                userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+                userBatteryMemberCardService.updateByUid(userBatteryMemberCard);
             }
+
         } finally {
             redisService.delete(CacheConstant.ELE_CACHE_USER_BATTERY_MEMBERCARD_REFUND_LOCK_KEY + user.getUid());
         }
@@ -402,7 +423,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
 
         //使用中
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
         }

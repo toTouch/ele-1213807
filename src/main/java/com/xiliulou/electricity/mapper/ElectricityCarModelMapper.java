@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.vo.CarModelPullVo;
+import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -38,4 +39,6 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
     ElectricityCarModel queryByNameAndStoreId(@Param("name") String name, @Param("storeId") Long storeId);
 
     List<Long> selectByStoreIds(@Param("storeIds") List<Long> storeIds);
+
+    List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery);
 }

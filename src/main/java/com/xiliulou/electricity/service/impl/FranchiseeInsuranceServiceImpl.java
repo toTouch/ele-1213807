@@ -13,6 +13,7 @@ import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -26,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +61,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Autowired
     CityService cityService;
 
+    @Autowired
+    StoreService storeService;
+
+    @Autowired
+    ElectricityCarModelService carModelService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R add(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
@@ -74,8 +78,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0038", "未找到加盟商！");
         }
 
-        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && StringUtils.isBlank(franchiseeInsuranceAddAndUpdate.getSimpleBatteryType())) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && !Objects.equals(franchiseeInsuranceAddAndUpdate.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && StringUtils.isBlank(franchiseeInsuranceAddAndUpdate.getSimpleBatteryType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数！");
+        }
+
+        if(Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))){
+            return R.fail("100293", "已存在相同型号保险");
         }
 
         Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
@@ -106,11 +114,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         BeanUtil.copyProperties(franchiseeInsuranceAddAndUpdate, franchiseeInsurance);
 
         //填充参数
+        franchiseeInsurance.setCid(franchisee.getCid());
         franchiseeInsurance.setCreateTime(System.currentTimeMillis());
         franchiseeInsurance.setUpdateTime(System.currentTimeMillis());
         franchiseeInsurance.setStatus(FranchiseeInsurance.STATUS_UN_USABLE);
         franchiseeInsurance.setTenantId(tenantId);
-        franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
+        franchiseeInsurance.setDelFlag(FranchiseeInsurance.DEL_NORMAL);
 
         InsuranceInstruction insuranceInstruction = new InsuranceInstruction();
         insuranceInstruction.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
@@ -130,6 +139,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
+    private Integer checkInsuranceExist(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
+        return baseMapper.checkInsuranceExist(franchiseeInsuranceAddAndUpdate);
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R update(FranchiseeInsuranceAddAndUpdate franchiseeInsuranceAddAndUpdate) {
@@ -139,6 +152,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         FranchiseeInsurance oldFranchiseeInsurance = this.queryByIdFromCache(franchiseeInsuranceAddAndUpdate.getId());
         if (Objects.isNull(oldFranchiseeInsurance) || !Objects.equals(tenantId, oldFranchiseeInsurance.getTenantId())) {
             return R.ok();
+        }
+
+        if (!Objects.equals(oldFranchiseeInsurance.getName() ,franchiseeInsuranceAddAndUpdate.getName() ) && baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName()) > 0) {
+            return R.fail("100304", "保险名称已存在！");
         }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
@@ -316,15 +333,37 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
-        if (Objects.nonNull(franchiseeInsuranceVoList)) {
-            for (FranchiseeInsuranceVo franchiseeInsuranceVo : franchiseeInsuranceVoList) {
-                if (StringUtils.isNotEmpty(franchiseeInsuranceVo.getBatteryType())) {
-
-                    franchiseeInsuranceVo.setBatteryType(batteryModelService.acquireBatteryModel(franchiseeInsuranceVo.getBatteryType(),tenantId).toString());
-                }
-            }
-        }
         return R.ok(franchiseeInsuranceVoList);
+    }
+
+    @Slave
+    @Override
+    public List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query) {
+        List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.selectByPage(query);
+        if(CollectionUtils.isEmpty(franchiseeInsuranceVoList)){
+            return Collections.emptyList();
+        }
+
+        return franchiseeInsuranceVoList.parallelStream().peek(item->{
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee)?"":franchisee.getName());
+
+            if (Objects.nonNull(item.getStoreId())) {
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
+                item.setStoreName(Objects.nonNull(store)?store.getName():"");
+            }
+
+            if(Objects.nonNull(item.getCarModelId())){
+                ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(item.getCarModelId().intValue());
+                item.setCarModelName(Objects.nonNull(electricityCarModel)?electricityCarModel.getName():"");
+            }
+        }).collect(Collectors.toList());
+    }
+
+    @Slave
+    @Override
+    public Integer selectPageCount(FranchiseeInsuranceQuery query) {
+        return baseMapper.selectPageCount(query);
     }
 
     @Slave
@@ -492,5 +531,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public FranchiseeInsurance selectByFranchiseeIdAndType(Long franchiseeId, int insuranceTypeBattery, String batteryV) {
         return franchiseeInsuranceMapper.selectByFranchiseeIdAndType(franchiseeId,insuranceTypeBattery,batteryV);
+    }
+
+    @Override
+    public FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query) {
+        return franchiseeInsuranceMapper.selectInsuranceByType(query);
     }
 }

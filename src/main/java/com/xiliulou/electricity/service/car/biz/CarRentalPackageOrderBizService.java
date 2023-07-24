@@ -68,9 +68,10 @@ public interface CarRentalPackageOrderBizService {
      * @param uid 用户ID
      * @param packageOrderNo 套餐购买订单编号
      * @param applyTerm 申请期限(天)
+     * @param applyReason 申请理由
      * @return
      */
-    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm);
+    Boolean freezeRentOrder(Integer tenantId, Long uid, String packageOrderNo, Integer applyTerm, String applyReason);
 
     /**
      * 根据用户ID及订单编码，退租购买的订单申请

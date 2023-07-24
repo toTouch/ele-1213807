@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.RentCarHybridOrderQuery;
+import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
@@ -44,4 +46,10 @@ public interface FranchiseeInsuranceService {
     R selectInsuranceListByCondition( Integer status, Integer type, Integer tenantId, Long franchiseeId, String batterType);
 
     FranchiseeInsurance selectByFranchiseeIdAndType(Long franchiseeId, int insuranceTypeBattery, String batteryV);
+
+    List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query);
+
+    Integer selectPageCount(FranchiseeInsuranceQuery query);
+
+    FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query);
 }

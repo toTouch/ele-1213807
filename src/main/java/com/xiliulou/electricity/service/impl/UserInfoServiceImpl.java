@@ -166,6 +166,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     BatteryModelService batteryModelService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -261,9 +264,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardName(null);
                 }
 
-                //不能删除  会员列表详情在用，TODO 详情新增接口
                 if (Objects.nonNull(item.getBatteryDepositStatus()) && Objects.equals(item.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-//                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), EleDepositOrder.ELECTRICITY_DEPOSIT);
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.selectLatestByUid(item.getUid());
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
@@ -294,15 +295,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getCardId())) {
                     //获取用户套餐
-                    ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
-                    if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                        item.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER);
-                    }
-    
-                    //不是送的次数卡
-                    if (Objects.nonNull(electricityMemberCard) && !Objects.equals(item.getCardId().longValue(), UserBatteryMemberCard.SEND_REMAINING_NUMBER) && StringUtils.isNotBlank(electricityMemberCard.getName())) {
-                            item.setCardName(electricityMemberCard.getName());
-                    }
+                    BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getCardId().longValue());
+                    item.setCardName(Objects.nonNull(batteryMemberCard)?batteryMemberCard.getName():"");
+
                 }
             });
         }, threadPool).exceptionally(e -> {

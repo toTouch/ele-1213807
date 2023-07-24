@@ -52,6 +52,24 @@ public class JsonAdminElectricityCarModelController {
     @Autowired
     UserDataScopeService userDataScopeService;
 
+    @GetMapping(value = "/admin/electricityCarModel/search")
+    public R search(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                    @RequestParam(value = "name", required = false) String name,
+                    @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                    @RequestParam(value = "storeId", required = false) Long storeId) {
+
+        ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
+                .size(size)
+                .offset(offset)
+                .name(name)
+                .delFlag(ElectricityCarModel.DEL_NORMAL)
+                .storeId(storeId)
+                .franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId()).build();
+
+        return R.ok(electricityCarModelService.search(electricityCarModelQuery));
+    }
+
     //新增换电柜车辆型号
     @PostMapping(value = "/admin/electricityCarModel")
     public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarModelQuery electricityCarModelQuery) {
