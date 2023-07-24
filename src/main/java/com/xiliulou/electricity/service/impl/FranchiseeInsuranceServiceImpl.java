@@ -26,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,6 +59,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     CityService cityService;
+
+    @Autowired
+    StoreService storeService;
+
+    @Autowired
+    ElectricityCarModelService carModelService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -325,14 +328,25 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         List<FranchiseeInsuranceVo> franchiseeInsuranceVoList = baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId);
-        if (Objects.nonNull(franchiseeInsuranceVoList)) {
-            for (FranchiseeInsuranceVo franchiseeInsuranceVo : franchiseeInsuranceVoList) {
-                if (StringUtils.isNotEmpty(franchiseeInsuranceVo.getBatteryType())) {
-
-                    franchiseeInsuranceVo.setBatteryType(batteryModelService.acquireBatteryModel(franchiseeInsuranceVo.getBatteryType(),tenantId).toString());
-                }
-            }
+        if(CollectionUtils.isEmpty(franchiseeInsuranceVoList)){
+            return R.ok(Collections.emptyList());
         }
+
+        franchiseeInsuranceVoList=franchiseeInsuranceVoList.parallelStream().peek(item->{
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(item.getFranchiseeId());
+            item.setFranchiseeName(Objects.isNull(franchisee)?"":franchisee.getName());
+
+            if (Objects.nonNull(item.getStoreId())) {
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
+                item.setStoreName(Objects.nonNull(store)?store.getName():"");
+            }
+
+            if(Objects.nonNull(item.getCarModelId())){
+                ElectricityCarModel electricityCarModel = carModelService.queryByIdFromCache(item.getCarModelId().intValue());
+                item.setCarModelName(Objects.nonNull(electricityCarModel)?electricityCarModel.getName():"");
+            }
+        }).collect(Collectors.toList());
+
         return R.ok(franchiseeInsuranceVoList);
     }
 
