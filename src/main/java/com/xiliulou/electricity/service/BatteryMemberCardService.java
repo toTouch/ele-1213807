@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.BatteryMemberCardStatusQuery;
 import com.xiliulou.electricity.query.BatteryModelQuery;
@@ -52,6 +53,8 @@ public interface BatteryMemberCardService {
     List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query);
 
     Integer selectByPageCount(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardVO> selectCarRentalAndElectricityPackages(CarRentalPackageQryModel qryModel);
 
     List<BatteryMemberCardSearchVO> search(BatteryMemberCardQuery query);
 
