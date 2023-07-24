@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.queue.MessageDelayQueueService;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.utils.VersionUtil;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -86,11 +87,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     BatteryModelService batteryModelService;
 
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
-
-
-    private static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
-
-    private static final String IRON_LITHIUM = "IRON_LITHIUM";
 
     /**
      * 柜机ANCHI模式
@@ -573,6 +569,12 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      * @param electricityCabinet
      */
     private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet) {
+
+        //1.9.9之后的版本走新的满仓提醒流程
+        String APP_VERSION = "1.9.9";
+        if (VersionUtil.compareVersion(electricityCabinet.getVersion(), APP_VERSION) > 0) {
+            return;
+        }
 
         boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1",
                 300 * 1000L, false);

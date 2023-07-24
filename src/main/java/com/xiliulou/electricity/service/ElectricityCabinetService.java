@@ -184,6 +184,8 @@ public interface ElectricityCabinetService {
     
     void sendFullBatteryMessage(List<Message>  messageList);
 
+    List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet);
+
     List<Integer> selectEidByStoreId(Long storeId);
 
     List<ElectricityCabinetVO> selectElectricityCabinetByAddress(ElectricityCabinetQuery electricityCabinetQuery);
