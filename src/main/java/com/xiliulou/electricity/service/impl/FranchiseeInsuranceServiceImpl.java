@@ -78,7 +78,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0038", "未找到加盟商！");
         }
 
-        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && StringUtils.isBlank(franchiseeInsuranceAddAndUpdate.getSimpleBatteryType())) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE) && !Objects.equals(franchiseeInsuranceAddAndUpdate.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && StringUtils.isBlank(franchiseeInsuranceAddAndUpdate.getSimpleBatteryType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数！");
         }
 
@@ -152,6 +152,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         FranchiseeInsurance oldFranchiseeInsurance = this.queryByIdFromCache(franchiseeInsuranceAddAndUpdate.getId());
         if (Objects.isNull(oldFranchiseeInsurance) || !Objects.equals(tenantId, oldFranchiseeInsurance.getTenantId())) {
             return R.ok();
+        }
+
+        if(Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))){
+            return R.fail("100293", "已存在相同型号保险");
         }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
