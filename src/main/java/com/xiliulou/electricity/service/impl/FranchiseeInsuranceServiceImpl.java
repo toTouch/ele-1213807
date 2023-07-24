@@ -154,8 +154,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-        if(Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))){
-            return R.fail("100293", "已存在相同型号保险");
+        Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
+        if (count > 0) {
+            return R.fail("100304", "保险名称已存在！");
         }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
