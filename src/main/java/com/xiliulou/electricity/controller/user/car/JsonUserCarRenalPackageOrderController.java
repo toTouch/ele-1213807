@@ -317,7 +317,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     @PostMapping("/buyRentalPackageOrder")
     public R<?> buyRentalPackageOrder(@RequestBody CarRentalPackageOrderBuyOptModel buyOptModel, HttpServletRequest request) {
         // 参数基本校验
-        if (ObjectUtils.allNotNull(buyOptModel, buyOptModel.getRentalPackageId())) {
+        if (!ObjectUtils.allNotNull(buyOptModel, buyOptModel.getRentalPackageId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
