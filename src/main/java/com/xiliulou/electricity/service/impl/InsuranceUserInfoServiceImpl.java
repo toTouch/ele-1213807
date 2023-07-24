@@ -140,6 +140,27 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
     }
 
     @Override
+    public InsuranceUserInfo selectByUidAndTypeFromDB(Long uid, Integer type) {
+        return insuranceUserInfoMapper.selectByUidAndTypeFromDB(uid, type);
+    }
+
+    @Override
+    public InsuranceUserInfo selectByUidAndTypeFromCache(Long uid, Integer type) {
+        InsuranceUserInfo cache = redisService.getWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type, InsuranceUserInfo.class);
+        if (Objects.nonNull(cache)) {
+            return cache;
+        }
+
+        InsuranceUserInfo insuranceUserInfo = this.selectByUidAndTypeFromDB(uid, type);
+        if (Objects.isNull(insuranceUserInfo)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_INSURANCE_USER_INFO + uid + ":" + type, insuranceUserInfo);
+        return insuranceUserInfo;
+    }
+
+    @Override
     public Integer insert(InsuranceUserInfo insuranceUserInfo) {
         return insuranceUserInfoMapper.insert(insuranceUserInfo);
     }
@@ -149,6 +170,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         int result = this.insuranceUserInfoMapper.update(insuranceUserInfo);
         DbUtils.dbOperateSuccessThen(result, () -> {
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid());
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid() + ":" + insuranceUserInfo.getType());
             return null;
         });
         return result;
@@ -281,6 +303,7 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
 
         DbUtils.dbOperateSuccessThen(delete, () -> {
             redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid());
+            redisService.delete(CacheConstant.CACHE_INSURANCE_USER_INFO + insuranceUserInfo.getUid() + ":" + insuranceUserInfo.getType());
             return null;
         });
         return delete;

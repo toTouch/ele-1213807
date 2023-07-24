@@ -4161,8 +4161,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         });
     }
-    
-    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(
+    @Override
+    public List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(
             ElectricityCabinet electricityCabinet) {
         MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService
                 .queryByTenantIdFromCache(electricityCabinet.getTenantId());

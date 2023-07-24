@@ -39,4 +39,6 @@ public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsuranc
     Integer selectPageCount(FranchiseeInsuranceQuery query);
 
     List<FranchiseeInsuranceVo> selectByPage(FranchiseeInsuranceQuery query);
+
+    FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query);
 }

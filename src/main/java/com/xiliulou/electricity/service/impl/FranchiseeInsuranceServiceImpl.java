@@ -154,8 +154,8 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.ok();
         }
 
-        if(Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))){
-            return R.fail("100293", "已存在相同型号保险");
+        if (!Objects.equals(oldFranchiseeInsurance.getName() ,franchiseeInsuranceAddAndUpdate.getName() ) && baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName()) > 0) {
+            return R.fail("100304", "保险名称已存在！");
         }
 
         FranchiseeInsurance newFranchiseeInsurance = new FranchiseeInsurance();
@@ -531,5 +531,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public FranchiseeInsurance selectByFranchiseeIdAndType(Long franchiseeId, int insuranceTypeBattery, String batteryV) {
         return franchiseeInsuranceMapper.selectByFranchiseeIdAndType(franchiseeId,insuranceTypeBattery,batteryV);
+    }
+
+    @Override
+    public FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query) {
+        return franchiseeInsuranceMapper.selectInsuranceByType(query);
     }
 }
