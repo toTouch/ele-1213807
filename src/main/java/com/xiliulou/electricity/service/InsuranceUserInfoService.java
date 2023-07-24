@@ -25,6 +25,10 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfo queryByUidFromCache(Long uid);
 
+    InsuranceUserInfo selectByUidAndTypeFromDB(Long uid,Integer type);
+
+    InsuranceUserInfo selectByUidAndTypeFromCache(Long uid,Integer type);
+
     Integer insert(InsuranceUserInfo insuranceUserInfo);
 
     Integer update(InsuranceUserInfo insuranceUserInfo);

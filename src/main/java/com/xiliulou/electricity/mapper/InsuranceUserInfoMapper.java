@@ -20,4 +20,5 @@ public interface InsuranceUserInfoMapper extends BaseMapper<InsuranceUserInfo> {
 
     InsuranceUserInfoVo queryByUidAndTenantId(@Param("uid") Long uid, @Param("tenantId") Integer tenantId);
 
+    InsuranceUserInfo selectByUidAndTypeFromDB(@Param("uid") Long uid, @Param("type") Integer type);
 }
