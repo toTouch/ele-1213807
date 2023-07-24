@@ -231,6 +231,94 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+    <select id="queryListByCarMemberCardExpireTime" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
+        select
+        tui.id as user_info_id,
+        tui.phone,
+        tui.name,
+        tui.uid,
+        tui.create_time as userCertificationTime,
+        tui.auth_status,
+        tui.usable_status,
+        tui.battery_rent_status,
+        tui.franchisee_id,
+        tui.battery_deposit_status,
+        ubmc.member_card_expire_time,
+        ubmc.disable_member_card_time,
+        ubmc.remaining_number,
+        ubmc.member_card_id as card_id,
+        ubmc.member_card_status as member_card_status,
+        ubmc.card_pay_count as cardPayCount,
+        teb.power,
+        teb.business_status as businessStatus,
+        teb.sn as nowElectricityBatterySn,
+        tui.tenant_id
+        from t_user_car_member_card ucmc
+        left join t_user_battery_member_card ubmc on ubmc.uid=ucmc.uid
+        left join t_user_info tui on ubmc.uid=tui.uid
+        left join t_electricity_battery teb on tui.uid=teb.uid
+        where tui.del_flag=0 and tui.auth_status=2
+        <if test="query.tenantId != null">
+            and tui.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and tui.name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and tui.phone = #{query.phone}
+        </if>
+        <if test="query.batteryId != null">
+            and teb.id = #{query.batteryId}
+        </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
+        </if>
+        <if test="query.memberCardId != null ">
+            and ubmc.member_card_id = #{query.memberCardId}
+        </if>
+        <if test="query.beginTime != null">
+            and tui.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and tui.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.authStatus !=null">
+            and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.batteryRentStatus !=null">
+            and tui.battery_rent_status =#{query.batteryRentStatus}
+        </if>
+        <if test="query.batteryDepositStatus !=null">
+            and tui.battery_deposit_status =#{query.batteryDepositStatus}
+        </if>
+        <if test="query.memberCardExpireTimeBegin !=null">
+            and ucmc.member_card_expire_time &gt;=#{query.carMemberCardExpireTimeBegin}
+        </if>
+        <if test="query.memberCardExpireTimeEnd !=null">
+            and ucmc.member_card_expire_time &lt;=#{query.carMemberCardExpireTimeEnd}
+        </if>
+        <if test="query.memberCardExpireType == 4">
+            and ucmc.member_card_expire_time is not null and ucmc.member_card_expire_time !=0
+        </if>
+        <if test="query.cardPayCount != null">
+            and ubmc.card_pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="query.userCreateBeginTime !=null">
+            and tui.create_time &gt;=#{query.userCreateBeginTime}
+        </if>
+        <if test="query.userCreateEndTime !=null">
+            and tui.create_time &lt;=#{query.userCreateEndTime}
+        </if>
+        order by ucmc.member_card_expire_time,tui.uid desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
     <select id="queryCountByMemberCardExpireTime" resultType="java.lang.Integer">
         select COUNT(1)
         from t_user_battery_member_card ubmc
@@ -281,6 +369,69 @@
         </if>
         <if test="query.cardPayCount != null">
             and ubmc.card_pay_count =#{query.cardPayCount}
+        </if>
+        <if test="query.userCreateBeginTime !=null">
+            and tui.create_time &gt;=#{query.userCreateBeginTime}
+        </if>
+        <if test="query.userCreateEndTime !=null">
+            and tui.create_time &lt;=#{query.userCreateEndTime}
+        </if>
+        <if test="query.franchiseeIds != null and query.franchiseeIds.size()>0">
+            and tui.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryCountByCarMemberCardExpireTime" resultType="java.lang.Integer">
+        select COUNT(1)
+        from t_user_car_member_card ucmc
+        left join t_user_battery_member_card ubmc on ubmc.uid=ucmc.uid
+        left join t_user_info tui on ubmc.uid=tui.uid
+        left join t_electricity_battery teb on tui.uid=teb.uid
+        where tui.del_flag=0 and tui.auth_status=2
+        <if test="query.tenantId != null">
+            and tui.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and tui.name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and tui.phone = #{query.phone}
+        </if>
+        <if test="query.batteryId != null">
+            and teb.id = #{query.batteryId}
+        </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
+        </if>
+        <if test="query.memberCardId != null ">
+            and ubmc.member_card_id = #{query.memberCardId}
+        </if>
+        <if test="query.beginTime != null">
+            and tui.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and tui.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.authStatus !=null">
+            and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.batteryRentStatus !=null">
+            and tui.battery_rent_status =#{query.batteryRentStatus}
+        </if>
+        <if test="query.batteryDepositStatus !=null">
+            and tui.battery_deposit_status =#{query.batteryDepositStatus}
+        </if>
+        <if test="query.carMemberCardExpireTimeBegin !=null">
+            and ucmc.member_card_expire_time &gt;=#{query.carMemberCardExpireTimeBegin}
+        </if>
+        <if test="query.carMemberCardExpireTimeEnd !=null">
+            and ucmc.member_card_expire_time &lt;=#{query.carMemberCardExpireTimeEnd}
+        </if>
+        <if test="query.memberCardExpireType == 4">
+            and ucmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
         </if>
         <if test="query.userCreateBeginTime !=null">
             and tui.create_time &gt;=#{query.userCreateBeginTime}

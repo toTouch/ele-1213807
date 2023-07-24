@@ -66,4 +66,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     
     List<UserInfoSearchVo> userInfoSearch(@Param("size") Long size, @Param("offset") Long offset,
             @Param("name") String name, @Param("tenantId") Integer tenantId);
+
+    List<UserBatteryInfoVO> queryListByCarMemberCardExpireTime(UserInfoQuery userInfoQuery);
+
+    Integer queryCountByCarMemberCardExpireTime(UserInfoQuery userInfoQuery);
 }
