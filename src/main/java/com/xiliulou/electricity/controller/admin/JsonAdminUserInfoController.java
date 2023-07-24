@@ -80,6 +80,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
+                       @RequestParam(value = "carMemberCardExpireType", required = false) Integer carMemberCardExpireType,
                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                        @RequestParam(value = "carMemberCardExpireTimeBegin", required = false) Long carMemberCardExpireTimeBegin,
                        @RequestParam(value = "carMemberCardExpireTimeEnd", required = false) Long carMemberCardExpireTimeEnd,
@@ -121,6 +122,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .serviceStatus(serviceStatus)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .carMemberCardExpireType(carMemberCardExpireType)
                 .carMemberCardExpireTimeBegin(carMemberCardExpireTimeBegin)
                 .carMemberCardExpireTimeEnd(carMemberCardExpireTimeEnd)
                 .uid(uid)
@@ -215,6 +217,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                         @RequestParam(value = "carMemberCardExpireTimeBegin", required = false) Long carMemberCardExpireTimeBegin,
                         @RequestParam(value = "carMemberCardExpireTimeEnd", required = false) Long carMemberCardExpireTimeEnd,
+                        @RequestParam(value = "carMemberCardExpireType", required = false) Integer carMemberCardExpireType,
                         @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateTimeBegin,
                         @RequestParam(value = "userCreateEndTime", required = false) Long userCreateTimeEnd,
                         @RequestParam(value = "batteryId", required = false) Long batteryId,
@@ -251,6 +254,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .phone(phone)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .carMemberCardExpireType(carMemberCardExpireType)
                 .carMemberCardExpireTimeBegin(carMemberCardExpireTimeBegin)
                 .carMemberCardExpireTimeEnd(carMemberCardExpireTimeEnd)
                 .cardName(cardName)
