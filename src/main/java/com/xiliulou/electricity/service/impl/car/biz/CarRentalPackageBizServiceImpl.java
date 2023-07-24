@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import com.xiliulou.electricity.exception.BizException;
@@ -144,6 +145,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         qryModel.setDeposit(deposit);
         qryModel.setType(rentalPackageType);
         qryModel.setCarModelId(carModelId);
+        qryModel.setStatus(UpDownEnum.UP.getCode());
         List<CarRentalPackagePO> packageEntityList = carRentalPackageService.page(qryModel);
         if (CollectionUtils.isEmpty(packageEntityList)) {
             return Collections.emptyList();
