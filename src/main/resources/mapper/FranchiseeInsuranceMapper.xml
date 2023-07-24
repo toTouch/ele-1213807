@@ -163,7 +163,7 @@
         order by id desc limit 1
     </select>
 
-    <select id="checkInsuranceExist" resultType="integer">
+    <select id="checkInsuranceExist" resultType="Integer">
         SELECT 1 FROM t_franchisee_insurance
         where del_flag=0 and status=0
         <if test="franchiseeId != null">

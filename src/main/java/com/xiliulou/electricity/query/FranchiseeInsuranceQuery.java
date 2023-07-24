@@ -3,11 +3,6 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.util.List;
-
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com

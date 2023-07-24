@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
@@ -194,6 +195,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * 修改
      */
     @PutMapping("/admin/battery/memberCard")
+    @Log(title = "修改电池套餐")
     public R update(@RequestBody @Validated(UpdateGroup.class) BatteryMemberCardQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -211,6 +213,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * 上下架
      */
     @PutMapping("/admin/battery/memberCard/shelf")
+    @Log(title = "上/下架电池套餐")
     public R update(@RequestBody @Validated BatteryMemberCardStatusQuery batteryModelQuery) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -228,6 +231,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * 删除
      */
     @DeleteMapping("/admin/battery/memberCard/{id}")
+    @Log(title = "删除电池套餐")
     public R delete(@PathVariable("id") Long id) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
