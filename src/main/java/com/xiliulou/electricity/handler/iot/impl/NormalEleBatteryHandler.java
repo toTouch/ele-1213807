@@ -576,22 +576,19 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             return;
         }
 
-        boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1",
-                300 * 1000L, false);
+        boolean cacheFlag = redisService.setNx(CacheConstant.CHECK_FULL_BATTERY_CACHE + electricityCabinet.getId(), "1", 300 * 1000L, false);
         if (!cacheFlag) {
             return;
         }
 
         //获取所有启用的格挡
-        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(
-                electricityCabinet.getId());
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
         if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return;
         }
 
         //过滤没有电池的格挡
-        List<ElectricityCabinetBox> notHaveBatteryBoxs = electricityCabinetBoxes.stream()
-                .filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
+        List<ElectricityCabinetBox> notHaveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(notHaveBatteryBoxs)) {
             List<String> emptyCellNo = notHaveBatteryBoxs.stream().map(ElectricityCabinetBox::getCellNo).collect(Collectors.toList());
             log.info("ELE BATTERY REPORT INFO! check battery full,eid={},empty cellNo={}", electricityCabinet.getId(), JsonUtil.toJson(emptyCellNo));
@@ -599,10 +596,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
         //柜机仓内电池已满
-        messageDelayQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE,
-                buildDelyQueueMessage(electricityCabinet), 5 * 60);
+        messageDelayQueueService.pushMessage(CommonConstant.FULL_BATTERY_DELY_QUEUE, buildDelyQueueMessage(electricityCabinet), 5 * 60);
     }
-
 
     private Message buildDelyQueueMessage(ElectricityCabinet electricityCabinet) {
         Message message = new Message();
@@ -611,39 +606,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         return message;
     }
-
-//    public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
-//        if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
-//            return "";
-//        }
-//
-//        StringBuilder modelName = new StringBuilder("B_");
-//        char[] batteryChars = batteryName.toCharArray();
-//
-//        //获取电压
-//        String chargeV = split(batteryChars, 4, 6);
-//        modelName.append(chargeV).append("V").append("_");
-//
-//        //获取材料体系
-//        char material = batteryChars[2];
-//        if (material == '1') {
-//            modelName.append(IRON_LITHIUM).append("_");
-//        } else {
-//            modelName.append(TERNARY_LITHIUM).append("_");
-//        }
-//
-//        modelName.append(split(batteryChars, 9, 11));
-//        return modelName.toString();
-//    }
-//
-//    private static String split(char[] strArray, int beginIndex, int endIndex) {
-//        StringBuilder stringBuilder = new StringBuilder();
-//        for (int i = beginIndex; i < endIndex; i++) {
-//            stringBuilder.append(strArray[i]);
-//        }
-//        return stringBuilder.toString();
-//    }
-
 
     @Data
     class EleBatteryVO {

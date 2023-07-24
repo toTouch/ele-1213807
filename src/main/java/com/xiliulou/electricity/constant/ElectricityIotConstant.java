@@ -5,11 +5,6 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * @author: lxc
- * @Date: 2020/12/28 13:34
- * @Description:
- */
 public class ElectricityIotConstant {
     /**
      * 命令映射处理的handler

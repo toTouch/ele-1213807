@@ -160,7 +160,7 @@ public class BatteryModelServiceImpl implements BatteryModelService {
             return Collections.emptyList();
         }
 
-        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().sorted().collect(Collectors.toList());
+        return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().sorted(Comparator.comparing(item -> Integer.parseInt(item.substring(0, item.length() - 1)))).collect(Collectors.toList());
     }
 
     /**
