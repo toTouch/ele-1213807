@@ -260,25 +260,25 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
                 EleChargeConfig config = queryByTenantIdFromDb(tenantId);
                 if (Objects.nonNull(config)) {
                     //这里排除自己
-                    return !Objects.nonNull(chargeId) || !Objects.equals(config.getId(), chargeId);
+                    return Objects.nonNull(chargeId) && !Objects.equals(config.getId(), chargeId);
                 }
                 break;
             case EleChargeConfig.TYPE_ALL_STORE:
                 EleChargeConfig franchiseeConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), null, null, EleChargeConfig.TYPE_ALL_STORE);
                 if (Objects.nonNull(franchiseeConfig)) {
-                    return !Objects.nonNull(chargeId) || !Objects.equals(franchiseeConfig.getId(), chargeId);
+                    return Objects.nonNull(chargeId) && !Objects.equals(franchiseeConfig.getId(), chargeId);
                 }
                 break;
             case EleChargeConfig.TYPE_ALL_CABINET:
                 EleChargeConfig storeConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), chargeConfigQuery.getStoreId(), null, EleChargeConfig.TYPE_ALL_CABINET);
                 if (Objects.nonNull(storeConfig)) {
-                    return !Objects.nonNull(chargeId) || !Objects.equals(storeConfig.getId(), chargeId);
+                    return Objects.nonNull(chargeId) && !Objects.equals(storeConfig.getId(), chargeId);
                 }
                 break;
             case EleChargeConfig.TYPE_SINGLE_CABINET:
                 EleChargeConfig cabinetConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), chargeConfigQuery.getStoreId(), chargeConfigQuery.getEid(), EleChargeConfig.TYPE_SINGLE_CABINET);
                 if (Objects.nonNull(cabinetConfig)) {
-                    return !Objects.nonNull(chargeId) || !Objects.equals(cabinetConfig.getId(), chargeId);
+                    return Objects.nonNull(chargeId) && !Objects.equals(cabinetConfig.getId(), chargeId);
                 }
                 break;
             default:
