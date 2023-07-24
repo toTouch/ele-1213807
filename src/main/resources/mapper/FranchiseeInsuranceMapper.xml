@@ -119,7 +119,7 @@
     </select>
 
     <select id="checkInsuranceExist" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
-        SELECT 1 FROM t_franchisee_insurance WHERE del_flag=0
+        SELECT 1 FROM t_franchisee_insurance
         where del_flag=0 and status=0
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}

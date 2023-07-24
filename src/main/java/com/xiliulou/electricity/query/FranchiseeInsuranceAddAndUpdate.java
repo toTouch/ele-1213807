@@ -26,6 +26,7 @@ public class FranchiseeInsuranceAddAndUpdate {
     /**
      * 加盟商id
      */
+    @NotNull(message = "加盟商不能为空!")
     private Long franchiseeId;
 
     /**
