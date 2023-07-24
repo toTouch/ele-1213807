@@ -114,7 +114,7 @@ public class BasicController {
      * K：租车套餐ID<br />
      * V：租车套餐信息
      * @param carRentalPackageIds 租车套餐ID集
-     * @return
+     * @return 租车套餐ID:租车套餐信息
      */
     protected Map<Long, CarRentalPackagePO> getCarRentalPackageByIdsForMap(Set<Long> carRentalPackageIds) {
 
@@ -135,7 +135,7 @@ public class BasicController {
      * K：租车套餐ID<br />
      * V：租车套餐名称
      * @param carRentalPackageIds 租车套餐ID集
-     * @return
+     * @return 租车套餐ID:租车套餐名称
      */
     protected Map<Long, String> getCarRentalPackageNameByIdsForMap(Set<Long> carRentalPackageIds) {
 

@@ -63,7 +63,7 @@ public class CarRentalPackageOrderVO implements Serializable {
     private Integer tenancyUnit;
 
     /**
-     * 租金单价，单位同租期单位
+     * 租金单价
      */
     private BigDecimal rentUnitPrice;
 
@@ -198,5 +198,10 @@ public class CarRentalPackageOrderVO implements Serializable {
      * 赠送的优惠券名称
      */
     private String couponName;
+
+    /**
+     * 电池型号对应的电压伏数
+     */
+    private BigDecimal batteryV;
 
 }
