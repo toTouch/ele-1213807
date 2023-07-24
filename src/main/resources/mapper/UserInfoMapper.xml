@@ -291,13 +291,13 @@
         <if test="query.batteryDepositStatus !=null">
             and tui.battery_deposit_status =#{query.batteryDepositStatus}
         </if>
-        <if test="query.memberCardExpireTimeBegin !=null">
+        <if test="query.carMemberCardExpireTimeBegin !=null">
             and ucmc.member_card_expire_time &gt;=#{query.carMemberCardExpireTimeBegin}
         </if>
-        <if test="query.memberCardExpireTimeEnd !=null">
+        <if test="query.carMemberCardExpireTimeEnd !=null">
             and ucmc.member_card_expire_time &lt;=#{query.carMemberCardExpireTimeEnd}
         </if>
-        <if test="query.memberCardExpireType == 4">
+        <if test="query.carMemberCardExpireType == 4">
             and ucmc.member_card_expire_time is not null and ucmc.member_card_expire_time !=0
         </if>
         <if test="query.cardPayCount != null">
@@ -430,7 +430,7 @@
         <if test="query.carMemberCardExpireTimeEnd !=null">
             and ucmc.member_card_expire_time &lt;=#{query.carMemberCardExpireTimeEnd}
         </if>
-        <if test="query.memberCardExpireType == 4">
+        <if test="query.carMemberCardExpireType == 4">
             and ucmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
         </if>
         <if test="query.userCreateBeginTime !=null">
