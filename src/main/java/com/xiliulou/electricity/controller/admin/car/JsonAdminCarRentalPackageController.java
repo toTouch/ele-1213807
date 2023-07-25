@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin.car;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -127,12 +128,17 @@ public class JsonAdminCarRentalPackageController extends BasicController {
             return R.ok(Collections.emptyList());
         }
 
-        // 获取辅助业务信息（加盟商、车辆型号）
+        // 获取辅助业务信息（加盟商、车辆型号、优惠券信息）
         Set<Long> franchiseeIds = new HashSet<>();
         Set<Integer> carModelIds = new HashSet<>();
+        List<Long> couponIds = new ArrayList<>();
         carRentalPackageEntityList.forEach(carRentalPackageEntity -> {
             franchiseeIds.add(Long.valueOf(carRentalPackageEntity.getFranchiseeId()));
             carModelIds.add(carRentalPackageEntity.getCarModelId());
+            Long couponId = carRentalPackageEntity.getCouponId();
+            if (ObjectUtils.isNotEmpty(couponId) && !couponIds.contains(couponId)) {
+                couponIds.add(couponId);
+            }
         });
 
         // 获取辅助业务信息（加盟商、车辆型号）
@@ -141,6 +147,9 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
         // 车辆型号信息
         Map<Integer, String> carModelMap = getCarModelNameByIdsForMap(carModelIds);
+
+        // 优惠券信息
+        Map<Long, Coupon> couponMap = queryCouponForMapByIds(couponIds);
 
         // 模型转换，封装返回
         List<CarRentalPackageVO> carRentalPackageVOList = carRentalPackageEntityList.stream().map(carRentalPackageEntity -> {
@@ -154,6 +163,10 @@ public class JsonAdminCarRentalPackageController extends BasicController {
 
             if (!carModelMap.isEmpty()) {
                 carRentalPackageVo.setCarModelName(carModelMap.getOrDefault(carRentalPackageEntity.getCarModelId(), ""));
+            }
+
+            if (!couponMap.isEmpty()) {
+                carRentalPackageVo.setCouponName(couponMap.getOrDefault(carRentalPackageEntity.getCouponId(), new Coupon()).getName());
             }
 
             return carRentalPackageVo;
