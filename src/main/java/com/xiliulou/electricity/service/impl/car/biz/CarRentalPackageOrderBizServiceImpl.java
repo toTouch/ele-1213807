@@ -582,6 +582,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageOrderSlippagePO slippageEntity = new CarRentalPackageOrderSlippagePO();
         slippageEntity.setUid(uid);
         slippageEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
+        slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
+        slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
         slippageEntity.setLateFeeStartTime(System.currentTimeMillis());

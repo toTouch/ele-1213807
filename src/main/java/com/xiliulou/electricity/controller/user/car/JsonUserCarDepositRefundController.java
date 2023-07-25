@@ -11,7 +11,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +42,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
     /**
      * 退押申请
      * @param depositPayOrderNo 押金缴纳订单编码
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/refundDeposit")
     public R<Boolean> refundDeposit(String depositPayOrderNo) {
@@ -59,7 +58,9 @@ public class JsonUserCarDepositRefundController extends BasicController {
 
     /**
      * 分页查询
-     * @return
+     * @param offset 偏移量
+     * @param size 取值数量
+     * @return 押金退还订单集
      */
     @GetMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(Integer offset, Integer size) {
@@ -73,12 +74,8 @@ public class JsonUserCarDepositRefundController extends BasicController {
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(user.getUid());
-        if (ObjectUtils.isNotEmpty(offset)) {
-            qryModel.setOffset(offset);
-        }
-        if (ObjectUtils.isNotEmpty(size)) {
-            qryModel.setSize(size);
-        }
+        qryModel.setOffset(offset);
+        qryModel.setSize(size);
 
         // 调用服务
         List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
@@ -99,7 +96,7 @@ public class JsonUserCarDepositRefundController extends BasicController {
 
     /**
      * 查询总数
-     * @return
+     * @return 总数
      */
     @GetMapping("/count")
     public R<Integer> count() {

@@ -54,6 +54,11 @@ public class CarRentalPackageOrderSlippageVO implements Serializable {
     private Long lateFeeStartTime;
 
     /**
+     * 滞纳金应缴纳金额
+     */
+    private BigDecimal lateFeePayable;
+
+    /**
      * 滞纳金缴纳金额
      */
     private BigDecimal lateFeePay;

@@ -55,7 +55,6 @@ public class JsonUserCarRenalPackageController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        // 重新赋值租户ID
         qryReq.setTenantId(tenantId);
 
         List<CarRentalPackagePO> entityList = carRentalPackageBizService.queryCanPurchasePackage(qryReq, user.getUid());

@@ -83,7 +83,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             log.info("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
-            throw new BizException("300000", "数据有误");
+            return null;
         }
 
         return carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
@@ -121,7 +121,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
 
         Integer payType = depositPayEntity.getPayType();
 
@@ -265,7 +265,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
 
         // 判定是否退押审核
         boolean depositAuditFlag = true;
@@ -376,7 +376,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param tenantId 租户ID
      * @param uid 用户ID
      */
-    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType, String depositPayOrderNo) {
+    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType) {
 
         // 检测是否存在滞纳金
         if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {

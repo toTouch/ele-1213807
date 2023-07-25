@@ -42,7 +42,9 @@ public class JsonUserCarDepositPayController extends BasicController {
 
     /**
      * 分页查询
-     * @return
+     * @param offset 偏移量
+     * @param size 取值数量
+     * @return 押金缴纳订单集
      */
     @GetMapping("/page")
     public R<List<CarRentalPackageDepositPayVO>> page(Integer offset, Integer size) {
@@ -77,7 +79,7 @@ public class JsonUserCarDepositPayController extends BasicController {
 
     /**
      * 查询总数
-     * @return
+     * @return 总数
      */
     @GetMapping("/count")
     public R<Integer> count() {

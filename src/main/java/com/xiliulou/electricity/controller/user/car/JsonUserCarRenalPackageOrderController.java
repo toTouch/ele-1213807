@@ -148,10 +148,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             qryReq = new CarRentalPackageOrderQryReq();
         }
 
-        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");

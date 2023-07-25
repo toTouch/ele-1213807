@@ -106,6 +106,7 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
             carRentalPackageOrderSlippageService.insert(slippageEntityInsert);
         }
+        // TODO 查询过期订单是否存在因冻结产生的逾期订单，若有，则需要更新滞纳金结束时间
         if (ObjectUtils.isNotEmpty(packageOrderEntityNew)) {
             // 覆盖会员期限信息
             CarRentalPackageMemberTermPO memberTermEntityUpdate = new CarRentalPackageMemberTermPO();
@@ -178,6 +179,8 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
         CarRentalPackageOrderSlippagePO slippageEntity = new CarRentalPackageOrderSlippagePO();
         slippageEntity.setUid(uid);
         slippageEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
+        slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
+        slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
         slippageEntity.setLateFeeStartTime(System.currentTimeMillis());
