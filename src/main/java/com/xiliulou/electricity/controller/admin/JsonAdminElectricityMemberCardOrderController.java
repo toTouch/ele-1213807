@@ -338,7 +338,6 @@ public class JsonAdminElectricityMemberCardOrderController extends BaseControlle
      * 获取用户当前绑定的套餐详情
      */
     @GetMapping(value = "/admin/electricityMemberCard/userBatteryMembercardInfo")
-    @Log(title = "用户套餐续费")
     public R userBatteryMembercardInfo(@RequestParam("uid") Long uid) {
         return returnTripleResult(electricityMemberCardOrderService.userBatteryMembercardInfo(uid));
     }

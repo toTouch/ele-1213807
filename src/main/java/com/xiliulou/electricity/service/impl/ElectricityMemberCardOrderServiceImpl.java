@@ -3162,7 +3162,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
 
-        if (Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
+        if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
             return Triple.of(false, "100275", "电池套餐不可用");
         }
 
