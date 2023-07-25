@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sun.xml.bind.v2.TODO;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
@@ -169,6 +168,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -229,7 +231,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         List<UserBatteryInfoVO> userBatteryInfoVOS ;
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
             userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
-        } else {
+        } else if(Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_CAR_EXPIRE_TIME)){
+            userBatteryInfoVOS = userInfoMapper.queryListByCarMemberCardExpireTime(userInfoQuery);
+        }else {
             userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
         }
 
@@ -708,6 +712,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer count ;
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
             count = userInfoMapper.queryCountByMemberCardExpireTime(userInfoQuery);
+        } else if(Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_CAR_EXPIRE_TIME)){
+            count = userInfoMapper.queryCountByCarMemberCardExpireTime(userInfoQuery);
         } else {
             count = userInfoMapper.queryCountForBatteryService(userInfoQuery);
         }
@@ -1420,7 +1426,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         DetailsUserInfoVo vo = new DetailsUserInfoVo();
         BeanUtils.copyProperties(userInfo, vo);
         vo.setUserCertificationTime(userInfo.getCreateTime());
-        
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        vo.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        vo.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
+
+        Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
+        vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
+
         UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
         BeanUtils.copyProperties(userTurnoverVo, vo);
         return R.ok(vo);
@@ -1459,7 +1472,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS BATTERY INFO ERROR! query user battery error!", e);
             return null;
         });
-        
+
+        List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
+        vo.setBatteryModels(userBatteryModels);
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryUserBatteryDeposit, queryUserBatteryMemberCard, queryUserBattery);
         try {
@@ -1918,7 +1934,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         
         vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
         vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
-        vo.setMemberCardExpireTime(userBatteryMemberCard.getDisableMemberCardTime());
+        vo.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
         

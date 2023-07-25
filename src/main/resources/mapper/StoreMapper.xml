@@ -282,6 +282,9 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
         order by id
         limit #{offset}, #{size}
     </select>

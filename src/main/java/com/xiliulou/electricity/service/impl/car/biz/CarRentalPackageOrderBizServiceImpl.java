@@ -134,8 +134,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageOrderFreezePO freezeEntity = carRentalPackageOrderFreezeService.selectByOrderNo(freezeRentOrderNo);
         if (ObjectUtils.isEmpty(freezeEntity) || !RentalPackageOrderFreezeStatusEnum.PENDING_APPROVAL.getCode().equals(freezeEntity.getStatus())) {
             log.error("approveFreezeRentOrder faild. not find car_rental_package_order_freeze or status error. freezeRentOrderNo is {}", freezeRentOrderNo);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(freezeEntity.getRentalPackageOrderNo());
@@ -148,8 +147,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(freezeEntity.getTenantId(), freezeEntity.getUid());
             if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermEntity.getStatus())) {
                 log.error("approveFreezeRentOrder faild. not find car_rental_package_member_term or status error. freezeRentOrderNo is {}, uid is {}", freezeRentOrderNo, freezeEntity.getUid());
-                // TODO 错误编码
-                throw new BizException("", "数据有误");
+                throw new BizException("300000", "数据有误");
             }
         }
 
@@ -235,8 +233,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageOrderRentRefundPO rentRefundEntity = carRentalPackageOrderRentRefundService.selectByOrderNo(refundRentOrderNo);
         if (ObjectUtils.isEmpty(rentRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(rentRefundEntity.getRefundState())) {
             log.error("approveRefundRentOrder faild. not find car_rental_package_order_rent_refund or status error. refundRentOrderNo is {}", refundRentOrderNo);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         // TX 事务落库
@@ -376,19 +373,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if (!MemberTermStatusEnum.FREEZE.getCode().equals(memberTermEntity.getStatus())) {
-            // TODO 错误编码
-            throw new BizException("", "用户状态不符");
+            throw new BizException("300002", "租车会员状态异常");
         }
 
         if (!memberTermEntity.getRentalPackageOrderNo().equals(packageOrderNo)) {
-            // TODO 错误编码
-            throw new BizException("", "订单编码不匹配");
+            throw new BizException("300020", "订单编码不匹配");
         }
 
         // 是否存在滞纳金（仅限租车套餐产生的滞纳金）
         if (carRentalPackageOrderSlippageService.isExitUnpaid(tenantId, uid)) {
-            // TODO 错误编码
-            throw new BizException("", "尚未缴纳滞纳金");
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         // TX 事务
@@ -437,20 +431,17 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if (!MemberTermStatusEnum.APPLY_FREEZE.getCode().equals(memberTermEntity.getStatus())) {
-            // TODO 错误编码
-            throw new BizException("", "用户状态不符");
+            throw new BizException("300002", "租车会员状态异常");
         }
 
         if (!memberTermEntity.getRentalPackageOrderNo().equals(packageOrderNo)) {
-            // TODO 错误编码
-            throw new BizException("", "订单编码不匹配");
+            throw new BizException("300020", "订单编码不匹配");
         }
 
         // 二次保险保底查询
         CarRentalPackageOrderFreezePO freezeEntity = carRentalPackageOrderFreezeService.selectPendingApprovalByUid(tenantId, uid);
         if (ObjectUtils.isEmpty(freezeEntity) || !freezeEntity.getRentalPackageOrderNo().equals(packageOrderNo)) {
-            // TODO 错误编码
-            throw new BizException("", "订单编码不匹配");
+            throw new BizException("300020", "订单编码不匹配");
         }
 
         // 撤销冻结申请
@@ -476,14 +467,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 查询套餐会员期限
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            // TODO 错误编码
-            throw new BizException("", "状态异常，不允许冻结");
+            throw new BizException("300002", "租车会员状态异常");
         }
 
         // 查询套餐购买订单信息
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(packageOrderNo);
+
         // 判定套餐是否允许冻结
-        checkPackageOrderEntity(packageOrderEntity);
+        if (ObjectUtils.isEmpty(packageOrderEntity)) {
+            throw new BizException("300008", "未找到租车套餐购买订单");
+        }
+
+        if(PayStateEnum.SUCCESS.getCode().equals(packageOrderEntity.getPayState())) {
+            throw new BizException("300014", "订单支付异常");
+        }
+
+        if(UseStateEnum.UN_USED.getCode().equals(packageOrderEntity.getUseState())) {
+            throw new BizException("300015", "订单状态异常");
+        }
 
         // 生成冻结申请
         Long residue = calculateResidue(packageOrderEntity.getConfine(), memberTermEntity.getResidue(), packageOrderEntity.getUseBeginTime().longValue(), packageOrderEntity.getTenancy(), packageOrderEntity.getTenancyUnit());
@@ -581,6 +582,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageOrderSlippagePO slippageEntity = new CarRentalPackageOrderSlippagePO();
         slippageEntity.setUid(uid);
         slippageEntity.setRentalPackageOrderNo(packageOrderEntity.getOrderNo());
+        slippageEntity.setRentalPackageId(packageOrderEntity.getRentalPackageId());
+        slippageEntity.setRentalPackageType(packageOrderEntity.getRentalPackageType());
         slippageEntity.setType(SlippageTypeEnum.FREEZE.getCode());
         slippageEntity.setLateFee(packageOrderEntity.getLateFee());
         slippageEntity.setLateFeeStartTime(System.currentTimeMillis());
@@ -601,32 +604,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         return slippageEntity;
     }
 
-    /**
-     * 检查套餐是否允许冻结
-     * @param packageOrderEntity
-     */
-    private void checkPackageOrderEntity(CarRentalPackageOrderPO packageOrderEntity) {
-        if (ObjectUtils.isEmpty(packageOrderEntity)) {
-            // TODO 错误编码
-            throw new BizException("", "订单不存在");
-        }
-
-        if(PayTypeEnum.GIVE.getCode().equals(packageOrderEntity.getPayType())) {
-            // TODO 错误编码
-            throw new BizException("", "赠送的订单不允许冻结");
-        }
-
-        if(PayStateEnum.SUCCESS.getCode().equals(packageOrderEntity.getPayState())) {
-            // TODO 错误编码
-            throw new BizException("", "支付状态异常，不允许冻结");
-        }
-
-        if(UseStateEnum.UN_USED.getCode().equals(packageOrderEntity.getUseState())) {
-            // TODO 错误编码
-            throw new BizException("", "未使用的订单，不允许冻结");
-        }
-
-    }
 
     /**
      * 根据用户ID及订单编码，退租购买的订单
@@ -646,28 +623,23 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 查询套餐购买订单
         CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(packageOrderNo);
         if (ObjectUtils.isEmpty(packageOrderEntity) || ObjectUtils.notEqual(tenantId, packageOrderEntity.getTenantId()) || ObjectUtils.notEqual(uid, packageOrderEntity.getUid())) {
-            // TODO 错误编码
-            throw new BizException("", "订单不存在");
+            throw new BizException("300008", "未找到租车套餐购买订单");
         }
 
-        if (System.currentTimeMillis() >= packageOrderEntity.getRentRebateEndTime()) {
-            // TODO 错误编码
-            throw new BizException("", "订单超过可退期限，不允许退租");
-        }
-
-        if (ObjectUtils.notEqual(PayTypeEnum.GIVE.getCode(), packageOrderEntity.getPayType())) {
-            // TODO 错误编码
-            throw new BizException("", "赠送订单不允许退租");
+        if (ObjectUtils.notEqual(YesNoEnum.NO.getCode(), packageOrderEntity.getRentRebate())) {
+            throw new BizException("300012", "订单不允许退租");
+        } else {
+            if (System.currentTimeMillis() >= packageOrderEntity.getRentRebateEndTime()) {
+                throw new BizException("300013", "订单超过可退期限");
+            }
         }
 
         if (ObjectUtils.notEqual(PayStateEnum.SUCCESS.getCode(), packageOrderEntity.getPayState())) {
-            // TODO 错误编码
-            throw new BizException("", "订单支付异常不允许退租");
+            throw new BizException("300014", "订单支付异常");
         }
 
         if (UseStateEnum.notRefundCodes().contains(packageOrderEntity.getUseState())) {
-            // TODO 错误编码
-            throw new BizException("", "订单状态异常不允许退租");
+            throw new BizException("300015", "订单状态异常");
         }
 
         // 购买的时候，赠送的优惠券是否被使用，若为使用中、已使用，则不允许退租
@@ -675,28 +647,24 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (ObjectUtils.isNotEmpty(userCoupon)) {
             Integer status = userCoupon.getStatus();
             if (UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status) || UserCoupon.STATUS_IS_BEING_VERIFICATION.equals(status)) {
-                // TODO 错误编码
-                throw new BizException("", "订单赠送优惠券状态异常不允许退租");
+                throw new BizException("300016", "订单赠送优惠券状态异常");
             }
         }
 
         CarRentalPackageMemberTermPO memberTermUpdateEntity = null;
         if (UseStateEnum.IN_USE.getCode().equals(packageOrderEntity.getUseState())) {
             if (carRentalPackageOrderService.isExitUnUseByUid(tenantId, uid)) {
-                // TODO 错误编码
-                throw new BizException("", "存在未使用的订单，不允许退租正在使用中的订单");
+                throw new BizException("300017", "存在未使用的订单");
             }
             // 查询设备信息，存在设备，不允许退租
             UserCar userCar = userCarService.selectByUidFromCache(uid);
             if (ObjectUtils.isNotEmpty(userCar) && ObjectUtils.isNotEmpty(userCar.getSn()) ) {
-                // TODO 错误编码
-                throw new BizException("", "存在未归还的车辆，不允许退租");
+                throw new BizException("300018", "存在未归还的车辆");
             }
             if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(packageOrderEntity.getRentalPackageType())) {
                 ElectricityBattery battery = batteryService.queryByUid(uid);
                 if (ObjectUtils.isNotEmpty(battery)) {
-                    // TODO 错误编码
-                    throw new BizException("", "存在未归还的电池，不允许退租");
+                    throw new BizException("300019", "存在未归还的电池");
                 }
             }
             memberTermUpdateEntity = buildRentRefundRentalPackageMemberTerm(tenantId, uid, optUid);
@@ -737,9 +705,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageMemberTermPO buildRentRefundRentalPackageMemberTerm(Integer tenantId, Long uid, Long optUid) {
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || !MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-            // TODO 错误编码
             log.error("buildRentRefundRentalPackageMemberTerm faild. not find car_rental_package_member_term or status error. uid is {}", uid);
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         CarRentalPackageMemberTermPO memberTermUpdateEntity = new CarRentalPackageMemberTermPO();
@@ -1010,15 +977,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageOrderPO carRentalPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(packageOrderNo);
         if (ObjectUtil.isEmpty(carRentalPackageOrderEntity)) {
             log.error("CancelRentalPackageOrder failed, not found car_rental_package_order, order_no is {}", packageOrderNo);
-            // TODO 错误码定义
-            throw new BizException("", "未找到租车套餐购买订单");
+            throw new BizException("300008", "未找到租车套餐购买订单");
         }
 
         // 订单支付状态不匹配
         if (ObjectUtil.notEqual(PayStateEnum.UNPAID.getCode(), carRentalPackageOrderEntity.getPayState())) {
             log.error("CancelRentalPackageOrder failed, car_rental_package_order processed, order_no is {}", packageOrderNo);
-            // TODO 错误码定义
-            throw new BizException("", "租车套餐购买订单已处理");
+            throw new BizException("300009", "租车套餐购买订单已处理");
         }
 
         // 更改套餐购买订单的支付状态
@@ -1029,8 +994,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(depositPayEntity)) {
             log.error("CancelRentalPackageOrder failed, not found car_rental_package_deposit_pay, order_no is {}", depositPayOrderNo);
-            // TODO 错误码定义
-            throw new BizException("", "未找到租车套餐押金缴纳订单");
+            throw new BizException("300010", "未找到租车套餐押金缴纳订单");
         }
 
         // 判定押金缴纳订单是否需要更改支付状态
@@ -1042,8 +1006,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity)) {
             log.error("CancelRentalPackageOrder failed, not found car_rental_package_member_term, uid is {}", uid);
-            // TODO 错误码定义
-            throw new BizException("", "未找到租车会员记录信息");
+            throw new BizException("300011", "未找到租车会员记录信息");
         }
 
         // 待生效的数据，直接删除
@@ -1092,45 +1055,39 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
             if (Objects.isNull(userInfo)) {
                 log.error("CheckBuyPackageCommon failed. Not found user. uid is {} ", uid);
-                // TODO 错误编码
-                throw new BizException("", "未找到用户");
+                throw new BizException("ELECTRICITY.0001", "未找到用户");
             }
 
             // 1.1 用户可用状态
             if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
                 log.error("CheckBuyPackageCommon failed. User is unUsable. uid is {} ", uid);
-                // TODO 错误编码
-                throw new BizException("", "用户已被禁用");
+                throw new BizException("ELECTRICITY.0024", "用户已被禁用");
             }
 
             // 1.2 用户实名认证状态
             if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
                 log.error("CheckBuyPackageCommon failed. User not auth. uid is {}", uid);
-                // TODO 错误编码
-                throw new BizException("", "用户尚未实名认证");
+                throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
             }
 
             // 2. 判定滞纳金
             if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
                 log.error("CheckBuyPackageCommon failed. Late fee not paid. uid is {}", uid);
-                // TODO 错误编码
-                throw new BizException("", "存在滞纳金，请先缴纳");
+                throw new BizException("300001", "存在滞纳金，请先缴纳");
             }
 
             // 3. 支付相关
             ElectricityPayParams payParamsEntity = electricityPayParamsService.queryFromCache(tenantId);
             if (Objects.isNull(payParamsEntity)) {
                 log.error("BuyRentalPackageOrder failed. Not found pay_params. uid is {}", uid);
-                // TODO 错误编码
-                throw new BizException("", "未配置支付参数");
+                throw new BizException("100234", "未配置支付参数");
             }
 
             // 4. 三方授权相关
             UserOauthBind userOauthBindEntity = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
             if (Objects.isNull(userOauthBindEntity) || Objects.isNull(userOauthBindEntity.getThirdId())) {
                 log.error("BuyRentalPackageOrder failed. Not found useroauthbind or thirdid is null. uid is {}", uid);
-                // TODO 错误编码
-                throw new BizException("", "未找到用户的第三方授权信息");
+                throw new BizException("100235", "未找到用户的第三方授权信息");
             }
 
             // 初始化押金金额
@@ -1146,8 +1103,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 5.1 用户套餐会员限制状态异常
                 if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
                     log.error("BuyRentalPackageOrder failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                    // TODO 错误编码
-                    return R.fail("", "用户状态异常");
+                    return R.fail("300002", "租车会员状态异常");
                 }
                 // 从会员期限中获取押金金额
                 deposit = memberTermEntity.getDeposit();
@@ -1158,23 +1114,20 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackagePO buyPackageEntity = carRentalPackageService.selectById(buyRentalPackageId);
             if (ObjectUtils.isEmpty(buyPackageEntity)) {
                 log.error("BuyRentalPackageOrder failed. Package does not exist, buyRentalPackageId is {}", buyRentalPackageId);
-                // TODO 错误编码
-                return R.fail("", "套餐不存在");
+                return R.fail("300003", "套餐不存在");
             }
 
             // 6.2 套餐上下架状态
             if (UpDownEnum.DOWN.getCode().equals(buyPackageEntity.getStatus())) {
                 log.error("BuyRentalPackageOrder failed. Package status is down. buyRentalPackageId is {}", buyRentalPackageId);
-                // TODO 错误编码
-                return R.fail("", "套餐已下架");
+                return R.fail("300004", "套餐已下架");
             }
 
             // 6.3 判定用户是否是老用户，然后和套餐的适用类型做比对
             Boolean oldUserFlag = userBizService.isOldUser(tenantId, uid);
             if (oldUserFlag && !ApplicableTypeEnum.oldUserApplicable().contains(buyPackageEntity.getApplicableType())) {
                 log.error("BuyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user is old", buyPackageEntity.getApplicableType());
-                // TODO 错误编码
-                return R.fail("", "套餐不匹配");
+                return R.fail("300005", "套餐不匹配");
             }
 
             // 7. 判定套餐互斥
@@ -1182,8 +1135,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) &&
                     (!UserInfo.BATTERY_DEPOSIT_STATUS_NO.equals(userInfo.getBatteryDepositStatus()) || !UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus()))) {
                 log.error("BuyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is battery", buyPackageEntity.getType());
-                // TODO 错误编码
-                return R.fail("", "套餐不匹配");
+                return R.fail("300005", "套餐不匹配");
             }
 
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
@@ -1191,8 +1143,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 7.2 用户名下的套餐类型和即将购买的套餐类型不一致
                 if (!memberTermEntity.getRentalPackageType().equals(buyPackageEntity.getType())) {
                     log.error("BuyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is {}", buyPackageEntity.getType(), memberTermEntity.getRentalPackageType());
-                    // TODO 错误编码
-                    return R.fail("", "套餐不匹配");
+                    return R.fail("300005", "套餐不匹配");
                 }
                 userTenantId = memberTermEntity.getTenantId();
                 userFranchiseeId = Long.valueOf(memberTermEntity.getFranchiseeId());
@@ -1204,14 +1155,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId, Long.valueOf(buyPackageEntity.getFranchiseeId()))
                         || ObjectUtils.notEqual(userStoreId, Long.valueOf(buyPackageEntity.getStoreId()))) {
                     log.error("BuyRentalPackageOrder failed. Package belong mismatch. ");
-                    // TODO 错误编码
-                    return R.fail("", "套餐不匹配");
+                    return R.fail("300005", "套餐不匹配");
                 }
             } else {
                 if (ObjectUtils.notEqual(userTenantId, buyPackageEntity.getTenantId()) || ObjectUtils.notEqual(userFranchiseeId, Long.valueOf(buyPackageEntity.getFranchiseeId()))) {
                     log.error("BuyRentalPackageOrder failed. Package belong mismatch. ");
-                    // TODO 错误编码
-                    return R.fail("", "套餐不匹配");
+                    return R.fail("300005", "套餐不匹配");
                 }
             }
 
@@ -1219,8 +1168,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
                 if (buyPackageEntity.getDeposit().compareTo(deposit) != 0) {
                     log.error("BuyRentalPackageOrder failed. Package deposit mismatch. ");
-                    // TODO 错误编码
-                    return R.fail("", "套餐不匹配");
+                    return R.fail("300005", "套餐不匹配");
                 }
                 // 比对型号
                 String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
@@ -1240,7 +1188,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriPackageOrderEntity.getRentalPackageId());
                 if (!oriCarRentalPackageEntity.getCarModelId().equals(buyPackageEntity.getCarModelId())) {
                     log.error("BuyRentalPackageOrder failed. Package carModelId mismatch. ");
-                    return R.fail("", "套餐不匹配");
+                    return R.fail("300005", "套餐不匹配");
                 }
                 // 车电一体，比对电池型号
                 if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
@@ -1248,7 +1196,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
                     if (!buyBatteryList.containsAll(oriBatteryList)) {
                         log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
-                        return R.fail("", "套餐不匹配");
+                        return R.fail("300005", "套餐不匹配");
                     }
                 }
             }
@@ -1264,8 +1212,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (ObjectUtils.isEmpty(depositPayEntity)) {
                 if (YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType())) {
                     // 免押
-                    // TODO 错误编码
-                    return R.fail("", "未缴纳押金");
+                    return R.fail("300006", "未缴纳押金");
                 }
                 // 生成押金缴纳订单，准备 insert
                 depositPayInsertEntity = buildCarRentalPackageDepositPay(tenantId, uid, buyPackageEntity.getDeposit(), YesNoEnum.NO.getCode(), buyPackageEntity.getFranchiseeId(), buyPackageEntity.getStoreId(), buyPackageEntity.getType());
@@ -1275,8 +1222,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 if ((YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType()) && !PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType()))
                         || YesNoEnum.NO.getCode().equals(buyOptModel.getDepositType()) && PayTypeEnum.EXEMPT.getCode().equals(depositPayEntity.getPayType())) {
                     // 免押
-                    // TODO 错误编码
-                    return R.fail("", "请选择对应的押金缴纳方式");
+                    return R.fail("300007", "请选择对应的押金缴纳方式");
                 }
                 depositPayOrderNo = depositPayEntity.getOrderNo();
             }

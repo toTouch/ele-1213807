@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleChargeConfigMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EleChargeConfig" id="EleChargeConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="eid" column="eid" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="jsonRule" column="json_rule" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryByCondition" resultMap="EleChargeConfigMap">
+        select
+        id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+        from t_ele_charge_config
+        <where>
+            type = #{type}
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+
+        </where>
+        order by id desc limit 1
+    </select>
+
+    <select id="queryByTenantId" resultMap="EleChargeConfigMap">
+        select id,
+               name,
+               franchisee_id,
+               store_id,
+               eid,
+               tenant_id,
+               type,
+               create_time,
+               update_time,
+               json_rule
+        from t_ele_charge_config
+        where tenant_id = #{tenantId}  and type = 0 order by id desc  limit 1
+    </select>
+
+    <select id="queryById" resultMap="EleChargeConfigMap">
+        select
+            id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+        from t_ele_charge_config
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="EleChargeConfigMap">
+        select
+          id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+        from t_ele_charge_config
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EleChargeConfigMap">
+        select
+          id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+        from t_ele_charge_config
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="jsonRule != null and jsonRule != ''">
+                and json_rule = #{jsonRule}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_charge_config(name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule)
+        values (#{name}, #{franchiseeId}, #{storeId}, #{eid}, #{tenantId}, #{type}, #{createTime}, #{updateTime}, #{jsonRule})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ele_charge_config
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="eid != null">
+                eid = #{eid},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="jsonRule != null and jsonRule != ''">
+                json_rule = #{jsonRule},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ele_charge_config where id = #{id}
+    </delete>
+
+    <select id="queryList" resultMap="EleChargeConfigMap">
+        select
+        id, name, franchisee_id, store_id, eid, tenant_id, type, create_time, update_time, json_rule
+        from t_ele_charge_config
+        <where>
+            tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+    <select id="queryListCount" resultType="java.lang.Integer">
+        select
+            count(1)
+        from t_ele_charge_config
+        <where>
+            tenant_id = #{tenantId}
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+        </where>
+    </select>
+</mapper>

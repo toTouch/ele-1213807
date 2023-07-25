@@ -3041,8 +3041,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.0041", "未实名认证");
         }
 
-        if (!Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
-            return Triple.of(false, "ELECTRICITY.0042", "未缴纳押金");
+        if (Objects.equals(userInfo.getBatteryDepositStatus(), UserInfo.BATTERY_DEPOSIT_STATUS_YES)) {
+            return Triple.of(false, "ELECTRICITY.0042", "用户已缴纳押金");
         }
 
         UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
@@ -3162,7 +3162,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
 
-        if (Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
+        if (!Objects.equals(BatteryMemberCard.STATUS_UP, batteryMemberCard.getStatus())) {
             return Triple.of(false, "100275", "电池套餐不可用");
         }
 
@@ -3341,6 +3341,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //TODO 发送MQ消息  分帐  活动
 
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return Triple.of(false, "100247", "用户信息不存在");
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+        }
+
+        return Triple.of(true, null, batteryMemberCard);
     }
 
     @Override

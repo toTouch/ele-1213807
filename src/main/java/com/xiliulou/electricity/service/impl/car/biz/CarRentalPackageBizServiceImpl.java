@@ -210,8 +210,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
 
         // 检测唯一
         if (carRentalPackageService.uqByTenantIdAndName(tenantId, name)) {
-            // TODO 错误编码
-            throw new BizException("", "套餐名称已存在");
+            log.info("CarRentalPackageBizService.insertPackage, Package name already exists.");
+            throw new BizException("300022", "套餐名称已存在");
         }
 
         // 新增租车套餐
@@ -274,7 +274,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setStatus(entity.getStatus());
         batteryMemberCardEntity.setLimitCount(entity.getConfine());
         batteryMemberCardEntity.setUseCount(entity.getConfineNum());
-        batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+        if (ObjectUtils.isNotEmpty(entity.getCouponId())) {
+            batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+        }
         batteryMemberCardEntity.setIsRefund(entity.getRentRebate());
         batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());
         batteryMemberCardEntity.setFreeDeposite(entity.getFreeDeposit());
@@ -327,7 +329,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             throw new BizException("使用优惠券有误");
         }
 
-        // TODO 校验优惠券的使用，是否指定这个套餐，暴煜
+        // TODO 暴煜, 校验优惠券的使用，是否指定这个套餐
 
         // 真正使用的用户优惠券ID
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());

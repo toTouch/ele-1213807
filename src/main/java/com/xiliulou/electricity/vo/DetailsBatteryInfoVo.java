@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zgw
@@ -111,4 +112,9 @@ public class DetailsBatteryInfoVo {
      * 电量
      */
     private Double power;
+
+    /**
+     * 用户绑定的电池型号
+     */
+    private List<String> batteryModels;
 }

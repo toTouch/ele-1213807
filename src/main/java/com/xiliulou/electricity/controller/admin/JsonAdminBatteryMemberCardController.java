@@ -249,6 +249,40 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
      * 后台绑定套餐 下拉列表
      * @return
      */
+    @GetMapping("/admin/battery/memberCard/selectListByQuery")
+    public R selectListByQuery(@RequestParam(value = "name", required = false) String name,
+                  @RequestParam(value = "status", required = false) Integer status,
+                  @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
+        }
+
+        BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                .tenantId(TenantContextHolder.getTenantId())
+                .franchiseeId(franchiseeId)
+                .franchiseeIds(franchiseeIds)
+                .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .status(status)
+                .name(name)
+                .build();
+
+        return R.ok(batteryMemberCardService.selectListByQuery(query));
+    }
+
     @GetMapping("/admin/battery/memberCardByUid")
     public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset,
                                        @RequestParam("uid") long uid) {

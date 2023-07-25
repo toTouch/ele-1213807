@@ -44,23 +44,18 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     @Resource
     private CarRentalPackageOrderBizService carRentalPackageOrderBizService;
 
-
     /**
      * 启用冻结套餐订单申请
      * @param packageOrderNo 购买订单编号
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/enableFreezeRentOrder")
     public R<Boolean> enableFreezeRentOrder(String packageOrderNo) {
-
         if (StringUtils.isBlank(packageOrderNo)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -75,19 +70,15 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     /**
      * 撤销冻结套餐订单申请
      * @param packageOrderNo 购买订单编号
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/revokeFreezeRentOrder")
     public R<Boolean> revokeFreezeRentOrder(String packageOrderNo) {
-
         if (StringUtils.isBlank(packageOrderNo)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -102,7 +93,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     /**
      * 冻结套餐订单申请
      * @param freezeRentOrderoptReq 请求操作数据模型
-     * @return
+     * @return true(成功)、false(失败)
      */
     @PostMapping("/freezeRentOrder")
     public R<Boolean> freezeRentOrder(@RequestBody FreezeRentOrderoptReq freezeRentOrderoptReq) {
@@ -126,7 +117,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     /**
      * 用户根据套餐购买订单编码进行订单退租申请
      * @param packageOrderNo 购买订单编码
-     * @return
+     * @return true(成功)、false(失败)
      */
     @GetMapping("/refundRentOrder")
     public R<Boolean> refundRentOrder(String packageOrderNo) {
@@ -149,7 +140,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
     /**
      * 套餐购买订单-条件查询列表
      * @param qryReq 请求参数类
-     * @return
+     * @return 套餐购买订单集
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderVO>> page(@RequestBody CarRentalPackageOrderQryReq qryReq) {
@@ -157,10 +148,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
             qryReq = new CarRentalPackageOrderQryReq();
         }
 
-        // 租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
-        // 用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -178,7 +166,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 调用服务
         List<CarRentalPackageOrderPO> carRentalPackageOrderEntityList = carRentalPackageOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageOrderEntityList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（套餐信息，车辆型号信息、电池型号信息）

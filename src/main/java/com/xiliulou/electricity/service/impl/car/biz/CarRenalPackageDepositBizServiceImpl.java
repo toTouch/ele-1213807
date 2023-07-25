@@ -68,6 +68,28 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     /**
+     * 用户名下的押金信息(单车、车电一体)
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 押金缴纳信息
+     */
+    @Override
+    public CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.info("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
+            return null;
+        }
+
+        return carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+    }
+
+    /**
      * 运营商端创建退押
      *
      * @param optModel 租户ID
@@ -88,20 +110,18 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         // 检测押金缴纳订单数据
         CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(depositPayEntity) || PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
             log.error("CarRenalPackageDepositBizService.refundDepositCreate failed. car_rental_package_deposit_pay not found or status is error. uid is {}, depositPayOrderNo is {}", uid, depositPayOrderNo);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
 
         Integer payType = depositPayEntity.getPayType();
 
@@ -171,8 +191,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageDepositRefundPO depositRefundEntity = carRentalPackageDepositRefundService.selectByOrderNo(refundDepositOrderNo);
         if (ObjectUtils.isEmpty(depositRefundEntity) || !RefundStateEnum.PENDING_APPROVAL.getCode().equals(depositRefundEntity.getRefundState())) {
             log.error("approveRefundDepositOrder faild. not find car_rental_package_deposit_refund or status error. refundDepositOrderNo is {}", refundDepositOrderNo);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         // TX 事务落库
@@ -235,20 +254,18 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
             log.error("CarRenalPackageDepositBizService.checkRefundDeposit failed. car_rental_package_member_term not found or status is error. uid is {}", uid);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         // 检测押金缴纳订单数据
         CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectByOrderNo(depositPayOrderNo);
         if (ObjectUtils.isEmpty(depositPayEntity) || PayStateEnum.SUCCESS.getCode().equals(depositPayEntity.getPayState())) {
             log.error("CarRenalPackageDepositBizService.refundDeposit failed. car_rental_package_deposit_pay not found or status is error. uid is {}, depositPayOrderNo is {}", uid, depositPayOrderNo);
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            throw new BizException("300000", "数据有误");
         }
 
         // 退押检测
-        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType(), depositPayOrderNo);
+        checkRefundDeposit(tenantId, uid, memberTermEntity.getRentalPackageType());
 
         // 判定是否退押审核
         boolean depositAuditFlag = true;
@@ -359,27 +376,27 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      * @param tenantId 租户ID
      * @param uid 用户ID
      */
-    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType, String depositPayOrderNo) {
+    private void checkRefundDeposit(Integer tenantId, Long uid, Integer rentalPackageType) {
 
         // 检测是否存在滞纳金
         if (carRenalPackageSlippageBizService.isExitUnpaid(tenantId, uid)) {
-            // TODO 错误编码
-            throw new BizException("", "名下存在未缴纳滞纳金，不允许退押");
+            log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There is a Late fee, please pay first. uid is {}", uid);
+            throw new BizException("300001", "存在滞纳金，请先缴纳");
         }
 
         // 查询设备(车辆)
         UserCar userCar = userCarService.selectByUidFromCache(uid);
         if (ObjectUtils.isEmpty(userCar) || StringUtils.isNotBlank(userCar.getSn())) {
-            // TODO 错误编码
-            throw new BizException("", "名下存在未归还车辆设备，不允许退押");
+            log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There are vehicles that have not been returned. uid is {}", uid);
+            throw new BizException("300018", "存在未归还的车辆");
         }
 
         // 车电一体，查询设备(电池)
         if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
             ElectricityBattery battery = electricityBatteryService.queryByUid(uid);
             if (ObjectUtils.isNotEmpty(battery)) {
-                // TODO 错误编码
-                throw new BizException("", "名下存在未归还电池设备，不允许退押");
+                log.info("CarRenalPackageDepositBizService.checkRefundDeposit, There are unreturned batteries. uid is {}", uid);
+                throw new BizException("300019", "存在未归还的电池");
             }
         }
     }

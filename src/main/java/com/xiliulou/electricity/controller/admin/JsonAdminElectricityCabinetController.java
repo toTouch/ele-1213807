@@ -175,8 +175,8 @@ public class JsonAdminElectricityCabinetController extends BaseController {
                         @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
-                        @RequestParam(value = "sn",required = false) String sn,
-                        @RequestParam(value = "modelId",required = false) Integer modelId) {
+                        @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "modelId", required = false) Integer modelId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -523,7 +523,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
      */
     @GetMapping(value = "/admin/electricityCabinet/allCabinet")
     public R queryAllElectricityCabinet(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam(value = "name", required = false) String name) {
+                                        @RequestParam(value = "name", required = false) String name) {
 
         if (size < 0 || size > 50) {
             size = 10L;
@@ -743,11 +743,13 @@ public class JsonAdminElectricityCabinetController extends BaseController {
 
     /**
      * 列表页搜索接口
+     *
      * @return
      */
     @GetMapping("/admin/electricityCabinet/search")
     public R search(@RequestParam("size") long size, @RequestParam("offset") long offset,
-                    @RequestParam(value = "name", required = false) String name) {
+                    @RequestParam(value = "name", required = false) String name,
+                    @RequestParam(value = "storeId", required = false) Long storeId) {
 
         if (size < 0 || size > 50) {
             size = 20;
@@ -758,7 +760,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
         }
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder().size(size).offset(offset)
-                .name(name).tenantId(TenantContextHolder.getTenantId()).build();
+                .name(name).tenantId(TenantContextHolder.getTenantId()).storeId(storeId).build();
 
         return R.ok(electricityCabinetService.eleCabinetSearch(cabinetQuery));
     }
@@ -961,7 +963,7 @@ public class JsonAdminElectricityCabinetController extends BaseController {
      * 将工厂账号下柜机迁移到扫码租户下，并物理删除工厂租户下的柜机信息
      */
     @PostMapping("/admin/electricityCabinet/transfer")
-    public R transferCabinet(@RequestBody @Validated ElectricityCabinetTransferQuery query){
+    public R transferCabinet(@RequestBody @Validated ElectricityCabinetTransferQuery query) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");

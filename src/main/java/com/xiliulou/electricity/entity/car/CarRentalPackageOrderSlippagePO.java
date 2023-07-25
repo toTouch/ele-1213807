@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.basic.BasicCarPO;
 
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.SlippageTypeEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -34,6 +35,21 @@ public class CarRentalPackageOrderSlippagePO extends BasicCarPO {
      * 购买订单编号
      */
     private String rentalPackageOrderNo;
+
+    /**
+     * 套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
+     * 套餐类型
+     * <pre>
+     *     1-单车
+     *     2-车电一体
+     * </pre>
+     * @see CarRentalPackageTypeEnum
+     */
+    private Integer rentalPackageType;
 
     /**
      * 类型

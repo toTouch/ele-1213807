@@ -75,9 +75,11 @@
         INSERT INTO <include refid="table_name" />
             (`tenant_id`, `franchisee_id`, `store_id`, `create_uid`, `update_uid`, `create_time`, `update_time`, `rental_package_id`, `car_model_id`, `battery_model_type`, `battery_v`)
         VALUES
-        <foreach collection="entityList" item="entity" open="(" close=")" separator=",">
-            #{entity.tenantId}, #{entity.franchiseeId}, #{entity.storeId}, #{entity.createUid}, #{entity.updateUid}, #{entity.createTime}, #{entity.updateTime}, #{entity.rentalPackageId},
-            #{entity.carModelId}, #{entity.batteryModelType}, #{entity.batteryV}
+        <foreach collection="entityList" item="entity" separator=",">
+            (
+                #{entity.tenantId}, #{entity.franchiseeId}, #{entity.storeId}, #{entity.createUid}, #{entity.updateUid}, #{entity.createTime}, #{entity.updateTime}, #{entity.rentalPackageId},
+                #{entity.carModelId}, #{entity.batteryModelType}, #{entity.batteryV}
+            )
         </foreach>
     </insert>
 

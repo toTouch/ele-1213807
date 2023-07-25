@@ -17,6 +17,8 @@
         <result property="uid" column="uid" jdbcType="BIGINT" />
         <result property="orderNo" column="order_no" jdbcType="VARCHAR" />
         <result property="rentalPackageOrderNo" column="rental_package_order_no" jdbcType="VARCHAR" />
+        <result property="rentalPackageId" column="rental_package_id" jdbcType="BIGINT" />
+        <result property="rentalPackageType" column="rental_package_type" jdbcType="INTEGER" />
         <result property="type" column="type" jdbcType="INTEGER" />
         <result property="carSn" column="car_sn" jdbcType="VARCHAR" />
         <result property="batterySn" column="battery_sn" jdbcType="VARCHAR" />
@@ -38,7 +40,7 @@
 
     <!-- 私有字段 -->
     <sql id="private_field">
-        `uid`, `order_no`, `rental_package_order_no`, `type`, `car_sn`, `battery_sn`, `late_fee`, `late_fee_start_time`,
+        `uid`, `order_no`, `rental_package_order_no`, `rental_package_id`, `rental_package_type`, `type`, `car_sn`, `battery_sn`, `late_fee`, `late_fee_start_time`,
         `late_fee_end_time`, `late_fee_pay`, `pay_state`, `pay_time`
     </sql>
 
@@ -54,6 +56,8 @@
         <if test=" storeId != null "> AND `uid` = #{store_id} </if>
         <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
         <if test=" uid != null "> AND `uid` = #{uid} </if>
+        <if test=" rentalPackageId != null "> AND `rental_package_id` = #{rentalPackageId} </if>
+        <if test=" rentalPackageType != null "> AND `rental_package_type` = #{rentalPackageType} </if>
         <if test=" payState != null "> AND `pay_state` = #{payState} </if>
         <if test=" createTimeBegin != null and createTimeEnd != null "> AND `create_time` BETWEEN #{createTimeBegin} AND #{createTimeEnd} </if>
     </sql>
@@ -72,6 +76,8 @@
             <if test=" uid != null "> `uid`, </if>
             <if test=" orderNo != null and orderNo != '' "> `order_no`, </if>
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> `rental_package_order_no`, </if>
+            <if test=" rentalPackageId != null "> `rental_package_id`, </if>
+            <if test=" rentalPackageType != null "> `rental_package_type`, </if>
             <if test=" type != null "> `type`, </if>
             <if test=" carSn != null and carSn != '' "> `car_sn`, </if>
             <if test=" batterySn != null and batterySn != '' "> `battery_sn`, </if>
@@ -97,6 +103,8 @@
             <if test=" uid != null "> #{uid}, </if>
             <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
             <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> #{rentalPackageOrderNo}, </if>
+            <if test=" rentalPackageId != null "> #{rentalPackageId}, </if>
+            <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" type != null "> #{type}, </if>
             <if test=" carSn != null and carSn != '' "> #{carSn}, </if>
             <if test=" batterySn != null and batterySn != '' "> #{batterySn}, </if>
