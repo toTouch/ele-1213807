@@ -274,7 +274,9 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         batteryMemberCardEntity.setStatus(entity.getStatus());
         batteryMemberCardEntity.setLimitCount(entity.getConfine());
         batteryMemberCardEntity.setUseCount(entity.getConfineNum());
-        batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+        if (ObjectUtils.isNotEmpty(entity.getCouponId())) {
+            batteryMemberCardEntity.setCouponId(Integer.valueOf(entity.getCouponId().intValue()));
+        }
         batteryMemberCardEntity.setIsRefund(entity.getRentRebate());
         batteryMemberCardEntity.setRefundLimit(entity.getRentRebateTerm());
         batteryMemberCardEntity.setFreeDeposite(entity.getFreeDeposit());
