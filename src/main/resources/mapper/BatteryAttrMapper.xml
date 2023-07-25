@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.BatteryAttrMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.BatteryAttr" id="BatteryAttrMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="bId" column="b_id" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="batteryV" column="battery_v" jdbcType="NUMERIC"/>
+        <result property="batteryA" column="battery_a" jdbcType="NUMERIC"/>
+        <result property="soc" column="soc" jdbcType="INTEGER"/>
+        <result property="capacity" column="capacity" jdbcType="NUMERIC"/>
+        <result property="batteryStatus" column="battery_status" jdbcType="INTEGER"/>
+        <result property="coreNum" column="core_num" jdbcType="INTEGER"/>
+        <result property="hardwareTemp" column="hardware_temp" jdbcType="NUMERIC"/>
+        <result property="coreTemp" column="core_temp" jdbcType="NUMERIC"/>
+        <result property="envTemp" column="env_temp" jdbcType="NUMERIC"/>
+        <result property="batteryCoreVList" column="battery_core_v_list" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartOne" column="battery_health_part_one" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartTwo" column="battery_health_part_two" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartThree" column="battery_health_part_three" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartFour" column="battery_health_part_four" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartFive" column="battery_health_part_five" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartSix" column="battery_health_part_six" jdbcType="VARCHAR"/>
+        <result property="batteryHealthPartSeven" column="battery_health_part_seven" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BatteryAttrMap">
+        select
+          id, b_id, sn, battery_v, battery_a, soc, capacity, battery_status, core_num, hardware_temp, core_temp, env_temp, battery_core_v_list, battery_health_part_one, battery_health_part_two, battery_health_part_three, battery_health_part_four, battery_health_part_five, battery_health_part_six, battery_health_part_seven, create_time, update_time
+        from t_battery_attr
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BatteryAttrMap">
+        select
+          id, b_id, sn, battery_v, battery_a, soc, capacity, battery_status, core_num, hardware_temp, core_temp, env_temp, battery_core_v_list, battery_health_part_one, battery_health_part_two, battery_health_part_three, battery_health_part_four, battery_health_part_five, battery_health_part_six, battery_health_part_seven, create_time, update_time
+        from t_battery_attr
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BatteryAttrMap">
+        select
+          id, b_id, sn, battery_v, battery_a, soc, capacity, battery_status, core_num, hardware_temp, core_temp, env_temp, battery_core_v_list, battery_health_part_one, battery_health_part_two, battery_health_part_three, battery_health_part_four, battery_health_part_five, battery_health_part_six, battery_health_part_seven, create_time, update_time
+        from t_battery_attr
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="bId != null">
+                and b_id = #{bId}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="batteryV != null">
+                and battery_v = #{batteryV}
+            </if>
+            <if test="batteryA != null">
+                and battery_a = #{batteryA}
+            </if>
+            <if test="soc != null">
+                and soc = #{soc}
+            </if>
+            <if test="capacity != null">
+                and capacity = #{capacity}
+            </if>
+            <if test="batteryStatus != null">
+                and battery_status = #{batteryStatus}
+            </if>
+            <if test="coreNum != null">
+                and core_num = #{coreNum}
+            </if>
+            <if test="hardwareTemp != null">
+                and hardware_temp = #{hardwareTemp}
+            </if>
+            <if test="coreTemp != null">
+                and core_temp = #{coreTemp}
+            </if>
+            <if test="envTemp != null">
+                and env_temp = #{envTemp}
+            </if>
+            <if test="batteryCoreVList != null and batteryCoreVList != ''">
+                and battery_core_v_list = #{batteryCoreVList}
+            </if>
+            <if test="batteryHealthPartOne != null and batteryHealthPartOne != ''">
+                and battery_health_part_one = #{batteryHealthPartOne}
+            </if>
+            <if test="batteryHealthPartTwo != null and batteryHealthPartTwo != ''">
+                and battery_health_part_two = #{batteryHealthPartTwo}
+            </if>
+            <if test="batteryHealthPartThree != null and batteryHealthPartThree != ''">
+                and battery_health_part_three = #{batteryHealthPartThree}
+            </if>
+            <if test="batteryHealthPartFour != null and batteryHealthPartFour != ''">
+                and battery_health_part_four = #{batteryHealthPartFour}
+            </if>
+            <if test="batteryHealthPartFive != null and batteryHealthPartFive != ''">
+                and battery_health_part_five = #{batteryHealthPartFive}
+            </if>
+            <if test="batteryHealthPartSix != null and batteryHealthPartSix != ''">
+                and battery_health_part_six = #{batteryHealthPartSix}
+            </if>
+            <if test="batteryHealthPartSeven != null and batteryHealthPartSeven != ''">
+                and battery_health_part_seven = #{batteryHealthPartSeven}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_battery_attr(b_id, sn, battery_v, battery_a, soc, capacity, battery_status, core_num, hardware_temp, core_temp, env_temp, battery_core_v_list, battery_health_part_one, battery_health_part_two, battery_health_part_three, battery_health_part_four, battery_health_part_five, battery_health_part_six, battery_health_part_seven, create_time, update_time)
+        values (#{bId}, #{sn}, #{batteryV}, #{batteryA}, #{soc}, #{capacity}, #{batteryStatus}, #{coreNum}, #{hardwareTemp}, #{coreTemp}, #{envTemp}, #{batteryCoreVList}, #{batteryHealthPartOne}, #{batteryHealthPartTwo}, #{batteryHealthPartThree}, #{batteryHealthPartFour}, #{batteryHealthPartFive}, #{batteryHealthPartSix}, #{batteryHealthPartSeven}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_battery_attr
+        <set>
+            <if test="bId != null">
+                b_id = #{bId},
+            </if>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="batteryV != null">
+                battery_v = #{batteryV},
+            </if>
+            <if test="batteryA != null">
+                battery_a = #{batteryA},
+            </if>
+            <if test="soc != null">
+                soc = #{soc},
+            </if>
+            <if test="capacity != null">
+                capacity = #{capacity},
+            </if>
+            <if test="batteryStatus != null">
+                battery_status = #{batteryStatus},
+            </if>
+            <if test="coreNum != null">
+                core_num = #{coreNum},
+            </if>
+            <if test="hardwareTemp != null">
+                hardware_temp = #{hardwareTemp},
+            </if>
+            <if test="coreTemp != null">
+                core_temp = #{coreTemp},
+            </if>
+            <if test="envTemp != null">
+                env_temp = #{envTemp},
+            </if>
+            <if test="batteryCoreVList != null and batteryCoreVList != ''">
+                battery_core_v_list = #{batteryCoreVList},
+            </if>
+            <if test="batteryHealthPartOne != null and batteryHealthPartOne != ''">
+                battery_health_part_one = #{batteryHealthPartOne},
+            </if>
+            <if test="batteryHealthPartTwo != null and batteryHealthPartTwo != ''">
+                battery_health_part_two = #{batteryHealthPartTwo},
+            </if>
+            <if test="batteryHealthPartThree != null and batteryHealthPartThree != ''">
+                battery_health_part_three = #{batteryHealthPartThree},
+            </if>
+            <if test="batteryHealthPartFour != null and batteryHealthPartFour != ''">
+                battery_health_part_four = #{batteryHealthPartFour},
+            </if>
+            <if test="batteryHealthPartFive != null and batteryHealthPartFive != ''">
+                battery_health_part_five = #{batteryHealthPartFive},
+            </if>
+            <if test="batteryHealthPartSix != null and batteryHealthPartSix != ''">
+                battery_health_part_six = #{batteryHealthPartSix},
+            </if>
+            <if test="batteryHealthPartSeven != null and batteryHealthPartSeven != ''">
+                battery_health_part_seven = #{batteryHealthPartSeven},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_battery_attr where id = #{id}
+    </delete>
+
+</mapper>

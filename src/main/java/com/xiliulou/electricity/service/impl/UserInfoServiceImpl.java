@@ -168,6 +168,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -228,7 +231,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         List<UserBatteryInfoVO> userBatteryInfoVOS ;
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
             userBatteryInfoVOS = userInfoMapper.queryListByMemberCardExpireTime(userInfoQuery);
-        } else {
+        } else if(Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_CAR_EXPIRE_TIME)){
+            userBatteryInfoVOS = userInfoMapper.queryListByCarMemberCardExpireTime(userInfoQuery);
+        }else {
             userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
         }
 
@@ -707,6 +712,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer count ;
         if (Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_EXPIRE_TIME)) {
             count = userInfoMapper.queryCountByMemberCardExpireTime(userInfoQuery);
+        } else if(Objects.nonNull(userInfoQuery.getSortType()) && Objects.equals(userInfoQuery.getSortType(), UserInfoQuery.SORT_TYPE_CAR_EXPIRE_TIME)){
+            count = userInfoMapper.queryCountByCarMemberCardExpireTime(userInfoQuery);
         } else {
             count = userInfoMapper.queryCountForBatteryService(userInfoQuery);
         }
@@ -1422,6 +1429,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         vo.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        vo.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
 
         Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
         vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
@@ -1464,7 +1472,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS BATTERY INFO ERROR! query user battery error!", e);
             return null;
         });
-        
+
+        List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
+        vo.setBatteryModels(userBatteryModels);
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryUserBatteryDeposit, queryUserBatteryMemberCard, queryUserBattery);
         try {

@@ -38,6 +38,10 @@ public class UserInfoQuery {
     private Long memberCardExpireTimeBegin;
     private Long memberCardExpireTimeEnd;
 
+    private Integer carMemberCardExpireType;
+    private Long carMemberCardExpireTimeBegin;
+    private Long carMemberCardExpireTimeEnd;
+
     /**
      * 套餐id
      */
@@ -72,4 +76,6 @@ public class UserInfoQuery {
 
     public static final Integer SORT_TYPE_EXPIRE_TIME = 0;
     public static final Integer SORT_TYPE_AUTH_TIME = 1;
+    public static final Integer SORT_TYPE_CAR_EXPIRE_TIME = 2;
+
 }

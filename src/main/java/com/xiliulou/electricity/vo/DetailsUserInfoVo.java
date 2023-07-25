@@ -72,6 +72,8 @@ public class DetailsUserInfoVo {
      */
     private Long userCertificationTime;
 
+    private Integer modelType;
+
     private String franchiseeName;
 
     private String storeName;
