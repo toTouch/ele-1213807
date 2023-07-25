@@ -75,6 +75,12 @@ public interface DivisionAccountConfigService {
 
     Triple<Boolean, String, Object> save(DivisionAccountConfigQuery divisionAccountConfigQue);
 
+    Triple<Boolean, String, Object> saveDivisionAccountWithPackage(DivisionAccountConfigQuery divisionAccountConfigQue);
+
+    Triple<Boolean, String, Object> modifyDivisionAccountWithPackage(DivisionAccountConfigQuery divisionAccountConfigQuery);
+
+    Triple<Boolean, String, Object> updateDAStatus(DivisionAccountConfigStatusQuery divisionAccountConfigQuery);
+
     Triple<Boolean, String, Object> selectInfoById(Long id);
 
     List<DivisionAccountConfigRefVO> selectDivisionAccountConfigRefInfo(DivisionAccountConfigQuery query);
