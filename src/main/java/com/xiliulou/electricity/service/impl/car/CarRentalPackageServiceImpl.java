@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
@@ -197,18 +198,19 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id);
-        CarRentalPackagePO cachePO = redisService.getWithHash(cacheKey, CarRentalPackagePO.class);
-        if (ObjectUtils.isNotEmpty(cachePO)) {
-            return cachePO;
+        String cacheStr = redisService.get(cacheKey);
+        CarRentalPackagePO cacheEntity = JSON.parseObject(cacheStr, CarRentalPackagePO.class);
+        if (ObjectUtils.isNotEmpty(cacheEntity)) {
+            return cacheEntity;
         }
 
         // 查询 DB
-        CarRentalPackagePO dbPO = carRentalPackageMapper.selectById(id);
+        CarRentalPackagePO dbEntity = carRentalPackageMapper.selectById(id);
 
         // 存入缓存
-        redisService.saveWithHash(cacheKey, dbPO);
+        redisService.set(cacheKey, JSON.toJSONString(dbEntity));
 
-        return dbPO;
+        return dbEntity;
     }
 
     /**
