@@ -28,4 +28,9 @@ public class UserBatteryMembercardQuery {
     private Long useCount;
 
 
+    private Long memberCardExpireTime;
+
+
+
+
 }
