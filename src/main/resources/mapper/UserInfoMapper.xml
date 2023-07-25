@@ -255,7 +255,7 @@
         tui.tenant_id
         from t_user_car_member_card ucmc
         left join t_user_battery_member_card ubmc on ubmc.uid=ucmc.uid
-        left join t_user_info tui on ubmc.uid=tui.uid
+        left join t_user_info tui on ucmc.uid=tui.uid
         left join t_electricity_battery teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
         <if test="query.tenantId != null">
@@ -388,7 +388,7 @@
         select COUNT(1)
         from t_user_car_member_card ucmc
         left join t_user_battery_member_card ubmc on ubmc.uid=ucmc.uid
-        left join t_user_info tui on ubmc.uid=tui.uid
+        left join t_user_info tui on ucmc.uid=tui.uid
         left join t_electricity_battery teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
         <if test="query.tenantId != null">
