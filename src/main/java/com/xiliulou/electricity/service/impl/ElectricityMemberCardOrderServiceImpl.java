@@ -3344,6 +3344,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            return Triple.of(false, "100247", "用户信息不存在");
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+        }
+
+        return Triple.of(true, null, batteryMemberCard);
+    }
+
+    @Override
     public Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard) {
         return Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 0
                 : userBatteryMemberCard.getCardPayCount();

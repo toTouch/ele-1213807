@@ -140,4 +140,6 @@ public interface ElectricityMemberCardOrderService {
     Triple<Boolean, String, Object> editUserBatteryMemberCard(UserBatteryMembercardQuery query);
 
     Triple<Boolean, String, Object> renewalUserBatteryMemberCard(UserBatteryMembercardQuery query);
+
+    Triple<Boolean, String, Object> userBatteryMembercardInfo(Long uid);
 }

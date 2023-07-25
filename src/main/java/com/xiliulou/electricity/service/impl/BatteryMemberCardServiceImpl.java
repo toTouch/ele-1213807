@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
@@ -335,6 +334,10 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(query.getId());
         if (Objects.isNull(batteryMemberCard) || !Objects.equals(batteryMemberCard.getTenantId(), TenantContextHolder.getTenantId())) {
             return Triple.of(false, "ELECTRICITY.00121", "套餐不存在");
+        }
+
+        if (!Objects.equals(query.getName(), batteryMemberCard.getName()) && Objects.nonNull(this.batteryMemberCardMapper.checkMembercardExist(query.getName(), TenantContextHolder.getTenantId()))) {
+            return Triple.of(false, "100104", "套餐名称已存在");
         }
 
         if (Objects.equals(query.getStatus(), BatteryMemberCard.STATUS_UP)) {
