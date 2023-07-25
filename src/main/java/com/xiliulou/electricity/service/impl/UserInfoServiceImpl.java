@@ -168,6 +168,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
 
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -1426,6 +1429,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
         vo.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+        vo.setModelType(Objects.isNull(franchisee) ? null : franchisee.getModelType());
 
         Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
         vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
@@ -1468,7 +1472,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("DETAILS BATTERY INFO ERROR! query user battery error!", e);
             return null;
         });
-        
+
+        List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
+        vo.setBatteryModels(userBatteryModels);
+
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryUserBatteryDeposit, queryUserBatteryMemberCard, queryUserBattery);
         try {
