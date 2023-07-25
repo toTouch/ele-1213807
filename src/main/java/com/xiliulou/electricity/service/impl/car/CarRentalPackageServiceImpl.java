@@ -206,7 +206,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         CarRentalPackagePO dbPO = carRentalPackageMapper.selectById(id);
 
         // 存入缓存
-        redisService.saveWithHashContainSuperClass(cacheKey, dbPO);
+        redisService.saveWithHash(cacheKey, dbPO);
 
         return dbPO;
     }
