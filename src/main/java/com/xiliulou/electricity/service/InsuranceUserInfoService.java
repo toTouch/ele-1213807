@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface InsuranceUserInfoService {
 
     InsuranceUserInfo queryByUid(Long uid, Integer tenantId);
 
-    R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus);
+    R updateUserBatteryInsuranceStatus(Long uid, Integer insuranceStatus,Integer type);
 
     InsuranceUserInfo queryByUidFromCache(Long uid);
 
@@ -33,6 +34,8 @@ public interface InsuranceUserInfoService {
 
     Integer update(InsuranceUserInfo insuranceUserInfo);
 
+    int updateInsuranceUserInfoById(InsuranceUserInfo insuranceUserInfo);
+
     InsuranceUserInfoVo queryByUidAndTenantId(Long uid, Integer tenantId);
 
     R queryUserInsurance();
@@ -41,10 +44,10 @@ public interface InsuranceUserInfoService {
 
     int deleteById(InsuranceUserInfo insuranceUserInfo);
 
-    R insertUserBatteryInsurance(InsuranceUserInfo insuranceOrder);
+    R insertUserBatteryInsurance(InsuranceUserInfoQuery query);
 
-    R editUserInsuranceInfo(InsuranceUserInfo order);
+    R editUserInsuranceInfo(InsuranceUserInfoQuery query);
 
-    R renewalUserBatteryInsurance(InsuranceUserInfo insuranceOrder);
+    R renewalUserBatteryInsurance(InsuranceUserInfoQuery query);
 
 }

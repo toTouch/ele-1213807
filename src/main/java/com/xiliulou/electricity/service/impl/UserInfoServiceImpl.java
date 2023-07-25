@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sun.xml.bind.v2.TODO;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
@@ -1420,7 +1419,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         DetailsUserInfoVo vo = new DetailsUserInfoVo();
         BeanUtils.copyProperties(userInfo, vo);
         vo.setUserCertificationTime(userInfo.getCreateTime());
-        
+
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(userInfo.getFranchiseeId());
+        vo.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
+
+        Store store = storeService.queryByIdFromCache(userInfo.getStoreId());
+        vo.setStoreName(Objects.isNull(store) ? "" : store.getName());
+
         UserTurnoverVo userTurnoverVo = queryUserConsumptionPay(uid);
         BeanUtils.copyProperties(userTurnoverVo, vo);
         return R.ok(vo);
