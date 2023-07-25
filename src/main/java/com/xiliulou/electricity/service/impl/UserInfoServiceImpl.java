@@ -1937,7 +1937,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
         vo.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
         vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
-        
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        vo.setCardName(Objects.isNull(batteryMemberCard)?"":batteryMemberCard.getName());
+        vo.setLimitCount(Objects.isNull(batteryMemberCard)?null:batteryMemberCard.getLimitCount());
+
         //开始时间
         if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {
             ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService
@@ -1947,19 +1951,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 vo.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
             }
         }
-        
-        //套餐名限制次数
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService
-                .queryByCache(userBatteryMemberCard.getMemberCardId().intValue());
-        if (Objects.nonNull(electricityMemberCard)) {
-            vo.setCardName(electricityMemberCard.getName());
-            vo.setLimitCount(electricityMemberCard.getLimitCount());
-            
-            if (Objects
-                    .equals(ElectricityMemberCard.UN_LIMITED_COUNT.intValue(), electricityMemberCard.getLimitCount())) {
-                vo.setRemainingNumber(UserBatteryMemberCard.UN_LIMIT_COUNT_REMAINING_NUMBER);
-            }
-        }
+
     
         long carDays = 0;
         if (userBatteryMemberCard.getMemberCardExpireTime() > System.currentTimeMillis()) {
