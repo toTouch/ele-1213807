@@ -19,12 +19,6 @@ public class CarRentalPackagePO extends BasicCarPO {
 
     private static final long serialVersionUID = -5562928515712317577L;
 
-
-    /**
-     * 主键ID
-     */
-    private Long id;
-
     /**
      * 套餐名称
      */
