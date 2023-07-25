@@ -5,6 +5,7 @@ import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageDepositPayQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
+import com.xiliulou.electricity.service.car.biz.CarRenalPackageDepositBizService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
@@ -12,11 +13,13 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,6 +35,9 @@ import java.util.stream.Collectors;
 public class JsonUserCarDepositPayController extends BasicController {
 
     @Resource
+    private CarRenalPackageDepositBizService carRenalPackageDepositBizService;
+
+    @Resource
     private CarRentalPackageDepositPayService carRentalPackageDepositPayService;
 
     /**
@@ -40,9 +46,7 @@ public class JsonUserCarDepositPayController extends BasicController {
      */
     @GetMapping("/page")
     public R<List<CarRentalPackageDepositPayVO>> page(Integer offset, Integer size) {
-
         Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -52,15 +56,14 @@ public class JsonUserCarDepositPayController extends BasicController {
         CarRentalPackageDepositPayQryModel qryModel = new CarRentalPackageDepositPayQryModel();
         qryModel.setTenantId(tenantId);
         qryModel.setUid(user.getUid());
-        if (ObjectUtils.isNotEmpty(offset)) {
-            qryModel.setOffset(offset);
-        }
-        if (ObjectUtils.isNotEmpty(size)) {
-            qryModel.setSize(size);
-        }
+        qryModel.setOffset(offset);
+        qryModel.setSize(size);
 
         // 调用服务
         List<CarRentalPackageDepositPayPO> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
+        if (CollectionUtils.isEmpty(depositPayEntityList)) {
+            return R.ok(Collections.emptyList());
+        }
 
         // 模型转换，封装返回
         List<CarRentalPackageDepositPayVO> depositPayVoList = depositPayEntityList.stream().map(depositPayEntity -> {
@@ -78,9 +81,7 @@ public class JsonUserCarDepositPayController extends BasicController {
      */
     @GetMapping("/count")
     public R<Integer> count() {
-
         Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
@@ -96,7 +97,7 @@ public class JsonUserCarDepositPayController extends BasicController {
     }
 
     /**
-     * 获取用户名下支付成功且未退还的押金信息
+     * 用户名下的押金信息(单车、车电一体)
      * @return
      */
     @GetMapping("/queryUnRefundCarDeposit")
@@ -108,7 +109,7 @@ public class JsonUserCarDepositPayController extends BasicController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, user.getUid());
+        CarRentalPackageDepositPayPO depositPayEntity = carRenalPackageDepositBizService.selectUnRefundCarDeposit(tenantId, user.getUid());
         if (ObjectUtils.isEmpty(depositPayEntity)) {
             return R.ok();
         }
@@ -118,7 +119,8 @@ public class JsonUserCarDepositPayController extends BasicController {
         depositPayVo.setDeposit(depositPayEntity.getDeposit());
         depositPayVo.setRentalPackageType(depositPayEntity.getRentalPackageType());
         depositPayVo.setPayState(depositPayEntity.getPayState());
-        
+        depositPayVo.setPayType(depositPayEntity.getPayType());
+
         return R.ok();
     }
 

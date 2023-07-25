@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.car.biz;
 
+import com.xiliulou.electricity.entity.car.CarRentalPackageDepositPayPO;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageDepositRefundOptModel;
 
 import java.math.BigDecimal;
@@ -10,6 +11,14 @@ import java.math.BigDecimal;
  * @author xiaohui.song
  **/
 public interface CarRenalPackageDepositBizService {
+
+    /**
+     * 用户名下的押金信息(单车、车电一体)
+     * @param tenantId 租户ID
+     * @param uid 用户ID
+     * @return 押金缴纳信息
+     */
+    CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid);
 
     /**
      * 运营商端创建退押

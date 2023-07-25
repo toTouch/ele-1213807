@@ -169,7 +169,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 调用服务
         List<CarRentalPackageOrderPO> carRentalPackageOrderEntityList = carRentalPackageOrderService.page(qryModel);
         if (CollectionUtils.isEmpty(carRentalPackageOrderEntityList)) {
-            return R.ok();
+            return R.ok(Collections.emptyList());
         }
 
         // 获取辅助业务信息（套餐信息，车辆型号信息、电池型号信息）
