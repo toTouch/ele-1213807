@@ -68,6 +68,28 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
     private CarRenalPackageSlippageBizService carRenalPackageSlippageBizService;
 
     /**
+     * 用户名下的押金信息(单车、车电一体)
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 押金缴纳信息
+     */
+    @Override
+    public CarRentalPackageDepositPayPO selectUnRefundCarDeposit(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity)) {
+            log.info("CarRenalPackageDepositBizService.selectUnRefundCarDeposit, not found car_rental_package_member_term, tenantId is {}, uid is {}", tenantId, uid);
+            throw new BizException("300000", "数据有误");
+        }
+
+        return carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
+    }
+
+    /**
      * 运营商端创建退押
      *
      * @param optModel 租户ID

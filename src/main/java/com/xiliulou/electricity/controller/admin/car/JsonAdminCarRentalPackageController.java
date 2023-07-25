@@ -13,6 +13,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
@@ -43,6 +44,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/admin/car/carRentalPackage")
 public class JsonAdminCarRentalPackageController extends BasicController {
+
+    @Resource
+    private CouponService couponService;
 
     @Resource
     private CarRentalPackageCarBatteryRelService carRentalPackageCarBatteryRelService;
@@ -227,6 +231,13 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer carModelId = carRentalPackageEntity.getCarModelId();
         ElectricityCarModel carModel = electricityCarModelService.queryByIdFromCache(carModelId);
 
+        // 查询优惠券
+        Long couponId = carRentalPackageEntity.getCouponId();
+        Coupon coupon = null;
+        if (ObjectUtils.isNotEmpty(couponId)) {
+            coupon = couponService.queryByIdFromCache(couponId.intValue());
+        }
+
         // 转换模型，组装返回值
         CarRentalPackageVO carRentalPackageVo = new CarRentalPackageVO();
         BeanUtils.copyProperties(carRentalPackageEntity, carRentalPackageVo);
@@ -235,6 +246,7 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         carRentalPackageVo.setFranchiseeName(ObjectUtils.isNotEmpty(franchisee) ? franchisee.getName() : null);
         carRentalPackageVo.setStoreName(ObjectUtils.isNotEmpty(store) ? store.getName() : null);
         carRentalPackageVo.setCarModelName(ObjectUtils.isNotEmpty(carModel) ? carModel.getName() : null);
+        carRentalPackageVo.setCouponName(ObjectUtils.isNotEmpty(coupon) ? coupon.getName() : null);
 
         // 查询电池型号
         if (carRentalPackageEntity.getType().equals(CarRentalPackageTypeEnum.CAR_BATTERY.getCode())) {
