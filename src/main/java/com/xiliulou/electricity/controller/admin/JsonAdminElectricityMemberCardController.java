@@ -3,17 +3,21 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.DivisionAccountBatteryMembercard;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -40,6 +44,9 @@ public class JsonAdminElectricityMemberCardController {
     UserDataScopeService userDataScopeService;
     @Autowired
     BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
 
 //    /**
 //     * 新增
@@ -237,6 +244,87 @@ public class JsonAdminElectricityMemberCardController {
                 .status(BatteryMemberCard.STATUS_UP)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return R.ok(batteryMemberCardService.selectByQuery(query));
+    }
+
+    /**
+     * 根据业务类型获取可用套餐列表
+     * @param offset
+     * @param size
+     * @param franchiseeId
+     * @param type
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/queryUsableByFranchisee")
+    public R getElectricityUsablePackage(@RequestParam(value = "offset") Long offset,
+                                             @RequestParam(value = "size") Long size,
+                                             @RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
+                                             @RequestParam(value = "type",  required = true) Integer type) {
+
+            if(!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)){
+                return R.fail("000200", "业务类型参数不合法");
+            }
+
+            if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+                BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                        .offset(offset)
+                        .size(size)
+                        .franchiseeId(franchiseeId)
+                        .delFlag(BatteryMemberCard.DEL_NORMAL)
+                        .status(BatteryMemberCard.STATUS_UP)
+                        .tenantId(TenantContextHolder.getTenantId()).build();
+                return R.ok(batteryMemberCardService.selectByQuery(query));
+            }else{
+                CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+                qryModel.setOffset(offset.intValue());
+                qryModel.setSize(size.intValue());
+                qryModel.setFranchiseeId(franchiseeId.intValue());
+                qryModel.setTenantId(TenantContextHolder.getTenantId());
+                qryModel.setStatus(UpDownEnum.UP.getCode());
+
+                if(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY.equals(type)){
+                    qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+                }else if(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL.equals(type)){
+                    qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+                }
+
+                return R.ok(batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel));
+            }
+    }
+
+    /**
+     * 根据业务类型获取可用套餐列表总数
+     * @param franchiseeId
+     * @param type
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/queryUsableCount")
+    public R getElectricityUsablePackageCount(@RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
+                                              @RequestParam(value = "type",  required = true) Integer type) {
+
+        if(!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)){
+            return R.fail("000200", "业务类型参数不合法");
+        }
+
+        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                    .franchiseeId(franchiseeId)
+                    .delFlag(BatteryMemberCard.DEL_NORMAL)
+                    .status(BatteryMemberCard.STATUS_UP)
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+            return R.ok(batteryMemberCardService.selectByPageCount(query));
+        }else{
+            CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+            qryModel.setFranchiseeId(franchiseeId.intValue());
+            qryModel.setTenantId(TenantContextHolder.getTenantId());
+            qryModel.setStatus(UpDownEnum.UP.getCode());
+
+            if(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY.equals(type)){
+                qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+            }else if(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL.equals(type)){
+                qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+            }
+            return R.ok(carRentalPackageService.count(qryModel));
+        }
     }
 
     /**

@@ -101,9 +101,7 @@ public class JsonUserCarDepositPayController extends BasicController {
      */
     @GetMapping("/queryUnRefundCarDeposit")
     public R<CarRentalPackageDepositPayVO> queryUnRefundCarDeposit() {
-
         Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");

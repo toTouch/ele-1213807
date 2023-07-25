@@ -10,4 +10,5 @@ import lombok.Data;
 public class EleDivisionAccountOperationRecordDTO {
     private Integer id;
     private String name;
+    private Integer type;
 }

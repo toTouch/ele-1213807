@@ -8,6 +8,7 @@
         <result property="divisionAccountId" column="division_account_id" jdbcType="INTEGER"/>
         <result property="refId" column="ref_id" jdbcType="INTEGER"/>
         <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER" />
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -24,6 +25,13 @@
     <select id="selectByDivisionAccountConfigId" resultType="long">
         select
           ref_id
+        from t_division_account_battery_membercard
+        where division_account_id = #{id}
+    </select>
+
+    <select id="selectMemberCardsByDAConfigId" resultMap="DivisionAccountBatteryMembercardMap">
+        select
+        id, division_account_id, ref_id, tenant_id, type, del_flag, create_time, update_time
         from t_division_account_battery_membercard
         where division_account_id = #{id}
     </select>
@@ -94,6 +102,16 @@
             #{item.updateTime})
         </foreach>
     </insert>
+
+    <insert id="batchInsertMemberCards">
+        insert into t_division_account_battery_membercard(division_account_id, ref_id, tenant_id, type, del_flag, create_time,
+        update_time) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.divisionAccountId}, #{item.refId}, #{item.tenantId}, #{item.type}, #{item.delFlag}, #{item.createTime},
+            #{item.updateTime})
+        </foreach>
+    </insert>
+
 
     <!--通过主键修改数据-->
     <update id="update">

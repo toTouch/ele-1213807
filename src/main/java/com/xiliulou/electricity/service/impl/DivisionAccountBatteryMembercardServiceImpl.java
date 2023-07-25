@@ -66,6 +66,11 @@ public class DivisionAccountBatteryMembercardServiceImpl implements DivisionAcco
         return this.divisionAccountBatteryMembercardMapper.selectByDivisionAccountConfigId(id);
     }
 
+    @Override
+    public List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(Long divisionAccountId) {
+        return this.divisionAccountBatteryMembercardMapper.selectMemberCardsByDAConfigId(divisionAccountId);
+    }
+
     @Slave
     @Override
     public Long selectByBatteryMembercardId(Long membercardId) {
@@ -101,6 +106,12 @@ public class DivisionAccountBatteryMembercardServiceImpl implements DivisionAcco
     @Transactional(rollbackFor = Exception.class)
     public Integer batchInsert(List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList) {
         return this.divisionAccountBatteryMembercardMapper.batchInsert(divisionAccountBatteryMembercardList);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer batchInsertMemberCards(List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList) {
+        return this.divisionAccountBatteryMembercardMapper.batchInsertMemberCards(divisionAccountBatteryMembercardList);
     }
 
     /**

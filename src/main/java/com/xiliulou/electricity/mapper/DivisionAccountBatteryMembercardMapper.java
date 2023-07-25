@@ -67,7 +67,11 @@ public interface DivisionAccountBatteryMembercardMapper extends BaseMapper<Divis
 
     Integer batchInsert(List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList);
 
+    Integer batchInsertMemberCards(List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercardList);
+
     List<Long> selectByDivisionAccountConfigId(@Param("id") Long id);
+
+    List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(@Param("id") Long id);
 
     Long selectByBatteryMembercardId(@Param("membercardId") Long membercardId);
 

@@ -76,10 +76,10 @@ public class DivisionAccountConfigQuery {
      */
     private Integer status;
     /**
-     * 业务类型
+     * 业务类型 1 换电套餐， 2 租车型号
      */
-    @NotNull(message = "业务类型不能为空", groups = {CreateGroup.class, UpdateGroup.class})
-    @Range(min = 1, max = 2, message = "业务类型不合法", groups = {CreateGroup.class, UpdateGroup.class})
+    //@NotNull(message = "业务类型不能为空", groups = {CreateGroup.class, UpdateGroup.class})
+    //@Range(min = 1, max = 2, message = "业务类型不合法", groups = {CreateGroup.class, UpdateGroup.class})
     private Integer type;
 
     private List<Long> membercards;
@@ -87,5 +87,20 @@ public class DivisionAccountConfigQuery {
     private List<Long> carModels;
 
     private Long refId;
+
+    /**
+     * 换电套餐IDs
+     */
+    private List<Long> electricityPackages;
+
+    /**
+     * 租车套餐IDs
+     */
+    private List<Long> carRentalPackages;
+
+    /**
+     * 车电一体套餐IDs
+     */
+    private List<Long> carElectricityPackages;
 
 }
