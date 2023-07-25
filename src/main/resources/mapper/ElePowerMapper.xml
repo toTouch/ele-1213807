@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElePowerMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ElePower" id="ElePowerMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="eName" column="e_name" jdbcType="VARCHAR"/>
+        <result property="eid" column="eid" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="reportTime" column="report_time" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="sumPower" column="sum_power" jdbcType="NUMERIC"/>
+        <result property="hourPower" column="hour_power" jdbcType="NUMERIC"/>
+        <result property="electricCharge" column="electric_charge" jdbcType="NUMERIC"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ElePowerMap">
+        select id,
+               sn,
+               e_name,
+               eid,
+               store_id,
+               franchisee_id,
+               tenant_id,
+               report_time,
+               create_time,
+               type,
+               sum_power,
+               hour_power,
+               electric_charge
+        from t_ele_power
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ElePowerMap">
+        select id,
+               sn,
+               e_name,
+               eid,
+               store_id,
+               franchisee_id,
+               tenant_id,
+               report_time,
+               create_time,
+               type,
+               sum_power,
+               hour_power,
+               electric_charge
+        from t_ele_power limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ElePowerMap">
+        select
+        id, sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type, sum_power, hour_power,
+        electric_charge
+        from t_ele_power
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="eName != null and eName != ''">
+                and e_name = #{eName}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="reportTime != null">
+                and report_time = #{reportTime}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="sumPower != null">
+                and sum_power = #{sumPower}
+            </if>
+            <if test="hourPower != null">
+                and hour_power = #{hourPower}
+            </if>
+            <if test="electricCharge != null">
+                and electric_charge = #{electricCharge}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryPartAttList" resultMap="ElePowerMap">
+        select
+        e_name, eid, report_time, create_time, type, sum_power, hour_power, electric_charge
+        from t_ele_power
+        <where>
+            tenant_id = #{tenantId}
+            <if test="startTime != null">
+                and report_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and report_time &lt;= #{endTime}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+        </where>
+        order by report_time desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="queryDayList" resultType="com.xiliulou.electricity.vo.ElePowerDayVo">
+        select from_unixtime(report_time/1000, '%Y-%m-%d') date,sum(hour_power) sumPower
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by date
+        order by date
+    </select>
+
+    <select id="queryMonthList" resultType="com.xiliulou.electricity.vo.ElePowerMothVo">
+        select from_unixtime(report_time / 1000, '%Y-%m') date,sum(hour_power) sumPower,sum(electric_charge) sumElectricCharge
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by date
+        order by date
+    </select>
+
+    <select id="queryDayDetail" resultType="com.xiliulou.electricity.vo.ElePowerDayDetailVo">
+        select type, sum(hour_power) sumPower
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by type;
+    </select>
+
+
+    <select id="queryMonthDetail" resultType="com.xiliulou.electricity.vo.ElePowerMonthDetailVo">
+        select type, sum(hour_power) sumPower, sum(electric_charge) sumElectricCharge
+        from t_ele_power
+        where report_time &gt;= #{startTime}
+          and report_time &lt;= #{endTime}
+          and tenant_id = #{tenantId}
+          and eid = #{eid}
+        group by type;
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
+                                sum_power, hour_power, electric_charge)
+        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime},
+                #{type}, #{sumPower}, #{hourPower}, #{electricCharge})
+    </insert>
+
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_power(sn, e_name, eid, store_id, franchisee_id, tenant_id, report_time, create_time, type,
+                                sum_power, hour_power, electric_charge)
+        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{franchiseeId}, #{tenantId}, #{reportTime}, #{createTime},
+                #{type}, #{sumPower}, #{hourPower}, #{electricCharge})
+        on duplicate key update sum_power=#{sumPower},hour_power=#{hourPower},create_time=#{createTime},electric_charge=#{electricCharge}, type =#{type}
+
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ele_power
+        <set>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="eName != null and eName != ''">
+                e_name = #{eName},
+            </if>
+            <if test="eid != null">
+                eid = #{eid},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="reportTime != null">
+                report_time = #{reportTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="sumPower != null">
+                sum_power = #{sumPower},
+            </if>
+            <if test="hourPower != null">
+                hour_power = #{hourPower},
+            </if>
+            <if test="electricCharge != null">
+                electric_charge = #{electricCharge},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from t_ele_power
+        where id = #{id}
+    </delete>
+
+</mapper>
