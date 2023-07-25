@@ -182,7 +182,6 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 滞纳金(天)
      */
-    @NotNull(message = "[滞纳金]不能为空")
     private BigDecimal lateFee;
 
     /**
