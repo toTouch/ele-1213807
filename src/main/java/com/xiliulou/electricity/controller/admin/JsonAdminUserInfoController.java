@@ -80,7 +80,10 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "cardPayCount", required = false) Integer cardPayCount,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
+                       @RequestParam(value = "carMemberCardExpireType", required = false) Integer carMemberCardExpireType,
                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+                       @RequestParam(value = "carMemberCardExpireTimeBegin", required = false) Long carMemberCardExpireTimeBegin,
+                       @RequestParam(value = "carMemberCardExpireTimeEnd", required = false) Long carMemberCardExpireTimeEnd,
                        @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateBeginTime,
                        @RequestParam(value = "userCreateEndTime", required = false) Long userCreateEndTime) {
         if (size < 0 || size > 50) {
@@ -93,7 +96,6 @@ public class JsonAdminUserInfoController extends BaseController {
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
@@ -120,6 +122,9 @@ public class JsonAdminUserInfoController extends BaseController {
                 .serviceStatus(serviceStatus)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .carMemberCardExpireType(carMemberCardExpireType)
+                .carMemberCardExpireTimeBegin(carMemberCardExpireTimeBegin)
+                .carMemberCardExpireTimeEnd(carMemberCardExpireTimeEnd)
                 .uid(uid)
                 .sortType(sortType)
                 .cardPayCount(cardPayCount)
@@ -134,6 +139,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -209,8 +215,11 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "memberCardExpireType", required = false) Integer memberCardExpireType,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-            @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateTimeBegin,
-            @RequestParam(value = "userCreateEndTime", required = false) Long userCreateTimeEnd,
+                        @RequestParam(value = "carMemberCardExpireTimeBegin", required = false) Long carMemberCardExpireTimeBegin,
+                        @RequestParam(value = "carMemberCardExpireTimeEnd", required = false) Long carMemberCardExpireTimeEnd,
+                        @RequestParam(value = "carMemberCardExpireType", required = false) Integer carMemberCardExpireType,
+                        @RequestParam(value = "userCreateBeginTime", required = false) Long userCreateTimeBegin,
+                        @RequestParam(value = "userCreateEndTime", required = false) Long userCreateTimeEnd,
                         @RequestParam(value = "batteryId", required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "batteryRentStatus", required = false) Integer batteryRentStatus,
@@ -225,7 +234,6 @@ public class JsonAdminUserInfoController extends BaseController {
     
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
     
@@ -246,6 +254,9 @@ public class JsonAdminUserInfoController extends BaseController {
                 .phone(phone)
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .carMemberCardExpireType(carMemberCardExpireType)
+                .carMemberCardExpireTimeBegin(carMemberCardExpireTimeBegin)
+                .carMemberCardExpireTimeEnd(carMemberCardExpireTimeEnd)
                 .cardName(cardName)
                 .uid(uid)
                 .batteryId(batteryId)
@@ -264,6 +275,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         verifyMemberCardExpireTimeEnd(userInfoQuery);
+        verifyCarMemberCardExpireTimeEnd(userInfoQuery);
 
         return userInfoService.queryCount(userInfoQuery);
     }
@@ -497,6 +509,35 @@ public class JsonAdminUserInfoController extends BaseController {
             }
             userInfoQuery.setMemberCardExpireTimeBegin(memberCardExpireTimeBegin);
             userInfoQuery.setMemberCardExpireTimeEnd(memberCardExpireTimeEnd);
+        }
+    }
+
+    private void verifyCarMemberCardExpireTimeEnd(UserInfoQuery userInfoQuery) {
+        if (Objects.isNull(userInfoQuery.getCarMemberCardExpireType())) {
+            return;
+        }
+
+        if (Objects.equals(userInfoQuery.getCarMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_ALL)) {
+            return;
+        }
+
+        if (Objects.isNull(userInfoQuery.getCarMemberCardExpireTimeBegin()) && Objects.isNull(userInfoQuery.getCarMemberCardExpireTimeEnd())) {
+            Long carMemberCardExpireTimeEnd = null;
+            Long carMemberCardExpireTimeBegin = null;
+
+            if (Objects.equals(userInfoQuery.getCarMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_NOT_EXPIRE)) {
+                carMemberCardExpireTimeBegin = System.currentTimeMillis();
+            } else if (Objects.equals(userInfoQuery.getCarMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_THREE)) {
+                carMemberCardExpireTimeBegin = System.currentTimeMillis();
+                carMemberCardExpireTimeEnd = System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L;
+            } else if (Objects.equals(userInfoQuery.getCarMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_SEVEN)) {
+                carMemberCardExpireTimeBegin = System.currentTimeMillis();
+                carMemberCardExpireTimeEnd = System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000L;
+            } else if (Objects.equals(userInfoQuery.getCarMemberCardExpireType(), MEMBERCARD_EXPIRE_TYPE_EXPIRE)) {
+                carMemberCardExpireTimeEnd = System.currentTimeMillis();
+            }
+            userInfoQuery.setCarMemberCardExpireTimeBegin(carMemberCardExpireTimeBegin);
+            userInfoQuery.setCarMemberCardExpireTimeEnd(carMemberCardExpireTimeEnd);
         }
     }
     
