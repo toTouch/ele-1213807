@@ -21,6 +21,21 @@ public class DetailsUserInfoVo {
      * 联系方式
      */
     private String phone;
+
+    /**
+     * 电池押金状态 0--未缴纳押金，1--已缴纳押金,2--押金退款中
+     */
+    private Integer batteryDepositStatus;
+
+    /**
+     * 车辆押金状态
+     */
+    private Integer carDepositStatus;
+
+    /**
+     * 车电一体押金状态
+     */
+    private Integer carBatteryDepositStatus;
     
     /**
      * 电池租借状态
