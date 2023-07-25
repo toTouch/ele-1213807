@@ -127,8 +127,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         // 校验能否删除
         if (carRentalPackageOrderService.checkByRentalPackageId(id)) {
-            // TODO 错误编码
-            throw new BizException("", "已有购买订单记录，不允许删除");
+            log.info("CarRentalPackageService.delById, Purchase order record already exists, deletion not allowed. packageId is {}", id);
+            throw new BizException("300023", "已有购买订单记录");
         }
 
         int num = carRentalPackageMapper.delById(id, uid, System.currentTimeMillis());
@@ -225,12 +225,12 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         // 检测原始套餐状态
         CarRentalPackagePO oriEntity = carRentalPackageMapper.selectById(entity.getId());
         if (oriEntity == null || DelFlagEnum.DEL.getCode().equals(oriEntity.getDelFlag())) {
-            // TODO 错误编码
-            throw new BizException("", "数据有误");
+            log.info("CarRentalPackageService.updateById, not found car_rental_package. packageId is {}", entity.getId());
+            throw new BizException("300000", "数据有误");
         }
         if (UpDownEnum.UP.getCode().equals(oriEntity.getStatus())) {
-            // TODO 错误编码
-            throw new BizException("", "请先下架套餐再进行编辑操作");
+            log.info("CarRentalPackageService.updateById, The data status is up. packageId is {}", entity.getId());
+            throw new BizException("300021", "请先下架套餐再进行编辑操作");
         }
 
         Integer tenantId = entity.getTenantId();
@@ -238,8 +238,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         // 检测唯一
         if (!oriEntity.getName().equals(name) && carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
-            // TODO 错误编码
-            throw new BizException("", "套餐名称已存在");
+            log.info("CarRentalPackageService.updateById, Package name already exists.");
+            throw new BizException("300022", "套餐名称已存在");
         }
 
         entity.setUpdateTime(System.currentTimeMillis());
@@ -271,8 +271,8 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
 
         // 检测唯一
         if (carRentalPackageMapper.uqByTenantIdAndName(tenantId, name) > 0) {
-            // TODO 错误编码
-            throw new BizException("", "套餐名称已存在");
+            log.info("CarRentalPackageService.updateById, Package name already exists.");
+            throw new BizException("300022", "套餐名称已存在");
         }
 
         // 赋值操作人、时间、删除标记

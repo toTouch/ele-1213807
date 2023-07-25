@@ -67,8 +67,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
         if (ObjectUtils.isEmpty(freezeEntity)) {
             log.error("CarRentalPackageOrderFreezeServiceImpl.enableFreezeRentOrderByUidAndPackageOrderNo error. not found order. uid is {}, packageOrderNo is {}",
                     uid, packageOrderNo);
-            // TODO 错误编码
-            throw new BizException("", "未找到匹配的订单数据");
+            throw new BizException("300020", "订单编码不匹配");
         }
 
         // 实际期限、启用算法
