@@ -431,7 +431,7 @@
             and ucmc.member_card_expire_time &lt;=#{query.carMemberCardExpireTimeEnd}
         </if>
         <if test="query.carMemberCardExpireType == 4">
-            and ucmc.member_card_expire_time is not null and ubmc.member_card_expire_time !=0
+            and ucmc.member_card_expire_time is not null and ucmc.member_card_expire_time !=0
         </if>
         <if test="query.userCreateBeginTime !=null">
             and tui.create_time &gt;=#{query.userCreateBeginTime}
