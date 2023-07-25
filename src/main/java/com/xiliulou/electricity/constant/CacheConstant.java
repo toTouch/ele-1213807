@@ -408,4 +408,9 @@ public interface CacheConstant {
     String CACHE_GET_COUPON = "get_coupon:";
 
     String CACHE_BATTERY_MEMBERCARD = "battery_membercard:";
+
+    String CACHE_CHARGE_POWER_CONFIG ="charge_p_conf:";
+    String CACHE_CHARGE_POWER_CONFIG_NONE ="charge_p_conf_none:";
+    String CACHE_CHARGE_CONFIG_OPERATE_LIMIT = "c_p_conf_op:";
+    String CACHE_USER_EXPORT_LIMIT = "c_u_export_limit:";
 }
