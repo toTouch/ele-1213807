@@ -261,8 +261,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_division_account_record(division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, del_flag, create_time, update_time,franchisee_id,store_id)
-        values (#{divisionAccountConfigId}, #{membercardName},#{uid},#{orderNo}, #{price}, #{payAmount}, #{payTime}, #{operatorIncome}, #{franchiseeIncome}, #{storeIncome}, #{operatorRate}, #{franchiseeRate}, #{storeRate}, #{tenantId}, #{status}, #{delFlag}, #{createTime}, #{updateTime},#{franchiseeId},#{storeId})
+        insert into t_division_account_record(division_account_config_id, membercard_name,uid,order_no, price, pay_amount, pay_time, operator_income, franchisee_income, store_income, operator_rate, franchisee_rate, store_rate, tenant_id, status, type, division_account_status, del_flag, create_time, update_time,franchisee_id,store_id)
+        values (#{divisionAccountConfigId}, #{membercardName},#{uid},#{orderNo}, #{price}, #{payAmount}, #{payTime}, #{operatorIncome}, #{franchiseeIncome}, #{storeIncome}, #{operatorRate}, #{franchiseeRate}, #{storeRate}, #{tenantId}, #{status}, #{type}, #{division_account_status}, #{delFlag}, #{createTime}, #{updateTime},#{franchiseeId},#{storeId})
     </insert>
 
     <!--通过主键修改数据-->
@@ -316,6 +316,9 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="divisionAccountStatus != null">
+                division_account_status = #{divisionAccountStatus},
             </if>
         </set>
         where id = #{id}
