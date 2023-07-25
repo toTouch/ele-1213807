@@ -71,4 +71,12 @@ public class DetailsUserInfoVo {
      * 认证时间
      */
     private Long userCertificationTime;
+
+    private String franchiseeName;
+
+    private String storeName;
+
+    private Long franchiseeId;
+
+    private Long storeId;
 }
