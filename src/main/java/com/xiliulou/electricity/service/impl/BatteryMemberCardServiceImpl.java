@@ -188,6 +188,18 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return batteryMemberCardVOS.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_OLD) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).collect(Collectors.toList());
     }
 
+
+    @Override
+    public List<BatteryMemberCardVO> selectListByQuery(BatteryMemberCardQuery query) {
+        List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByQuery(query);
+
+        return list.parallelStream().map(item -> {
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+    }
+
     @Override
     public List<BatteryMemberCardVO> selectByPage(BatteryMemberCardQuery query) {
         List<BatteryMemberCard> list = this.batteryMemberCardMapper.selectByPage(query);

@@ -75,4 +75,6 @@ public interface BatteryMemberCardService {
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
 
     List<BatteryMemberCardVO> selectUserBatteryMembercardList(BatteryMemberCardQuery query);
+
+    List<BatteryMemberCardVO>  selectListByQuery(BatteryMemberCardQuery query);
 }
