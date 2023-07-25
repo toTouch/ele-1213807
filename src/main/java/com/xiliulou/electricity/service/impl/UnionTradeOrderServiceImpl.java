@@ -540,8 +540,9 @@ public class UnionTradeOrderServiceImpl extends
             updateOrAddInsuranceUserInfo.setPremium(franchiseeInsurance.getPremium());
             updateOrAddInsuranceUserInfo.setFranchiseeId(franchiseeInsurance.getFranchiseeId());
             updateOrAddInsuranceUserInfo.setCreateTime(System.currentTimeMillis());
+            updateOrAddInsuranceUserInfo.setType(insuranceOrder.getInsuranceType());
 
-            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.queryByUidFromCache(insuranceOrder.getUid());
+            InsuranceUserInfo insuranceUserInfo = insuranceUserInfoService.selectByUidAndTypeFromCache(insuranceOrder.getUid(),insuranceOrder.getInsuranceType());
             if (Objects.isNull(insuranceUserInfo)) {
                 insuranceUserInfoService.insert(updateOrAddInsuranceUserInfo);
             } else {
