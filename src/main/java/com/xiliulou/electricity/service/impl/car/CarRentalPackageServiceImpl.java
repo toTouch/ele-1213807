@@ -199,7 +199,7 @@ public class CarRentalPackageServiceImpl implements CarRentalPackageService {
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENAL_PACKAGE_ID_KEY, id);
         CarRentalPackagePO cachePO = redisService.getWithHash(cacheKey, CarRentalPackagePO.class);
         if (ObjectUtils.isNotEmpty(cachePO)) {
-            return null;
+            return cachePO;
         }
 
         // 查询 DB
