@@ -6,13 +6,16 @@ import com.xiliulou.electricity.entity.UserCar;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderSlippagePO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.*;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.UserCarService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +37,9 @@ import java.util.List;
 public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackageMemberTermBizService {
 
     @Resource
+    private CarRentalPackageService carRentalPackageService;
+
+    @Resource
     private CarRentalPackageOrderSlippageService carRentalPackageOrderSlippageService;
 
     @Resource
@@ -47,6 +53,44 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
     @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
+
+    /**
+     * 根据用户ID获取当前用户的绑定车辆型号ID<br />
+     * 可能为null
+     *
+     * @param tenantId 租户ID
+     * @param uid      用户ID
+     * @return 车辆型号ID
+     */
+    @Override
+    public Integer queryCarModelByUid(Integer tenantId, Long uid) {
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询租车会员信息
+        CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isEmpty(memberTermEntity) || MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+            log.info("CarRentalPackageMemberTermBizService.queryCarModelByUid return null, not found car_rental_package_member_term or status is pending effective. uid is {}", uid);
+            return null;
+        }
+
+        // 退租未退押
+        Long rentalPackageId = memberTermEntity.getRentalPackageId();
+        if (ObjectUtils.isEmpty(rentalPackageId) || rentalPackageId.longValue() == 0) {
+            log.info("CarRentalPackageMemberTermBizService.queryCarModelByUid return null, User has retired from lease. uid is {}", uid);
+            return null;
+        }
+
+        // 查询套餐设置信息
+        CarRentalPackagePO rentalPackageEntity = carRentalPackageService.selectById(rentalPackageId);
+        if (ObjectUtils.isEmpty(rentalPackageEntity)) {
+            log.info("CarRentalPackageMemberTermBizService.queryCarModelByUid return null, not found car_rental_package. rentalPackageId is {}", rentalPackageId);
+            return null;
+        }
+
+        return rentalPackageEntity.getCarModelId();
+    }
 
     /**
      * 套餐购买订单过期处理<br />
