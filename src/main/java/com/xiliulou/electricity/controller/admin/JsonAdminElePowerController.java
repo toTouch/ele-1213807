@@ -129,8 +129,8 @@ public class JsonAdminElePowerController extends BaseController {
     }
 
     @GetMapping("/admin/power/month/statistics")
-    public R monthStatistics(@RequestParam(value = "startDate") String startDate,
-                             @RequestParam(value = "endDate") String endDate,
+    public R monthStatistics(@RequestParam(value = "startDate",required = false) String startDate,
+                             @RequestParam(value = "endDate",required = false) String endDate,
                              @RequestParam(value = "eid", required = false) Long eid,
                              @RequestParam(value = "storeId", required = false) Long storeId,
                              @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
