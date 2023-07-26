@@ -41,6 +41,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -1271,7 +1272,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 6）更改用户优惠券状态使用中
             // 使用的优惠券
-            List<Long> userCouponIds = couponTriple.getMiddle();
+            List<Long> userCouponIds = CollectionUtils.isEmpty(couponTriple.getMiddle()) ? new ArrayList<>() : couponTriple.getMiddle();
             List<UserCoupon> userCouponList = buildUserCouponList(userCouponIds, UserCoupon.STATUS_IS_BEING_VERIFICATION, carRentalPackageOrder.getOrderNo(), OrderTypeEnum.CAR_BUY_ORDER.getCode());
             userCouponService.batchUpdateUserCoupon(userCouponList);
 
