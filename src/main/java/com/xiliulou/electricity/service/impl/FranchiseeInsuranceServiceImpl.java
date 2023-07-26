@@ -560,7 +560,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         String simpleBatteryType = null;
 
         if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
-            simpleBatteryType = userBatteryTypeService.selectUserMaxBatteryType(uid);
+            simpleBatteryType = userBatteryTypeService.selectUserSimpleBatteryType(uid);
         } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_CAR)) {
             if (Objects.nonNull(userInfo.getStoreId()) && !Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
                 storeId = userInfo.getStoreId();
@@ -569,7 +569,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 // TODO           carModelId
 
         } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR)) {
-            simpleBatteryType = userBatteryTypeService.selectUserMaxBatteryType(uid);
+            simpleBatteryType = userBatteryTypeService.selectUserSimpleBatteryType(uid);
 
             if (Objects.nonNull(userInfo.getStoreId()) && !Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
                 storeId = userInfo.getStoreId();

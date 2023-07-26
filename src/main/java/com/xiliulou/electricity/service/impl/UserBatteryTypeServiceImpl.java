@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.UserBatteryType;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserBatteryTypeMapper;
 import com.xiliulou.electricity.service.UserBatteryTypeService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +83,21 @@ public class UserBatteryTypeServiceImpl implements UserBatteryTypeService {
         }
 
         return batteryTypes.stream().sorted(Comparator.comparing(item -> item.substring(item.length() - 2))).reduce((first, second) -> second).orElse(null);
+    }
+
+    @Override
+    public String selectUserSimpleBatteryType(Long uid) {
+        List<String> batteryTypes = this.selectByUid(uid);
+        if(CollectionUtils.isEmpty(batteryTypes)){
+            return null;
+        }
+
+        String batteryType = batteryTypes.get(0);
+        if(StringUtils.isBlank(batteryType)){
+            return null;
+        }
+
+        return batteryType.substring(batteryType.indexOf("_") + 1).substring(0, batteryType.substring(batteryType.indexOf("_") + 1).indexOf("_"));
     }
 
     @Override
