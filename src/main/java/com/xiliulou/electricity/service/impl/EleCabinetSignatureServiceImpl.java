@@ -311,7 +311,7 @@ public class EleCabinetSignatureServiceImpl implements EleCabinetSignatureServic
 
         }catch(Exception e){
             log.error("get sign flow link error! get sign flow link error,uid={},ex={}", userInfo.getUid(), e);
-            return Triple.of(false, "000109", "获取签署链接失败");
+            return Triple.of(false, "000109", "实名认证信息与当前签署人信息不符");
         }finally {
             redisService.delete(CacheConstant.CACHE_ELE_CABINET_ESIGN_SIGN_LOCK_KEY + SecurityUtils.getUid());
         }

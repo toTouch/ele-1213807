@@ -158,7 +158,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     log.error(
                             "TOKEN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}",
                             existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
-                    throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
+                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理!");
                 }
 
                 //添加到user_info表中
@@ -183,7 +183,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
                 if (Objects.isNull(user)) {
                     log.error("TOKEN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
-                    throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
+                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理!");
                 }
 
                 //这里的uid必须相同
@@ -191,7 +191,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     log.error(
                             "TOKEN ERROR! openId exists,phone not exists! third account uid not equals user account uid! thirdUid={},userId={}",
                             existsOpenId.getRight().getUid(), user.getUid());
-                    throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
+                    throw new AuthenticationServiceException("登录信息异常，请联系客服处理!");
                 }
 
                 User updateUser = User.builder().uid(user.getUid()).phone(purePhoneNumber)
@@ -249,7 +249,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                         log.error(
                                 "TOKEN ERROR! openId not exists,phone exists! third account uid not equals user account uid! thirdUid={},userId={}",
                                 userOauthBind.getUid(), existPhone.getRight().getUid());
-                        throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
+                        throw new AuthenticationServiceException("登录信息异常，请联系客服处理!");
                     }
 
                     //这里更改openId
