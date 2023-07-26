@@ -137,7 +137,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return returnTripleResult(divisionAccountConfigService.save(divisionAccountConfigQuery));
+        return returnTripleResult(divisionAccountConfigService.saveDivisionAccountWithPackage(divisionAccountConfigQuery));
     }
 
     /**
@@ -154,7 +154,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return returnTripleResult(divisionAccountConfigService.modify(divisionAccountConfigQuery));
+        return returnTripleResult(divisionAccountConfigService.modifyDivisionAccountWithPackage(divisionAccountConfigQuery));
     }
 
     /**
@@ -171,7 +171,7 @@ public class JsonAdminDivisionAccountConfigController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return returnTripleResult(divisionAccountConfigService.updateStatus(divisionAccountConfigQuery));
+        return returnTripleResult(divisionAccountConfigService.updateDAStatus(divisionAccountConfigQuery));
     }
 
     /**

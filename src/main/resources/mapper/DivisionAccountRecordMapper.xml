@@ -98,6 +98,32 @@
         </where>
     </select>
 
+    <select id="selectDAFreezeStatusRecordsByTime">
+        select
+            id,
+            division_account_config_id,
+            membercard_name,
+            uid,
+            order_no,
+            price,
+            pay_amount,
+            pay_time,
+            operator_income,
+            franchisee_income,
+            store_income,
+            tenant_id,
+            status,
+            source,
+            type,
+            division_account_status,
+            del_flag,
+            create_time,
+            update_time
+        from t_division_account_record
+        where type = 0
+        and create_time &lt;=  #{time}
+    </select>
+
     <select id="selectByPage" resultMap="DivisionAccountRecordMap">
         select
         id,

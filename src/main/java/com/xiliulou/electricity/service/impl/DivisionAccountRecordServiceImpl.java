@@ -3,10 +3,18 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackageOrderRentRefundPO;
+import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.mapper.DivisionAccountRecordMapper;
 import com.xiliulou.electricity.query.DivisionAccountRecordQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderRentRefundService;
+import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.DivisionAccountAmountVO;
 import com.xiliulou.electricity.vo.DivisionAccountConfigRefVO;
 import com.xiliulou.electricity.vo.DivisionAccountRecordStatisticVO;
 import com.xiliulou.electricity.vo.DivisionAccountRecordVO;
@@ -69,10 +77,25 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
     private ElectricityMemberCardOrderService eleMemberCardOrderService;
 
     @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
     private ElectricityCabinetService eleCabinetService;
 
     @Autowired
     private ElectricityCarModelService eleCarModelService;
+
+    @Autowired
+    private CarRentalPackageOrderService carRentalPackageOrderService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
+
+    @Autowired
+    private BatteryMembercardRefundOrderService batteryMembercardRefundOrderService;
+
+    @Autowired
+    private CarRentalPackageOrderRentRefundService carRentalPackageOrderRentRefundService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -258,6 +281,359 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
                 log.error("ELE ERROR! batteryMemberCardOrder division account error,orderId={},uid={}", batteryMemberCardOrder.getOrderId(), batteryMemberCardOrder.getUid(), e);
             }
         });
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleDivisionAccountByPackage(String orderNo, Integer type){
+
+        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(orderNo);
+            if(Objects.isNull(electricityMemberCardOrder)){
+                log.error("Division Account error, Not found for electricity member card, order number = {}", orderNo);
+                return;
+            }
+
+            log.info("Division Account Start, electricity member card order, order number = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid());
+            try {
+                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(electricityMemberCardOrder.getMemberCardId().longValue(), null, electricityMemberCardOrder.getFranchiseeId(), electricityMemberCardOrder.getTenantId());
+                if (Objects.isNull(divisionAccountConfigRefVO)) {
+                    log.error("Division Account error, Division account for electricity member card, not found division account config info, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid());
+                    return;
+                }
+
+                DivisionAccountAmountVO divisionAccountAmountVO = calculateBenefitsByBatteryDA(electricityMemberCardOrder.getPayAmount(), electricityMemberCardOrder.getSource(), divisionAccountConfigRefVO);
+                if(Objects.isNull(divisionAccountAmountVO)){
+                    log.error("calculate Division Account amount error");
+                    return;
+                }
+                //获取套餐信息
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+
+                //保存分帐记录
+                DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
+                divisionAccountRecord.setMembercardName(batteryMemberCard.getName());
+                divisionAccountRecord.setUid(electricityMemberCardOrder.getUid());
+                divisionAccountRecord.setOrderNo(electricityMemberCardOrder.getOrderId());
+                divisionAccountRecord.setPayAmount(electricityMemberCardOrder.getPayAmount());
+                divisionAccountRecord.setPayTime(electricityMemberCardOrder.getUpdateTime());
+                divisionAccountRecord.setDivisionAccountConfigId(divisionAccountConfigRefVO.getId());
+                divisionAccountRecord.setOperatorIncome(divisionAccountAmountVO.getOperatorIncome());
+                divisionAccountRecord.setFranchiseeIncome(divisionAccountAmountVO.getFranchiseeIncome());
+                divisionAccountRecord.setStoreIncome(divisionAccountAmountVO.getStoreIncome());
+                divisionAccountRecord.setOperatorRate(divisionAccountAmountVO.getOperatorRate());
+                divisionAccountRecord.setFranchiseeRate(divisionAccountAmountVO.getFranchiseeRate());
+                divisionAccountRecord.setStoreRate(divisionAccountAmountVO.getStoreRate());
+                divisionAccountRecord.setSource(electricityMemberCardOrder.getSource());
+                divisionAccountRecord.setTenantId(electricityMemberCardOrder.getTenantId());
+                divisionAccountRecord.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+                divisionAccountRecord.setStoreId(electricityMemberCardOrder.getStoreId());
+                divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
+                divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
+                divisionAccountRecord.setType(DivisionAccountRecord.TYPE_PURCHASE);
+
+                if(BatteryMemberCard.YES.equals(batteryMemberCard.getIsRefund())){
+                    divisionAccountRecord.setDivisionAccountStatus(DivisionAccountRecord.DA_STATUS_FREEZE);
+                }else{
+                    divisionAccountRecord.setDivisionAccountStatus(DivisionAccountRecord.DA_STATUS_NORMAL);
+                }
+                divisionAccountRecord.setCreateTime(System.currentTimeMillis());
+                divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
+                divisionAccountRecordMapper.insert(divisionAccountRecord);
+            }catch (Exception e) {
+                log.error("Division Account error, Division account for electricity member card error, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid(), e);
+            }
+
+        } else {
+            CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(orderNo);
+            if(Objects.isNull(carRentalPackageOrderPO)){
+                log.error("Division Account error, Not found for car rental package, order number = {}", orderNo);
+                return;
+            }
+
+            log.info("Division Account Start, electricity member card order, order number = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid());
+            try {
+                DivisionAccountConfigRefVO divisionAccountConfigRefVO = divisionAccountConfigService.selectDivisionConfigByRefId(carRentalPackageOrderPO.getRentalPackageId(), null, carRentalPackageOrderPO.getFranchiseeId().longValue(), carRentalPackageOrderPO.getTenantId());
+                if (Objects.isNull(divisionAccountConfigRefVO)) {
+                    log.info("Division Account error, Division account for car rental or car-electricity package, not found division account config info, orderId = {},uid = {}", orderNo, carRentalPackageOrderPO.getUid());
+                    return;
+                }
+
+                DivisionAccountAmountVO CarRentalAmountVO = calculateBenefitsByCarRentalPackage(carRentalPackageOrderPO.getRentPayment(), divisionAccountConfigRefVO);
+                //获取租车/车电一体套餐信息
+                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
+
+                //保存分帐记录
+                DivisionAccountRecord divisionAccountRecord = new DivisionAccountRecord();
+                divisionAccountRecord.setMembercardName(carRentalPackagePO.getName());
+                divisionAccountRecord.setUid(carRentalPackageOrderPO.getUid());
+                divisionAccountRecord.setOrderNo(carRentalPackageOrderPO.getOrderNo());
+                divisionAccountRecord.setPayAmount(carRentalPackageOrderPO.getRentPayment());
+                divisionAccountRecord.setPayTime(carRentalPackageOrderPO.getUpdateTime());
+                divisionAccountRecord.setDivisionAccountConfigId(divisionAccountConfigRefVO.getId());
+                divisionAccountRecord.setOperatorIncome(CarRentalAmountVO.getOperatorIncome());
+                divisionAccountRecord.setFranchiseeIncome(CarRentalAmountVO.getFranchiseeIncome());
+                divisionAccountRecord.setStoreIncome(CarRentalAmountVO.getStoreIncome());
+                divisionAccountRecord.setOperatorRate(CarRentalAmountVO.getOperatorRate());
+                divisionAccountRecord.setFranchiseeRate(CarRentalAmountVO.getFranchiseeRate());
+                divisionAccountRecord.setStoreRate(CarRentalAmountVO.getStoreRate());
+
+                divisionAccountRecord.setTenantId(carRentalPackageOrderPO.getTenantId());
+                divisionAccountRecord.setFranchiseeId(carRentalPackageOrderPO.getFranchiseeId().longValue());
+                divisionAccountRecord.setStoreId(carRentalPackageOrderPO.getStoreId().longValue());
+                divisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
+                divisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
+                divisionAccountRecord.setType(DivisionAccountRecord.TYPE_PURCHASE);
+
+                if(YesNoEnum.YES.getCode().equals(carRentalPackagePO.getRentRebate())){
+                    divisionAccountRecord.setDivisionAccountStatus(DivisionAccountRecord.DA_STATUS_FREEZE);
+                }else{
+                    divisionAccountRecord.setDivisionAccountStatus(DivisionAccountRecord.DA_STATUS_NORMAL);
+                }
+                divisionAccountRecord.setCreateTime(System.currentTimeMillis());
+                divisionAccountRecord.setUpdateTime(System.currentTimeMillis());
+                divisionAccountRecordMapper.insert(divisionAccountRecord);
+
+            } catch(Exception e){
+                log.error("Division Account error, Division account for car rental or car-electricity package error, orderId = {}, uid = {}", orderNo, carRentalPackageOrderPO.getUid(), e);
+            }
+
+        }
+    }
+
+    /**
+     * 计算换电套餐分账金额
+     * @param userPayAmount
+     * @param orderSource
+     * @param divisionAccountConfigRefVO
+     * @return
+     */
+    private DivisionAccountAmountVO calculateBenefitsByBatteryDA(BigDecimal userPayAmount, Integer orderSource,DivisionAccountConfigRefVO divisionAccountConfigRefVO){
+
+        DivisionAccountAmountVO divisionAccountAmountVO = new DivisionAccountAmountVO();
+
+        BigDecimal operatorIncome = BigDecimal.ZERO;
+        BigDecimal franchiseeIncome = BigDecimal.ZERO;
+        BigDecimal storeIncome = BigDecimal.ZERO;
+
+        BigDecimal operatorRate = divisionAccountConfigRefVO.getOperatorRate();
+        BigDecimal franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRate();
+        BigDecimal storeRate = divisionAccountConfigRefVO.getStoreRate();
+
+        if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfigRefVO.getHierarchy())) {
+            //二级分帐
+            operatorIncome = getAmountByRate(userPayAmount, operatorRate);
+            franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
+        } else if (DivisionAccountConfig.HIERARCHY_THREE.equals(divisionAccountConfigRefVO.getHierarchy())) {
+            //三级分帐
+            //扫码 门店、加盟商、运营商分帐
+            if (ElectricityMemberCardOrder.SOURCE_SCAN.equals(orderSource)) {
+                operatorIncome = getAmountByRate(userPayAmount, operatorRate);
+                franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
+                storeIncome = getAmountByRate(userPayAmount, storeRate);
+            } else {
+                //非扫码 加盟商、运营商分帐
+                operatorRate = divisionAccountConfigRefVO.getOperatorRateOther();
+                franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRateOther();
+
+                operatorIncome = getAmountByRate(userPayAmount, operatorRate);
+                franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
+            }
+        } else {
+            log.warn("Division Account error, Division account for electricity member card, not found division account hierarchy, DA config id = {}", divisionAccountConfigRefVO.getId());
+            return null;
+        }
+
+        divisionAccountAmountVO.setOperatorIncome(operatorIncome);
+        divisionAccountAmountVO.setFranchiseeIncome(franchiseeIncome);
+        divisionAccountAmountVO.setStoreIncome(storeIncome);
+        divisionAccountAmountVO.setOperatorRate(operatorRate);
+        divisionAccountAmountVO.setFranchiseeRate(franchiseeRate);
+        divisionAccountAmountVO.setStoreRate(storeRate);
+
+        return divisionAccountAmountVO;
+    }
+
+    /**
+     * 计算租车套餐和车电一体套餐分账金额
+     * @param userPayAmount
+     * @param divisionAccountConfigRefVO
+     * @return
+     */
+    private DivisionAccountAmountVO calculateBenefitsByCarRentalPackage(BigDecimal userPayAmount, DivisionAccountConfigRefVO divisionAccountConfigRefVO){
+
+        DivisionAccountAmountVO divisionAccountAmountVO = new DivisionAccountAmountVO();
+        BigDecimal operatorIncome = BigDecimal.ZERO;
+        BigDecimal franchiseeIncome = BigDecimal.ZERO;
+        BigDecimal storeIncome = BigDecimal.ZERO;
+
+        BigDecimal operatorRate = divisionAccountConfigRefVO.getOperatorRate();
+        BigDecimal franchiseeRate = divisionAccountConfigRefVO.getFranchiseeRate();
+        BigDecimal storeRate = divisionAccountConfigRefVO.getStoreRate();
+
+        if (DivisionAccountConfig.HIERARCHY_TWO.equals(divisionAccountConfigRefVO.getHierarchy())) {
+            //二级分帐
+            operatorIncome = getAmountByRate(userPayAmount, operatorRate);
+            franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
+        } else if (DivisionAccountConfig.HIERARCHY_THREE.equals(divisionAccountConfigRefVO.getHierarchy())) {
+            //三级分帐
+            operatorIncome = getAmountByRate(userPayAmount, operatorRate);
+            franchiseeIncome = getAmountByRate(userPayAmount, franchiseeRate);
+            storeIncome = getAmountByRate(userPayAmount, storeRate);
+        } else {
+            log.warn("Division account for car rental or car-electricity package error, not found division account hierarchy, DA config id = {}", divisionAccountConfigRefVO.getId());
+            return null;
+        }
+
+        divisionAccountAmountVO.setOperatorIncome(operatorIncome);
+        divisionAccountAmountVO.setFranchiseeIncome(franchiseeIncome);
+        divisionAccountAmountVO.setStoreIncome(storeIncome);
+        divisionAccountAmountVO.setOperatorRate(operatorRate);
+        divisionAccountAmountVO.setFranchiseeRate(franchiseeRate);
+        divisionAccountAmountVO.setStoreRate(storeRate);
+
+        return divisionAccountAmountVO;
+
+    }
+
+    /**
+     * 处理退款时的分账业务
+     * @param orderNo 退款订单号
+     * @param type 套餐类型
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleRefundDivisionAccountByPackage(String orderNo, Integer type){
+        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+            BatteryMembercardRefundOrder batteryMembercardRefundOrder = batteryMembercardRefundOrderService.selectByOrderNo(orderNo);
+
+            if(Objects.isNull(batteryMembercardRefundOrder)) {
+                log.error("Refund Division Account error, Not found for battery member card refund order, refund order number = {}", orderNo);
+                return;
+            }
+            log.info("Refund Division Account Start, electricity member card order, refund order id = {}, uid = {}", batteryMembercardRefundOrder.getId(), batteryMembercardRefundOrder.getUid());
+            ElectricityMemberCardOrder electricityMemberCardOrder = eleMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
+            try {
+
+                //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
+                DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+
+                //保存分帐记录
+                DivisionAccountRecord refundDivisionAccountRecord = new DivisionAccountRecord();
+                refundDivisionAccountRecord.setMembercardName(electricityMemberCardOrder.getCardName());
+                refundDivisionAccountRecord.setUid(batteryMembercardRefundOrder.getUid());
+                refundDivisionAccountRecord.setOrderNo(batteryMembercardRefundOrder.getRefundOrderNo());
+                refundDivisionAccountRecord.setPayAmount(batteryMembercardRefundOrder.getRefundAmount());
+                refundDivisionAccountRecord.setPayTime(batteryMembercardRefundOrder.getUpdateTime());
+                refundDivisionAccountRecord.setDivisionAccountConfigId(divisionAccountRecord.getDivisionAccountConfigId());
+                refundDivisionAccountRecord.setOperatorIncome(divisionAccountRecord.getOperatorIncome());
+                refundDivisionAccountRecord.setFranchiseeIncome(divisionAccountRecord.getFranchiseeIncome());
+                refundDivisionAccountRecord.setStoreIncome(divisionAccountRecord.getStoreIncome());
+                refundDivisionAccountRecord.setOperatorRate(divisionAccountRecord.getOperatorRate());
+                refundDivisionAccountRecord.setFranchiseeRate(divisionAccountRecord.getFranchiseeRate());
+                refundDivisionAccountRecord.setStoreRate(divisionAccountRecord.getStoreRate());
+                refundDivisionAccountRecord.setSource(electricityMemberCardOrder.getSource());
+                refundDivisionAccountRecord.setTenantId(batteryMembercardRefundOrder.getTenantId());
+                refundDivisionAccountRecord.setFranchiseeId(batteryMembercardRefundOrder.getFranchiseeId());
+                refundDivisionAccountRecord.setStoreId(batteryMembercardRefundOrder.getStoreId());
+                refundDivisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
+                refundDivisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
+                refundDivisionAccountRecord.setType(DivisionAccountRecord.TYPE_REFUND);
+                refundDivisionAccountRecord.setDivisionAccountStatus(DivisionAccountRecord.DA_STATUS_NORMAL);
+                refundDivisionAccountRecord.setCreateTime(System.currentTimeMillis());
+                refundDivisionAccountRecord.setUpdateTime(System.currentTimeMillis());
+                divisionAccountRecordMapper.insert(refundDivisionAccountRecord);
+
+                //退租后，需要将之前购买的分账记录状态置为无效
+                updateDARecordStatus(divisionAccountRecord, DivisionAccountRecord.DA_STATUS_INVALIDITY);
+            }catch (Exception e) {
+                log.error("Refund Division Account error, Refund Division account for electricity member card error, orderId = {}, uid = {}", electricityMemberCardOrder.getOrderId(), electricityMemberCardOrder.getUid(), e);
+            }
+
+        } else {
+            //处理租车和车电一体的退租分账记录
+            try{
+                handleRefundDivisionAccountByCarRentalPackage(orderNo);
+            }catch (Exception e){
+                log.error("Refund Division Account error, Refund Division account for car rental package error, orderNo = {}", orderNo, e);
+            }
+        }
+    }
+
+    /**
+     * 更新超过七天的分账记录状态为冻结的记录，将分账状态更新为正常
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateDivisionAccountStatusForFreezeOrder() {
+        Long exceedTime = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L;
+        List<DivisionAccountRecord> divisionAccountRecords = divisionAccountRecordMapper.selectDAFreezeStatusRecordsByTime(exceedTime);
+        if(CollectionUtils.isNotEmpty(divisionAccountRecords)){
+            for(DivisionAccountRecord divisionAccountRecord : divisionAccountRecords){
+               //只要查到超过七天的状态还是冻结态的记录，则将其修改为正常，因为如果有退单的记录，这个状态就会被置为失效。所以能查到的肯定是未退款的记录
+                updateDARecordStatus(divisionAccountRecord, DivisionAccountRecord.DA_STATUS_NORMAL);
+            }
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateDARecordStatus(DivisionAccountRecord divisionAccountRecord, Integer status){
+        DivisionAccountRecord accountRecord = new DivisionAccountRecord();
+        accountRecord.setId(divisionAccountRecord.getId());
+        accountRecord.setDivisionAccountStatus(status);
+        divisionAccountRecordMapper.update(accountRecord);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void handleRefundDivisionAccountByCarRentalPackage(String orderNo){
+        CarRentalPackageOrderRentRefundPO carRentalPackageOrderRentRefundPO = carRentalPackageOrderRentRefundService.selectByOrderNo(orderNo);
+        if(Objects.isNull(carRentalPackageOrderRentRefundPO)){
+            log.error("Refund Division Account error, Not found for car rental package order, refund order number = {}", orderNo);
+            return;
+        }
+
+        log.info("Refund Division Account Start, car rental package order, refund order id = {}, uid = {}", carRentalPackageOrderRentRefundPO.getId(), carRentalPackageOrderRentRefundPO.getUid());
+        CarRentalPackageOrderPO carRentalPackageOrderPO = carRentalPackageOrderService.selectByOrderNo(carRentalPackageOrderRentRefundPO.getRentalPackageOrderNo());
+
+        //退租时,需要查询出之前购买时的分账记录，按照购买时的分账记录，无需按照比例将退款返给用户，直接按照购买时的记录退款。产品已确定需求
+        DivisionAccountRecord divisionAccountRecord = this.divisionAccountRecordMapper.selectByOrderId(carRentalPackageOrderPO.getOrderNo());
+
+        //不需要再根据之前的分账设置去计算退款金额，直接按购买时的分账金额全部退回。同时将构面分账记录状态设置为失效状态。如果后续分账时只需查找分账状态为正常且创建时间大于7天的记录即可。
+        CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(carRentalPackageOrderPO.getRentalPackageId());
+
+        //保存分帐记录
+        DivisionAccountRecord refundDivisionAccountRecord = new DivisionAccountRecord();
+        refundDivisionAccountRecord.setMembercardName(carRentalPackagePO.getName());
+        refundDivisionAccountRecord.setUid(carRentalPackageOrderRentRefundPO.getUid());
+        refundDivisionAccountRecord.setOrderNo(carRentalPackageOrderRentRefundPO.getOrderNo());
+        refundDivisionAccountRecord.setPayAmount(carRentalPackageOrderRentRefundPO.getRefundAmount());
+        refundDivisionAccountRecord.setPayTime(carRentalPackageOrderRentRefundPO.getUpdateTime());
+        refundDivisionAccountRecord.setDivisionAccountConfigId(divisionAccountRecord.getDivisionAccountConfigId());
+        refundDivisionAccountRecord.setOperatorIncome(divisionAccountRecord.getOperatorIncome());
+        refundDivisionAccountRecord.setFranchiseeIncome(divisionAccountRecord.getFranchiseeIncome());
+        refundDivisionAccountRecord.setStoreIncome(divisionAccountRecord.getStoreIncome());
+        refundDivisionAccountRecord.setOperatorRate(divisionAccountRecord.getOperatorRate());
+        refundDivisionAccountRecord.setFranchiseeRate(divisionAccountRecord.getFranchiseeRate());
+        refundDivisionAccountRecord.setStoreRate(divisionAccountRecord.getStoreRate());
+
+        refundDivisionAccountRecord.setTenantId(carRentalPackageOrderRentRefundPO.getTenantId());
+        refundDivisionAccountRecord.setFranchiseeId(carRentalPackageOrderRentRefundPO.getFranchiseeId().longValue());
+        refundDivisionAccountRecord.setStoreId(carRentalPackageOrderRentRefundPO.getStoreId().longValue());
+        refundDivisionAccountRecord.setStatus(DivisionAccountRecord.STATUS_SUCCESS);
+        refundDivisionAccountRecord.setDelFlag(DivisionAccountRecord.DEL_NORMAL);
+        refundDivisionAccountRecord.setType(DivisionAccountRecord.TYPE_REFUND);
+        refundDivisionAccountRecord.setDivisionAccountStatus(DivisionAccountRecord.DA_STATUS_NORMAL);
+        refundDivisionAccountRecord.setCreateTime(System.currentTimeMillis());
+        refundDivisionAccountRecord.setUpdateTime(System.currentTimeMillis());
+        divisionAccountRecordMapper.insert(refundDivisionAccountRecord);
+
+        //退租后，需要将之前购买的分账记录状态置为无效
+        updateDARecordStatus(divisionAccountRecord, DivisionAccountRecord.DA_STATUS_INVALIDITY);
+    }
+
+    private BigDecimal getAmountByRate(BigDecimal userPayAmount, BigDecimal rate){
+        BigDecimal ratePercent = BigDecimal.ZERO.compareTo(rate) == 0 ? BigDecimal.ZERO : rate.divide(BigDecimal.valueOf(100), new MathContext(2, RoundingMode.DOWN));
+        return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));
     }
 
     @Override

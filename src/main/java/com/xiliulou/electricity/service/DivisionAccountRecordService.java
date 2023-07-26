@@ -61,6 +61,12 @@ public interface DivisionAccountRecordService {
     void handleBatteryMembercardDivisionAccount(ElectricityMemberCardOrder electricityMemberCardOrder);
 
     void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder);
+
+    void handleDivisionAccountByPackage(String orderNo, Integer type);
+
+    void handleRefundDivisionAccountByPackage(String orderNo, Integer type);
+
+    void updateDivisionAccountStatusForFreezeOrder();
     
     Triple<Boolean, String, Object> divisionAccountCompensation(String orderId, Integer type);
 }
