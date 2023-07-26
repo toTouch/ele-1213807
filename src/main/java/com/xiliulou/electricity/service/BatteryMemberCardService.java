@@ -70,6 +70,8 @@ public interface BatteryMemberCardService {
 
     Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder memberCardOrder);
 
+    Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, Long validDays);
+
     List<BatteryMemberCardVO> selectByPageForUser(BatteryMemberCardQuery query);
 
     List<String> selectMembercardBatteryV(BatteryMemberCardQuery query);
