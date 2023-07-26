@@ -14,6 +14,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderSlippageService;
 import com.xiliulou.electricity.service.car.biz.CarRentalPackageMemberTermBizService;
+import com.xiliulou.electricity.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -91,8 +94,22 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
                         continue;
                     }
                 }
+
+                // 若生成滞纳金，则代表肯定设置了滞纳金，此时查看是否存在因冻结产生的滞纳金，若存在，则更新数据，并新增一条过期的逾期订单
+                CarRentalPackageOrderSlippagePO slippageFreezeEntity = null;
+                if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
+                    slippageFreezeEntity = carRentalPackageOrderSlippageService.selectByPackageOrderNoAndType(slippageEntityInsert.getRentalPackageOrderNo(), SlippageTypeEnum.FREEZE.getCode());
+                    if (ObjectUtils.isNotEmpty(slippageFreezeEntity)) {
+                        // 取会员的当前到期时间，因为在冻结的时候，会更新当前套餐订单的到期时间
+                        slippageFreezeEntity.setUpdateTime(System.currentTimeMillis());
+                        slippageFreezeEntity.setLateFeeEndTime(memberTermEntity.getDueTime());
+                        // 计算滞纳金金额
+                        long diffDay = DateUtils.diffDay(memberTermEntity.getDueTime(), slippageFreezeEntity.getLateFeeStartTime());
+                        slippageFreezeEntity.setLateFeePay(slippageFreezeEntity.getLateFee().multiply(new BigDecimal(diffDay)).setScale(2, RoundingMode.HALF_UP));
+                    }
+                }
                 // 数据落库处理
-                saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity);
+                saveExpirePackageOrderTx(slippageEntityInsert, packageOrderEntity, memberTermEntity, slippageFreezeEntity);
             }
 
 
@@ -101,12 +118,14 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void saveExpirePackageOrderTx(CarRentalPackageOrderSlippagePO slippageEntityInsert, CarRentalPackageOrderPO packageOrderEntityNew, CarRentalPackageMemberTermPO memberTermEntity) {
+    public void saveExpirePackageOrderTx(CarRentalPackageOrderSlippagePO slippageEntityInsert, CarRentalPackageOrderPO packageOrderEntityNew,
+                                         CarRentalPackageMemberTermPO memberTermEntity, CarRentalPackageOrderSlippagePO slippageFreezeEntity) {
         // 生成逾期订单
         if (ObjectUtils.isNotEmpty(slippageEntityInsert)) {
             carRentalPackageOrderSlippageService.insert(slippageEntityInsert);
+            // 更新对应的因冻结的产生的逾期订单记录
+            carRentalPackageOrderSlippageService.updateById(slippageFreezeEntity);
         }
-        // TODO 查询过期订单是否存在因冻结产生的逾期订单，若有，则需要更新滞纳金结束时间
         if (ObjectUtils.isNotEmpty(packageOrderEntityNew)) {
             // 覆盖会员期限信息
             CarRentalPackageMemberTermPO memberTermEntityUpdate = new CarRentalPackageMemberTermPO();
@@ -145,6 +164,17 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
 
 
     private CarRentalPackageOrderSlippagePO buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageMemberTermPO memberTermEntity) {
+        // 查询当时购买的订单信息
+        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
+        if (ObjectUtils.isEmpty(packageOrderEntity)) {
+            log.info("CarRentalPackageMemberTermBizService.buildCarRentalPackageOrderSlippage failed. not found car_rental_package_order. orderNo is {}", memberTermEntity.getRentalPackageOrderNo());
+        }
+
+        // 免除滞纳金
+        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
+            return null;
+        }
+
         // 初始化标识
         boolean createFlag = false;
 
@@ -169,11 +199,6 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             return null;
         }
 
-        // 查询当时购买的订单信息
-        CarRentalPackageOrderPO packageOrderEntity = carRentalPackageOrderService.selectByOrderNo(memberTermEntity.getRentalPackageOrderNo());
-        if (ObjectUtils.isEmpty(packageOrderEntity)) {
-            log.info("CarRentalPackageMemberTermBizService.buildCarRentalPackageOrderSlippage failed. not found car_rental_package_order. orderNo is {}", memberTermEntity.getRentalPackageOrderNo());
-        }
 
         // 生成实体记录
         CarRentalPackageOrderSlippagePO slippageEntity = new CarRentalPackageOrderSlippagePO();

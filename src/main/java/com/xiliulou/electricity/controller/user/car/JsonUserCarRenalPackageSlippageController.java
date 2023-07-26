@@ -75,9 +75,11 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         for (CarRentalPackageOrderSlippagePO slippageEntity : carRentalPackageSlippageEntityList) {
             CarRentalPackageOrderSlippageVO slippageVo = new CarRentalPackageOrderSlippageVO();
             BeanUtils.copyProperties(slippageEntity, slippageVo);
+            // 默认应缴==实缴
+            slippageVo.setLateFeePayable(slippageVo.getLateFeePay());
 
             Integer payState = slippageVo.getPayState();
-            // 未支付、支付失败，计算滞纳金金额
+            // 未支付、支付失败，计算应缴滞纳金金额
             if (PayStateEnum.UNPAID.getCode().equals(payState) || PayStateEnum.FAILED.getCode().equals(payState) ) {
                 // 结束时间，不为空
                 if (ObjectUtils.isNotEmpty(slippageEntity.getLateFeeEndTime())) {

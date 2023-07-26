@@ -556,6 +556,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
     private CarRentalPackageOrderSlippagePO buildCarRentalPackageOrderSlippage(Long uid, CarRentalPackageOrderPO packageOrderEntity) {
         // 初始化标识
         boolean createFlag = false;
+        if (ObjectUtils.isEmpty(packageOrderEntity.getLateFee()) || BigDecimal.ZERO.compareTo(packageOrderEntity.getLateFee()) >= 0) {
+            // 不收取滞纳金
+            return null;
+        }
 
         // 查询是否未归还设备
         // 1. 车辆
@@ -1093,8 +1097,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 初始化押金金额
             BigDecimal deposit = null;
             Integer userTenantId = userInfo.getTenantId();
-            Long userFranchiseeId = userInfo.getFranchiseeId();
-            Long userStoreId = userInfo.getStoreId();
+            Long userFranchiseeId = Long.valueOf(buyOptModel.getFranchiseeId());
+            Long userStoreId = Long.valueOf(buyOptModel.getStoreId());
+            if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0) {
+                userFranchiseeId = userInfo.getFranchiseeId();
+            }
+            if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0) {
+                userStoreId = userInfo.getStoreId();
+            }
 
             // 5. 获取租车套餐会员期限信息
             CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);

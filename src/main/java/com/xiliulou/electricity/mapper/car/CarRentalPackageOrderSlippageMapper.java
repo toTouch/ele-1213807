@@ -16,6 +16,22 @@ import java.util.List;
 public interface CarRentalPackageOrderSlippageMapper {
 
     /**
+     * 根据主键ID进行更新
+     * @param entity 实体数据
+     * @return 操作条数
+     */
+    int updateById(CarRentalPackageOrderSlippagePO entity);
+
+    /**
+     * 根据套餐购买订单编号和逾期订单类型，查询未支付的逾期订单信息
+     *
+     * @param rentalPackageOrderNo 套餐购买订单编码
+     * @param type                 逾期订单类型：1-过期、2-冻结
+     * @return 逾期订单信息
+     */
+    CarRentalPackageOrderSlippagePO selectByPackageOrderNoAndType(@Param("rentalPackageOrderNo") String rentalPackageOrderNo, @Param("type") Integer type);
+
+    /**
      * 根据用户ID查询未支付的逾期订单
      * @param tenantId 租户ID
      * @param uid 用户ID
