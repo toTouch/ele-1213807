@@ -282,7 +282,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageOrderRentRefundService.updateByOrderNo(rentRefundUpdateEntity);
 
             // 2. 更新会员期限
-            carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getUid(), refundRentOrderNo, apploveUid);
+            carRentalPackageMemberTermService.rentRefundByUidAndPackageOrderNo(rentRefundEntity.getTenantId(), rentRefundEntity.getUid(), refundRentOrderNo, apploveUid);
         } else {
             // 1. 更新退租申请单状态
             rentRefundUpdateEntity.setRefundState(RefundStateEnum.AUDIT_REJECT.getCode());
