@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.query;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author zzlong
@@ -10,6 +12,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class FranchiseeInsuranceQuery {
 
     private Long size;
