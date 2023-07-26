@@ -1009,23 +1009,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 3. 处理租车套餐会员期限
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isEmpty(memberTermEntity)) {
-            log.error("CancelRentalPackageOrder failed, not found car_rental_package_member_term, uid is {}", uid);
-            throw new BizException("300011", "未找到租车会员记录信息");
-        }
-
         // 待生效的数据，直接删除
-        if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+        if (ObjectUtils.isNotEmpty(memberTermEntity) && MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
             carRentalPackageMemberTermService.delByUidAndTenantId(tenantId, uid, uid);
         }
 
-        // 4. TODO 处理用户押金支付信息（订单取消）
-
-
-        // 5. 处理用户优惠券的使用状态
+        // 4. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(packageOrderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_UNUSED);
 
-        // 7. TODO 处理保险购买订单
+        // 5. TODO 处理保险购买订单
 
         return true;
     }
@@ -1111,13 +1103,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
             // 若非空，则押金必定缴纳
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
-                // 5.1 用户套餐会员限制状态异常
-                if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
-                    log.error("BuyRentalPackageOrder failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
-                    return R.fail("300002", "租车会员状态异常");
+                // 非待生效
+                if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+                    // 5.1 用户套餐会员限制状态异常
+                    if (!MemberTermStatusEnum.NORMAL.getCode().equals(memberTermEntity.getStatus())) {
+                        log.error("BuyRentalPackageOrder failed. member_term status wrong. uid is {}, status is {}", uid, memberTermEntity.getStatus());
+                        return R.fail("300002", "租车会员状态异常");
+                    }
+                    // 从会员期限中获取押金金额
+                    deposit = memberTermEntity.getDeposit();
                 }
-                // 从会员期限中获取押金金额
-                deposit = memberTermEntity.getDeposit();
             }
 
             // 6. 获取套餐信息
@@ -1220,7 +1215,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             String depositPayOrderNo = null;
             CarRentalPackageDepositPayPO depositPayEntity = carRentalPackageDepositPayService.selectUnRefundCarDeposit(tenantId, uid);
             // 没有押金订单，此时肯定也没有申请免押，因为免押是另外的线路，在下订单之前就已经生成记录了
-            if (ObjectUtils.isEmpty(depositPayEntity)) {
+            if (ObjectUtils.isEmpty(depositPayEntity) || PayStateEnum.UNPAID.getCode().equals(depositPayEntity.getPayState())) {
                 if (YesNoEnum.YES.getCode().equals(buyOptModel.getDepositType())) {
                     // 免押
                     return R.fail("300006", "未缴纳押金");
@@ -1268,6 +1263,14 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 // 生成租车套餐会员期限表信息，准备 Insert
                 CarRentalPackageMemberTermPO memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder);
                 carRentalPackageMemberTermService.insert(memberTermInsertEntity);
+            } else {
+                if (MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+                    // 先删除
+                    carRentalPackageMemberTermService.delByUidAndTenantId(memberTermEntity.getTenantId(), memberTermEntity.getUid(), memberTermEntity.getUid());
+                    // 生成租车套餐会员期限表信息，准备 Insert
+                    CarRentalPackageMemberTermPO memberTermInsertEntity = buildCarRentalPackageMemberTerm(tenantId, uid, buyPackageEntity, carRentalPackageOrder);
+                    carRentalPackageMemberTermService.insert(memberTermInsertEntity);
+                }
             }
 
             // 6）更改用户优惠券状态使用中
