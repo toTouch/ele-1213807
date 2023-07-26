@@ -336,8 +336,12 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
     @Override
     public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid) {
         log.info("calculatePaymentAmount amount is {}", amount);
-        if (BigDecimal.ZERO.compareTo(amount) == 0 || CollectionUtils.isEmpty(userCouponIds)) {
-            return Triple.of(BigDecimal.ZERO, null, true) ;
+        if (BigDecimal.ZERO.compareTo(amount) == 0) {
+            return Triple.of(BigDecimal.ZERO, userCouponIds, true) ;
+        }
+
+        if (amount.compareTo(BigDecimal.ZERO) > 0 && CollectionUtils.isEmpty(userCouponIds)) {
+            return Triple.of(amount, null, true) ;
         }
 
         // 查询用户名下是否存在未使用、未过期的优惠券
