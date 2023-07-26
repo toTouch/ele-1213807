@@ -129,7 +129,8 @@ public class JsonAdminElePowerController extends BaseController {
     }
 
     @GetMapping("/admin/power/month/statistics")
-    public R monthStatistics(@RequestParam("date") String date,
+    public R monthStatistics(@RequestParam(value = "startDate") String startDate,
+                             @RequestParam(value = "endDate") String endDate,
                              @RequestParam(value = "eid", required = false) Long eid,
                              @RequestParam(value = "storeId", required = false) Long storeId,
                              @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -145,7 +146,8 @@ public class JsonAdminElePowerController extends BaseController {
 
         PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
                 .storeId(storeId)
-                .date(date)
+                .startDate(startDate)
+                .endDate(endDate)
                 .size(size)
                 .offset(offset)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -156,7 +158,8 @@ public class JsonAdminElePowerController extends BaseController {
     }
 
     @PostMapping("/admin/power/month/statistics/export")
-    public void monthStatisticsExport(@RequestParam("date") String date,
+    public void monthStatisticsExport(@RequestParam(value = "startDate") String startDate,
+                                      @RequestParam(value = "endDate") String endDate,
                                       @RequestParam(value = "eid", required = false) Long eid,
                                       @RequestParam(value = "storeId", required = false) Long storeId,
                                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -164,7 +167,8 @@ public class JsonAdminElePowerController extends BaseController {
 
         PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
                 .storeId(storeId)
-                .date(date)
+                .startDate(startDate)
+                .endDate(endDate)
                 .size(Integer.MAX_VALUE)
                 .offset(NumberConstant.ZERO)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -176,7 +180,8 @@ public class JsonAdminElePowerController extends BaseController {
 
 
     @GetMapping("/admin/power/month/statistics/count")
-    public R monthStatistics(@RequestParam("date") String date,
+    public R monthStatistics(@RequestParam(value = "startDate",required = false) String startDate,
+                             @RequestParam(value = "endDate",required = false) String endDate,
                              @RequestParam(value = "eid", required = false) Long eid,
                              @RequestParam(value = "storeId", required = false) Long storeId,
                              @RequestParam(value = "franchiseeId", required = false) Long franchiseeId
@@ -184,7 +189,8 @@ public class JsonAdminElePowerController extends BaseController {
 
         PowerMonthStatisticsQuery query = PowerMonthStatisticsQuery.builder()
                 .storeId(storeId)
-                .date(date)
+                .startDate(startDate)
+                .endDate(endDate)
                 .tenantId(TenantContextHolder.getTenantId())
                 .franchiseeId(franchiseeId)
                 .eid(eid).build();

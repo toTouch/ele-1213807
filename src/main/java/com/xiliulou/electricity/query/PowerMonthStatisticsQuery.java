@@ -10,7 +10,8 @@ import lombok.Data;
 @Data
 @Builder
 public class PowerMonthStatisticsQuery {
-    private String date;
+    private String startDate;
+    private String endDate;
     private Integer tenantId;
     private Long storeId;
     private Long franchiseeId;
