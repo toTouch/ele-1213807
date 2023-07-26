@@ -96,7 +96,7 @@ public class JsonUserCarRenalPackageController extends BasicController {
             packageVO.setConfineNum(entity.getConfineNum());
             packageVO.setGiveCoupon(entity.getGiveCoupon());
             packageVO.setRemark(entity.getRemark());
-            packageVO.setBatteryV(entity.getBatteryV());
+            packageVO.setBatteryVoltage(entity.getBatteryVoltage());
             // 设置辅助业务信息
             packageVO.setGiveCouponAmount(couponMap.getOrDefault(entity.getCouponId(), new Coupon()).getAmount());
             return packageVO;

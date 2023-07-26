@@ -202,6 +202,6 @@ public class CarRentalPackageOrderVO implements Serializable {
     /**
      * 电池型号对应的电压伏数
      */
-    private BigDecimal batteryV;
+    private String batteryVoltage;
 
 }

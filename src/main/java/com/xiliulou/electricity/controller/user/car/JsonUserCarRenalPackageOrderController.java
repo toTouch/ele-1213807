@@ -209,7 +209,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
 
             // 赋值业务属性信息
             carRentalPackageOrderVO.setCarRentalPackageName(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getName());
-            carRentalPackageOrderVO.setBatteryV(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getBatteryV());
+            carRentalPackageOrderVO.setBatteryVoltage(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getBatteryVoltage());
             carRentalPackageOrderVO.setCarModelName(carModelNameMap.getOrDefault(carRentalPackageMap.getOrDefault(carRentalPackageOrder.getRentalPackageId(), new CarRentalPackagePO()).getCarModelId(), ""));
 
             return carRentalPackageOrderVO;

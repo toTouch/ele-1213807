@@ -133,7 +133,7 @@ public class CarRentalPackageOptModel implements Serializable {
     /**
      * 电池型号对应的电压伏数
      */
-    private BigDecimal batteryV;
+    private String batteryVoltage;
 
     /**
      * 适用类型

@@ -55,6 +55,15 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private InsuranceOrderService insuranceOrderService;
+
+    @Resource
+    private FranchiseeInsuranceService franchiseeInsuranceService;
+
+    @Resource
+    private InsuranceUserInfoService insuranceUserInfoService;
+
+    @Resource
     private ElectricityBatteryService batteryService;
 
     @Resource
@@ -1215,6 +1224,35 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
 
+            // 8. 保险校验
+            FranchiseeInsurance buyInsurance = null;
+            Long buyInsuranceId = buyOptModel.getInsuranceId();
+            Boolean buyInsuranceFlag = insuranceUserInfoService.verifyUserIsNeedBuyInsurance(userInfo, buyPackageEntity.getType(), buyPackageEntity.getBatteryVoltage(), Long.valueOf(buyPackageEntity.getCarModelId()));
+            if (buyInsuranceFlag) {
+                if (ObjectUtils.isEmpty(buyInsuranceId)) {
+                    // TODO 错误编码 需要购买保险
+                    return R.fail("300007", "请选择对应的押金缴纳方式");
+                }
+            }
+            // 8.1 查询保险信息
+            if (ObjectUtils.isNotEmpty(buyInsuranceId)) {
+                buyInsurance = franchiseeInsuranceService.queryByIdFromCache(buyInsuranceId.intValue());
+                if (ObjectUtils.isEmpty(buyInsurance)) {
+                    // TODO 错误编码 保险不存在
+                    return R.fail("300007", "请选择对应的押金缴纳方式");
+                }
+
+                if (!Long.valueOf(buyPackageEntity.getCarModelId()).equals(buyInsurance.getCarModelId())) {
+                    // TODO 错误编码 保险不匹配
+                    return R.fail("300007", "请选择对应的押金缴纳方式");
+                }
+
+                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) && !buyPackageEntity.getBatteryVoltage().equals(buyInsurance.getSimpleBatteryType())) {
+                    // TODO 错误编码 保险不匹配
+                    return R.fail("300007", "请选择对应的押金缴纳方式");
+                }
+            }
+
             // 检测结束，进入购买阶段，
             // 1）押金处理
             // 待新增的押金信息，肯定没有走免押
@@ -1248,9 +1286,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             }
 
             // 2）保险处理 TODO 志龙接口
-            InsuranceOrder insuranceOrderInsertEntity = buildInsuranceOrder(uid);
-            // 保险费用初始化
-            BigDecimal insuranceAmount = BigDecimal.ZERO;
+            InsuranceOrder insuranceOrderInsertEntity = buildInsuranceOrder(uid, buyInsurance);
+            if (ObjectUtils.isNotEmpty(insuranceOrderInsertEntity)) {
+
+            }
+            // 保险费用
+            BigDecimal insuranceAmount = ObjectUtils.isNotEmpty(buyInsurance) ? buyInsurance.getPremium() : BigDecimal.ZERO;
 
             // 3）支付金额处理
             // 优惠券只抵扣租金
@@ -1541,7 +1582,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * 构建保险订单信息
      * @return
      */
-    private InsuranceOrder buildInsuranceOrder(Long uid) {
+    private InsuranceOrder buildInsuranceOrder(Long uid, FranchiseeInsurance buyInsurance) {
         // TODO 赋值具体值
         InsuranceOrder insuranceOrder = new InsuranceOrder();
         return insuranceOrder;

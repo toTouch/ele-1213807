@@ -273,7 +273,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
             carBatteryRelEntity.setRentalPackageId(packageId);
             carBatteryRelEntity.setCarModelId(entity.getCarModelId());
             carBatteryRelEntity.setBatteryModelType(batteryModelType);
-            carBatteryRelEntity.setBatteryV(optModel.getBatteryV());
+            carBatteryRelEntity.setBatteryVoltage(optModel.getBatteryVoltage());
             carBatteryRelEntity.setTenantId(entity.getTenantId());
             carBatteryRelEntity.setFranchiseeId(entity.getFranchiseeId());
             carBatteryRelEntity.setStoreId(entity.getStoreId());

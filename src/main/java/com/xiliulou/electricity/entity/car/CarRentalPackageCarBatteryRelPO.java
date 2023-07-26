@@ -33,5 +33,5 @@ public class CarRentalPackageCarBatteryRelPO extends BasicCarPO {
     /**
      * 电池型号对应的电压伏数
      */
-    private BigDecimal batteryV;
+    private String batteryVoltage;
 }
