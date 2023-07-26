@@ -6,9 +6,12 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="memberCardId" column="member_card_id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="INTEGER"/>
         <result property="memberCardExpireTime" column="member_card_expire_time" jdbcType="INTEGER"/>
         <result property="orderExpireTime" column="order_expire_time" jdbcType="INTEGER"/>
+        <result property="orderEffectiveTime" column="order_effective_time" jdbcType="INTEGER"/>
         <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
+        <result property="orderRemainingNumber" column="order_remaining_number" jdbcType="INTEGER"/>
         <result property="memberCardStatus" column="member_card_status" jdbcType="INTEGER"/>
         <result property="disableMemberCardTime" column="disable_member_card_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
@@ -19,7 +22,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectUserBatteryMemberCard">
-       	select   id, uid, member_card_id, member_card_expire_time, order_expire_time, remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,card_pay_count  from t_user_battery_member_card
+       	select   id, uid, member_card_id, order_id, member_card_expire_time, order_expire_time,order_effective_time, remaining_number, order_remaining_number, member_card_status, disable_member_card_time, del_flag, create_time, update_time,card_pay_count  from t_user_battery_member_card
     </sql>
 
     <!--查询单个-->

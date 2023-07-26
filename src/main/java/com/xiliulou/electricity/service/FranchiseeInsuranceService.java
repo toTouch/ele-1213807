@@ -52,4 +52,6 @@ public interface FranchiseeInsuranceService {
     Integer selectPageCount(FranchiseeInsuranceQuery query);
 
     FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query);
+
+    Triple<Boolean, String, Object> selectInsuranceByUid(Long uid, Integer type);
 }

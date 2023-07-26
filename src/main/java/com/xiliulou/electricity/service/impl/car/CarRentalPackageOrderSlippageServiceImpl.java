@@ -28,6 +28,36 @@ public class CarRentalPackageOrderSlippageServiceImpl implements CarRentalPackag
     @Resource
     private CarRentalPackageOrderSlippageMapper carRentalPackageOrderSlippageMapper;
 
+    /**
+     * 根据主键ID进行更新
+     *
+     * @param entity 操作实体
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean updateById(CarRentalPackageOrderSlippagePO entity) {
+        if (!ObjectUtils.allNotNull(entity, entity.getId())) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        int num = carRentalPackageOrderSlippageMapper.updateById(entity);
+        return num >= 0;
+    }
+
+    /**
+     * 根据套餐购买订单编号和逾期订单类型，查询未支付的逾期订单信息
+     *
+     * @param rentalPackageOrderNo 套餐购买订单编码
+     * @param type                 逾期订单类型：1-过期、2-冻结
+     * @return 逾期订单信息
+     */
+    @Slave
+    @Override
+    public CarRentalPackageOrderSlippagePO selectByPackageOrderNoAndType(String rentalPackageOrderNo, Integer type) {
+        if (!ObjectUtils.allNotNull(rentalPackageOrderNo, type)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+        return carRentalPackageOrderSlippageMapper.selectByPackageOrderNoAndType(rentalPackageOrderNo, type);
+    }
 
     /**
      * 根据用户ID查询未支付的逾期订单

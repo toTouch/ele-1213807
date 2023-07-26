@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -41,7 +43,6 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      */
     @Override
     public List<CarRentalPackageMemberTermPO> pageExpire(Integer offset, Integer size, Long nowTime) {
-
         offset = ObjectUtils.isEmpty(offset) ? 0: offset;
         size = ObjectUtils.isEmpty(size) ? 10: size;
         nowTime = ObjectUtils.isEmpty(nowTime) ? System.currentTimeMillis(): nowTime;
@@ -53,18 +54,22 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
      * 根据用户ID和套餐购买订单编码进行退租<br />
      * 用于退掉最后一个订单的时候，即当前正在使用的订单进行退租
      *
+     * @param tenantId            租户ID
      * @param uid            用户ID
      * @param packageOrderNo 购买订单编码
      * @param optUid         操作人ID
      * @return true(成功)、false(失败)
      */
     @Override
-    public boolean rentRefundByUidAndPackageOrderNo(Long uid, String packageOrderNo, Long optUid) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean rentRefundByUidAndPackageOrderNo(Integer tenantId, Long uid, String packageOrderNo, Long optUid) {
         if (ObjectUtils.allNotNull(uid, packageOrderNo, optUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
         int num = carRentalPackageMemberTermMapper.rentRefundByUidAndPackageOrderNo(uid, packageOrderNo, optUid, System.currentTimeMillis());
+
+        selectByUidAndPackageOrderNo(tenantId, uid, packageOrderNo);
 
         return num >= 0;
     }
@@ -100,6 +105,11 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         int num = carRentalPackageMemberTermMapper.delByUidAndTenantId(tenantId, uid, optId, System.currentTimeMillis());
+
+        // 清空缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        redisService.delete(cacheKey);
+
         return num >= 0;
     }
 
@@ -118,6 +128,11 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         int num = carRentalPackageMemberTermMapper.updateStatusByUidAndTenantId(tenantId, uid, status, optId, System.currentTimeMillis());
+
+        // 清空缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        redisService.delete(cacheKey);
+
         return num >= 0;
     }
 
@@ -135,6 +150,12 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
         int num = carRentalPackageMemberTermMapper.updateStatusById(id, status, optId, System.currentTimeMillis());
+
+        // 清空缓存
+        CarRentalPackageMemberTermPO dbEntity = carRentalPackageMemberTermMapper.selectById(id);
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, dbEntity.getTenantId(), dbEntity.getUid());
+        redisService.delete(cacheKey);
+
         return num >= 0;
     }
 
@@ -153,6 +174,17 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
         entity.setUpdateTime(System.currentTimeMillis());
 
         int num = carRentalPackageMemberTermMapper.updateById(entity);
+
+        // 清空缓存
+        Integer tenantId = entity.getTenantId();
+        Long uid = entity.getUid();
+        if (!ObjectUtils.allNotNull(tenantId, uid)) {
+            CarRentalPackageMemberTermPO dbEntity = carRentalPackageMemberTermMapper.selectById(entity.getId());
+            tenantId = dbEntity.getTenantId();
+            uid = dbEntity.getUid();
+        }
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
+        redisService.delete(cacheKey);
 
         return num >= 0;
     }
@@ -173,18 +205,19 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
-        CarRentalPackageMemberTermPO cachePO = redisService.getWithHash(cacheKey, CarRentalPackageMemberTermPO.class);
-        if (ObjectUtils.isNotEmpty(cachePO)) {
-            return cachePO;
+        String cacheStr = redisService.get(cacheKey);
+        CarRentalPackageMemberTermPO cacheEntity = JSON.parseObject(cacheStr, CarRentalPackageMemberTermPO.class);
+        if (ObjectUtils.isNotEmpty(cacheEntity)) {
+            return cacheEntity;
         }
 
         // 获取 DB
-        CarRentalPackageMemberTermPO dbPO = carRentalPackageMemberTermMapper.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isNotEmpty(dbPO)) {
-            redisService.saveWithHash(cacheKey, dbPO);
+        CarRentalPackageMemberTermPO dbEntity = carRentalPackageMemberTermMapper.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(dbEntity)) {
+            redisService.set(cacheKey, JSON.toJSONString(dbEntity));
         }
 
-        return dbPO;
+        return dbEntity;
     }
 
     /**
@@ -245,7 +278,13 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
             throw  new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        return carRentalPackageMemberTermMapper.selectById(id);
+        CarRentalPackageMemberTermPO dbEntity = carRentalPackageMemberTermMapper.selectById(id);
+
+        // 清空缓存
+        String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, dbEntity.getTenantId(), dbEntity.getUid());
+        redisService.delete(cacheKey);
+
+        return dbEntity;
     }
 
     /**

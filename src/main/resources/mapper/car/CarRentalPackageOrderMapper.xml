@@ -29,6 +29,7 @@
         <result property="rentRebate" column="rent_rebate" jdbcType="INTEGER" />
         <result property="rentRebateTerm" column="rent_rebate_term" jdbcType="INTEGER" />
         <result property="rentRebateEndTime" column="rent_rebate_end_time" jdbcType="BIGINT" />
+        <result property="deposit" column="deposit" jdbcType="DECIMAL" />
         <result property="depositPayOrderNo" column="deposit_pay_order_no" jdbcType="VARCHAR" />
         <result property="lateFee" column="late_fee" jdbcType="DECIMAL" />
         <result property="payType" column="pay_type" jdbcType="INTEGER" />
@@ -97,6 +98,7 @@
             <if test=" rentRebate != null "> `rent_rebate`, </if>
             <if test=" rentRebateTerm != null "> `rent_rebate_term`, </if>
             <if test=" rentRebateEndTime != null "> `rent_rebate_end_time`, </if>
+            <if test=" deposit != null "> `deposit`, </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> `deposit_pay_order_no`, </if>
             <if test=" lateFee != null "> `late_fee`, </if>
             <if test=" payType != null "> `pay_type`, </if>
@@ -133,6 +135,7 @@
             <if test=" rentRebate != null "> #{rentRebate}, </if>
             <if test=" rentRebateTerm != null "> #{rentRebateTerm}, </if>
             <if test=" rentRebateEndTime != null "> #{rentRebateEndTime}, </if>
+            <if test=" deposit != null "> #{deposit}, </if>
             <if test=" depositPayOrderNo != null and depositPayOrderNo != '' "> #{depositPayOrderNo}, </if>
             <if test=" lateFee != null "> #{lateFee}, </if>
             <if test=" payType != null "> #{payType}, </if>

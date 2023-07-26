@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl.car;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
+import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.UseStateEnum;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.car.CarRentalPackageOrderMapper;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
 import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
+import com.xiliulou.electricity.utils.OrderIdUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -340,6 +342,10 @@ public class CarRentalPackageOrderServiceImpl implements CarRentalPackageOrderSe
         entity.setCreateTime(now);
         entity.setUpdateTime(now);
         entity.setDelFlag(DelFlagEnum.OK.getCode());
+
+        if (StringUtils.isBlank(entity.getOrderNo())) {
+            entity.setOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.CAR_MEMBERCARD, entity.getUid()));
+        }
 
         carRentalPackageOrderMapper.insert(entity);
 

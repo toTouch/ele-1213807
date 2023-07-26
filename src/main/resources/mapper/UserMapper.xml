@@ -13,6 +13,11 @@
 		where uid = #{uid}
 	</select>
 
+	<select id="queryByUserName" resultType="com.xiliulou.electricity.entity.User">
+		<include refid="selectUser"/>
+		where binary name = #{username}
+	</select>
+
 	<!--通过主键修改数据-->
 	<update id="updateUserByUid">
 		update t_user

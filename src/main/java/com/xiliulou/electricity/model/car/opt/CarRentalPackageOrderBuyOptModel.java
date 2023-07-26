@@ -21,6 +21,16 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
     private Integer tenantId;
 
     /**
+     * 加盟商ID
+     */
+    private Integer franchiseeId;
+
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
+
+    /**
      * 用户ID
      */
     private Long uid;

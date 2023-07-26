@@ -4,11 +4,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryMemberCard;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.UserCoupon;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.DelFlagEnum;
+import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
 import com.xiliulou.electricity.enums.basic.BasicEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
@@ -20,6 +22,7 @@ import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
 import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -35,10 +38,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +49,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
+
+    @Resource
+    private UserInfoService userInfoService;
 
     @Resource
     private BatteryMemberCardService batteryMemberCardService;
@@ -94,44 +97,75 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         Integer rentalPackageType = null;
         List<String> batteryModelTypeList = null;
 
+        // 0. 获取用户信息
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("CheckBuyPackageCommon failed. Not found user. uid is {} ", uid);
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+        // 0.1 用户可用状态
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("CheckBuyPackageCommon failed. User is unUsable. uid is {} ", uid);
+            throw new BizException("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        // 0.2 用户实名认证状态
+        if (!Objects.equals(userInfo.getAuthStatus(), UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
+            log.error("CheckBuyPackageCommon failed. User not auth. uid is {}", uid);
+            throw new BizException("ELECTRICITY.0041", "用户尚未实名认证");
+        }
+
+        if (ObjectUtils.isNotEmpty(userInfo.getFranchiseeId()) && userInfo.getFranchiseeId().longValue() != 0) {
+            franchiseeId = userInfo.getFranchiseeId().intValue();
+        }
+
+        if (ObjectUtils.isNotEmpty(userInfo.getStoreId()) && userInfo.getStoreId().longValue() != 0) {
+            storeId = userInfo.getStoreId().intValue();
+        }
+
 
         // 1、查询是否存在会员期限信息(代表是否存在过套餐购买)
         CarRentalPackageMemberTermPO memberTermEntity = carRentalPackageMemberTermService.selectByTenantIdAndUid(tenantId, uid);
         // 存在数据，则代表押金已经缴纳，即租户、加盟商、门店、套餐类型、押金全都定下来了
         if (ObjectUtils.isNotEmpty(memberTermEntity)) {
-            // 所属机构不匹配
-            if (!memberTermEntity.getFranchiseeId().equals(franchiseeId) || !memberTermEntity.getStoreId().equals(storeId)) {
-                log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's organization does not match. return empty list.");
-                return Collections.emptyList();
-            }
-
-            Long rentalPackageId = memberTermEntity.getRentalPackageId();
-
-            // 必定是老用户
-            if (ObjectUtils.isNotEmpty(rentalPackageId)) {
-                // 查询套餐对应的车辆型号
-                CarRentalPackagePO packageEntity = carRentalPackageService.selectById(rentalPackageId);
-
-                // 车辆型号不匹配
-                if (!packageEntity.getCarModelId().equals(carModelId)) {
-                    log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's carModel does not match. return empty list.");
+            // 待生效，代表未支付
+            if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+                // 所属机构不匹配
+                if (!memberTermEntity.getFranchiseeId().equals(franchiseeId) || !memberTermEntity.getStoreId().equals(storeId)) {
+                    log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's organization does not match. return empty list.");
                     return Collections.emptyList();
                 }
-                oldUserFlag = true;
-            } else {
-                oldUserFlag = userBizService.isOldUser(tenantId, uid);
+
+                Long rentalPackageId = memberTermEntity.getRentalPackageId();
+
+                // 必定是老用户
+                if (ObjectUtils.isNotEmpty(rentalPackageId)) {
+                    // 查询套餐对应的车辆型号
+                    CarRentalPackagePO packageEntity = carRentalPackageService.selectById(rentalPackageId);
+
+                    // 车辆型号不匹配
+                    if (!packageEntity.getCarModelId().equals(carModelId)) {
+                        log.info("CarRentalPackageBizService.queryCanPurchasePackage, The user's carModel does not match. return empty list.");
+                        return Collections.emptyList();
+                    }
+                    oldUserFlag = true;
+                } else {
+                    oldUserFlag = userBizService.isOldUser(tenantId, uid);
+                }
+
+                // 车电一体且存在订单
+                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
+                    // 查询电池型号信息
+                    List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
+                    batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
+                }
+
+                deposit = memberTermEntity.getDeposit();
+                rentalPackageType = memberTermEntity.getRentalPackageType();
             }
-
-            // 车电一体且存在订单
-            if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTermEntity.getRentalPackageType()) && ObjectUtils.isNotEmpty(rentalPackageId)) {
-                // 查询电池型号信息
-                List<CarRentalPackageCarBatteryRelPO> carBatteryRelEntityList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(rentalPackageId);
-                batteryModelTypeList = carBatteryRelEntityList.stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).distinct().collect(Collectors.toList());
-            }
-
-            deposit = memberTermEntity.getDeposit();
-            rentalPackageType = memberTermEntity.getRentalPackageType();
-
+        } else {
+            oldUserFlag = userBizService.isOldUser(tenantId, uid);
         }
 
         // 结合如上两点，从数据库中筛选合适的套餐
@@ -301,8 +335,13 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      */
     @Override
     public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid) {
-        if (BigDecimal.ZERO.compareTo(amount) == 0 || CollectionUtils.isEmpty(userCouponIds)) {
-            return Triple.of(BigDecimal.ZERO, null, true) ;
+        log.info("calculatePaymentAmount amount is {}", amount);
+        if (BigDecimal.ZERO.compareTo(amount) == 0) {
+            return Triple.of(BigDecimal.ZERO, userCouponIds, true) ;
+        }
+
+        if (amount.compareTo(BigDecimal.ZERO) > 0 && CollectionUtils.isEmpty(userCouponIds)) {
+            return Triple.of(amount, null, true) ;
         }
 
         // 查询用户名下是否存在未使用、未过期的优惠券
@@ -326,6 +365,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 按照优惠券是否可叠加分组
         Map<Integer, List<Coupon>> superpositionMap = couponList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
+            // TODO 错误编码
             throw new BizException("使用优惠券有误");
         }
 
@@ -335,13 +375,16 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());
 
         // 计算总共减免金额
-        BigDecimal discountAmount = couponList.stream().map(coupon -> coupon.getAmount()).reduce(BigDecimal::add).get();
+        BigDecimal discountAmount = couponList.stream().map(coupon -> ObjectUtils.isEmpty(coupon.getAmount()) ? new BigDecimal(0) : coupon.getAmount())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (discountAmount.compareTo(amount) >= 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIdList, true) ;
         }
+        log.info("calculatePaymentAmount discountAmount is {}", discountAmount);
 
         // 实际支付金额
         BigDecimal payAmount = amount.subtract(discountAmount);
+        log.info("calculatePaymentAmount payAmount is {}", payAmount);
 
         return Triple.of(payAmount, userCouponIdList, true) ;
     }

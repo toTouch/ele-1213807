@@ -117,6 +117,30 @@
         </trim>
     </sql>
 
+    <!-- 根据主键ID进行更新 -->
+    <update id="updateById">
+        UPDATE <include refid="table_name" />
+        <set>
+            `update_time` = #{updateTime}
+            <if test=" lateFeeEndTime != null "> , `late_fee_end_time` = #{lateFeeEndTime} </if>
+            <if test=" lateFeePay != null "> , `late_fee_pay` = #{lateFeePay} </if>
+            <if test=" payState != null "> , `pay_state` = #{payState} </if>
+            <if test=" payTime != null "> , `pay_time` = #{payTime} </if>
+            <if test=" updateUid != null "> , `update_uid` = #{updateUid} </if>
+        </set>
+        <where>
+            `id` = #{id}
+        </where>
+    </update>
+
+    <!-- 根据套餐购买订单编号和逾期订单类型，查询未支付的逾期订单信息 -->
+    <select id="selectByPackageOrderNoAndType" resultMap="entityMap">
+        SELECT <include refid="all_field" /> FROM <include refid="table_name" />
+        <where>
+            `rental_package_order_no` = #{rentalPackageOrderNo} AND `type` = #{type} AND `pay_state` = 1 AND `del_flag` = 0
+        </where>
+    </select>
+
     <!-- 根据用户ID查询未支付的逾期订单 -->
     <select id="selectUnPaidByByUid"  resultMap="entityMap">
         SELECT <include refid="all_field" /> FROM <include refid="table_name" />

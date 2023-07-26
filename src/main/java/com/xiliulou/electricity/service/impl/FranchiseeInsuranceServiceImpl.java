@@ -21,6 +21,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +67,12 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     ElectricityCarModelService carModelService;
+
+    @Autowired
+    UserInfoService userInfoService;
+
+    @Autowired
+    UserBatteryTypeService userBatteryTypeService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -536,5 +543,53 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public FranchiseeInsurance selectInsuranceByType(FranchiseeInsuranceQuery query) {
         return franchiseeInsuranceMapper.selectInsuranceByType(query);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectInsuranceByUid(Long uid, Integer type) {
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
+        Long storeId = null;
+
+        Long carModelId=null;
+
+        String simpleBatteryType = null;
+
+        if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
+            simpleBatteryType = userBatteryTypeService.selectUserSimpleBatteryType(uid);
+        } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_CAR)) {
+            if (Objects.nonNull(userInfo.getStoreId()) && !Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
+                storeId = userInfo.getStoreId();
+            }
+
+// TODO           carModelId
+
+        } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR)) {
+            simpleBatteryType = userBatteryTypeService.selectUserSimpleBatteryType(uid);
+
+            if (Objects.nonNull(userInfo.getStoreId()) && !Objects.equals(userInfo.getStoreId(), NumberConstant.ZERO_L)) {
+                storeId = userInfo.getStoreId();
+            }
+
+// TODO           carModelId
+            if (Objects.isNull(carModelId)) {
+                return Triple.of(false, "100005", "未找到车辆型号");
+            }
+        }
+
+        FranchiseeInsuranceQuery query = FranchiseeInsuranceQuery.builder()
+                .tenantId(userInfo.getTenantId())
+                .simpleBatteryType(simpleBatteryType)
+                .storeId(storeId)
+                .carModelId(carModelId)
+                .franchiseeId(userInfo.getFranchiseeId())
+                .insuranceType(type)
+                .status(FranchiseeInsurance.STATUS_USABLE).build();
+
+        return Triple.of(true,null,selectInsuranceByType(query));
     }
 }

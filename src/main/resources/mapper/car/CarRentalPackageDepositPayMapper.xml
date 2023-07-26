@@ -98,11 +98,11 @@
             <if test=" orderNo != null and orderNo != '' "> #{orderNo}, </if>
             <if test=" rentalPackageType != null "> #{rentalPackageType}, </if>
             <if test=" type != null "> #{type}, </if>
-            <if test=" changeAmount != null "> #{changeAmount}`, </if>
+            <if test=" changeAmount != null "> #{changeAmount}, </if>
             <if test=" deposit != null "> #{deposit}, </if>
             <if test=" freeDeposit != null "> #{freeDeposit}, </if>
             <if test=" payType != null "> #{payType}, </if>
-            <if test=" payState != null "> #{payState, </if>
+            <if test=" payState != null "> #{payState}, </if>
             <if test=" remark != null and remark != '' "> #{remark}, </if>
             <if test=" sourceOrderNo != null and sourceOrderNo != '' "> #{sourceOrderNo}, </if>
         </trim>
