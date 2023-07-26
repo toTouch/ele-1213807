@@ -1257,8 +1257,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Triple<BigDecimal, List<Long>, Boolean> couponTriple = carRentalPackageBizService.calculatePaymentAmount(buyPackageEntity.getRent(), buyOptModel.getUserCouponIds(), uid);
             // 实际支付租金金额
             BigDecimal rentPaymentAmount = couponTriple.getLeft();
+            log.info("BuyRentalPackageOrder rentPaymentAmount is {}", rentPaymentAmount);
             // 实际支付总金额（租金 + 押金 + 保险）
             BigDecimal paymentAmount = rentPaymentAmount.add(deposit).add(insuranceAmount);
+            log.info("BuyRentalPackageOrder paymentAmount is {}", paymentAmount);
 
             // 4）生成租车套餐订单，准备 insert
             CarRentalPackageOrderPO carRentalPackageOrder = buildCarRentalPackageOrder(buyPackageEntity, rentPaymentAmount, tenantId, uid, depositPayOrderNo);

@@ -335,6 +335,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
      */
     @Override
     public Triple<BigDecimal, List<Long>, Boolean> calculatePaymentAmount(BigDecimal amount, List<Long> userCouponIds, Long uid) {
+        log.info("calculatePaymentAmount amount is {}", amount);
         if (BigDecimal.ZERO.compareTo(amount) == 0 || CollectionUtils.isEmpty(userCouponIds)) {
             return Triple.of(BigDecimal.ZERO, null, true) ;
         }
@@ -375,9 +376,11 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         if (discountAmount.compareTo(amount) >= 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIdList, true) ;
         }
+        log.info("calculatePaymentAmount discountAmount is {}", discountAmount);
 
         // 实际支付金额
         BigDecimal payAmount = amount.subtract(discountAmount);
+        log.info("calculatePaymentAmount payAmount is {}", payAmount);
 
         return Triple.of(payAmount, userCouponIdList, true) ;
     }
