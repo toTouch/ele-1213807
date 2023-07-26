@@ -5,9 +5,6 @@
     <update id="update">
         update t_service_fee_user_info
         <set>
-            <if test="existBatteryServiceFee != null">
-                exist_battery_service_fee = #{existBatteryServiceFee},
-            </if>
             <if test="disableMemberCardNo != null">
                 disable_member_card_no = #{disableMemberCardNo},
             </if>
@@ -18,9 +15,6 @@
     <update id="updateByUid">
         update t_service_fee_user_info
         <set>
-            <if test="existBatteryServiceFee != null">
-                exist_battery_service_fee = #{existBatteryServiceFee},
-            </if>
             <if test="orderNo != null">
                 order_no = #{orderNo},
             </if>
