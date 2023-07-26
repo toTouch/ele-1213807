@@ -424,6 +424,14 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
         return Objects.equals(BatteryMemberCard.RENT_UNIT_MINUTES, batteryMemberCard.getRentUnit()) ? memberCardOrder.getValidDays() * 60 * 1000L : memberCardOrder.getValidDays() * 24 * 60 * 60 * 1000L;
     }
 
+    /**
+     * 计算套餐有效时长
+     */
+    @Override
+    public Long transformBatteryMembercardEffectiveTime(BatteryMemberCard batteryMemberCard, Long validDays) {
+        return Objects.equals(BatteryMemberCard.RENT_UNIT_MINUTES, batteryMemberCard.getRentUnit()) ? validDays * 60 * 1000L : validDays * 24 * 60 * 60 * 1000L;
+    }
+
     private List<MemberCardBatteryType> buildMemberCardBatteryTypeList(List<String> batteryModels, Long mid) {
 
         List<MemberCardBatteryType> memberCardBatteryTypeList = Lists.newArrayList();
