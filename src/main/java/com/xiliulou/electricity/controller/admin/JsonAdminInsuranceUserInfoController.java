@@ -70,25 +70,25 @@ public class JsonAdminInsuranceUserInfoController extends BaseController {
      *
      */
     @PutMapping(value = "/admin/insuranceUserInfo/insuranceStatus")
-    @Log(title = "修改用户电池保险状态")
+    @Log(title = "修改用户保险状态")
     public R updateServiceStatus(@RequestParam("uid") Long uid, @RequestParam("insuranceStatus") Integer insuranceStatus, @RequestParam("type") Integer type) {
         return insuranceUserInfoService.updateUserBatteryInsuranceStatus(uid, insuranceStatus, type);
     }
 
     @PostMapping(value = "/admin/insuranceUserInfo/addUserInsurance")
-    @Log(title = "新增用户电池保险信息")
+    @Log(title = "新增用户保险信息")
     public R addUserInsuranceInfo(@RequestBody @Validated(value = CreateGroup.class) InsuranceUserInfoQuery query){
         return insuranceUserInfoService.insertUserBatteryInsurance(query);
     }
 
     @PutMapping(value = "/admin/insuranceUserInfo/editUserInsurance")
-    @Log(title = "修改用户电池保险信息")
+    @Log(title = "修改用户保险信息")
     public R editUserInsuranceInfo(@RequestBody InsuranceUserInfoQuery query){
         return insuranceUserInfoService.editUserInsuranceInfo(query);
     }
 
     @PutMapping(value = "/admin/insuranceUserInfo/renewalUserInsurance")
-    @Log(title = "续费用户电池保险")
+    @Log(title = "续费用户保险")
     public R renewalUserInsuranceInfo(@RequestBody InsuranceUserInfoQuery query){
         return insuranceUserInfoService.renewalUserBatteryInsurance(query);
     }

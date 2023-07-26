@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.entity.InsuranceUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -49,5 +49,7 @@ public interface InsuranceUserInfoService {
     R editUserInsuranceInfo(InsuranceUserInfoQuery query);
 
     R renewalUserBatteryInsurance(InsuranceUserInfoQuery query);
+
+    Boolean verifyUserIsNeedBuyInsurance(UserInfo userInfo, Integer type, String simpleBatteryType, Long carModelId);
 
 }

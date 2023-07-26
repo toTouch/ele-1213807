@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
 import com.xiliulou.electricity.mapper.InsuranceOrderMapper;
 import com.xiliulou.electricity.mapper.InsuranceUserInfoMapper;
+import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
 import com.xiliulou.electricity.query.InsuranceOrderQuery;
 import com.xiliulou.electricity.query.InsuranceUserInfoQuery;
 import com.xiliulou.electricity.service.*;
@@ -22,12 +22,12 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -530,5 +530,39 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         insuranceUserInfoService.updateInsuranceUserInfoById(updateOrAddInsuranceUserInfo);
 
         return R.ok();
+    }
+
+    @Override
+    public Boolean verifyUserIsNeedBuyInsurance(UserInfo userInfo, Integer type, String simpleBatteryType, Long carModelId) {
+
+        FranchiseeInsuranceQuery query = new FranchiseeInsuranceQuery();
+        query.setTenantId(userInfo.getTenantId());
+        query.setFranchiseeId(userInfo.getFranchiseeId());
+        query.setStatus(FranchiseeInsurance.STATUS_USABLE);
+        query.setInsuranceType(type);
+        query.setSimpleBatteryType(simpleBatteryType);
+        query.setCarModelId(carModelId);
+
+        if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
+            query.setSimpleBatteryType(simpleBatteryType);
+        } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_CAR)) {
+            query.setCarModelId(carModelId);
+        } else if (Objects.equals(type, FranchiseeInsurance.INSURANCE_TYPE_BATTERY_CAR)) {
+            query.setSimpleBatteryType(simpleBatteryType);
+            query.setCarModelId(carModelId);
+        }
+
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.selectInsuranceByType(query);
+        if(Objects.isNull(franchiseeInsurance) || !Objects.equals( FranchiseeInsurance.CONSTRAINT_FORCE, franchiseeInsurance.getIsConstraint())){
+            return Boolean.FALSE;
+        }
+
+        //获取用户当前绑定的保险
+        InsuranceUserInfo insuranceUserInfo = this.selectByUidAndTypeFromDB(userInfo.getUid(), type);
+        if(Objects.isNull(insuranceUserInfo) || insuranceUserInfo.getInsuranceExpireTime()<System.currentTimeMillis()){
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
     }
 }
