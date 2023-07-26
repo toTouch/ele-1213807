@@ -1,13 +1,15 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceOrder;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeInsuranceAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeInsuranceQuery;
-import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -17,11 +19,9 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,7 +32,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminFranchiseeInsuranceController {
+public class JsonAdminFranchiseeInsuranceController extends BaseController {
 
     @Autowired
     FranchiseeInsuranceService franchiseeInsuranceService;
@@ -206,5 +206,15 @@ public class JsonAdminFranchiseeInsuranceController {
 
         return franchiseeInsuranceService.selectInsuranceListByCondition(FranchiseeInsurance.STATUS_USABLE, InsuranceOrder.BATTERY_INSURANCE_TYPE, TenantContextHolder.getTenantId(), franchisee.getId(),batteryType);
     }
+
+
+    /**
+     * 获取用户可购买保险
+     */
+    @GetMapping("/admin/franchiseeInsurance/selectInsuranceByUid")
+    public R selectInsuranceByUid(@RequestParam(value = "uid") Long uid, @RequestParam(value = "type") Integer type) {
+        return returnTripleResult(franchiseeInsuranceService.selectInsuranceByUid(uid, type));
+    }
+
 
 }
