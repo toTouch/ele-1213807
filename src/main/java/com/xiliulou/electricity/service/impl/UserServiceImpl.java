@@ -200,7 +200,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User queryByUserName(String username) {
-        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
+        return this.userMapper.queryByUserName(username);
+//        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
     }
 
     @Override
