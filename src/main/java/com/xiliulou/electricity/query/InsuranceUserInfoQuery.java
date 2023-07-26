@@ -25,12 +25,6 @@ public class InsuranceUserInfoQuery {
     private Long uid;
 
     /**
-     * 加盟商id
-     */
-    @NotNull(message = "加盟商id不能为空", groups = {CreateGroup.class})
-    private Long franchiseeId;
-
-    /**
      * 保险Id
      */
     @NotNull(message = "保险id不能为空", groups = {CreateGroup.class})
