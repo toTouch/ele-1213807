@@ -269,18 +269,34 @@ public class ServiceFeeUserInfoServiceImpl implements ServiceFeeUserInfoService 
             return Triple.of(false, null, null);
         }
 
-        if(Objects.isNull(userBatteryMemberCard) || Objects.isNull(serviceFeeUserInfo)){
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(serviceFeeUserInfo)) {
             return Triple.of(false, null, null);
         }
 
+        //停卡电池服务费
+        BigDecimal pauseBatteryServiceFee = BigDecimal.ZERO;
+        //套餐过期电池服务费
+        BigDecimal expireBatteryServiceFee = BigDecimal.ZERO;
+
+        Integer type = null;
+
         if (Objects.equals(userBatteryMemberCard.getMemberCardStatus(), UserBatteryMemberCard.MEMBER_CARD_DISABLE)) {
             int batteryMembercardDisableDays = (int) Math.ceil((System.currentTimeMillis() - userBatteryMemberCard.getDisableMemberCardTime()) / 1000.0 / 60 / 60 / 24);
-            return Triple.of(true, EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD, batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays)));
+            pauseBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMembercardDisableDays));
+            type = EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD;
+            log.info("BATTERY SERVICE FEE INFO!user exist expire fee,uid={},fee={}", userInfo.getUid(), pauseBatteryServiceFee.doubleValue());
         }
 
         if (System.currentTimeMillis() - userBatteryMemberCard.getMemberCardExpireTime() + 24 * 60 * 60 * 1000L > 0) {
             int batteryMemebercardExpireDays = (int) Math.ceil((System.currentTimeMillis() - (serviceFeeUserInfo.getServiceFeeGenerateTime() + 24 * 60 * 60 * 1000L)) / 1000.0 / 60 / 60 / 24);
-            return Triple.of(true, EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE, batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays)));
+            expireBatteryServiceFee = batteryMemberCard.getServiceCharge().multiply(BigDecimal.valueOf(batteryMemebercardExpireDays));
+            type = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
+            log.info("BATTERY SERVICE FEE INFO!user exist pause fee,uid={},fee={}", userInfo.getUid(), expireBatteryServiceFee.doubleValue());
+        }
+
+        BigDecimal totalBatteryServiceFee = pauseBatteryServiceFee.add(expireBatteryServiceFee);
+        if (totalBatteryServiceFee.doubleValue() > 0) {
+            return Triple.of(true, type, totalBatteryServiceFee);
         }
 
         return Triple.of(false, null, null);
