@@ -3201,10 +3201,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()) {
                 userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
                 userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             } else {
-                userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getOrderExpireTime() + System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
-                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getMemberCardExpireTime() + System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
+                userBatteryMemberCardUpdate.setOrderExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getOrderExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
+                userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             }
         } else {
             if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis()|| userBatteryMemberCard.getRemainingNumber()<=0) {
