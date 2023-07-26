@@ -215,6 +215,11 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 batteryMemberCardVO.setBatteryModels(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()));
             }
 
+            if (Objects.nonNull(item.getCouponId())) {
+                Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            }
+
             return batteryMemberCardVO;
         }).collect(Collectors.toList());
     }
@@ -241,9 +246,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
                 BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
                 BeanUtils.copyProperties(item, batteryMemberCardVO);
 
-                if(Objects.nonNull(item.getCouponId())){
+                if (Objects.nonNull(item.getCouponId())) {
                     Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
-                    batteryMemberCardVO.setCouponName(Objects.isNull(coupon)?"":coupon.getName());
+                    batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
                 }
 
                 return batteryMemberCardVO;
@@ -254,9 +259,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
             BeanUtils.copyProperties(item, batteryMemberCardVO);
 
-            if(Objects.nonNull(item.getCouponId())){
+            if (Objects.nonNull(item.getCouponId())) {
                 Coupon coupon = couponService.queryByIdFromCache(item.getCouponId());
-                batteryMemberCardVO.setCouponName(Objects.isNull(coupon)?"":coupon.getName());
+                batteryMemberCardVO.setCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
             }
 
             return batteryMemberCardVO;
