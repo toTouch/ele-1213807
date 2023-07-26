@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl.car;
 
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
@@ -173,18 +174,19 @@ public class CarRentalPackageMemberTermServiceImpl implements CarRentalPackageMe
 
         // 获取缓存
         String cacheKey = String.format(CarRenalCacheConstant.CAR_RENTAL_PACKAGE_MEMBER_TERM_TENANT_UID_KEY, tenantId, uid);
-        CarRentalPackageMemberTermPO cachePO = redisService.getWithHash(cacheKey, CarRentalPackageMemberTermPO.class);
-        if (ObjectUtils.isNotEmpty(cachePO)) {
-            return cachePO;
+        String cacheStr = redisService.get(cacheKey);
+        CarRentalPackageMemberTermPO cacheEntity = JSON.parseObject(cacheStr, CarRentalPackageMemberTermPO.class);
+        if (ObjectUtils.isNotEmpty(cacheEntity)) {
+            return cacheEntity;
         }
 
         // 获取 DB
-        CarRentalPackageMemberTermPO dbPO = carRentalPackageMemberTermMapper.selectByTenantIdAndUid(tenantId, uid);
-        if (ObjectUtils.isNotEmpty(dbPO)) {
-            redisService.saveWithHash(cacheKey, dbPO);
+        CarRentalPackageMemberTermPO dbEntity = carRentalPackageMemberTermMapper.selectByTenantIdAndUid(tenantId, uid);
+        if (ObjectUtils.isNotEmpty(dbEntity)) {
+            redisService.set(cacheKey, JSON.toJSONString(dbEntity));
         }
 
-        return dbPO;
+        return dbEntity;
     }
 
     /**
