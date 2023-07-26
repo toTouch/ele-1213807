@@ -1239,14 +1239,12 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                     return R.fail("300007", "请选择对应的押金缴纳方式");
                 }
                 depositPayOrderNo = depositPayEntity.getOrderNo();
+                deposit = BigDecimal.ZERO;
             }
 
             // 判定 depositPayInsertEntity 是否需要新增
             if (!ObjectUtils.isEmpty(depositPayInsertEntity)) {
                 carRentalPackageDepositPayService.insert(depositPayInsertEntity);
-                deposit = depositPayInsertEntity.getDeposit();
-            } else {
-                deposit = BigDecimal.ZERO;
             }
 
             // 2）保险处理 TODO 志龙接口
