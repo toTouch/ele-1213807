@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -45,10 +46,11 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
      * 套餐逾期订单-条件查询列表
      * @param offset 偏移量
      * @param size 取值数量
+     * @param rentalPackageType 套餐类型：1-单车、2-车电一体
      * @return 逾期订单集
      */
     @GetMapping("/page")
-    public R<List<CarRentalPackageOrderSlippageVO>> page(Integer offset, Integer size) {
+    public R<List<CarRentalPackageOrderSlippageVO>> page(Integer offset, Integer size, @RequestParam(required = false) Integer rentalPackageType) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -62,6 +64,7 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         qryModel.setUid(user.getUid());
         qryModel.setOffset(offset);
         qryModel.setSize(size);
+        qryModel.setRentalPackageType(rentalPackageType);
 
         // 调用服务
         List<CarRentalPackageOrderSlippagePO> carRentalPackageSlippageEntityList = carRentalPackageOrderSlippageService.page(qryModel);
@@ -109,10 +112,11 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
 
     /**
      * 套餐逾期订单-条件查询总数
+     * @param rentalPackageType 套餐类型：1-单车、2-车电一体
      * @return 总数
      */
     @GetMapping("/count")
-    public R<Integer> count() {
+    public R<Integer> count(@RequestParam(required = false) Integer rentalPackageType) {
         Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -123,7 +127,8 @@ public class JsonUserCarRenalPackageSlippageController extends BasicController {
         // 赋值租户、用户
         CarRentalPackageOrderSlippageQryModel qryModel = new CarRentalPackageOrderSlippageQryModel();
         qryModel.setTenantId(tenantId);
-        qryModel.setUid(user.getUid());;
+        qryModel.setUid(user.getUid());
+        qryModel.setRentalPackageType(rentalPackageType);
 
         // 调用服务
         return R.ok(carRentalPackageOrderSlippageService.count(qryModel));
