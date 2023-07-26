@@ -360,6 +360,7 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         // 按照优惠券是否可叠加分组
         Map<Integer, List<Coupon>> superpositionMap = couponList.stream().collect(Collectors.groupingBy(Coupon::getSuperposition));
         if (superpositionMap.size() == 2 || (superpositionMap.size() == 1 && superpositionMap.containsKey(Coupon.SUPERPOSITION_NO) && superpositionMap.get(Coupon.SUPERPOSITION_NO).size() > 1)) {
+            // TODO 错误编码
             throw new BizException("使用优惠券有误");
         }
 
@@ -369,7 +370,8 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         List<Long> userCouponIdList = userCoupons.stream().map(UserCoupon::getId).distinct().collect(Collectors.toList());
 
         // 计算总共减免金额
-        BigDecimal discountAmount = couponList.stream().map(coupon -> coupon.getAmount()).reduce(BigDecimal::add).get();
+        BigDecimal discountAmount = couponList.stream().map(coupon -> ObjectUtils.isEmpty(coupon.getAmount()) ? new BigDecimal(0) : coupon.getAmount())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         if (discountAmount.compareTo(amount) >= 0) {
             return Triple.of(BigDecimal.ZERO, userCouponIdList, true) ;
         }
