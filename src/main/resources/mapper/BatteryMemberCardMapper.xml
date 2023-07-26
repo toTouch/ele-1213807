@@ -42,7 +42,7 @@
         id, name
         from t_battery_member_card
         <where>
-            business_type=0,
+            business_type=0
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
@@ -79,7 +79,7 @@
         service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
         from t_battery_member_card
         <where>
-            business_type=0,
+            business_type=0
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
@@ -115,7 +115,7 @@
         status, limit_count, use_count, coupon_id, is_refund, refund_limit, free_deposite, service_charge, remark, business_type, del_flag, tenant_id, create_time, update_time
         from t_battery_member_card
         <where>
-            business_type=0,
+            business_type=0
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
@@ -166,7 +166,7 @@
         bmc.service_charge
         from t_battery_member_card bmc left join (select battery_v,mid from t_member_card_battery_type group by battery_v,mid ) mcbt on bmc.id=mcbt.mid
         <where>
-            bmc.business_type=0,
+            bmc.business_type=0
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>
@@ -203,7 +203,7 @@
         mcbt.battery_v
         from t_battery_member_card bmc left join t_member_card_battery_type mcbt on bmc.id=mcbt.mid
         <where>
-            bmc.business_type=0,
+            bmc.business_type=0
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>
@@ -236,7 +236,7 @@
         count(*)
         from t_battery_member_card
         <where>
-            business_type=0,
+            business_type=0
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
             </if>
