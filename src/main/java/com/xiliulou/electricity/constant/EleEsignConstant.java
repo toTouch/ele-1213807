@@ -41,4 +41,6 @@ public class EleEsignConstant {
 
     public static final String PSN_PHOTO_OSS_PATH = "saas/psnPhoto/";
 
+    public static final String NAME_NOT_MATCH_PHONE_MSG = "传入的指定签署人信息与实名信息不一致";
+
 }
