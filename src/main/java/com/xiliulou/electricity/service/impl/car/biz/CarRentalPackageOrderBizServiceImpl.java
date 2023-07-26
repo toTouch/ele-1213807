@@ -1170,6 +1170,10 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
                 }
             }
 
+            if (ObjectUtils.isEmpty(deposit)) {
+                deposit = buyPackageEntity.getDeposit();
+            }
+
             // 7.4 类型一致、归属一致，比对：型号（车或者车、电） + 押金
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
                 if (buyPackageEntity.getDeposit().compareTo(deposit) != 0) {
