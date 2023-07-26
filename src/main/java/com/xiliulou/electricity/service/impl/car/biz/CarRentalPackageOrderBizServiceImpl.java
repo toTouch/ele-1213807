@@ -1146,14 +1146,16 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
                 // 此处代表用户名下有租车套餐（单车或车电一体）
-                // 7.2 用户名下的套餐类型和即将购买的套餐类型不一致
-                if (!memberTermEntity.getRentalPackageType().equals(buyPackageEntity.getType())) {
-                    log.error("BuyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is {}", buyPackageEntity.getType(), memberTermEntity.getRentalPackageType());
-                    return R.fail("300005", "套餐不匹配");
+                if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+                    // 7.2 用户名下的套餐类型和即将购买的套餐类型不一致
+                    if (!memberTermEntity.getRentalPackageType().equals(buyPackageEntity.getType())) {
+                        log.error("BuyRentalPackageOrder failed. Package type mismatch. Buy package type is {}, user package type is {}", buyPackageEntity.getType(), memberTermEntity.getRentalPackageType());
+                        return R.fail("300005", "套餐不匹配");
+                    }
+                    userTenantId = memberTermEntity.getTenantId();
+                    userFranchiseeId = Long.valueOf(memberTermEntity.getFranchiseeId());
+                    userStoreId = Long.valueOf(memberTermEntity.getStoreId());
                 }
-                userTenantId = memberTermEntity.getTenantId();
-                userFranchiseeId = Long.valueOf(memberTermEntity.getFranchiseeId());
-                userStoreId = Long.valueOf(memberTermEntity.getStoreId());
             }
 
             // 7.3 用户归属和套餐归属不一致(租户、加盟商、门店)，拦截
@@ -1176,37 +1178,39 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
             // 7.4 类型一致、归属一致，比对：型号（车或者车、电） + 押金
             if (ObjectUtils.isNotEmpty(memberTermEntity)) {
-                if (buyPackageEntity.getDeposit().compareTo(deposit) != 0) {
-                    log.error("BuyRentalPackageOrder failed. Package deposit mismatch. ");
-                    return R.fail("300005", "套餐不匹配");
-                }
-                // 比对型号
-                String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
-                CarRentalPackageOrderPO oriPackageOrderEntity = null;
-                if (StringUtils.isNotBlank(rentalPackageOrderNo)) {
-                    // 未退租
-                    // 根据套餐购买订单编号，获取套餐购买订单表，读取其中的套餐快照信息
-                    oriPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
-
-                } else{
-                    // 退租未退押
-                    // 查找最后一个购买的订单信息
-                    oriPackageOrderEntity = carRentalPackageOrderService.seletLastByUid(tenantId, uid);
-                }
-
-                // 比对车辆型号
-                CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriPackageOrderEntity.getRentalPackageId());
-                if (!oriCarRentalPackageEntity.getCarModelId().equals(buyPackageEntity.getCarModelId())) {
-                    log.error("BuyRentalPackageOrder failed. Package carModelId mismatch. ");
-                    return R.fail("300005", "套餐不匹配");
-                }
-                // 车电一体，比对电池型号
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
-                    List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
-                    List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
-                    if (!buyBatteryList.containsAll(oriBatteryList)) {
-                        log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
+                if (!MemberTermStatusEnum.PENDING_EFFECTIVE.getCode().equals(memberTermEntity.getStatus())) {
+                    if (buyPackageEntity.getDeposit().compareTo(deposit) != 0) {
+                        log.error("BuyRentalPackageOrder failed. Package deposit mismatch. ");
                         return R.fail("300005", "套餐不匹配");
+                    }
+                    // 比对型号
+                    String rentalPackageOrderNo = memberTermEntity.getRentalPackageOrderNo();
+                    CarRentalPackageOrderPO oriPackageOrderEntity = null;
+                    if (StringUtils.isNotBlank(rentalPackageOrderNo)) {
+                        // 未退租
+                        // 根据套餐购买订单编号，获取套餐购买订单表，读取其中的套餐快照信息
+                        oriPackageOrderEntity = carRentalPackageOrderService.selectByOrderNo(rentalPackageOrderNo);
+
+                    } else{
+                        // 退租未退押
+                        // 查找最后一个购买的订单信息
+                        oriPackageOrderEntity = carRentalPackageOrderService.seletLastByUid(tenantId, uid);
+                    }
+
+                    // 比对车辆型号
+                    CarRentalPackagePO oriCarRentalPackageEntity = carRentalPackageService.selectById(oriPackageOrderEntity.getRentalPackageId());
+                    if (!oriCarRentalPackageEntity.getCarModelId().equals(buyPackageEntity.getCarModelId())) {
+                        log.error("BuyRentalPackageOrder failed. Package carModelId mismatch. ");
+                        return R.fail("300005", "套餐不匹配");
+                    }
+                    // 车电一体，比对电池型号
+                    if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(oriCarRentalPackageEntity.getType())) {
+                        List<String> oriBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(oriCarRentalPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
+                        List<String> buyBatteryList = carRentalPackageCarBatteryRelService.selectByRentalPackageId(buyPackageEntity.getId()).stream().map(CarRentalPackageCarBatteryRelPO::getBatteryModelType).collect(Collectors.toList());
+                        if (!buyBatteryList.containsAll(oriBatteryList)) {
+                            log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
+                            return R.fail("300005", "套餐不匹配");
+                        }
                     }
                 }
             }
