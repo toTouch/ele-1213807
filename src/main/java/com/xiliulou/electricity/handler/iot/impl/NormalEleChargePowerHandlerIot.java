@@ -19,6 +19,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
@@ -73,7 +75,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         Double unitPrice = 0.0;
         Integer chargeConfigType = EleChargeConfig.TYPE_NONE;
 
-        EleChargeConfig eleChargeConfig = eleChargeConfigService.queryConfigByCabinetWithLayer(electricityCabinet,store.getFranchiseeId());
+        EleChargeConfig eleChargeConfig = eleChargeConfigService.queryConfigByCabinetWithLayer(electricityCabinet, store.getFranchiseeId());
         if (Objects.nonNull(eleChargeConfig)) {
             EleChargeConfigCalcDetailDto dto = eleChargeConfigService.acquireConfigTypeAndUnitPriceAccrodingTime(eleChargeConfig, cabinetPowerReport.getCreateTime());
             if (Objects.nonNull(dto)) {
@@ -94,7 +96,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setType(chargeConfigType);
         power.setSumPower(cabinetPowerReport.getSumConsumption());
         power.setHourPower(cabinetPowerReport.getPowerConsumption());
-        power.setElectricCharge(unitPrice);
+        power.setElectricCharge(BigDecimal.valueOf(unitPrice).multiply(BigDecimal.valueOf(power.getHourPower())).setScale(2, RoundingMode.HALF_UP).doubleValue());
         elePowerService.insertOrUpdate(power);
 
 
