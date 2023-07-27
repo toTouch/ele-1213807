@@ -115,6 +115,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     @Transactional(rollbackFor = Exception.class)
     public EleChargeConfig insert(EleChargeConfig eleChargeConfig) {
         this.eleChargeConfigMapper.insertOne(eleChargeConfig);
+        delConfigCache(eleChargeConfig);
         return eleChargeConfig;
     }
 
@@ -142,7 +143,6 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             case EleChargeConfig.TYPE_ALL_STORE:
                 redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_STORE, originalConfig.getFranchiseeId()));
                 redisService.delete(generateNoneCacheKey(EleChargeConfig.TYPE_ALL_STORE, originalConfig.getFranchiseeId()));
-
                 break;
             case EleChargeConfig.TYPE_ALL_CABINET:
                 redisService.delete(generateCacheKey(EleChargeConfig.TYPE_ALL_CABINET, originalConfig.getStoreId()));
