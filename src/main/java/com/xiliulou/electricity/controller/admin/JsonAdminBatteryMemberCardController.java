@@ -283,14 +283,19 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
         return R.ok(batteryMemberCardService.selectListByQuery(query));
     }
 
+    /**
+     * 获取可续费套餐列表 （押金、电池型号相同）
+     */
     @GetMapping("/admin/battery/memberCardByUid")
     public R userBatteryMembercardList(@RequestParam("size") long size, @RequestParam("offset") long offset,
                                        @RequestParam("uid") long uid) {
         BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
                 .size(size)
                 .offset(offset)
-                .tenantId(TenantContextHolder.getTenantId())
+                .uid(uid)
+                .status(BatteryMemberCard.STATUS_UP)
                 .delFlag(BatteryMemberCard.DEL_NORMAL)
+                .tenantId(TenantContextHolder.getTenantId())
                 .build();
         return R.ok(batteryMemberCardService.selectUserBatteryMembercardList(query));
     }
