@@ -3294,6 +3294,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (!Objects.equals(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
             return Triple.of(false, "100247", "用户套餐状态异常，不允许操作");
         }
+
+        BatteryMemberCard userBindbatteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if(Objects.isNull(userBindbatteryMemberCard)){
+            return Triple.of(false, "ELECTRICITY.00121", "用户电池套餐不存在");
+        }
 //TODO
 //        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
 //        if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
@@ -3322,13 +3327,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         this.insert(memberCardOrder);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
-        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || userBatteryMemberCard.getRemainingNumber() <= 0) {
-
+        if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setMemberCardId(batteryMemberCard.getId());
             userBatteryMemberCardUpdate.setOrderId(memberCardOrder.getOrderId());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
-            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
+            userBatteryMemberCardUpdate.setOrderExpireTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
             userBatteryMemberCardUpdate.setOrderEffectiveTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setOrderRemainingNumber(memberCardOrder.getMaxUseCount());
             userBatteryMemberCardUpdate.setRemainingNumber(memberCardOrder.getMaxUseCount());
@@ -3340,23 +3344,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
             userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
-        }else{
-            UserBatteryMemberCardPackage userBatteryMemberCardPackage=new UserBatteryMemberCardPackage();
+        } else {
+            UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
             userBatteryMemberCardPackage.setUid(userInfo.getUid());
             userBatteryMemberCardPackage.setMemberCardId(memberCardOrder.getMemberCardId());
             userBatteryMemberCardPackage.setOrderId(memberCardOrder.getOrderId());
             userBatteryMemberCardPackage.setRemainingNumber(batteryMemberCard.getUseCount());
-            userBatteryMemberCardPackage.setMemberCardExpireTime(batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
+            userBatteryMemberCardPackage.setMemberCardExpireTime(batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
             userBatteryMemberCardPackage.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardPackage.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardPackage.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardPackageService.insert(userBatteryMemberCardPackage);
 
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
-            userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
-            userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()+memberCardOrder.getMaxUseCount());
+            userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard, memberCardOrder));
+            userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + memberCardOrder.getMaxUseCount());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
         }
 
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();

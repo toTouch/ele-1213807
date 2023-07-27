@@ -43,8 +43,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn);
     
     ElectricityBattery queryPartAttrBySnFromCache(String sn);
-    
-    
+
     ElectricityBattery queryBySnFromDb(String oldElectricityBatterySn, Integer tenantId);
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
@@ -52,8 +51,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);
 
     R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
-
-    void handlerBatteryNotInCabinetWarning();
 
     R batteryOutTimeInfo(Long uid);
 
@@ -64,7 +61,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void insert(ElectricityBattery electricityBattery);
 
     Triple<Boolean, String, Object> queryInfoByUid(Long uid, Integer isNeedLocation);
-
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
     
@@ -81,8 +77,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery);
 
     R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery);
-
-    R bindFranchisee(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
     R bindFranchiseeForBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
