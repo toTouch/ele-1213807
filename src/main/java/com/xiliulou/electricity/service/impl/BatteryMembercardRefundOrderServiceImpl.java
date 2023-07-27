@@ -250,7 +250,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
 
             Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
-            if (Boolean.FALSE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
+            if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
                 return Triple.of(false, "100220", "用户存在电池服务费");
             }
@@ -260,6 +260,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100284", "未归还电池");
             }
 
+            BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
+            if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), user.getUid());
+                return Triple.of(false, "100294", "退租金额不合法");
+            }
+
             BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
             batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
@@ -267,7 +273,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
-            batteryMembercardRefundOrderInsert.setRefundAmount(calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
+            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
             batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
             batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
             batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());

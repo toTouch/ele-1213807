@@ -1938,7 +1938,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(userBatteryMemberCard)) {
             return;
         }
-        
+
         vo.setMemberCardId(userBatteryMemberCard.getMemberCardId());
         vo.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
         vo.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
@@ -1946,8 +1946,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         vo.setUserBatteryServiceFee(serviceFeeUserInfoService.queryUserBatteryServiceFee(userInfo));
 
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
-        vo.setCardName(Objects.isNull(batteryMemberCard)?"":batteryMemberCard.getName());
-        vo.setLimitCount(Objects.isNull(batteryMemberCard)?null:batteryMemberCard.getLimitCount());
+        vo.setCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
+        vo.setLimitCount(Objects.isNull(batteryMemberCard) ? null : batteryMemberCard.getLimitCount());
+
+        ElectricityMemberCardOrder userMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        if (Objects.nonNull(batteryMemberCard)&&Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES) && Objects.nonNull(userMemberCardOrder)) {
+            vo.setEditUserMembercard(System.currentTimeMillis() < (userMemberCardOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L));
+        }
 
         //开始时间
         if (!Objects.equals(userBatteryMemberCard.getMemberCardId(), UserBatteryMemberCard.SEND_REMAINING_NUMBER)) {

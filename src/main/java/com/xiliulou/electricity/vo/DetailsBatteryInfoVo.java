@@ -117,4 +117,6 @@ public class DetailsBatteryInfoVo {
      * 用户绑定的电池型号
      */
     private List<String> batteryModels;
+
+    private Boolean editUserMembercard = Boolean.TRUE;
 }
