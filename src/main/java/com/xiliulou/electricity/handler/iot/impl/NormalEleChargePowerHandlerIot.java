@@ -96,6 +96,7 @@ public class NormalEleChargePowerHandlerIot extends AbstractElectricityIotHandle
         power.setType(chargeConfigType);
         power.setSumPower(cabinetPowerReport.getSumConsumption());
         power.setHourPower(cabinetPowerReport.getPowerConsumption());
+        power.setUnitPrice(unitPrice);
         power.setElectricCharge(BigDecimal.valueOf(unitPrice).multiply(BigDecimal.valueOf(power.getHourPower())).setScale(2, RoundingMode.HALF_UP).doubleValue());
         elePowerService.insertOrUpdate(power);
 
