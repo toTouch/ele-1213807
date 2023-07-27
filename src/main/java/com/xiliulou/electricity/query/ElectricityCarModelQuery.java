@@ -71,6 +71,11 @@ public class ElectricityCarModelQuery {
      */
     private String otherProperties;
 
+    /**
+     * 已租数量
+     */
+    private Integer rentedQuantity;
+
 
     private Integer delFlag;
 
