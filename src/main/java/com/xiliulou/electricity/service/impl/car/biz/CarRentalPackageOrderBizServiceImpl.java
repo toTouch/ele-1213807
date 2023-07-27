@@ -55,6 +55,9 @@ import java.util.stream.Collectors;
 public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrderBizService {
 
     @Resource
+    private FranchiseeService franchiseeService;
+
+    @Resource
     private InsuranceOrderService insuranceOrderService;
 
     @Resource
@@ -1230,6 +1233,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             Boolean buyInsuranceFlag = insuranceUserInfoService.verifyUserIsNeedBuyInsurance(userInfo, buyPackageEntity.getType(), buyPackageEntity.getBatteryVoltage(), Long.valueOf(buyPackageEntity.getCarModelId()));
             if (buyInsuranceFlag) {
                 if (ObjectUtils.isEmpty(buyInsuranceId)) {
+                    log.error("BuyRentalPackageOrder failed. Please purchase insurance. ");
                     return R.fail("300024", "请购买保险");
                 }
             }
@@ -1237,19 +1241,31 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             if (ObjectUtils.isNotEmpty(buyInsuranceId)) {
                 buyInsurance = franchiseeInsuranceService.queryByIdFromCache(buyInsuranceId.intValue());
                 if (ObjectUtils.isEmpty(buyInsurance)) {
+                    log.error("BuyRentalPackageOrder failed. not found franchisee_insurance. insuranceId is {}", buyInsuranceId);
                     return R.fail("300025", "保险不存在");
                 }
 
                 if (FranchiseeInsurance.STATUS_UN_USABLE.equals(buyInsurance.getStatus())) {
+                    log.error("BuyRentalPackageOrder failed. Insurance disabled. insuranceId is {}", buyInsuranceId);
                     return R.fail("300026", "保险已被禁用");
                 }
 
                 if (!Long.valueOf(buyPackageEntity.getCarModelId()).equals(buyInsurance.getCarModelId())) {
+                    log.error("BuyRentalPackageOrder failed. Insurance and package do not match. Insurance's carModelId is {}, package's carModelId is {}", buyInsurance.getCarModelId(), buyPackageEntity.getCarModelId());
                     return R.fail("300027", "保险与套餐不匹配");
                 }
 
-                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType()) && !buyPackageEntity.getBatteryVoltage().equals(buyInsurance.getSimpleBatteryType())) {
-                    return R.fail("300027", "保险与套餐不匹配");
+                if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(buyPackageEntity.getType())) {
+                    // 恶心的逻辑判断，加盟商，存在多型号电池和单型号电池，若单型号电池，则电池型号为空
+                    Franchisee franchisee = franchiseeService.queryByIdFromCache(userFranchiseeId);
+                    if (ObjectUtils.isEmpty(franchisee)) {
+                        log.error("BuyRentalPackageOrder failed. not found franchisee. franchiseeId is {}", userFranchiseeId);
+                        return R.fail("300000", "数据有误");
+                    }
+                    if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType()) && !buyPackageEntity.getBatteryVoltage().equals(buyInsurance.getSimpleBatteryType())) {
+                        log.error("BuyRentalPackageOrder failed. Package battery mismatch. ");
+                        return R.fail("300027", "保险与套餐不匹配");
+                    }
                 }
             }
 
