@@ -23,10 +23,6 @@ public class ElectricityIotConstant {
      * 电池变化
      */
     public static final String NORMAL_ELE_BATTERY_CHANGE_HANDLER = "normalEleBatteryChangeHandler";
-    /**
-     * 邮箱上报告警
-     */
-    public static final String NORMAL_ELE_EMAIL_WARN_MSG_HANDLER = "normalEleEmailWarnMsgHandler";
     public static final String NORMAL_ELE_CELL_HANDLER = "normalEleCellHandler";
     public static final String NORMAL_ELE_EXCHANGE_HANDLER = "normalEleExchangeHandler";
     public static final String NORMAL_ELE_OPERATE_HANDLER = "normalEleOperateHandler";
@@ -36,11 +32,9 @@ public class ElectricityIotConstant {
     public static final String NORMAL_OFFLINE_ELE_EXCHANGE_HANDLER = "normalOffLineEleExchangeHandler";
     public static final String NORMAL_OTHER_CONFIG_HANDLER = "normalOtherConfigHandler";
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
-    public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
-    public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
     public static final String NORMAL_HIGH_TEMPERATURE_ALARM_HANDLER = "highTemperatureAlarmHandler";
 
     /**
@@ -68,6 +62,8 @@ public class ElectricityIotConstant {
 
 
     public static final String NORMAL_ELE_CHARGE_POWER_HANDLER = "normalEleChargePowerHandler";
+
+    public static final String NEW_HARDWARE_WARN_MSG_HANDLER = "hardwareWarnMsgHandler";
 
 
     public static String acquireChargeHandlerName(String command) {
@@ -120,7 +116,6 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_OTHER_CONFIG)
                 || Objects.equals(command, ELE_COMMAND_BATTERY_SYNC_INFO)
                 || Objects.equals(command, ELE_COMMAND_CUPBOARD_RESTART)
-                || Objects.equals(command, ELE_COMMAND_WARN_MSG_RSP)
                 || Objects.equals(command, ELE_COMMAND_UNLOCK_CABINET)
                 || Objects.equals(command, ELE_COMMAND_OTHER_CONFIG_READ)
                 || Objects.equals(command, ELE_COMMAND_OTHER_CONFIG_RSP)
@@ -148,8 +143,6 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
                 || Objects.equals(command, OTA_OPERATE)
                 || Objects.equals(command, OTA_OPERATE_RSP)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
                 || Objects.equals(command, RESTART_APP)
                 || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY)
                 || Objects.equals(command, ELE_BATTERY_MULTI_PARAM_SETTING)
@@ -267,7 +260,6 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_CUPBOARD_RESTART = "cupboard_restart";
 
     //上报异常
-    public static final String ELE_COMMAND_WARN_MSG_RSP = "warn_msg_rsp";
 
     //解锁换电柜
     public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
@@ -360,18 +352,7 @@ public class ElectricityIotConstant {
 
     public static final String OTA_OPERATE_RSP = "ota_operate_rsp";
 
-    /**
-     * sim上报
-     */
-    public static final String SIM_TRAFFIC_STATISTICS = "iccid_traffic_statistics";
-    public static final String SIM_TRAFFIC_STATISTICS_RSP = "sim_card_statistics_rsp";
-
     public static final String RESTART_APP = "restart_app";
-    /**
-     * 邮箱上报告警
-     */
-    public static final String ELE_EMAIL_WARN_MSG = "email_warn_msg";
-
     /**
      * 重新开启App循环检测
      */
@@ -425,6 +406,13 @@ public class ElectricityIotConstant {
     public static final String FULL_BATTERY_WARNING = "full_battery_warning";
 
 
+    /**
+     * 新硬件上报
+     */
+    public static final String NEW_HARDWARE_WARN_MSG = "hardware_warn_msg";
+    public static final String NEW_HARDWARE_WARN_MSG_ACK = "hardware_warn_msg_ack";
+
+
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, NORMAL_ELE_OPERATE_HANDLER);
@@ -454,7 +442,6 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, NORMAL_POWER_CONSUMPTION_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, NORMAL_POWER_CONSUMPTION_HANDLER);
-        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_WARN_MSG_RSP, NORMAL_WARN_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, NORMAL_OTHER_CONFIG_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_OTHER_SETTING, NORMAL_OTHER_CONFIG_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_OTHER_CONFIG_RSP_V2, NORMAL_OTHER_CONFIG_HANDLER);
@@ -520,15 +507,6 @@ public class ElectricityIotConstant {
          * 物理记录操作回调
          */
         COMMAND_HANDLER_MAPS.put(CUPBOARD_OPERATING_RECORD, NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER);
-        /**
-         * 流量上报
-         */
-        COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
-        COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS_RSP, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
-        /**
-         * 柜机上报告警发邮件
-         */
-        COMMAND_HANDLER_MAPS.put(ELE_EMAIL_WARN_MSG, NORMAL_ELE_EMAIL_WARN_MSG_HANDLER);
 
         /**
          * ota升级
@@ -561,5 +539,11 @@ public class ElectricityIotConstant {
          * 满仓提醒
          */
         COMMAND_HANDLER_MAPS.put(FULL_BATTERY_WARNING, FULL_BATTERY_WARNING_HANDLER);
+
+        /**
+         * 新警告故障通知
+         */
+
+        COMMAND_HANDLER_MAPS.put(NEW_HARDWARE_WARN_MSG, NEW_HARDWARE_WARN_MSG_HANDLER);
     }
 }
