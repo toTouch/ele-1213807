@@ -863,69 +863,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
     }
 
-    @Override
-    public void handlerBatteryNotInCabinetWarning() {
-
-        //        Integer offset = 0;
-        //        Integer size = 300;
-        //        while (true) {
-        //            List<BorrowExpireBatteryVo> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
-        //            if (CollectionUtils.isEmpty(borrowExpireBatteryList)) {
-        //                return;
-        //            }
-        //            //将电池按租户id分组
-        //            Map<Integer, List<BorrowExpireBatteryVo>> batteryMaps = borrowExpireBatteryList.stream().collect(Collectors.groupingBy(BorrowExpireBatteryVo::getTenantId));
-        //            //频率
-        //            Long frequency = Long.parseLong(wechatTemplateNotificationConfig.getBatteryTimeoutFrequency()) * 60000;
-        //
-        //            batteryMaps.entrySet().parallelStream().forEach(entry -> {
-        //                Integer tenantId = entry.getKey();
-        //                List<BorrowExpireBatteryVo> batteryList = entry.getValue();
-        //
-        //                boolean isOutTime = redisService.setNx(CacheConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
-        //                if (!isOutTime) {
-        //                    return;
-        //                }
-        //
-        //                WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
-        //                if (Objects.isNull(wechatTemplateAdminNotification)) {
-        //                    log.error("WECHAT_TEMPLATE_ADMIN_NOTIFICATION IS NULL ERROR! tenantId={}", tenantId);
-        //                    return;
-        //                }
-        //
-        //                BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
-        //                QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
-        //                wrapper.eq("tenant_id", tenantId);
-        //                ElectricityPayParams ele = mapper.selectOne(wrapper);
-        //
-        //                if (Objects.isNull(ele)) {
-        //                    log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
-        //                    return;
-        //                }
-        //
-        //                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
-        //
-        //                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
-        //                    log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
-        //                    return;
-        //                }
-        //
-        //                String openStr = wechatTemplateAdminNotification.getOpenIds();
-        //                List<String> openIds = JSON.parseArray(openStr, String.class);
-        //                AppTemplateQuery appTemplateQuery = createAppTemplateQuery(batteryList, tenantId, ele.getMerchantMinProAppId(), ele.getMerchantMinProAppSecert(), templateConfigEntity.getBatteryOuttimeTemplate());
-        //
-        //                if (CollectionUtils.isNotEmpty(openIds)) {
-        //                    for (String openId : openIds) {
-        //                        appTemplateQuery.setTouser(openId);
-        //                        appTemplateQuery.setFormId(RandomUtil.randomString(20));
-        //                        weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
-        //                    }
-        //                }
-        //            });
-        //            offset += size;
-        //        }
-    }
-
     @Slave
     @Override
     public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(
@@ -988,33 +925,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public R batteryStatistical(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.batteryStatistical(electricityBatteryQuery));
-    }
-
-    /**
-     * 电池绑定/解绑加盟商
-     *
-     * @param batteryQuery
-     * @return
-     */
-
-    @Deprecated
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public R bindFranchisee(BindElectricityBatteryQuery batteryQuery) {
-        //先解绑电池加盟商
-        ElectricityBattery updateBattery = new ElectricityBattery();
-        updateBattery.setFranchiseeId(null);
-        updateBattery.setTenantId(TenantContextHolder.getTenantId());
-        updateBattery.setUpdateTime(System.currentTimeMillis());
-        electricitybatterymapper.unbindFranchiseeId(batteryQuery.getFranchiseeId(), updateBattery);
-
-        //再绑定加盟商
-        if (CollectionUtils.isEmpty(batteryQuery.getElectricityBatteryIdList())) {
-            return R.ok();
-        }
-
-        electricitybatterymapper.bindFranchiseeId(batteryQuery);
-        return R.ok();
     }
 
     @Override
