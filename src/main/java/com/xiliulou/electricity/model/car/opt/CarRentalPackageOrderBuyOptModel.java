@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.model.car.opt;
 
+import com.xiliulou.electricity.enums.PayTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -59,5 +60,15 @@ public class CarRentalPackageOrderBuyOptModel implements Serializable {
      * @see com.xiliulou.electricity.enums.YesNoEnum
      */
     private Integer depositType;
+
+    /**
+     * 交易方式
+     * <pre>
+     *     1-线上
+     *     2-线下
+     * </pre>
+     * @see PayTypeEnum
+     */
+    private Integer payType;
 
 }
