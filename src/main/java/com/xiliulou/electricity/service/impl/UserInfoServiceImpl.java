@@ -171,6 +171,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
 
+    @Autowired
+    UserBatteryMemberCardPackageService userBatteryMemberCardPackageService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -303,6 +306,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardName(Objects.nonNull(batteryMemberCard)?batteryMemberCard.getName():"");
 
                 }
+
+                userBatteryMemberCardPackageService.batteryMembercardTransform(item.getUid());
             });
         }, threadPool).exceptionally(e -> {
             log.error("The member list ERROR! query memberCard error!", e);
@@ -987,6 +992,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryMemberCardPayAmount = CompletableFuture.runAsync(() -> {
             BigDecimal pay = electricityMemberCardOrderService.queryTurnOver(tenantId, id);
             userTurnoverVo.setMemberCardTurnover(pay);
+
+            userBatteryMemberCardPackageService.batteryMembercardTransform(id);
         }, threadPool).exceptionally(e -> {
             log.error("MEMBER CARD ORDER ERROR! query turn over error", e);
             return null;
