@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.car.CarRentalPackageOrderPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
+import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.model.car.opt.CarRentalPackageOrderBuyOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageOrderQryModel;
@@ -319,6 +320,7 @@ public class JsonUserCarRenalPackageOrderController extends BasicController {
         // 从上下文中重新赋值参数
         buyOptModel.setTenantId(tenantId);
         buyOptModel.setUid(user.getUid());
+        buyOptModel.setPayType(PayTypeEnum.ON_LINE.getCode());
 
         return carRentalPackageOrderBizService.buyRentalPackageOrder(buyOptModel, request);
     }
