@@ -3226,8 +3226,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 userBatteryMemberCardUpdate.setRemainingNumber(query.getUseCount());
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             }else{
-                userBatteryMemberCardUpdate.setOrderRemainingNumber(userBatteryMemberCard.getOrderRemainingNumber() + query.getUseCount());
-                userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + query.getUseCount());
+                userBatteryMemberCardUpdate.setOrderRemainingNumber(query.getUseCount());
+                userBatteryMemberCardUpdate.setRemainingNumber(query.getUseCount());
                 userBatteryMemberCardUpdate.setMemberCardExpireTime(Objects.isNull(query.getValidDays()) ? query.getMemberCardExpireTime() : userBatteryMemberCard.getMemberCardExpireTime() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,query.getValidDays()));
             }
         }
