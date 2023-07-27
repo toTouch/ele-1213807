@@ -366,6 +366,9 @@
         <if test="name != null and '' != name">
             and name like concat('%',#{name,jdbcType=VARCHAR},'%')
         </if>
+        <if test="storeId != null">
+            and store_id = #{storeId}
+        </if>
         order by id
         limit #{offset}, #{size}
     </select>

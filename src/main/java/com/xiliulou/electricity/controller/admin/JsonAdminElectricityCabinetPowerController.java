@@ -38,6 +38,7 @@ public class JsonAdminElectricityCabinetPowerController {
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetPower/list")
+    @Deprecated
     public R queryList(@RequestParam("size") Long size,
         @RequestParam("offset") Long offset,
         @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
@@ -70,6 +71,7 @@ public class JsonAdminElectricityCabinetPowerController {
 
     //换电柜电量导出报表
     @GetMapping("/admin/electricityCabinetPower/exportExcel")
+    @Deprecated
     public void exportExcel(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
         @RequestParam(value = "beginTime", required = false) Long beginTime,

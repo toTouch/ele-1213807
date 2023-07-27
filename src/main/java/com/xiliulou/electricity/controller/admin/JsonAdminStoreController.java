@@ -81,30 +81,31 @@ public class JsonAdminStoreController extends BaseController {
 
     /**
      * 根据角色获取租户下门店列表
+     *
      * @return
      */
     @GetMapping(value = "/admin/store/selectListQuery")
-    public R selectList(){
+    public R selectList() {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        StoreQuery storeQuery=new StoreQuery();
-        
-        List<Long> franchiseeIds=null;
+        StoreQuery storeQuery = new StoreQuery();
+
+        List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            franchiseeIds=userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
-        List<Long> storeIds=null;
+
+        List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
-            storeIds=userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -145,15 +146,15 @@ public class JsonAdminStoreController extends BaseController {
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(ids)){
+            if (CollectionUtils.isEmpty(ids)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         List<Long> franchiseeIds = null;
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)){
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -190,19 +191,19 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(ids)){
+            if (CollectionUtils.isEmpty(ids)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         List<Long> franchiseeIds = null;
-        if(Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)){
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
@@ -244,23 +245,23 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        
+
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         StoreQuery storeQuery = StoreQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -289,23 +290,23 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         List<Long> storeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIds)){
+            if (CollectionUtils.isEmpty(storeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         List<Long> franchiseeIds = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+
         StoreQuery storeQuery = StoreQuery.builder()
                 .name(name)
                 .beginTime(beginTime)
@@ -331,7 +332,7 @@ public class JsonAdminStoreController extends BaseController {
     @GetMapping("/admin/store/getAccountList")
     public R getAccountList(@RequestParam("size") Long size,
                             @RequestParam("offset") Long offset,
-                            @RequestParam(value ="userName", required = false) String storeName,
+                            @RequestParam(value = "userName", required = false) String storeName,
                             @RequestParam(value = "storeId", required = false) Long storeId,
                             @RequestParam(value = "startTime", required = false) Long startTime,
                             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -352,28 +353,28 @@ public class JsonAdminStoreController extends BaseController {
         List<Long> storeIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIdList)){
+            if (CollectionUtils.isEmpty(storeIdList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-        
+
             List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
             if (CollectionUtils.isEmpty(storeList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-    
+
             storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(storeIdList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-        
+
 
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
                 .offset(offset)
@@ -393,7 +394,7 @@ public class JsonAdminStoreController extends BaseController {
      */
     @GetMapping("/admin/store/getAccountCount")
     public R getAccountCount(@RequestParam(value = "storeId", required = false) Long storeId,
-                             @RequestParam(value ="userName", required = false) String storeName,
+                             @RequestParam(value = "userName", required = false) String storeName,
                              @RequestParam(value = "startTime", required = false) Long startTime,
                              @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -402,26 +403,26 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-    
+
         List<Long> storeIdList = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
             storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(storeIdList)){
+            if (CollectionUtils.isEmpty(storeIdList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
         }
-    
+
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-            if(CollectionUtils.isEmpty(franchiseeIds)){
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-        
+
             List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
             if (CollectionUtils.isEmpty(storeList)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
-        
+
             storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(storeIdList)) {
                 return R.ok(Collections.EMPTY_LIST);
@@ -442,7 +443,7 @@ public class JsonAdminStoreController extends BaseController {
     @GetMapping("/admin/store/getAccountHistoryList")
     public R getAccountHistoryList(@RequestParam("size") Long size,
                                    @RequestParam("offset") Long offset,
-                                   @RequestParam(value ="orderId", required = false) String orderId,
+                                   @RequestParam(value = "orderId", required = false) String orderId,
                                    @RequestParam(value = "storeId", required = false) Long storeId,
                                    @RequestParam(value = "startTime", required = false) Long startTime,
                                    @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -468,7 +469,7 @@ public class JsonAdminStoreController extends BaseController {
 
     @GetMapping("/admin/store/getAccountHistoryCount")
     public R getAccountHistoryCount(
-            @RequestParam(value ="orderId", required = false) String orderId,
+            @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "storeId", required = false) Long storeId,
             @RequestParam(value = "startTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
@@ -494,20 +495,22 @@ public class JsonAdminStoreController extends BaseController {
 
         return storeAmountService.modifyBalance(storeId, modifyBalance);
     }
-    
-    
+
+
     //搜索search
     @GetMapping("/admin/store/search")
     public R storeSearch(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam(value = "name", required = false) String name) {
+                         @RequestParam(value = "name", required = false) String name,
+                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 20) {
             size = 20L;
         }
-        
+
         if (offset < 0) {
             offset = 0L;
         }
-        
-        return storeService.storeSearch(size, offset, name, TenantContextHolder.getTenantId());
+
+        return storeService.storeSearch(size, offset, name, franchiseeId,TenantContextHolder.getTenantId());
     }
+
 }

@@ -23,6 +23,7 @@ import java.util.Objects;
 
 @Service(value= ElectricityIotConstant.NORMAL_POWER_CONSUMPTION_HANDLER)
 @Slf4j
+@Deprecated
 public class NormalPowerConsumptionHandlerIot extends AbstractElectricityIotHandler {
 	@Autowired
 	RedisService redisService;

@@ -4,11 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.mysql.cj.x.protobuf.MysqlxExpr;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
@@ -19,7 +17,6 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
-import com.xiliulou.electricity.vo.PictureVO;
 import com.xiliulou.electricity.vo.SearchVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -689,8 +686,8 @@ public class StoreServiceImpl implements StoreService {
     }
     
     @Override
-    public R storeSearch(Long size, Long offset, String name , Integer tenantId) {
-        List<SearchVo> voList = storeMapper.storeSearch(size, offset, name , tenantId);
+    public R storeSearch(Long size, Long offset, String name , Long franchiseeId, Integer tenantId) {
+        List<SearchVo> voList = storeMapper.storeSearch(size, offset, name , tenantId,franchiseeId);
         return R.ok(voList);
     }
     

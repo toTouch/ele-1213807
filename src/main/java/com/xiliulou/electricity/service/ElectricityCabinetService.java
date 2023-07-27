@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.EleChargeConfigCalcDetailDto;
+import com.xiliulou.electricity.entity.EleChargeConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.Message;
@@ -219,4 +221,6 @@ public interface ElectricityCabinetService {
     Triple<Boolean, String, Object> physicsDelete(ElectricityCabinet electricityCabinet);
 
     void exportExcel(ElectricityCabinetQuery query, HttpServletResponse response);
+
+
 }

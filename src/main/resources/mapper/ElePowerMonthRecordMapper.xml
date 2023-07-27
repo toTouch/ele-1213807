@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElePowerMonthRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ElePowerMonthRecord" id="ElePowerMonthRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="eName" column="e_name" jdbcType="VARCHAR"/>
+        <result property="eid" column="eid" jdbcType="INTEGER"/>
+        <result property="storeId" column="store_id" jdbcType="INTEGER"/>
+        <result property="storeName" column="store_name" jdbcType="VARCHAR"/>
+        <result property="franchiseeId" column="franchisee_id" jdbcType="INTEGER"/>
+        <result property="franchiseeName" column="franchisee_name" jdbcType="VARCHAR"/>
+        <result property="monthStartPower" column="month_start_power" jdbcType="NUMERIC"/>
+        <result property="monthEndPower" column="month_end_power" jdbcType="NUMERIC"/>
+        <result property="monthSumPower" column="month_sum_power" jdbcType="NUMERIC"/>
+        <result property="monthSumCharge" column="month_sum_charge" jdbcType="NUMERIC"/>
+        <result property="jsonCharge" column="json_charge" jdbcType="VARCHAR"/>
+        <result property="date" column="date" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ElePowerMonthRecordMap">
+        select
+          id, sn, e_name, eid, store_id, store_name, franchisee_id, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge, json_charge, date, tenant_id, create_time
+        from t_ele_power_month_record
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ElePowerMonthRecordMap">
+        select
+          id, sn, e_name, eid, store_id, store_name, franchisee_id, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge, json_charge, date, tenant_id, create_time
+        from t_ele_power_month_record
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ElePowerMonthRecordMap">
+        select
+          id, sn, e_name, eid, store_id, store_name, franchisee_id, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge, json_charge, date, tenant_id, create_time
+        from t_ele_power_month_record
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="eName != null and eName != ''">
+                and e_name = #{eName}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="storeName != null and storeName != ''">
+                and store_name = #{storeName}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="franchiseeName != null and franchiseeName != ''">
+                and franchisee_name = #{franchiseeName}
+            </if>
+            <if test="monthStartPower != null">
+                and month_start_power = #{monthStartPower}
+            </if>
+            <if test="monthEndPower != null">
+                and month_end_power = #{monthEndPower}
+            </if>
+            <if test="monthSumPower != null">
+                and month_sum_power = #{monthSumPower}
+            </if>
+            <if test="monthSumCharge != null">
+                and month_sum_charge = #{monthSumCharge}
+            </if>
+            <if test="jsonCharge != null and jsonCharge != ''">
+                and json_charge = #{jsonCharge}
+            </if>
+            <if test="date != null">
+                and date = #{date}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_power_month_record(sn, e_name, eid, store_id, store_name, franchisee_id, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge, json_charge, date, tenant_id, create_time)
+        values (#{sn}, #{eName}, #{eid}, #{storeId}, #{storeName}, #{franchiseeId}, #{franchiseeName}, #{monthStartPower}, #{monthEndPower}, #{monthSumPower}, #{monthSumCharge}, #{jsonCharge}, #{date}, #{tenantId}, #{createTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ele_power_month_record
+        <set>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="eName != null and eName != ''">
+                e_name = #{eName},
+            </if>
+            <if test="eid != null">
+                eid = #{eid},
+            </if>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="storeName != null and storeName != ''">
+                store_name = #{storeName},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="franchiseeName != null and franchiseeName != ''">
+                franchisee_name = #{franchiseeName},
+            </if>
+            <if test="monthStartPower != null">
+                month_start_power = #{monthStartPower},
+            </if>
+            <if test="monthEndPower != null">
+                month_end_power = #{monthEndPower},
+            </if>
+            <if test="monthSumPower != null">
+                month_sum_power = #{monthSumPower},
+            </if>
+            <if test="monthSumCharge != null">
+                month_sum_charge = #{monthSumCharge},
+            </if>
+            <if test="jsonCharge != null and jsonCharge != ''">
+                json_charge = #{jsonCharge},
+            </if>
+            <if test="date != null">
+                date = #{date},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ele_power_month_record where id = #{id}
+    </delete>
+
+    <select id="queryPartAttrList" resultMap="ElePowerMonthRecordMap">
+        select
+        sn, e_name, store_name, franchisee_name, month_start_power, month_end_power, month_sum_power, month_sum_charge,
+        json_charge, date, create_time
+        from t_ele_power_month_record
+        <where>
+            tenant_id = #{tenantId}
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null and startDate != ''">
+                and date &lt; #{endDate}
+            </if>
+        </where>
+        order by id desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from t_ele_power_month_record
+        <where>
+            tenant_id = #{tenantId}
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date &gt;= #{startDate}
+            </if>
+
+            <if test="endDate != null and startDate != ''">
+                and date &lt; #{endDate}
+            </if>
+        </where>
+    </select>
+
+</mapper>

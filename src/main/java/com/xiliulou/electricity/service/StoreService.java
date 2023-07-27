@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.MapVo;
@@ -87,5 +86,5 @@ public interface StoreService {
 
     List<StoreVO> selectByAddress(StoreQuery storeQuery);
     
-    R storeSearch(Long size, Long offset, String name , Integer tenantId);
+    R storeSearch(Long size, Long offset, String name , Long franchiseeId, Integer tenantId);
 }
