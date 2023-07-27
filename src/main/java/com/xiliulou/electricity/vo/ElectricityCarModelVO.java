@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.xiliulou.electricity.entity.CarModelTag;
-import com.xiliulou.electricity.entity.Picture;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,6 +52,12 @@ public class ElectricityCarModelVO {
      * 其它参数
      */
     private String otherProperties;
+
+    /**
+     * 已租数量
+     */
+    private Integer rentedQuantity;
+
     /**
      * 创建时间
      */
