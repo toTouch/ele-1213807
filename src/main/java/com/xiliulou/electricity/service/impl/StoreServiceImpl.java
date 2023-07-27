@@ -672,6 +672,10 @@ public class StoreServiceImpl implements StoreService {
             return Collections.EMPTY_LIST;
         }
 
+        if (!storeQuery.isQueryPictureFlag()) {
+            return list;
+        }
+
         return list.parallelStream().map(item -> {
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
@@ -681,6 +685,7 @@ public class StoreServiceImpl implements StoreService {
 
             return item;
         }).collect(Collectors.toList());
+
 
     }
 

@@ -18,6 +18,14 @@ import java.util.List;
  */
 public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarModel> {
 
+    /**
+     * 根据门店ID集，获取指定数量的数据，已租数量降序
+     * @param size 取值数量
+     * @param storeIdList 门店ID集
+     * @return 车辆型号集
+     */
+    List<ElectricityCarModelVO> selectByStoreIdListLimit(@Param("size") Integer size, @Param("storeIdList") List<Long> storeIdList);
+
 
     /**
      * @return 对象列表

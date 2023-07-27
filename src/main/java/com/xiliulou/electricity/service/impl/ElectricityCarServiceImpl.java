@@ -17,6 +17,7 @@ import com.xiliulou.electricity.domain.car.CarInfoDO;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.clickhouse.CarAttr;
 import com.xiliulou.electricity.enums.BusinessType;
+import com.xiliulou.electricity.enums.DelFlagEnum;
 import com.xiliulou.electricity.mapper.CarAttrMapper;
 import com.xiliulou.electricity.mapper.CarMoveRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
@@ -107,8 +108,23 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Autowired
     CarLockCtrlHistoryService carLockCtrlHistoryService;
 
-    @Autowired
+    @Resource
     private CarMoveRecordMapper carMoveRecordMapper;
+
+    /**
+     * 根据车辆型号ID，判定是否进行绑定
+     *
+     * @param carModelId 车辆型号ID
+     * @return true(绑定)、false(未绑定)
+     */
+    @Slave
+    @Override
+    public boolean checkBindingByCarModelId(Integer carModelId) {
+        LambdaQueryWrapper<ElectricityCar> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ElectricityCar::getModelId, carModelId).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode());
+        Integer count = electricityCarMapper.selectCount(queryWrapper);
+        return count > 0;
+    }
 
     /**
      * 根据 uid 查询车辆信息<br />

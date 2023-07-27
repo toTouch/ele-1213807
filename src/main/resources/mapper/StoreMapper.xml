@@ -310,7 +310,9 @@
             having distance &lt; #{distance}
         </if>
         order by distance asc
-        limit #{offset}, #{size}
+        <if test=" offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 
 

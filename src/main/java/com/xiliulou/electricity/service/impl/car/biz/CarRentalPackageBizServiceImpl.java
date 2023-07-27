@@ -1,10 +1,7 @@
 package com.xiliulou.electricity.service.impl.car.biz;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.BatteryMemberCard;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.entity.car.CarRentalPackageCarBatteryRelPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
@@ -19,10 +16,7 @@ import com.xiliulou.electricity.model.car.opt.CarRentalPackageOptModel;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.query.car.CarRentalPackageQryReq;
-import com.xiliulou.electricity.service.BatteryMemberCardService;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.service.car.CarRentalPackageCarBatteryRelService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
@@ -49,6 +43,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizService {
+
+    @Resource
+    private FranchiseeService franchiseeService;
 
     @Resource
     private UserInfoService userInfoService;
@@ -259,9 +256,10 @@ public class CarRentalPackageBizServiceImpl implements CarRentalPackageBizServic
         }
 
         // 车电一体
-        List<String> batteryModelTypes = optModel.getBatteryModelTypes();
+        List<String> batteryModelTypes = CollectionUtils.isEmpty(optModel.getBatteryModelTypes()) ? new ArrayList<>() : optModel.getBatteryModelTypes();
         if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(optModel.getType())) {
-            if (CollectionUtils.isEmpty(batteryModelTypes)) {
+            Franchisee franchisee = franchiseeService.queryByIdFromCache(Long.valueOf(optModel.getFranchiseeId()));
+            if (Franchisee.NEW_MODEL_TYPE.equals(franchisee.getModelType()) && CollectionUtils.isEmpty(batteryModelTypes)) {
                 log.error("CarRentalPackageBizService.insertPackage failed. BatteryModelTypes is empty.");
                 throw new BizException("ELECTRICITY.0007", "不合法的参数");
             }

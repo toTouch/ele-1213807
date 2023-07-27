@@ -5,13 +5,11 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.db.dynamic.annotation.Slave;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.dto.RentCarTypeDTO;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.query.UserCarQuery;
@@ -22,8 +20,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarModelSearchVO;
 import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +64,21 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Autowired
     ElectricityConfigService electricityConfigService;
 
+    /**
+     * 根据门店ID集，获取指定数量的数据，已租数量降序
+     *
+     * @param size        取值范围
+     * @param storeIdList 门店ID集
+     * @return 车辆型号集
+     */
+    @Slave
+    @Override
+    public List<ElectricityCarModelVO> selectByStoreIdListLimit(Integer size, List<Long> storeIdList) {
+        if (ObjectUtils.isEmpty(size) || CollectionUtils.isEmpty(storeIdList)) {
+            return null;
+        }
+        return electricityCarModelMapper.selectByStoreIdListLimit(size, storeIdList);
+    }
 
     @Override
     public List<ElectricityCarModelSearchVO> search(ElectricityCarModelQuery electricityCarModelQuery) {
@@ -176,6 +189,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
         if (!Objects.equals(oldElectricityCarModel.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
+        }
+
+        // 判定，车辆型号是否绑定了车辆
+        if (electricityCarService.checkBindingByCarModelId(oldElectricityCarModel.getId())) {
+            if (!oldElectricityCarModel.getName().equals(query.getName()) || !oldElectricityCarModel.getStoreId().equals(query.getStoreId())) {
+                return R.fail("100432", "已有车辆绑定该型号，请先删除对应车辆后再修改");
+            }
         }
 
         ElectricityCarModel updateCarModel = new ElectricityCarModel();
@@ -457,6 +477,9 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
 
         List<String> carModelTags = JsonUtil.fromJsonArray(query.getCarModelTag(), String.class);
+        if (!CollectionUtils.isEmpty(carModelTags) && carModelTags.size() > 5) {
+            throw new BizException("100433", "车辆标签数量，最多设置4个");
+        }
         if (!CollectionUtils.isEmpty(carModelTags)) {
             for (int i = 0; i < carModelTags.size(); i++) {
                 CarModelTag carModelTag = new CarModelTag();
