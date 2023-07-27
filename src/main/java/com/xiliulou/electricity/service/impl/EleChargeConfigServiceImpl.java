@@ -130,6 +130,8 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
     public Integer update(EleChargeConfig eleChargeConfig, EleChargeConfig originalConfig) {
         return DbUtils.dbOperateSuccessThenHandleCache(this.eleChargeConfigMapper.update(eleChargeConfig), id -> {
             delConfigCache(originalConfig);
+            //这里需要删除新的配置，因为旧的配置有可能存在
+            delConfigCache(eleChargeConfig);
         });
 
     }
