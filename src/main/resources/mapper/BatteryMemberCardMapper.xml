@@ -170,6 +170,9 @@
             <if test="batteryV != null and batteryV != ''">
                 and mcbt.battery_v = #{batteryV}
             </if>
+            <if test="deposit != null">
+                and bmc.deposit = #{deposit}
+            </if>
             <if test="franchiseeId != null">
                 and bmc.franchisee_id = #{franchiseeId}
             </if>
@@ -179,17 +182,14 @@
             <if test="name != null and name != ''">
                 and bmc.name like concat('%',#{name,jdbcType=VARCHAR},'%')
             </if>
-            <if test="rentType != null">
-                and bmc.rent_type = #{rentType}
+            <if test="rentType != null and rentType==3">
+                and bmc.rent_type in (0,2)
             </if>
             <if test="tenantId != null">
                 and bmc.tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
                 and bmc.del_flag = #{delFlag}
-            </if>
-            <if test="franchiseeId != null">
-                and bmc.franchisee_id = #{franchiseeId}
             </if>
         </where>
         order by bmc.id desc

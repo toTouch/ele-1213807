@@ -164,30 +164,35 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             return Collections.emptyList();
         }
 
-        BatteryMemberCardQuery batteryMemberCardQuery = new BatteryMemberCardQuery();
-        batteryMemberCardQuery.setStatus(BatteryMemberCard.STATUS_UP);
-        batteryMemberCardQuery.setFranchiseeId(userInfo.getFranchiseeId());
-        batteryMemberCardQuery.setTenantId(TenantContextHolder.getTenantId());
-
-        List<String> userBatteryTypes = userBatteryTypeService.selectByUid(userInfo.getUid());
-        if(CollectionUtils.isNotEmpty(userBatteryTypes)){
-            String batteryModel=userBatteryTypes.get(0);
-            batteryMemberCardQuery.setBatteryV(batteryModel.substring(batteryModel.indexOf("_") + 1).substring(0, batteryModel.substring(batteryModel.indexOf("_") + 1).indexOf("_")));
-        }
-
-        List<BatteryMemberCardVO> batteryMemberCardVOS = this.selectByPageForUser(batteryMemberCardQuery);
-        if (CollectionUtils.isEmpty(batteryMemberCardVOS)) {
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard)) {
+            log.error("ELE ERROR!not found userBatteryMemberCard,uid={}", userInfo.getUid());
             return Collections.emptyList();
         }
 
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) || userBatteryMemberCard.getCardPayCount() <= 0) {
-            return batteryMemberCardVOS.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_NEW) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).collect(Collectors.toList());
+        BatteryMemberCard batteryMemberCard = this.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.error("ELE ERROR!not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Collections.emptyList();
         }
 
-        return batteryMemberCardVOS.parallelStream().filter(item -> Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_OLD) || Objects.equals(item.getRentType(), BatteryMemberCard.RENT_TYPE_UNLIMIT)).collect(Collectors.toList());
-    }
+        query.setFranchiseeId(userInfo.getFranchiseeId());
+        query.setDeposit(batteryMemberCard.getDeposit());
+        query.setRentType(BatteryMemberCard.RENT_TYPE_UNLIMIT_OLD);
+        query.setBatteryV(userBatteryTypeService.selectUserSimpleBatteryType(userInfo.getUid()));
 
+        List<BatteryMemberCard> batteryMemberCardList = this.batteryMemberCardMapper.selectByPageForUser(query);
+        if (CollectionUtils.isEmpty(batteryMemberCardList)) {
+            log.error("ELE ERROR!batteryMemberCardList is empty,uid={}", userInfo.getUid());
+            return Collections.emptyList();
+        }
+
+        return batteryMemberCardList.stream().map(item -> {
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            BeanUtils.copyProperties(item, batteryMemberCardVO);
+            return batteryMemberCardVO;
+        }).collect(Collectors.toList());
+    }
 
     @Override
     public List<BatteryMemberCardVO> selectListByQuery(BatteryMemberCardQuery query) {
