@@ -92,7 +92,12 @@ public class ElectricityMemberCardOrder {
      * 扫码的柜机
      */
     private Long refId;
-    
+
+    /**
+     * 套餐赠送的优惠券id
+     */
+    private Long sendCouponId;
+
     // 订单状态 0未支付,1支付成功 2支付失败,3取消支付
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

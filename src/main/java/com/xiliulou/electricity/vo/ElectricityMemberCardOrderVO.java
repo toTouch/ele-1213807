@@ -24,4 +24,8 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      */
     private Integer payType;
 
+    private Long sendCouponId;
+
+    private String sendCouponName;
+
 }

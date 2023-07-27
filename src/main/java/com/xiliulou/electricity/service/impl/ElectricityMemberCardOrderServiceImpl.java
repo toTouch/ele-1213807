@@ -869,6 +869,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 electricityMemberCardOrderVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
             }
 
+            if (Objects.nonNull(electricityMemberCardOrderVO.getSendCouponId())) {
+                Coupon coupon = couponService.queryByIdFromCache(electricityMemberCardOrderVO.getSendCouponId().intValue());
+                electricityMemberCardOrderVO.setSendCouponName(Objects.isNull(coupon) ? "" : coupon.getName());
+            }
+
             ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
         }
 
@@ -3083,6 +3088,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payCount(queryMaxPayCount(userBatteryMemberCard) + 1)
                 .refId(null)
+                .sendCouponId(batteryMemberCard.getCouponId().longValue())
+                .useStatus(ElectricityMemberCardOrder.USE_STATUS_USING)
                 .source(ElectricityMemberCardOrder.SOURCE_NOT_SCAN)
                 .storeId(userInfo.getStoreId()).build();
         this.baseMapper.insert(electricityMemberCardOrder);
@@ -3186,12 +3193,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (!Objects.equals(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE, userBatteryMemberCard.getMemberCardStatus())) {
             return Triple.of(false, "100247", "用户套餐状态异常，不允许操作");
         }
-//TODO
-//        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
-//        if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-//            log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-//            return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
-//        }
+
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
+        }
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());
@@ -3299,12 +3306,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if(Objects.isNull(userBindbatteryMemberCard)){
             return Triple.of(false, "ELECTRICITY.00121", "用户电池套餐不存在");
         }
-//TODO
-//        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
-//        if (Boolean.FALSE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
-//            log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
-//            return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
-//        }
+
+        Triple<Boolean,Integer,BigDecimal> acquireUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid()));
+        if (Boolean.TRUE.equals(acquireUserBatteryServiceFeeResult.getLeft())) {
+            log.warn("BATTERY MEMBER ORDER WARN! user exist battery service fee,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(false,"ELECTRICITY.100000", "存在电池服务费");
+        }
 
         ElectricityMemberCardOrder memberCardOrder = new ElectricityMemberCardOrder();
         memberCardOrder.setOrderId(OrderIdUtil.generateBusinessOrderId(BusinessType.BATTERY_MEMBERCARD, userInfo.getUid()));
@@ -3321,13 +3328,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         memberCardOrder.setStoreId(userInfo.getStoreId());
         memberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
+        memberCardOrder.setSendCouponId(batteryMemberCard.getCouponId().longValue());
         memberCardOrder.setTenantId(userInfo.getTenantId());
         memberCardOrder.setCreateTime(System.currentTimeMillis());
         memberCardOrder.setUpdateTime(System.currentTimeMillis());
-        this.insert(memberCardOrder);
+        memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_NON);
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
+            memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
+
             userBatteryMemberCardUpdate.setUid(userInfo.getUid());
             userBatteryMemberCardUpdate.setMemberCardId(batteryMemberCard.getId());
             userBatteryMemberCardUpdate.setOrderId(memberCardOrder.getOrderId());
@@ -3368,6 +3378,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
+
+        this.insert(memberCardOrder);
 
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)

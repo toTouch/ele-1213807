@@ -191,9 +191,6 @@
             <if test="delFlag != null">
                 and bmc.del_flag = #{delFlag}
             </if>
-            <if test="franchiseeId != null">
-                and bmc.franchisee_id = #{franchiseeId}
-            </if>
         </where>
         order by bmc.id desc
         limit #{offset}, #{size}
