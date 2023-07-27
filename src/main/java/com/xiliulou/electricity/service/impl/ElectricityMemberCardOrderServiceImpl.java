@@ -3092,7 +3092,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payCount(queryMaxPayCount(userBatteryMemberCard) + 1)
                 .refId(null)
-                .sendCouponId(batteryMemberCard.getCouponId().longValue())
+                .sendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null)
                 .useStatus(ElectricityMemberCardOrder.USE_STATUS_USING)
                 .source(ElectricityMemberCardOrder.SOURCE_NOT_SCAN)
                 .storeId(userInfo.getStoreId()).build();
@@ -3234,6 +3234,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
         serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
@@ -3332,7 +3333,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         memberCardOrder.setSource(ElectricityMemberCardOrder.SOURCE_NOT_SCAN);
         memberCardOrder.setStoreId(userInfo.getStoreId());
         memberCardOrder.setFranchiseeId(userInfo.getFranchiseeId());
-        memberCardOrder.setSendCouponId(batteryMemberCard.getCouponId().longValue());
+        memberCardOrder.setSendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null);
         memberCardOrder.setTenantId(userInfo.getTenantId());
         memberCardOrder.setCreateTime(System.currentTimeMillis());
         memberCardOrder.setUpdateTime(System.currentTimeMillis());
@@ -3381,6 +3382,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         serviceFeeUserInfoUpdate.setUid(userInfo.getUid());
         serviceFeeUserInfoUpdate.setTenantId(userInfo.getTenantId());
         serviceFeeUserInfoUpdate.setServiceFeeGenerateTime(userBatteryMemberCardUpdate.getMemberCardExpireTime());
+        serviceFeeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
         serviceFeeUserInfoService.updateByUid(serviceFeeUserInfoUpdate);
 
         this.insert(memberCardOrder);
