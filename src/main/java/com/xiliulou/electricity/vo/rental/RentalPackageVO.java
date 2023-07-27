@@ -47,11 +47,12 @@ public class RentalPackageVO implements Serializable {
     /**
      * 状态
      * <pre>
+     *     0-初始化
      *     1-正常
      *     2-申请冻结
      *     3-冻结
      *     4-申请退押
-     *     5-过期
+     *     5-申请退租
      * </pre>
      * @see MemberTermStatusEnum
      */

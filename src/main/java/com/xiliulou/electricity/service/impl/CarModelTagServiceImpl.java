@@ -1,20 +1,18 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.db.dynamic.annotation.Slave;
 import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.entity.CarModelTag;
 import com.xiliulou.electricity.mapper.CarModelTagMapper;
 import com.xiliulou.electricity.service.CarModelTagService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 车辆型号标签表(CarModelTag)表服务实现类
@@ -25,8 +23,24 @@ import org.springframework.util.CollectionUtils;
 @Service("carModelTagService")
 @Slf4j
 public class CarModelTagServiceImpl implements CarModelTagService {
-    @Autowired
+
+    @Resource
     private CarModelTagMapper carModelTagMapper;
+
+    /**
+     * 根据车辆型号ID集获取对应标签集
+     *
+     * @param carModelIdList 车辆型号ID集
+     * @return 标签集
+     */
+    @Slave
+    @Override
+    public List<CarModelTag> selectByCarModelIds(List<Integer> carModelIdList) {
+        if (CollectionUtils.isEmpty(carModelIdList)) {
+            return null;
+        }
+        return carModelTagMapper.selectByCarModelIds(carModelIdList);
+    }
 
     /**
      * 通过ID查询单条数据从DB

@@ -51,4 +51,9 @@ public class StoreQuery {
 
 	private Long uid;
 
+	/**
+	 * 是否查询图片信息
+	 */
+	private boolean queryPictureFlag = true;
+
 }

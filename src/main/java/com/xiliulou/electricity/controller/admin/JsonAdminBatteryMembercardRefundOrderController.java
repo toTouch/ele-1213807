@@ -158,6 +158,14 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
         return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundAudit(refundOrderNo, errMsg, status, request));
     }
 
+    /**
+     * 可退租订单详情
+     */
+    @GetMapping("/admin/batteryMembercardRefund/{orderNo}")
+    public R batteryMembercardRefundOrderDetail(String orderNo) {
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo));
+    }
+
     @PostMapping("/admin/battery/membercard/refund")
     @Log(title = "后台电池租金退款")
     public R batteryMembercardRefund(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,

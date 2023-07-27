@@ -24,4 +24,17 @@ public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
      */
     private Integer payType;
 
+    private Long sendCouponId;
+
+    private String sendCouponName;
+
+    /**
+     * 租期单位 0：分钟，1：天
+     */
+    private Integer rentUnit;
+    /**
+     * 租赁类型
+     */
+    private Integer rentType;
+
 }

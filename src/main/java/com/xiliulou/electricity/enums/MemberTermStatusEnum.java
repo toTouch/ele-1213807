@@ -13,6 +13,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum MemberTermStatusEnum implements BasicEnum<Integer, String> {
 
+    /** 值：-1，无实际意义，返回给C端展示的 */
+    EXPIRE(-1, "已过期"),
     PENDING_EFFECTIVE(0, "待生效"),
     NORMAL(1, "正常"),
     APPLY_FREEZE(2, "申请冻结"),

@@ -204,4 +204,9 @@ public class CarRentalPackageOrderVO implements Serializable {
      */
     private String batteryVoltage;
 
+    /**
+     * 押金金额(元)
+     */
+    private BigDecimal deposit;
+
 }

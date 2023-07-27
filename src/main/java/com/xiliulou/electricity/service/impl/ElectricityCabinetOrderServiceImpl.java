@@ -1067,7 +1067,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //判断用户电池服务费
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
             Triple<Boolean, String, Object> checkUserBatteryServiceFeeResult = checkUserBatteryServiceFee(userBatteryMemberCard, userInfo, user, serviceFeeUserInfo, franchisee);
-            if (Boolean.FALSE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
+            if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
                 return checkUserBatteryServiceFeeResult;
             }
     

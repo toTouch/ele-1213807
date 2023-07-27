@@ -119,4 +119,6 @@ public class BatteryMemberCardVO {
     private List<String> batteryModels;
 
     private String couponName;
+
+    private Boolean editUserMembercard = Boolean.TRUE;
 }

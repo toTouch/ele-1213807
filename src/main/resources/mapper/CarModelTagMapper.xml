@@ -19,6 +19,17 @@
        	select   id, title, car_model_id, seq, status, del_flag, tenant_id, create_time, update_time        from t_car_model_tag
     </sql>
 
+    <!-- 根据车辆型号ID集获取对应标签集 -->
+    <select id="selectByCarModelIds" resultMap="CarModelTagMap">
+        <include refid="selectCarModelTag"/>
+        <where>
+            `del_flag` = 0 AND `car_model_id` IN
+            <foreach collection="carModelIdList" item="carModelId" open="(" close=")" separator=",">
+                #{carModelId}
+            </foreach>
+        </where>
+    </select>
+
     <!--查询单个-->
     <select id="selectById" resultMap="CarModelTagMap">
         <include refid="selectCarModelTag"/>

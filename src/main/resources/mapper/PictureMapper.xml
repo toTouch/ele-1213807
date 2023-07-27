@@ -65,6 +65,12 @@
             <if test="tenantId != null">
                 and tenant_id = #{tenantId}
             </if>
+            <if test=" businessIdList != null and businessIdList.size > 0 ">
+                AND `business_id` IN
+                <foreach collection="businessIdList" item="businessId" open="(" close=")" separator=",">
+                    #{businessId}
+                </foreach>
+            </if>
         </where>
     </select>
 

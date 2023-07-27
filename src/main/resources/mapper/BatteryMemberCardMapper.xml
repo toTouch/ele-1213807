@@ -171,7 +171,7 @@
                 and mcbt.battery_v = #{batteryV}
             </if>
             <if test="deposit != null">
-                and mcbt.deposit = #{deposit}
+                and bmc.deposit = #{deposit}
             </if>
             <if test="franchiseeId != null">
                 and bmc.franchisee_id = #{franchiseeId}
@@ -190,9 +190,6 @@
             </if>
             <if test="delFlag != null">
                 and bmc.del_flag = #{delFlag}
-            </if>
-            <if test="franchiseeId != null">
-                and bmc.franchisee_id = #{franchiseeId}
             </if>
         </where>
         order by bmc.id desc

@@ -250,7 +250,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             }
 
             Triple<Boolean, Integer, BigDecimal> checkUserBatteryServiceFeeResult = serviceFeeUserInfoService.acquireUserBatteryServiceFee(userInfo, userBatteryMemberCard, batteryMemberCard, serviceFeeUserInfo);
-            if (Boolean.FALSE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
+            if (Boolean.TRUE.equals(checkUserBatteryServiceFeeResult.getLeft())) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! user exit battery service fee,uid={}", user.getUid());
                 return Triple.of(false, "100220", "用户存在电池服务费");
             }
@@ -260,6 +260,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100284", "未归还电池");
             }
 
+            BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
+            if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), user.getUid());
+                return Triple.of(false, "100294", "退租金额不合法");
+            }
+
             BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
             batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
             batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
@@ -267,7 +273,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
-            batteryMembercardRefundOrderInsert.setRefundAmount(calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
+            batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
             batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
             batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
             batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
@@ -473,9 +479,21 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
+        //若退用户最后一个套餐用户绑定有资产提示先归还资产再退租金
+        if(Objects.equals(userBatteryMemberCard.getOrderId(),orderNo) && Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", userInfo.getUid());
+            return Triple.of(false, "100284", "未归还电池");
+        }
+
+        BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
+        if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), userInfo.getUid());
+            return Triple.of(false, "100294", "退租金额不合法");
+        }
+
         BatteryMembercardRefundOrderDetailVO refundOrderDetailVO = new BatteryMembercardRefundOrderDetailVO();
         refundOrderDetailVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
-        refundOrderDetailVO.setRefundAmount(calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
+        refundOrderDetailVO.setRefundAmount(refundAmount);
         refundOrderDetailVO.setRemainingCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
 
         return Triple.of(true, null, refundOrderDetailVO);
