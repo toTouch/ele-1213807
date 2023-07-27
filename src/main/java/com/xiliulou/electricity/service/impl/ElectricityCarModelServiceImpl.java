@@ -337,6 +337,21 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
 
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId().longValue());
             carModelVO.setPictures(pictureService.pictureParseVO(pictures));
+
+            List<CarModelTag> tagList = carModelTagService.selectByCarModelId(item.getId());
+            if (!CollectionUtils.isEmpty(tagList)) {
+
+                // 兼容老数据，最多四个
+                List<String> carModelTagNames = null;
+                if (tagList.size() > 4) {
+                    List<List<CarModelTag>> partitionList = Lists.partition(tagList, 4);
+                    carModelTagNames = partitionList.get(0).stream().map(CarModelTag::getTitle).collect(Collectors.toList());
+                } else {
+                    carModelTagNames = tagList.stream().map(CarModelTag::getTitle).collect(Collectors.toList());
+                }
+
+                carModelVO.setCarModelTag(carModelTagNames);
+            }
             return carModelVO;
         }).collect(Collectors.toList());
 
