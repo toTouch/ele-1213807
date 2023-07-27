@@ -3433,12 +3433,25 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
+        BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
         }
 
-        return Triple.of(true, null, batteryMemberCard);
+        BeanUtils.copyProperties(batteryMemberCard, batteryMemberCardVO);
+
+        ElectricityMemberCardOrder userMemberCardOrder = electricityMemberCardOrderService.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        if (Objects.isNull(userMemberCardOrder)) {
+            return Triple.of(true, null, batteryMemberCardVO);
+        }
+
+        if (Objects.equals(batteryMemberCard.getIsRefund(), BatteryMemberCard.YES)) {
+            batteryMemberCardVO.setEditUserMembercard(System.currentTimeMillis() > (userMemberCardOrder.getCreateTime() + batteryMemberCard.getRefundLimit() * 24 * 60 * 60 * 1000L));
+        }
+
+        return Triple.of(true, null, batteryMemberCardVO);
     }
 
     @Override

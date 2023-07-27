@@ -118,5 +118,4 @@ public class DetailsBatteryInfoVo {
      */
     private List<String> batteryModels;
 
-    private Boolean editUserMembercard = Boolean.TRUE;
 }
