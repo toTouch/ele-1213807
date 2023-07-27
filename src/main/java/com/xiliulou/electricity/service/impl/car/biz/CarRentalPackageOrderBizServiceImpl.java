@@ -1582,7 +1582,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
      * @return
      */
     private InsuranceOrder buildInsuranceOrder(UserInfo userInfo, FranchiseeInsurance buyInsurance, Integer payType) {
-        // TODO 赋值具体值
+        if (ObjectUtils.isEmpty(buyInsurance)) {
+            return null;
+        }
         InsuranceOrder insuranceOrder = new InsuranceOrder();
         insuranceOrder.setPayAmount(buyInsurance.getPremium());
         insuranceOrder.setValidDays(buyInsurance.getValidDays());
