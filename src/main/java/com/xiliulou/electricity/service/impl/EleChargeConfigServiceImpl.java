@@ -261,33 +261,35 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
         switch (configType) {
             case EleChargeConfig.TYPE_ALL_FRANCHISEE:
                 EleChargeConfig config = queryByTenantIdFromDb(tenantId);
-                if (Objects.nonNull(config)) {
-                    //这里排除自己
-                    return Objects.nonNull(chargeId) && !Objects.equals(config.getId(), chargeId);
+                if (Objects.isNull(config)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(config.getId(), chargeId);
             case EleChargeConfig.TYPE_ALL_STORE:
                 EleChargeConfig franchiseeConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), null, null, EleChargeConfig.TYPE_ALL_STORE);
-                if (Objects.nonNull(franchiseeConfig)) {
-                    return Objects.nonNull(chargeId) && !Objects.equals(franchiseeConfig.getId(), chargeId);
+                if (Objects.isNull(franchiseeConfig)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(franchiseeConfig.getId(), chargeId);
             case EleChargeConfig.TYPE_ALL_CABINET:
                 EleChargeConfig storeConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), chargeConfigQuery.getStoreId(), null, EleChargeConfig.TYPE_ALL_CABINET);
-                if (Objects.nonNull(storeConfig)) {
-                    return Objects.nonNull(chargeId) && !Objects.equals(storeConfig.getId(), chargeId);
+                if (Objects.isNull(storeConfig)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(storeConfig.getId(), chargeId);
             case EleChargeConfig.TYPE_SINGLE_CABINET:
                 EleChargeConfig cabinetConfig = queryFromDb(chargeConfigQuery.getFranchiseeId(), chargeConfigQuery.getStoreId(), chargeConfigQuery.getEid(), EleChargeConfig.TYPE_SINGLE_CABINET);
-                if (Objects.nonNull(cabinetConfig)) {
-                    return Objects.nonNull(chargeId) && !Objects.equals(cabinetConfig.getId(), chargeId);
+                if (Objects.isNull(cabinetConfig)) {
+                    return false;
                 }
-                break;
+
+                return !Objects.nonNull(chargeId) || !Objects.equals(cabinetConfig.getId(), chargeId);
             default:
                 return false;
         }
-        return false;
     }
 
     @Override
