@@ -22,6 +22,13 @@ import java.util.List;
 public interface ElectricityCarService {
 
     /**
+     * 根据车辆型号ID判定，是否存在未租车辆
+     * @param carModelId 车辆型号ID
+     * @return true(存在)、false(不存在)
+     */
+    boolean checkUnleasedByCarModelId(Integer carModelId);
+
+    /**
      * 根据车辆型号ID，判定是否进行绑定
      * @param carModelId 车辆型号ID
      * @return true(绑定)、false(未绑定)

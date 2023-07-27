@@ -112,6 +112,21 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     private CarMoveRecordMapper carMoveRecordMapper;
 
     /**
+     * 根据车辆型号ID判定，是否存在未租车辆
+     *
+     * @param carModelId 车辆型号ID
+     * @return true(存在)、false(不存在)
+     */
+    @Slave
+    @Override
+    public boolean checkUnleasedByCarModelId(Integer carModelId) {
+        LambdaQueryWrapper<ElectricityCar> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ElectricityCar::getModelId, carModelId).eq(ElectricityCar::getDelFlag, DelFlagEnum.OK.getCode()).eq(ElectricityCar::getStatus, ElectricityCar.STATUS_NOT_RENT);
+        Integer count = electricityCarMapper.selectCount(queryWrapper);
+        return count > 0;
+    }
+
+    /**
      * 根据车辆型号ID，判定是否进行绑定
      *
      * @param carModelId 车辆型号ID
