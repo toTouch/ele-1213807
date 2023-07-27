@@ -334,6 +334,7 @@ public class EleChargeConfigServiceImpl implements EleChargeConfigService {
             updateConfig.setType(configType);
             updateConfig.setUpdateTime(System.currentTimeMillis());
             updateConfig.setJsonRule(chargeConfigQuery.getJsonRule());
+            updateConfig.setTenantId(TenantContextHolder.getTenantId());
 
             update(updateConfig, config);
         } finally {
