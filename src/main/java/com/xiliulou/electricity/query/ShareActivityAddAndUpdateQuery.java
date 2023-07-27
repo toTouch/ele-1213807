@@ -86,6 +86,11 @@ public class ShareActivityAddAndUpdateQuery {
      */
     private List<Long> membercardIds;
 
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     */
+    private Integer invitationCriteria;
+
 }
 
 

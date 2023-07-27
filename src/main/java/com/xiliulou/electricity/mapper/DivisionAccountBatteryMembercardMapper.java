@@ -73,6 +73,8 @@ public interface DivisionAccountBatteryMembercardMapper extends BaseMapper<Divis
 
     List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(@Param("id") Long id);
 
+    List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigIdAndType(@Param("id") Long id, @Param("type") Integer type);
+
     Long selectByBatteryMembercardId(@Param("membercardId") Long membercardId);
 
     List<Long> selectByTenantId(@Param("tenantId")Integer tenantId);
