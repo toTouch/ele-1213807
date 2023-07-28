@@ -61,7 +61,7 @@ public interface BatteryMembercardRefundOrderService {
 
     Triple<Boolean,String,Object> batteryMembercardRefund(String orderNo);
 
-    Triple<Boolean, String, Object> batteryMembercardRefundOrderDetail(String orderNo);
+    Triple<Boolean, String, Object> batteryMembercardRefundOrderDetail(String orderNo,Integer confirm);
 
     Triple<Boolean, String, Object> batteryMembercardRefundAudit(String refundOrderNo, String errMsg, Integer status, HttpServletRequest request);
 
