@@ -74,7 +74,6 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        Integer tenantId = TenantContextHolder.getTenantId();
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("not found user.");
