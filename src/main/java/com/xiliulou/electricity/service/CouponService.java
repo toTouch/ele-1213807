@@ -51,4 +51,5 @@ public interface CouponService {
     Triple<Boolean, String, Object> deleteById(Long id);
 
     List<SearchVo> search(CouponQuery query);
+
 }

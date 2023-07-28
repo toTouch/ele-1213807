@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CouponActivityPackageMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.CouponActivityPackage" id="CouponActivityPackageMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="packageId" column="package_id" jdbcType="INTEGER"/>
+        <result property="packageType" column="package_type" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectCouponPackage">
+        select id, coupon_id, package_id, package_type, tenant_id, del_flag, create_time, update_time from t_coupon_activity_package
+    </sql>
+
+    <!-- 新增优惠券关联套餐信息-->
+    <insert id="insertOne" parameterType="com.xiliulou.electricity.entity.CouponActivityPackage" useGeneratedKeys="true" keyProperty="id">
+        insert into t_coupon_activity_package
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            coupon_id,
+            package_id,
+            package_type,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{couponId},
+            #{packageId},
+            #{packageType},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime},
+        </trim>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="updateOne">
+        update t_coupon_activity_package
+        <set>
+            <if test="appId != null and appId != ''">
+                coupon_id = #{couponId},
+            </if>
+            <if test="appSecret != null and appSecret != ''">
+                package_id = #{packageId},
+            </if>
+            <if test="docTemplateId != null and docTemplateId != ''">
+                package_type = #{packageType},
+            </if>
+            <if test="signFileName != null and signFileName != ''">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteCouponPackage">
+        delete from t_coupon_activity_package where id = #{id}
+    </delete>
+
+    <!--批量新增优惠券套餐记录-->
+    <insert id="batchInsertCouponPackages" keyProperty="id" useGeneratedKeys="true">
+        insert into t_coupon_activity_package
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            coupon_id,
+            package_id,
+            package_type,
+            tenant_id,
+            del_flag,
+            create_time,
+            update_time,
+        </trim>
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (
+            #{couponId},
+            #{packageId},
+            #{packageType},
+            #{tenantId},
+            #{delFlag},
+            #{createTime},
+            #{updateTime}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectByQuery" resultMap="CouponActivityPackageMap">
+        <include refid="selectCouponPackage"/>
+        <where>
+            del_flag = 0
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="couponId != null">
+                and coupon_id = #{couponId}
+            </if>
+            <if test="packageId != null">
+                and package_id = #{packageId}
+            </if>
+            <if test="packageType != null">
+                and package_type = #{packageType}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+
+        </where>
+    </select>
+
+    <select id="selectActivityPackagesByCouponId" resultMap="CouponActivityPackageMap">
+        <include refid="selectCouponPackage"/>
+        where coupon_id = #{couponId}
+    </select>
+
+</mapper>
