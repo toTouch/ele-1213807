@@ -36,6 +36,7 @@ public class JsonUserCarModelController extends BasicController {
      * @param carModelId 车辆型号ID
      * @return 车辆型号详细信息
      */
+    @GetMapping("/queryByCarModelId")
     public R<CarModelDetailVO> queryByCarModelId(Integer carModelId) {
         if (ObjectUtils.isEmpty(carModelId)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
