@@ -31,6 +31,18 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
     private CarRentalPackageDepositPayMapper carRentalPackageDepositPayMapper;
 
     /**
+     * 同步免押状态
+     *
+     * @param orderNo 押金缴纳订单编码
+     * @param optUid  操作人ID
+     * @return true(成功)、false(失败)
+     */
+    @Override
+    public boolean syncFreeState(String orderNo, Long optUid) {
+        return false;
+    }
+
+    /**
      * 根据订单编号更新支付状态
      *
      * @param orderNo  订单编码
@@ -39,7 +51,7 @@ public class CarRentalPackageDepositPayServiceImpl implements CarRentalPackageDe
      */
     @Override
     public Boolean updatePayStateByOrderNo(String orderNo, Integer payState) {
-        return updatePayStateByOrderNo(orderNo, payState);
+        return updatePayStateByOrderNo(orderNo, payState, null, null);
     }
 
     /**
