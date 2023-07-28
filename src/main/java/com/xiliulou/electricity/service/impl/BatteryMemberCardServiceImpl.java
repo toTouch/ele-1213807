@@ -69,6 +69,9 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
     @Autowired
     private CarRentalPackageService carRentalPackageService;
 
+    @Autowired
+    private BatteryModelService batteryModelService;
+
     /**
      * 通过ID查询单条数据从DB
      *
@@ -217,7 +220,7 @@ public class BatteryMemberCardServiceImpl implements BatteryMemberCardService {
             batteryMemberCardVO.setFranchiseeName(Objects.nonNull(franchisee) ? franchisee.getName() : "");
 
             if (Objects.nonNull(franchisee) && Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
-                batteryMemberCardVO.setBatteryModels(memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId()));
+                batteryMemberCardVO.setBatteryModels(batteryModelService.transformShortBatteryType(batteryModelService.selectBatteryTypeAll(item.getTenantId()), memberCardBatteryTypeService.selectBatteryTypeByMid(item.getId())));
             }
 
             if (Objects.nonNull(item.getCouponId())) {

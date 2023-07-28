@@ -22,6 +22,7 @@ import com.xiliulou.electricity.vo.FranchiseeInsuranceVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -536,6 +537,17 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
                 .insuranceType(type)
                 .status(FranchiseeInsurance.STATUS_USABLE).build();
 
-        return Triple.of(true,null,selectInsuranceByType(query));
+        FranchiseeInsurance franchiseeInsurance = selectInsuranceByType(query);
+        if(Objects.isNull(franchiseeInsurance)){
+            return Triple.of(true,null,null);
+        }
+
+        FranchiseeInsuranceVo franchiseeInsuranceVo = new FranchiseeInsuranceVo();
+        BeanUtils.copyProperties(franchiseeInsurance , franchiseeInsuranceVo);
+
+        City city = cityService.queryByIdFromDB(franchiseeInsurance.getCid());
+        franchiseeInsuranceVo.setCityName(Objects.isNull(city)?"":city.getName());
+
+        return Triple.of(true,null,franchiseeInsuranceVo);
     }
 }

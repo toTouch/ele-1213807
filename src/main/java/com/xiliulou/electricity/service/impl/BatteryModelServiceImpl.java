@@ -132,7 +132,8 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     public Integer selectByPageCount(BatteryModelQuery query) {
         return this.batteryModelMapper.selectByPageCount(query);
     }
-    
+
+    @Deprecated
     @Override
     public List<BatteryTypeVO> selectBatteryTypeAll() {
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
@@ -154,6 +155,26 @@ public class BatteryModelServiceImpl implements BatteryModelService {
     }
 
     @Override
+    public List<BatteryTypeVO> selectBatteryTypeAll(Integer tenantId) {
+        List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(tenantId);
+        if (CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        List<BatteryMaterial> batteryMaterials = materialService.selectAllFromCache();
+        if (CollectionUtils.isEmpty(batteryMaterials)) {
+            return Collections.emptyList();
+        }
+
+        return batteryModels.stream().map(item -> {
+            BatteryTypeVO batteryTypeVO = new BatteryTypeVO();
+            BeanUtils.copyProperties(item, batteryTypeVO);
+            batteryTypeVO.setBatteryTypeName(transformBatteryType(item, batteryMaterials));
+            return batteryTypeVO;
+        }).sorted(Comparator.comparing(item -> Integer.parseInt(StringUtils.isNotBlank(item.getBatteryVShort()) ? item.getBatteryVShort().substring(0, item.getBatteryVShort().indexOf("V/")) : "0"))).collect(Collectors.toList());
+    }
+
+    @Override
     public List<String> selectBatteryVAll() {
         List<BatteryModel> batteryModels = this.queryByTenantIdFromCache(TenantContextHolder.getTenantId());
         if (CollectionUtils.isEmpty(batteryModels)) {
@@ -161,6 +182,23 @@ public class BatteryModelServiceImpl implements BatteryModelService {
         }
 
         return batteryModels.stream().filter(item -> StringUtils.isNotBlank(item.getBatteryVShort())).map(e -> e.getBatteryVShort().substring(0, e.getBatteryVShort().indexOf("/"))).distinct().sorted(Comparator.comparing(item -> Integer.parseInt(item.substring(0, item.length() - 1)))).collect(Collectors.toList());
+    }
+
+    /**
+     * 长电池型号转为短电池型号
+     * @param batteryModels 租户所有电池型号
+     * @param batteryTypes 待转换长电池型号
+     * @return
+     */
+    @Override
+    public List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes) {
+        if (CollectionUtils.isEmpty(batteryTypes) || CollectionUtils.isEmpty(batteryModels)) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> batteryModelMap = batteryModels.stream().collect(Collectors.toMap(BatteryTypeVO::getBatteryType, BatteryTypeVO::getBatteryVShort));
+
+        return batteryTypes.stream().map(batteryModelMap::get).collect(Collectors.toList());
     }
 
     /**

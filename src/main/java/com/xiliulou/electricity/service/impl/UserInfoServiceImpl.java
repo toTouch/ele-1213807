@@ -1481,7 +1481,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         });
 
         List<String> userBatteryModels = userBatteryTypeService.selectByUid(userInfo.getUid());
-        vo.setBatteryModels(userBatteryModels);
+        if (CollectionUtils.isNotEmpty(userBatteryModels)) {
+            vo.setBatteryModels(batteryModelService.transformShortBatteryType(batteryModelService.selectBatteryTypeAll(userInfo.getTenantId()), userBatteryModels));
+        }
 
         CompletableFuture<Void> resultFuture = CompletableFuture
                 .allOf(queryUserBatteryDeposit, queryUserBatteryMemberCard, queryUserBattery);
