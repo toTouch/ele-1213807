@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.service.car.CarRentalOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalOrderVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,52 +60,30 @@ public class JsonAdminCarRentalOrderController extends BasicController {
 
     /**
      * 条件查询列表
-     * @param queryReq 请求参数类
+     * @param qryReq 请求参数类
      * @return 租车订单集
      */
     @PostMapping("/page")
-    public R<List<CarRentalOrderVO>> page(@RequestBody CarRentalOrderQryReq queryReq) {
-        // TODO mock数据
-        if (true) {
-            String mockString = "[\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"17283162734829387654\",\n" +
-                    "        \"type\":1,\n" +
-                    "        \"carSn\":\"38dhns345\",\n" +
-                    "        \"rentalState\":2,\n" +
-                    "        \"remark\":\"备注\",\n" +
-                    "        \"createTime\":1690267754000,\n" +
-                    "        \"userRelName\":\"张三\",\n" +
-                    "        \"userPhone\":\"13253648976\",\n" +
-                    "        \"carModelName\":\"车辆型号名称\",\n" +
-                    "        \"storeName\":\"门店名称\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"17283162734829387653\",\n" +
-                    "        \"type\":2,\n" +
-                    "        \"carSn\":\"sjsid8262\",\n" +
-                    "        \"rentalState\":1,\n" +
-                    "        \"remark\":\"备注\",\n" +
-                    "        \"createTime\":1690267754000,\n" +
-                    "        \"userRelName\":\"李四\",\n" +
-                    "        \"userPhone\":\"17625364897\",\n" +
-                    "        \"carModelName\":\"车辆型号名称\",\n" +
-                    "        \"storeName\":\"门店名称\"\n" +
-                    "    }\n" +
-                    "]";
-            return R.ok(JSON.parseArray(mockString, CarRentalOrderVO.class));
-        }
-        if (null == queryReq) {
-            queryReq = new CarRentalOrderQryReq();
+    public R<List<CarRentalOrderVO>> page(@RequestBody CarRentalOrderQryReq qryReq) {
+        if (null == qryReq) {
+            qryReq = new CarRentalOrderQryReq();
         }
 
         // 赋值租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        queryReq.setTenantId(tenantId);
+        qryReq.setTenantId(tenantId);
+
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
 
         // 转换请求体
         CarRentalOrderQryModel qryModel = new CarRentalOrderQryModel();
-        BeanUtils.copyProperties(queryReq, qryModel);
+        BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalOrderPO> rentalOrderEntityList = carRentalOrderService.page(qryModel);
@@ -173,9 +151,17 @@ public class JsonAdminCarRentalOrderController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
+
         // 转换请求体
         CarRentalOrderQryModel qryModel = new CarRentalOrderQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalOrderService.count(qryModel));

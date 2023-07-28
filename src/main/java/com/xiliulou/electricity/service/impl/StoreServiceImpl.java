@@ -742,6 +742,13 @@ public class StoreServiceImpl implements StoreService {
                 item.setPictureList(pictureService.pictureParseVO(pictures));
             }
 
+            //标签
+            List<StoreTag> storeTags = storeTagService.selectByStoreId(item.getId());
+            if (!CollectionUtils.isEmpty(storeTags)) {
+                List<String> tags = storeTags.stream().map(StoreTag::getTitle).collect(Collectors.toList());
+                item.setServiceType(tags);
+            }
+
             return item;
         }).collect(Collectors.toList());
     }

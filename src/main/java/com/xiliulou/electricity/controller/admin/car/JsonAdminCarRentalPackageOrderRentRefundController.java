@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -16,6 +15,7 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageOrderRentRefundVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,48 +92,6 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderRentRefundVO>> page(@RequestBody CarRentalPackageOrderRentRefundQryReq queryReq) {
-        // TODO mock数据
-        if (true) {
-            String mockString = "[\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"7373849302938472\",\n" +
-                    "        \"rentalPackageOrderNo\":\"6273849982273617\",\n" +
-                    "        \"rentalPackageType\":1,\n" +
-                    "        \"payType\":1,\n" +
-                    "        \"residue\":123,\n" +
-                    "        \"residueUnit\":0,\n" +
-                    "        \"refundAmount\":760,\n" +
-                    "        \"refundState\":1,\n" +
-                    "        \"rentUnitPrice\":320,\n" +
-                    "        \"rentPayment\":1110,\n" +
-                    "        \"remark\":\"备注\",\n" +
-                    "        \"createTime\":1690267754000,\n" +
-                    "        \"updateTime\":1690267754000,\n" +
-                    "        \"userRelName\":\"张三\",\n" +
-                    "        \"userPhone\":\"17689876263\",\n" +
-                    "        \"carRentalPackageName\":\"单车套餐\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"7362839482738163\",\n" +
-                    "        \"rentalPackageOrderNo\":\"6273837982273617\",\n" +
-                    "        \"rentalPackageType\":2,\n" +
-                    "        \"payType\":2,\n" +
-                    "        \"residue\":234,\n" +
-                    "        \"residueUnit\":1,\n" +
-                    "        \"refundAmount\":220,\n" +
-                    "        \"refundState\":2,\n" +
-                    "        \"rentUnitPrice\":230,\n" +
-                    "        \"rentPayment\":2220,\n" +
-                    "        \"remark\":\"备注\",\n" +
-                    "        \"createTime\":1690267754000,\n" +
-                    "        \"updateTime\":1690267754000,\n" +
-                    "        \"userRelName\":\"李四\",\n" +
-                    "        \"userPhone\":\"166273898256\",\n" +
-                    "        \"carRentalPackageName\":\"车电一体套餐\"\n" +
-                    "    }\n" +
-                    "]";
-            return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderRentRefundVO.class));
-        }
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderRentRefundQryReq();
         }
@@ -142,9 +100,17 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         // 转换请求体
         CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalPackageOrderRentRefundPO> refundPOList = carRentalPackageOrderRentRefundService.page(qryModel);
@@ -203,9 +169,17 @@ public class JsonAdminCarRentalPackageOrderRentRefundController extends BasicCon
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
+
         // 转换请求体
         CarRentalPackageOrderRentRefundQryModel qryModel = new CarRentalPackageOrderRentRefundQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageOrderRentRefundService.count(qryModel));

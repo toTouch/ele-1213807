@@ -107,4 +107,14 @@ public class CarRentalPackageQryModel implements Serializable {
      */
     private Integer carModelId;
 
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
+
 }

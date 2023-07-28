@@ -52,8 +52,8 @@
 
     <!-- where 查询条件 -->
     <sql id="where_field">
-        <if test=" franchiseeId != null "> AND `uid` = #{franchisee_id} </if>
-        <if test=" storeId != null "> AND `uid` = #{store_id} </if>
+        <if test=" franchiseeId != null "> AND `franchisee_id` = #{franchiseeId} </if>
+        <if test=" storeId != null "> AND `store_id` = #{storeId} </if>
         <if test=" orderNo != null and orderNo != '' "> AND `order_no` = #{orderNo} </if>
         <if test=" rentalPackageOrderNo != null and rentalPackageOrderNo != '' "> AND `rental_package_order_no` = #{rentalPackageOrderNo} </if>
         <if test=" uid != null "> AND `uid` = #{uid} </if>
@@ -62,6 +62,18 @@
         <if test=" refundState != null "> AND `refund_state` = #{refundState} </if>
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
         <if test=" createTimeBegin != null and createTimeEnd != null "> AND `create_time` BETWEEN #{createTimeBegin} AND #{createTimeEnd} </if>
+        <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
+            AND `franchisee_id` IN
+            <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test=" storeIdList != null and storeIdList.size > 0 ">
+            AND `store_id` IN
+            <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
     </sql>
 
     <!-- 条件新增字段 -->
