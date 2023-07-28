@@ -2,7 +2,7 @@ package com.xiliulou.electricity.vo.rental;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
-import com.xiliulou.electricity.vo.Insurance.UserInsuranceVO;
+import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
 import lombok.Data;
