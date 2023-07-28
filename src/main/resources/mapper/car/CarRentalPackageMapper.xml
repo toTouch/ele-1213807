@@ -64,6 +64,7 @@
         <if test=" type != null "> AND `type` = #{type} </if>
         <if test=" status != null "> AND `status` = #{status} </if>
         <if test=" carModelId != null "> AND `car_model_id` = #{carModelId} </if>
+        <if test=" rentRebate != null "> AND `rent_rebate` = #{rentRebate} </if>
         <if test=" deposit != null "> AND `deposit` = #{deposit} </if>
         <if test=" idList != null and idList.size > 0">
             AND `id` IN

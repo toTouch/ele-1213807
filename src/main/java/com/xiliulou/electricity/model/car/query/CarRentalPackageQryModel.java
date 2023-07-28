@@ -3,6 +3,7 @@ package com.xiliulou.electricity.model.car.query;
 import com.xiliulou.electricity.enums.ApplicableTypeEnum;
 import com.xiliulou.electricity.enums.RenalPackageConfineEnum;
 import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.YesNoEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
@@ -106,6 +107,16 @@ public class CarRentalPackageQryModel implements Serializable {
      * 车辆型号ID
      */
     private Integer carModelId;
+
+    /**
+     * 租金可退
+     * <pre>
+     *     0-是
+     *     1-否
+     * </pre>
+     * @see YesNoEnum
+     */
+    private Integer rentRebate;
 
     /**
      * 加盟商ID集
