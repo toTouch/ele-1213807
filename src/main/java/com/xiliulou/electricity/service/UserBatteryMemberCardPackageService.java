@@ -50,4 +50,6 @@ public interface UserBatteryMemberCardPackageService {
     Triple<Boolean, String, Object> batteryMembercardTransform(Long uid);
 
     Integer deleteByUid(Long uid);
+
+    UserBatteryMemberCardPackage selectByOrderNo(String orderId);
 }

@@ -21,5 +21,7 @@ public class BatteryMembercardRefundOrderDetailVO {
 
     private BigDecimal refundAmount;
 
-    private Long remainingCapacity;
+    private Long remainingNumber;
+
+    private Long remainingTime;
 }

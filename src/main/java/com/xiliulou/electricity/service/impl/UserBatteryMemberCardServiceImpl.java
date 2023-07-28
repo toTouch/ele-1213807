@@ -161,6 +161,7 @@ public class UserBatteryMemberCardServiceImpl implements UserBatteryMemberCardSe
     public Integer unbindMembercardInfoByUid(Long uid) {
         UserBatteryMemberCard userBatteryMemberCard = new UserBatteryMemberCard();
         userBatteryMemberCard.setUid(uid);
+        userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_NOT_DISABLE);
         userBatteryMemberCard.setMemberCardId(0L);
         userBatteryMemberCard.setOrderId("");
         userBatteryMemberCard.setOrderExpireTime(0L);

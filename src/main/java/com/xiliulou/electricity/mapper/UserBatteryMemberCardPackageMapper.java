@@ -46,4 +46,6 @@ public interface UserBatteryMemberCardPackageMapper extends BaseMapper<UserBatte
     UserBatteryMemberCardPackage selectNearestByUid(Long uid);
 
     Integer deleteByUid(Long uid);
+
+    UserBatteryMemberCardPackage selectByOrderNo(String orderId);
 }
