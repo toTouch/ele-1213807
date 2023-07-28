@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.BatteryModel;
 import com.xiliulou.electricity.query.BatteryModelQuery;
 import com.xiliulou.electricity.vo.BatteryModelAndMaterialVO;
 import com.xiliulou.electricity.vo.BatteryModelPageVO;
+import com.xiliulou.electricity.vo.BatteryModelVO;
 import com.xiliulou.electricity.vo.BatteryTypeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -84,6 +85,9 @@ public interface BatteryModelService {
     List<BatteryModel> selectCustomizeBatteryType(BatteryModelQuery query);
 
     List<BatteryTypeVO> selectBatteryTypeAll();
+    List<BatteryTypeVO> selectBatteryTypeAll(Integer tenantId);
 
     List<String> selectBatteryVAll();
+
+    List<String> transformShortBatteryType(List<BatteryTypeVO> batteryModels, List<String> batteryTypes);
 }
