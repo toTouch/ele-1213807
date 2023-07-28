@@ -225,7 +225,7 @@ public class CouponServiceImpl implements CouponService {
 
     private Triple<Boolean, String, Object> getPackagesFromCoupon(Coupon coupon){
         List<CouponActivityPackage> couponActivityPackages = Lists.newArrayList();
-        List<Long> electricityPackages = coupon.getElectricityPackages();
+        List<Long> electricityPackages = null;//coupon.getElectricityPackages();
         for(Long packageId : electricityPackages){
             //检查所选套餐是否存在，并且可用
             ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
@@ -237,7 +237,7 @@ public class CouponServiceImpl implements CouponService {
             couponActivityPackages.add(couponActivityPackage);
         }
 
-        List<Long> carRentalPackages = coupon.getCarRentalPackages();
+        List<Long> carRentalPackages = null; //coupon.getCarRentalPackages();
         for(Long packageId : carRentalPackages){
             CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
@@ -248,7 +248,7 @@ public class CouponServiceImpl implements CouponService {
             couponActivityPackages.add(couponActivityPackage);
         }
 
-        List<Long> carElectricityPackages = coupon.getCarElectricityPackages();
+        List<Long> carElectricityPackages = null; //coupon.getCarElectricityPackages();
         for(Long packageId : carElectricityPackages){
             CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
