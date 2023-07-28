@@ -268,7 +268,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
             batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
-            batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
+//            batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
             batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
             batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
@@ -301,31 +301,73 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String refundOrderNo, String errMsg, Integer status, HttpServletRequest request) {
-        BatteryMembercardRefundOrder batteryMembercardRefundOrder = this.batteryMembercardRefundOrderMapper.selectOne(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, refundOrderNo)
-                .eq(BatteryMembercardRefundOrder::getTenantId, TenantContextHolder.getTenantId())
-                .in(BatteryMembercardRefundOrder::getStatus, BatteryMembercardRefundOrder.STATUS_INIT, BatteryMembercardRefundOrder.STATUS_REFUSE_REFUND, BatteryMembercardRefundOrder.STATUS_FAIL));
-        if (Objects.isNull(batteryMembercardRefundOrder)) {
-            log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMembercardRefundOrder,refoundOrderNo={}", refundOrderNo);
-            return Triple.of(false, "ELECTRICITY.0015", "未找到退款订单!");
-        }
-
-        UserInfo userInfo = userInfoService.queryByUidFromCache(batteryMembercardRefundOrder.getUid());
-        if (Objects.isNull(userInfo)) {
-            log.warn("BATTERY MEMBERCARD REFUND WARN! not found userInfo,uid={}", batteryMembercardRefundOrder.getUid());
-            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
-        }
-
-        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
+    public Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request) {
+        ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(orderNo);
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
-            log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", userInfo.getUid(), batteryMembercardRefundOrder.getMemberCardOrderNo());
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,orderNo={}", orderNo);
             return Triple.of(false, "100281", "电池套餐订单不存在");
         }
 
-        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrder.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            return handleBatteryOfflineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, userInfo);
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityMemberCardOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not found userInfo,uid={}", electricityMemberCardOrder.getUid());
+            return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryMemberCard)){
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
+            return Triple.of(false, "100247", "用户信息不存在");
+        }
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), electricityMemberCardOrder.getMemberCardId());
+            return Triple.of(false, "ELECTRICITY.00121", "电池套餐不存在");
+        }
+
+        BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
+        if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), userInfo.getUid());
+            return Triple.of(false, "100294", "退租金额不合法");
+        }
+
+        BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert = new BatteryMembercardRefundOrder();
+        batteryMembercardRefundOrderInsert.setUid(userInfo.getUid());
+        batteryMembercardRefundOrderInsert.setPhone(userInfo.getPhone());
+        batteryMembercardRefundOrderInsert.setMid(electricityMemberCardOrder.getMemberCardId());
+        batteryMembercardRefundOrderInsert.setRefundOrderNo(OrderIdUtil.generateBusinessOrderId(BusinessType.REFUND_BATTERY_MEMBERCARD, userInfo.getUid()));
+        batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
+        batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
+        batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
+//        batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
+        batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
+        batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
+        batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
+        batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
+        batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
+        batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+
+        this.insert(batteryMembercardRefundOrderInsert);
+
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate=new ElectricityMemberCardOrder();
+        electricityMemberCardOrderUpdate.setOrderId(electricityMemberCardOrder.getOrderId());
+        electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
+        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        batteryMemberCardOrderService.updateStatusByOrderNo(electricityMemberCardOrderUpdate);
+
+        //若套餐使用中,发起退租不能再使用
+        if (Objects.equals(orderNo, userBatteryMemberCard.getOrderId())) {
+            userBatteryMemberCard.setUid(userInfo.getUid());
+            userBatteryMemberCard.setMemberCardStatus(UserBatteryMemberCard.MEMBER_CARD_REFUND);
+            userBatteryMemberCard.setUpdateTime(System.currentTimeMillis());
+            userBatteryMemberCardService.updateByUid(userBatteryMemberCard);
+        }
+
+        if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            return handleBatteryOfflineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo);
         } else {
-            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, request);
+            return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, request);
         }
     }
 
@@ -495,34 +537,30 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         BatteryMembercardRefundOrderDetailVO refundOrderDetailVO = new BatteryMembercardRefundOrderDetailVO();
         refundOrderDetailVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
         refundOrderDetailVO.setRefundAmount(refundAmount);
-        refundOrderDetailVO.setRemainingCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
+        refundOrderDetailVO.setRentUnit(batteryMemberCard.getRentUnit());
+        refundOrderDetailVO.setLimitCount(batteryMemberCard.getLimitCount());
+        assignOtherAttr(refundOrderDetailVO, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
 
         return Triple.of(true, null, refundOrderDetailVO);
     }
 
-    private Long calculateCapacity(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder electricityMemberCardOrder) {
-        Long result = 0L;
+    private void assignOtherAttr(BatteryMembercardRefundOrderDetailVO refundOrderDetailVO, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder electricityMemberCardOrder) {
         //未使用
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
-            if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.YES)) {
-                result = electricityMemberCardOrder.getMaxUseCount();
-            } else {
-                result = electricityMemberCardOrder.getValidDays().longValue();
+            UserBatteryMemberCardPackage userBatteryMemberCardPackage = userBatteryMemberCardPackageService.selectByOrderNo(electricityMemberCardOrder.getOrderId());
+            if (Objects.isNull(userBatteryMemberCardPackage)) {
+                return;
             }
+
+            refundOrderDetailVO.setRemainingNumber(userBatteryMemberCardPackage.getRemainingNumber());
+            refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCardPackage.getMemberCardExpireTime() / 60 / 1000);
         }
 
         //使用中
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
-            if (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.YES)) {
-                //限次
-                result = userBatteryMemberCard.getOrderRemainingNumber();
-            } else {
-                //不限次
-                result = userBatteryMemberCard.getOrderExpireTime() - System.currentTimeMillis();
-            }
+            refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+            refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCard.getMemberCardExpireTime() / 60 / 1000);
         }
-
-        return result;
     }
 
     private BigDecimal calculateRefundAmount(UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder electricityMemberCardOrder) {

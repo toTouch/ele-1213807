@@ -41,8 +41,6 @@ public interface UserBatteryMemberCardService {
      */
     UserBatteryMemberCard insert(UserBatteryMemberCard userBatteryMemberCard);
 
-    UserBatteryMemberCard insertOrUpdate(UserBatteryMemberCard userBatteryMemberCard);
-
     /**
      * 修改数据
      *

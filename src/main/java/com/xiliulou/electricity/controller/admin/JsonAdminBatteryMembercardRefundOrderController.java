@@ -168,11 +168,10 @@ public class JsonAdminBatteryMembercardRefundOrderController extends BaseControl
 
     @PostMapping("/admin/battery/membercard/refund")
     @Log(title = "后台电池租金退款")
-    public R batteryMembercardRefund(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status,
-                                          @RequestParam(value = "errMsg", required = false) String errMsg, HttpServletRequest request) {
+    public R batteryMembercardRefund(@RequestParam("orderNo") String orderNo, HttpServletRequest request) {
 
 
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(refundOrderNo, errMsg, status, request));
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundForAdmin(orderNo, request));
     }
 
 

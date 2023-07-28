@@ -67,5 +67,5 @@ public interface BatteryMembercardRefundOrderService {
 
     Integer insert(BatteryMembercardRefundOrder batteryMembercardRefundOrderInsert);
 
-    Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String refundOrderNo, String errMsg, Integer status, HttpServletRequest request);
+    Triple<Boolean, String, Object> batteryMembercardRefundForAdmin(String orderNo, HttpServletRequest request);
 }
