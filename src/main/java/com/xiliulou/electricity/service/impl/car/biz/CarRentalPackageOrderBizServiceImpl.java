@@ -24,7 +24,7 @@ import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
-import com.xiliulou.electricity.vo.Insurance.UserInsuranceVO;
+import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;

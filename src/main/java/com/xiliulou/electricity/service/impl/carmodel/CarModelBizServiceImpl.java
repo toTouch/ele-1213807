@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service.impl.carmodel;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.Picture;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.car.CarRentalPackageMemberTermPO;
 import com.xiliulou.electricity.entity.car.CarRentalPackagePO;
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
@@ -9,15 +12,23 @@ import com.xiliulou.electricity.exception.BizException;
 import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
 import com.xiliulou.electricity.service.ElectricityCarModelService;
 import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.PictureService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.car.CarRentalPackageMemberTermService;
 import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.service.carmodel.CarModelBizService;
+import com.xiliulou.electricity.vo.PictureVO;
+import com.xiliulou.electricity.vo.StoreVO;
+import com.xiliulou.electricity.vo.car.CarModelDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 车辆型号业务聚合 BizServiceImpl
@@ -29,6 +40,12 @@ import java.math.BigDecimal;
 public class CarModelBizServiceImpl implements CarModelBizService {
 
     @Resource
+    private StoreService storeService;
+
+    @Resource
+    private PictureService pictureService;
+
+    @Resource
     private CarRentalPackageMemberTermService carRentalPackageMemberTermService;
 
     @Resource
@@ -38,7 +55,61 @@ public class CarModelBizServiceImpl implements CarModelBizService {
     private ElectricityCarService carService;
 
     @Resource
-    private ElectricityCarModelService carModelBizService;
+    private ElectricityCarModelService carModelService;
+
+    /**
+     * 根据车辆型号ID获取车辆型号信息<br />
+     * 包含：基本信息、图片信息、门店信息
+     *
+     * @param carModelId 车辆型号ID
+     * @return 车辆型号详细信息
+     */
+    @Override
+    public CarModelDetailVO queryDetailByCarModelId(Integer carModelId) {
+        if (ObjectUtils.isEmpty(carModelId)) {
+            throw new BizException("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        // 查询车辆型号基本信息
+        ElectricityCarModel carModel = carModelService.queryByIdFromCache(carModelId);
+        if (ObjectUtils.isEmpty(carModel)) {
+            log.info("CarModelBizService.queryDetailByCarModelId, not found t_electricity_car_model. carModelId is {}", JsonUtil.toJson(carModel));
+            return null;
+        }
+
+        // 查询车辆型号图片信息
+        List<String> pictureUrls = null;
+        List<Picture> pictures = pictureService.selectByByBusinessId(Long.valueOf(carModel.getId()));
+        if (!CollectionUtils.isEmpty(pictures)) {
+            List<PictureVO> pictureVOList = pictureService.pictureParseVO(pictures);
+            if (!CollectionUtils.isEmpty(pictureVOList)) {
+                pictureUrls = pictureVOList.stream().map(PictureVO::getPictureOSSUrl).collect(Collectors.toList());
+            }
+        }
+
+        // 查询门店信息
+        Store store = storeService.queryByIdFromCache(carModel.getStoreId());
+
+        // 拼装返回数据
+        CarModelDetailVO carModelDetailVo = new CarModelDetailVO();
+        carModelDetailVo.setId(carModel.getId());
+        carModelDetailVo.setName(carModel.getName());
+        carModelDetailVo.setOtherProperties(carModel.getOtherProperties());
+
+        // 赋值车辆型号图片信息
+        carModelDetailVo.setPictureUrls(pictureUrls);
+
+        // 赋值门店信息
+        if (ObjectUtils.isNotEmpty(store)) {
+            StoreVO storeVo = new StoreVO();
+            storeVo.setId(store.getId());
+            storeVo.setName(store.getName());
+            storeVo.setAddress(store.getAddress());
+            carModelDetailVo.setStore(storeVo);
+        }
+
+        return carModelDetailVo;
+    }
 
     /**
      * 检测是否允许购买此车辆型号
@@ -55,7 +126,7 @@ public class CarModelBizServiceImpl implements CarModelBizService {
         }
 
         // 1. 查询车辆型号是否存在
-        ElectricityCarModel carModel = carModelBizService.queryByIdFromCache(carModelId);
+        ElectricityCarModel carModel = carModelService.queryByIdFromCache(carModelId);
         if (ObjectUtils.isEmpty(carModel) || !tenantId.equals(carModel.getTenantId())) {
             log.error("CarModelBizService.checkBuyByCarModelId, not found t_electricity_car_model or tenantId mismatch. ");
             throw new BizException("300000", "数据有误");

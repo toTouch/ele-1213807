@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo.Insurance;
+package com.xiliulou.electricity.vo.insurance;
 
 import lombok.Data;
 
