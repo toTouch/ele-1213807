@@ -505,7 +505,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setCardPayCount(payCount + 1);
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
 
             ServiceFeeUserInfo serviceFeeUserInfoInsertOrUpdate = new ServiceFeeUserInfo();
             serviceFeeUserInfoInsertOrUpdate.setServiceFeeGenerateTime(memberCardExpireTime);
@@ -3139,7 +3139,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
         userBatteryMemberCardUpdate.setTenantId(electricityMemberCardOrder.getTenantId());
         userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
-        userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+        userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
 
         ServiceFeeUserInfo serviceFeeUserInfoInsert = new ServiceFeeUserInfo();
         serviceFeeUserInfoInsert.setServiceFeeGenerateTime(System.currentTimeMillis() + batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,electricityMemberCardOrder));
@@ -3363,7 +3363,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setTenantId(userInfo.getTenantId());
             userBatteryMemberCardUpdate.setCardPayCount(queryMaxPayCount(userBatteryMemberCard) + 1);
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
         } else {
             UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
             userBatteryMemberCardPackage.setUid(userInfo.getUid());
@@ -3640,7 +3640,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
 
         }else{
             //用户已绑定套餐
@@ -3660,7 +3660,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()+memberCardOrder.getMaxUseCount());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
 
 
             //获取用户电池型号
@@ -3713,7 +3713,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setDelFlag(UserBatteryMemberCard.DEL_NORMAL);
             userBatteryMemberCardUpdate.setCreateTime(System.currentTimeMillis());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
 
         }else{
             //用户已绑定套餐
@@ -3733,7 +3733,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime()+batteryMemberCardService.transformBatteryMembercardEffectiveTime(batteryMemberCard,memberCardOrder));
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber()+memberCardOrder.getMaxUseCount());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
-            userBatteryMemberCardService.insertOrUpdate(userBatteryMemberCardUpdate);
+            userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
 
 
             //获取用户电池型号
