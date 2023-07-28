@@ -503,7 +503,6 @@ public class UnionTradeOrderServiceImpl extends
         return Pair.of(true, null);
     }
 
-
     //处理保险订单
     @Override
     @Transactional(rollbackFor = Exception.class)

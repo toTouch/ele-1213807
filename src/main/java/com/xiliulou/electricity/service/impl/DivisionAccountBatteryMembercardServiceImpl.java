@@ -71,6 +71,11 @@ public class DivisionAccountBatteryMembercardServiceImpl implements DivisionAcco
         return this.divisionAccountBatteryMembercardMapper.selectMemberCardsByDAConfigId(divisionAccountId);
     }
 
+    @Override
+    public List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigIdAndType(Long divisionAccountId, Integer type) {
+        return  this.divisionAccountBatteryMembercardMapper.selectMemberCardsByDAConfigIdAndType(divisionAccountId, type);
+    }
+
     @Slave
     @Override
     public Long selectByBatteryMembercardId(Long membercardId) {

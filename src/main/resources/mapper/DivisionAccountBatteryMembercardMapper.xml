@@ -36,6 +36,14 @@
         where division_account_id = #{id}
     </select>
 
+    <select id="selectMemberCardsByDAConfigIdAndType" resultMap="DivisionAccountBatteryMembercardMap">
+        select
+        id, division_account_id, ref_id, tenant_id, type, del_flag, create_time, update_time
+        from t_division_account_battery_membercard
+        where division_account_id = #{id}
+        and type = #{type}
+    </select>
+
     <select id="selectByBatteryMembercardId" resultType="long">
         select
           division_account_id
