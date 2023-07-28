@@ -473,7 +473,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         //若退用户最后一个套餐用户绑定有资产提示先归还资产再退租金
         if(Objects.equals(userBatteryMemberCard.getOrderId(),orderNo) && Objects.equals(userInfo.getBatteryRentStatus(),UserInfo.BATTERY_RENT_STATUS_YES)){
             log.warn("BATTERY MEMBERCARD REFUND WARN! not return battery,uid={}", userInfo.getUid());
-            return Triple.of(false, "100284", "未归还电池");
+            return Triple.of(false, "100295", "请先归还资产再退租金");
         }
 
         BigDecimal refundAmount = calculateRefundAmount(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
