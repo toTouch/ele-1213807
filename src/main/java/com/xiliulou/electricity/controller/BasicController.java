@@ -250,16 +250,85 @@ public class BasicController {
     }
 
     /**
-     * 检查权限
-     * @return
+     * 检查权限<br />
+     * <pre>
+     *     加盟商ID集：Long
+     *     门店ID集：Long
+     * </pre>
+     * @return L:加盟商ID集，M：门店ID集，R：校验是否成功
      */
-    protected void checkPermission() {
+    protected Triple<List<Long>, List<Long>, Boolean> checkPermission() {
         // 用户拦截
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("BasicController.checkPermission failed. not found user.");
             throw new BizException("ELECTRICITY.0001", "未找到用户");
         }
+
+        // 加盟商数据权
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                log.info("BasicController.checkPermission. Franchisee data rights are empty.");
+                return Triple.of(null, null, false);
+            }
+        }
+
+        // 门店数据权
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                log.info("BasicController.checkPermission. Store data rights are empty.");
+                return Triple.of(null, storeIds, false);
+            }
+        }
+
+        return Triple.of(franchiseeIds, storeIds, true);
+    }
+
+    /**
+     * 检查权限<br />
+     * <pre>
+     *     加盟商ID集：Integer
+     *     门店ID集：Integer
+     * </pre>
+     * @return L:加盟商ID集，M：门店ID集，R：校验是否成功
+     */
+    protected Triple<List<Integer>, List<Integer>, Boolean> checkPermissionInteger() {
+        // 用户拦截
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("BasicController.checkPermission failed. not found user.");
+            throw new BizException("ELECTRICITY.0001", "未找到用户");
+        }
+
+        // 加盟商数据权
+        List<Integer> franchiseeIdList = null;
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                log.info("BasicController.checkPermission. Franchisee data rights are empty.");
+                return Triple.of(null, null, false);
+            }
+            franchiseeIdList = franchiseeIds.stream().map(franchiseeId -> franchiseeId.intValue()).collect(Collectors.toList());
+        }
+
+        // 门店数据权
+        List<Integer> storeIdList = null;
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(storeIds)) {
+                log.info("BasicController.checkPermission. Store data rights are empty.");
+                return Triple.of(null, null, false);
+            }
+            storeIdList = storeIds.stream().map(storeId -> storeId.intValue()).collect(Collectors.toList());
+        }
+
+        return Triple.of(franchiseeIdList, storeIdList, true);
     }
 
 }

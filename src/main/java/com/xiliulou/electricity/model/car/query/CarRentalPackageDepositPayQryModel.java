@@ -6,6 +6,7 @@ import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 租车套餐押金缴纳订单表，DB层查询模型
@@ -94,4 +95,14 @@ public class CarRentalPackageDepositPayQryModel implements Serializable {
      * 创建时间截止
      */
     private Long createTimeEnd;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
 }

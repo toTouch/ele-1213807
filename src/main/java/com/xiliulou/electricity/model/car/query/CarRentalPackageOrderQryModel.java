@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.model.car.query;
 
+import java.io.Serializable;
+import java.util.List;
+
 import com.xiliulou.electricity.enums.BuyTypeEnum;
 import com.xiliulou.electricity.enums.PayStateEnum;
 import com.xiliulou.electricity.enums.PayTypeEnum;
-import lombok.Data;
 
-import java.io.Serializable;
+import lombok.Data;
 
 /**
  * 租车套餐购买订单，DB层查询模型
@@ -91,4 +93,14 @@ public class CarRentalPackageOrderQryModel implements Serializable {
      * 购买时间截止
      */
     private Long buyTimeEnd;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
 }

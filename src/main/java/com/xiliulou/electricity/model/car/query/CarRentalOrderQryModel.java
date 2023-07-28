@@ -4,6 +4,7 @@ import com.xiliulou.electricity.enums.RentalTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 车辆租赁订单表，DB层查询模型
@@ -63,4 +64,14 @@ public class CarRentalOrderQryModel implements Serializable {
      * 车辆SN码
      */
     private String carSn;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
 }

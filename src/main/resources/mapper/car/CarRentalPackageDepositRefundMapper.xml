@@ -57,6 +57,18 @@
         <if test=" payType != null "> AND `pay_type` = #{payType} </if>
         <if test=" refundState != null "> AND `refund_state` = #{refundState} </if>
         <if test=" createTimeBegin != null and createTimeEnd != null "> AND `create_time` BETWEEN #{createTimeBegin} AND #{createTimeEnd} </if>
+        <if test=" franchiseeIdList != null and franchiseeIdList.size > 0 ">
+            AND `franchisee_id` IN
+            <foreach collection="franchiseeIdList" item="franchiseeId" open="(" close=")" separator=",">
+                #{franchiseeId}
+            </foreach>
+        </if>
+        <if test=" storeIdList != null and storeIdList.size > 0 ">
+            AND `store_id` IN
+            <foreach collection="storeIdList" item="storeId" open="(" close=")" separator=",">
+                #{storeId}
+            </foreach>
+        </if>
     </sql>
 
     <!-- 条件新增字段 -->
