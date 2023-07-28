@@ -245,15 +245,4 @@
         </choose>
     </select>
 
-    <select id="checkExistInsurance" resultType="Integer">
-        select 1 from t_franchisee_insurance
-        where franchisee_id=#{franchiseeId}
-        <if test="simpleBatteryType != null and simpleBatteryType != ''">
-            and simple_battery_type = #{simpleBatteryType}
-        </if>
-        <if test="carModelId != null">
-            and car_model_id = #{carModelId}
-        </if>
-        LIMIT 1
-    </select>
 </mapper>
