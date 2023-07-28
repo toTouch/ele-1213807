@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.CarModelTag;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * 车辆型号标签表(CarModelTag)表数据库访问层
@@ -14,6 +13,14 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2022-12-14 15:55:53
  */
 public interface CarModelTagMapper extends BaseMapper<CarModelTag> {
+
+    /**
+     * 根据车辆型号ID集获取对应标签集
+     *
+     * @param carModelIdList 车辆型号ID集
+     * @return 标签集
+     */
+    List<CarModelTag> selectByCarModelIds(@Param("carModelIdList") List<Integer> carModelIdList);
 
     /**
      * 通过ID查询单条数据

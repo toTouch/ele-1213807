@@ -688,7 +688,11 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
         Store store = storeService.queryByIdFromCache(divisionAccountConfig.getStoreId());
         divisionAccountConfigVO.setStoreName(Objects.nonNull(store) ? store.getName() : "");
 
-        divisionAccountConfigVO.setMemberCardList(getMemberCardVOListByDA(divisionAccountConfig));
+        //divisionAccountConfigVO.setMemberCardList(getMemberCardVOListByDA(divisionAccountConfig));
+
+        divisionAccountConfigVO.setElectricityPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_BATTERY));
+        divisionAccountConfigVO.setCarRentalPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL));
+        divisionAccountConfigVO.setCarElectricityPackages(getMemberCardVOListByConfigIdAndType(divisionAccountConfig, DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY));
 
         /*if (Objects.equals(divisionAccountConfig.getType(), DivisionAccountConfig.TYPE_BATTERY)) {
             List<Long> memberCardIds = divisionAccountBatteryMembercardService.selectByDivisionAccountConfigId(divisionAccountConfig.getId());
@@ -790,6 +794,41 @@ public class DivisionAccountConfigServiceImpl implements DivisionAccountConfigSe
             }
         }
        return list;
+    }
+
+    /**
+     * 根据分账配置属性和套餐类型获取对应的套餐信息
+     * @param item
+     * @param packageType
+     * @return
+     */
+    private List<BatteryMemberCardVO> getMemberCardVOListByConfigIdAndType(DivisionAccountConfig item, Integer packageType) {
+        List<BatteryMemberCardVO> list = Lists.newArrayList();
+        List<DivisionAccountBatteryMembercard> divisionAccountBatteryMembercards = divisionAccountBatteryMembercardService.selectMemberCardsByDAConfigIdAndType(item.getId(), packageType);
+        if (CollectionUtils.isEmpty(divisionAccountBatteryMembercards)) {
+            return list;
+        }
+
+        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(packageType)) {
+            //获取换电套餐信息
+            for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
+                BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+                ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(accountBatteryMembercard.getRefId().intValue());
+                batteryMemberCardVO.setId(electricityMemberCard.getId().longValue());
+                batteryMemberCardVO.setName(electricityMemberCard.getName());
+                list.add(batteryMemberCardVO);
+            }
+        }else{
+            //获取租车或车电一体的套餐信息
+            for(DivisionAccountBatteryMembercard accountBatteryMembercard : divisionAccountBatteryMembercards) {
+                BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+                CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(accountBatteryMembercard.getRefId());
+                batteryMemberCardVO.setId(carRentalPackagePO.getId());
+                batteryMemberCardVO.setName(carRentalPackagePO.getName());
+                list.add(batteryMemberCardVO);
+            }
+        }
+        return list;
     }
 
     /**

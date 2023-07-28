@@ -54,6 +54,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     ElectricityConfigService electricityConfigService;
     @Autowired
     BoxOtherPropertiesService boxOtherPropertiesService;
+    @Autowired
+    BatteryModelService batteryModelService;
 
 
     /**
@@ -140,6 +142,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             item.setChargeStatus(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getChargeStatus() : -1);
             item.setBatteryA(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryChargeA() : 0);
             item.setBatteryV(Objects.nonNull(electricityBatteryVO) ? electricityBatteryVO.getBatteryV() : 0);
+
+            //设置电池短型号
+            String batteryShortType = batteryModelService.acquireBatteryShortType(electricityBatteryVO.getModel(), electricityCabinetBoxQuery.getTenantId());
+            item.setBatteryShortType(batteryShortType);
 
         }).collect(Collectors.toList());
     

@@ -205,6 +205,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         return divisionAccountRecordMapper.selectStatisticByPageCount(query);
     }
 
+    @Deprecated
     @Override
     public void handleBatteryMembercardDivisionAccount(ElectricityMemberCardOrder batteryMemberCardOrder) {
         divisionAccountExecutorService.execute(() -> {
@@ -636,6 +637,7 @@ public class DivisionAccountRecordServiceImpl implements DivisionAccountRecordSe
         return userPayAmount.multiply(ratePercent, new MathContext(2, RoundingMode.DOWN));
     }
 
+    @Deprecated
     @Override
     public void handleCarMembercardDivisionAccount(CarMemberCardOrder carMemberCardOrder) {
         divisionAccountExecutorService.execute(() -> {

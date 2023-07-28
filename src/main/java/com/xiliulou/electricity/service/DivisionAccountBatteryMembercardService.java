@@ -70,6 +70,8 @@ public interface DivisionAccountBatteryMembercardService {
 
     List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigId(Long divisionAccountId);
 
+    List<DivisionAccountBatteryMembercard> selectMemberCardsByDAConfigIdAndType(Long divisionAccountId, Integer type);
+
     Long selectByBatteryMembercardId(Long membercardId);
 
     List<Long> selectByTenantId(Integer tenantId);

@@ -54,6 +54,12 @@ public class DivisionAccountConfigVO {
 
     private List<ElectricityCarModel> carModelList;
 
+    private List<BatteryMemberCardVO> electricityPackages;
+
+    private List<BatteryMemberCardVO> carRentalPackages;
+
+    private List<BatteryMemberCardVO> carElectricityPackages;
+
     private Long createTime;
 
     private Long updateTime;
