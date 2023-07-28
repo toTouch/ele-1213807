@@ -43,4 +43,6 @@ public class CouponQuery {
      */
     private List<Long> ids;
 
+    private Integer superposition;
+
 }

@@ -123,6 +123,8 @@ public class UserCoupon {
     public static final Integer STATUS_DESTRUCTION = 4;
     // 使用中
     public static final Integer STATUS_IS_BEING_VERIFICATION = 5;
+    //已失效
+    public static final Integer STATUS_IS_INVALID = 6;
 
     //减免劵
     public static final Integer FULL_REDUCTION = 1;

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -137,7 +136,13 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
             return Triple.of(true, null, null);
         }
 
-        if (!(userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || userBatteryMemberCard.getOrderRemainingNumber() <= 2)) {
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("BATTERY MEMBER TRANSFORM WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(true, null, null);
+        }
+
+        if (!(userBatteryMemberCard.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getOrderRemainingNumber()<=1))) {
             return Triple.of(true, null, null);
         }
 
@@ -176,8 +181,6 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
                     return;
                 }
 
-                log.error("=====================11111{}",JsonUtil.toJson(batteryMemberCard));
-                log.error("=====================2222{}", JsonUtil.toJson(item));
                 if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber()<=1))) {
                     return;
                 }
