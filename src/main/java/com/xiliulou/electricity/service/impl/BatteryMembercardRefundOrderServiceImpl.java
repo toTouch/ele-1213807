@@ -537,6 +537,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         BatteryMembercardRefundOrderDetailVO refundOrderDetailVO = new BatteryMembercardRefundOrderDetailVO();
         refundOrderDetailVO.setPayAmount(electricityMemberCardOrder.getPayAmount());
         refundOrderDetailVO.setRefundAmount(refundAmount);
+        refundOrderDetailVO.setRentUnit(batteryMemberCard.getRentUnit());
+        refundOrderDetailVO.setLimitCount(batteryMemberCard.getLimitCount());
         assignOtherAttr(refundOrderDetailVO, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
 
         return Triple.of(true, null, refundOrderDetailVO);

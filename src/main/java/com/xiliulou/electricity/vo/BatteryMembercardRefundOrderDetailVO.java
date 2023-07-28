@@ -24,4 +24,14 @@ public class BatteryMembercardRefundOrderDetailVO {
     private Long remainingNumber;
 
     private Long remainingTime;
+
+    /**
+     * 0:不限制,1:限制
+     */
+    private Integer limitCount;
+
+    /**
+     * 租期单位 0：分钟，1：天
+     */
+    private Integer rentUnit;
 }
