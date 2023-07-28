@@ -13,6 +13,14 @@ import java.util.List;
 public interface CarRentalPackageDepositPayService {
 
     /**
+     * 同步免押状态
+     * @param orderNo 押金缴纳订单编码
+     * @param optUid 操作人ID
+     * @return true(成功)、false(失败)
+     */
+    boolean syncFreeState(String orderNo, Long optUid);
+
+    /**
      * 根据订单编号更新支付状态
      * @param orderNo 订单编码
      * @param payState 支付状态
