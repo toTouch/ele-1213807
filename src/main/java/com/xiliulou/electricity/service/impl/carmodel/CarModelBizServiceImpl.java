@@ -105,6 +105,8 @@ public class CarModelBizServiceImpl implements CarModelBizService {
             storeVo.setId(store.getId());
             storeVo.setName(store.getName());
             storeVo.setAddress(store.getAddress());
+            storeVo.setLongitude(store.getLongitude());
+            storeVo.setLatitude(store.getLatitude());
             carModelDetailVo.setStore(storeVo);
         }
 
