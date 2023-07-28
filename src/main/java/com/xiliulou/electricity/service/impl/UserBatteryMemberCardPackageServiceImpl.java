@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
 import com.xiliulou.electricity.service.*;
@@ -175,7 +176,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
                     return;
                 }
 
-                if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber() >= 1))) {
+                log.error("=====================11111{}",JsonUtil.toJson(batteryMemberCard));
+                log.error("=====================2222{}", JsonUtil.toJson(item));
+                if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber()<=1))) {
                     return;
                 }
 
