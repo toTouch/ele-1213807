@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.vo.rental;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
 import com.xiliulou.electricity.vo.Insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
@@ -29,9 +30,10 @@ public class RentalPackageVO implements Serializable {
      * */
     private CarVO car;
 
-    // TODO 电池信息
-
-
+    /**
+     * 电池信息
+     */
+    private ElectricityUserBatteryVo userBattery;
 
     /**
      * 用户保险信息

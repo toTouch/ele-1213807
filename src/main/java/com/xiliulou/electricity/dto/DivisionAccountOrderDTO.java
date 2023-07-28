@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.dto;
 
+import com.xiliulou.electricity.enums.DivisionAccountEnum;
+import com.xiliulou.electricity.enums.PackageTypeEnum;
 import lombok.Data;
 
 /**
@@ -17,12 +19,14 @@ public class DivisionAccountOrderDTO {
     private String orderNo;
 
     /**
-     * 套餐类型 (0 - 换电， 1 - 租车/车电一体)
+     * 套餐类型 (1 - 换电， 2 - 租车, 3 - 车电一体)
+     * @see PackageTypeEnum
      */
     private Integer Type;
 
     /**
      * 分账类型 (0 - 购买， 1 - 退租)
+     * @see DivisionAccountEnum
      */
     private Integer divisionAccountType;
 
