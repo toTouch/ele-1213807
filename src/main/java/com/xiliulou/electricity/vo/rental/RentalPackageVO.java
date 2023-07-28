@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.vo.rental;
 
 import com.xiliulou.electricity.enums.MemberTermStatusEnum;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.Insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
 import lombok.Data;
@@ -28,11 +30,15 @@ public class RentalPackageVO implements Serializable {
      * */
     private CarVO car;
 
-    // TODO 电池信息
+    /**
+     * 电池信息
+     */
+    private ElectricityUserBatteryVo userBattery;
 
-    // TODO 保险信息
-
-    // TODO 滞纳金信息
+    /**
+     * 用户保险信息
+     */
+    private UserInsuranceVO userInsurance;
 
     /**
      * 截止时间（所有订单的总计）
@@ -47,6 +53,7 @@ public class RentalPackageVO implements Serializable {
     /**
      * 状态
      * <pre>
+     *     -1-已过期
      *     0-初始化
      *     1-正常
      *     2-申请冻结

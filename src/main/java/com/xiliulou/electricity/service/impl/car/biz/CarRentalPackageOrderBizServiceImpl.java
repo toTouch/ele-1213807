@@ -23,9 +23,13 @@ import com.xiliulou.electricity.service.car.biz.CarRentalPackageOrderBizService;
 import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
+import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
+import com.xiliulou.electricity.vo.Insurance.UserInsuranceVO;
+import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
+import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.mq.service.RocketMqService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -946,24 +950,28 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 4. 查询车辆相关信息
         CarInfoDO carInfo = carService.queryByCarId(tenantId, userCar.getCid());
 
-        // 5. TODO 查询保险信息，志龙
+        // 5. 查询用户保险信息，志龙
+        Integer rentalPackageType = memberTerm.getRentalPackageType();
+        InsuranceUserInfoVo insuranceUserInfoVo = insuranceUserInfoService.selectUserInsuranceDetailByUidAndType(uid, rentalPackageType);
 
-        // 车电一体
-        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(memberTerm.getRentalPackageType())) {
-            // 6. TODO 电池消息，志龙
-
+        // 6. 电池消息
+        ElectricityUserBatteryVo userBatteryVo = null;
+        if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(rentalPackageType)) {
+            Triple<Boolean, String, Object> batteryTriple = batteryService.queryInfoByUid(uid, BatteryInfoQuery.NEED);
+            userBatteryVo = (ElectricityUserBatteryVo) batteryTriple.getRight();
         }
 
         // 7. 滞纳金信息
         BigDecimal lateFeeAmount = carRenalPackageSlippageBizService.queryCarPackageUnpaidAmountByUid(tenantId, uid);
 
         // 构建返回信息
-        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, carInfo, lateFeeAmount);
+        RentalPackageVO rentalPackageVO = buildRentalPackageVO(memberTerm, carRentalPackage, carRentalPackageOrder, insuranceUserInfoVo, carInfo, userBatteryVo, lateFeeAmount);
 
         return R.ok(rentalPackageVO);
     }
 
-    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTerm, CarRentalPackagePO carRentalPackage, CarRentalPackageOrderPO carRentalPackageOrder, CarInfoDO carInfo, BigDecimal lateFeeAmount) {
+    private RentalPackageVO buildRentalPackageVO(CarRentalPackageMemberTermPO memberTerm, CarRentalPackagePO carRentalPackage, CarRentalPackageOrderPO carRentalPackageOrder,
+                                                 InsuranceUserInfoVo insuranceUserInfoVo, CarInfoDO carInfo, ElectricityUserBatteryVo userBatteryVo, BigDecimal lateFeeAmount) {
         RentalPackageVO rentalPackageVO = new RentalPackageVO();
         rentalPackageVO.setDeadlineTime(memberTerm.getDueTimeTotal());
         rentalPackageVO.setLateFeeAmount(lateFeeAmount);
@@ -987,6 +995,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 赋值套餐订单信息
         rentalPackageVO.setCarRentalPackageOrder(carRentalPackageOrderVO);
 
+        // 用户保险信息
+        if (ObjectUtils.isNotEmpty(insuranceUserInfoVo)) {
+            UserInsuranceVO userInsuranceVo = new UserInsuranceVO();
+            userInsuranceVo.setInsuranceName(insuranceUserInfoVo.getInsuranceName());
+            userInsuranceVo.setInsuranceExpireTime(insuranceUserInfoVo.getInsuranceExpireTime());
+            userInsuranceVo.setPremium(insuranceUserInfoVo.getPremium());
+            rentalPackageVO.setUserInsurance(userInsuranceVo);
+        }
+
         // 车辆信息
         if (ObjectUtils.isNotEmpty(carInfo)) {
             CarVO carVO = new CarVO();
@@ -997,6 +1014,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             // 赋值车辆信息
             rentalPackageVO.setCar(carVO);
         }
+
+        // 电池信息
+        rentalPackageVO.setUserBattery(userBatteryVo);
 
         return rentalPackageVO;
     }

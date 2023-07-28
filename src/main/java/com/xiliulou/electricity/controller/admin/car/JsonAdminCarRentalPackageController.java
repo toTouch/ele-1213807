@@ -27,6 +27,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐表 Controller
- * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -122,9 +122,17 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalPackagePO> carRentalPackageEntityList = carRentalPackageService.page(qryModel);
@@ -194,9 +202,17 @@ public class JsonAdminCarRentalPackageController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
+
         // 转换请求体
         CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageService.count(qryModel));

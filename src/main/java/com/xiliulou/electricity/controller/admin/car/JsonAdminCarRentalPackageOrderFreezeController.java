@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -16,6 +15,7 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageOrderFreezeVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐订单冻结表 Controller
- * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -93,49 +92,6 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderFreezeVO>> page(@RequestBody CarRentalPackageOrderFreezeQryReq queryReq) {
-        // TODO mock数据
-        if (true) {
-            String mockString = "[\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"7364728293847382\",\n" +
-                    "        \"rentalPackageType\":1,\n" +
-                    "        \"residue\":123,\n" +
-                    "        \"residueUnit\":0,\n" +
-                    "        \"status\":1,\n" +
-                    "        \"remark\":\"备注\",\n" +
-                    "        \"lateFee\":230,\n" +
-                    "        \"createTime\":1690267754000,\n" +
-                    "        \"updateTime\":1690267754000,\n" +
-                    "        \"applyTerm\":5,\n" +
-                    "        \"applyTime\":1690267754000,\n" +
-                    "        \"applyReason\":\"申请原因\",\n" +
-                    "        \"userRelName\":\"张三\",\n" +
-                    "        \"userPhone\":\"18726372897\",\n" +
-                    "        \"carRentalPackageName\":\"单车套餐\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"8762738492837162\",\n" +
-                    "        \"rentalPackageType\":2,\n" +
-                    "        \"residue\":987,\n" +
-                    "        \"residueUnit\":1,\n" +
-                    "        \"status\":2,\n" +
-                    "        \"remark\":\"备注啊\",\n" +
-                    "        \"lateFee\":22,\n" +
-                    "        \"createTime\":1690267754000,\n" +
-                    "        \"updateTime\":1690267754000,\n" +
-                    "        \"applyTerm\":56,\n" +
-                    "        \"realTerm\":4,\n" +
-                    "        \"applyTime\":1690267754000,\n" +
-                    "        \"auditTime\":1690267754000,\n" +
-                    "        \"enableTime\":1690267754000,\n" +
-                    "        \"applyReason\":\"李四\",\n" +
-                    "        \"userRelName\":\"李四\",\n" +
-                    "        \"userPhone\":\"16273627876\",\n" +
-                    "        \"carRentalPackageName\":\"车电一体套餐\"\n" +
-                    "    }\n" +
-                    "]";
-            return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderFreezeVO.class));
-        }
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderFreezeQryReq();
         }
@@ -144,9 +100,17 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         // 转换请求体
         CarRentalPackageOrderFreezeQryModel qryModel = new CarRentalPackageOrderFreezeQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalPackageOrderFreezePO> freezeEntityList = carRentalPackageOrderFreezeService.page(qryModel);
@@ -205,9 +169,17 @@ public class JsonAdminCarRentalPackageOrderFreezeController extends BasicControl
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
+
         // 转换请求体
         CarRentalPackageOrderFreezeQryModel qryModel = new CarRentalPackageOrderFreezeQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageOrderFreezeService.count(qryModel));

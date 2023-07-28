@@ -37,7 +37,6 @@ public class InsuranceUserInfoVo {
      * 保险Id
      */
     private Integer insuranceId;
-
     /**
      * 保险订单编号
      */
@@ -64,7 +63,9 @@ public class InsuranceUserInfoVo {
     private Long createTime;
 
     private Long updateTime;
-
+    /**
+     * 保险名称
+     */
     private String insuranceName;
 
     private String cityName;

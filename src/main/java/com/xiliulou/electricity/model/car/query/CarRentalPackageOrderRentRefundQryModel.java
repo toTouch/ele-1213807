@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.model.car.query;
 
+import java.io.Serializable;
+import java.util.List;
+
 import com.xiliulou.electricity.enums.PayTypeEnum;
 import com.xiliulou.electricity.enums.RefundStateEnum;
 import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
-import lombok.Data;
 
-import java.io.Serializable;
+import lombok.Data;
 
 /**
  * 租车套餐订单租金退款表，DB层查询模型
@@ -106,4 +108,14 @@ public class CarRentalPackageOrderRentRefundQryModel implements Serializable {
      * 创建时间截止
      */
     private Long createTimeEnd;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
 }

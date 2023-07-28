@@ -6,6 +6,7 @@ import com.xiliulou.electricity.enums.PayTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 租车套餐购买订单，DB层查询模型
@@ -36,6 +37,11 @@ public class CarRentalPackageOrderQryModel implements Serializable {
      * 加盟商ID
      */
     private Integer franchiseeId;
+
+    /**
+     * 门店ID
+     */
+    private Integer storeId;
 
     /**
      * 订单编码
@@ -91,4 +97,14 @@ public class CarRentalPackageOrderQryModel implements Serializable {
      * 购买时间截止
      */
     private Long buyTimeEnd;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
 }

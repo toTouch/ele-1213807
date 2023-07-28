@@ -5,6 +5,7 @@ import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 租车套餐订单逾期表，DB层查询模型
@@ -47,6 +48,11 @@ public class CarRentalPackageOrderSlippageQryModel implements Serializable {
     private String orderNo;
 
     /**
+     * 套餐ID
+     */
+    private Long rentalPackageId;
+
+    /**
      * 套餐类型
      * <pre>
      *     1-单车
@@ -81,4 +87,14 @@ public class CarRentalPackageOrderSlippageQryModel implements Serializable {
      * 创建时间截止
      */
     private Long createTimeEnd;
+
+    /**
+     * 加盟商ID集
+     */
+    private List<Integer> franchiseeIdList;
+
+    /**
+     * 门店ID集
+     */
+    private List<Integer> storeIdList;
 }

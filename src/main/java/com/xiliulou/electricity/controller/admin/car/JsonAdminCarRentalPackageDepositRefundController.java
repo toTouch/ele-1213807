@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -17,6 +16,7 @@ import com.xiliulou.electricity.vo.car.CarRentalPackageDepositRefundVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐押金退押 Controller
- * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -111,53 +110,24 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositRefundVO>> page(@RequestBody CarRentalPackageDepositRefundQryReq queryReq) {
-        // TODO mock数据
-        if (true) {
-            String mockString = "[\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"111111111\",\n" +
-                    "        \"depositPayOrderNo\":\"111111111\",\n" +
-                    "        \"applyAmount\":99,\n" +
-                    "        \"realAmount\":90,\n" +
-                    "        \"payType\":1,\n" +
-                    "        \"refundState\":1,\n" +
-                    "        \"createTime\":1689749354000,\n" +
-                    "        \"remark\":\"\",\n" +
-                    "        \"userRelName\":\"张三\",\n" +
-                    "        \"userPhone\":\"13384937843\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"\",\n" +
-                    "        \"depositPayOrderNo\":\"\",\n" +
-                    "        \"applyAmount\":0,\n" +
-                    "        \"realAmount\":0,\n" +
-                    "        \"payType\":0,\n" +
-                    "        \"refundState\":0,\n" +
-                    "        \"createTime\":1689404354000,\n" +
-                    "        \"remark\":\"我是备注\",\n" +
-                    "        \"userRelName\":\"李四\",\n" +
-                    "        \"userPhone\":\"13243256746\"\n" +
-                    "    }\n" +
-                    "]";
-            return R.ok(JSON.parseArray(mockString, CarRentalPackageDepositRefundVO.class));
-        }
-
-        Integer tenantId = TenantContextHolder.getTenantId();
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("not found user.");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositRefundQryReq();
         }
 
+        Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
+
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
 
         // 转换请求体
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalPackageDepositRefundPO> depositRefundEntityList = carRentalPackageDepositRefundService.page(qryModel);
@@ -196,22 +166,24 @@ public class JsonAdminCarRentalPackageDepositRefundController extends BasicContr
      */
     @PostMapping("/count")
     public R<Integer> count(@RequestBody CarRentalPackageDepositRefundQryReq qryReq) {
-        Integer tenantId = TenantContextHolder.getTenantId();
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("not found user.");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
         if (null == qryReq) {
             qryReq = new CarRentalPackageDepositRefundQryReq();
         }
 
+        Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
+
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
 
         // 转换请求体
         CarRentalPackageDepositRefundQryModel qryModel = new CarRentalPackageDepositRefundQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageDepositRefundService.count(qryModel));

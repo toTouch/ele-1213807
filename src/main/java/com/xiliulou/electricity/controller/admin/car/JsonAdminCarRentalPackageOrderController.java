@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.Coupon;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.service.car.CarRentalPackageOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 /**
  * 租车套餐订单表 Controller
- * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -43,66 +42,6 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageOrderVO>> page(@RequestBody CarRentalPackageOrderQryReq queryReq) {
-        // TODO mock数据
-        if (true) {
-            String mockString = "[\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"3627384938274829\",\n" +
-                    "        \"rentalPackageType\":1,\n" +
-                    "        \"confine\":0,\n" +
-                    "        \"tenancy\":7,\n" +
-                    "        \"tenancyUnit\":0,\n" +
-                    "        \"rent\":123,\n" +
-                    "        \"rentPayment\":100,\n" +
-                    "        \"applicableType\":0,\n" +
-                    "        \"rentRebate\":1,\n" +
-                    "        \"depositPayOrderNo\":\"2637284938274839\",\n" +
-                    "        \"lateFee\":288,\n" +
-                    "        \"payType\":1,\n" +
-                    "        \"couponId\":123456,\n" +
-                    "        \"payState\":2,\n" +
-                    "        \"useState\":2,\n" +
-                    "        \"remark\":\"\",\n" +
-                    "        \"couponName\":\"赠送优惠券名称\",\n" +
-                    "        \"createTime\":1689749354000,\n" +
-                    "        \"franchiseeName\":\"我是加盟商\",\n" +
-                    "        \"userRelName\":\"张三\",\n" +
-                    "        \"userPhone\":\"15426374839\",\n" +
-                    "        \"carRentalPackageName\":\"我是单车套餐\",\n" +
-                    "        \"carModelName\":\"我是车辆型号\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"2637485039281738\",\n" +
-                    "        \"rentalPackageType\":2,\n" +
-                    "        \"confine\":1,\n" +
-                    "        \"confineNum\":20,\n" +
-                    "        \"tenancy\":99,\n" +
-                    "        \"tenancyUnit\":1,\n" +
-                    "        \"rentUnitPrice\":23,\n" +
-                    "        \"rent\":760,\n" +
-                    "        \"rentPayment\":380,\n" +
-                    "        \"applicableType\":1,\n" +
-                    "        \"rentRebate\":0,\n" +
-                    "        \"rentRebateTerm\":7,\n" +
-                    "        \"rentRebateEndTime\":1690267754000,\n" +
-                    "        \"depositPayOrderNo\":\"2736483948392811\",\n" +
-                    "        \"lateFee\":188,\n" +
-                    "        \"payType\":2,\n" +
-                    "        \"couponId\":1234,\n" +
-                    "        \"payState\":2,\n" +
-                    "        \"useState\":1,\n" +
-                    "        \"remark\":\"我是备注啊\",\n" +
-                    "        \"couponName\":\"赠送优惠券名称\",\n" +
-                    "        \"createTime\":1689749354000,\n" +
-                    "        \"franchiseeName\":\"我是加盟商啊\",\n" +
-                    "        \"userRelName\":\"李四\",\n" +
-                    "        \"userPhone\":\"17672637489\",\n" +
-                    "        \"carRentalPackageName\":\"我是车电一体套餐\",\n" +
-                    "        \"carModelName\":\"我是车辆型号啊\"\n" +
-                    "    }\n" +
-                    "]";
-            return R.ok(JSON.parseArray(mockString, CarRentalPackageOrderVO.class));
-        }
         if (null == queryReq) {
             queryReq = new CarRentalPackageOrderQryReq();
         }
@@ -111,9 +50,18 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         // 转换请求体
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
+
 
         // 调用服务
         List<CarRentalPackageOrderPO> carRentalPackageOrderPOList = carRentalPackageOrderService.page(qryModel);
@@ -190,9 +138,17 @@ public class JsonAdminCarRentalPackageOrderController extends BasicController {
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
+
         // 转换请求体
         CarRentalPackageOrderQryModel qryModel = new CarRentalPackageOrderQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageOrderService.count(qryModel));

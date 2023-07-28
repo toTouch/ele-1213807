@@ -206,7 +206,7 @@ public class JsonAdminBatteryMemberCardController extends BaseController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return R.ok(batteryMemberCardService.modify(query));
+        return returnTripleResult(batteryMemberCardService.modify(query));
     }
 
     /**

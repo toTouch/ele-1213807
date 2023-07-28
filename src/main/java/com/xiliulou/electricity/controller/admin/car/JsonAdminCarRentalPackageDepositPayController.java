@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin.car;
 
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.controller.BasicController;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -11,17 +10,20 @@ import com.xiliulou.electricity.service.car.CarRentalPackageDepositPayService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.car.CarRentalPackageDepositPayVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * 租车套餐押金缴纳 Controller
- * TODO 权限后补
  * @author xiaohui.song
  **/
 @Slf4j
@@ -50,37 +52,6 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
      */
     @PostMapping("/page")
     public R<List<CarRentalPackageDepositPayVO>> page(@RequestBody CarRentalPackageDepositPayQryReq queryReq) {
-        // TODO mock数据
-        if (true) {
-            String mockString = "[\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"1234567890123456\",\n" +
-                    "        \"rentalPackageType\":1,\n" +
-                    "        \"type\":1,\n" +
-                    "        \"deposit\":99,\n" +
-                    "        \"payType\":1,\n" +
-                    "        \"payState\":1,\n" +
-                    "        \"remark\":\"\",\n" +
-                    "        \"createTime\":1689922154000,\n" +
-                    "        \"userRelName\":\"张三\",\n" +
-                    "        \"userPhone\":\"13129400876\"\n" +
-                    "    },\n" +
-                    "    {\n" +
-                    "        \"orderNo\":\"0987654321234567\",\n" +
-                    "        \"rentalPackageType\":2,\n" +
-                    "        \"type\":1,\n" +
-                    "        \"deposit\":199,\n" +
-                    "        \"payType\":2,\n" +
-                    "        \"payState\":2,\n" +
-                    "        \"remark\":\"\",\n" +
-                    "        \"createTime\":1689749354000,\n" +
-                    "        \"userRelName\":\"李四\",\n" +
-                    "        \"userPhone\":\"1378294839\"\n" +
-                    "    },\n" +
-                    "]\n" +
-                    "\n";
-            return R.ok(JSON.parseArray(mockString, CarRentalPackageDepositPayVO.class));
-        }
         if (null == queryReq) {
             queryReq = new CarRentalPackageDepositPayQryReq();
         }
@@ -89,9 +60,17 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         Integer tenantId = TenantContextHolder.getTenantId();
         queryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(Collections.emptyList());
+        }
+
         // 转换请求体
         CarRentalPackageDepositPayQryModel qryModel = new CarRentalPackageDepositPayQryModel();
         BeanUtils.copyProperties(queryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         List<CarRentalPackageDepositPayPO> depositPayEntityList = carRentalPackageDepositPayService.page(qryModel);
@@ -138,9 +117,17 @@ public class JsonAdminCarRentalPackageDepositPayController extends BasicControll
         Integer tenantId = TenantContextHolder.getTenantId();
         qryReq.setTenantId(tenantId);
 
+        // 数据权校验
+        Triple<List<Integer>, List<Integer>, Boolean> permissionTriple = checkPermissionInteger();
+        if (!permissionTriple.getRight()) {
+            return R.ok(0);
+        }
+
         // 转换请求体
         CarRentalPackageDepositPayQryModel qryModel = new CarRentalPackageDepositPayQryModel();
         BeanUtils.copyProperties(qryReq, qryModel);
+        qryModel.setFranchiseeIdList(permissionTriple.getLeft());
+        qryModel.setStoreIdList(permissionTriple.getMiddle());
 
         // 调用服务
         return R.ok(carRentalPackageDepositPayService.count(qryModel));

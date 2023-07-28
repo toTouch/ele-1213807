@@ -22,7 +22,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.InsuranceOrderVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -564,5 +564,21 @@ public class InsuranceUserInfoServiceImpl extends ServiceImpl<InsuranceUserInfoM
         }
 
         return Boolean.FALSE;
+    }
+
+    @Override
+    public InsuranceUserInfoVo selectUserInsuranceDetailByUidAndType(Long uid, Integer type) {
+        InsuranceUserInfo insuranceUserInfo = this.selectByUidAndTypeFromDB(uid, type);
+        if (Objects.isNull(insuranceUserInfo)) {
+            return null;
+        }
+
+        InsuranceUserInfoVo insuranceUserInfoVo = new InsuranceUserInfoVo();
+        BeanUtils.copyProperties(insuranceUserInfo, insuranceUserInfoVo);
+
+        FranchiseeInsurance franchiseeInsurance = franchiseeInsuranceService.queryByIdFromCache(insuranceUserInfo.getInsuranceId());
+        insuranceUserInfoVo.setInsuranceName(Objects.isNull(franchiseeInsurance) ? "" : franchiseeInsurance.getName());
+
+        return insuranceUserInfoVo;
     }
 }

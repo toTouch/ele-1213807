@@ -2,10 +2,12 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.NumberConstant;
 import com.xiliulou.electricity.service.BatteryMembercardRefundOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,8 +35,8 @@ public class JsonUserBatteryMembercardRefundOrderController extends BaseControll
      * 可退租订单详情
      */
     @GetMapping("/user/batteryMembercardRefund/{orderNo}")
-    public R batteryMembercardRefundOrderDetail(String orderNo) {
-        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo));
+    public R batteryMembercardRefundOrderDetail(@PathVariable("orderNo") String orderNo) {
+        return returnTripleResult(batteryMembercardRefundOrderService.batteryMembercardRefundOrderDetail(orderNo, NumberConstant.ONE));
     }
 
 
