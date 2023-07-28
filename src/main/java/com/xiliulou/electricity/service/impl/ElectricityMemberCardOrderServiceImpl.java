@@ -3091,6 +3091,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .tenantId(batteryMemberCard.getTenantId())
                 .franchiseeId(batteryMemberCard.getFranchiseeId())
                 .payCount(queryMaxPayCount(userBatteryMemberCard) + 1)
+                .payType(ElectricityMemberCardOrder.OFFLINE_PAYMENT)
                 .refId(null)
                 .sendCouponId(Objects.nonNull(batteryMemberCard.getCouponId()) ? batteryMemberCard.getCouponId().longValue() : null)
                 .useStatus(ElectricityMemberCardOrder.USE_STATUS_USING)

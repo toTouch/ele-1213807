@@ -225,13 +225,6 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100283", "电池套餐已退租");
             }
 
-            //校验套餐赠送的优惠券
-            UserCoupon userCoupon = userCouponService.selectBySourceOrderId(electricityMemberCardOrder.getOrderId());
-            if(Objects.nonNull(userCoupon) && (Objects.equals( userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals( userCoupon.getStatus(),UserCoupon.STATUS_USED ))){
-                log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", user.getUid());
-                return Triple.of(false, "100291", "套餐绑定的优惠券已使用，无法退租");
-            }
-
             UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
             if (Objects.isNull(userBatteryMemberCard)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryMemberCard,uid={}", user.getUid());
@@ -422,16 +415,14 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
-        //未使用
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
-            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue(), System.currentTimeMillis());
-            userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
-        }
-
-        //使用中
-        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), electricityMemberCardOrder.getOrderId())) {
+            //使用中
             userBatteryMemberCardService.unbindMembercardInfoByUid(userInfo.getUid());
             serviceFeeUserInfoService.deleteByUid(userInfo.getUid());
+        }else{
+            //未使用
+            userBatteryMemberCardService.deductionExpireTime(userInfo.getUid(), electricityMemberCardOrder.getValidDays().longValue(), System.currentTimeMillis());
+            userBatteryMemberCardPackageService.deleteByOrderId(electricityMemberCardOrder.getOrderId());
         }
 
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
@@ -489,6 +480,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (refundAmount.compareTo(electricityMemberCardOrder.getPayAmount()) > 0) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! refundAmount illegal,refundAmount={},uid={}", refundAmount.doubleValue(), userInfo.getUid());
             return Triple.of(false, "100294", "退租金额不合法");
+        }
+
+        //校验套餐赠送的优惠券
+        UserCoupon userCoupon = userCouponService.selectBySourceOrderId(electricityMemberCardOrder.getOrderId());
+        if(Objects.nonNull(userCoupon) && (Objects.equals( userCoupon.getStatus(), UserCoupon.STATUS_DESTRUCTION) || Objects.equals( userCoupon.getStatus(),UserCoupon.STATUS_USED ))){
+            log.warn("BATTERY MEMBERCARD REFUND WARN! battery memberCard binding coupon already used,uid={}", userInfo.getUid());
+            return Triple.of(false, "100291", "套餐绑定的优惠券已使用，无法退租");
         }
 
         BatteryMembercardRefundOrderDetailVO refundOrderDetailVO = new BatteryMembercardRefundOrderDetailVO();
