@@ -89,10 +89,6 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0007", "不合法的参数！");
         }
 
-        if(Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))){
-            return R.fail("100293", "已存在相同型号保险");
-        }
-
         Integer count = baseMapper.queryCount(null, franchiseeInsuranceAddAndUpdate.getInsuranceType(), tenantId, null, franchiseeInsuranceAddAndUpdate.getName());
         if (count > 0) {
             return R.fail("100304", "保险名称已存在！");
@@ -210,6 +206,10 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
+//        if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE) && Objects.nonNull(checkInsuranceExist(franchiseeInsuranceAddAndUpdate))) {
+//            return R.fail("100293", "已存在相同型号保险");
+//        }
+
         if (Objects.equals(status, FranchiseeInsurance.STATUS_USABLE)) {
             if (Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_CAR) && baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
                     .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId()).eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
@@ -220,7 +220,7 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
             if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
                 if (Objects.equals(franchiseeInsurance.getInsuranceType(), FranchiseeInsurance.INSURANCE_TYPE_BATTERY)) {
-                    if (baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE)
+                    if (baseMapper.selectCount(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getStatus, FranchiseeInsurance.STATUS_USABLE).eq(FranchiseeInsurance::getSimpleBatteryType, franchiseeInsurance.getSimpleBatteryType())
                             .eq(FranchiseeInsurance::getFranchiseeId, franchiseeInsurance.getFranchiseeId()).eq(FranchiseeInsurance::getDelFlag, FranchiseeInsurance.DEL_NORMAL)
                             .eq(FranchiseeInsurance::getInsuranceType, franchiseeInsurance.getInsuranceType()).notIn(FranchiseeInsurance::getId, id)) > 0) {
                         return R.fail("100242", "该加盟商已有启用的电池保险");
