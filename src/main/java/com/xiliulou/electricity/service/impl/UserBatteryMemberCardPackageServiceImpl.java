@@ -1,15 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.UserBatteryMemberCard;
-import com.xiliulou.electricity.entity.UserBatteryMemberCardPackage;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserBatteryMemberCardPackageMapper;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardPackageService;
-import com.xiliulou.electricity.service.UserBatteryMemberCardService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -38,6 +31,9 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
 
     @Autowired
     private UserInfoService userInfoService;
+
+    @Autowired
+    private BatteryMemberCardService batteryMemberCardService;
 
     @Autowired
     private ElectricityMemberCardOrderService batteryMemberCardOrderService;
@@ -150,7 +146,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
             return Triple.of(true, null, null);
         }
 
-        updateUserBatteryMembercardInfo(userBatteryMemberCard ,userBatteryMemberCardPackageLatest);
+        updateUserBatteryMembercardInfo(userBatteryMemberCard, userBatteryMemberCardPackageLatest);
 
         return Triple.of(true, null, null);
     }
@@ -174,7 +170,12 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
                     return;
                 }
 
-                if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || item.getOrderRemainingNumber() <= 2)) {
+                BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMemberCardId());
+                if (Objects.isNull(batteryMemberCard)) {
+                    return;
+                }
+
+                if (!(item.getOrderExpireTime() < System.currentTimeMillis() + 5 * 60 * 1000L || (Objects.equals(batteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && item.getOrderRemainingNumber() <= 1))) {
                     return;
                 }
 
@@ -183,7 +184,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
                     return;
                 }
 
-                updateUserBatteryMembercardInfo(item,userBatteryMemberCardPackageLatest);
+                updateUserBatteryMembercardInfo(item, userBatteryMemberCardPackageLatest);
 
             });
 
@@ -191,7 +192,7 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         }
     }
 
-    private void updateUserBatteryMembercardInfo(UserBatteryMemberCard userBatteryMemberCard ,UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest){
+    private void updateUserBatteryMembercardInfo(UserBatteryMemberCard userBatteryMemberCard, UserBatteryMemberCardPackage userBatteryMemberCardPackageLatest) {
         //更新当前用户绑定的套餐数据
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         userBatteryMemberCardUpdate.setUid(userBatteryMemberCard.getUid());

@@ -3346,7 +3346,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         UserBatteryMemberCard userBatteryMemberCardUpdate = new UserBatteryMemberCard();
         if (userBatteryMemberCard.getMemberCardExpireTime() < System.currentTimeMillis() || (Objects.equals(userBindbatteryMemberCard.getLimitCount(), BatteryMemberCard.LIMIT) && userBatteryMemberCard.getRemainingNumber() <= 0)) {
-            log.error("===========12222=================={}",JsonUtil.toJson(userBindbatteryMemberCard));
 
             memberCardOrder.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_USING);
 
@@ -3368,8 +3367,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardService.insert(userBatteryMemberCardUpdate);
         } else {
 
-            log.error("===========11111==================");
-
             UserBatteryMemberCardPackage userBatteryMemberCardPackage = new UserBatteryMemberCardPackage();
             userBatteryMemberCardPackage.setUid(userInfo.getUid());
             userBatteryMemberCardPackage.setMemberCardId(memberCardOrder.getMemberCardId());
@@ -3386,10 +3383,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             userBatteryMemberCardUpdate.setRemainingNumber(userBatteryMemberCard.getRemainingNumber() + memberCardOrder.getMaxUseCount());
             userBatteryMemberCardUpdate.setUpdateTime(System.currentTimeMillis());
             userBatteryMemberCardService.updateByUid(userBatteryMemberCardUpdate);
-
-
-
-
         }
 
         ServiceFeeUserInfo serviceFeeUserInfoUpdate = new ServiceFeeUserInfo();
