@@ -737,6 +737,25 @@ public class StoreServiceImpl implements StoreService {
         }
         return stores.parallelStream().map(item -> {
 
+            //营业时间
+            if (Objects.nonNull(item.getBusinessTime())) {
+                String businessTime = item.getBusinessTime();
+                if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                    item.setBusinessTimeType(StoreVO.ALL_DAY);
+                } else {
+                    item.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                    Integer index = businessTime.indexOf("-");
+                    if (!Objects.equals(index, -1) && index > 0) {
+                        item.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                        item.setBeginTime(beginTime);
+                        item.setEndTime(endTime);
+                    }
+                }
+            }
+
+            // 图片信息
             List<Picture> pictures = pictureService.selectByByBusinessId(item.getId());
             if (!CollectionUtils.isEmpty(pictures)) {
                 item.setPictureList(pictureService.pictureParseVO(pictures));
