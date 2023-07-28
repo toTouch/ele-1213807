@@ -39,6 +39,7 @@ public class DivisionAccountConsumer implements RocketMQListener<String> {
                 return;
             }
 
+            //同步处理分账业务
             if(DivisionAccountRecord.TYPE_PURCHASE.equals(divisionAccountOrderDTO.getDivisionAccountType())){
                 executorService.execute(() -> {
                     divisionAccountRecordService.handleDivisionAccountByPackage(divisionAccountOrderDTO.getOrderNo(), divisionAccountOrderDTO.getType());
