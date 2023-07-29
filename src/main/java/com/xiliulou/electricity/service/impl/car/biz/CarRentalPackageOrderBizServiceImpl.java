@@ -1507,15 +1507,15 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         if (YesNoEnum.NO.getCode().equals(userInfo.getCarBatteryDepositStatus()) || UserInfo.CAR_DEPOSIT_STATUS_NO.equals(userInfo.getCarDepositStatus())) {
-            LambdaUpdateWrapper<UserInfo> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.eq(UserInfo::getUid, uid).eq(UserInfo::getTenantId, tenantId)
-                    .set(UserInfo::getUpdateTime, System.currentTimeMillis());
+            userInfo.setUpdateTime(System.currentTimeMillis());
             if (CarRentalPackageTypeEnum.CAR_BATTERY.getCode().equals(carRentalPackageOrderEntity.getRentalPackageType())) {
-                updateWrapper.set(UserInfo::getCarBatteryDepositStatus, YesNoEnum.YES.getCode());
+                userInfo.setCarBatteryDepositStatus(YesNoEnum.YES.getCode());
             } else {
-                updateWrapper.set(UserInfo::getCarDepositStatus, UserInfo.CAR_DEPOSIT_STATUS_YES);
+                userInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             }
-            userInfoService.update(updateWrapper);
+            LambdaUpdateWrapper<UserInfo> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(UserInfo::getUid, uid).eq(UserInfo::getTenantId, tenantId);
+            userInfoService.update(userInfo, updateWrapper);
         }
 
         // 5. 处理用户套餐购买次数叠加
