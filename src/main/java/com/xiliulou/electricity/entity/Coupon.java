@@ -110,17 +110,17 @@ public class Coupon {
     /**
      * 换电套餐IDs
      */
-    private List<Long> electricityPackages;
+    //private List<Long> electricityPackages;
 
     /**
      * 租车套餐IDs
      */
-    private List<Long> carRentalPackages;
+    //private List<Long> carRentalPackages;
 
     /**
      * 车电一体套餐IDs
      */
-    private List<Long> carElectricityPackages;
+   //private List<Long> carElectricityPackages;
 
     public static final Integer SUPERPOSITION_NO = 0;
     public static final Integer SUPERPOSITION_YES = 1;
