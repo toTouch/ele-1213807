@@ -22,6 +22,10 @@ public class UserBatteryMemberCardInfoVO {
      */
     private Integer isExistMemberCard;
     /**
+     * 租期
+     */
+    private Integer validDays;
+    /**
      * 是否购买保险
      */
     private  InsuranceUserInfoVo insuranceUserInfoVo;
