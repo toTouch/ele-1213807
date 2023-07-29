@@ -944,10 +944,13 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         }
 
         // 3. 查询用户车辆信息
+        CarInfoDO carInfo = null;
         UserCar userCar = userCarService.selectByUidFromCache(uid);
+        if (ObjectUtils.isNotEmpty(userCar)) {
+            // 4. 查询车辆相关信息
+            carInfo = carService.queryByCarId(tenantId, userCar.getCid());
+        }
 
-        // 4. 查询车辆相关信息
-        CarInfoDO carInfo = carService.queryByCarId(tenantId, userCar.getCid());
 
         // 5. 查询用户保险信息，志龙
         Integer rentalPackageType = memberTerm.getRentalPackageType();
@@ -1445,9 +1448,6 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         if (unUseNum.intValue() > 1) {
             // 更改套餐购买订单的支付状态
             carRentalPackageOrderService.updatePayStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode());
-        } else {
-            // 更改支付状态、使用状态、开始使用时间
-            carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
         }
 
         // 2. 处理租车套餐押金缴纳订单
@@ -1461,6 +1461,8 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
         // 判定押金缴纳订单是否需要更改支付状态
         if (ObjectUtil.equal(PayStateEnum.UNPAID.getCode(), depositPayEntity.getPayState())) {
             carRentalPackageDepositPayService.updatePayStateByOrderNo(depositPayOrderNo, PayStateEnum.SUCCESS.getCode());
+            // 更改套餐订单支付状态、使用状态、开始使用时间
+            carRentalPackageOrderService.updateStateByOrderNo(orderNo, PayStateEnum.SUCCESS.getCode(), UseStateEnum.IN_USE.getCode());
         }
 
         // 3. 处理租车套餐会员期限
