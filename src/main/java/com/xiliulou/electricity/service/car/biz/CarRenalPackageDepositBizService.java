@@ -13,6 +13,15 @@ import java.math.BigDecimal;
 public interface CarRenalPackageDepositBizService {
 
     /**
+     * 创建免押订单，生成二维码<br />
+     * 创建押金缴纳订单、生成免押记录
+     * @param tenantId 租户ID
+     * @param uid C端用户ID
+     * @param rentalPackageId 套餐ID
+     */
+    String createFreeDeposit(Integer tenantId, Long uid, Long rentalPackageId);
+
+    /**
      * 用户名下的押金信息(单车、车电一体)
      * @param tenantId 租户ID
      * @param uid 用户ID
@@ -43,7 +52,6 @@ public interface CarRenalPackageDepositBizService {
      * @param tenantId 租户ID
      * @param uid 用户ID
      * @param depositPayOrderNo 押金缴纳支付订单编码
-     * @param systemDefinition 操作系统来源
      * @return
      */
     boolean refundDeposit(Integer tenantId, Long uid, String depositPayOrderNo);
