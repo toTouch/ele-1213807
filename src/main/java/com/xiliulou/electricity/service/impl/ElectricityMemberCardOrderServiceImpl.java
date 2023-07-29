@@ -3496,6 +3496,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, null, userBatteryMemberCardInfoVO);
         }
 
+        //套餐订单金额
         ElectricityMemberCardOrder electricityMemberCardOrder = this.selectByOrderNo(userBatteryMemberCard.getOrderId());
         userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder)?null:electricityMemberCardOrder.getPayAmount());
 
@@ -3503,6 +3504,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
         userBatteryMemberCardInfoVO.setRentUnit(batteryMemberCard.getRentUnit());
         userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
+
+        //用户电池型号
+        userBatteryMemberCardInfoVO.setUserBatteryTypes(userBatteryTypeService.selectByUid(userInfo.getUid()));
 
         return Triple.of(true, null, userBatteryMemberCardInfoVO);
     }

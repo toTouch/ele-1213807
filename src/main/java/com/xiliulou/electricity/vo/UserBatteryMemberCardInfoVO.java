@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -64,6 +65,10 @@ public class UserBatteryMemberCardInfoVO {
      * 租期单位 0：分钟，1：天
      */
     private Integer rentUnit;
+    /**
+     * 用户电池型号
+     */
+    private List<String> userBatteryTypes;
 
 
 
