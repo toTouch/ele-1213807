@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl.car.biz;
 
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CarRenalCacheConstant;
@@ -24,10 +23,10 @@ import com.xiliulou.electricity.service.user.biz.UserBizService;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.vo.ElectricityUserBatteryVo;
-import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.InsuranceUserInfoVo;
 import com.xiliulou.electricity.vo.car.CarRentalPackageOrderVO;
 import com.xiliulou.electricity.vo.car.CarVO;
+import com.xiliulou.electricity.vo.insurance.UserInsuranceVO;
 import com.xiliulou.electricity.vo.rental.RentalPackageVO;
 import com.xiliulou.electricity.web.query.battery.BatteryInfoQuery;
 import com.xiliulou.mq.service.RocketMqService;
@@ -1499,7 +1498,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             carRentalPackageMemberTermService.updateById(memberTermUpdateEntity);
         }
 
-        // 4. 处理用户押金支付信息
+        // 4. 处理用户押金支付信息、套餐购买次数信息
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("NotifyCarRenalPackageOrder failed, not found user_info, uid is {}", uid);
@@ -1513,16 +1512,9 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
             } else {
                 userInfo.setCarDepositStatus(UserInfo.CAR_DEPOSIT_STATUS_YES);
             }
-            LambdaUpdateWrapper<UserInfo> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.eq(UserInfo::getUid, uid).eq(UserInfo::getTenantId, tenantId);
-            userInfoService.update(userInfo, updateWrapper);
         }
-
-        // 5. 处理用户套餐购买次数叠加
-        UserInfo userInfoUpdateEntity = new UserInfo();
-        userInfoUpdateEntity.setUid(uid);
-        userInfoUpdateEntity.setPayCount(userInfo.getPayCount() + 1);
-        userInfoService.updateByUid(userInfoUpdateEntity);
+        userInfo.setPayCount(userInfo.getPayCount() + 1);
+        userInfoService.updateByUid(userInfo);
 
         // 6. 处理用户优惠券的使用状态
         userCouponService.updateStatusByOrderId(orderNo, OrderTypeEnum.CAR_BUY_ORDER.getCode(), UserCoupon.STATUS_USED);
