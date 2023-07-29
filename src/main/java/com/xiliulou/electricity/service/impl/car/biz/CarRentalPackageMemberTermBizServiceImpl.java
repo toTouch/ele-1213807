@@ -181,12 +181,12 @@ public class CarRentalPackageMemberTermBizServiceImpl implements CarRentalPackag
             // 计算到期时间
             Integer tenancy = packageOrderEntityNew.getTenancy();
             Integer tenancyUnit = packageOrderEntityNew.getTenancyUnit();
-            long dueTime = System.currentTimeMillis();
+            Long dueTime = null;
             if (RentalUnitEnum.DAY.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * TimeConstant.DAY_MILLISECOND);
+                dueTime = (tenancy * TimeConstant.DAY_MILLISECOND);
             }
             if (RentalUnitEnum.MINUTE.getCode().equals(tenancyUnit)) {
-                dueTime = dueTime + (tenancy * 1000);
+                dueTime = Long.valueOf(tenancy * 1000);
             }
 
             memberTermEntityUpdate.setDueTime(dueTime);
