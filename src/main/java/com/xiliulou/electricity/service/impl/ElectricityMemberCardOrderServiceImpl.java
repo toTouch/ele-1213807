@@ -3496,6 +3496,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return Triple.of(true, null, userBatteryMemberCardInfoVO);
         }
 
+        ElectricityMemberCardOrder electricityMemberCardOrder = this.selectByOrderNo(userBatteryMemberCard.getOrderId());
+        userBatteryMemberCardInfoVO.setBatteryMembercardPayAmount(Objects.isNull(electricityMemberCardOrder)?null:electricityMemberCardOrder.getPayAmount());
+
         userBatteryMemberCardInfoVO.setValidDays(batteryMemberCard.getValidDays());
         userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
         userBatteryMemberCardInfoVO.setRentUnit(batteryMemberCard.getRentUnit());

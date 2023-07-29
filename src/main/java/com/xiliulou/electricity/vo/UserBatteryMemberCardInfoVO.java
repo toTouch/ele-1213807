@@ -17,6 +17,8 @@ public class UserBatteryMemberCardInfoVO {
     private Integer batteryDepositStatus;
 
     private BigDecimal batteryDeposit;
+
+    private BigDecimal batteryMembercardPayAmount;
     /**
      * 是否购买套餐
      */
