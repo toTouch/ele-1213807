@@ -268,13 +268,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
             batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
-//            batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
             batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
             batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
             batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
             batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
             batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+            assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
 
             this.insert(batteryMembercardRefundOrderInsert);
 
@@ -340,13 +340,13 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
         batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
         batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
-//        batteryMembercardRefundOrderInsert.setCapacity(calculateCapacity(userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder));
         batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
         batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
         batteryMembercardRefundOrderInsert.setTenantId(electricityMemberCardOrder.getTenantId());
         batteryMembercardRefundOrderInsert.setCreateTime(System.currentTimeMillis());
         batteryMembercardRefundOrderInsert.setUpdateTime(System.currentTimeMillis());
+        assignOtherAttr(batteryMembercardRefundOrderInsert, userBatteryMemberCard, batteryMemberCard, electricityMemberCardOrder);
 
         this.insert(batteryMembercardRefundOrderInsert);
 
@@ -560,6 +560,25 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
             refundOrderDetailVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
             refundOrderDetailVO.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCard.getMemberCardExpireTime() / 60 / 1000);
+        }
+    }
+
+    private void assignOtherAttr(BatteryMembercardRefundOrder batteryMembercardRefundOrder, UserBatteryMemberCard userBatteryMemberCard, BatteryMemberCard batteryMemberCard, ElectricityMemberCardOrder electricityMemberCardOrder) {
+        //未使用
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_NON)) {
+            UserBatteryMemberCardPackage userBatteryMemberCardPackage = userBatteryMemberCardPackageService.selectByOrderNo(electricityMemberCardOrder.getOrderId());
+            if (Objects.isNull(userBatteryMemberCardPackage)) {
+                return;
+            }
+
+            batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCardPackage.getRemainingNumber());
+            batteryMembercardRefundOrder.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCardPackage.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCardPackage.getMemberCardExpireTime() / 60 / 1000);
+        }
+
+        //使用中
+        if (Objects.equals(electricityMemberCardOrder.getUseStatus(), ElectricityMemberCardOrder.USE_STATUS_USING)) {
+            batteryMembercardRefundOrder.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+            batteryMembercardRefundOrder.setRemainingTime(Objects.equals(BatteryMemberCard.RENT_UNIT_DAY, batteryMemberCard.getRentUnit()) ? userBatteryMemberCard.getMemberCardExpireTime() / 24 / 60 / 60 / 1000 : userBatteryMemberCard.getMemberCardExpireTime() / 60 / 1000);
         }
     }
 

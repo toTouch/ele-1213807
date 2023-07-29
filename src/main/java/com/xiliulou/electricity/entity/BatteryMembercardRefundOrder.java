@@ -52,7 +52,9 @@ public class BatteryMembercardRefundOrder {
      */
     private BigDecimal refundAmount;
 
-    private Long capacity;
+    private Long remainingNumber;
+
+    private Long remainingTime;
     /**
      * 订单状态
      */

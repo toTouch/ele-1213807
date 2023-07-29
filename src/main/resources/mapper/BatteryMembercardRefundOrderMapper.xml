@@ -11,7 +11,8 @@
         <result property="memberCardOrderNo" column="member_card_order_no" jdbcType="VARCHAR"/>
         <result property="payAmount" column="pay_amount" jdbcType="NUMERIC"/>
         <result property="refundAmount" column="refund_amount" jdbcType="NUMERIC"/>
-        <result property="capacity" column="capacity" jdbcType="INTEGER"/>
+        <result property="remainingTime" column="remaining_time" jdbcType="INTEGER"/>
+        <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="msg" column="msg" jdbcType="VARCHAR"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
@@ -25,13 +26,13 @@
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMembercardRefundOrderMap">
         select
-          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, capacity, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
+          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
         from t_battery_membercard_refund_order
         where id = #{id}
     </select>
     <select id="selectByPage" resultMap="BatteryMembercardRefundOrderMap">
         select
-        id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, capacity, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
+        id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
         from t_battery_membercard_refund_order
         <where>
             <if test="uid != null">
@@ -126,8 +127,11 @@
             <if test="refundAmount != null">
                 refund_amount = #{refundAmount},
             </if>
-            <if test="capacity != null">
-                capacity = #{capacity},
+            <if test="remainingTime != null">
+                remaining_time = #{remainingTime},
+            </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
             </if>
             <if test="status != null">
                 status = #{status},
