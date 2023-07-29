@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author zzlong
  * @email zhaozhilong@xiliulou.com
@@ -13,6 +15,8 @@ public class UserBatteryMemberCardInfoVO {
     private Integer batteryRentStatus;
 
     private Integer batteryDepositStatus;
+
+    private BigDecimal batteryDeposit;
     /**
      * 是否购买套餐
      */
