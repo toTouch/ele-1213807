@@ -72,9 +72,9 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
      */
     @PostMapping("/outer/wechat/battery/membercard/refund/notified/{tenantId}")
     public WechatV3CallBackResult batteryMembercardRefundNotified(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
-        wechatV3RefundOrderCallBackQuery.setTenantId(tenantId);
-        //TODO
-        wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
+        WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
+        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode());
+        service.process(callBackParam);
         return WechatV3CallBackResult.success();
     }
 
@@ -88,7 +88,7 @@ public class JsonOuterCallBackController extends JsonOuterCallBackBasicControlle
     @PostMapping("/outer/wechat/refund/car/deposit/notified/{tenantId}")
     public WechatV3CallBackResult carDepositRefundCallBackUrl(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
         WechatJsapiRefundOrderCallBackResource callBackParam = handCallBackParam(wechatV3RefundOrderCallBackQuery);
-        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.CAR_DEPOSIT_REFUND_CALL_BACK.getCode());
+        WxRefundPayService service = WxRefundPayServiceFactory.getService(WxRefundPayOptTypeEnum.BATTERY_RENT_REFUND_CALL_BACK.getCode());
         service.process(callBackParam);
         return WechatV3CallBackResult.success();
     }

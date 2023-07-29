@@ -103,6 +103,11 @@ public class UserBatteryMemberCardPackageServiceImpl implements UserBatteryMembe
         return this.userBatteryMemberCardPackageMapper.selectByOrderNo(orderId);
     }
 
+    @Override
+    public Integer checkUserBatteryMemberCardPackageByUid(Long uid) {
+        return this.userBatteryMemberCardPackageMapper.checkUserBatteryMemberCardPackageByUid(uid);
+    }
+
     /**
      * 用户端懒加载处理换电套餐资源包转换
      */

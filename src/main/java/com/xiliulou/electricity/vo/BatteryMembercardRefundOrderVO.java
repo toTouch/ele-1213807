@@ -21,6 +21,8 @@ public class BatteryMembercardRefundOrderVO {
     private Long id;
 
     private Long uid;
+
+    private String name;
     /**
      * 手机号
      */
@@ -29,6 +31,7 @@ public class BatteryMembercardRefundOrderVO {
      * 套餐id
      */
     private Long mid;
+    private String memberCardName;
     /**
      * 退款单号
      */
@@ -60,11 +63,15 @@ public class BatteryMembercardRefundOrderVO {
     /**
      * 订单类型
      */
-    private Integer type;
+    private Integer payType;
     /**
      * 创建时间
      */
     private Long createTime;
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
 
 
 

@@ -15,6 +15,7 @@
         <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="msg" column="msg" jdbcType="VARCHAR"/>
+        <result property="payType" column="pay_type" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -26,13 +27,13 @@
     <!--查询单个-->
     <select id="queryById" resultMap="BatteryMembercardRefundOrderMap">
         select
-          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
+          id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, pay_type, create_time, update_time, tenant_id, franchisee_id, store_id
         from t_battery_membercard_refund_order
         where id = #{id}
     </select>
     <select id="selectByPage" resultMap="BatteryMembercardRefundOrderMap">
         select
-        id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, create_time, update_time, tenant_id, franchisee_id, store_id
+        id, uid, phone, mid, refund_order_no, member_card_order_no, pay_amount, refund_amount, remaining_time,remaining_number, status, msg, type, pay_type, create_time, update_time, tenant_id, franchisee_id, store_id
         from t_battery_membercard_refund_order
         <where>
             <if test="uid != null">
@@ -141,6 +142,9 @@
             </if>
             <if test="type != null">
                 type = #{type},
+            </if>
+            <if test="payType != null">
+                pay_type = #{payType},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},

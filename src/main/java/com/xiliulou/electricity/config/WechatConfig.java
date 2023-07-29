@@ -99,4 +99,9 @@ public class WechatConfig {
      */
     private String carRentRefundCallBackUrl;
 
+    /**
+     * 电池套餐退租金回调
+     */
+    private String batteryRentRefundCallBackUrl;
+
 }

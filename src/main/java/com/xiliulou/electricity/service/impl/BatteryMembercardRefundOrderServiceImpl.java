@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.enums.BusinessType;
@@ -13,7 +15,10 @@ import com.xiliulou.electricity.utils.OrderIdUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderDetailVO;
 import com.xiliulou.electricity.vo.BatteryMembercardRefundOrderVO;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
+import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -82,6 +87,53 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     @Autowired
     UserBatteryTypeService userBatteryTypeService;
 
+    @Autowired
+    ElectricityTradeOrderService electricityTradeOrderService;
+
+    @Autowired
+    UnionTradeOrderService unionTradeOrderService;
+
+    @Autowired
+    WechatV3JsapiService wechatV3JsapiService;
+
+    @Autowired
+    WechatConfig wechatConfig;
+
+    @Override
+    public WechatJsapiRefundResultDTO handleRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, HttpServletRequest request) throws WechatPayException{
+
+        //看不懂  抄的退电池押金 @See EleRefundOrderServiceImpl#commonCreateRefundOrder()
+        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(batteryMembercardRefundOrder.getMemberCardOrderNo());
+        String tradeOrderNo = null;
+        Integer total = null;
+        if (Objects.isNull(electricityTradeOrder)) {
+            log.error("BATTERY MEMBERCARD REFUND ERROR!not found electricityTradeOrder,memberCardOrderNo={}", batteryMembercardRefundOrder.getMemberCardOrderNo());
+            throw new CustomBusinessException("未找到交易订单!");
+        }
+        tradeOrderNo = electricityTradeOrder.getTradeOrderNo();
+        total = batteryMembercardRefundOrder.getPayAmount().multiply(new BigDecimal(100)).intValue();
+
+        if (Objects.nonNull(electricityTradeOrder.getParentOrderId())) {
+            UnionTradeOrder unionTradeOrder = unionTradeOrderService.selectTradeOrderById(electricityTradeOrder.getParentOrderId());
+            if (Objects.nonNull(unionTradeOrder)) {
+                tradeOrderNo = unionTradeOrder.getTradeOrderNo();
+                total = unionTradeOrder.getTotalFee().multiply(new BigDecimal(100)).intValue();
+            }
+        }
+
+        //退款
+        WechatV3RefundQuery wechatV3RefundQuery = new WechatV3RefundQuery();
+        wechatV3RefundQuery.setTenantId(electricityTradeOrder.getTenantId());
+        wechatV3RefundQuery.setTotal(total);
+        wechatV3RefundQuery.setRefund(batteryMembercardRefundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
+        wechatV3RefundQuery.setReason("退款");
+        wechatV3RefundQuery.setOrderId(tradeOrderNo);
+        wechatV3RefundQuery.setNotifyUrl(wechatConfig.getBatteryRentRefundCallBackUrl() + electricityTradeOrder.getTenantId());
+        wechatV3RefundQuery.setCurrency("CNY");
+        wechatV3RefundQuery.setRefundId(batteryMembercardRefundOrder.getRefundOrderNo());
+
+        return wechatV3JsapiService.refund(wechatV3RefundQuery);
+    }
 
     @Override
     public List<BatteryMembercardRefundOrderVO> selectByPage(BatteryMembercardRefundOrderQuery query) {
@@ -93,6 +145,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         return list.parallelStream().map(item -> {
             BatteryMembercardRefundOrderVO batteryMembercardRefundOrderVO = new BatteryMembercardRefundOrderVO();
             BeanUtils.copyProperties(item, batteryMembercardRefundOrderVO);
+
+            UserInfo userInfo = userInfoService.queryByUidFromCache(item.getUid());
+            batteryMembercardRefundOrderVO.setName(Objects.isNull(userInfo) ? "" : userInfo.getName());
+
+            BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
+            batteryMembercardRefundOrderVO.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
 
             return batteryMembercardRefundOrderVO;
         }).collect(Collectors.toList());
@@ -131,7 +189,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
 
     @Override
-    public BatteryMembercardRefundOrder selectByOrderNo(String orderNo) {
+    public BatteryMembercardRefundOrder selectByRefundOrderNo(String orderNo) {
         return this.batteryMembercardRefundOrderMapper.selectOne(new LambdaQueryWrapper<BatteryMembercardRefundOrder>().eq(BatteryMembercardRefundOrder::getRefundOrderNo, orderNo));
     }
 
@@ -237,6 +295,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
                 return Triple.of(false, "100289", "电池套餐暂停中");
             }
 
+            if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.nonNull(userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
+                log.warn("BATTERY MEMBERCARD REFUND WARN! exist not use batteryMemberCard,uid={}", userInfo.getUid());
+                return Triple.of(false, "100296", "请先退未使用的套餐");
+            }
+
             ServiceFeeUserInfo serviceFeeUserInfo = serviceFeeUserInfoService.queryByUidFromCache(userInfo.getUid());
             if (Objects.isNull(serviceFeeUserInfo)) {
                 log.warn("BATTERY MEMBERCARD REFUND WARN! not found serviceFeeUserInfo,uid={}", user.getUid());
@@ -268,6 +331,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
             batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
             batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
+            batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
             batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
             batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
             batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
@@ -320,6 +384,11 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "100247", "用户信息不存在");
         }
 
+        if (Objects.equals(userBatteryMemberCard.getOrderId(), orderNo) && Objects.nonNull(userBatteryMemberCardPackageService.checkUserBatteryMemberCardPackageByUid(userInfo.getUid()))) {
+            log.warn("BATTERY MEMBERCARD REFUND WARN! exist not use batteryMemberCard,uid={}", userInfo.getUid());
+            return Triple.of(false, "100296", "请先退未使用的套餐");
+        }
+
         BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(electricityMemberCardOrder.getMemberCardId());
         if (Objects.isNull(batteryMemberCard)) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), electricityMemberCardOrder.getMemberCardId());
@@ -340,6 +409,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         batteryMembercardRefundOrderInsert.setMemberCardOrderNo(electricityMemberCardOrder.getOrderId());
         batteryMembercardRefundOrderInsert.setPayAmount(electricityMemberCardOrder.getPayAmount());
         batteryMembercardRefundOrderInsert.setRefundAmount(refundAmount);
+        batteryMembercardRefundOrderInsert.setPayType(electricityMemberCardOrder.getPayType());
         batteryMembercardRefundOrderInsert.setStatus(BatteryMembercardRefundOrder.STATUS_INIT);
         batteryMembercardRefundOrderInsert.setFranchiseeId(electricityMemberCardOrder.getFranchiseeId());
         batteryMembercardRefundOrderInsert.setStoreId(electricityMemberCardOrder.getStoreId());
@@ -365,7 +435,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
 
         if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrderInsert.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            return handleBatteryOfflineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo);
+            return handleBatteryOfflineRefundOrder(userBatteryMemberCard, batteryMembercardRefundOrderInsert, electricityMemberCardOrder, userInfo);
         } else {
             return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrderInsert, electricityMemberCardOrder, request);
         }
@@ -388,6 +458,12 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
             return Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
 
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if(Objects.isNull(userBatteryMemberCard)){
+            log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
+            return Triple.of(false, "100247", "用户信息不存在");
+        }
+
         ElectricityMemberCardOrder electricityMemberCardOrder = batteryMemberCardOrderService.selectByOrderNo(batteryMembercardRefundOrder.getMemberCardOrderNo());
         if (Objects.isNull(electricityMemberCardOrder) || !Objects.equals(electricityMemberCardOrder.getTenantId(), TenantContextHolder.getTenantId())) {
             log.warn("BATTERY MEMBERCARD REFUND WARN! not found electricityMemberCardOrder,uid={},orderNo={}", userInfo.getUid(), batteryMembercardRefundOrder.getMemberCardOrderNo());
@@ -406,7 +482,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
         }
 
         if (Objects.equals(electricityMemberCardOrder.getPayType(), ElectricityMemberCardOrder.OFFLINE_PAYMENT) || batteryMembercardRefundOrder.getRefundAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-            return handleBatteryOfflineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, userInfo);
+            return handleBatteryOfflineRefundOrder( userBatteryMemberCard, batteryMembercardRefundOrder, electricityMemberCardOrder, userInfo);
         } else {
             return handleBatteryOnlineRefundOrder(batteryMembercardRefundOrder, electricityMemberCardOrder, request);
         }
@@ -416,25 +492,20 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     public Triple<Boolean, String, Object> handleBatteryOnlineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, HttpServletRequest request) {
         BatteryMembercardRefundOrder batteryMembercardRefundOrderUpdate = new BatteryMembercardRefundOrder();
         batteryMembercardRefundOrderUpdate.setId(batteryMembercardRefundOrder.getId());
-        batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
         batteryMembercardRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        this.update(batteryMembercardRefundOrderUpdate);
 
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
-        electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 
         try {
-            RefundOrder refundOrder = RefundOrder.builder()
-                    .orderId(batteryMembercardRefundOrder.getMemberCardOrderNo())
-                    .refundOrderNo(batteryMembercardRefundOrder.getRefundOrderNo())
-                    .payAmount(batteryMembercardRefundOrder.getPayAmount())
-                    .refundAmount(batteryMembercardRefundOrder.getRefundAmount())
-                    .build();
+            this.handleRefundOrder(batteryMembercardRefundOrder, request);
 
-            eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+            batteryMembercardRefundOrderUpdate.setStatus(BatteryMembercardRefundOrder.STATUS_REFUND);
+            this.update(batteryMembercardRefundOrderUpdate);
+
+            electricityMemberCardOrderUpdate.setUseStatus(ElectricityMemberCardOrder.USE_STATUS_REFUNDING);
+            batteryMemberCardOrderService.updateByID(electricityMemberCardOrderUpdate);
 
             return Triple.of(true, "", null);
         } catch (WechatPayException e) {
@@ -451,12 +522,7 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo) {
-        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
-        if (Objects.isNull(userBatteryMemberCard)) {
-            log.warn("BATTERY MEMBERCARD REFUND WARN! not found userBatteryMemberCard,uid={}", batteryMembercardRefundOrder.getUid());
-            return Triple.of(false, "100247", "用户信息不存在");
-        }
+    public Triple<Boolean, String, Object> handleBatteryOfflineRefundOrder(UserBatteryMemberCard userBatteryMemberCard, BatteryMembercardRefundOrder batteryMembercardRefundOrder, ElectricityMemberCardOrder electricityMemberCardOrder, UserInfo userInfo) {
 
         if (Objects.equals(userBatteryMemberCard.getOrderId(), electricityMemberCardOrder.getOrderId())) {
             //使用中
