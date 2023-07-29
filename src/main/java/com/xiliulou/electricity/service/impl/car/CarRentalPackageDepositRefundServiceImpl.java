@@ -36,7 +36,7 @@ public class CarRentalPackageDepositRefundServiceImpl implements CarRentalPackag
      */
     @Override
     public boolean updateByOrderNo(CarRentalPackageDepositRefundPO entity) {
-        if (ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
+        if (!ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
