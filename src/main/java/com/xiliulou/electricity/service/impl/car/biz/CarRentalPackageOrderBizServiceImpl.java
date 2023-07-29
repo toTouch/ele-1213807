@@ -1521,7 +1521,7 @@ public class CarRentalPackageOrderBizServiceImpl implements CarRentalPackageOrde
 
         // 6. TODO 车辆断启电
 
-        rocketMqService.sendAsyncMsg("topic", "msg");
+        /*rocketMqService.sendAsyncMsg("topic", "msg");*/
         // 7. TODO 处理保险购买订单
         // 8. TODO 处理分账
         // 9. TODO 处理活动
