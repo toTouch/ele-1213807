@@ -151,6 +151,8 @@ public class BatteryMembercardRefundOrderServiceImpl implements BatteryMembercar
 
             BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(item.getMid());
             batteryMembercardRefundOrderVO.setMemberCardName(Objects.isNull(batteryMemberCard) ? "" : batteryMemberCard.getName());
+            batteryMembercardRefundOrderVO.setRentUnit(Objects.isNull(batteryMemberCard) ? null :batteryMemberCard.getRentUnit());
+            batteryMembercardRefundOrderVO.setLimitCount(Objects.isNull(batteryMemberCard) ? null :batteryMemberCard.getLimitCount());
 
             return batteryMembercardRefundOrderVO;
         }).collect(Collectors.toList());
