@@ -42,6 +42,11 @@ public class JsonUserElectricityMemberCardOrderController extends BaseController
 //        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
         return returnTripleResult(electricityMemberCardOrderService.buyBatteryMemberCard(electricityMemberCardOrderQuery, request));
     }
+
+    @GetMapping("user/battery/membercard/info")
+    public R userBatteryDepositAndMembercardInfo(){
+        return returnTripleResult(electricityMemberCardOrderService.userBatteryDepositAndMembercardInfo());
+    }
     
     @GetMapping("user/memberCardOrder/list")
     public R queryUserList(@RequestParam("offset") long offset, @RequestParam("size") long size,

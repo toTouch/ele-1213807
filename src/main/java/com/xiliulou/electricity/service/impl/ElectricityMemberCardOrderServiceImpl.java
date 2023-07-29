@@ -3458,6 +3458,44 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
+    public Triple<Boolean, String, Object> userBatteryDepositAndMembercardInfo() {
+        UserBatteryMemberCardInfoVO userBatteryMemberCardInfoVO=new UserBatteryMemberCardInfoVO();
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(SecurityUtils.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.warn("ELE WARN!not found userInfo,uid={}", SecurityUtils.getUid());
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+
+        userBatteryMemberCardInfoVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
+        userBatteryMemberCardInfoVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+        userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
+
+        UserBatteryMemberCard userBatteryMemberCard = userBatteryMemberCardService.selectByUidFromCache(userInfo.getUid());
+        if (Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getMemberCardId())) {
+            log.warn("ELE WARN! not found userBatteryMemberCard,uid={}", userInfo.getUid());
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+
+        userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.YES);
+        userBatteryMemberCardInfoVO.setMemberCardStatus(userBatteryMemberCard.getMemberCardStatus());
+        userBatteryMemberCardInfoVO.setMemberCardExpireTime(userBatteryMemberCard.getMemberCardExpireTime());
+        userBatteryMemberCardInfoVO.setRemainingNumber(userBatteryMemberCard.getRemainingNumber());
+
+        BatteryMemberCard batteryMemberCard = batteryMemberCardService.queryByIdFromCache(userBatteryMemberCard.getMemberCardId());
+        if (Objects.isNull(batteryMemberCard)) {
+            log.warn("ELE WARN! not found batteryMemberCard,uid={},mid={}", userInfo.getUid(), userBatteryMemberCard.getMemberCardId());
+            return Triple.of(true, null, userBatteryMemberCardInfoVO);
+        }
+
+        userBatteryMemberCardInfoVO.setMemberCardName(batteryMemberCard.getName());
+        userBatteryMemberCardInfoVO.setRentUnit(batteryMemberCard.getRentUnit());
+        userBatteryMemberCardInfoVO.setLimitCount(batteryMemberCard.getLimitCount());
+
+        return Triple.of(true, null, userBatteryMemberCardInfoVO);
+    }
+
+    @Override
     public Integer queryMaxPayCount(UserBatteryMemberCard userBatteryMemberCard) {
         return Objects.isNull(userBatteryMemberCard) || Objects.isNull(userBatteryMemberCard.getCardPayCount()) ? 0
                 : userBatteryMemberCard.getCardPayCount();
