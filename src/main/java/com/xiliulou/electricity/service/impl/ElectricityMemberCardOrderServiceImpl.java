@@ -3469,6 +3469,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         userBatteryMemberCardInfoVO.setBatteryRentStatus(userInfo.getBatteryRentStatus());
         userBatteryMemberCardInfoVO.setBatteryDepositStatus(userInfo.getBatteryDepositStatus());
+        userBatteryMemberCardInfoVO.setFranchiseeId(userInfo.getFranchiseeId());
+        userBatteryMemberCardInfoVO.setStoreId(userInfo.getStoreId());
         userBatteryMemberCardInfoVO.setIsExistMemberCard(UserBatteryMemberCardInfoVO.NO);
 
         UserBatteryDeposit userBatteryDeposit = userBatteryDepositService.selectByUidFromCache(userInfo.getUid());

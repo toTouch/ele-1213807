@@ -70,7 +70,9 @@ public class UserBatteryMemberCardInfoVO {
      */
     private List<String> userBatteryTypes;
 
+    private Long franchiseeId;
 
+    private Long storeId;
 
     public static final Integer NO = 0;
     public static final Integer YES = 1;
