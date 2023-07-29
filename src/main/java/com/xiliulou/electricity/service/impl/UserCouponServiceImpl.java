@@ -83,14 +83,13 @@ public class UserCouponServiceImpl implements UserCouponService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        UserCoupon entity = new UserCoupon();
-        entity.setStatus(status);
-        entity.setUpdateTime(System.currentTimeMillis());
-
         LambdaUpdateWrapper<UserCoupon> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(UserCoupon::getOrderId, orderId).eq(UserCoupon::getOrderIdType, orderIdType);
+        updateWrapper.eq(UserCoupon::getOrderId, orderId)
+                .eq(UserCoupon::getOrderIdType, orderIdType)
+                .set(UserCoupon::getStatus, status)
+                .set(UserCoupon::getUpdateTime, System.currentTimeMillis());
 
-        int num = userCouponMapper.update(entity, updateWrapper);
+        int num = userCouponMapper.update(null, updateWrapper);
 
         return num >= 0;
     }
