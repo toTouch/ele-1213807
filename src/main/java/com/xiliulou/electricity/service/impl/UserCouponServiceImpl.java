@@ -75,11 +75,11 @@ public class UserCouponServiceImpl implements UserCouponService {
      * @param orderId     订单编码
      * @param orderIdType 订单编码对应的类型
      * @param status      状态
-     * @return
+     * @return true(成功)、false(失败)
      */
     @Override
     public boolean updateStatusByOrderId(String orderId, Integer orderIdType, Integer status) {
-        if (ObjectUtils.allNotNull(orderId, orderIdType, status)) {
+        if (!ObjectUtils.allNotNull(orderId, orderIdType, status)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 

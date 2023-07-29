@@ -39,7 +39,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Override
     public boolean updateByOrderNo(CarRentalPackageOrderFreezePO entity) {
-        if (ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
+        if (!ObjectUtils.allNotNull(entity, entity.getOrderNo())) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
@@ -59,7 +59,7 @@ public class CarRentalPackageOrderFreezeServiceImpl implements CarRentalPackageO
      */
     @Override
     public boolean enableFreezeRentOrderByUidAndPackageOrderNo(String packageOrderNo, Long uid, Boolean autoEnable, Long optUid) {
-        if (ObjectUtils.allNotNull(packageOrderNo, uid, autoEnable)) {
+        if (!ObjectUtils.allNotNull(packageOrderNo, uid, autoEnable)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 

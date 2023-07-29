@@ -291,7 +291,7 @@ public class CarRenalPackageDepositBizServiceImpl implements CarRenalPackageDepo
      */
     @Override
     public boolean approveRefundDepositOrder(String refundDepositOrderNo, boolean approveFlag, String apploveDesc, Long apploveUid, BigDecimal refundAmount) {
-        if (ObjectUtils.allNotNull(refundDepositOrderNo, approveFlag, apploveUid)) {
+        if (!ObjectUtils.allNotNull(refundDepositOrderNo, approveFlag, apploveUid)) {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
