@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivity">
         select
-        id, name, type, status,  description, del_flag, create_time,receive_type,
+        id, name, type, status,  description, invitation_criteria, del_flag, create_time,receive_type,
         update_time, uid,user_name,franchisee_id,hours
         from t_share_activity
         <where>
@@ -31,12 +31,16 @@
             <if test="query.status != null ">
                 and status = #{query.status}
             </if>
+            <if test="query.invitationCriteria != null ">
+                and invitation_criteria = #{query.invitationCriteria}
+            </if>
         </where>
         order by update_time desc
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
         </if>
     </select>
+
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
         from t_share_activity
@@ -61,6 +65,9 @@
             </if>
             <if test="query.status != null ">
                 and status = #{query.status}
+            </if>
+            <if test="query.invitationCriteria != null ">
+                and invitation_criteria = #{query.invitationCriteria}
             </if>
         </where>
     </select>

@@ -27,18 +27,18 @@ public interface CouponService {
     /**
      * 新增数据
      *
-     * @param coupon 实例对象
+     * @param couponQuery 实例对象
      * @return 实例对象
      */
-    R insert(Coupon coupon);
+    R insert(CouponQuery couponQuery);
 
     /**
      * 修改数据
      *
-     * @param coupon 实例对象
+     * @param couponQuery 实例对象
      * @return 实例对象
      */
-    R update(Coupon coupon);
+    R update(CouponQuery couponQuery);
 
 
 
@@ -51,5 +51,7 @@ public interface CouponService {
     Triple<Boolean, String, Object> deleteById(Long id);
 
     List<SearchVo> search(CouponQuery query);
+
+    Triple<Boolean, String, Object> findCouponById(Long id);
 
 }

@@ -3,10 +3,17 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.annotation.Log;
-import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.BatteryMemberCard;
+import com.xiliulou.electricity.entity.DivisionAccountBatteryMembercard;
+import com.xiliulou.electricity.enums.UpDownEnum;
+import com.xiliulou.electricity.enums.car.CarRentalPackageTypeEnum;
+import com.xiliulou.electricity.model.car.query.CarRentalPackageQryModel;
+import com.xiliulou.electricity.query.BatteryMemberCardQuery;
 import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.service.BatteryMemberCardService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -37,6 +44,12 @@ public class JsonAdminCouponController extends BaseController {
     @Autowired
     UserDataScopeService userDataScopeService;
 
+    @Autowired
+    BatteryMemberCardService batteryMemberCardService;
+
+    @Autowired
+    private CarRentalPackageService carRentalPackageService;
+
     /**
      * 搜索
      */
@@ -63,16 +76,27 @@ public class JsonAdminCouponController extends BaseController {
 
     //新增
     @PostMapping(value = "/admin/coupon")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) Coupon coupon) {
-        return couponService.insert(coupon);
+    public R save(@RequestBody @Validated(value = CreateGroup.class) CouponQuery couponQuery) {
+        return couponService.insert(couponQuery);
     }
 
     //修改--暂时无此功能
     @PutMapping(value = "/admin/coupon")
     @Log(title = "修改优惠券")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) Coupon coupon) {
-        return couponService.update(coupon);
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) CouponQuery couponQuery) {
+        return couponService.update(couponQuery);
     }
+
+    /**
+     * 根据优惠券ID查询优惠券信息
+     * @param id
+     * @return
+     */
+    @GetMapping("/admin/coupon/update/{id}")
+    public R edit(@PathVariable("id") Long id){
+        return returnTripleResult(couponService.findCouponById(id));
+    }
+
     @DeleteMapping("/admin/coupon/delete/{id}")
     @Log(title = "删除优惠券")
     public R delete(@PathVariable("id") Long id){
@@ -86,7 +110,8 @@ public class JsonAdminCouponController extends BaseController {
                        @RequestParam(value = "discountType", required = false) Integer discountType,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "applyType", required = false) Integer applyType) {
+                       @RequestParam(value = "applyType", required = false) Integer applyType,
+                       @RequestParam(value = "superposition", required = false) Integer superposition) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -121,6 +146,7 @@ public class JsonAdminCouponController extends BaseController {
                 .franchiseeId(franchiseeId)
 //                .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
+                .superposition(superposition)
                 .tenantId(TenantContextHolder.getTenantId()).build();
         return couponService.queryList(couponQuery);
     }
@@ -130,7 +156,8 @@ public class JsonAdminCouponController extends BaseController {
     public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "applyType", required = false) Integer applyType) {
+                        @RequestParam(value = "applyType", required = false) Integer applyType,
+                        @RequestParam(value = "superposition", required = false) Integer superposition) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -159,8 +186,77 @@ public class JsonAdminCouponController extends BaseController {
                 .franchiseeId(franchiseeId)
 //                .franchiseeIds(franchiseeIds)
                 .applyType(applyType)
+                .superposition(superposition)
                 .tenantId(tenantId).build();
         return couponService.queryCount(couponQuery);
+    }
+
+    @GetMapping(value = "/admin/coupon/queryPackagesByFranchisee")
+    public R queryPackagesByFranchisee(@RequestParam(value = "offset") Long offset,
+                                         @RequestParam(value = "size") Long size,
+                                         @RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
+                                         @RequestParam(value = "type",  required = true) Integer type) {
+
+        if(!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)){
+            return R.fail("000200", "业务类型参数不合法");
+        }
+
+        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                    .offset(offset)
+                    .size(size)
+                    .franchiseeId(franchiseeId)
+                    .delFlag(BatteryMemberCard.DEL_NORMAL)
+                    .status(BatteryMemberCard.STATUS_UP)
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+            return R.ok(batteryMemberCardService.selectByQuery(query));
+        }else{
+            CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+            qryModel.setOffset(offset.intValue());
+            qryModel.setSize(size.intValue());
+            qryModel.setFranchiseeId(franchiseeId.intValue());
+            qryModel.setTenantId(TenantContextHolder.getTenantId());
+            qryModel.setStatus(UpDownEnum.UP.getCode());
+
+            if(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY.equals(type)){
+                qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+            }else if(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL.equals(type)){
+                qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+            }
+
+            return R.ok(batteryMemberCardService.selectCarRentalAndElectricityPackages(qryModel));
+        }
+
+    }
+
+    @GetMapping(value = "/admin/coupon/queryPackagesCount")
+    public R getElectricityUsablePackageCount(@RequestParam(value = "franchiseeId",  required = true) Long franchiseeId,
+                                              @RequestParam(value = "type",  required = true) Integer type) {
+
+        if(!DivisionAccountBatteryMembercard.PACKAGE_TYPES.contains(type)){
+            return R.fail("000200", "业务类型参数不合法");
+        }
+
+        if(DivisionAccountBatteryMembercard.TYPE_BATTERY.equals(type)){
+            BatteryMemberCardQuery query = BatteryMemberCardQuery.builder()
+                    .franchiseeId(franchiseeId)
+                    .delFlag(BatteryMemberCard.DEL_NORMAL)
+                    .status(BatteryMemberCard.STATUS_UP)
+                    .tenantId(TenantContextHolder.getTenantId()).build();
+            return R.ok(batteryMemberCardService.selectByPageCount(query));
+        }else{
+            CarRentalPackageQryModel qryModel = new CarRentalPackageQryModel();
+            qryModel.setFranchiseeId(franchiseeId.intValue());
+            qryModel.setTenantId(TenantContextHolder.getTenantId());
+            qryModel.setStatus(UpDownEnum.UP.getCode());
+
+            if(DivisionAccountBatteryMembercard.TYPE_CAR_BATTERY.equals(type)){
+                qryModel.setType(CarRentalPackageTypeEnum.CAR_BATTERY.getCode());
+            }else if(DivisionAccountBatteryMembercard.TYPE_CAR_RENTAL.equals(type)){
+                qryModel.setType(CarRentalPackageTypeEnum.CAR.getCode());
+            }
+            return R.ok(carRentalPackageService.count(qryModel));
+        }
     }
 
 }

@@ -16,10 +16,13 @@ import com.xiliulou.electricity.service.car.CarRentalPackageService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import com.xiliulou.electricity.vo.SearchVo;
+import com.xiliulou.electricity.vo.activity.CouponActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,12 +91,12 @@ public class CouponServiceImpl implements CouponService {
     /**
      * 新增数据
      *
-     * @param coupon 实例对象
+     * @param couponQuery 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R insert(Coupon coupon) {
+    public R insert(CouponQuery couponQuery) {
         //创建账号
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -103,7 +106,6 @@ public class CouponServiceImpl implements CouponService {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-
 
 //        //判断参数
 //        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
@@ -124,14 +126,14 @@ public class CouponServiceImpl implements CouponService {
     
         //判断参数
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
-            coupon.setType(Coupon.TYPE_FRANCHISEE);
-            if (Objects.isNull(coupon.getFranchiseeId())) {
+            couponQuery.setType(Coupon.TYPE_FRANCHISEE);
+            if (Objects.isNull(couponQuery.getFranchiseeId())) {
                 log.error("Coupon  ERROR! not found FranchiseeId ");
                 return R.fail("ELECTRICITY.0094", "加盟商不能为空");
             }
         } else {
-            if (Objects.equals(coupon.getType(), Coupon.TYPE_FRANCHISEE)) {
-                if (Objects.isNull(coupon.getFranchiseeId())) {
+            if (Objects.equals(couponQuery.getType(), Coupon.TYPE_FRANCHISEE)) {
+                if (Objects.isNull(couponQuery.getFranchiseeId())) {
                     log.error("Coupon  ERROR! not found FranchiseeId ");
                     return R.fail("ELECTRICITY.0094", "加盟商不能为空");
                 }
@@ -140,40 +142,42 @@ public class CouponServiceImpl implements CouponService {
 
 
         //参数判断
-        if (Objects.equals(coupon.getDiscountType(), Coupon.FULL_REDUCTION)) {
-            if (Objects.isNull(coupon.getAmount())) {
+        if (Objects.equals(couponQuery.getDiscountType(), Coupon.FULL_REDUCTION)) {
+            if (Objects.isNull(couponQuery.getAmount())) {
                 return R.fail("ELECTRICITY.0072", "减免金额不能为空");
             }
         }
 
-        if (Objects.equals(coupon.getDiscountType(), Coupon.DISCOUNT)) {
-            if (Objects.isNull(coupon.getDiscount())) {
+        if (Objects.equals(couponQuery.getDiscountType(), Coupon.DISCOUNT)) {
+            if (Objects.isNull(couponQuery.getDiscount())) {
                 return R.fail("ELECTRICITY.0073", "打折折扣不能为空");
             }
         }
 
-        if (Objects.equals(coupon.getDiscountType(), Coupon.EXPERIENCE)) {
-            if (Objects.isNull(coupon.getCount())) {
+        if (Objects.equals(couponQuery.getDiscountType(), Coupon.EXPERIENCE)) {
+            if (Objects.isNull(couponQuery.getCount())) {
                 return R.fail("ELECTRICITY.0074", "天数不能为空");
             }
         }
 
         //检查优惠券名称是否已经存在
-        if(isExistCouponName(coupon.getName(), tenantId)){
+        if(isExistCouponName(couponQuery.getName(), tenantId)){
             return R.fail("000075", "优惠券名称不能重复");
         }
 
         //判断若选择不可叠加优惠券，则需要检查是否选择了套餐
         List<CouponActivityPackage> couponActivityPackages = null;
-        if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())){
+        if(Coupon.SUPERPOSITION_NO.equals(couponQuery.getSuperposition())){
             //获取页面传递进来的套餐信息
-            Triple<Boolean, String, Object> packagesResult = getPackagesFromCoupon(coupon);
+            Triple<Boolean, String, Object> packagesResult = getPackagesFromCoupon(couponQuery);
             if (Boolean.FALSE.equals(packagesResult.getLeft())) {
                 return R.fail("000076", (String) packagesResult.getRight());
             }
             couponActivityPackages = (List<CouponActivityPackage>) packagesResult.getRight();
         }
 
+        Coupon coupon = new Coupon();
+        BeanUtils.copyProperties(couponQuery, coupon);
         coupon.setUid(user.getUid());
         coupon.setUserName(user.getUsername());
         coupon.setCreateTime(System.currentTimeMillis());
@@ -223,9 +227,9 @@ public class CouponServiceImpl implements CouponService {
         return Boolean.FALSE;
     }
 
-    private Triple<Boolean, String, Object> getPackagesFromCoupon(Coupon coupon){
+    private Triple<Boolean, String, Object> getPackagesFromCoupon(CouponQuery couponQuery){
         List<CouponActivityPackage> couponActivityPackages = Lists.newArrayList();
-        List<Long> electricityPackages = null;//coupon.getElectricityPackages();
+        List<Long> electricityPackages = couponQuery.getBatteryPackages();
         for(Long packageId : electricityPackages){
             //检查所选套餐是否存在，并且可用
             ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(packageId.intValue());
@@ -233,29 +237,29 @@ public class CouponServiceImpl implements CouponService {
                 return Triple.of(false, "000202", "换电套餐不存在");
             }
 
-            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(coupon.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), coupon.getTenantId());
+            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponQuery.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode(), couponQuery.getTenantId());
             couponActivityPackages.add(couponActivityPackage);
         }
 
-        List<Long> carRentalPackages = null; //coupon.getCarRentalPackages();
+        List<Long> carRentalPackages = couponQuery.getCarRentalPackages();
         for(Long packageId : carRentalPackages){
             CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000203", "租车套餐不存在");
             }
 
-            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(coupon.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode(), coupon.getTenantId());
+            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponQuery.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode(), couponQuery.getTenantId());
             couponActivityPackages.add(couponActivityPackage);
         }
 
-        List<Long> carElectricityPackages = null; //coupon.getCarElectricityPackages();
+        List<Long> carElectricityPackages = couponQuery.getCarWithBatteryPackages();
         for(Long packageId : carElectricityPackages){
             CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(packageId);
             if (Objects.isNull(carRentalPackagePO)) {
                 return Triple.of(false, "000204", "车电一体套餐不存在");
             }
 
-            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(coupon.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode(), coupon.getTenantId());
+            CouponActivityPackage couponActivityPackage = buildCouponActivityPackage(couponQuery.getId().longValue(), packageId, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode(), couponQuery.getTenantId());
             couponActivityPackages.add(couponActivityPackage);
         }
 
@@ -280,31 +284,31 @@ public class CouponServiceImpl implements CouponService {
     /**
      * 修改数据
      *
-     * @param coupon 实例对象
+     * @param couponQuery 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R update(Coupon coupon) {
-        Coupon oldCoupon = queryByIdFromCache(coupon.getId());
+    public R update(CouponQuery couponQuery) {
+        Coupon oldCoupon = queryByIdFromCache(couponQuery.getId());
         if (Objects.isNull(oldCoupon) || !Objects.equals(oldCoupon.getTenantId() ,TenantContextHolder.getTenantId())) {
-            log.error("update Coupon  ERROR! not found coupon ! couponId={} ", coupon.getId());
+            log.error("update Coupon  ERROR! not found coupon ! couponId={} ", couponQuery.getId());
             return R.fail("ELECTRICITY.00104", "找不到优惠券");
         }
 
         //检查优惠券是否已经绑定用户
-        List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(coupon.getId().longValue());
+        List<UserCoupon> userCoupons = userCouponService.selectCouponUserCountById(couponQuery.getId().longValue());
         if (!CollectionUtils.isEmpty(userCoupons)) {
-            log.error("update Coupon  ERROR! this coupon already bound user ! couponId={} ", coupon.getId());
+            log.error("update Coupon  ERROR! this coupon already bound user ! couponId={} ", couponQuery.getId());
             return R.fail("000205", "优惠券已有用户领取");
         }
 
         Coupon couponUpdate = new Coupon();
-        couponUpdate.setId(coupon.getId());
+        couponUpdate.setId(couponQuery.getId());
        /* couponUpdate.setSuperposition(coupon.getSuperposition());
         couponUpdate.setName(coupon.getName());
         couponUpdate.setDelFlag(coupon.getDelFlag());*/
-        couponUpdate.setDescription(coupon.getDescription());
+        couponUpdate.setDescription(couponQuery.getDescription());
         couponUpdate.setUpdateTime(System.currentTimeMillis());
 
         int update = couponMapper.updateById(couponUpdate);
@@ -337,6 +341,55 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public List<SearchVo> search(CouponQuery query) {
         return couponMapper.search(query);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> findCouponById(Long id) {
+        Coupon coupon = this.queryByIdFromCache(id.intValue());
+        if (Objects.isNull(coupon) || !Objects.equals(coupon.getTenantId(), TenantContextHolder.getTenantId())) {
+            return Triple.of(false, null, "优惠券信息不存在");
+        }
+        CouponActivityVO couponActivityVO = new CouponActivityVO();
+        BeanUtils.copyProperties(coupon, couponActivityVO);
+
+        if(Coupon.SUPERPOSITION_NO.equals(coupon.getSuperposition())){
+            couponActivityVO.setBatteryPackages(getBatteryPackages(id));
+
+            couponActivityVO.setCarRentalPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_RENTAL.getCode()));
+            couponActivityVO.setCarWithBatteryPackages(getCarBatteryPackages(id, PackageTypeEnum.PACKAGE_TYPE_CAR_BATTERY.getCode()));
+        }
+
+
+        return Triple.of(true, null, couponActivityVO);
+    }
+
+    private List<BatteryMemberCardVO> getBatteryPackages(Long couponId){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, PackageTypeEnum.PACKAGE_TYPE_BATTERY.getCode());
+
+        for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            ElectricityMemberCard electricityMemberCard = memberCardService.queryByCache(couponActivityPackage.getPackageId().intValue());
+            BeanUtils.copyProperties(electricityMemberCard, batteryMemberCardVO);
+            memberCardVOList.add(batteryMemberCardVO);
+        }
+
+        return memberCardVOList;
+    }
+
+    private List<BatteryMemberCardVO> getCarBatteryPackages(Long couponId, Integer packageType){
+        List<BatteryMemberCardVO> memberCardVOList = Lists.newArrayList();
+        List<CouponActivityPackage> couponActivityPackages = couponActivityPackageService.findPackagesByCouponIdAndType(couponId, packageType);
+        for(CouponActivityPackage couponActivityPackage : couponActivityPackages){
+            BatteryMemberCardVO batteryMemberCardVO = new BatteryMemberCardVO();
+            CarRentalPackagePO carRentalPackagePO = carRentalPackageService.selectById(couponActivityPackage.getPackageId());
+            batteryMemberCardVO.setId(carRentalPackagePO.getId());
+            batteryMemberCardVO.setName(carRentalPackagePO.getName());
+            batteryMemberCardVO.setCreateTime(carRentalPackagePO.getCreateTime());
+            memberCardVOList.add(batteryMemberCardVO);
+        }
+
+        return memberCardVOList;
     }
 
     @Override
@@ -376,7 +429,13 @@ public class CouponServiceImpl implements CouponService {
         couponUpdate.setId(id.intValue());
         couponUpdate.setDelFlag(Coupon.DEL_DEL);
         couponUpdate.setUpdateTime(System.currentTimeMillis());
-        this.update(couponUpdate);
+
+        int update = couponMapper.updateById(couponUpdate);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.saveWithHash(CacheConstant.COUPON_CACHE + couponUpdate.getId(), couponUpdate);
+            return null;
+        });
 
         return Triple.of(true, "", "删除成功！");
     }

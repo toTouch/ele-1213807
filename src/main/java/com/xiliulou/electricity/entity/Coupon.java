@@ -1,18 +1,18 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * 优惠券规则表(TCoupon)实体类
@@ -106,21 +106,6 @@ public class Coupon {
      */
     @NotNull(message = "优惠券叠加使用方式不能为空!", groups = {CreateGroup.class})
     private Integer superposition;
-
-    /**
-     * 换电套餐IDs
-     */
-    //private List<Long> electricityPackages;
-
-    /**
-     * 租车套餐IDs
-     */
-    //private List<Long> carRentalPackages;
-
-    /**
-     * 车电一体套餐IDs
-     */
-   //private List<Long> carElectricityPackages;
 
     public static final Integer SUPERPOSITION_NO = 0;
     public static final Integer SUPERPOSITION_YES = 1;

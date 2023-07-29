@@ -1,38 +1,29 @@
-package com.xiliulou.electricity.query;
+package com.xiliulou.electricity.vo.activity;
 
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
-import lombok.Builder;
+import com.xiliulou.electricity.vo.BatteryMemberCardVO;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * @author: lxc
- * @Date: 2021/4/15 16:02
+ * @author: Kenneth
+ * @Date: 2023/7/29 18:17
  * @Description:
  */
-@Data
-@Builder
-public class CouponQuery {
-    private Long size;
-    private Long offset;
 
-    @NotNull(message = "优惠券id不能为空!", groups = {UpdateGroup.class})
+@Data
+public class CouponActivityVO {
+
     private Integer id;
 
     /**
      * 优惠券名称
      */
-    @NotEmpty(message = "优惠券名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
      * 优惠类型，1--减免券，2--打折券，3-体验劵
      */
-    @NotNull(message = "优惠类型不能为空!", groups = {CreateGroup.class})
     private Integer discountType;
 
     /**
@@ -52,12 +43,10 @@ public class CouponQuery {
     /**
      * 有效天数
      */
-    @NotNull(message = "有效天数不能为空!", groups = {CreateGroup.class})
     private Integer days;
     /**
      * 优惠券描述
      */
-    @NotEmpty(message = "优惠券描述不能为空!", groups = {CreateGroup.class})
     private String description;
 
     /**
@@ -68,7 +57,7 @@ public class CouponQuery {
      * 加盟商Id
      */
     private Long franchiseeId;
-    
+
     private List<Long> franchiseeIds;
     /**
      * 适用类型  1--邀请活动优惠券  2--普通活动优惠券
@@ -91,22 +80,21 @@ public class CouponQuery {
     /**
      * 是否可叠加 0：否，1：是
      */
-    @NotNull(message = "优惠券叠加使用方式不能为空!", groups = {CreateGroup.class})
     private Integer superposition;
 
     /**
-     * 换电套餐IDs
+     * 邀请活动关联的换电套餐列表
      */
-    private List<Long> batteryPackages;
+    private List<BatteryMemberCardVO> batteryPackages;
 
     /**
-     * 租车套餐IDs
+     * 邀请活动关联的租车套餐列表
      */
-    private List<Long> carRentalPackages;
+    private List<BatteryMemberCardVO> carRentalPackages;
 
     /**
-     * 车电一体套餐IDs
+     * 邀请活动关联的车电一体套餐列表
      */
-    private List<Long> carWithBatteryPackages;
+    private List<BatteryMemberCardVO> carWithBatteryPackages;
 
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.xiliulou.electricity.enums.ActivityEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -83,6 +84,11 @@ public class ShareActivity {
      */
     private Integer discountType;
 
+    /**
+     * 邀请标准 0-登录注册 1-实名认证 2-购买套餐
+     * @see ActivityEnum
+     */
+    private Integer invitationCriteria;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

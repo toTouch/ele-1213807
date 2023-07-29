@@ -132,4 +132,10 @@
         where coupon_id = #{couponId}
     </select>
 
+    <select id="selectPackagesByCouponIdAndPackageType" resultMap="CouponActivityPackageMap">
+        <include refid="selectCouponPackage"/>
+        where coupon_id = #{couponId}
+        and package_type = #{packageType}
+    </select>
+
 </mapper>
