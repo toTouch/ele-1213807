@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
@@ -83,13 +82,7 @@ public class UserCouponServiceImpl implements UserCouponService {
             throw new BizException("ELECTRICITY.0007", "不合法的参数");
         }
 
-        LambdaUpdateWrapper<UserCoupon> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(UserCoupon::getOrderId, orderId)
-                .eq(UserCoupon::getOrderIdType, orderIdType)
-                .set(UserCoupon::getStatus, status)
-                .set(UserCoupon::getUpdateTime, System.currentTimeMillis());
-
-        int num = userCouponMapper.update(null, updateWrapper);
+        int num = userCouponMapper.updateStatusByOrderId(orderId, orderIdType, status, System.currentTimeMillis());
 
         return num >= 0;
     }

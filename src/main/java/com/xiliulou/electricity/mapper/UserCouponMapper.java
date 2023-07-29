@@ -18,6 +18,17 @@ import java.util.List;
 public interface UserCouponMapper extends BaseMapper<UserCoupon>{
 
     /**
+     * 根据订单编码更新优惠券状态
+     *
+     * @param orderId     订单编码
+     * @param orderIdType 订单编码对应的类型
+     * @param status      状态
+     * @param optTime      操作时间
+     * @return 操作条数
+     */
+    int updateStatusByOrderId(@Param("orderId") String orderId, @Param("orderIdType") Integer orderIdType, @Param("status") Integer status, @Param("optTime") Long optTime);
+
+    /**
      * 查询用户名下有效的优惠券
      *
      * @param uid      用户ID
